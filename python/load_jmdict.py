@@ -2,15 +2,17 @@
 
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
-import sys, os, re
+import sys, os, re, locale
 import cElementTree as ElementTree, MySQLdb 
 import jbdb, tables
 
-global KW, KWx, Xrefs, Seq
+global KW, KWx, Xrefs, Seq, Def_enc
 Xrefs = []
 
 def main (args, opts):
-	global KW, KWx
+	global KW, KWx, Def_enc
+
+	Def_enc = locale.getdefaultlocale()[1]
 
 	# open the database...
 	try: cursor = jbdb.dbOpen (user=opts.u, pw=opts.p, db=opts.d)
@@ -403,7 +405,7 @@ def find_xref_targets (cursor, txt):
 	# in the database that have a kanj.txt or kana.txt 
 	# that matches "txt".
 
-	if KANJI & jstr_classify (txt):
+	if jbdb.KANJI & jbdb.jstr_classify (txt):
 	    sql = "SELECT s.id FROM ((entr e " \
 		"INNER JOIN sens s ON s.entr=e.id) " \
 		"INNER JOIN kanj j ON j.entr=e.id) " \
@@ -415,27 +417,6 @@ def find_xref_targets (cursor, txt):
 		"WHERE k.txt=%s"
 	cursor.execute (sql, (txt,))
 	return [r[0] for r in cursor.fetchall()]
-
-# Bits used in the return value of function jstr_classify() below.
-KANA=1; HIRAGANA=2; KATAKANA=4; KANJI=8
-
-def jstr_classify (s):
-	"""\
-	Returns an integer with bits set according to whether
-	the indicated type of characters are present in string <s>.
-	    1 - Kana (either hiragana or katakana)
-	    2 - Hiragana
-	    4 - Katakana
-	    8 - Kanji
-	"""
-	r = 0
-	for c in s:
-	    n = ord (c)
-	    if   n >= 0x3040 and n <= 0x309F: r |= (HIRAGANA | KANA)
-	    elif n >= 0x30A0 and n <= 0x30FF: r |= (KATAKANA | KANA)
-	    elif n >= 0x4E00 and n <= 0x9FFF: r |= KANJI
-	return r	
-
 
 def fixup (s):
 	return s.rstrip ()
@@ -559,8 +540,6 @@ def remove_dup_freq_tags (flist):
 		result.append (x)
 	return result
 
-
-# Following stuff is boilerplate code...
 #---------------------------------------------------------------------
 
 from optparse import OptionParser
@@ -634,5 +613,3 @@ if __name__ == '__main__':
 	    sys.excepthook = exceptionHandler
 	    pdb.set_trace ()
 	main (args, opts)
-
-

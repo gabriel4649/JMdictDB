@@ -138,7 +138,7 @@ CREATE TABLE kfreq (
     FOREIGN KEY (kw) REFERENCES kwfreq(id));
 
 CREATE TABLE rfreq (
-    kana INT UNSIGNED NOT NULLE,
+    kana INT UNSIGNED NOT NULL,
     kw TINYINT UNSIGNED NOT NULL,
     value INT UNSIGNED,
     PRIMARY KEY (kana,kw),

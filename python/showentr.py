@@ -1,46 +1,119 @@
-# Loads the JMdict files in a jbdb database.
+# Simple command line tool to find and display entries
+# in the JMdict database.
 
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
-import sys, os, re
+import sys, os, re, locale
 import jbdb, MySQLdb
 from tables import *
 
-global KW
+class ParseError (RuntimeError): pass
+
+global KW, Def_enc
 
 def main (args, opts):
-	global KW, KWx
+	global KW, Def_enc
 
+	Def_enc = locale.getdefaultlocale()[1]
 	# open the database...
 	try: cursor = jbdb.dbOpen (user=opts.u, pw=opts.p, db=opts.d)
 	except MySQLdb.OperationalError, e:
 	    if e[0] == 1045: 
-		print "Error, unable to connect to database, do you need -u or -p?\n", e[1];  sys.exit(1)
+		print "Error, unable to connect to database, do you need -u or -p?\n", e[1];  
+		sys.exit(1)
 	    else: raise
 
 	# Read in all the keyword tables...
 	KW = jbdb.Kwds (cursor)
+	mk_tmpsrch (cursor)
 
 	print """
-This program will repeatedly prompt you for a number and display
-data for a matching jmdict entry.  If the number is less than
-1000000 then it is interpreted as an entry id number.  Otherwise
-it is interpreted as an entry sequence number.
-
+Type "help" for more info.
 To exit type a return, or EOF (usually ^d on Unix, ^z on Windows)."""
 
 	while True:
-	    try: s = raw_input( "\nId or seq number? ").strip()
+	    try: s = raw_input( "find> ").decode(Def_enc).strip()
 	    except EOFError: break
 	    if not s: break
-	    try: s = int(s)
-	    except: print "Not a number"
+	    if s[0] == "h" or s[0] == "H":
+		help (); continue
+	    try: rowcnt = search (cursor, s)
+	    except ParseError, e: 
+		print "Parse error, type \"h\" for help"; continue
+	    if rowcnt == 0: print "Nothing found"
+	    elif rowcnt == 1: 
+		rs = get_found_list (cursor)
+		entr = get_entry (cursor, rs[0][0])
+		entr = display_entry (entr)
 	    else:
-		entr = get_entr (cursor, s)
-		if not entr: print "Entry not found"
-		else: display_entr (entr)
+		rs = get_found_list (cursor)
+		choose_entry (cursor, rs)
+	    
+def search (cursor, s):
+	Tbls = {'e':"entr",'k':"kanj",'r':"kana",'s':"sens",'g':"gloss",'q':"entr",None:"entr"}
+	parsed = srch_parse (s)
+	results = []
+	for typ,tbl,val in parsed:
+	    table = Tbls[tbl];  col = "txt"
+	    if isinstance (val, (int,long)): col = "id"
+	    if col=="txt" and table in ("entr","sens"):
+		raise ParseError ("Parse error")
+	    if typ is None: w = "%s.%s=%%s" % (table,col)
+	    else: w = "%s.%s LIKE(%%s)" % (table,col)
+	    if typ == '^': val = val + "%"
+	    elif typ == '*': val = "%" + val + "%"
+	    elif typ == '$': val = "%" + val
+	    results.append ((table,w,(val,)))
+	cursor.execute ("DELETE FROM _tmpsrch")
+	sql, args = build_search_sql (results)
+	cursor.execute ("INSERT INTO _tmpsrch(id) " + sql, args)
+	return cursor.rowcount
 
-def display_entr (entr):
+def choose_entry (cursor, rs):
+	display_list (rs)
+	while True:
+	    try: s = raw_input( "show> ").decode(Def_enc).strip()
+	    except EOFError: break
+	    if not s: break
+	    elif s[0] == "h" or s[0] == "H": help ()
+	    elif s[0] == "l" or s[0] == "L": display_list (rs)
+	    else:
+		try: numb = int (s)
+		except ValueError: 
+		    print "Not a number or command, type \"h\" for help"; continue
+		if numb < 1 or numb > len(rs):
+		    print "Number out of range 1-%d, type \"h\" for help" % len(rs); continue
+		else: 
+		    entr = get_entry (cursor, rs[numb-1][0])
+		    display_entry (entr)
+
+def display_list (rs):
+	for n,(e,q,k,j,g) in enumerate (rs):
+	    print "%3d.%6d%8d|%s|%s|%s" % (n+1,e,q,clip(k,10,u"\u3000"),
+			clip(j,10,u"\u3000"),clip(g,18," "))
+
+def clip (s, n, pad):
+	if isinstance(pad, unicode): s = s.replace("; ", u"\uff1b")
+	x = min (len (s), n)
+	s = (pad * (n - x)) + s[:x]
+	return s
+
+def get_found_list (cursor):
+	sql = \
+	    u"SELECT e.id,e.seq, " \
+		u"(SELECT GROUP_CONCAT(k.txt ORDER BY ord SEPARATOR '; ') " \
+		    u"FROM kana k WHERE k.entr=e.id) AS kana, " \
+		u"(SELECT GROUP_CONCAT(j.txt ORDER BY ord SEPARATOR '; ') " \
+		    u"FROM kanj j WHERE j.entr=e.id) AS kanj, " \
+		u"(SELECT group_concat(g.txt ORDER BY s.ord,g.ord SEPARATOR '; ') " \
+		    u"FROM sens s JOIN gloss g ON g.sens=s.id " \
+		    u"WHERE s.entr=e.id) AS gloss " \
+		u"FROM entr e JOIN _tmpsrch t ON e.id=t.id"
+	cursor.execute (sql)
+	rs = cursor.fetchall ()
+	return rs
+
+def display_entry (entr):
 
 	  # Print basic entry information 
 
@@ -90,7 +163,7 @@ def display_entr (entr):
 	    if sr or sk: 
 		stag = " (%s only)" % ", ".join([x.txt for x in sk+sr])
 
-	    print "\n  %d. %s%s%s" % (n+1, pos, misc, stag)
+	    print "\n  %d. %s%s%s(%d)" % (n+1, pos, misc, stag, s.id)
 	    if fld: print "     Field(s): " + fld
 
 	      # Now print the glosses...
@@ -114,11 +187,9 @@ def display_restr (rlist, klist):
 	    else: s.append (r.txt + u" (" + ", ".join([j.txt for j in valid]) + u")")
 	print "; ".join(s)
 
-def get_entr (cursor, id):
-	if id < 1000000:
-	    e = load (Entr, cursor, "select * from entr where id=%s", (id,))
-	else:
-	    e = load (Entr, cursor, "select * from entr where seq=%s", (str(id),))
+def get_entry (cursor, entrid):
+	sql = "SELECT * FROM entr WHERE id=%s"
+	e = load (Entr, cursor, sql, (entrid,))
 	if len(e) < 1: return None
 	e = e[0]; id = e.id
 	e.lang = load (Lang, cursor, "select * from lang where entr=%s", (id,))
@@ -145,6 +216,79 @@ def get_entr (cursor, id):
 	    k.restr = load (Restr, cursor, "select * from restr where kana=%s", (k.id,))
 	return e
 
+def build_search_sql (condlist):
+	"""\
+	Build a sql statement that will find the id numbers of
+	all entries matching the conditions given in <condlist>.
+	Note: This function does not provide for generating arbitrary 
+	sql statements; it is only intented to support some limited 
+	search capabilities.
+
+	<condlist> is a list of 3-tuples.  Each 3-tuple specifies
+	one condition:
+	  0: Name of table, one of: "entr", "kana", "kanj", "sens", 
+	    "gloss", "pos", "use".
+	  1: Sql snippit that will be AND'd into the WHERE clause.
+	    Field names must be qualified by table.  When looking 
+	    for a value in a field.  A "?" may (and should) be used 
+	    where possible to denote an exectime parameter.  The value
+	    to be used when the sql is executed is is provided in
+	    the 3rd member of the tuple (see #2 next).
+	  2: A sequence of argument values for any exec-time parameters
+	    ("?") used in the second value of the tuple (see #1 above).
+
+	Example:
+	    [("entr","entr.typ=1", ()),
+	     ("gloss", "gloss.text LIKE ?", ("'%'+but+'%'",)),
+	     ("pos","pos.kw IN (?,?,?)",(8,18,47))]
+
+	  This will generate the SQL statement and arguments:
+	    "SELECT entr.id FROM (((entr INNER JOIN sens ON sens.entr=entr.id) 
+		INNER JOIN gloss ON gloss.sens=sens.id) 
+		INNER JOIN pos ON pos.sens=sens.id) 
+		WHERE entr.typ=1 AND (gloss.text=?) AND (pos IN (?,?,?))"
+	    ('but',8,18,47)
+	  which will find all entries that have a gloss containing the
+	  substring "but" and a sense with a pos (part-of-speech) tagged
+	  as a conjunction (pos.kw=8), a particle (18), or an irregular
+	  verb (47)."""
+
+	tables = []; wclauses = []; args =[]
+	for tbl,cond,arg in condlist:
+	    tables.append (tbl)
+	    wclauses.append (cond)
+	    args.extend (arg)
+	t = "(%s INNER JOIN % s ON %s)"
+	s = "entr "
+	if "kana" in tables:  s = t % ( s, "kana",  "kana.entr=entr.id" )
+	if "kanj" in tables:  s = t % ( s, "kanj",  "kanj.entr=entr.id" )
+	if "sens" in tables \
+		or "gloss" in tables \
+		or "pos" in tables \
+		or "misc" in tables:
+			      s = t % ( s, "sens",  "sens.entr=entr.id" ) 
+	if "gloss" in tables: s = t % ( s, "gloss", "gloss.sens=sens.id" ) 
+	if "pos" in tables:   s = t % ( s, "pos",   "pos.sens=sens.id" ) 
+	if "misc" in tables:  s = t % ( s, "misc",  "misc.sens=sens.id" ) 
+	where = " AND ".join (wclauses)
+	return "SELECT DISTINCT entr.id FROM %s WHERE %s" % (s, where), tuple(args)
+
+def srch_parse (txt):
+		  #   123          4         56       7      89           0  1
+	regex = ur"\s*((([ekrsgq])?([0-9]+))|(([*^$])?([krg])(([^'\s]\S*)|(\'([^']*?)\'))))"
+                  #   123        3 3      32 23     3 3     334         4 4  5      5  4321
+	reob = re.compile (regex, re.I|re.U)
+	start = 0;  results = []
+	while start < len(txt):
+	    m = reob.match (txt.strip(), start)
+	    if not m: raise ParseError ("Parse error")
+	    start = m.span()[1]
+	    if m.group(4): results.append ((None,m.group(3),int(m.group(4))))
+	    else: 
+		if m.group(8): results.append ((m.group(6),m.group(7),m.group(8)))
+		else: results.append ((m.group(6),m.group(7),m.group(11)))
+	return results
+
 def load (cls, cursor, sql, sqlargs):
 	cursor.execute (sql, sqlargs)
 	rs = cursor.fetchall ()
@@ -155,6 +299,14 @@ def filt (exclude, xlist):
 	# that do not have an id number that is in the list
 	# of numbers in <exclude>.
 	return [x for x in xlist if x.id not in exclude]
+
+def mk_tmpsrch (cursor):
+	cursor.execute ("DROP TABLE IF EXISTS _tmpsrch;")
+	cursor.execute (
+	    "CREATE TABLE _tmpsrch (" \
+		"id INT UNSIGNED NOT NULL PRIMARY KEY, " \
+		"ord INT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE);")
+
 
 # Following stuff is boilerplate code...
 #---------------------------------------------------------------------

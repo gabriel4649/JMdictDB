@@ -24,3 +24,7 @@ INSERT INTO kwmisc(id,kw,descr) VALUES(23, 'uK',      'word usually written usin
 INSERT INTO kwmisc(id,kw,descr) VALUES(24, 'vulg',    'vulgar expression or word');
 INSERT INTO kwmisc(id,kw,descr) VALUES(25, 'sens',    'sensitive');
 INSERT INTO kwmisc(id,kw,descr) VALUES(99, 'ateji',   'ateji (phonetic) reading');
+INSERT INTO kwmisc(id,kw,descr) VALUES(26, 'proverb', 'proverb');
+INSERT INTO kwmisc(id,kw,descr) VALUES(27, 'aphorism','aphorism (pithy saying)');
+INSERT INTO kwmisc(id,kw,descr) VALUES(28, 'quote',   'quotation');
+INSERT INTO kwmisc(id,kw,descr) VALUES(29, 'senryuu', 'senryuu (comic haiku)');

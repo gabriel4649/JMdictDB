@@ -57,8 +57,6 @@ class DbRow (list):
 	    val = getattr (self, x)
 	    if hasattr (self, "_useid") and x in self._useid: val = val.id
 	    vals.append (val)
-	# Mysql hack...
-	vals = tuple([self.utf8ize(v) for v in vals])
 
 	# Create the sql statement text.
 	sql = "INSERT INTO %s(%s) VALUES(%s);" \
@@ -66,7 +64,7 @@ class DbRow (list):
 
 	# Do it, and a sanity check.
 	#print "%s; %s" % (sql, str(vals));  n = 1
-	n = cursor.execute (unicode(sql), vals)
+	n = cursor.execute (sql, vals)
 	if n < 1: raise RuntimeError( "No rows inserted" )
 	if n > 1: raise RuntimeError( "Multiple rows inserted" )
 
@@ -88,11 +86,6 @@ class DbRow (list):
 
 	# Return the auto_id number in case caller wants to know,
 	return id
-
-    def utf8ize (self, o):
-	#if isinstance (o, unicode): return o.encode("utf-8")
-	if isinstance (o, str): return unicode(o)
-	return o
 
     def __repr__ (self):
 	args = []
@@ -170,19 +163,79 @@ class Kwd (list):
 
 #=======================================================================
 
+# Bits used in the return value of function jstr_classify() below.
+KANA=1; HIRAGANA=2; KATAKANA=4; KANJI=8
+
+def jstr_classify (s):
+	"""\
+	Returns an integer with bits set according to whether
+	the indicated type of characters are present in string <s>.
+	    1 - Kana (either hiragana or katakana)
+	    2 - Hiragana
+	    4 - Katakana
+	    8 - Kanji
+	"""
+	r = 0
+	for c in s:
+	    n = ord (c)
+	    if   n >= 0x3040 and n <= 0x309F: r |= (HIRAGANA | KANA)
+	    elif n >= 0x30A0 and n <= 0x30FF: r |= (KATAKANA | KANA)
+	    elif n >= 0x4E00 and n <= 0x9FFF: r |= KANJI
+	return r
+
+
+#=======================================================================
+
+
+class Cursor:
+    """\
+    This class wraps a Python DBI cursor instance by delegating
+    all undefined (in here) operations to the wrapped object.
+    The purpose is to allow us to intercept .execute() calls
+    so can convert unicode strings to utf fro broken versions
+    of MySQLdb."""
+
+  # WARNING....
+  # All assignments to instance properties below must be done
+  # using the form "self.__dict__['property'] = value" rather
+  # that "self.property = value" to avoid an infinite recursion
+  # in self.getattr()
+
+    def __init__ (self, conn): 
+	self.__dict__['conn'] = conn
+	self.__dict__['_cursor_'] = conn.cursor ()
+    def execute (self, sql, args=None): 
+	if args is None: args = []
+	if MySQLdb.__version__ == "1.2.1_p2": pass
+	elif MySQLdb.__version__ == "1.2.0":
+	    args = self.utf8ize (args)
+	    sql = sql.encode("utf8")
+	else: raise RuntimeError ("Unprepared for MySQLdb version %s" \
+			         % MySQLdb.__version__)
+	rc = self.__dict__['_cursor_'].execute (sql, args)
+	return rc
+    def __getattr__(self, attr):
+        return getattr (self._cursor_, attr)
+    def __setattr__(self, attr, value):
+        return setattr (self._cursor_, attr, value)
+
+    def utf8ize (self, args):
+	uargs = []	
+	for a in args:
+	    if not isinstance (a, unicode): uargs.append (a)
+	    else: uargs.append (a.encode("utf-8"))
+	return uargs
+
+
 import MySQLdb
-def dbOpen (user="root", pw="", db="jb"):
-        conn = MySQLdb.connect (user=user, passwd=pw,
-                                db=db, use_unicode=True,
-				charset="utf8")
-
-    # The charset="utf8" argument to MySQLdb.connrct() above
-    # works with MySQLdb-1.2.1_p2 but causes an error with
-    # version 1.2.0.  I think that the following line has
-    # the same effect but not sure...
-
-	conn.charset = "utf8"
-	cursor = conn.cursor()
-	cursor.conn = conn
-	return cursor
-
+def dbOpen (user="root", pw="", db="jb", host="localhost"):
+	if MySQLdb.__version__ == "1.2.1_p2":
+            conn = MySQLdb.connect (user=user, passwd=pw, host=host,
+                                    db=db, use_unicode=True,
+				    charset="utf8")
+	else:
+            conn = MySQLdb.connect (user=user, passwd=pw, host=host,
+                                    db=db, use_unicode=True)
+	conn.cursor().execute("SET NAMES 'utf8'")
+	conn.charset = "utf-8"
+	return Cursor (conn)

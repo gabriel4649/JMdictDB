@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # Simple command line tool to find and display entries
 # in the JMdict database.
 
@@ -88,6 +91,7 @@ def choose_entry (cursor, rs):
 		    display_entry (entr)
 
 def display_list (rs):
+	print "Num.  eId    Seq  |           Readings |              Kanji | Glosses"
 	for n,(e,q,k,j,g) in enumerate (rs):
 	    print "%3d.%6d%8d|%s|%s|%s" % (n+1,e,q,clip(k,10,u"\u3000"),
 			clip(j,10,u"\u3000"),clip(g,18," "))
@@ -285,7 +289,7 @@ def srch_parse (txt):
 	    start = m.span()[1]
 	    if m.group(4): results.append ((None,m.group(3),int(m.group(4))))
 	    else: 
-		if m.group(8): results.append ((m.group(6),m.group(7),m.group(8)))
+		if m.group(9): results.append ((m.group(6),m.group(7),m.group(9)))
 		else: results.append ((m.group(6),m.group(7),m.group(11)))
 	return results
 
@@ -308,7 +312,71 @@ def mk_tmpsrch (cursor):
 		"ord INT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE);")
 
 
-# Following stuff is boilerplate code...
+def help ():
+	print """\
+At the "find>" prompt, you can search for an entry by
+the id number of any of it's components, or by searching
+for text strings.
+
+To find an entry by id number, enter a single letter
+indicating the table, followed by the id number.  The
+acceptable letters are "e" (entr.id), "r" (kana.id),
+"k" (kanj.id), "s" (sens.id), "g" (gloss.id).  The
+letter "q" denotes the entr.seq data.  Examples:
+
+	# Show the entry that has entr.id = 33108
+	find> e33108	
+
+	# Show the entry that has reading kana.id = 10558
+	find> r10558
+
+	# Show the entry with seq = 1000240
+	find> q1000240
+
+To find entries whose reading, kanji, or gloss contains
+a particular string, use this syntax:
+
+	[srch-type][table][text]
+
+[srch-type] is optional and may be one of "^", "*", "$".
+If not present, [text] must exactly match a the text in 
+the searched table.  "^" denotes that [text] need only
+occur at the start of the text in the table.  "*" denotes
+[text] occurs anywhere in the table text.  "$" denotes
+[text] occurs at the end of the table text.
+
+[table] indicates the table to be searched: "r" readings
+(table kana), "k" kanji (table kanj), "g" glosses (table
+gloss).  
+
+[text] is the text to be searched for.  If is contains
+spaces, it must be enclosed in single quotes ("'").
+
+Multiple search conditions may be given; matching entries
+must satisfy all the conditions.
+
+Examples:
+
+	# Find all entries having a reading of "atsui"
+	find> rあつい
+
+	# Find all entries with kanji that starts with
+	# "omo.u" and has a gloss "to feel"
+	find> ^k思 g'to feel'
+
+	# Find all entries with kanji that starts with
+	# "omo.u" and has a gloss containing the word
+	# "feel"
+	find> ^k思 *gfeel
+
+If only one entry is found, it is displayed.  If more than
+entry is found, a numbered list is displayed, and you are
+prompted with the "show>" prompt to enter the number of the
+entry you want.  At the "show>" prompt you can also entr
+"l" (lower case "L") to redisplay the list, "h" for this
+help, or an blank line to return to the "find>" prompt.
+""" 
+
 #---------------------------------------------------------------------
 
 from optparse import OptionParser

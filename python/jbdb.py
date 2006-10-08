@@ -52,19 +52,24 @@ class DbRow (list):
 	# column name is a "_useid" column, then it if a reference 
 	# to an object whose id we we use.  Otherwise, it is the
 	# the value of the attribute itself.
-	vals = []
+	vals = [];  bind = []
 	for x in attrs:
 	    val = getattr (self, x)
-	    if hasattr (self, "_useid") and x in self._useid: val = val.id
-	    vals.append (val)
+	    if hasattr (self, "_useid") and x in self._useid: 
+		val = val.id
+	    if hasattr (self, "_auto") and x == self._auto and val == 0:
+		bind.append ("DEFAULT")
+	    else:
+		vals.append (val)
+		bind.append ("%s")
 
 	# Create the sql statement text.
 	sql = "INSERT INTO %s(%s) VALUES(%s);" \
-		% (self._table, ",".join(attrs), (",%s"*len(attrs))[1:])
+		% (self._table, ",".join(attrs), ",".join(bind) )
 
 	# Do it, and a sanity check.
 	#print "%s; %s" % (sql, str(vals));  n = 1
-	n = cursor.execute (sql, vals)
+	cursor.execute (sql, vals);  n = cursor.rowcount
 	if n < 1: raise RuntimeError( "No rows inserted" )
 	if n > 1: raise RuntimeError( "Multiple rows inserted" )
 

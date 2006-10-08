@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # This program will read a JMdict XML file and count
 # the number of occurances of various tags and (for
 # some tags) the number of values that occur in that 

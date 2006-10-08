@@ -1,10 +1,14 @@
+#!/usr/bin/env python
+
 # Loads the JMdict files in a jbdb database.
 
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
 import sys, os, re, locale
-import cElementTree as ElementTree, MySQLdb 
+import MySQLdb as dbapi
 import jbdb, tables
+if sys.version_info[1] < 5: import cElementTree as ElementTree
+else: import xml.etree.cElementTree as ElementTree
 
 global KW, KWx, Xrefs, Seq, Def_enc
 Xrefs = []
@@ -16,10 +20,8 @@ def main (args, opts):
 
 	# open the database...
 	try: cursor = jbdb.dbOpen (user=opts.u, pw=opts.p, db=opts.d)
-	except MySQLdb.OperationalError, e:
-	    if e[0] == 1045: 
-		print "Error, unable to connect to database:", e[1];  sys.exit(1)
-	    else: raise
+	except dbapi.OperationalError, e:
+	    print "Error, unable to connect to database:", unicode(e);  sys.exit(1)
 
 	# Read in all the keyword tables...
 	KW = jbdb.Kwds (cursor)
@@ -42,6 +44,8 @@ class LnFile:
 	return s
 
 def parse_xmlfile (cursor, filename, srcid, opts): 
+	global Xrefs
+
 	# Use the ElementTree module to parse the jmdict 
 	# xml file.  This function keeps track of where
 	# we are and for each parsed <entry> element, calls
@@ -105,6 +109,7 @@ def parse_xmlfile (cursor, filename, srcid, opts):
 		    x = " and loading database"
 		    if opts.n: x = ""
 		    print "Parsing%s..." % x
+		    if not opts.n: cursor.execute ("BEGIN")
 
 		# Process and write this entry.
 
@@ -121,24 +126,21 @@ def parse_xmlfile (cursor, filename, srcid, opts):
 		# off between faster speed (high number) and not having 
 		# to redo entries in case of error (low number).
  
-		if (cntr - cnt0 + 1) % 200 == 0: 
-		    if not opts.n: cursor.conn.commit()
+		if (cntr - cnt0 + 1) % 3975 == 0: 
+		    if not opts.n: cursor.execute ("COMMIT")
 
 	    # We no longer need the parsed xml info for this
 	    # item so dump it to reduce memory consumption.
 
 	    root.clear()
 
-	if not opts.n: cursor.conn.commit()
+	if not opts.n: cursor.execute ("COMMIT")
 	print "\nParsed xml to line %d in %s" % (inpf.lineno, filename)
 
-	global Xrefs
-	# Count xrefs to do...
-	
-	print "Resolving %d xrefs and antonyms..." \
+	if not opts.n: 
+	    print "Resolving %d xrefs and antonyms..." \
 		% sum ([len(x[2]) for x in Xrefs])
-	do_xrefs (cursor, Xrefs)
-	cursor.conn.commit ()
+	    do_xrefs (cursor, Xrefs)
 	print "Done!"
 
 def write_entr (cursor, entr):
@@ -156,15 +158,15 @@ def write_entr (cursor, entr):
 	for o in entr.stagk: o._insert (cursor)
 	for o in entr.stagr: o._insert (cursor)
 
-	# We can't write the xrefs yet because they may reference
-	# an entry that hasn't been processed yet.  So we will 
-	# save each, along with the sense id number which we now 
-	# have, on a global list later processing.
+	# We can't write xrefs because referenced entry
+	# may not be in database yet.  So save this entries 
+	# xref in a list for processing at end of program.
+	# We have to do this after the entry was written 
+	# because we need to save the actual sens.id used
+	# in the database.
 
-	global Xrefs
 	for s in entr.sens:
 	    if s.xrefs: Xrefs.append ((s.id, entr.seq, s.xrefs))
-
 
 def do_entry (elem, srcid, lineno):
 	# Process an <entry> element.  The element has been
@@ -174,7 +176,7 @@ def do_entry (elem, srcid, lineno):
 	# JMnedict, examples, etc).  "lineno" is the source
 	# file line number.
 
-	seq = elem.find('ent_seq').text
+	seq = int(elem.find('ent_seq').text)
 	global Seq;  Seq = seq
 	entr =  tables.Entr ((0, srcid, seq, str(lineno)))
 
@@ -384,21 +386,27 @@ def do_xrefs (cursor, xreflist):
 	# an ant.  The sencond item is the xref or ant's 
 	# text string as it was in jmdict.  
 
+	cursor.execute ("BEGIN")
 	for sid,seq,xlst in xreflist:
 	    for typ,txt in xlst:
 		xids = find_xref_targets (cursor, txt)
 		if not xids:
 		    print "Warning, no entry found that matches " \
 			  "xref \"%s\" from entry %s" % (txt, seq)
-		for x in xids:
+		for n,x in enumerate (xids):
 		    if typ=="x": xtyp = KW.XREF.see.id
 		    elif typ=="a": xtyp = KW.XREF.ant.id
 		    else: raise RuntimeError ("Bad xref type code")
 		    xref = tables.Xref ((sid, x, xtyp, "JMdict")) 
 		    try: xref._insert (cursor)
-		    except MySQLdb.IntegrityError, err:
-			if err[0] != 1062: raise  # Duplicate key.
+		    except dbapi.IntegrityError, err:
+			estr = str(err).lower()
+			if "duplicate key" not in estr \
+			    and "duplicate entry" not in estr: raise
 			print "Note: Multiple xref resolved to same entry (%s)" % seq
+			cursor.execute ("ROLLBACK")
+		    else: 
+			cursor.execute ("COMMIT")
 
 def find_xref_targets (cursor, txt):
 	# Return a list of all the sense id's for entries 
@@ -546,7 +554,7 @@ from optparse import OptionParser
 
 def parse_cmdline ():
 	u = \
-"""\n\t%prog [-d dbfile] xmlfile srcid
+"""\n\t%prog [-d dbfile] xmlfile
 	
   %prog will extract the data from <xmlfile> (which is a JMdict
   or JMnedict file) and will load it into a database. The new

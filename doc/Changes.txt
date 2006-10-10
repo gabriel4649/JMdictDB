@@ -1,0 +1,50 @@
+2006-10-10	smcgraw@frii.com
+
+	Tag T004: Changes to suppport Postgresql in addition to Mysql.
+
+	* Changes.txt pg/db.py mysql/db.py
+	New files.
+
+	* jbdb.py 
+	Move Cursor class, function dbOpen() into pg/db.py and mysql/db.py.
+	Instead of executing db-specific sql to get the last used auto-number
+	  value, move that sql into new cursor method .lastauto() in each
+	  of the db-specific db.py modules, and call it in jbdb.py.
+
+	* load_jmdict.py
+	Get rid of mysql specific code.
+
+	* loadkw.sql reload,sql schema.sql 
+	Move into the database-specific directories pg/ and mysql/.
+
+	* README.txt 
+	Updated to include new info about postgresql, remove
+	some old info no longer relevent.
+
+	* mysql/schema.sql
+	Add view "entr_summary".
+
+	* showentr.py
+	Get rid of mysql specific code.
+	When printing glosses, explicitly convert to default encoding
+	  so can use "replace" to avoid exception when an unconvertable
+	  utf8 character encountered, as commonly happens with iso9959-x
+	  characters when default encoding is something like sjis.
+	Use query "entr_summary" to get matched entries list, rather
+	  than doing the sql in the script.  **Note**: This results
+	  in very long response times for the "find>" command when
+	  using Mysql, because Mysql executes the view's sql without
+	  any consideration of the outer WHERE clause!
+	Drop the temp table before trying to create it.
+	Conditionalize the sql executed to create the temp table for 
+	  mysql or postgresql.
+
+	* sitecustomize
+	It wasn't actually setting the default encoding. Fixed.
+
+2006/10/09	smcgraw@frii.com
+
+	Tags to date:
+	T003	Last (I hope) Mysql-only files.
+	T002	Files distributed on the jmdict mailing list, 2006/09/21.
+	T001	Initial commit

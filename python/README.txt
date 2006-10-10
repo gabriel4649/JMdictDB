@@ -1,95 +1,151 @@
-Here is a possible schema for the jmdict project which
-I offer for discussion.  
+This directory contains scripts for creating a Mysql or
+Postgresql database schema for Jim Breen's JMdict project.
+The schema and supporting tools are not well tested and
+are in no way finished or polished.  This is offered as 
+a starting point for discussion and possibly further 
+development.
 
-I've attached a zip file containing:
+This directory contains
 
     README.txt -- This file.
-    schema.png -- Schema diagram.
-    schema.sql -- Table definitions, loadable into mysql.
-    loadkw.sql -- Mysql commands to load the static keyword data.
-    data/*.sql -- Static keyword data for the kw* tables.
     load_jmdict.py -- Python script to load data from jmdict.
+    schema.png -- Schema diagram.
     showentr.py -- Command line script to display entry from database. 
-    jbdb.py -- Mini-orm :-) used by load_jmdict.py and showentr.py.
     tables.py -- Table definitions used by jbdb.py.
+    data/*.sql -- Static keyword data for the kw* tables.
 
-Disclaimer:  this stuff has had almost no testing
-and is in no way finished or polished.  But I don't
-want to invest more effort without some feedback.
+    pg/jbdb.py -- Mini-orm :-) used by load_jmdict.py and showentr.py.\
+    pg/loadkw.sql -- Mysql commands to load the static keyword data.
+    pg/reload.sql -- Script for creating a fresh empty schema.
+    pg/schema.sql -- Table definitions, loadable into mysql.
 
-To load jmdict data from the script you will need 
-Python-2.4 (or later) installed, and you will also 
-need the following python modules installed:
+    mysql/jbdb.py -- Mini-orm :-) used by load_jmdict.py and showentr.py.
+    mysql/loadkw.sql -- Mysql commands to load the static keyword data.
+    mysql/reload.sql -- Script for creating a fresh empty schema.
+    mysql/schema.sql -- Table definitions, loadable into mysql.
 
-    mysqldb 
-      <http://sourceforge.net/project/showfiles.php?group_id=22307&package_id=15775&release_id=408321>
+These scripts can be used with both Postgresql and Mysql databases.
+They have been tested with Mysql-5.0.22 and Postgresql-8.1.4.
+
+To load jmdict data from the script you will need Python-2.4 
+(or later) installed, and you will also need the following 
+python modules installed:
+
     elementtree 
-      <http://www.effbot.org/downloads/elementtree-1.2.6-20050316.win32.exe>
+      (needed for Python-2.4.x and earlier, not needed for Python-2.5)
+      windows: <http://www.effbot.org/downloads/elementtree-1.2.6-20050316.win32.exe>
       and
-      <http://www.effbot.org/downloads/cElementTree-1.0.5-20051215.win32-py2.4.exe>
+      windows: <http://www.effbot.org/downloads/cElementTree-1.0.5-20051215.win32-py2.4.exe>
 
-Fedora Core 5 includes both of those in the core 
-packages.  For windows, you will need to download 
-and install if you don't have them but they are an 
-easy mouse-click install.  The URLs given above are 
-for Windows packages.
+    For mysql database:
+    mysqldb-1.2.1_p2 or -1.2.0
+      <http://sourceforge.net/project/showfiles.php?group_id=22307&package_id=15775&release_id=408321>
 
-I am considerably confused by the character set 
-issues around mysql and the python interface to it.  
-It seems that utf-8 support must be compiled into 
-mysql (?), and that is the case with the Windows 
-binaries, but not with the Fedora Core 5 packages 
-(both the original 5.0.18 mysql,  and an update 
-5.0.22 mysql complain when I try to tell it to use 
-utf-8.)  I spent several days screwing around with 
-it, and since there are other mysql+japanese users 
-here,  almost all who know more than me (it's my 
-first time using mysql) I decided to leave 
-straightening this out to them.  Also, on FC5, the 
-python MySQLdb module (rpm package "mysql-python") 
-is version 1.2.0 but load_jmdict was developed with 
-the 1.2.1_p2 version.  There are changes in the utf8 
-handling between the two versions including syntax 
-incompatabilities.  See the comments in jbdb.py
-function dbOpen() (at the botton of the file).
+    For postgresql database:
+    psycopg2
+      src: <http://initd.org/pub/software/psycopg/psycopg2-2.0.5.1.tar.gz>
+      windows: <http://www.stickpeople.com/projects/python/win-psycopg/index.html>
+      fc5 extras: python-psycopg2
 
-On my windows box (Mysql-5.0.24, MySQLdb-1.2.1_p2) 
-things work fine and both command-line mysql, and 
-the gui tools like SqlAdministrator show Japanese 
-text correctly.  However, since my Windows default 
-system encoding is cp932, I am not sure whether 
-there is actually utf8 in the database or whether 
-it is stored as cp932. 
+Fedora Core 5 includes MySQLdb and ElementTree in the core 
+packages, and pyscopg2 in the extras packages.  For windows, 
+you will need to download and install if you don't have them 
+but they are an easy mouse-click install. 
 
-To load the schema and keyword data, run the mysql 
-command line tool in the directory you unpacked the 
-files in, and do:
+Database-specific files are in the subdirectories myqsl/ 
+and pg/.  In each of those directories is a file, jbdb.py
+that encapulates the python related differences.  You
+tell the scripts in this directory which database to use
+by copying the file jbdb.py from either the mysql/ or pg/
+subdirectory, to this directory.
 
-mysql> create database jb;
-mysql> use jb;
-mysql> source schema.sql;
-mysql> source loadkw.sql;
+To install jmdict in a Postgresql database...
 
-You now have a database with all the tables, and the 
-semi-permanent data (keywords) loaded, but no Japanese 
-language entries.  To load some data from jmdict use 
-the load_jmdict.py script.  Use -u and -p to give it 
-a username and password for connecting to mysql.  You 
-can use the -b, -e, and -c options to limit it to a 
-part of the file.  Use the --help option for more info.
+  1. cd to this direcory's parent directory.
 
-Loading the full file take about 1 hour on my venerable
-700mhz machine.  Speed is mainly dependent on speed
-of your mysql server.  
-The first time you run load_jmdict.py, try using the
--n option to supress database writing.  This will 
-uncover any problems parsing the jmdict file in a 
-few minutes rather than after 30+ minutes of loading 
-the database.
+  2. Copy pg/jbdb.py to the current directory.
+
+  3. Start the psql program.
+
+  4. If there is no existing database named "jb" 
+     create it:
+
+       psql> create database jb;
+
+  5. Initialize the database:
+
+       psql> \i pg/reload.sql;
+
+     Exit psql after the reload.sql finishes.
+
+  6. Load jmdict:
+
+       python load_jmdict.py -u pgUsername -p ***** JMdict
+
+     Subsitute "JMdict" with the path and name of the
+     JMdict xml file to be loaded.  This will take a 
+     long time (2hrs on my 700Mhz machine).
+
+  7. Add the current directory to the environment variable PYTHONPATH
+     If if doesn't exist, create it.  We assume for illustration
+     that the directory you have unpacked everything in is 
+     /home/me/jmdict/.  For Unix:
+
+	$ PYTHONPATH=/home/me/jmdict; export PYTHONPATH
+
+    For windows:
+
+	> set PYTHONPATH c:\me\jmdict
+
+    If the PYTHONPATH variable already exists, add the current
+    directory to it.
+
+To install jmdict in a Mysql database:
+
+  1. cd to the directory where these files were unpacked.
+
+  2. Copy mysql/jbdb.py to the current directory.
+
+  3. Start the mysql program.
+
+  4. Initialize the database:
+
+       mysql> source mysql/reload.sql;
+
+     Exit mysql after the reload.sql finishes.
+
+  5. Load jmdict:
+
+       python load_jmdict.py -u mysqlUsername -p ***** JMdict
+
+     Subsitute "JMdict" with the path and name of the
+     JMdict xml file to be loaded.  This will take a 
+     long time (1hr on my 700Mhz machine).
+
+  6. Add the current directory to the environment variable PYTHONPATH
+     If if doesn't exist, create it.  We assume for illustration
+     that the directory you have unpacked everything in is 
+     /home/me/jmdict/.  For Unix:
+
+	$ PYTHONPATH=/home/me/jmdict; export PYTHONPATH
+
+    For windows:
+
+	> set PYTHONPATH c:\me\jmdict
+
+    If the PYTHONPATH variable already exists, add the current
+    directory to it.
+
+The load_jmdict.py script has a number of command 
+options,  type "python load_jmdict.py --help" for more 
+info.  Use -u and -p options to give it the username 
+and password to connect to the database with.  You can 
+use the -b, -e, and -c options to load only a part of 
+the jmdict file.  
 
 load_jmdict.py loads data for each entry as it is 
-parsed but defers adding <xref> and <ant> to the 
-database until it processed all the entries since 
+parsed but defers adding <xref>s and <ant>s to the 
+database until it has processed all the entries since 
 the xref target may not be in the database when the 
 xref is parsed.  If you only load a part of the 
 jmdict file, it is likely that some of the loaded 
@@ -111,19 +167,23 @@ handling is nearly non-existent (if running under
 the python debugger, otherwise a traceback is printed 
 and script exits.)
 
-Foreign keys constraints are not enforced, nor do the 
-"on delete" clause work.  Appearently mysql uses a 
-different syntax than every other db in the world and 
-I haven't had time to change the schema.sql file.
-
-Any possiblity of considering using postgresql?
-
 showentr.py is a command line script that will prompt 
 for an entry to display, read the data from the database, 
 and print it to stdout.  It is not intended to be a 
 serious app, just to illustrate accessing the database
 from a script.  Use --help for info.
 
+The version of db.py that is in the top directory 
+determines which database (mysql or postgresql) that
+showentry.py will use.  After the databases are loaded,
+you can change the top level db.py ar will.
+
+showentry.py uses a view restricted by a join to get
+the list of meatching entries when a search is done.
+Because of the mysql problem discussed on the jmdict
+mailing list previously, this is very slow in mysql.
+It can be speeded up by including a mysql-specific 
+query in the coe, but I haven't done that yet.
 
 
 Some notes about the schema.
@@ -261,5 +321,18 @@ etc.  Thus "ichi1" is replaced by ("ichi",1) and "nf14"
 by ("nf",14).  This allows for the inclusion of other 
 finer-grained metrics in the future such as 
 ("google", 338400).
+
+cross-references
+----------------
+Cross references (<xref> and <ant> in jmdict) are represented
+by rows in table "xref".  Each row identifies the type of
+cross-reference, the sense the xref is from (this is the 
+sense in jmdict where it is listed) and a *sense* that is
+the target of the xref.  In jmdict, the target is an entire
+entry, not a specific sense.  When creating sense, 
+load_jmdict.py will create multiple xref's if there are 
+multiple senses in the entry target of a jmdict <xref> (same
+of <ant>.)  If multiple <xref>s or <ant>s in jmdict resolve 
+to the same target sense, load_jmdict.py will print a warning.
 
 Comments welcome.

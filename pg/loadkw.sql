@@ -1,0 +1,11 @@
+\i data/kwaudit.sql
+\i data/kwdial.sql
+\i data/kwfreq.sql
+\i data/kwfld.sql
+\i data/kwkinf.sql
+\i data/kwlang.sql
+\i data/kwmisc.sql
+\i data/kwpos.sql
+\i data/kwrinf.sql
+\i data/kwsrc.sql
+\i data/kwxref.sql

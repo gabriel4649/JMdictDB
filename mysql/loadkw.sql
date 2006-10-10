@@ -1,0 +1,11 @@
+source data/kwaudit.sql
+source data/kwdial.sql
+source data/kwfreq.sql
+source data/kwfld.sql
+source data/kwkinf.sql
+source data/kwlang.sql
+source data/kwmisc.sql
+source data/kwpos.sql
+source data/kwrinf.sql
+source data/kwsrc.sql
+source data/kwxref.sql

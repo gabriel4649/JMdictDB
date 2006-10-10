@@ -5,8 +5,7 @@
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
 import sys, os, re, locale
-import MySQLdb as dbapi
-import jbdb, tables
+import db, jbdb, tables
 if sys.version_info[1] < 5: import cElementTree as ElementTree
 else: import xml.etree.cElementTree as ElementTree
 
@@ -19,8 +18,8 @@ def main (args, opts):
 	Def_enc = locale.getdefaultlocale()[1]
 
 	# open the database...
-	try: cursor = jbdb.dbOpen (user=opts.u, pw=opts.p, db=opts.d)
-	except dbapi.OperationalError, e:
+	try: cursor = db.dbOpen (user=opts.u, pw=opts.p, db=opts.d)
+	except db.dbapi.OperationalError, e:
 	    print "Error, unable to connect to database:", unicode(e);  sys.exit(1)
 
 	# Read in all the keyword tables...
@@ -399,7 +398,7 @@ def do_xrefs (cursor, xreflist):
 		    else: raise RuntimeError ("Bad xref type code")
 		    xref = tables.Xref ((sid, x, xtyp, "JMdict")) 
 		    try: xref._insert (cursor)
-		    except dbapi.IntegrityError, err:
+		    except db.dbapi.IntegrityError, err:
 			estr = str(err).lower()
 			if "duplicate key" not in estr \
 			    and "duplicate entry" not in estr: raise

@@ -7,7 +7,7 @@
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
 import sys, os, re, locale
-import jbdb, MySQLdb
+import db, jbdb
 from tables import *
 
 class ParseError (RuntimeError): pass
@@ -19,12 +19,10 @@ def main (args, opts):
 
 	Def_enc = locale.getdefaultlocale()[1]
 	# open the database...
-	try: cursor = jbdb.dbOpen (user=opts.u, pw=opts.p, db=opts.d)
-	except MySQLdb.OperationalError, e:
-	    if e[0] == 1045: 
-		print "Error, unable to connect to database, do you need -u or -p?\n", e[1];  
-		sys.exit(1)
-	    else: raise
+	try: cursor = db.dbOpen (user=opts.u, pw=opts.p, db=opts.d)
+	except db.dbapi.OperationalError, e:
+	    print "Error, unable to connect to database, do you need -u or -p?\n", str(e);  
+	    sys.exit(1)
 
 	# Read in all the keyword tables...
 	KW = jbdb.Kwds (cursor)
@@ -91,10 +89,15 @@ def choose_entry (cursor, rs):
 		    display_entry (entr)
 
 def display_list (rs):
-	print "Num.  eId    Seq  |           Readings |              Kanji | Glosses"
+	print "Num.  eId     Seq             Readings |              Kanji | Glosses"
 	for n,(e,q,k,j,g) in enumerate (rs):
-	    print "%3d.%6d%8d|%s|%s|%s" % (n+1,e,q,clip(k,10,u"\u3000"),
+	    u = "%3d.%6d%9d%s|%s|%s" % (n+1,e,q,clip(k,10,u"\u3000"),
 			clip(j,10,u"\u3000"),clip(g,18," "))
+	    # Explicitly convert to the system default excoding 
+	    # for output, because we can get encoding errors which
+	    # we don't want to bomb the program. 
+	    s = u.encode (Def_enc, "replace")
+	    print s
 
 def clip (s, n, pad):
 	if isinstance(pad, unicode): s = s.replace("; ", u"\uff1b")
@@ -104,15 +107,8 @@ def clip (s, n, pad):
 
 def get_found_list (cursor):
 	sql = \
-	    u"SELECT e.id,e.seq, " \
-		u"(SELECT GROUP_CONCAT(k.txt ORDER BY ord SEPARATOR '; ') " \
-		    u"FROM kana k WHERE k.entr=e.id) AS kana, " \
-		u"(SELECT GROUP_CONCAT(j.txt ORDER BY ord SEPARATOR '; ') " \
-		    u"FROM kanj j WHERE j.entr=e.id) AS kanj, " \
-		u"(SELECT group_concat(g.txt ORDER BY s.ord,g.ord SEPARATOR '; ') " \
-		    u"FROM sens s JOIN gloss g ON g.sens=s.id " \
-		    u"WHERE s.entr=e.id) AS gloss " \
-		u"FROM entr e JOIN _tmpsrch t ON e.id=t.id"
+	    u"SELECT e.id,seq,kana,kanj,gloss " \
+		"FROM entr_summary e JOIN _tmpsrch t ON e.id=t.id"
 	cursor.execute (sql)
 	rs = cursor.fetchall ()
 	return rs
@@ -174,7 +170,12 @@ def display_entry (entr):
 	    for g in s.gloss:
 		lang = KW.LANG[g.lang].kw
 		if lang: lang += ": "
-	        print "     %s%s" % (lang, g.txt)
+		  # Some glosses may contain characters not displayable
+		  # in the user's system character set and which will 
+		  # cause a UnicodeEncodeError if just printed.   So 
+		  # explicitly encode with "replace" to avoid that.
+		gtxt = g.txt.encode (Def_enc, "replace")
+	        print "     %s%s" % (lang, gtxt)
 
 	      # Print the number of xrefs than this sense references,
 	      # and the numbers of other senses that reference this
@@ -305,12 +306,23 @@ def filt (exclude, xlist):
 	return [x for x in xlist if x.id not in exclude]
 
 def mk_tmpsrch (cursor):
-	cursor.execute ("DROP TABLE IF EXISTS _tmpsrch;")
-	cursor.execute (
+	try: cursor.execute ("DROP TABLE _tmpsrch;")
+	except db.dbapi.OperationalError, e:	# Mysql
+	    if "Unknown table" not in e[1]: raise
+	except db.dbapi.ProgrammingError, e:	# Postgresql
+	    if "does not exist" not in str(e): raise
+	    cursor.conn.rollback()
+	if db.dbapi.__name__ == "psycopg2":
+	    sql = \
+	    "CREATE TABLE _tmpsrch (" \
+		"id INT NOT NULL PRIMARY KEY, " \
+		"ord SERIAL NOT NULL UNIQUE);"
+	else:	# Assume MySQLdb
+	    sql = \
 	    "CREATE TABLE _tmpsrch (" \
 		"id INT UNSIGNED NOT NULL PRIMARY KEY, " \
-		"ord INT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE);")
-
+		"ord INT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE);"
+	cursor.execute (sql)
 
 def help ():
 	print """\
@@ -405,11 +417,11 @@ arguments:  None"""
              help="Name of the database to load.  Default is \"jb\".")
 	p.add_option ("-u", "--user",
              type="str", dest="u", default="root", 
-             help="Connect to Mysql with this username.  " \
+             help="Connect to the database with this username.  " \
                       "Deafult is \"root\"")
 	p.add_option ("-p", "--passwd",
              type="str", dest="p", default="",
-             help="Connect to Mysql with this password.")
+             help="Connect to that database with this password.")
 	p.add_option ("-D", "--debug",
              action="store_true", dest="D", 
              help="Startup in Python pdb debugger.")

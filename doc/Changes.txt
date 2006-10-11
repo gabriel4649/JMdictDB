@@ -1,5 +1,9 @@
 2006-10-10	smcgraw@frii.com
 
+	Tag R002: Posted to jmdict mailing list. 2006-10-10.
+
+2006-10-10	smcgraw@frii.com
+
 	Tag T004: Changes to suppport Postgresql in addition to Mysql.
 
 	* Changes.txt pg/db.py mysql/db.py

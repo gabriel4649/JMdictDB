@@ -4,18 +4,16 @@
 
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
-import sys, os, re, locale
+import sys, os, re
 import db, jbdb, tables
 if sys.version_info[1] < 5: import cElementTree as ElementTree
 else: import xml.etree.cElementTree as ElementTree
 
-global KW, KWx, Xrefs, Seq, Def_enc
+global KW, KWx, Xrefs, Seq
 Xrefs = []
 
 def main (args, opts):
-	global KW, KWx, Def_enc
-
-	Def_enc = locale.getdefaultlocale()[1]
+	global KW, KWx
 
 	# open the database...
 	try: cursor = db.dbOpen (user=opts.u, pw=opts.p, db=opts.d)
@@ -209,10 +207,10 @@ def do_entry (elem, srcid, lineno):
 	for x in elem.findall('k_ele'):
 	    entr.kanj.append (do_k_ele(x, ord))
 	    ord += 10
-
-	entr.sens = [];  ord = 10
+	print entr ######################################
+	entr.sens = [];  ord = 10;  lastpos = [[]]
 	for x in elem.findall('sense'):
-	    entr.sens.append (do_sense(x, ord))
+	    entr.sens.append (do_sense(x, ord, lastpos))
 	    ord += 10
 
 	# Fix up the restrictions.  They are stored in the 
@@ -306,7 +304,7 @@ def do_k_ele (elem, ord):
 
 	return k
 
-def do_sense (elem, ord):
+def do_sense (elem, ord, pos=None):
 	# Process a <re_ele> element... 
 
 	s = tables.Sens ((0, 0, ord, None))
@@ -317,10 +315,17 @@ def do_sense (elem, ord):
  
 	s.fld =  [tables.Fld((0,KWx.FLD[fixup(x.text)])) 
 		  for x in elem.findall('field')]
-	s.pos =  [tables.Pos((0,KWx.POS[fixup(x.text)])) 
-		  for x in elem.findall('pos')]
 	s.misc = [tables.Misc((0,KWx.MISC[fixup(x.text)])) 
 		  for x in elem.findall('misc')]
+	s.pos =  [tables.Pos((0,KWx.POS[fixup(x.text)])) 
+		  for x in elem.findall('pos')]
+
+	# Propagate pos values to succeeding senses.
+
+	if pos is not None:
+	    if s.pos: pos[0] = s.pos
+	    elif pos[0]: s.pos = pos[0]
+	print pos
 
 	s.note = "\n".join ([x .text for x in elem.findall('s_inf')])
 	s.xrefs = [("x", x.text) for x in elem.findall('xref')]

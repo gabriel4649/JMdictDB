@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # Simple command line tool to find and display entries
@@ -6,7 +6,7 @@
 
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
-import sys, os, re, locale
+import sys, os, re
 import db, jbdb
 from tables import *
 
@@ -15,9 +15,8 @@ class ParseError (RuntimeError): pass
 global KW, Def_enc
 
 def main (args, opts):
-	global KW, Def_enc
+	global KW
 
-	Def_enc = locale.getdefaultlocale()[1]
 	# open the database...
 	try: cursor = db.dbOpen (user=opts.u, pw=opts.p, db=opts.d)
 	except db.dbapi.OperationalError, e:
@@ -33,7 +32,7 @@ Type "help" for more info.
 To exit type a return, or EOF (usually ^d on Unix, ^z on Windows)."""
 
 	while True:
-	    try: s = raw_input( "find> ").decode(Def_enc).strip()
+	    try: s = raw_input( "find> ").decode(sys.stdout.encoding).strip()
 	    except EOFError: break
 	    if not s: break
 	    if s[0] == "h" or s[0] == "H":
@@ -73,7 +72,7 @@ def search (cursor, s):
 def choose_entry (cursor, rs):
 	display_list (rs)
 	while True:
-	    try: s = raw_input( "show> ").decode(Def_enc).strip()
+	    try: s = raw_input( "show> ").decode(sys.stdout.encoding).strip()
 	    except EOFError: break
 	    if not s: break
 	    elif s[0] == "h" or s[0] == "H": help ()
@@ -96,7 +95,7 @@ def display_list (rs):
 	    # Explicitly convert to the system default excoding 
 	    # for output, because we can get encoding errors which
 	    # we don't want to bomb the program. 
-	    s = u.encode (Def_enc, "replace")
+	    s = u.encode (sys.stdout.encoding, "replace")
 	    print s
 
 def clip (s, n, pad):
@@ -174,7 +173,7 @@ def display_entry (entr):
 		  # in the user's system character set and which will 
 		  # cause a UnicodeEncodeError if just printed.   So 
 		  # explicitly encode with "replace" to avoid that.
-		gtxt = g.txt.encode (Def_enc, "replace")
+		gtxt = g.txt.encode (sys.stdout.encoding, "replace")
 	        print "     %s%s" % (lang, gtxt)
 
 	      # Print the number of xrefs than this sense references,

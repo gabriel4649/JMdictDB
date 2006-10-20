@@ -1,5 +1,4 @@
 
-
 _VERSION_=("$Revision$"[11:-2],"$Date$"[7:-11])
 
 class DbRow (list):
@@ -8,38 +7,136 @@ class DbRow (list):
     model rows from database tables or other query result-
     sets.  The subclass specializes DbRow to describe a 
     particular resultset by defining the following class
-    static variables (only _cols is required):
+    static variables:
         _cols:  A sequence of strings naming the columns
 		of the resultset.
-	_table: String naming the table this resultset
-		was generated from.  Optional and only
-		required if the insert() method is used.
-	_related: A sequence of strings naming (classes
-		representing) tables containing foreign 
-		keys referencing this table.  Optional
-		and only needed if related data is to be
-		loaded with this data.  Note that the class
-		defining the fk will usually have a "_parent" 
-		attribute naming this class.
-	_auto:  If there is a auto-increment (aka "counter"
-		or "serial") column, this should be set to
-		its name (string).
-	_parent: If this is a child table of another 
+	_table: String naming the table this resultset was 
+		generated from.  Optional and only required 
+		if the insert() method is used.
+	_pk:	A sequence of strings naming the columns 
+		that constitute the primary key for this 
+		table.
+	_related: (Optional) A sequence of *classes* 
+		representing tables containing foreign keys 
+		referencing this table.  Only needed if 
+		related data is to be loaded with this data.  
+		Note that the class defining the fk will 
+		usually have a "_parent" attribute naming 
+		this class.
+		Hack: DbRow assumes that the foreign key 
+		column has the same name as the parent table.
+	_auto:  (Optional) If there is a auto-increment (aka
+		"counter" or "serial") column, this should be 
+		set to its name (string).
+	_parent: (Optional) If this is a child table of another 
 		table (i.e. has a foreign key referencing 
 		the pk of the parent table) then this string
-		names that table."""
+		names that table.
+		Hack: DbRow assumes that the foreign key 
+		column has the same name as the parent table."""
     #-----------------------------------------------------
 
+    # FIXME: define error class instead of overloading the
+    #   python's standard errors.
+    # FIXME: use a more efficient implementation of __getattr__()
+    #   and __setattr__()
+
+    def __getattr__(self, name):
+	# Map column name attribute access to list de-index op.
+	try: n = self.__class__._cols.index(name) 
+	except ValueError: raise AttributeError (
+	    "'%s' object has no attribute '%s'" \
+	    % (self.__class__.__name__, name))
+	return self[n]
+
+    def __setattr__ (self, name, val):
+	# Map column name attribute assignment to list de-index op.
+	try: n = self.__class__._cols.index(name) 
+	except ValueError: self.__dict__[name] = val
+	else: self[n] = val
+
     def __init__ (self, data=None):
-	if data: 
-	    self.extend( data )
-	    if len( self ) != len( self._cols ): 
-		raise ValueError, "Wrong length"
-	else: self.extend( [data] * len( self._cols ))
-	for c,x in zip (self._cols, data): 
-	    if c: setattr (self, c, x)
-	if not hasattr (self, "_related"): self._related = []
-	for k in self._related: setattr( self, k, [] )
+
+	# No argument means, create an empty instance with
+	# all trhe column values set to None.  Otherwise the
+	# argument is a sequence of N values, where N is the 
+	# number of columns in the corresponding table (same
+	# as len(self._cols).)
+
+	if data is None: data = [None] * len( self._cols )
+
+	# Overwrite any existing data, and check that the
+	# number of data we received isthe same as the number
+	# of columns.
+
+	self[:] = data 
+	if len( self ) != len( self._cols ): 
+	    raise ValueError, "Wrong length"
+
+	# Initialize all the "related" attributes...
+
+	if hasattr (self, "_related"):
+	    for k in self._related: setattr( self, k._table, [] )
+
+    def _read (self, cursor, pkvals=None):
+
+	# Set the data in this object by reading a row from 
+	# the corresponding table in the database opened by
+	# <cursor>.  Any existing data is overwritten.
+	# The row read is identified my the the primary key
+	# values is <pkvals> which is a sequence, allowing
+	# multi-column primary keys.  As a convenience, a 
+	# single scalar value may be given, in the common
+	# case where there is a single column pk.  
+	# If there are any related tables, (i.e., self._related
+	# exists and is non-empty) they will be read recursively.
+
+	if pkvals is None: 
+	    pkvals = [getattr (self, x) for x in self._pk]
+
+	# If pkvals is a scalar, turn it into a list.  It is a scalar
+	# FIXME: the test for scalar-ness breaks if pkval is a string.
+	# I don't use and string pk's yet so I haven't fixed this. 
+
+	if not hasattr (pkvals, "__iter__") and not \
+	       hasattr (pkvals, "__getitem__"): pkvals = [pkvals]
+	whr = " AND ".join ([x+"=%s" for x in self._pk])
+	if not hasattr(self, "_ord") or not self._ord: ordby = ""
+	else: ordby = " ORDER BY " + self._ord
+	sql = "SELECT * FROM %s WHERE %s%s" % (self._table, whr, ordby)
+	cursor.execute (sql, pkvals)
+	rs = cursor.fetchmany(2);  
+	if len(rs) > 1: raise RuntimeError("Multiple rows received!")
+	# FIXME: What to do when len(rs)==0?  Return unchanged self? 
+	#  return self.__init__(None)? Return None?  Raise error?
+	if len(rs) == 0: rs = None
+
+	# Use our own .__init__() method because that alse sets
+	# attribute properly.
+
+	else: self.__init__( rs[0] )
+
+	# Now recusively create and attach lists of any related 
+	# rows in other tables.
+
+	self._readrel (cursor)
+	if hasattr (self, "related"):
+	    for cls in self.related: self._readrel (cursor, cls, pk)
+	return self  # So that things like x=Entr()._read(...) will work.
+
+    def _readrel (self, cursor):
+	if not hasattr (self, "_related") or not self._related: return
+	pk = [getattr (self, x) for x in self._pk]
+	for cls in self._related:
+	    tbl = cls._table;  fk = cls._parent
+	    if not hasattr(cls, "_ord") or not cls._ord: ordby = ""
+	    else: ordby = " ORDER BY " + cls._ord
+	    sql = "SELECT * FROM %s WHERE %s=%%s%s" % (tbl, fk, ordby)
+	    cursor.execute (sql, pk)
+	    lst = [];  setattr (self, tbl, lst)
+	    for r in cursor.fetchall():
+		o = cls (r);  lst.append (o)
+		o._readrel (cursor)
 
     def _insert (self, cursor, parent=None):
 	cols = self._cols
@@ -48,17 +145,16 @@ class DbRow (list):
 
 	# Get the column names (intersection of the cols defined
 	# for this table, and the attributes actually on this object).
-	attrs = [x for x in self._cols if hasattr (self, x)]
+	attrs = [x for x in cols if hasattr (self, x)]
 
 	# ...and a value (to be inserted) for each column.  If the 
 	# column name is a "_useid" column, then it if a reference 
 	# to an object whose id we we use.  Otherwise, it is the
 	# the value of the attribute itself.
+
 	vals = [];  bind = []
 	for x in attrs:
 	    val = getattr (self, x)
-	    if hasattr (self, "_useid") and x in self._useid: 
-		val = val.id
 	    if hasattr (self, "_auto") and x == self._auto and val == 0:
 		bind.append ("DEFAULT")
 	    else:
@@ -66,10 +162,12 @@ class DbRow (list):
 		bind.append ("%s")
 
 	# Create the sql statement text.
+
 	sql = "INSERT INTO %s(%s) VALUES(%s);" \
 		% (self._table, ",".join(attrs), ",".join(bind) )
 
 	# Do it, and a sanity check.
+
 	#print "%s; %s" % (sql, str(vals));  n = 1
 	cursor.execute (sql, vals);  n = cursor.rowcount
 	if n < 1: raise RuntimeError( "No rows inserted" )
@@ -77,6 +175,7 @@ class DbRow (list):
 
 	# If we have an "_auto" column, retrieve the value it
 	# got set to because we need it for the child table rows.
+
 	id = None
 	if hasattr (self, "_auto") and self._auto: 
 	    id = cursor.lastauto ()
@@ -85,12 +184,16 @@ class DbRow (list):
 	    setattr (self, self._auto, id)
 
 	# Insert child table data recursively...
-	related = [x for x in dir (self) if x in self._related]
-	for rel in related:
-	    objs = getattr (self, rel)
-	    for o in objs: o._insert (cursor, parent=id)
 
-	# Return the auto_id number in case caller wants to know,
+	if hasattr (self, "_related"):
+	    attrs = dir (self)
+	    related = [x for x in self._related if x._table in attrs]
+	    for rel in related:
+		objs = getattr (self, rel._table)
+		for o in objs: o._insert (cursor, parent=id)
+
+	# Return the auto_id number in case caller wants to know.
+
 	return id
 
     def __repr__ (self):
@@ -188,3 +291,65 @@ def jstr_classify (s):
 	    elif n >= 0x30A0 and n <= 0x30FF: r |= (KATAKANA | KANA)
 	    elif n >= 0x4E00 and n <= 0x9FFF: r |= KANJI
 	return r
+
+def listdiff (a, b, cmp=None):
+	# Return those items in list 'a' that are not
+	# in list 'b'.  Unlike python's set_difference
+	# operator, this preserves the order of items 
+	# from 'a'.  If present, 'cmp' should be a function
+	# of two arguments that returns 0 if the first 
+	# argument is "==" to the second, or non-zero
+	# otherwise.  The first argument should be compatible
+	# with items in 'a', and the second with items in 
+	# 'b'.  It will be use to determine when an 'a'
+	# item is in 'b'.  If not supplied, python's "in"
+	# operator (based in turn on "==") is used.
+
+	r = []
+	for x in a:
+	    if cmp:
+	        for y in b:
+		    if 0 == cmp (x, y): break
+		else: r.append (x)
+	    else:
+		if x not in b: r.append (x)
+	return r
+
+
+def rslv_refs (zlist, alist, blist):
+	# Resolve (find object with a given id number)
+	# the elements in zlist (which is a list of Restr,
+	# Stagr, or Stagk objects) using alist and blist
+	# (which are lists of Kana, Kanj, or Sens objects
+	# as appropriate for the type of zlist).  We return
+	# a list of 2-sequences where each item corresponds
+	# to the samely-positioned item in zlist, and the
+	# two elements of each item are references the
+	# objects in alist and blist that have the same id
+	# as the elements of the zlist item.  If an id
+	# number in zlist is not found in alist (blist)
+	# an error is raised. 
+
+	result = []
+	for z in zlist:
+	    # Since these lists are in general very short,
+	    # we just do a sequential scan for id numbers.
+	    for a in alist:
+		if z[0] == a.id: break
+	    else: raise RuntimeError("Expected id not found in alist")
+	    for b in blist:
+		if z[1] == b.id: break
+	    else: raise RuntimeError("Expected id not found in blist")
+	    result.append ((a,b))
+	return result
+
+def load (cls, cursor, sql, sqlargs):
+	# Execute sql statement 'sql' with bound arguments 'sqlargs'
+	# Create a new instance of 'cls' for each row, and use the 
+	# row data to initialize it.  Return a list of the instances
+	# in the same order as the rows.
+
+	cursor.execute (sql, sqlargs)
+	rs = cursor.fetchall ()
+	return [cls (x) for x in rs]
+    

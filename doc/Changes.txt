@@ -1,3 +1,103 @@
+2006-10-19	smcgraw@frii.com
+
+	Tag T004:
+	Tested on Windows 2000 with postgresql-8.1.4, Python-2.5,
+	  psycopg2-2.0.5.1.
+	Tested on Fedora Core 5 with mysql-5.0.22, Python-2.4.3,
+	  MySQLdb-1.2.0,
+
+2006-10-16	smcgraw@frii.com
+
+	* jbdb.py[1.5]
+	In class jbdb.DbRow, was previously maintaining duplicate 
+	  values, one set in the list part of self, the other in 
+	  attributes leading to inevitable cases where they got out 
+	  of sync. Instead, override __getattr__, __setattr__ to get 
+	  set the list values when accessed through attributes.
+
+	* pg/db.py[1.2]
+	Pass whatever arguments dbOpen() gets directly to the dbapi
+	  connect call.  This moves responsibilty for maintaining 
+	  default argument values to the caller and allows not passing
+	  some arguments (like usename, which psycopg2 will then 
+	  default to the current user's username) if desired.  
+
+	* mysql/db.py[1.2]
+	Same changes as for pg/db.py but need to translate some args
+	  into mysql dialect, and add some additional parameters for 
+	  the unicode issues.
+	'conn.charset' was being set to "utf-8".  I think the hyphen 
+	  is an error, changed to "utf8"
+	Added missing .lastauto() method to Cursor.
+
+2006-10-15	smcgraw@frii.com
+
+	* tables.py[1.2]
+	Changes to support recursive read in jbdb.DbRow class:
+	Add a _pk attribute to all tables.
+	Add restr, stagr, and stagk related classes to kana, sens,
+	  and sens tables.  This will result in then being read
+	  and written automatically, instead of handling them outside
+	  of this framework as previously.
+	Change the contents of the _related attribute from strings
+	  naming that attribute that the "related" list will be
+	  attached to on the object, to a list of classes that will
+	  be used to instansiate list elements.  Attribute name will
+	  be taken from the classes _table attribute.
+	Rearrange order of classes to prevent undefined name errors
+	  when executing the class definitions.
+ 	  
+	* jbdb.py
+	Add DbRow methods() ._read() and ._readrel() that will allow
+	  initializing in an instance's data by a database read, and
+	  recursively for all related row instances.  This is what drove
+	  the changes to tables.py.
+	Added functions rslv_refs() and load() (latter moved here from 
+	  showentr.py).
+	Added/updated comments.
+
+	* pg/schema.sql[1.2]
+	Rename view "kr_valid" to "rk_validity".
+	Add column k.id to view "re_nokanji".
+	Add view rk_valid which will correctly give the valid kanji
+	  (including the "nokanji" case) for all readings of any entry,
+	  efficiently.
+
+	* load_jjmdict.py
+	Updated for consistency with jbdb.py[1.5] and tables.py[1.2].
+	Completely rework hanfdling of restr, stagr, and stagk elements.
+	  They are now inverted at the time the elements are processed
+	  instead of deffering procesing until the entr object is 
+	  completely built. 
+	Remove debugging print statement inadvertantly left in the 
+	  previous version.
+	Changed the commit interval from 3975 to 200 after reading 
+	  that postgres will slow down when a large number of uncommited 
+	  transactions have accumulated, and that one user found (in 
+	  a completely dissimilar application) the sweet spot was in 
+	  the low hundreds of transactions.  (For us each entr insert 
+	  represents a half dozen or more transactions, so we may still 
+	  be too high.)
+
+	* showentr.py[1.6]
+	Updated for consistency with jbdb.py[1.5] and tables.py[1.2].
+	Use the new recursive Entr._read() method to initialize 
+	  entry data rather than executing a bunch on sql statements.
+	Move function load() into jbdb.py.
+
+	* README.txt[1.3]
+	Clarify alarming messages when running the reload.sql script.
+
+2006-10-11	smcgraw@frii.com
+
+	* load_jmdict.py[1.5]
+	Propagate part-of-speech information to folowing senses in
+	each entry.
+
+	Remove the Def_enc global and the code that set if from locale.  
+	It wasn't used, and if we need the encoding, we can get it from 
+	sys.stdout.encoding.
+
 2006-10-10	smcgraw@frii.com
 
 	Tag R002: Posted to jmdict mailing list. 2006-10-10.
@@ -9,26 +109,26 @@
 	* Changes.txt pg/db.py mysql/db.py
 	New files.
 
-	* jbdb.py 
+	* jbdb.py[1.4]
 	Move Cursor class, function dbOpen() into pg/db.py and mysql/db.py.
 	Instead of executing db-specific sql to get the last used auto-number
 	  value, move that sql into new cursor method .lastauto() in each
 	  of the db-specific db.py modules, and call it in jbdb.py.
 
-	* load_jmdict.py
+	* load_jmdict.py[1.5]
 	Get rid of mysql specific code.
 
 	* loadkw.sql reload,sql schema.sql 
 	Move into the database-specific directories pg/ and mysql/.
 
-	* README.txt 
+	* README.txt[1.2]
 	Updated to include new info about postgresql, remove
 	some old info no longer relevent.
 
-	* mysql/schema.sql
+	* mysql/schema.sql[1.1]
 	Add view "entr_summary".
 
-	* showentr.py
+	* showentr.py[1.4]
 	Get rid of mysql specific code.
 	When printing glosses, explicitly convert to default encoding
 	  so can use "replace" to avoid exception when an unconvertable
@@ -43,7 +143,7 @@
 	Conditionalize the sql executed to create the temp table for 
 	  mysql or postgresql.
 
-	* sitecustomize
+	* sitecustomize[1.2]
 	It wasn't actually setting the default encoding. Fixed.
 
 2006/10/09	smcgraw@frii.com

@@ -271,7 +271,7 @@ CREATE VIEW item_cnts AS (
 -- kanji, and an indicator whether of not that combination
 -- is valid ('X' in column 'valid' means invalid).
 ------------------------------------------------------------
-CREATE VIEW kr_valid AS (
+CREATE VIEW rk_validity AS (
     SELECT e.id AS id,e.seq AS seq,
 	k.id AS kid,k.txt AS ktxt,j.id AS jid,j.txt AS jtxt,
 	CASE WHEN r.kanj IS NOT NULL THEN 'X' END AS valid
@@ -285,7 +285,7 @@ CREATE VIEW kr_valid AS (
 -- in jmdict.xml.
 ------------------------------------------------------------
 CREATE VIEW re_nokanji AS (
-    SELECT e.id,e.seq,k.txt
+    SELECT e.id AS id,e.seq AS seq,k.id AS rid,k.txt AS rtxt
     FROM kana k 
     JOIN entr e ON e.id=k.entr
     WHERE 
@@ -293,3 +293,22 @@ CREATE VIEW re_nokanji AS (
 	AND (SELECT COUNT(*) FROM restr x WHERE x.kana=k.id)
 	  = (SELECT COUNT(*) FROM kanj j WHERE j.entr=e.id));
 
+-------------------------------------------------------------
+-- For every reading in every entry, provide only the valid 
+-- kanji as determined by restr if applicable, and taking 
+-- the jmdict's re_nokanji information into account. 
+-------------------------------------------------------------
+CREATE VIEW rk_valid AS (
+  SELECT e.id, e.seq, r.id AS rid, r.txt AS rtxt, 
+	sub.jid AS jid, sub.jtxt AS jtxt
+    FROM entr e
+      JOIN kana r ON r.entr=e.id
+      LEFT JOIN (
+        SELECT e.id AS eid, r.id AS rid, j.id AS jid, j.txt AS jtxt
+          FROM entr e
+          JOIN kana r ON r.entr=e.id
+            LEFT JOIN kanj j ON j.entr=r.entr
+            LEFT JOIN restr z ON z.kana=r.id AND z.kanj=j.id
+          WHERE z.kana IS NULL
+        ) AS sub ON sub.rid=r.id AND sub.eid=e.id
+  );

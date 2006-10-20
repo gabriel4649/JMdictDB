@@ -76,6 +76,13 @@ To install jmdict in a Postgresql database...
 
        psql> \i pg/reload.sql;
 
+     Note: when you run this you will see this:
+
+	You are now connected to database "postgres".
+	DROP DATABASE
+
+     It is not dropping the postgres database!  It is dropping
+     the old jb database -- it just doesn't report the name.
      Exit psql after the reload.sql finishes.
 
   6. Load jmdict:

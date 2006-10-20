@@ -38,9 +38,8 @@ class Cursor:
 import psycopg2 
 import psycopg2.extensions
 dbapi = psycopg2
-def dbOpen (user="postgres", pw="", db="jb", host="localhost"):
-	conn = psycopg2.connect (user=user,password=pw,
-				 host=host,database=db)
+def dbOpen (*args, **kwds):
+	conn = psycopg2.connect (*args, **kwds)
 	# Magic incantation to ask the dbapi god to return a 
 	# unicode object rather than a utf-8 encoded str.
         psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)

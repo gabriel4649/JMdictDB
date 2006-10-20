@@ -2,6 +2,8 @@
 
 # Loads the JMdict files in a jbdb database.
 
+# FIXME: write error messages to stderr, not stdout.
+
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
 import sys, os, re
@@ -16,7 +18,13 @@ def main (args, opts):
 	global KW, KWx
 
 	# open the database...
-	try: cursor = db.dbOpen (user=opts.u, pw=opts.p, db=opts.d)
+	openargs = dict()
+	if opts.u: openargs["user"] = opts.u
+	if opts.p: openargs["password"] = opts.p
+	if opts.d: openargs["database"] = opts.d
+	if opts.h: openargs["host"] = opts.h
+
+	try: cursor = db.dbOpen (**openargs)
 	except db.dbapi.OperationalError, e:
 	    print "Error, unable to connect to database:", unicode(e);  sys.exit(1)
 
@@ -105,7 +113,7 @@ def parse_xmlfile (cursor, filename, srcid, opts):
 		    cnt0 = cntr
 		    x = " and loading database"
 		    if opts.n: x = ""
-		    print "Parsing%s..." % x
+		    print "Parsing jmdict file%s..." % x
 		    if not opts.n: cursor.execute ("BEGIN")
 
 		# Process and write this entry.
@@ -123,7 +131,7 @@ def parse_xmlfile (cursor, filename, srcid, opts):
 		# off between faster speed (high number) and not having 
 		# to redo entries in case of error (low number).
  
-		if (cntr - cnt0 + 1) % 3975 == 0: 
+		if (cntr - cnt0 + 1) % 200 == 0:   
 		    if not opts.n: cursor.execute ("COMMIT")
 
 	    # We no longer need the parsed xml info for this
@@ -151,9 +159,11 @@ def write_entr (cursor, entr):
 	# written, they all have valid id numbers and we can write
 	# the restriction table rows.
 
-	for o in entr.restr: o._insert (cursor)
-	for o in entr.stagk: o._insert (cursor)
-	for o in entr.stagr: o._insert (cursor)
+	for k in entr.kana: 
+	    for o in k.xrestr: tables.Restr((k.id,o.id))._insert (cursor)
+	for s in entr.sens: 
+	    for o in s.xstagr: tables.Stagr((s.id,o.id))._insert (cursor)
+	    for o in s.xstagk: tables.Stagk((s.id,o.id))._insert (cursor)
 
 	# We can't write xrefs because referenced entry
 	# may not be in database yet.  So save this entries 
@@ -198,87 +208,62 @@ def do_entry (elem, srcid, lineno):
 	# "ord" is used to maintain the same order of items
 	# in the database as they occur in jmdict.
 
-	entr.read = [];  ord = 10
-	for x in elem.findall('r_ele'):
-	    entr.read.append (do_r_ele(x, ord))
-	    ord += 10
-
 	entr.kanj = [];  ord = 10
 	for x in elem.findall('k_ele'):
 	    entr.kanj.append (do_k_ele(x, ord))
 	    ord += 10
-	print entr ######################################
-	entr.sens = [];  ord = 10;  lastpos = [[]]
-	for x in elem.findall('sense'):
-	    entr.sens.append (do_sense(x, ord, lastpos))
+
+	entr.kana = [];  ord = 10
+	for x in elem.findall('r_ele'):
+	    entr.kana.append (do_r_ele(x, ord, entr.kanj))
 	    ord += 10
 
-	# Fix up the restrictions.  They are stored in the 
-	# .restr attribute of the Read, Kanj, and Sens objects
-	# and consist of a list of the text strings given in
-	# the xml.  Here we do two things:
-	# 1. Convert the strings to references to the actual
-	#   objects containing the text.
-	# 2. Invert the sense: in Jmdict, the restr elements
-	#   identify valid combinations, except that the lack 
-	#   of the element which would logically mean "no valid
-	#   combinations" actually means "all cominations are 
-	#   valid.  To straighten that out for storage in the 
-	#   db, we store only invalid combinations.  Thus if 
-	#   an entry has 3 kanji (K1,K2,K3), 2 readings (R1,R2), 
-	#   and a restriction on R1 of K1,K2 we will store
-	#   (R1,K3) in the restr table.  If R2 has a restriction
-	#   of K3, then we store (R2,K1)(R2,K2).  This more
-	#   consistent representation allows generating the 
-	#   valid K,R combination in a SQL statement by taking
-	#   the set difference between the cross product of K 
-	#   and R, and the restriction set.  Otherwise one really
-	#   needs to handle it with a conditional in application
-	#   code.
+	entr.sens = [];  ord = 10;  lastpos = [[]]
+	for x in elem.findall('sense'):
+	    entr.sens.append (do_sense(x, ord, entr.kana, 
+			               entr.kanj, lastpos))
+	    ord += 10
 
-	entr.restr = [tables.Restr(x) for r in entr.read
-		      for x in mk_restr (r, r.restr, entr.kanj)]
-	entr.stagk = [tables.Stagk(x) for s in entr.sens
-		      for x in mk_restr (s, s.stagk, entr.kanj)]
-	entr.stagr = [tables.Stagr(x) for s in entr.sens
-		      for x in mk_restr (s, s.stagr, entr.read)]
 	return entr
 
-def do_r_ele (elem, ord):
+def do_r_ele (elem, ord, kanj):
 	# Process a <re_ele> element...
 
 	txt = elem.find('reb').text
-	r = tables.Read ((0, 0, ord, txt))
+	r = tables.Kana ((0, 0, ord, txt))
 
-	r.inf = [tables.Rinf((0,KWx.RINF[fixup(x.text)]))
+	r.rinf = [tables.Rinf((0,KWx.RINF[fixup(x.text)]))
 		    for x in elem.findall('re_inf')]
 
 	# Split the <re_pri> tag into a freq scale keyword and a 
 	# numeric value.  "news1" and "news2" are ignored because 
 	# they are redundent with the "nfxx" tags.
 
-	r.freq = [tables.Rfreq(decd_pri(x.text, KW))
+	r.rfreq = [tables.Rfreq(decd_pri(x.text, KW))
 		    for x in elem.findall('re_pri') 
 		    if x.text != "news1" and x.text != "news2"]
 	
 	# Need the following hack because some jmdict entries 
 	# (as of 2006.09.18) have multiple "nfxx" tag in the same
 	# re_ele and ke_ele's.
-	r.freq = remove_dup_freq_tags (r.freq)
+	r.rfreq = remove_dup_freq_tags (r.rfreq)
 
-	# Save the reading restictions.  We don't have access to
-	# the kanji text here, and can't resolve the restriction
-	# texts to Kanj objects, so we save it as-is and resolve 
-	# later.  We will always create a .restr attribute and 
-	# it will encode three conditions:
-	#   [non-empty list] -- Kanji texts with this reading.
-	#   [] -- Empty list: No kanji have this reading.
-	#   None -- All kanji have this reading (i.e no restr).
-
-	r.restr = [x.text for x in elem.findall('re_restr')]
-	if not r.restr: r.restr = None  # All kanji have this reading.
+	# Find all the restr elements.  The jmdict file lists the
+	# kanji that are valid for a reading but the database stores
+	# the kanji that are invalid for a reading.  So in here we
+	# we subtract (in the "set" sense) the restr item from the
+	# kanj items to get the invalid kanj.  If the re_nokanj
+	# is present, then our list of invalid kanj will be the full
+	# kanj list.  If there are no restr elements, then thare are
+	# no invalid kanj and our restr list in empty.  
+ 
+	r.xrestr = []
+	rl = elem.findall('restr')
+	if rl: r.xrestr = jbdb.listdiff (kanj, rl, lambda a,b: a.txt==b.text)
 	if elem.find('re_nokanji') is not None: 
-	    r.restr = []		# No kanji have this reading.
+	    if r.xrestr: raise RuntimeError ("restr and nokanji both present.")
+	    r.xrestr = kanj	# No kanji have this reading.
+
   	return r
 
 def do_k_ele (elem, ord):
@@ -287,24 +272,24 @@ def do_k_ele (elem, ord):
 	txt = elem.find('keb').text
 	k = tables.Kanj ((0, 0, ord, txt))
 
-	k.inf = [tables.Kinf((0,KWx.KINF[fixup(x.text)]))
+	k.kinf = [tables.Kinf((0,KWx.KINF[fixup(x.text)]))
 		    for x in elem.findall('ke_inf')]
 
 	# See comments in do_r_ele() re *_pri handling.  ke_pri
 	# is handled identically.
 
-	k.freq = [tables.Kfreq(decd_pri(x.text, KW))
+	k.kfreq = [tables.Kfreq(decd_pri(x.text, KW))
 		    for x in elem.findall('ke_pri')
 		    if x.text != "news1" and x.text != "news2"]
 
 	# Need the following hack because some jmdict entries 
 	# (as of 2006.09.18) have multiple "nfxx" tag in the same
 	# re_ele and ke_ele's.
-	k.freq = remove_dup_freq_tags (k.freq)
+	k.kfreq = remove_dup_freq_tags (k.kfreq)
 
 	return k
 
-def do_sense (elem, ord, pos=None):
+def do_sense (elem, ord, kana, kanj, pos=None):
 	# Process a <re_ele> element... 
 
 	s = tables.Sens ((0, 0, ord, None))
@@ -325,7 +310,6 @@ def do_sense (elem, ord, pos=None):
 	if pos is not None:
 	    if s.pos: pos[0] = s.pos
 	    elif pos[0]: s.pos = pos[0]
-	print pos
 
 	s.note = "\n".join ([x .text for x in elem.findall('s_inf')])
 	s.xrefs = [("x", x.text) for x in elem.findall('xref')]
@@ -333,13 +317,15 @@ def do_sense (elem, ord, pos=None):
 
 	# See comments in do_re_ele() re handling of restrictions.
 	# It is identical here except there is no analogue of
-	# of <nokanji> hence no need to use an empty restriction 
-	# list.
+	# of <nokanji>.
 
-	s.stagk = [x.text for x in elem.findall('stagk')]
-	if not s.stagk: s.stagk = None
-	s.stagr = [x.text for x in elem.findall('stagr')]
-	if not s.stagr: s.stagr = None
+	s.xstagr = []
+	rl = elem.findall('stagr')
+	if rl: s.xstagr = jbdb.listdiff (kana, rl, lambda a,b: a.txt==b.text)
+
+	s.xstagk = []
+	rl = elem.findall('stagk')
+	if rl: s.xstagk = jbdb.listdiff (kanj, rl, lambda a,b: a.txt==b.text)
 
 	# Process the <gloss> elements in do_gloss().  The 
 	# resulting list of Gloss objects is stored in the
@@ -536,7 +522,7 @@ def mk_xemap (kwds):
 
 def remove_dup_freq_tags (flist):
 	# Temporary (I hope!) hack to remove duplicate enties
-	# in r.freq and k.freq lists.  If dups in the list will
+	# in r.rfreq and k.kfreq lists.  If dups in the list will
 	# cause a duplicate pk error when list is written to 
 	# database.
 
@@ -570,16 +556,18 @@ arguments:
 
 	v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
 	        + " Rev %s (%s)" % _VERSION_
-	p = OptionParser (usage=u, version=v)
+	p = OptionParser (usage=u, version=v, add_help_option=False)
 	p.add_option ("-d", "--database",
              type="str", dest="d", default="jb",
              help="Name of the database to load.  Default is \"jb\".")
+	p.add_option ("-h", "--host",
+             type="str", dest="h", default=None,
+             help="Name host machine database resides on.")
 	p.add_option ("-u", "--user",
-             type="str", dest="u", default="root", 
-             help="Connect to Mysql with this username.  " \
-                      "Deafult is \"root\"")
+             type="str", dest="u", default=None, 
+             help="Connect to Mysql with this username.")
 	p.add_option ("-p", "--passwd",
-             type="str", dest="p", default="",
+             type="str", dest="p", default=None,
              help="Connect to Mysql with this password.")
 	p.add_option ("-b", "--begin",
              type="int", dest="b", default=0,
@@ -603,6 +591,9 @@ arguments:
 	p.add_option ("-D", "--debug",
              action="store_true", dest="D", 
              help="Startup in Python pdb debugger.")
+	p.add_option ("--help",
+             action="help", help="Print this help message.")
+
 	opts, args = p.parse_args ()
 	if len(args) < 1: p.error("Too few arguments, jmdict filename expected" 
 				"\nUse --help for more info")

@@ -19,6 +19,7 @@ class Cursor:
     def __init__ (self, conn): 
 	self.__dict__['conn'] = conn
 	self.__dict__['_cursor_'] = conn.cursor ()
+
     def execute (self, sql, args=None): 
 	if args is None: args = []
 	if MySQLdb.__version__ == "1.2.1_p2": pass
@@ -29,6 +30,11 @@ class Cursor:
 			         % MySQLdb.__version__)
 	rc = self.__dict__['_cursor_'].execute (sql, args)
 	return rc
+
+    def lastauto (self):
+	self.execute ("SELECT LAST_INSERT_ID();", ())
+	return (self.fetchone ())[0]
+
     def __getattr__(self, attr):
         return getattr (self._cursor_, attr)
     def __setattr__(self, attr, value):
@@ -43,14 +49,19 @@ class Cursor:
 
 
 import MySQLdb;  dbapi = MySQLdb
-def dbOpen (user="root", pw="", db="jb", host="localhost"):
+def dbOpen (**kwds):
+	# Change the keywords used by the caller into
+	# ones acceptable to mysql.
+	if kwds.has_key("password"): 
+	    kwds["passwd"] = kwds["password"]; del kwds["password"] 
+	if kwds.has_key("database"): 
+	    kwds["db"] = kwds["database"]; del kwds["database"] 
+	if "use_unicode" not in kwds: kwds["use_unicode"] = True
 	if MySQLdb.__version__ == "1.2.1_p2":
-            conn = MySQLdb.connect (user=user, passwd=pw, host=host,
-                                    db=db, use_unicode=True,
-				    charset="utf8")
+	    if "charset" not in kwds: kwds["charset"] = "utf8"
+            conn = MySQLdb.connect (**kwds)
 	else:
-            conn = MySQLdb.connect (user=user, passwd=pw, host=host,
-                                    db=db, use_unicode=True)
+            conn = MySQLdb.connect (**kwds)
 	conn.cursor().execute("SET NAMES 'utf8'")
-	conn.charset = "utf-8"
+	conn.charset = "utf8"
 	return Cursor (conn)

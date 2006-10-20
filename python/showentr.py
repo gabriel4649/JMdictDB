@@ -12,13 +12,19 @@ from tables import *
 
 class ParseError (RuntimeError): pass
 
-global KW, Def_enc
+global KW
 
 def main (args, opts):
 	global KW
 
 	# open the database...
-	try: cursor = db.dbOpen (user=opts.u, pw=opts.p, db=opts.d)
+	openargs = dict()
+	if opts.u: openargs["user"] = opts.u
+	if opts.p: openargs["password"] = opts.p
+	if opts.d: openargs["database"] = opts.d
+	if opts.h: openargs["host"] = opts.h
+
+	try: cursor = db.dbOpen (**openargs)
 	except db.dbapi.OperationalError, e:
 	    print "Error, unable to connect to database, do you need -u or -p?\n", str(e);  
 	    sys.exit(1)
@@ -124,8 +130,8 @@ def display_entry (entr):
  
 	klist = []
 	for k in entr.kanj:
-	    kwds = ";".join([KW.KINF[x.kw].kw for x in k.inf] \
-		   + [KW.FREQ[x.kw].kw+str(x.value) for x in k.freq])
+	    kwds = ";".join([KW.KINF[x.kw].kw for x in k.kinf] \
+		   + [KW.FREQ[x.kw].kw+str(x.value) for x in k.kfreq])
 	    if kwds: klist.append (k.txt + "/" + kwds)
 	    else: klist.append (k.txt)
 	if klist: print "; ".join (klist)
@@ -137,10 +143,10 @@ def display_entry (entr):
 	  # r_rfreq for for simplicity -- method is same as for
 	  # kanji.
 
-	if max([len(r.restr) for r in entr.read]) > 0:
-	    display_restr (entr.read, entr.kanj)
+	if max([len(r.restr) for r in entr.kana]) > 0:
+	    display_restr (entr.kana, entr.kanj)
 	else:
-	    print ", ".join([x.txt for x in entr.read])
+	    print ", ".join([x.txt for x in entr.kana])
 
 	  # Print the sense information.
 
@@ -155,7 +161,7 @@ def display_entry (entr):
 
 	      # Restrictions... 
 	    if not s.stagr: sr = []
-	    else: sr = filt ([x.kana for x in s.stagr], entr.read)
+	    else: sr = filt ([x.kana for x in s.stagr], entr.kana)
 	    if not s.stagk: sk = []
 	    else: sk = filt ([x.kanj for x in s.stagk], entr.kanj)
 	    stag = ""
@@ -193,31 +199,10 @@ def display_restr (rlist, klist):
 
 def get_entry (cursor, entrid):
 	sql = "SELECT * FROM entr WHERE id=%s"
-	e = load (Entr, cursor, sql, (entrid,))
-	if len(e) < 1: return None
-	e = e[0]; id = e.id
-	e.lang = load (Lang, cursor, "select * from lang where entr=%s", (id,))
-	e.dial = load (Dial, cursor, "select * from dial where entr=%s", (id,))
-	e.read = load (Read, cursor, "select * from kana where entr=%s order by ord", (id,))
-	e.kanj = load (Kanj, cursor, "select * from kanj where entr=%s order by ord", (id,))
-	e.sens = load (Sens, cursor, "select * from sens where entr=%s order by ord", (id,))
+	e = Entr()._read(cursor, entrid)
 	for s in e.sens:
-	    s.gloss = load (Gloss, cursor, "select * from gloss where sens=%s order by ord", (s.id,))
-	    s.pos = load (Pos, cursor, "select * from pos where sens=%s", (s.id,))
-	    s.misc = load (Misc, cursor, "select * from misc where sens=%s", (s.id,))
-	    s.fld = load (Fld, cursor, "select * from fld where sens=%s", (s.id,))
-	    s.xref = load (Xref, cursor, "select * from xref where sens=%s", (s.id,))
-	    s.xrex = load (Xref, cursor, "select * from xref where xref=%s", (s.id,))
-	    s.stagr = load (Stagr, cursor, "select * from stagr where sens=%s", (s.id,))
-	    s.stagk = load (Stagk, cursor, "select * from stagk where sens=%s", (s.id,))
-
-	for j in e.kanj:
-	    j.inf = load (Kinf, cursor, "select * from kinf where kanj=%s", (j.id,))
-	    j.freq = load (Kfreq, cursor, "select * from kfreq where kanj=%s", (j.id,))
-	for k in e.read:
-	    k.inf = load (Kinf, cursor, "select * from rinf where kana=%s", (k.id,))
-	    k.freq = load (Kfreq, cursor, "select * from rfreq where kana=%s", (k.id,))
-	    k.restr = load (Restr, cursor, "select * from restr where kana=%s", (k.id,))
+	    s.xrex = jbdb.load (Xref, cursor, 
+		"SELECT * FROM xref WHERE xref=%s", (s.id,))
 	return e
 
 def build_search_sql (condlist):
@@ -292,11 +277,6 @@ def srch_parse (txt):
 		if m.group(9): results.append ((m.group(6),m.group(7),m.group(9)))
 		else: results.append ((m.group(6),m.group(7),m.group(11)))
 	return results
-
-def load (cls, cursor, sql, sqlargs):
-	cursor.execute (sql, sqlargs)
-	rs = cursor.fetchall ()
-	return [cls (x) for x in rs]
 
 def filt (exclude, xlist):
 	# returns a list containing those items of <xlist>
@@ -410,20 +390,24 @@ arguments:  None"""
 
 	v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
 	        + " Rev %s (%s)" % _VERSION_
-	p = OptionParser (usage=u, version=v)
+	p = OptionParser (usage=u, version=v, add_help_option=False)
 	p.add_option ("-d", "--database",
              type="str", dest="d", default="jb",
              help="Name of the database to load.  Default is \"jb\".")
+	p.add_option ("-h", "--host",
+             type="str", dest="h", default=None,
+             help="Name host machine database resides on.")
 	p.add_option ("-u", "--user",
-             type="str", dest="u", default="root", 
-             help="Connect to the database with this username.  " \
-                      "Deafult is \"root\"")
+             type="str", dest="u", default=None, 
+             help="Connect to Mysql with this username.")
 	p.add_option ("-p", "--passwd",
-             type="str", dest="p", default="",
-             help="Connect to that database with this password.")
+             type="str", dest="p", default=None,
+             help="Connect to Mysql with this password.")
 	p.add_option ("-D", "--debug",
              action="store_true", dest="D", 
              help="Startup in Python pdb debugger.")
+	p.add_option ("--help",
+             action="help", help="Print this help message.")
 	opts, args = p.parse_args ()
 	if len(args) > 0: p.error("Error, no arguments expected.  " 
 				"Use --help for more info")

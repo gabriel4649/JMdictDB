@@ -1,7 +1,11 @@
 
+# Copyright (c) 2006, Stuart McGraw 
 _VERSION_=("$Revision$"[11:-2],"$Date$"[7:-11])
 
-class DbRow (list):
+# FIXME: define error class instead of overloading the
+#   python's standard errors.
+
+class DbRow (object):
     #-----------------------------------------------------
     """Provides a base class that can be subclassed to 
     model rows from database tables or other query result-
@@ -23,7 +27,7 @@ class DbRow (list):
 		Note that the class defining the fk will 
 		usually have a "_parent" attribute naming 
 		this class.
-		Hack: DbRow assumes that the foreign key 
+		FIXME: DbRow assumes that the foreign key 
 		column has the same name as the parent table.
 	_auto:  (Optional) If there is a auto-increment (aka
 		"counter" or "serial") column, this should be 
@@ -36,47 +40,32 @@ class DbRow (list):
 		column has the same name as the parent table."""
     #-----------------------------------------------------
 
-    # FIXME: define error class instead of overloading the
-    #   python's standard errors.
-    # FIXME: use a more efficient implementation of __getattr__()
-    #   and __setattr__()
-
-    def __getattr__(self, name):
-	# Map column name attribute access to list de-index op.
-	try: n = self.__class__._cols.index(name) 
-	except ValueError: raise AttributeError (
-	    "'%s' object has no attribute '%s'" \
-	    % (self.__class__.__name__, name))
-	return self[n]
-
-    def __setattr__ (self, name, val):
-	# Map column name attribute assignment to list de-index op.
-	try: n = self.__class__._cols.index(name) 
-	except ValueError: self.__dict__[name] = val
-	else: self[n] = val
-
-    def __init__ (self, data=None):
-
+    def __init__(self, values=None):
 	# No argument means, create an empty instance with
 	# all trhe column values set to None.  Otherwise the
 	# argument is a sequence of N values, where N is the 
 	# number of columns in the corresponding table (same
 	# as len(self._cols).)
 
-	if data is None: data = [None] * len( self._cols )
-
-	# Overwrite any existing data, and check that the
-	# number of data we received isthe same as the number
-	# of columns.
-
-	self[:] = data 
-	if len( self ) != len( self._cols ): 
-	    raise ValueError, "Wrong length"
-
-	# Initialize all the "related" attributes...
-
+	if values is None: values = [None] * len(self._cols)
+        if len(values) != len(self._cols):
+            raise ValueError("%s() expects an iterable with %s items" %
+                             (self.__class__.__name__, len(self._cols)))
+	for n,v in zip (self._cols, values): setattr (self, n, v)
+	  # Initialize all the "related" attributes...
 	if hasattr (self, "_related"):
 	    for k in self._related: setattr( self, k._table, [] )
+    def __getitem__ (self, idx): return getattr (self, self._cols[idx])
+    def __setitem__ (self, idx, value):
+	name = self._cols[idx]
+	setattr (self, name, value)
+    def __len__(self): return len(self._cols)
+    def __iter__(self):
+	for n in self._cols: yield getattr (self, n)
+	raise StopIteration
+    def __repr__ (self):
+	vals = [repr (getattr (self, c)) for c in self._cols]
+	return "%s((%s))" % (str(self.__class__.__name__), ",".join (vals))
 
     def _read (self, cursor, pkvals=None):
 
@@ -90,6 +79,9 @@ class DbRow (list):
 	# case where there is a single column pk.  
 	# If there are any related tables, (i.e., self._related
 	# exists and is non-empty) they will be read recursively.
+	#
+	# WARNING: This is not an efficient way to read a large
+	# number of entries.  
 
 	if pkvals is None: 
 	    pkvals = [getattr (self, x) for x in self._pk]
@@ -112,7 +104,7 @@ class DbRow (list):
 	if len(rs) == 0: rs = None
 
 	# Use our own .__init__() method because that alse sets
-	# attribute properly.
+	# attributes properly.
 
 	else: self.__init__( rs[0] )
 
@@ -139,6 +131,12 @@ class DbRow (list):
 		o._readrel (cursor)
 
     def _insert (self, cursor, parent=None):
+	# Insert this object, and any related child objects, into
+	# new rows in the appropriate database tables.
+	#
+	# WARNING: This is not an efficient way to insert a large
+	# number of entries.  
+
 	cols = self._cols
 	if parent is not None and parent != 0 and hasattr (self, "_parent"):
 	    setattr (self, self._parent, parent)
@@ -195,12 +193,6 @@ class DbRow (list):
 	# Return the auto_id number in case caller wants to know.
 
 	return id
-
-    def __repr__ (self):
-	args = []
-	for c in self._cols: 
-	    args.append (repr (getattr (self, c)))
-	return "%s(%s)" % (str(self.__class__)[8:-2], ",".join (args))
 
 #======================================================================
 
@@ -315,34 +307,6 @@ def listdiff (a, b, cmp=None):
 		if x not in b: r.append (x)
 	return r
 
-
-def rslv_refs (zlist, alist, blist):
-	# Resolve (find object with a given id number)
-	# the elements in zlist (which is a list of Restr,
-	# Stagr, or Stagk objects) using alist and blist
-	# (which are lists of Kana, Kanj, or Sens objects
-	# as appropriate for the type of zlist).  We return
-	# a list of 2-sequences where each item corresponds
-	# to the samely-positioned item in zlist, and the
-	# two elements of each item are references the
-	# objects in alist and blist that have the same id
-	# as the elements of the zlist item.  If an id
-	# number in zlist is not found in alist (blist)
-	# an error is raised. 
-
-	result = []
-	for z in zlist:
-	    # Since these lists are in general very short,
-	    # we just do a sequential scan for id numbers.
-	    for a in alist:
-		if z[0] == a.id: break
-	    else: raise RuntimeError("Expected id not found in alist")
-	    for b in blist:
-		if z[1] == b.id: break
-	    else: raise RuntimeError("Expected id not found in blist")
-	    result.append ((a,b))
-	return result
-
 def load (cls, cursor, sql, sqlargs):
 	# Execute sql statement 'sql' with bound arguments 'sqlargs'
 	# Create a new instance of 'cls' for each row, and use the 
@@ -352,4 +316,76 @@ def load (cls, cursor, sql, sqlargs):
 	cursor.execute (sql, sqlargs)
 	rs = cursor.fetchall ()
 	return [cls (x) for x in rs]
-    
+
+def build_search_sql (condlist):
+	"""\
+	Build a sql statement that will find the id numbers of
+	all entries matching the conditions given in <condlist>.
+	Note: This function does not provide for generating
+	arbitrary SQL statements; it is only intented to support 
+	limited search capabilities that are typically provided 
+	on a search form.
+
+	<condlist> is a list of 3-tuples.  Each 3-tuple specifies
+	one condition:
+	  0: Name of table that contains the field being searched on.
+	  1: Sql snippit that will be AND'd into the WHERE clause.
+	    Field names must be qualified by table.  When looking 
+	    for a value in a field.  A "?" may (and should) be used 
+	    where possible to denote an exectime parameter.  The value
+	    to be used when the sql is executed is is provided in
+	    the 3rd member of the tuple (see #2 next).
+	  2: A sequence of argument values for any exec-time parameters
+	    ("?") used in the second value of the tuple (see #1 above).
+
+	Example:
+	    [("entr","entr.typ=1", ()),
+	     ("gloss", "gloss.text LIKE ?", ("'%'+but+'%'",)),
+	     ("pos","pos.kw IN (?,?,?)",(8,18,47))]
+
+	  This will generate the SQL statement and arguments:
+	    "SELECT entr.id FROM (((entr INNER JOIN sens ON sens.entr=entr.id) 
+		INNER JOIN gloss ON gloss.sens=sens.id) 
+		INNER JOIN pos ON pos.sens=sens.id) 
+		WHERE entr.typ=1 AND (gloss.text=?) AND (pos IN (?,?,?))"
+	    ('but',8,18,47)
+	  which will find all entries that have a gloss containing the
+	  substring "but" and a sense with a pos (part-of-speech) tagged
+	  as a conjunction (pos.kw=8), a particle (18), or an irregular
+	  verb (47)."""
+
+	from topsort import topsort 
+	rels = {
+	    "entr":None, "kana":"entr", "kanj":"entr", "sens":"entr", "gloss": "sens", 
+	    "pos":"sens", "misc":"sens", "fld":"sens", "rinf":"kana", "dial":"entr",
+	    "rfreq":"kana", "kinf":"kanj", "kfreq":"kanj", "lang":"entr",}
+
+	tables = set(); wclauses = []; args = []
+	for tbl,cond,arg in condlist:
+	      ##Add tbl, and all of tbl's parents to the table list.
+	    while tbl:
+		tables.add (tbl)
+		tbl = rels[tbl]
+	    wclauses.append (cond)
+	    args.extend (arg)
+	  ##Do a topological sort to put tables in right order. 
+	tables = topsort ([(p,t) for t,p in rels.items() if t in tables])[1:]
+	frm = mk_from_clause( tables )
+	where = " AND ".join (wclauses)
+	return "SELECT DISTINCT entr.id FROM %s WHERE %s" % (frm, where), tuple(args)
+
+def mk_from_clause (tables): 
+	# Given a list of table in the proper order (parent tables
+	# occur in the list before child tables), create a string
+	# that can be used in a SQL "FROM" clause that joins all
+	# the tables.  We assume that the primary key column of 
+	# each parent table is named "id" and the foreign key column
+	# of each child table has the same name as the parent table.
+
+	tbls = tables[:];  t0 = tbls.pop(0);  clause = t0 
+	for tx in tbls:
+	    clause = "%s JOIN %s ON %s.%s=%s.%s" \
+		% (clause, tx, tx, t0, t0, "id")
+	    clause = "(" + clause + ")"
+	    t0 = tx
+	return clause

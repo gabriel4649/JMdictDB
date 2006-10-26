@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- Copyright (C) 2006, Stuart McGraw -->
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link rel="stylesheet" type="text/css" href="entr.css">
+  <title>JMdict</title>
+  </head>
+<body>
+  <div class="results">
+    <form method="get" action="entr.py">
+      <span class="count">
+        <span tal:replace="python: len(results)"/> matching entries found...
+	</span>
+      <table class="reslist" tal:condition="python: len(results)">
+	<tr class="heading">
+	  <th>Select</th>
+	  <th>Seqnum</th>
+	  <th>Reading</th>
+	  <th>Kanji</th>
+	  <th>Gloss</th>
+	  </tr>
+	<tr class="resrow" tal:repeat="r results">
+	  <td><input type="checkbox" name="e" tal:attributes="value python:r[0]"/></td>
+	  <td tal:content="python: r[1]"/>
+	  <td tal:content="python: r[2]"/>
+	  <td tal:content="python: r[3]"/>
+	  <td tal:content="python: r[4]"/>
+	  </tr>
+	</table>
+      <input name="show" value="Display selected entries" type="submit" tal:condition="python: len(results)>1"> 
+      </form>
+    </div>
+  </body>
+</html>

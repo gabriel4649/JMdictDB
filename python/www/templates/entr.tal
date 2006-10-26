@@ -1,0 +1,96 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- Copyright (C) 2006, Stuart McGraw -->
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link rel="stylesheet" type="text/css" href="entr.css">
+  <title>JMdict</title>
+</head>
+<body>
+  <span tal:repeat="e elist">
+    <div class="entry">
+      Entry <span tal:replace="e/seq"/>
+      <span class="pkid">(id:<span tal:replace="e/id"/>)</span>
+      <span class="dial" tal:condition="e/dial">, 
+        Dialect: <span tal:replace="python: ', '.join([KW.DIAL[x.kw].descr for x in e.dial])"/>
+	</span>
+      <span class="lang" tal:condition="e/lang">, 
+	Language of orgin: <span tal:replace="python: ', '.join([KW.LANG[x.kw].descr for x in e.lang])"/>
+	</span>
+
+      <br/> 
+      <span tal:repeat="j e/kanj">
+	<span tal:condition="repeat/j/index">;&emsp;</span>
+	<span class="kanj" tal:content="j/txt"/>
+	<span class="kinf" tal:content=
+		"python: '/'.join([KW.KINF[x.kw].kw for x in j.kinf]
+		         +[KW.FREQ[x.kw].kw+str(x.value) for x in j.kfreq])"/>
+	</span>
+
+      <span tal:condition="not: e/restr">
+        【<span tal:repeat="r e/kana">
+	  <span tal:condition="repeat/r/index">;&emsp;</span>
+	  <span tal:replace="r/txt" />
+	  <span class="rinf" tal:content=
+		"python: '/'.join([KW.RINF[x.kw].kw for x in r.rinf]
+		         +[KW.FREQ[x.kw].kw+str(x.value) for x in r.rfreq])"/>
+	    </span>】
+	  </span>
+	<span tal:condition="e/restr">
+  	  <br/>【<span tal:repeat="r e/kana">
+	    <span tal:condition="repeat/r/index">;&emsp;</span>
+	    <span tal:replace="r/txt"/>
+	    <span class="rinf" tal:content=
+		"python: '/'.join([KW.RINF[x.kw].kw for x in r.rinf]
+		         +[KW.FREQ[x.kw].kw+str(x.value) for x in r.rfreq])"/>
+	    <span tal:condition="exists: r/restr">(
+	      <span tal:condition="not: r/restr">no kanji</span>
+	      <span tal:condition="r/restr">
+		<span tal:replace="python: ','.join([x.txt for x in r.restr])"/>
+		</span>
+	      )</span>
+	    </span>
+	  】</span>
+    <ol>
+	<span class="senses" tal:repeat="s e/sens">
+	<li class="sense">
+	  <span class="pos" tal:condition="s/pos">
+	    [<span tal:replace="python: ','.join([KW.POS[x.kw].kw for x in s.pos])"/>]
+	    </span>
+	  <span class="misc" tal:condition="s/misc">
+	    [<span tal:replace="python: ','.join([KW.MISC[x.kw].kw for x in s.misc])"/>]
+	    </span>
+	  <span class="stag" tal:condition="s/stagr|s/stagk">(
+	    <span tal:replace="python: ', '.join([x.txt for x in s.stagk]
+				            +[x.txt for x in s.stagr])"/>
+	    only)</span>
+	  <span class="pkid">(id:<span tal:replace="s/id"/>)</span><br/>
+	  <span tal:repeat="g s/gloss">
+	    <span class="glang" tal:replace="python: KW.LANG[g.lang].kw"/>: 
+	    <span class="gloss" tal:replace="g/txt"/><br/>
+	    </span>
+
+	  <dl tal:condition="s/tal_xrefs | s/tal_ants">
+	    <span tal:condition="s/tal_xrefs">
+	    <dt>Cross-refs:</dt>
+	      <dd> <span tal:repeat="x s/tal_xrefs">
+		<span tal:condition="repeat/x/index" replace=", "/>
+		<a href="http://iii/cgi/jmdict/htmlentr.py?s=${x}">${x}</a>
+		</span></dd>
+	        </span>
+	      <span tal:condition="s/tal_ants">
+	    <dt>Antonyms:</dt>
+	      <dd> <span tal:repeat="m s/tal_ants">
+		<span tal:condition="repeat/m/index" replace=", "/>
+		<a href="http://iii/cgi/jmdict/htmlentr.py?s=${x}">${x}</a>
+		</span></dd>
+	      </span>
+	    </dl>
+
+	  </li>
+	</span>
+      </ol>
+    </div>
+    </span>
+  </body>
+</html>

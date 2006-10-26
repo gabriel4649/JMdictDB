@@ -8,24 +8,35 @@ development.
 This directory contains
 
     README.txt -- This file.
+    jbdb.py -- Mini-orm :-) used by other scripts.
     load_jmdict.py -- Python script to load data from jmdict.
     schema.png -- Schema diagram.
     showentr.py -- Command line script to display entry from database. 
     tables.py -- Table definitions used by jbdb.py.
     data/*.sql -- Static keyword data for the kw* tables.
+    www/entr.py -- cgi script to display jmdict entries.
+    www/srchfrm.py -- cgi script that presents a search form.
+    www/srchres.py -- cgi script that present search results.
+    www/entr.css -- Style sheet for cgi generated pages.
+    www/templates/entr.tal -- Template for entr.py.
+    www/templates/srchfrm.tal -- Template for srchfrm.py.
+    www/templates/srchres.tal -- Template for srchres.py.
 
-    pg/jbdb.py -- Mini-orm :-) used by load_jmdict.py and showentr.py.\
+    pg/db.py -- Postgresql specific cursor class and open function.
     pg/loadkw.sql -- Mysql commands to load the static keyword data.
     pg/reload.sql -- Script for creating a fresh empty schema.
     pg/schema.sql -- Table definitions, loadable into mysql.
 
-    mysql/jbdb.py -- Mini-orm :-) used by load_jmdict.py and showentr.py.
+    mysql/db.py -- Mysql specific cursor class and open function.
     mysql/loadkw.sql -- Mysql commands to load the static keyword data.
     mysql/reload.sql -- Script for creating a fresh empty schema.
     mysql/schema.sql -- Table definitions, loadable into mysql.
 
-These scripts can be used with both Postgresql and Mysql databases.
-They have been tested with Mysql-5.0.22 and Postgresql-8.1.4.
+load_jmdict.py scripts can be used with both Postgresql and Mysql 
+databases and was tested with Mysql-5.0.22 and Postgresql-8.1.4.
+Other scripts have not been tested with Mysql recently, and if 
+they work at all, may be very slow due to Mysql's inability to
+optimize certain queries with sub-selects.
 
 To load jmdict data from the script you will need Python-2.4 
 (or later) installed, and you will also need the following 
@@ -193,8 +204,38 @@ It can be speeded up by including a mysql-specific
 query in the coe, but I haven't done that yet.
 
 
+CGI scripts.
+============
+This package contain three CGI scripts for accessing 
+the JMdict database.  They were tested on Microsoft 
+Windows 2000/IIS-6.0/Postgresql-8.1.4 and Linux (FC5)/
+Apache-2.54/Postgresql-8.1.4.  The same issues regarding 
+the database connection software mentioned above also 
+apply.  I did not bother testing with Mysql because 
+the scripts use queries that exceute excessively slowly 
+under Mysql.
+
+To use these scripts your will need:
+  o Web server configured to serve Python cgi scripts.  
+  o SimplaTAL-1.4 python package installed.
+    (http://...)
+  o JMdict loaded into a postgresql database.
+ 
+1. You will need to edit the scripts and modify the database
+   connection details (username and password).
+2. Copy the files in www/* to a directory that your web server
+   can execute cgi scripts from, and set the file owners/permissions
+   as appropriate.
+3. Copy the files jbdb.py, db.py, tables.py, utils.py to the 
+   same directory as used in step 2.
+
+
+
+
+
+
 Some notes about the schema.
-=======================
+============================
 - The schema is pretty generic so it should be easy 
   to   load into some other db (eg postgresql) with 
   suitable munging   of things like quote characters

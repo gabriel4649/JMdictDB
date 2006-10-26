@@ -1,3 +1,28 @@
+2006-10-26	smcgraw@frii.com
+
+	* README.txt[1.4]
+	Update for cgi stuff.
+
+	* jbdb.py[1.6]
+	DbRow object wasn't keeping attribute values in sync with
+	  list values, does now.  Derive from object (instead of list
+	  as before) and keep values as attributes, map indexed access
+	  to attribute access.
+	Remove function rslv_refs() since it is no longer used
+	  by anything.  
+	Add function build_search_sql() and its helper, 
+	  mk_from_clasuse()  This is a slightly rewritten version
+	  of what was in showentr.py.
+
+	* showentr.py[1.7]
+	Move function build_search_sql() to jbdb.py.
+
+	* www/entr.py[1.1] www/srchfrm.py[1.1] www/srchres.py[1.1]
+	* www./simpleTalHelper.py[1.1] www/entr.css[1.1]
+	* www/templates/entr.tal[1.l] www/templates/srchfrm.tal[1.l]
+	* www/templates/srchres.tal[1.l]
+	New files added to demonstrate access via cgi.
+
 2006-10-19	smcgraw@frii.com
 
 	Tag T004:

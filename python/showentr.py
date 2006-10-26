@@ -71,7 +71,7 @@ def search (cursor, s):
 	    elif typ == '$': val = "%" + val
 	    results.append ((table,w,(val,)))
 	cursor.execute ("DELETE FROM _tmpsrch")
-	sql, args = build_search_sql (results)
+	sql, args = jbdb.build_search_sql (results)
 	cursor.execute ("INSERT INTO _tmpsrch(id) " + sql, args)
 	return cursor.rowcount
 
@@ -205,62 +205,6 @@ def get_entry (cursor, entrid):
 		"SELECT * FROM xref WHERE xref=%s", (s.id,))
 	return e
 
-def build_search_sql (condlist):
-	"""\
-	Build a sql statement that will find the id numbers of
-	all entries matching the conditions given in <condlist>.
-	Note: This function does not provide for generating arbitrary 
-	sql statements; it is only intented to support some limited 
-	search capabilities.
-
-	<condlist> is a list of 3-tuples.  Each 3-tuple specifies
-	one condition:
-	  0: Name of table, one of: "entr", "kana", "kanj", "sens", 
-	    "gloss", "pos", "use".
-	  1: Sql snippit that will be AND'd into the WHERE clause.
-	    Field names must be qualified by table.  When looking 
-	    for a value in a field.  A "?" may (and should) be used 
-	    where possible to denote an exectime parameter.  The value
-	    to be used when the sql is executed is is provided in
-	    the 3rd member of the tuple (see #2 next).
-	  2: A sequence of argument values for any exec-time parameters
-	    ("?") used in the second value of the tuple (see #1 above).
-
-	Example:
-	    [("entr","entr.typ=1", ()),
-	     ("gloss", "gloss.text LIKE ?", ("'%'+but+'%'",)),
-	     ("pos","pos.kw IN (?,?,?)",(8,18,47))]
-
-	  This will generate the SQL statement and arguments:
-	    "SELECT entr.id FROM (((entr INNER JOIN sens ON sens.entr=entr.id) 
-		INNER JOIN gloss ON gloss.sens=sens.id) 
-		INNER JOIN pos ON pos.sens=sens.id) 
-		WHERE entr.typ=1 AND (gloss.text=?) AND (pos IN (?,?,?))"
-	    ('but',8,18,47)
-	  which will find all entries that have a gloss containing the
-	  substring "but" and a sense with a pos (part-of-speech) tagged
-	  as a conjunction (pos.kw=8), a particle (18), or an irregular
-	  verb (47)."""
-
-	tables = []; wclauses = []; args =[]
-	for tbl,cond,arg in condlist:
-	    tables.append (tbl)
-	    wclauses.append (cond)
-	    args.extend (arg)
-	t = "(%s INNER JOIN % s ON %s)"
-	s = "entr "
-	if "kana" in tables:  s = t % ( s, "kana",  "kana.entr=entr.id" )
-	if "kanj" in tables:  s = t % ( s, "kanj",  "kanj.entr=entr.id" )
-	if "sens" in tables \
-		or "gloss" in tables \
-		or "pos" in tables \
-		or "misc" in tables:
-			      s = t % ( s, "sens",  "sens.entr=entr.id" ) 
-	if "gloss" in tables: s = t % ( s, "gloss", "gloss.sens=sens.id" ) 
-	if "pos" in tables:   s = t % ( s, "pos",   "pos.sens=sens.id" ) 
-	if "misc" in tables:  s = t % ( s, "misc",  "misc.sens=sens.id" ) 
-	where = " AND ".join (wclauses)
-	return "SELECT DISTINCT entr.id FROM %s WHERE %s" % (s, where), tuple(args)
 
 def srch_parse (txt):
 		  #   123          4         56       7      89           0  1

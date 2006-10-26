@@ -6,6 +6,7 @@ table.  Properties of the tables (e.g. the names
 of the table's columns) are defined by setting
 class variables.  See the docstring in tables.DbRow.
 """
+# Copyright (c) 2006, Stuart McGraw 
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
 from jbdb import DbRow

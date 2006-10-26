@@ -4,6 +4,7 @@
 
 # FIXME: write error messages to stderr, not stdout.
 
+# Copyright (c) 2006, Stuart McGraw 
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
 import sys, os, re

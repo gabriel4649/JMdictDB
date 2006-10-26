@@ -12,6 +12,7 @@
 # so the program should end when about one line of
 # dots has been printed.)
 
+# Copyright (c) 2006, Stuart McGraw 
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
 import sys

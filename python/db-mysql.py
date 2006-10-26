@@ -1,5 +1,6 @@
 # db.py for Mysql-5.0 database and MySQLdb interface.
 
+# Copyright (c) 2006, Stuart McGraw 
 _VERSION_=("$Revision$"[11:-2],"$Date$"[7:-11])
 
 class Cursor:

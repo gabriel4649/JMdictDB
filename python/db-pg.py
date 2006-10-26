@@ -1,5 +1,6 @@
 # db.py for Postgresql-8.x database and psycopg2 interface.
 
+# Copyright (c) 2006, Stuart McGraw 
 _VERSION_=("$Revision$"[11:-2],"$Date$"[7:-11])
 
 class Cursor:

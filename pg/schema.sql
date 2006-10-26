@@ -1,4 +1,5 @@
 -- $Revision$ $Date$
+-- Copyright (c) 2006, Stuart McGraw 
 -- JMdict schema for Postgresql
 
 CREATE TABLE kwaudit (

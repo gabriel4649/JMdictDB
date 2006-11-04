@@ -6,17 +6,17 @@
   <link rel="stylesheet" type="text/css" href="entr.css">
   <title>JMdict</title>
 </head>
-<body>
+<body class="srchfrm">
 <form method="get" action="srchres.py" name="srchres">
-  <table border="1">
+  <table class="form">
     <tbody>
       <tr>
         <td>
-        <table border="1">
+        <table class="top">
           <tbody>
             <tr>
               <td>
-              <table border="1">
+              <table class="txtsrch">
                 <tbody>
                   <tr>
                     <td>Search in</td>
@@ -83,9 +83,8 @@
                 </tbody>
               </table>
               </td>
-              <td> <input name="search" value="Search" type="submit"> 
-	      <br>Search by Id number:
-              <table>
+              <td>Search by Id number:
+              <table class="idsrch">
                 <tbody>
                   <tr>
                     <td>Table:</td>
@@ -108,32 +107,36 @@
                   </tr>
                 </tbody>
               </table>
+	      <br><input name="search" value="Search" type="submit"> 
               </td>
             </tr>
+	    <tr><td colspan="2"> </td></tr>
             <tr>
-              <td colspan="2"> Entry source:<br>
-              <span tal:repeat="z src"> 
+              <td colspan="2"><span class="descriptor">Entry source:</span><br>
+              <span tal:repeat="z src" class="optgroup"> 
 		<input name="src" tal:attributes="value z/id" tal:content="z/kw" type="checkbox"> 
 		</span>
 	      </td>
             </tr>
+	    <tr><td colspan="2"><hr width=100%></td></tr>
             <tr>
-              <td colspan="2"> Frequency of use:<br>
-              <span tal:repeat="z freq" tal:omit-tag="">
+              <td colspan="2"><span class="descriptor">Frequency of use:</span><br>
+              <span tal:repeat="z freq" class="optgroup">
                 <input name="freq" tal:attributes="value z" tal:content="z" type="checkbox"> 
 	      </span> 
-	      <br> 
+	      <br><span class="optgroup">
 	      <input name="freq" value="nf" type="checkbox">nf
-              <select name="y3">
-              <option selected="selected">&lt;</option>
+              <select name="nfcmp">
+              <option selected="selected">&lt;=</option>
               <option>=</option>
-              <option>&gt;</option>
+              <option>&gt;=</option>
               </select>
-              <input name="nfval" size="2"> </td>
+              <input name="nfval" size="2"></span></td>
             </tr>
+	    <tr><td colspan="2"><hr width=100%></td></tr>
             <tr>
-              <td colspan="2"> Part-of-speech attributes:
-              <table>
+              <td colspan="2"><span class="descriptor">Part-of-speech attributes:</span>
+              <table class="optgroup">
                 <tbody>
                   <tr tal:repeat="r python:range(7)">
                     <td tal:repeat="c python:range(8)"> 
@@ -146,14 +149,15 @@
               </table>
               </td>
             </tr>
+	    <tr><td colspan="2"><hr width=100%></td></tr>
             <tr>
-              <td colspan="2"> Misc attributes:
-              <table>
+              <td colspan="2"><span class="descriptor">Misc attributes:</span>
+              <table class="optgroup">
                 <tbody>
                   <tr tal:repeat="r python:range(4)">
                     <td tal:repeat="c python:range(8)"> 
 		      <span tal:define="z python:misc[r*8+c]" tal:condition="python: r*8+c&lt;len(misc)" tal:omit-tag="">
-                        <input name="pos" tal:attributes="value z/id" tal:content="z/kw" type="checkbox"> 
+                        <input name="misc" tal:attributes="value z/id" tal:content="z/kw" type="checkbox"> 
 		      </span> 
 		    </td>
                   </tr>

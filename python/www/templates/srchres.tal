@@ -7,6 +7,7 @@
   <title>JMdict</title>
   </head>
 <body>
+  <div class="debug" tal:condition="sql" tal:content="sql"/>
   <div class="results">
     <form method="get" action="entr.py">
       <span class="count">

@@ -354,7 +354,6 @@ def build_search_sql (condlist):
 	  as a conjunction (pos.kw=8), a particle (18), or an irregular
 	  verb (47)."""
 
-	from topsort import topsort 
 	rels = {
 	    "entr":None, "kana":"entr", "kanj":"entr", "sens":"entr", "gloss": "sens", 
 	    "pos":"sens", "misc":"sens", "fld":"sens", "rinf":"kana", "dial":"entr",
@@ -364,28 +363,41 @@ def build_search_sql (condlist):
 	for tbl,cond,arg in condlist:
 	      ##Add tbl, and all of tbl's parents to the table list.
 	    while tbl:
+		tbln = tbl.split()[0]
+		if tbln[0] == '*': tbln = tbln[1:]
 		tables.add (tbl)
-		tbl = rels[tbl]
+		tbl = rels[tbln]
 	    wclauses.append (cond)
 	    args.extend (arg)
-	  ##Do a topological sort to put tables in right order. 
-	tables = topsort ([(p,t) for t,p in rels.items() if t in tables])[1:]
-	frm = mk_from_clause( tables )
-	where = " AND ".join (wclauses)
-	return "SELECT DISTINCT entr.id FROM %s WHERE %s" % (frm, where), tuple(args)
+	frm = mk_from_clause( tables, rels )
+	where = " AND ".join ([w for w in wclauses if w])
+	sql = "SELECT DISTINCT entr.id FROM %s WHERE %s" % (frm, where), tuple(args)
+	print sql
+	return sql
 
-def mk_from_clause (tables): 
-	# Given a list of table in the proper order (parent tables
-	# occur in the list before child tables), create a string
-	# that can be used in a SQL "FROM" clause that joins all
-	# the tables.  We assume that the primary key column of 
-	# each parent table is named "id" and the foreign key column
-	# of each child table has the same name as the parent table.
+def mk_from_clause (tables, rels): 
+	# Given a list of tables, 'tables', and a dict, 'rels', that 
+	# for each possible table in 'tables' give the parent table, 
+	# create a string that can be used in a SQL "FROM" clause that
+	# joins all the tables.  We assume that the primary key column
+	# of each parent table is named "id" and the foreign key column
+	# of each child table has the same name as the parent table. 
+	# The table in 'tables' may be just a table name, or may be a
+	# table name followed by a space and an alias.
 
-	tbls = tables[:];  t0 = tbls.pop(0);  clause = t0 
-	for tx in tbls:
-	    clause = "%s JOIN %s ON %s.%s=%s.%s" \
-		% (clause, tx, tx, t0, t0, "id")
-	    clause = "(" + clause + ")"
-	    t0 = tx
+	otables = ("entr","kana","rinf","rfreq","kanj","kinf","kfreq",
+		    "sens","gloss","pos","misc","fld","dial","lang")
+	clause = ""
+	for tb in otables:
+	    for tx in tables:
+		if tx[0] == "*": 
+		    join = "LEFT JOIN"
+		    tx = tx[1:]
+		else: join = "JOIN"
+		if not tx.startswith (tb): continue
+		if len(tx) == len(tb): alias = ""
+		else: tx,alias = tx.split()
+		if not clause: clause = tx
+		else: clause = "(%s %s %s %s ON %s.%s=%s.%s)" \
+		    % (clause, join, tx, alias, (alias or tx), rels[tx], rels[tx], "id")
 	return clause

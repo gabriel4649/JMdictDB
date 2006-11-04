@@ -75,14 +75,14 @@
 	    <dt>Cross-refs:</dt>
 	      <dd> <span tal:repeat="x s/tal_xrefs">
 		<span tal:condition="repeat/x/index" replace=", "/>
-		<a href="http://iii/cgi/jmdict/htmlentr.py?s=${x}">${x}</a>
+		<a tal:attributes="href string: http://iii/cgi/jmdict/entr.py?s=${x}" tal:content="string: s=${x}"/>
 		</span></dd>
 	        </span>
 	      <span tal:condition="s/tal_ants">
 	    <dt>Antonyms:</dt>
 	      <dd> <span tal:repeat="m s/tal_ants">
 		<span tal:condition="repeat/m/index" replace=", "/>
-		<a href="http://iii/cgi/jmdict/htmlentr.py?s=${x}">${x}</a>
+		<a tal:attributes="href string: http://iii/cgi/jmdict/entr.py?s=${x}" tal:content="string: s=${x}"/>
 		</span></dd>
 	      </span>
 	    </dl>

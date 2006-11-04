@@ -1,3 +1,63 @@
+
+2006-11-03	smcgraw@frii.com
+
+	* Tag T005
+	Cgi search form, result list, and entry pages seem to mostly
+	  work ok.  
+
+2006-11-03	smcgraw@frii.com
+
+	* jbdb.py[1.7]
+	Fixed build_search_sql() which returned bad sql under a 
+	  number of circumstances.
+	Enhance mk_from_clause() to do left rather than inner join
+	  if table name prefixed with asterisk.  Need this because we 
+	  need outer join when looking for "or" of frequency values. 
+	
+	* entr.css
+	Add formatting for srchfrm.html
+
+	* www/srchres.py
+	Accept option string as commnd argument.
+	Fix the frequency-of-use input stuff so that it is functional 
+	  now.
+	Allow display of search sql on results page for debugging.
+	Fix problem where searching for two glosses would never find 
+	  anything because the generated sql asked for rows where the
+	  same gloss was simulataneously equal to g1 and g2.  Now, g1
+	  and g2 need only occur in the same sense.  (We probably
+	  want "in the same entry" iunstead, but that will need to 
+	  wait.)  Same problem also occured (and ws fixed) for kanji 
+	  and reading searches too.
+
+	* www/templates/entr.tal
+	Fix synonym, antonym links.
+
+	* wwww/templates/srchfrm.tal
+`	Change the use of class attributes to allow better formating
+	  in css.
+	Correct misnamed "misc" and "nfcmp" elements.
+	Minor layout changes such as moving search button and adding
+	  horizonal rules between sections.
+
+	* www/templates/srchres.tal
+	Add a debug section for displaying the search sql used.
+
+2006-10-26	smcgraw@frii.com
+
+	* jbdb.py
+	mk_from_clause() was broken, failed to generate valid sql in 
+	  some cases because it assumed the added table always should
+	  be joined to the previously added table but that is often 
+	  wrong; need to join to parent table which may have been 
+	  added much earlier.
+	Enhance mk_from_clause() to allow multiple instances of the 
+	  same table with different aliases.  This fixes problem 
+	  where giving (for example) two "gloss" conditions would
+	  always results in 0 records found because the sql asked
+	  for a record in which gloss.txt was simultaneously equal
+	  to two different values.   
+
 2006-10-26	smcgraw@frii.com
 
 	* README.txt[1.4]

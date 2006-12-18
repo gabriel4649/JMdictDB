@@ -9,8 +9,10 @@ _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
 import sys, os, re
 import db, jbdb, tables
-if sys.version_info[1] < 5: import cElementTree as ElementTree
-else: import xml.etree.cElementTree as ElementTree
+try: import xml.etree.cElementTree as ElementTree
+except ImportError: 
+    try: import cElementTree as ElementTree
+    except ImportError: import ElementTree
 
 global KW, KWx, Xrefs, Seq
 Xrefs = []
@@ -353,7 +355,7 @@ def mk_audit (elem):
 	dt = elem.find('upd_date').text
 	if elem.find('upd_detl').text != "Entry created":
 	    raise RuntimeError ("Unexpected <upd_detl> contents")
-	a = tables.Audit((0,0,KW.AUDIT.a.id,dt,"JMdict loader",None))
+	a = tables.Audit((0,0,None,' ',dt,"JMdict loader",None))
 	return a
 
 def do_xrefs (cursor, xreflist):

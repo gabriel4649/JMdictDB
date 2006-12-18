@@ -1,3 +1,15 @@
+2006-12-18	smcgraw@frii.com
+	* Tag T006
+	Around 2006/11/30 a decision seems to have been taken on 
+	  on the jmdict mailing list to base the jmdict database system
+	  on postgreslql and perl.
+	  I rearranged the cvs directory structure to support this.  (Since
+	  this was done on the CVS repository, it is "retroactive".)
+	  This tag identified the code base (in the new directory structure)
+	  as it existed prior to switch focus to perl.  Because of the directory
+	  changes, many python scripts probably won't run as-is.
+	  Also, some schema changes were made related to the audit table
+	  that haven't been propagated to the python scripts yet.
 
 2006-11-03	smcgraw@frii.com
 

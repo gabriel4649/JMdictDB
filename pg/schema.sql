@@ -2,11 +2,6 @@
 -- Copyright (c) 2006, Stuart McGraw 
 -- JMdict schema for Postgresql
 
-CREATE TABLE kwaudit (
-    id SMALLINT PRIMARY KEY,
-    kw VARCHAR(20) NOT NULL UNIQUE,
-    descr VARCHAR(255));
-
 CREATE TABLE kwdial (
     id SMALLINT PRIMARY KEY,
     kw VARCHAR(20) NOT NULL UNIQUE,
@@ -62,7 +57,9 @@ CREATE TABLE kwxref (
 CREATE TABLE entr (
     id SERIAL NOT NULL PRIMARY KEY,
     src SMALLINT NOT NULL,
-    seq INT NOT NULL, 
+    seq INT NOT NULL,
+    stat CHAR(1) NOT NULL DEFAULT ' ' 
+      CHECK (stat IN (' ','A','M','D','X','O','R')),
     note TEXT,
     FOREIGN KEY (src) REFERENCES kwsrc(id));
   CREATE INDEX entr_seq ON entr(seq);
@@ -120,12 +117,12 @@ CREATE TABLE xref (
 CREATE TABLE audit (
     id SERIAL NOT NULL PRIMARY KEY,
     entr INT NOT NULL,
-    typ SMALLINT NOT NULL,
+    otyp CHAR(1) CHECK (otyp IN (' ','A','M','D','X','O','R')),
+    ntyp CHAR(1) CHECK (ntyp IN (' ','A','M','D','X','O','R')),
     dt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     who VARCHAR(255),
     note TEXT,
     FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE,
-    FOREIGN KEY (typ) REFERENCES kwaudit(id) ON DELETE CASCADE);
   CREATE INDEX audit_dt ON audit(dt);
   CREATE INDEX audit_who ON audit(who);
 

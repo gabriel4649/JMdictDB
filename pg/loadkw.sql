@@ -1,4 +1,3 @@
-\i data/kwaudit.sql
 \i data/kwdial.sql
 \i data/kwfreq.sql
 \i data/kwfld.sql

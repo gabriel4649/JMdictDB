@@ -52,6 +52,4 @@ INSERT INTO kwpos(id,kw,descr) VALUES(50, 'vt',     'transitive verb');
 INSERT INTO kwpos(id,kw,descr) VALUES(51, 'mg',     'masculine gender');
 INSERT INTO kwpos(id,kw,descr) VALUES(52, 'fg',     'feminine gender');
 INSERT INTO kwpos(id,kw,descr) VALUES(53, 'ng',     'neuter gender');
-INSERT INTO kwpos(id,kw,descr) VALUES(99, 'id',     'idiomatic expression');
-INSERT INTO kwpos(id,kw,descr) VALUES(98, 'col',    'colloquialism');
 

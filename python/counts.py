@@ -16,7 +16,10 @@
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
 import sys
-from cElementTree import iterparse
+try: from xml.etree.cElementTree import iterparse
+except ImportError: 
+    try: from cElementTree import iterparse
+    except ImportError: from ElementTree import iterparse
 
 Counts = {}
 Counts['pos'] = {}

@@ -8,10 +8,10 @@
 -- as '-U username' depending on exiting defaults.
 
 \c postgres
-drop database jb;
+drop database jmdict;
 \set ON_ERROR_STOP 1
-create database jb encoding 'utf8';
-\c jb
-\i pg/schema.sql
-\i pg/loadkw.sql
+create database jmdict encoding 'utf8';
+\c jmdict
+\i mktables.sql
+\i loadkw.sql
 

@@ -10,3 +10,4 @@
 \i mkindex.sql
 \i mkfk.sql
 \i mkviews.sql
+\i xresolv.sql

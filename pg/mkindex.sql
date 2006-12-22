@@ -8,8 +8,8 @@
   CREATE INDEX gloss_txt ON gloss(txt);
   CREATE INDEX xref_sens ON xref(sens);
   CREATE INDEX xref_xref ON xref(xref);
-  CREATE INDEX audit_dt ON audit(dt);
-  CREATE INDEX audit_who ON audit(who);
+  CREATE INDEX hist_dt ON hist(dt);
+  CREATE INDEX hist_who ON hist(who);
   CREATE INDEX restr_rdng ON restr(rdng);
   CREATE INDEX restr_kanj ON restr(kanj);
   CREATE INDEX stagr_sens ON stagr(sens);

@@ -95,13 +95,21 @@ CREATE TABLE xref (
     notes TEXT,
     PRIMARY KEY (sens,xref,typ));
 
-CREATE TABLE audit (
+CREATE TABLE hist (
     id SERIAL NOT NULL PRIMARY KEY,
     entr INT NOT NULL,
     ostat CHAR(1) CHECK (ostat IN (' ','A','M','D','X','O','R')),
     dt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     who VARCHAR(250),
     notes TEXT);
+
+CREATE TABLE audio (
+    id SERIAL NOT NULL PRIMARY KEY,
+    rdng INT NOT NULL,
+    fname VARCHAR(255) NOT NULL,
+    start INT NOT NULL,
+    leng INT NOT NULL);
+
 
 CREATE TABLE xresolv (
     sens INT NOT NULL,

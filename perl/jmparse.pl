@@ -81,12 +81,12 @@ sub initialize {
 	  [\$::Frestr, "load16.tmp", "COPY restr(rdng,kanj) FROM stdin;"],
 	  [\$::Fstagr, "load17.tmp", "COPY stagr(sens,rdng) FROM stdin;"],
 	  [\$::Fstagk, "load18.tmp", "COPY stagk(sens,kanj) FROM stdin;"],
-	  [\$::Faudit, "load19.tmp", "COPY audit(id,entr,ostat,dt,who,notes) FROM stdin;"] );
+	  [\$::Fhist, "load19.tmp", "COPY hist(id,entr,ostat,dt,who,notes) FROM stdin;"] );
 
 	$::srcid = 1; $::cntr = 0;
 	  # Following globals are used to maintain the row 'id'
 	  # numbers for tables entr, kanj, rdng, sens, gloss,
-	  # and audit respectively.
+	  # and hist respectively.
 	$::eid = $::jid = $::rid = $::sid = $::gid = $::aid = 1;
 
 	foreach $t (@tmpfiles) {
@@ -131,7 +131,7 @@ sub do_entry { my ($seq, $entry) = @_;
 	if (@x = $entry->get_xpath("sense")) { do_sens (\@x, $kmap, $rmap); }
 	if (@x = $entry->get_xpath("info/dial")) { do_dial (\@x); }
 	if (@x = $entry->get_xpath("info/lang")) { do_lang (\@x); }
-	if (@x = $entry->get_xpath("info/audit")) { do_audit (\@x); }
+	if (@x = $entry->get_xpath("info/audit")) { do_hist (\@x); }
 	$::eid += 1; }
 
 sub do_kanj { my ($keles) = @_;
@@ -287,14 +287,14 @@ sub do_xref { my ($xtyp, $xref) = @_;
 	    # (id,sens,ord,lang,txt,notes)
 	    print $::Fxref "$::sid\t$kw\t$txt\n"; } }
 
-sub do_audit { my ($audit) = @_;
+sub do_hist { my ($hist) = @_;
 	my ($x, $dt, $op);
-	foreach $x (@$audit) {
+	foreach $x (@$hist) {
 	    $dt = ($x->get_xpath ("upd_date"))[0]->text; # Assume just one.
 	    $op = ($x->get_xpath ("upd_detl"))[0]->text; # Assume just one.
 	    if ($op eq "Entry created") {
 		# (id,entr,ostat,dt,who,notes)
-		print Faudit "$a::id\t$::eid\t\\N\t$dt\tload_jmdict.pl\t\\N"; }
+		print Fhist "$a::id\t$::eid\t\\N\t$dt\tload_jmdict.pl\t\\N"; }
 	    else { die ("Unexpected <upd_detl> contents: $op"); }
 	    $::aid += 1; } }
 

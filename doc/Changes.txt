@@ -1,4 +1,40 @@
+2006-12-22	smcgraw@frii.com
+
+	* pg/mkfk.sql pg/mkindex.sql pg/mkperms.sql pg/mktables 
+	* load_jmdict.pl
+	Change name of table "audit" to "hist".  Add new table "audio".
+
+	* perl/README.txt
+	Reorganized load instructions.
+
+	* pg/postload.sql pg/xresolv.sql
+	xresolv.sql will create xref table extries based on contents
+	  of table xresolv loaded with jmdict data.  postload.sql
+	  modified to call xresolv.sql as part of postload processing.
+
 2006-12-18	smcgraw@frii.com
+
+	* Tag T007
+	At this point the perl jmdict loader sucessfully loads 
+	  jmdict into a postgresql database, using the instructions
+	  in perl/README.txt.  The mysql stuff is obsolete and the
+	  python stuff is probably broken.
+
+	* pg/mkfk.sql pg/mkindex.sql pg/mkperms.sql pg/mktables.sql
+	  pg/mkviews.sql pg/postload.sql pg/reload.sql pg/schema.sql
+	Replace schema.sql with a separate scripts for creating tables,
+	  indexes, foreign keys, etc.  This is because new loader method
+	  uses postgresql copy commands in file and does the indexing, 
+	  etc afterwards.
+	Database name changed from jb to jmdict.
+
+	* perl/load_jmdict.pl perl/JMdict.pm perl/README.txt
+	Database loader written in Perl.  Requires module XML::Twig.
+	JMdict.pm module maps JMdict xml file text strings to database
+	keyword id numbers.
+
+2006-12-18	smcgraw@frii.com
+
 	* Tag T006
 	Around 2006/11/30 a decision seems to have been taken on 
 	  on the jmdict mailing list to base the jmdict database system

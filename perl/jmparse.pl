@@ -14,6 +14,13 @@
 @VERSION = (substr('$Revision$',11,-2), \
 	    substr('$Date$',7,-11));
 
+# To do:
+# Add usage/help message.
+# Add command line option to give a directory for the
+#   temporary files.
+# Better performance if we use SAX instead of XML::Twig?
+# Derive encoding used for interactive output from locale.
+
 use XML::Twig;
 use Encode;
 use Getopt::Std ('getopts');
@@ -21,9 +28,14 @@ use strict;
 
 use JMdict ('%JM2ID');
 
-binmode(STDOUT, ":encoding(utf-8)");
-binmode(STDERR, ":encoding(shift_jis)");
-#binmode($DB::OUT, ":encoding(shift_jis)");
+if (lc ($ENV{OS}) =~ m/windows/) {
+    binmode(STDOUT, ":encoding(shift_jis)");
+    binmode(STDERR, ":encoding(shift_jis)");
+    eval { binmode($DB::OUT, ":encoding(shift_jis)"); } }
+else {
+    binmode(STDOUT, ":encoding(utf-8)");
+    binmode(STDERR, ":encoding(utf-8)");
+    eval { binmode($DB::OUT, ":encoding(utf-8)"); } }
 
 
 main: {
@@ -35,7 +47,7 @@ main: {
 	  # s -- seq num of first entry to process.
 	  # k -- (keep) don't delete temp files.
 	$infn = shift (@ARGV) || "JMdict";
-	$outfn = $::Opts{o} || "JMdict.pgd";
+	$outfn = $::Opts{o} || "JMdict.dmp";
 	  # Make STDERR unbuffered so we print "."s, one at 
 	  # a time, as a sort of progress bar.  
 	$tmp = select(STDERR); $| = 1; select($tmp);
@@ -87,7 +99,7 @@ sub initialize {
 	  # Following globals are used to maintain the row 'id'
 	  # numbers for tables entr, kanj, rdng, sens, gloss,
 	  # and hist respectively.
-	$::eid = $::jid = $::rid = $::sid = $::gid = $::aid = 1;
+	$::eid = $::jid = $::rid = $::sid = $::gid = $::hid = 1;
 
 	foreach $t (@tmpfiles) {
 	    open (${$t->[0]}, ">:utf8", $t->[1]) or \
@@ -157,10 +169,10 @@ sub do_kinfs { my ($kinfs) = @_;
 	    print $::Fkinf "$::jid\t$kw\n"; } }
 
 sub do_kfrqs { my ($kfrqs) = @_;
-	my ($i, $kw, $kwstr, $val);
-	foreach $i (@$kfrqs) {
-	    ($kw, $val) = parse_freq ($i->text);
-	    if ($kw) { print $::Fkfrq "$::jid\t$kw\t$val\n"; } } }
+	my ($kw, $f);
+	$f = freqs ($kfrqs);
+	foreach $kw (sort (keys (%$f))) {
+	    if ($kw) { print $::Fkfrq "$::jid\t$kw\t$f->{$kw}\n"; } } }
 
 sub do_rdng { my ($reles, $kmap) = @_;
 	my ($ord, $txt, $r, $z, @x, $rmap, %restr);
@@ -189,10 +201,10 @@ sub do_rinfs { my ($rinfs) = @_;
 	    print $::Frinf "$::rid\t$kw\n"; } }
 
 sub do_rfrqs { my ($rfrqs) = @_;
-	my ($i, $kw, $kwstr, $val);
-	foreach $i (@$rfrqs) {
-	    ($kw, $val) = parse_freq ($i->text);
-	    if ($kw) { print $::Frfrq "$::rid\t$kw\t$val\n"; } } }
+	my ($kw, $f);
+	$f = freqs ($rfrqs);
+	foreach $kw (sort (keys (%$f))) {
+	    if ($kw) { print $::Frfrq "$::rid\t$kw\t$f->{$kw}\n"; } } }
 
 sub do_sens { my ($sens, $kmap, $rmap) = @_;
 	my ($ord, $txt, $s, @x, @p, @pp, $z, %smap, %stagr, %stagk);
@@ -294,14 +306,22 @@ sub do_hist { my ($hist) = @_;
 	    $op = ($x->get_xpath ("upd_detl"))[0]->text; # Assume just one.
 	    if ($op eq "Entry created") {
 		# (id,entr,ostat,dt,who,notes)
-		print Fhist "$a::id\t$::eid\t\\N\t$dt\tload_jmdict.pl\t\\N"; }
+		print $::Fhist "$::hid\t$::eid\t\\N\t$dt\tload_jmdict.pl\t\\N\n"; }
 	    else { die ("Unexpected <upd_detl> contents: $op"); }
-	    $::aid += 1; } }
+	    $::hid += 1; } }
+
+sub freqs { my ($frqs) = @_;
+	my ($i, $kw, $val, %dupnuke);
+	foreach $i (@$frqs) {
+	    ($kw, $val) = parse_freq ($i->text);
+	    if (!defined ($dupnuke{$kw}) or $dupnuke{$kw} < $val) { 
+		$dupnuke{$kw} = $val; } }
+	return \%dupnuke; }
 
 sub parse_freq { my ($fstr) = @_;
 	my ($i, $kw, $val);
 	($fstr =~ m/([a-z]+)(\d+)/io) or die ("Bad x_pri string: $fstr\n");
 	return () if $1 eq "news";
 	($kw = $::JM2ID{FREQ}{$1}) or die ("Unrecognized x_pri string: /$fstr/\n");
-	$val = $2;
+	$val = int ($2);
 	return ($kw, $val); }

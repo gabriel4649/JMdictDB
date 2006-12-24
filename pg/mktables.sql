@@ -107,7 +107,7 @@ CREATE TABLE audio (
     id SERIAL NOT NULL PRIMARY KEY,
     rdng INT NOT NULL,
     fname VARCHAR(255) NOT NULL,
-    start INT NOT NULL,
+    strt INT NOT NULL,
     leng INT NOT NULL);
 
 

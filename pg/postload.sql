@@ -11,3 +11,4 @@
 \i mkfk.sql
 \i mkviews.sql
 \i xresolv.sql
+vacuum analyze

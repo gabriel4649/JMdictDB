@@ -184,8 +184,11 @@ sub do_rdng { my ($reles, $kmap) = @_;
 	    if (@x = $r->get_xpath ("re_inf")) { do_rinfs (\@x); }
 	    if (@x = $r->get_xpath ("re_pri")) { do_rfrqs (\@x); }
 	    for $z ($r->get_xpath ("re_restr")) { 
-		$restr{"$::rid," . $kmap->{$z->text}} = 1; }
-	    if ($r->get_xpath ("nokanji")) { $restr{$::rid} = 1; }
+		if (! defined ($restr{$::rid})) { $restr{$::rid} = {}; }
+		$restr{$::rid}->{$kmap->{$z->text}} = 1; }
+	    if ($r->get_xpath ("re_nokanji")) { 
+		if (! defined ($restr{$::rid})) { $restr{$::rid} = {}; }
+		$restr{$::rid} = 1; }
 	    $rmap->{$txt} = $::rid;
 	    $ord += 10; 
 	    $::rid += 1; }
@@ -223,9 +226,11 @@ sub do_sens { my ($sens, $kmap, $rmap) = @_;
 	    if (@x = $s->get_xpath ("xref"))  { do_xref ("see", \@x); }
 	    if (@x = $s->get_xpath ("ant"))   { do_xref ("ant", \@x); }
 	    for $z ($s->get_xpath ("stagr")) { 
-		$stagr{"$::sid," . $rmap->{$z->text}} = 1; }
+		if (! defined ($stagr{$::sid})) { $stagr{$::sid} = {}; }
+		$stagr{$::sid}->{$rmap->{$z->text}} = 1; }
 	    for $z ($s->get_xpath ("stagk")) { 
-		$stagk{"$::sid," . $kmap->{$z->text}} = 1; }
+		if (! defined ($stagk{$::sid})) { $stagk{$::sid} = {}; }
+		$stagk{$::sid}->{$kmap->{$z->text}} = 1; }
 	    $smap{$s::id} = $::sid;
 	    $ord += 10; 
 	    $::sid += 1; }
@@ -285,10 +290,11 @@ sub do_lang { my ($lang) = @_;
 	    print $::Flang "$::eid\t$kw\n"; } }
 
 sub do_restr { my ($file, $restr, $amap, $bmap) = @_;
-	my ($a, $b);
+	my ($a, $b, $r);
 	foreach $a (sort (values (%$amap))) {
 	    foreach $b (sort (values (%$bmap))) {
-		if (! $restr->{"$a,$b"} or $restr->{$a}) { 
+		next if (!($r = $restr->{$a}));
+		if ($r == 1 or !$r->{$b}) { 
 		    print $file "$a\t$b\n"; } } } }
 
 sub do_xref { my ($xtyp, $xref) = @_;

@@ -1,3 +1,10 @@
+2006-12-25	smcgraw@frii.com
+
+	* perl/load_jmdict.pl[1.5]
+	Fix: gloss language attribute was not read correctly and all 
+	  glosses were defaulted to "en".
+	
+
 2006-12-23	smcgraw@frii.com
 
 	* perl/load_jmdict.pl[1.4]

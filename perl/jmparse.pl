@@ -20,6 +20,10 @@
 #   temporary files.
 # Better performance if we use SAX instead of XML::Twig?
 # Derive encoding used for interactive output from locale.
+# shift_jis output encoding on windows doesn't really
+#   work -- get unmappable utf8 characters in gloss which
+#   cause fatal error.  Should non-fatally map to a printable
+#   hex format or "?" or something.
 
 use XML::Twig;
 use Encode;
@@ -31,7 +35,7 @@ use JMdict ('%JM2ID');
 if (lc ($ENV{OS}) =~ m/windows/) {
     binmode(STDOUT, ":encoding(shift_jis)");
     binmode(STDERR, ":encoding(shift_jis)");
-    eval { binmode($DB::OUT, ":encoding(shift_jis)"); } }
+    eval { binmode($DB::OUT, ":encoding(utf-8)"); } }
 else {
     binmode(STDOUT, ":encoding(utf-8)");
     binmode(STDERR, ":encoding(utf-8)");
@@ -241,7 +245,7 @@ sub do_glos { my ($gloss) = @_;
 	my ($g, $ord, $lang, $txt);
 	$ord = 10;
 	foreach $g (@$gloss) {
-	    $lang = undef; $lang = $g->att("lang");
+	    $lang = undef; $lang = $g->att("g_lang");
 	    $lang = $lang ? $::JM2ID{LANG}{$lang} : $::JM2ID{LANG}{"en"}; 
 	    ($txt = $g->text) =~ s/\\/\\\\/go;
 	    # (id,sens,ord,lang,txt,notes)

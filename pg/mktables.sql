@@ -59,7 +59,7 @@ CREATE TABLE entr (
     src SMALLINT NOT NULL,
     seq INT NOT NULL,
     stat CHAR(1) NOT NULL DEFAULT ' ' 
-      CHECK (stat IN (' ','A','M','D','X','O','R')),
+      CHECK (stat IN ('A','M','D','X','O','R')),
     notes TEXT);
 
 CREATE TABLE rdng (
@@ -98,7 +98,7 @@ CREATE TABLE xref (
 CREATE TABLE hist (
     id SERIAL NOT NULL PRIMARY KEY,
     entr INT NOT NULL,
-    ostat CHAR(1) CHECK (ostat IN (' ','A','M','D','X','O','R')),
+    stat CHAR(1) CHECK (stat IN ('A','M','D','X','O','R')),
     dt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     who VARCHAR(250),
     notes TEXT);

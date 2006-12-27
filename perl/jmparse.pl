@@ -1,14 +1,14 @@
+# This program will read a JMdict.xml file and create
+# an output file containing postgresql data load commands
+# that will, when executes, load the JMdict data into an
+# appropriately configured Postgresql database.
+#
 # Special handling: 
 # - generate "ord" values.
 # - propagate PoS through senses.
 # - do xrefs/ants in 2nd pass
 # - ke_pri, re_pri: ignore (redundant) newsX values.
 # - record only 1 nfXX when multiple values present. (niy)
-
-# This program will read a JMdict.xml file and create
-# an output file containing postgresql data load commands
-# that will, when executes, load the JMdict data into an
-# appropriately configured Postgresql database.
 
 # Copyright (c) 2006, Stuart McGraw 
 @VERSION = (substr('$Revision$',11,-2), \
@@ -30,7 +30,7 @@ use Encode;
 use Getopt::Std ('getopts');
 use strict;
 
-use JMdict ('%JM2ID');
+use jmdictxml ('%JM2ID');
 
 if (lc ($ENV{OS}) =~ m/windows/) {
     binmode(STDOUT, ":encoding(shift_jis)");
@@ -45,13 +45,11 @@ else {
 main: {
 	my ($twig, $infn, $outfn, $tmpfiles, $tmp);
 
-	getopts ("o:c:s:k", \%::Opts);
-	  # o -- Output filename.
-	  # c -- Number of entries to process.
-	  # s -- seq num of first entry to process.
-	  # k -- (keep) don't delete temp files.
+	getopts ("o:c:s:kh", \%::Opts);
+	if ($::Opts{h}) { usage (0); }
 	$infn = shift (@ARGV) || "JMdict";
 	$outfn = $::Opts{o} || "JMdict.dmp";
+
 	  # Make STDERR unbuffered so we print "."s, one at 
 	  # a time, as a sort of progress bar.  
 	$tmp = select(STDERR); $| = 1; select($tmp);
@@ -335,3 +333,22 @@ sub parse_freq { my ($fstr) = @_;
 	($kw = $::JM2ID{FREQ}{$1}) or die ("Unrecognized x_pri string: /$fstr/\n");
 	$val = int ($2);
 	return ($kw, $val); }
+
+sub usage { my ($exitstat) = @_;
+	print <<EOT;
+
+Usage: load_jmdict.pl [-o output-filename] [-c entry-count] \\
+		      [-s start-seq-num] [-k]  [xml-filename]
+
+Arguments:
+	xml-filename -- Name of input jmdict xml file.  Default 
+	  is "JMdict".
+Options:
+	-o output-filename -- Name of output postgresql dump file. 
+	    Default is "JMdict.dmp"
+	-c entry-count -- Number of entries to process.
+	-s start-seq-num -- Sequence number of first entry to process.
+	-k -- (keep) do not delete temporary files.
+	-h -- (help) print this text and exit.
+EOT
+	exit $exitstat; }

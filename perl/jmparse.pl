@@ -97,7 +97,7 @@ sub initialize {
 	  [\$::Frestr, "load16.tmp", "COPY restr(rdng,kanj) FROM stdin;"],
 	  [\$::Fstagr, "load17.tmp", "COPY stagr(sens,rdng) FROM stdin;"],
 	  [\$::Fstagk, "load18.tmp", "COPY stagk(sens,kanj) FROM stdin;"],
-	  [\$::Fhist, "load19.tmp", "COPY hist(id,entr,ostat,dt,who,notes) FROM stdin;"] );
+	  [\$::Fhist, "load19.tmp", "COPY hist(id,entr,stat,dt,who,notes) FROM stdin;"] );
 
 	$::srcid = 1; $::cntr = 0;
 	  # Following globals are used to maintain the row 'id'
@@ -315,8 +315,8 @@ sub do_hist { my ($hist) = @_;
 	    $dt = ($x->get_xpath ("upd_date"))[0]->text; # Assume just one.
 	    $op = ($x->get_xpath ("upd_detl"))[0]->text; # Assume just one.
 	    if ($op eq "Entry created") {
-		# (id,entr,ostat,dt,who,notes)
-		print $::Fhist "$::hid\t$::eid\t\\N\t$dt\tload_jmdict.pl\t\\N\n"; }
+		# (id,entr,stat,dt,who,notes)
+		print $::Fhist "$::hid\t$::eid\t\A\t$dt\tload_jmdict.pl\t\\N\n"; }
 	    else { die ("Unexpected <upd_detl> contents: $op"); }
 	    $::hid += 1; } }
 

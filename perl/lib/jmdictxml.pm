@@ -1,5 +1,5 @@
 
-package JMdict;
+package jmdictxml;
 use Exporter ();  @ISA = 'Exporter';
 @EXPORT_OK = ('%JM2ID','@VERSION'); 
 

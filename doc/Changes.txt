@@ -1,6 +1,23 @@
 
 2006-12-26	smcgraw@frii.com
 
+	* perl/jmdictxml.pm[1.2]
+	Renamed JMdict.pm to jmdictxml.pm.  This was done in
+	  CVS repository so is "retroactive".
+
+	* perl/load_jmdict.pl[1.7]
+	Use renamed jmdictxml.pm.
+	Add help option and usage() sub.
+
+	* perl/jmdict.pm[1.1]
+	New.  Contains common database access subs.
+
+	* perl/showentry.pl[1.1]
+	New.  Console app to display all info for specified jmdict
+	  entries.
+
+2006-12-26	smcgraw@frii.com
+
 	* perl/load_jmdict.pl[1.6]
 	When hist records are created by load_jmdixt.pl, create them with
 	  stat='A' instead of null. 
@@ -10,12 +27,12 @@
 	  and add NOT NULL constraint, don't allow 'stat' to be a space 
 	  character. 
 
-	* pg/mkviews.sql [1.2]
+	* pg/mkviews.sql[1.2]
 	Changed old convention of using 'k','j' aliases for tables 'rdng'
 	  and 'kanj' to new convention 'r','k'.
 	Add view 'sref'.
 
-	* pg/postload.sql [1.4]
+	* pg/postload.sql[1.4]
 	Set permissions as last step rather than earlier so that all database 
 	  object will have been created.
 

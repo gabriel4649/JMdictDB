@@ -14,10 +14,10 @@ CREATE AGGREGATE accum (
 ------------------------------------------------------------
 CREATE VIEW entr_summary AS (
     SELECT e.id,e.seq,
-	(SELECT ARRAY_TO_STRING(ACCUM(sk.txt), '; ') 
-	 FROM (SELECT k.txt FROM rdng k WHERE k.entr=e.id ORDER BY k.ord) AS sk) AS rdng,
-	(SELECT ARRAY_TO_STRING(ACCUM(sj.txt), '; ')
-	 FROM (SELECT j.txt FROM kanj j WHERE j.entr=e.id ORDER BY j.ord) AS sj) AS kanj,
+	(SELECT ARRAY_TO_STRING(ACCUM(sr.txt), '; ') 
+	 FROM (SELECT r.txt FROM rdng r WHERE r.entr=e.id ORDER BY r.ord) AS sr) AS rdng,
+	(SELECT ARRAY_TO_STRING(ACCUM(sk.txt), '; ')
+	 FROM (SELECT k.txt FROM kanj k WHERE k.entr=e.id ORDER BY k.ord) AS sk) AS kanj,
 	(SELECT ARRAY_TO_STRING(ACCUM( ss.gtxt ), ' / ') 
 	 FROM 
 	    (SELECT 
@@ -35,8 +35,8 @@ CREATE VIEW entr_summary AS (
 CREATE VIEW item_cnts AS (
     SELECT 
 	e.id,e.seq,
-	(SELECT COUNT(*) FROM rdng k WHERE k.entr=e.id) as nrdng,
-	(SELECT COUNT(*) FROM kanj j WHERE j.entr=e.id) as nkanj,
+	(SELECT COUNT(*) FROM rdng r WHERE r.entr=e.id) as nrdng,
+	(SELECT COUNT(*) FROM kanj k WHERE k.entr=e.id) as nkanj,
 	(SELECT COUNT(*) FROM sens s WHERE s.entr=e.id) as nsens
     FROM entr e);
 
@@ -47,25 +47,25 @@ CREATE VIEW item_cnts AS (
 ------------------------------------------------------------
 CREATE VIEW rk_validity AS (
     SELECT e.id AS id,e.seq AS seq,
-	k.id AS kid,k.txt AS ktxt,j.id AS jid,j.txt AS jtxt,
-	CASE WHEN r.kanj IS NOT NULL THEN 'X' END AS valid
+	r.id AS rid,r.txt AS rtxt,k.id AS kid,k.txt AS ktxt,
+	CASE WHEN z.kanj IS NOT NULL THEN 'X' END AS valid
     FROM ((entr e
-    LEFT JOIN rdng k ON k.entr=e.id)
-    LEFT JOIN kanj j ON j.entr=e.id)
-    LEFT JOIN restr r ON k.id=r.rdng AND j.id=r.kanj);
+    LEFT JOIN rdng r ON r.entr=e.id)
+    LEFT JOIN kanj k ON k.entr=e.id)
+    LEFT JOIN restr z ON r.id=z.rdng AND k.id=z.kanj);
 
 ------------------------------------------------------------
 -- List all readings that should be marked "re_nokanji" 
 -- in jmdict.xml.
 ------------------------------------------------------------
 CREATE VIEW re_nokanji AS (
-    SELECT e.id AS id,e.seq AS seq,k.id AS rid,k.txt AS rtxt
-    FROM rdng k 
-    JOIN entr e ON e.id=k.entr
+    SELECT e.id AS id,e.seq AS seq,r.id AS rid,r.txt AS rtxt
+    FROM rdng r 
+    JOIN entr e ON e.id=r.entr
     WHERE 
-	k.id IN (SELECT rk.rdng FROM restr rk)
-	AND (SELECT COUNT(*) FROM restr x WHERE x.rdng=k.id)
-	  = (SELECT COUNT(*) FROM kanj j WHERE j.entr=e.id));
+	r.id IN (SELECT z.rdng FROM restr z)
+	AND (SELECT COUNT(*) FROM restr x WHERE x.rdng=r.id)
+	  = (SELECT COUNT(*) FROM kanj k WHERE k.entr=e.id));
 
 -------------------------------------------------------------
 -- For every reading in every entry, provide only the valid 
@@ -74,15 +74,31 @@ CREATE VIEW re_nokanji AS (
 -------------------------------------------------------------
 CREATE VIEW rk_valid AS (
   SELECT e.id, e.seq, r.id AS rid, r.txt AS rtxt, 
-	sub.jid AS jid, sub.jtxt AS jtxt
+	sub.kid AS kid, sub.ktxt AS ktxt
     FROM entr e
       JOIN rdng r ON r.entr=e.id
       LEFT JOIN (
-        SELECT e.id AS eid, r.id AS rid, j.id AS jid, j.txt AS jtxt
+        SELECT e.id AS eid, r.id AS rid, k.id AS kid, k.txt AS ktxt
           FROM entr e
           JOIN rdng r ON r.entr=e.id
-            LEFT JOIN kanj j ON j.entr=r.entr
-            LEFT JOIN restr z ON z.rdng=r.id AND z.kanj=j.id
+            LEFT JOIN kanj k ON k.entr=r.entr
+            LEFT JOIN restr z ON z.rdng=r.id AND z.kanj=k.id
           WHERE z.rdng IS NULL
-        ) AS sub ON sub.rid=r.id AND sub.eid=e.id
-  );
+        ) AS sub ON sub.rid=r.id AND sub.eid=e.id);
+
+-------------------------------------------------------------
+-- For each sense, provide it's entry id and seq, and a brief
+-- text summary which is the kanji aggregate if there are any
+-- kanji entries, of the readings aggregte otherwise.
+-- This view is primarily used to provide an xref summary.
+-------------------------------------------------------------
+CREATE VIEW sref AS (
+  SELECT s.id AS sid,e.id AS id,e.seq, 
+      COALESCE (NULLIF (	
+        (SELECT ARRAY_TO_STRING(ACCUM(sk.txt), '; ')
+         FROM (SELECT k.txt FROM kanj k WHERE k.entr=e.id ORDER BY k.ord) AS sk), ''),
+ 	(SELECT ARRAY_TO_STRING(ACCUM(sr.txt), '; ') 
+	 FROM (SELECT r.txt FROM rdng r WHERE r.entr=e.id ORDER BY r.ord) AS sr)) AS txt
+  FROM sens s  
+    JOIN entr e ON e.id=s.entr);
+

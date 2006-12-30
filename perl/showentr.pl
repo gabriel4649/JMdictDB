@@ -38,10 +38,11 @@ use jmdict;
 	    elsif (m/^e/i) { push (@elist, int (substr ($_, 1))); }
 	    elsif (m/^s/i) { push (@slist, int (substr ($_, 1))); }
 	    else { print STDERR "Invalid argument skipped: $_" } }
-	if (@qlist) { push (@whr, "e.seq IN (" . '?' x length(@qlist) . ")"); }
-	if (@elist) { push (@whr, "e.id IN (" . '?' x length(@elist) . ")"); }
-	if (@slist) { push (@whr, "s.id IN (" . '?' x length(@slist) . ")"); }
+	if (@qlist) { push (@whr, "e.seq IN (" . join(",",map('?',@qlist)) . ")"); }
+	if (@elist) { push (@whr, "e.id  IN (" . join(",",map('?',@elist)) . ")"); }
+	if (@slist) { push (@whr, "s.id  IN (" . join(",",map('?',@slist)) . ")"); }
 	if (@slist) { $sens = "JOIN sens s ON s.entr=e.id"; }
+	else { $sens = ""; }
 	$sql = "SELECT e.id FROM entr e $sens WHERE " . join (" OR ", @whr);
 	$tmptbl = Find ($dbh, $sql, [@qlist, @elist, @slist]);
 
@@ -52,8 +53,10 @@ use jmdict;
     sub p_entry { my ($e) = @_;
 	my (@x, $x, $s, $n);
 	print "\nEntry $e->{seq} \{$e->{id}\}";
-	print ", dialect: $e->{_dial}" if ($e->{_dial});
-	print ", origin lang: $e->{_lang}" if ($e->{_lang}) ;
+	print (", Dialect: "     . join(",", 
+		map ($::KW->{iDIAL}{$_->{kw}}{kw}, @{$e->{_dial}}))) if ($e->{_dial});
+	print (", Origin lang: " . join(",", 
+		map ($::KW->{iLANG}{$_->{kw}}{kw}, @{$e->{_lang}}))) if ($e->{_lang}) ;
 	print "\n";
 	print "  Notes: $e->{_notes}\n" if ($e->{_notes}) ;
 	@x = map (f_kanj($_), @{$e->{_kanj}});

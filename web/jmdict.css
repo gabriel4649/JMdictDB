@@ -1,0 +1,27 @@
+
+/* Entry display */
+.entry		{font-family: arial; font-size: 100%; background: #E8FFF0; 
+		 border-style: solid; border-width: thin; 
+		 margin: 5px; padding: 10px}
+.pkid		{font-size: 55%}
+.kattrs, .rattrs {font-size: 80%; font-style: italic; color: #008000}
+.pos, .misc	{font-style: italic; color: #008000}
+.dial, .lang	{font-size: 80%}
+
+/* Search results list */
+.results	{background: #E8FFF0; 
+		 border-style: solid; border-width: thin; 
+		 margin: 5px; padding: 10px;
+		 font: 100% arial}	
+.count     	{font-size: 80%; font-style: bold; color: #C00040}
+.reslist   	{border-width: thin;}
+.resrow    	{vertical-align: top;}
+.heading   	{border-width: thin;}
+
+/* Search form */
+.form	    	{background: #E8FFF0; 
+		  border-style: solid; border-width: thin; 
+		  margin: 5px; padding: 10px;
+		  font: 100% arial}
+.descriptor	{font-style: italic; color: #008000;} 
+.optgroup	{font: 75% arial}

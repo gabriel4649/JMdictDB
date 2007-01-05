@@ -10,5 +10,6 @@
 \i mkfk.sql
 \i mkviews.sql
 \i xresolv.sql
+\i syncseq.sql
 \i mkperms.sql
 vacuum analyze

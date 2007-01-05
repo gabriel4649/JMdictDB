@@ -23,6 +23,13 @@ $Petal::Hash::MODIFIERS->{'kwabbrs:'} = sub { my ($hash, $args) = @_;
 	$delim =~ s/[\\]([^\\])/$1/go;
 	return join ($delim, @a); };
 
+$Petal::Hash::MODIFIERS->{'kwfull:'} = sub { my ($hash, $args) = @_;
+	my ($typ, $expr, $x, $a);
+	($typ, $expr) = split (/ /, $args);
+	$x = $hash->fetch ($expr);
+	$a = $::KW->{$typ}{$x}{descr};
+	return $a; };
+
 $Petal::Hash::MODIFIERS->{'kwfulls:'} = sub { my ($hash, $args) = @_;
 	my ($typ, $delim, $expr, $x, @a);
 	($typ, $delim, $expr) = split (/\s+'(.*?)'\s+/, $args);

@@ -51,8 +51,9 @@ use jmdict;
 	$dbh->disconnect(); }
 	
     sub p_entry { my ($e) = @_;
-	my (@x, $x, $s, $n);
-	print "\nEntry $e->{seq} \{$e->{id}\}";
+	my (@x, $x, $s, $n, $stat);
+	$stat = $::KW->{STAT}{$e->{stat}}{kw};
+	print "\nEntry $e->{seq} [$stat] \{$e->{id}\}";
 	print ", Dialect: "     . join(",", 
 		map ($::KW->{DIAL}{$_->{kw}}{kw}, @{$e->{_dial}})) if ($e->{_dial});
 	print ", Origin lang: " . join(",", 

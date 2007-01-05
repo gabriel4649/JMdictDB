@@ -10,6 +10,9 @@
   <span tal:repeat="e entries">
     <div class="entry">
       Seq: <span tal:replace="e/seq">seqnum</span>
+      <span class="status" tal:if="not:eq: string:2 e/stat">
+        [<span tal:replace="kwfull: STAT e/stat">[status]</span>]
+	</span>
       <span class="pkid">{id:<span tal:replace="e/id"/>}</span>
       <span class="dial" tal:condition="e/_dial">, 
         Dialect: <span tal:replace="kwabbrs: DIAL ',' e/_dial">dial</span>
@@ -114,8 +117,8 @@
       <span tal:if="e/_hist" tal:omit-tag="">History:
 	<ol>
 	  <li tal:repeat="h e/_hist">
-	    <span class="hhdr" tal:content="string:${h/stat} ${h/dt} ${h/who}">hist-header</span>
-	    <pre class="hnotes" tal:if="h/notes" tal:content="h/notes">hist-notes</pre>
+	      <span class="hhdr" tal:replace="string: ${kwabbr:STAT h/stat} ${h/dt} ${h/who}">hist-header</span>
+	      <pre class="hnotes" tal:if="h/notes" tal:content="h/notes">hist-notes</pre>
 	    </li>
 	  </ol>
 	</span>

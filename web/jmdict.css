@@ -7,6 +7,7 @@
 .kattrs, .rattrs {font-size: 80%; font-style: italic; color: #008000}
 .pos, .misc	{font-style: italic; color: #008000}
 .dial, .lang	{font-size: 80%}
+.status		{font-size: 80%; color: #FF0000}
 
 /* Search results list */
 .results	{background: #E8FFF0; 

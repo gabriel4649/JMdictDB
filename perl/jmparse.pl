@@ -30,6 +30,7 @@ use Encode;
 use Getopt::Std ('getopts');
 use strict;
 
+BEGIN {push (@INC, "./lib");}
 use jmdictxml ('%JM2ID');
 
 if (lc ($ENV{OS}) =~ m/windows/) {

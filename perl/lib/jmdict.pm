@@ -35,6 +35,8 @@ use strict; use warnings;
 	$kw{RINF} = $dbh->selectall_hashref("SELECT * FROM kwrinf", "id");
 	$kw{SRC}  = $dbh->selectall_hashref("SELECT * FROM kwsrc",  "kw");
 	$kw{SRC}  = $dbh->selectall_hashref("SELECT * FROM kwsrc",  "id");
+	$kw{STAT} = $dbh->selectall_hashref("SELECT * FROM kwstat", "kw");
+	$kw{STAT} = $dbh->selectall_hashref("SELECT * FROM kwstat", "id");
 	$kw{XREF} = $dbh->selectall_hashref("SELECT * FROM kwxref", "kw");
 	$kw{XREF} = $dbh->selectall_hashref("SELECT * FROM kwxref", "id");
 	return \%kw; }

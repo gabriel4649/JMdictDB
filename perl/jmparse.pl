@@ -140,7 +140,7 @@ sub entry_ele { my( $t, $entry ) = @_;
 sub do_entry { my ($seq, $entry) = @_;
 	my (@x, $kmap, $rmap);
 	# (id,src,seq,stat,note)
-	print $::Fentr "$::eid\t$::srcid\t$seq\tA\t\\N\n";
+	print $::Fentr "$::eid\t$::srcid\t$seq\t2\t\\N\n";
 	if (@x = $entry->get_xpath("k_ele")) { $kmap = do_kanj (\@x); }
 	if (@x = $entry->get_xpath("r_ele")) { $rmap = do_rdng (\@x, $kmap); }
 	if (@x = $entry->get_xpath("sense")) { do_sens (\@x, $kmap, $rmap); }
@@ -315,7 +315,7 @@ sub do_hist { my ($hist) = @_;
 	    $op = ($x->get_xpath ("upd_detl"))[0]->text; # Assume just one.
 	    if ($op eq "Entry created") {
 		# (id,entr,stat,dt,who,notes)
-		print $::Fhist "$::hid\t$::eid\t\A\t$dt\tload_jmdict.pl\t\\N\n"; }
+		print $::Fhist "$::hid\t$::eid\t\2\t$dt\tfrom JMdict.xml\t\\N\n"; }
 	    else { die ("Unexpected <upd_detl> contents: $op"); }
 	    $::hid += 1; } }
 

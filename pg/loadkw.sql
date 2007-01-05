@@ -7,4 +7,5 @@
 \i data/kwpos.sql
 \i data/kwrinf.sql
 \i data/kwsrc.sql
+\i data/kwstat.sql
 \i data/kwxref.sql

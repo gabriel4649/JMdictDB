@@ -47,6 +47,11 @@ CREATE TABLE kwsrc (
     kw VARCHAR(20) NOT NULL UNIQUE,
     descr VARCHAR(255));
 
+CREATE TABLE kwstat (
+    id SMALLINT PRIMARY KEY,
+    kw VARCHAR(20) NOT NULL UNIQUE,
+    descr VARCHAR(255));
+
 CREATE TABLE kwxref (
     id SMALLINT PRIMARY KEY,
     kw VARCHAR(20) NOT NULL UNIQUE,
@@ -58,8 +63,7 @@ CREATE TABLE entr (
     id SERIAL NOT NULL PRIMARY KEY,
     src SMALLINT NOT NULL,
     seq INT NOT NULL,
-    stat CHAR(1) NOT NULL DEFAULT ' ' 
-      CHECK (stat IN ('A','M','D','X','O','R')),
+    stat SMALLINT NOT NULL DEFAULT 2,
     notes TEXT);
 
 CREATE TABLE rdng (
@@ -98,7 +102,7 @@ CREATE TABLE xref (
 CREATE TABLE hist (
     id SERIAL NOT NULL PRIMARY KEY,
     entr INT NOT NULL,
-    stat CHAR(1) CHECK (stat IN ('A','M','D','X','O','R')),
+    stat SMALLINT NOT NULL,
     dt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     who VARCHAR(250),
     notes TEXT);

@@ -1,3 +1,44 @@
+
+2007-01-04	smcgraw@frii.com
+
+	* perl/lib/jmdict.pm
+	Moved jmdict.pm from directory perl/ to perl/lib/ (in CVS 
+	  repository).
+	Change some hash key names in the structure returned by 
+	  EntrList to be more consistent with table/column names.
+	In KW structure, use same 1st level key (e.g. 'POS') to 
+	  hold both 'kw' hash and 'id' hash.  Formerly the latter
+	  used a key prefixed with "i" (e.g. 'iPOS'). 
+	Move sub filt() from showentr.pl to here.
+	Add sub's irestr(), istagr(), istagk() which will convert
+	  the restriction lists from the database form to jmdict form. 
+
+	* perl/load_jmdict.pl perl/lib/jmdictxml.pm
+	Moved jmdictxml.pm from directory perl/ to perl/lib/ (in CVS 
+	  repository).
+
+	* perl/showentr.pl
+	Moved jmdict.pm from directory perl/ to perl/lib/ (in CVS 
+	  repository).
+	Track the entry hash key name changes and KW key changes made
+	  in perl/lib/jmdict.pl.
+	Fix: displayed kanji freq data was actually erroneously using
+	  reading frequency data.
+	Fix: Stagr/stagk restrictions weren't displaying.
+	Fix: History notes weren't displaying.
+	Eliminate some warnings reported by "use warnings".
+	Move sub filt() to jmdict.pm.
+	Add code to show reverse cross refs.
+
+	* perl/cgi/entr.pl perl/cgi/entr.css perl/lib/jmdicttal.pm  
+	* perl/lib/tal/entr.tal
+	Add demo/devtool cgi script entr.pl and supporting files
+	  jmdicttal.pm, entr.tal, entr.css
+
+	* pg/postload.sql pg/syncseq.sql
+	Set the currval of all sequences after loading database.  
+	  Otherwise inserts that use a defaulted id will fail.
+
 2006-12-30	smcgraw@frii.com
 
 	* perl/showentry.pl[1.2]
@@ -24,8 +65,8 @@
 2006-12-26	smcgraw@frii.com
 
 	* perl/load_jmdict.pl[1.6]
-	When hist records are created by load_jmdixt.pl, create them with
-	  stat='A' instead of null. 
+	When hist records are created by load_jmdixt.pl, create them 
+	  with stat='A' instead of null. 
 
 	* pg/mktables.sql[1.4]
 	In table hist, change name of (what was) column 'ostat' to 'stat'
@@ -33,13 +74,13 @@
 	  character. 
 
 	* pg/mkviews.sql[1.2]
-	Changed old convention of using 'k','j' aliases for tables 'rdng'
-	  and 'kanj' to new convention 'r','k'.
+	Changed old convention of using 'k','j' aliases for tables
+	  'rdng' and 'kanj' to new convention 'r','k'.
 	Add view 'sref'.
 
 	* pg/postload.sql[1.4]
-	Set permissions as last step rather than earlier so that all database 
-	  object will have been created.
+	Set permissions as last step rather than earlier so that all
+	  database object will have been created.
 
 2006-12-25	smcgraw@frii.com
 
@@ -121,8 +162,8 @@
 	  I rearranged the cvs directory structure to support this.  (Since
 	  this was done on the CVS repository, it is "retroactive".)
 	  This tag identified the code base (in the new directory structure)
-	  as it existed prior to switch focus to perl.  Because of the directory
-	  changes, many python scripts probably won't run as-is.
+	  as it existed prior to switch focus to perl.  Because of the
+	  directory changes, many python scripts probably won't run as-is.
 	  Also, some schema changes were made related to the audit table
 	  that haven't been propagated to the python scripts yet.
 

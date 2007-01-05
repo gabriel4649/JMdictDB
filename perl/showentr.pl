@@ -1,18 +1,18 @@
 ﻿# This file contains non-ascii utf-8 characters.
 
-# Copyright (c) 2006, Stuart McGraw 
+# Copyright (c) 2006,2007 Stuart McGraw 
 @VERSION = (substr('$Revision$',11,-2), \
 	    substr('$Date$',7,-11));
 
 # to do:
-# Add xref, ant
 # temp table very slow, use only for sense?
 # fix encoding issues on windows.
 
-use strict;
-use Encode;  use utf8;
+use strict;  use warnings;
+use Encode;  use utf8;  use DBI;
 use Getopt::Std ('getopts');
-use DBI;
+
+BEGIN {push (@INC, "./lib");}
 use jmdict;
 
     binmode(STDOUT, ":utf8");
@@ -24,7 +24,7 @@ use jmdict;
 	getopts ("hd:u:p:", \%::Opts);
 	if ($::Opts{h}) { usage (0); }
 	$user = $::Opts{u} || "postgres";
-	$pw = $::Opts{p};
+	$pw = $::Opts{p} || "";
 	$dbname = $::Opts{db} || "jmdict";
 
 	$dbh = DBI->connect("dbi:Pg:dbname=$dbname", "$user", "$pw", 
@@ -53,10 +53,10 @@ use jmdict;
     sub p_entry { my ($e) = @_;
 	my (@x, $x, $s, $n);
 	print "\nEntry $e->{seq} \{$e->{id}\}";
-	print (", Dialect: "     . join(",", 
-		map ($::KW->{iDIAL}{$_->{kw}}{kw}, @{$e->{_dial}}))) if ($e->{_dial});
-	print (", Origin lang: " . join(",", 
-		map ($::KW->{iLANG}{$_->{kw}}{kw}, @{$e->{_lang}}))) if ($e->{_lang}) ;
+	print ", Dialect: "     . join(",", 
+		map ($::KW->{DIAL}{$_->{kw}}{kw}, @{$e->{_dial}})) if ($e->{_dial});
+	print ", Origin lang: " . join(",", 
+		map ($::KW->{LANG}{$_->{kw}}{kw}, @{$e->{_lang}})) if ($e->{_lang}) ;
 	print "\n";
 	print "  Notes: $e->{_notes}\n" if ($e->{_notes}) ;
 	@x = map (f_kanj($_), @{$e->{_kanj}});
@@ -65,8 +65,8 @@ use jmdict;
 	if (@x) { print ("Readings: " . join ("; ", @x) . "\n"); }
 	foreach $s (@{$e->{_sens}}) {
 	    $n += 1;
-	    p_sens ($s, $n); }
-	@x = grep ($_->{_audi}, @{$e->{_rdng}});
+	    p_sens ($s, $n, $e->{_kanj}, $e->{_rdng}); }
+	@x = grep ($_->{_audio}, @{$e->{_rdng}});
 	if (@x) { p_audio (\@x); }
 	if ($e->{_hist}) { p_hist ($e->{_hist}); }
 	}
@@ -74,8 +74,8 @@ use jmdict;
     sub f_kanj { my ($k) = @_;
 	my ($txt, @f);
 	$txt = $k->{txt};  
-	@f = map ($::KW->{iFREQ}{$_->{kw}}{kw}."$_->{value}", @{$k->{_kfrq}});
-	push (@f, map ($::KW->{iKINF}{$_->{kw}}{kw}, @{$k->{_kinf}}));
+	@f = map ($::KW->{FREQ}{$_->{kw}}{kw}."$_->{value}", @{$k->{_kfreq}});
+	push (@f, map ($::KW->{KINF}{$_->{kw}}{kw}, @{$k->{_kinf}}));
 	($txt .= "[" . join ("/", @f) . "]") if (@f);
 	$txt .= "\{$k->{ord}/$k->{id}\}";
 	return $txt; }
@@ -83,8 +83,8 @@ use jmdict;
     sub f_rdng { my ($r, $kanj) = @_;
 	my ($txt, @f, $restr, $klist);
 	$txt = $r->{txt};  
-	@f = map ($::KW->{iFREQ}{$_->{kw}}{kw}."$_->{value}", @{$r->{_kfrq}});
-	push (@f, map ($::KW->{iKINF}{$_->{kw}}{kw}, @{$r->{_rinf}}));
+	@f = map ($::KW->{FREQ}{$_->{kw}}{kw}."$_->{value}", @{$r->{_rfreq}});
+	push (@f, map ($::KW->{KINF}{$_->{kw}}{kw}, @{$r->{_rinf}}));
 	($txt .= "[" . join ("/", @f) . "]") if (@f);
 	if ($kanj and ($restr = $r->{_restr})) {  # That's '=', not '=='.
 	    if (scalar (@$restr) == scalar (@$kanj)) { $txt .= "【no kanji】"; }
@@ -94,46 +94,34 @@ use jmdict;
 	$txt .= "\{$r->{ord}/$r->{id}\}";
 	return $txt; }
 
-    sub filt { my ($targ, $restr, $attrnm) = @_;
-	my ($t, $r, @results, $found);
-	foreach $t (@$targ) {
-	    $found = 0;
-	    foreach $r (@$restr) {
-		if ($t->{id} == $r->{$attrnm}) {
-		    $found = 1;
-		    last; } }
-	    push (@results, $t) if (!$found); }
-	return \@results; }
-
     sub p_sens { my ($s, $n, $kanj, $rdng) = @_;
 	my ($pos, $misc, $fld, $restrs, $g, @r, $stagr, $stagk);
-	$pos = join (";", map ($::KW->{iPOS}{$_->{kw}}{kw}, @{$s->{_pos}}));
+
+	$pos = join (";", map ($::KW->{POS}{$_->{kw}}{kw}, @{$s->{_pos}}));
 	if ($pos) { $pos = "[$pos]"; }
-	$misc = join (";", map ($::KW->{iMISC}{$_->{kw}}{kw}, @{$s->{_misc}}));
+	$misc = join (";", map ($::KW->{MISC}{$_->{kw}}{kw}, @{$s->{_misc}}));
 	if ($misc) { $misc = "[$misc]"; }
-	$fld = join (";", map ($::KW->{iFLD}{$_->{kw}}{kw}, @{$s->{_fld}}));
+	$fld = join (";", map ($::KW->{FLD}{$_->{kw}}{kw}, @{$s->{_fld}}));
 	if ($fld) { $fld = " $fld term"; }
 
-	if ($kanj and ($stagk = $s->{stagk})) {	# That's '=', not '=='.
-	    push (@r, filt ($kanj, $stagk, "kanj")); }
-	if ($rdng and ($stagr = $s->{stagr})) {	# That's '=', not '=='.
-	    push (@r, filt ($rdng, $stagr, "rdng")); }
-	if (@r) {
-	    $restrs = " (" . join (", ", map ($_->{txt}, @r)) . " only)"; }
+	if ($kanj and ($stagk = $s->{_stagk})) { # That's '=', not '=='.
+	    push (@r, @{filt ($kanj, $stagk, "kanj")}); }
+	if ($rdng and ($stagr = $s->{_stagr})) { # That's '=', not '=='.
+	    push (@r, @{filt ($rdng, $stagr, "rdng")}); }
+	$restrs = @r ? "(" . join (", ", map ($_->{txt}, @r)) . " only) " : "";
 
-	print "$n. $pos$misc$fld$restrs \{$s->{ord}/$s->{id}\}\n";
+	print "$n. $restrs$pos$misc$fld \{$s->{ord}/$s->{id}\}\n";
 	if ($s->{notes}) { print "  $s->{notes}\n"; }
-	foreach $g (@{$s->{_glos}}) {
-	    print "  " . $::KW->{iLANG}{$g->{lang}}{kw} . ": $g->{txt} \{$g->{ord}/$g->{id}\}\n"; }
-	p_xref ($s->{_xref}); 
-}
-	
+	foreach $g (@{$s->{_gloss}}) {
+	    print "  " . $::KW->{LANG}{$g->{lang}}{kw} . ": $g->{txt} \{$g->{ord}/$g->{id}\}\n"; }
+	p_xref ($s->{_xref}, "Cross references:"); 
+	p_xref ($s->{_xrer}, "Reverse references:"); }
 
     sub p_audio { my ($rdngs) = @_;
 	my ($r, $a, $rtxt, $audio);
 	print "Audio:\n";
 	foreach $r (@$rdngs) {
-	    next if (!($audio = $r->{_audi}));
+	    next if (!($audio = $r->{_audio}));
 	    $rtxt = "  " . $r->{txt} . ":";
 	    foreach $a (@$audio) {
 		print "$rtxt $a->{fname} $a->{strt}/$a->{leng} \{$a->{id}\}\n";
@@ -144,16 +132,16 @@ use jmdict;
 	print "History:\n";
 	foreach $h (@$hists) {
 	    print "  $h->{stat} $h->{dt} $h->{who} \{$h->{id}\}\n";
-	    if ($n = $a->{notes}) { # That's an '=', not '=='.
-		$n =~ s/(\n.)/    \1/;
+	    if ($n = $h->{notes}) { # That's an '=', not '=='.
+		$n =~ s/(\n.)/    $1/;
 		print "    $n\n"; } } }
 
-    sub p_xref { my ($xrefs) = @_;
+    sub p_xref { my ($xrefs, $sep) = @_;
 	my ($x, $t, $sep_done);
 	foreach $x (@$xrefs) {
-	    #if (!$sep_done) { print "  --\n";  $sep_done = 1; }
-	    $t = ucfirst ($::KW->{iXREF}{$x->{typ}}{descr});
-	    print "  $t: $x->{txt} (seq. $x->{seq})\n"; } }
+	    if (!$sep_done) { print "  $sep\n";  $sep_done = 1; }
+	    $t = $::KW->{XREF}{$x->{typ}}{descr};
+	    print "    $t: $x->{txt} (seq. $x->{seq})\n"; } }
 
 
 sub usage { my ($exitstat) = @_;

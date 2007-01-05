@@ -1,6 +1,25 @@
 
 2007-01-05	smcgraw@frii.com
 
+	* perl/load_jmdict.pl [1.9]
+	* perl/lib/jmdict.pm [1.3]
+	* pg/loadkw.sql [1.3]
+	* pg/mkfk.sql [1.3]
+	* pg/mkperms.sql [1.3]
+	* pg/mktables.sql [1.5]
+	* pg/data/kwstat.sql[1.1]
+	Change the "stat" column in tables "entr" and "hist" from
+	  a checked character to a keyword integer that is a foreign
+	  key to new table "kwstat".
+
+	* perl/showentr.pl [1.4]
+	* perl/cgi/entr.css [1.2]
+	* perl/lib/jmdicttal.pm [1.2]
+	* perl/lib/tal/entr.tal [1.2]
+	Show status (entr.stat) when displaying entries.
+
+2007-01-05	smcgraw@frii.com
+
 	* Tag T008
 
 2007-01-04	smcgraw@frii.com

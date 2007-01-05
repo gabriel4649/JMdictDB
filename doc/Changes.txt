@@ -1,4 +1,8 @@
 
+2007-01-05	smcgraw@frii.com
+
+	* Tag T008
+
 2007-01-04	smcgraw@frii.com
 
 	* perl/lib/jmdict.pm

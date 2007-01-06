@@ -1,4 +1,4 @@
-﻿# This file contains non-ascii utf-8 characters.
+#!/usr/bin/env perl
 
 # Copyright (c) 2006,2007 Stuart McGraw 
 @VERSION = (substr('$Revision$',11,-2), \
@@ -9,7 +9,7 @@
 # fix encoding issues on windows.
 
 use strict;  use warnings;
-use Encode;  use utf8;  use DBI;
+use Encode;  use DBI;
 use Getopt::Std ('getopts');
 
 BEGIN {push (@INC, "./lib");}
@@ -88,10 +88,10 @@ use jmdict;
 	push (@f, map ($::KW->{KINF}{$_->{kw}}{kw}, @{$r->{_rinf}}));
 	($txt .= "[" . join ("/", @f) . "]") if (@f);
 	if ($kanj and ($restr = $r->{_restr})) {  # That's '=', not '=='.
-	    if (scalar (@$restr) == scalar (@$kanj)) { $txt .= "【no kanji】"; }
+	    if (scalar (@$restr) == scalar (@$kanj)) { $txt .= "\x{3010}no kanji\x{3011}"; }
 	    else {
 		$klist = filt ($kanj, $restr, 'kanj');
-		$txt .= "【" . join ("; ", map ($_->{txt}, @$klist)) . "】"; } }
+		$txt .= "\x{3010}" . join ("; ", map ($_->{txt}, @$klist)) . "\x{3011}"; } }
 	$txt .= "\{$r->{ord}/$r->{id}\}";
 	return $txt; }
 

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # Copyright (c) 2007 Stuart McGraw 
 @VERSION = (substr('$Revision$',11,-2), \

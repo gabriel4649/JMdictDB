@@ -1,3 +1,5 @@
+#!/usr/bin/env perl
+
 # This program will read a JMdict.xml file and create
 # an output file containing postgresql data load commands
 # that will, when executes, load the JMdict data into an

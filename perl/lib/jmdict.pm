@@ -17,29 +17,21 @@ use strict; use warnings;
 
     sub Kwds { my ($dbh) = @_;
 	my (%kw);
-	$kw{DIAL} = $dbh->selectall_hashref("SELECT * FROM kwdial", "kw");
-	$kw{DIAL} = $dbh->selectall_hashref("SELECT * FROM kwdial", "id");
-	$kw{FLD}  = $dbh->selectall_hashref("SELECT * FROM kwfld",  "kw");
-	$kw{FLD}  = $dbh->selectall_hashref("SELECT * FROM kwfld",  "id");
-	$kw{FREQ} = $dbh->selectall_hashref("SELECT * FROM kwfreq", "kw");
-	$kw{FREQ} = $dbh->selectall_hashref("SELECT * FROM kwfreq", "id");
-	$kw{KINF} = $dbh->selectall_hashref("SELECT * FROM kwkinf", "kw");
-	$kw{KINF} = $dbh->selectall_hashref("SELECT * FROM kwkinf", "id");
-	$kw{LANG} = $dbh->selectall_hashref("SELECT * FROM kwlang", "kw");
-	$kw{LANG} = $dbh->selectall_hashref("SELECT * FROM kwlang", "id");
-	$kw{MISC} = $dbh->selectall_hashref("SELECT * FROM kwmisc", "kw");
-	$kw{MISC} = $dbh->selectall_hashref("SELECT * FROM kwmisc", "id");
-	$kw{POS}  = $dbh->selectall_hashref("SELECT * FROM kwpos",  "kw");
-	$kw{POS}  = $dbh->selectall_hashref("SELECT * FROM kwpos",  "id");
-	$kw{RINF} = $dbh->selectall_hashref("SELECT * FROM kwrinf", "kw");
-	$kw{RINF} = $dbh->selectall_hashref("SELECT * FROM kwrinf", "id");
-	$kw{SRC}  = $dbh->selectall_hashref("SELECT * FROM kwsrc",  "kw");
-	$kw{SRC}  = $dbh->selectall_hashref("SELECT * FROM kwsrc",  "id");
-	$kw{STAT} = $dbh->selectall_hashref("SELECT * FROM kwstat", "kw");
-	$kw{STAT} = $dbh->selectall_hashref("SELECT * FROM kwstat", "id");
-	$kw{XREF} = $dbh->selectall_hashref("SELECT * FROM kwxref", "kw");
-	$kw{XREF} = $dbh->selectall_hashref("SELECT * FROM kwxref", "id");
+	$kw{DIAL} = $dbh->selectall_hashref("SELECT * FROM kwdial", "kw"); addids ($kw{DIAL});
+	$kw{FLD}  = $dbh->selectall_hashref("SELECT * FROM kwfld",  "kw"); addids ($kw{FLD});
+	$kw{FREQ} = $dbh->selectall_hashref("SELECT * FROM kwfreq", "kw"); addids ($kw{FREQ});
+	$kw{KINF} = $dbh->selectall_hashref("SELECT * FROM kwkinf", "kw"); addids ($kw{KINF});
+	$kw{LANG} = $dbh->selectall_hashref("SELECT * FROM kwlang", "kw"); addids ($kw{LANG});
+	$kw{MISC} = $dbh->selectall_hashref("SELECT * FROM kwmisc", "kw"); addids ($kw{MISC});
+	$kw{POS}  = $dbh->selectall_hashref("SELECT * FROM kwpos",  "kw"); addids ($kw{POS});
+	$kw{RINF} = $dbh->selectall_hashref("SELECT * FROM kwrinf", "kw"); addids ($kw{RINF});
+	$kw{SRC}  = $dbh->selectall_hashref("SELECT * FROM kwsrc",  "kw"); addids ($kw{SRC});
+	$kw{STAT} = $dbh->selectall_hashref("SELECT * FROM kwstat", "kw"); addids ($kw{STAT});
+	$kw{XREF} = $dbh->selectall_hashref("SELECT * FROM kwxref", "kw"); addids ($kw{XREF});
 	return \%kw; }
+
+    sub addids { my ($hashref) = @_;
+	foreach my $v (values (%$hashref)) { $hashref->{$v->{id}} = $v; } }    
 
     sub mktmptbl { my ($dbh) = @_;
 	my ($tmpnm, $cset, $i);

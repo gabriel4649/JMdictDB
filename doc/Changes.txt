@@ -1,4 +1,11 @@
 
+2007-01-08	smcgraw@frii.com
+
+	* perl/lib/jmdict.pl
+	Fix: Correctly index keyword records by kw string in sub 
+	  Kwds.  Previously they were only indexed by id due to
+	  programer brain-deadness.
+
 2007-01-06	smcgraw@frii.com
 
 	* perl/load_jmdict.pl perl/cgi/entr.pl 

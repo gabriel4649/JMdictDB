@@ -105,6 +105,7 @@ CREATE TABLE hist (
     stat SMALLINT NOT NULL,
     dt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     who VARCHAR(250),
+    diff TEXT,
     notes TEXT);
 
 CREATE TABLE audio (
@@ -114,12 +115,17 @@ CREATE TABLE audio (
     strt INT NOT NULL,
     leng INT NOT NULL);
 
+CREATE TABLE editor (
+    id SERIAL NOT NULL PRIMARY KEY,
+    name VRCHAR(80) NOT NULL,
+    email VARCHAR(250),
+    notes TEXT);
 
 CREATE TABLE xresolv (
     sens INT NOT NULL,
     typ SMALLINT NOT NULL,
     txt VARCHAR(250) NOT NULL);
-    
+
 
 CREATE TABLE kfreq (
     kanj INT NOT NULL,

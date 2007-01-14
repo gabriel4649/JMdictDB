@@ -22,7 +22,7 @@ binmode (STDOUT, ":utf8");
 	print "Content-type: text/html\n\n";
 
 	open (F, "../lib/jmdict.cfg") or die ("Can't open database config file\n");
-	($dbname, $username, $pw) = split (/ /, <F>); close (F);
+	($dbname, $username, $pw) = split (' ', <F>); close (F);
 	$dbh = DBI->connect("dbi:Pg:dbname=$dbname", $username, $pw, 
 			{ PrintWarn=>0, RaiseError=>1, AutoCommit=>0 } );
 	$dbh->{pg_enable_utf8} = 1;

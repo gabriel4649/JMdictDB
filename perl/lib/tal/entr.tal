@@ -11,14 +11,14 @@
     <div class="entry">
       Seq: <span tal:replace="e/seq">seqnum</span>
       <span class="status" tal:if="not:eq: string:2 e/stat">
-        [<span tal:replace="kwfull: STAT e/stat">[status]</span>]
+        [<span tal:replace="kwfull: 'STAT' e/stat">[status]</span>]
 	</span>
       <span class="pkid">{id:<span tal:replace="e/id"/>}</span>
       <span class="dial" tal:condition="e/_dial">, 
-        Dialect: <span tal:replace="kwabbrs: DIAL ',' e/_dial">dial</span>
+        Dialect: <span tal:replace="kwabbrs: 'DIAL' ',' e/_dial">dial</span>
 	</span>
       <span class="lang" tal:if="e/_lang">, 
-	Original lang: <span tal:replace="kwabbrs: LANG ',' e/_lang">lang</span>
+	Original lang: <span tal:replace="kwabbrs: 'LANG' ',' e/_lang">lang</span>
 	</span>
 
       <br/> 
@@ -26,9 +26,9 @@
 	<span tal:condition="not:repeat/start" tal:omit-tag="">； </span>
 	<span class="kanj" tal:content="k/txt">kanji text</span>
 	<span class="kattrs" tal:if="or:k/_kinf k/_kfreq">
-	  [<span class="kinf" tal:if="k/_kinf" tal:content="kwabbrs: KINF ',' k/_kinf">kinf</span>
+	  [<span class="kinf" tal:if="k/_kinf" tal:content="kwabbrs: 'KINF' ',' k/_kinf">kinf</span>
 	   <span tal:if="and: k/_kinf k/_kfreq" tal:replace="string:/">/</span>
-	   <span class="kfreq" tal:if="k/_kfreq" tal:content="freqs: FREQ ',' k/_kfreq">kfreq</span>]
+	   <span class="kfreq" tal:if="k/_kfreq" tal:content="freqs: ',' k/_kfreq">kfreq</span>]
 	  </span>
 	</span>
 
@@ -47,9 +47,9 @@
 	    </span>)
 	  </span>
 	<span class="rattrs" tal:if="or:r/_rinf r/_rfreq">
-	  [<span class="rinf" tal:if="r/_rinf" tal:content="kwabbrs: RINF ',' r/_rinf">rinf</span>
+	  [<span class="rinf" tal:if="r/_rinf" tal:content="kwabbrs: 'RINF' ',' r/_rinf">rinf</span>
 	  <span tal:if="and: r/_rinf r/_rfreq" tal:replace="string:/">/</span>
-	  <span class="rfreq" tal:if="r/_rfreq" tal:content="freqs: FREQ ',' r/_rfreq">rfreq</span>]
+	  <span class="rfreq" tal:if="r/_rfreq" tal:content="freqs: ',' r/_rfreq">rfreq</span>]
 	  </span>
 	</span>
       <span tal:if="e/_kanj">】</span>
@@ -64,24 +64,24 @@
 		</span> only)
 	      </span>
 	    <span class="pos" tal:if="s/_pos">
-	      [<span tal:replace="kwabbrs: POS ',' s/_pos">pos</pos>]
+	      [<span tal:replace="kwabbrs: 'POS' ',' s/_pos">pos</pos>]
 	      </span>
 	    <span class="misc" tal:if="s/_misc">
-	      [<span tal:replace="kwabbrs: MISC ',' s/_misc">misc</span>]
+	      [<span tal:replace="kwabbrs: 'MISC' ',' s/_misc">misc</span>]
 	      </span>
 	    <span class="fld" tal:if="s/_fld">
-	      <span tal:replace="kwfulls: MISC ',' s/_fld">fields</span>]
+	      <span tal:replace="kwfulls: 'MISC' ',' s/_fld">fields</span>]
 	      </span>
 	    <span class="pkid">{id:<span tal:replace="s/ord">s.ord</span>/<span tal:replace="s/id">s.id</span>}</span><br/>
 	    <span tal:repeat="g s/_gloss">
-	      <span class="glang" tal:replace="kwabbr: LANG g/lang">lang</span>: 
+	      <span class="glang" tal:replace="kwabbr: 'LANG' g/lang">lang</span>: 
 	      <span class="gloss" tal:replace="g/txt">gloss text</span>
 	      <span class="pkid">{id:<span tal:replace="g/ord">g.ord</span>/<span tal:replace="g/id">g.id</span>}</span><br/>
 	      </span>
 	    <span tal:if="true:s/_xref">Cross references:
 	      <ul>
 		<li tal:repeat="x s/_xref">
-		  <span tal:replace="kwabbr: XREF x/typ">xref-type</span>:
+		  <span tal:replace="kwabbr: 'XREF' x/typ">xref-type</span>:
 		  <a tal:attributes="href string:entr.pl?e=${x/id}" tal:content="x/seq">seq-num</a>
 		  <span tal:replace="x/txt">xref-text</span>
 		  </li>
@@ -90,7 +90,7 @@
 	    <span tal:if="true:s/_xrer">Reverse references:
 	      <ul>
 		<li tal:repeat="x s/_xrer">
-		  <span tal:replace="kwabbr: XREF x/typ">xref-type</span>:
+		  <span tal:replace="kwabbr: 'XREF' x/typ">xref-type</span>:
 		  <a tal:attributes="href string:entr.pl?e=${x/id}" tal:content="x/seq">seq-num</a>
 		  <span tal:replace="x/txt">xref-text</span>
 		  </li>
@@ -117,7 +117,7 @@
       <span tal:if="e/_hist" tal:omit-tag="">History:
 	<ol>
 	  <li tal:repeat="h e/_hist">
-	      <span class="hhdr" tal:replace="string: ${kwabbr:STAT h/stat} ${h/dt} ${h/who}">hist-header</span>
+	      <span class="hhdr" tal:replace="string: ${kwabbr:'STAT' h/stat} ${h/dt} ${h/who}">hist-header</span>
 	      <pre class="hnotes" tal:if="h/notes" tal:content="h/notes">hist-notes</pre>
 	    </li>
 	  </ol>

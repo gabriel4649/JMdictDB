@@ -12,7 +12,7 @@
 # - ke_pri, re_pri: ignore (redundant) newsX values.
 # - record only 1 nfXX when multiple values present. (niy)
 
-# Copyright (c) 2006, Stuart McGraw 
+# Copyright (c) 2006,2007 Stuart McGraw 
 @VERSION = (substr('$Revision$',11,-2), \
 	    substr('$Date$',7,-11));
 
@@ -98,7 +98,7 @@ sub initialize {
 	  [\$::Frestr, "load16.tmp", "COPY restr(rdng,kanj) FROM stdin;"],
 	  [\$::Fstagr, "load17.tmp", "COPY stagr(sens,rdng) FROM stdin;"],
 	  [\$::Fstagk, "load18.tmp", "COPY stagk(sens,kanj) FROM stdin;"],
-	  [\$::Fhist, "load19.tmp", "COPY hist(id,entr,stat,dt,who,notes) FROM stdin;"] );
+	  [\$::Fhist, "load19.tmp", "COPY hist(id,entr,stat,dt,who,diff,notes) FROM stdin;"] );
 
 	$::srcid = 1; $::cntr = 0;
 	  # Following globals are used to maintain the row 'id'
@@ -317,7 +317,7 @@ sub do_hist { my ($hist) = @_;
 	    $op = ($x->get_xpath ("upd_detl"))[0]->text; # Assume just one.
 	    if ($op eq "Entry created") {
 		# (id,entr,stat,dt,who,notes)
-		print $::Fhist "$::hid\t$::eid\t\2\t$dt\tfrom JMdict.xml\t\\N\n"; }
+		print $::Fhist "$::hid\t$::eid\t2\t$dt\tfrom JMdict.xml\t\\N\t\\N\n"; }
 	    else { die ("Unexpected <upd_detl> contents: $op"); }
 	    $::hid += 1; } }
 

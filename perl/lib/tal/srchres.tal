@@ -1,0 +1,37 @@
+<html xmlns:tal="http://purl.org/petal/1.0/">
+<!--? Copyright (c) 2007 Stuart McGraw -->
+<!--? $Revision$ $Date$ -->
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link rel="stylesheet" type="text/css" href="entr.css"/>
+  <title>JMdict search results</title>
+</head>
+<body class="srchres">
+  <div class="results">
+    <form method="get" action="entr.pl">
+      <span class="count">
+        <span tal:replace="len:results"/> matching entries found...
+	</span>
+      <input tal:if="gt:len:results 10" name="show" value="Display selected entries" type="submit" tal:condition="true:results"/> 
+      <table class="reslist" tal:condition="true:results">
+	<tr class="heading">
+	  <th> </th>
+	  <th>Seqnum</th>
+	  <th>Reading</th>
+	  <th>Kanji</th>
+	  <th>Gloss</th>
+	  </tr>
+	<tr class="resrow" tal:repeat="r results">
+	  <td><input type="checkbox" name="e" tal:attributes="value r/id"/></td>
+	  <td class="seq" tal:content="r/seq"/>
+	  <td class="rdng" tal:content="r/rdng"/>
+	  <td class="kanj" tal:content="r/kanj"/>
+	  <td class="gloss" tal:content="r/gloss"/>
+	  </tr>
+	</table>
+      <input name="show" value="Display selected entries" type="submit" tal:condition="true:results"/> 
+      </form>
+    </div>
+  <div class="debug" tal:condition="sql" tal:content="sql"/>
+  </body>
+</html>

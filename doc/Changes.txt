@@ -1,4 +1,69 @@
 
+2007-01-13	smcgraw@frii.com
+
+	* Tag T009
+	This bring the Perl web interface code to approxmately where 
+	  the Python code was when work switched to Perl.  At this point
+	  some support code has been added for better history trackng
+	  and and update process but it is incomplete.
+
+	* perl/load_jmdict.pl [1.11]
+	Fix: Forgot to write out new "diff" column when creating
+	  load records for table hist as needed by maketables.sql[1.6].
+
+	* perl/cgi/entr.css [1.3]
+	Tweak fomatting of srchres page.
+
+	* perl/cgi/entr.pl [1.3]
+	Fix: reading of db login info from file jmdict.cfg. 
+
+	* perl/lib/jmdict.pm [1.5]
+	Add new subs:
+	  - kwrecs to get a single set of record values without duplicates 
+	  from a keyword data structure.
+	  - jstr_classify to identify the types of japanese characters in a
+	  string.
+
+	* perl/lib/jmdicttal.pm [1.3]
+	Steal the split_args() and fetch_arg() subs from Petal::Utils and
+	  rewrite our modifiers to use them.
+	Add new modifiers "gt", "lt", "len", and (untested) "perl".
+	Change "freqs" modifier to not require first argument "FREQ".
+
+	* perl/lib/tal/entr.tal [1.3]
+	Put single quotes around keyword type strings, and remove FREQ type
+	  from modifer "freqs", as required by revised modifiers in 
+	  jmdicttal.pm [1.3].
+
+	* perl/cgi/srchform.pl
+	* perl/cgi/srchres.pl
+	* perl/lib/tal/srchform.tal
+	* perl/lib/tal/srchres.tal
+	New files to provide search form an results pages.
+
+2007-01-09	smcgraw@frii.com
+
+	* pg/mkindex.sql [1.3]
+	Add unique indexes on columns (entr,ord) in tables rdng,
+	  kanj,sens,gloss.  These are needed because the function 
+	  (under development) that duplicates entries need to match
+	  up old and new rdng's, kanj,s and sens's to duplicate the
+	  restriction table entries, and uses unique ord numbers to
+	  do that.
+	Add unique indexes on columns (entr,txt) in tables rdng,
+	  kanj, and gloss.  This disallows duplicate txt values
+	  in the same entry.
+	Add partial index on entr.stat.
+	Add index on audio.fname.
+
+	* pg/mktables.sql [1.6]
+	Add "diff" column to "hist" table.
+
+	* pg/mkindex.sql [1.3]
+	* pg/mkperms.sql [1.4]
+	* pg/mktables.sql [1.6]
+	Add new "editor" table.
+
 2007-01-08	smcgraw@frii.com
 
 	* perl/lib/jmdict.pl

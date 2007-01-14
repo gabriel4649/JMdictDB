@@ -30,6 +30,9 @@ use strict; use warnings;
 	$kw{XREF} = $dbh->selectall_hashref("SELECT * FROM kwxref", "kw"); addids ($kw{XREF});
 	return \%kw; }
 
+    sub kwrecs { my ($KW, $typ) = @_;
+	return map ($KW->{$typ}{$_}, grep (!m/^[0-9]+$/, keys (%{$KW->{$typ}}))); }
+
     sub addids { my ($hashref) = @_;
 	foreach my $v (values (%$hashref)) { $hashref->{$v->{id}} = $v; } }    
 
@@ -163,5 +166,26 @@ use strict; use warnings;
 		    last; } }
 	    push (@results, $t) if (!$found); }
 	return \@results; }
+
+
+    $::KANA=1; $::HIRAGANA=2; $::KATAKANA=4; $::KANJI=8;
+
+    sub jstr_classify { my ($str) = @_;
+
+	# Returns an integer with bits set according to whether
+	# the indicated type of characters are present in string <s>.
+	#     1 - Kana (either hiragana or katakana)
+	#     2 - Hiragana
+	#     4 - Katakana
+	#     8 - Kanji
+
+	my ($r, $n);
+	$r = 0;
+	foreach (split (//, $str)) {
+	    $n = ord();
+	    if    ($n >= 0x3040 and $n <= 0x309F) { $r |= ($::HIRAGANA | $::KANA); }
+	    elsif ($n >= 0x30A0 and $n <= 0x30FF) { $r |= ($::HIRAGANA | $::KANA); }
+	    elsif ($n >= 0x4E00 and $n <= 0x9FFF) { $r |= $::KANJI; } }
+	return $r; }
 
     1;

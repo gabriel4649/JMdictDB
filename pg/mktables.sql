@@ -117,7 +117,7 @@ CREATE TABLE audio (
 
 CREATE TABLE editor (
     id SERIAL NOT NULL PRIMARY KEY,
-    name VRCHAR(80) NOT NULL,
+    name VARCHAR(80) NOT NULL,
     email VARCHAR(250),
     notes TEXT);
 

@@ -42,7 +42,7 @@ use jmdict;
 	$::sthIR = $dbh->prepare ("INSERT INTO rfreq(rdng,kw,value) VALUES(?,?,?)");
 	readfile ($infn); 
 	$dbh->commit() if (!$::Opts{n});
-	$dbh->finish(); }
+	$dbh->disconnect(); }
 
    sub readfile { my ($infn) = @_;
 	my (@a, $lasttxt, @freqs);

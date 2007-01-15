@@ -3,3 +3,4 @@ INSERT INTO kwfreq(id,kw,descr) VALUES(2,'gai',NULL);
 INSERT INTO kwfreq(id,kw,descr) VALUES(3,'jdd',NULL);
 INSERT INTO kwfreq(id,kw,descr) VALUES(4,'spec',NULL);
 INSERT INTO kwfreq(id,kw,descr) VALUES(5,'nf',NULL);
+INSERT INTO kwfreq(id,kw,descr) VALUES(6,'gA','2007-01-14 Google counts (Kale Stutzman)');

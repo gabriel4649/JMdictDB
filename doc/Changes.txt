@@ -1,4 +1,29 @@
 
+2007-01-15	smcgraw@frii.com
+
+	* perl/load_googits.pl [1.1]
+	* pg/data/kwfreq.sql [1.2]
+	Add support fo google hit counts as kfreq/rfreq FoU metric.
+
+	* perl/cgi/srchform.pl [1.2]
+	* perl/cgi/srchres.pl [1.2]
+	* perl/lib/tal/srchform.tal [1.2]
+	Add support for entry status and google hit counts.
+
+	* pg/mkindex.sql [1.4]
+	Disable unique indexes on (entr,txt) for tables kanj and 
+	  rdng and (sens.txt) for table gloss because (as of 
+	  2007-01-14) duplicates exist in the jmdict xml file.
+
+	* pg/mktables.sql [1.7]
+	Fix syntax error typo.
+
+	* pg/mkviews.sql [1.3]
+	Add experimental functions dupentr and delentr.
+
+	* pg/data/kwstat.sql [1.2]
+	Shorten 'descr' text a little.
+
 2007-01-13	smcgraw@frii.com
 
 	* Tag T009

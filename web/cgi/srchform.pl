@@ -16,7 +16,7 @@ binmode (STDOUT, ":utf8");
 
     main: {
 	my ($dbh, $cgi, $tmptbl, $tmpl, $dbname, $username, $pw,, 
-	    $pos, $misc, @freq, @src, $i, @x, $kw, $width);
+	    $pos, $misc, @freq, @src, $stat, $i, @x, $kw);
 	binmode (STDOUT, ":encoding(utf-8)");
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
@@ -28,25 +28,26 @@ binmode (STDOUT, ":utf8");
 	$dbh->{pg_enable_utf8} = 1;
 	$::KW = Kwds ($dbh);
 
-	$width = 10;
-
 	@x = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'POS'));
-	$pos = reshape (\@x, $width, {id=>0, kw=>""});
+	$pos = reshape (\@x, 10);
 
 	@x = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'MISC'));
-	$misc = reshape (\@x, $width, {id=>0, kw=>""});
+	$misc = reshape (\@x, 10);
 
-	@src = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'SRC'));
+	@src  = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'SRC'));
+
+	@x = sort ({$a->{descr} cmp $b->{descr}} kwrecs ($::KW, 'STAT'));
+	$stat = reshape (\@x, 3);
 
 	for $i (sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'FREQ'))) {
 	    $kw = $i->{kw};
-	    if ($kw ne "nf") { 
+	    if ($kw ne "nf" and $kw ne "gA") { 
 		push (@freq, $kw."1"); 
 		if ($kw ne "spec") { push (@freq, $kw."2"); } } }
 
 	$tmpl = new Petal (file=>'../lib/tal/srchform.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
-	print $tmpl->process ({pos=>$pos, misc=>$misc, src=>\@src, freq=>\@freq});
+	print $tmpl->process ({pos=>$pos, misc=>$misc, stat=>$stat, freq=>\@freq});
 	$dbh->disconnect; }
 
     sub reshape { my ($array, $ncols, $default) = @_;

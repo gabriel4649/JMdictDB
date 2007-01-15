@@ -15,9 +15,9 @@ $|=1;
 binmode (STDOUT, ":utf8");
 
     main: {
-	my ($dbh, $cgi, $dbname, $username, $pw, $tmpl, @s, @y, @t, 
-	    @pos, @misc, @src, @freq, $nfval, $nfcmp, $idval, $col,
-	    $idtbl, $sql, $sql_args, $sql2, $rs, $i, $freq, @condlist);
+	my ($dbh, $cgi, $dbname, $username, $pw, $tmpl, @s, @y, @t, $col, 
+	    @pos, @misc, @src, @stat, @freq, $nfval, $nfcmp, $gaval, $gacmp, 
+	    $idval, $idtbl, $sql, $sql_args, $sql2, $rs, $i, $freq, @condlist);
 	binmode (STDOUT, ":encoding(utf-8)");
 	$cgi = new CGI;
 
@@ -31,9 +31,10 @@ binmode (STDOUT, ":utf8");
 	$s[0]=$cgi->param("s1"); $y[0]=$cgi->param("y1"); $t[0]=decode_utf8($cgi->param("t1"));
 	$s[1]=$cgi->param("s2"); $y[1]=$cgi->param("y2"); $t[1]=decode_utf8($cgi->param("t2"));
 	$s[2]=$cgi->param("s3"); $y[2]=$cgi->param("y3"); $t[2]=decode_utf8($cgi->param("t3"));
-	@pos=$cgi->param("pos"); @misc=$cgi->param("misc");
+	@pos=$cgi->param("pos"); @misc=$cgi->param("misc"); @stat=$cgi->param("stat"); 
 	@src=$cgi->param("src"); @freq=$cgi->param("freq");
 	$nfval=$cgi->param("nfval"); $nfcmp=$cgi->param("nfcmp");
+	$gaval=$cgi->param("gaval"); $gacmp=$cgi->param("gacmp");
 	$idval=$cgi->param("idval"); $idtbl=$cgi->param("idtyp");
 
 	if ($idval) {	# Search for id number...
@@ -45,10 +46,11 @@ binmode (STDOUT, ":utf8");
 	    for $i (0..2) {
 		if ($t[$i]) { 
 		    push (@condlist, str_match_clause ($s[$i],$y[$i],$t[$i],$i)); } }
-	    if (@pos) { push  (@condlist, ["pos", getsel("pos.kw",  \@pos), []]); }
-	    if (@misc) { push (@condlist, ["misc",getsel("misc.kw", \@misc),[]]); }
-	    if (@src) { push  (@condlist, ["entr",getsel("entr.src",\@src), []]); }
-	    if (@freq) { push (@condlist, freq_srch_clause (\@freq, $nfval, $nfcmp)); }
+	    if (@pos)  { push (@condlist, ["pos", getsel("pos.kw",   \@pos), []]); }
+	    if (@misc) { push (@condlist, ["misc",getsel("misc.kw",  \@misc),[]]); }
+	    if (@src)  { push (@condlist, ["entr",getsel("entr.src", \@src), []]); }
+	    if (@stat) { push (@condlist, ["entr",getsel("entr.stat",\@stat),[]]); }
+	    if (@freq) { push (@condlist, freq_srch_clause (\@freq, $nfval, $nfcmp, $gaval, $gacmp)); }
 	    ($sql, $sql_args) = build_search_sql (\@condlist); }
 
 	$sql2 = sprintf ("SELECT q.* FROM entr_summary q JOIN (%s) AS i ON i.id=q.id", $sql);
@@ -90,11 +92,11 @@ binmode (STDOUT, ":utf8");
 	my $s = sprintf ("%s IN (%s)", $fqcol, join(",", @$itms));
 	return $s; }
 
-    sub freq_srch_clause { my ($freq, $nfval, $nfcmp) = @_;
+    sub freq_srch_clause { my ($freq, $nfval, $nfcmp, $gaval, $gacmp) = @_;
 	my ($f, $domain, $value, %x, $k, $v, $kwid, @whr, $whr);
 	foreach $f (@$freq) {
 	    ($domain, $value) = ($f =~ m/(^[A-Za-z_-]+)(\d*)$/);
-	    next if ($domain eq "nf");
+	    next if ($domain eq "nf" or $domain eq "ga");
 	    if (!defined ($x{$domain})) { $x{$domain} = []; }
 	    push (@{$x{$domain}}, $value); }
 	while (($k,$v) = each (%x)) {
@@ -114,6 +116,12 @@ binmode (STDOUT, ":utf8");
 	    push (@whr, sprintf (
 		"((kfreq.kw=%s AND kfreq.value%s%s) OR (rfreq.kw=%s AND rfreq.value%s%s))",
 		$kwid, $nfcmp, $nfval,  $kwid, $nfcmp, $nfval)); }
+	if (grep ($_ eq "ga", @$freq) and $gaval) {
+	    $kwid = $::KW->{FREQ}{gA}{id};
+	    push (@whr, sprintf (
+		"((kfreq.kw=%s AND kfreq.value%s%s) OR (rfreq.kw=%s AND rfreq.value%s%s))",
+		$kwid, $gacmp, $gaval,  $kwid, $gacmp, $gaval)); }
+
 	$whr = "(" . join(" OR ", @whr) . ")";
 	return [] if (!$whr);
 	return (["*rfreq","",[]],["*kfreq",$whr,[]]); }

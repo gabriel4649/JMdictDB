@@ -1,6 +1,29 @@
 
 2007-01-15	smcgraw@frii.com
 
+	* perl/load_googits.pl [1.3]
+	Fix: was warning about texts that resolved to multiple
+	  entries but still added the [kr]freq googits values.
+	  Now it skips them.
+
+	* pg/mkviews [1.5]
+	Add views pkanj and prdng to give a view of kanj or
+	  rdng table with additional column that indicates if
+	  the kanj/rdng would have "P" tag in edict.
+
+2007-01-15	smcgraw@frii.com
+
+	* perl/load_googits.pl [1.2]
+	Fix call dbi method disconnect() (was typo finish()).
+
+	* pg/mkviews.sql [1.4]
+	Explicitly create the plpgsql language since it does not 
+	  exist in a default Postgresql install but may be present
+	  in some installs (e.g. Windows if selected at install
+	  time).
+
+2007-01-15	smcgraw@frii.com
+
 	* perl/load_googits.pl [1.1]
 	* pg/data/kwfreq.sql [1.2]
 	Add support fo google hit counts as kfreq/rfreq FoU metric.

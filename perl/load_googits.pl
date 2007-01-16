@@ -77,7 +77,7 @@ use jmdict;
 	if (scalar (@$rs) <= 0) { 
 	    print STDERR "Warning, $txt not found (line $.)\n"; return; }
 	if (scalar (@$rs) > 1) {
-	    print STDERR "Warning, multiple entries found for '$txt' (line $.)\n"; }
+	    print STDERR "Warning, multiple entries found for '$txt' (line $.)\n"; return; }
 	foreach $r (@$rs) { 
 	    if (!$::Opts{n}) {
 		$sth_i->execute ($r->[0], $::FREQKWID, $cnt); }

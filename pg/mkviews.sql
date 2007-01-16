@@ -107,6 +107,42 @@ CREATE VIEW sref AS (
     JOIN entr e ON e.id=s.entr);
 
 -------------------------------------------------------------
+-- Provide a view of table "kanj" with additional column
+-- that is <logical true> if the kanji would be marked as
+-- "P" in edict.  According to 
+--    http://www.csse.monash.edu.au/~jwb/edict_doc.html#IREF05
+-- the "P" kanji are those tagged with "ichi1", "gai1",
+-- "jdd1", "spec1", or "news1" (= "nf01"-"nf24") in JMdict.
+-------------------------------------------------------------
+CREATE VIEW pkanj AS (
+    SELECT k.*, exists (
+        SELECT * FROM kfreq f
+          WHERE f.kanj=k.id AND
+          -- ichi1, gai1, jdd1, spec1
+          ((f.kw IN (1,2,3,4) AND f.value=1) 
+          -- news1
+          OR (f.kw=5 AND f.value<=24))) AS p 
+    FROM kanj k);
+
+-------------------------------------------------------------
+-- Provide a view of table "rdng" with additional column
+-- that is <logical true> if the reading would be marked as
+-- "P" in edict.  According to 
+--    http://www.csse.monash.edu.au/~jwb/edict_doc.html#IREF05
+-- the "P" readings are those tagged with "ichi1", "gai1",
+-- "jdd1", "spec1", or "news1" (= "nf01"-"nf24") in JMdict.
+-------------------------------------------------------------
+CREATE VIEW prdng AS (
+    SELECT r.*, exists (
+        SELECT * FROM rfreq f
+          WHERE f.rdng=r.id AND
+          -- ichi1, gai1, jdd1, spec1
+          ((f.kw IN (1,2,3,4) AND f.value=1) 
+          -- news1
+          OR (f.kw=5 AND f.value<=24))) AS p 
+    FROM rdng r);
+
+-------------------------------------------------------------
 -- This function will replicate an entry by duplicating it's
 -- row in table entr and all child rows recursively (although
 -- this function is not recursive.)

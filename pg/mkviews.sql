@@ -91,20 +91,26 @@ CREATE VIEW rk_valid AS (
         ) AS sub ON sub.rid=r.id AND sub.eid=e.id);
 
 -------------------------------------------------------------
--- For each sense, provide it's entry id and seq, and a brief
--- text summary which is the kanji aggregate if there are any
--- kanji entries, of the readings aggregte otherwise.
--- This view is primarily used to provide an xref summary.
+-- For each xref, provide a summary of the entry that the
+-- xref.xref column points to.  xsumr is the same except  
+-- that the summary is for the entry pointed to by xref.sens 
+-- (the reverse direction).  The columns xref and sens are
+-- excluded from the select lists of xsum and xsumr respectively,
+-- because we want only one row per entry, not one per sense.
+-- This is a temporary hack that mimics the jmdict xml file's
+-- sense->entry cross reference semantics.
 -------------------------------------------------------------
-CREATE VIEW sref AS (
-  SELECT s.id AS sid,e.id AS id,e.seq, 
-      COALESCE (NULLIF (	
-        (SELECT ARRAY_TO_STRING(ACCUM(sk.txt), '; ')
-         FROM (SELECT k.txt FROM kanj k WHERE k.entr=e.id ORDER BY k.ord) AS sk), ''),
- 	(SELECT ARRAY_TO_STRING(ACCUM(sr.txt), '; ') 
-	 FROM (SELECT r.txt FROM rdng r WHERE r.entr=e.id ORDER BY r.ord) AS sr)) AS txt
-  FROM sens s  
-    JOIN entr e ON e.id=s.entr);
+CREATE VIEW xsum AS (
+  SELECT DISTINCT x.sens,x.typ,x.notes,e.id AS eid,e.seq,e.kanj,e.rdng
+    FROM xref x
+    JOIN sens s ON s.id=x.xref
+    JOIN entr_summary e ON e.id=s.entr);
+
+CREATE VIEW xsumr AS (
+  SELECT DISTINCT x.xref,x.typ,x.notes,e.id AS eid,e.seq,e.kanj,e.rdng
+    FROM xref x
+    JOIN sens s ON s.id=x.sens
+    JOIN entr_summary e ON e.id=s.entr);
 
 -------------------------------------------------------------
 -- Provide a view of table "kanj" with additional column

@@ -15,6 +15,17 @@ use strict; use warnings;
 	while ($r = $sth->fetchrow_hashref) { push (@rs, $r); }
 	return \@rs; }
 
+    sub dbinsert { my ($dbh, $table, $cols, $hash) = @_;
+	my ($sql, $sth, @args, $id);
+	$sql = "INSERT INTO $table(" . 
+		join(",", @$cols)  . 
+		") VALUES(" . join (",", split(//, "?" x scalar(@$cols))) . ")";
+	@args = map ($hash->{$_}, @$cols);
+	$sth = $dbh->prepare_cached ($sql);
+	$sth->execute (@args);
+	$id = $dbh->last_insert_id (undef, undef, $table, undef);
+	return $id; }
+
     sub Kwds { my ($dbh) = @_;
 	my (%kw);
 	$kw{DIAL} = $dbh->selectall_hashref("SELECT * FROM kwdial", "kw"); addids ($kw{DIAL});
@@ -84,8 +95,8 @@ use strict; use warnings;
 	my $restr = dbread ($dbh, "SELECT x.* $com JOIN rdng r ON r.entr=e.id JOIN restr x ON x.rdng=r.id $where;", $args);
 	my $stagr = dbread ($dbh, "SELECT x.* $com JOIN sens s ON s.entr=e.id JOIN stagr x ON x.sens=s.id $where;", $args);
 	my $stagk = dbread ($dbh, "SELECT x.* $com JOIN sens s ON s.entr=e.id JOIN stagk x ON x.sens=s.id $where;", $args);
-	my $xref  = dbread ($dbh, "SELECT x.sens,x.typ,z.id,z.seq,z.txt $com JOIN sens s ON s.entr=e.id JOIN xref x ON x.sens=s.id JOIN sref z ON z.sid=x.xref GROUP BY x.sens,x.typ,z.id,z.seq,z.txt ORDER BY x.sens,x.typ $where;", $args);
-	my $xrer  = dbread ($dbh, "SELECT x.xref,x.typ,z.id,z.seq,z.txt $com JOIN sens s ON s.entr=e.id JOIN xref x ON x.xref=s.id JOIN sref z ON z.sid=x.sens GROUP BY x.xref,x.typ,z.id,z.seq,z.txt ORDER BY x.xref,x.typ $where;", $args);
+	my $xref  = dbread ($dbh, "SELECT x.* $com JOIN sens s ON s.entr=e.id JOIN xsum  x ON x.sens=s.id $where;", $args);
+	my $xrer  = dbread ($dbh, "SELECT x.* $com JOIN sens s ON s.entr=e.id JOIN xsumr x ON x.xref=s.id $where;", $args);
 
 	matchup ($entr, "_dial",  $dial,  "entr");
 	matchup ($entr, "_lang",  $lang,  "entr");
@@ -184,8 +195,97 @@ use strict; use warnings;
 	foreach (split (//, $str)) {
 	    $n = ord();
 	    if    ($n >= 0x3040 and $n <= 0x309F) { $r |= ($::HIRAGANA | $::KANA); }
-	    elsif ($n >= 0x30A0 and $n <= 0x30FF) { $r |= ($::HIRAGANA | $::KANA); }
+	    elsif ($n >= 0x30A0 and $n <= 0x30FF) { $r |= ($::KATAKANA | $::KANA); }
 	    elsif ($n >= 0x4E00 and $n <= 0x9FFF) { $r |= $::KANJI; } }
 	return $r; }
+
+    sub addentr { my ($dbh, $entr) = @_;
+	my ($eid, $seq, $rid, $kid, $sid, $cntr, $cntr2, $r, $k, $s, $g, $x);
+	$entr->{seq} = $seq = get_seq ($dbh); 
+	$entr->{src} = 1;
+	$entr->{id} = $eid = dbinsert ($dbh, "entr", ['src','seq','stat','notes'], $entr);
+	$cntr = 1;
+	foreach $k (@{$entr->{_kanj}}) {
+	    $k->{entr} = $eid;  $k->{ord} = $cntr++;
+	    $k->{id} = $kid = dbinsert ($dbh, "kanj", ['entr','ord','txt'], $k);
+	    foreach $x (@{$k->{_kinf}}) {
+		$x->{kanj} = $kid;
+		dbinsert ($dbh, "kinf", ['kanj','kw'], $x); }
+	    foreach $x (@{$k->{_kfreq}}) {
+		$x->{kanj} = $kid;
+		dbinsert ($dbh, "kfreq", ['kanj','kw','value'], $x); } }
+	$cntr = 1;
+	foreach $r (@{$entr->{_rdng}}) {
+	    $r->{entr} = $eid;  $r->{ord} = $cntr++;
+	    $r->{id} = $rid = dbinsert ($dbh, "rdng", ['entr','ord','txt'], $r);
+	    foreach $x (@{$r->{_rinf}}) {
+		$x->{rdng} = $rid;
+		dbinsert ($dbh, "rinf", ['rdng','kw'], $x); }
+	    foreach $x (@{$r->{_rfreq}}) {
+		$x->{rdng} = $rid;
+		dbinsert ($dbh, "rfreq", ['rdng','kw','value'], $x); }
+	    foreach $x (@{$r->{_audio}}) {
+		$x->{rdng} = $rid;
+		dbinsert ($dbh, "audio", ['rdng','fname','strt','leng'], $x); }
+	    foreach $x (@{$r->{_restr}}) {
+		$x->{rdng} = $rid; $x->{kanj} = $x->{kanj}{id};
+		dbinsert ($dbh, "restr", ['rdng','kanj'], $x); } }
+	$cntr = 1;
+	foreach $s (@{$entr->{_sens}}) {
+	    $s->{entr} = $eid;  $s->{ord} = $cntr++;
+	    $s->{id} = $sid = dbinsert ($dbh, "sens", ['entr','ord','notes'], $s);
+	    $cntr2 = 1;
+	    foreach $g (@{$s->{_gloss}}) {
+		$g->{sens} = $sid; $g->{ord} = $cntr2++;
+		$g->{id} = dbinsert ($dbh, "gloss", ['sens','ord','lang','txt','notes'], $g); }
+	    foreach $x (@{$s->{_pos}}) {
+		$x->{sens} = $sid;
+		dbinsert ($dbh, "pos", ['sens','kw'], $x); }
+	    foreach $x (@{$s->{_misc}}) {
+		$x->{sens} = $sid;
+		dbinsert ($dbh, "misc", ['sens','kw'], $x); }
+	    foreach $x (@{$s->{_fld}}) {
+		$x->{sens} = $sid;
+		dbinsert ($dbh, "fld", ['sens','kw'], $x); }
+	    foreach $x (@{$s->{_stagr}}) {
+		$x->{sens} = $sid; $x->{rdng} = $x->{rdng}{id};
+		dbinsert ($dbh, "stagr", ['sens','rdng'], $x); }
+	    foreach $x (@{$s->{_stagk}}) {
+		$x->{sens} = $sid; $x->{kanj} = $x->{kanj}{id};
+		dbinsert ($dbh, "stagk", ['sens','kanj'], $x); }
+	    foreach $x (@{$s->{_xref}}) {
+		$x->{sens} = $sid; $x->{xref} = $x->{xref}{id};
+		dbinsert ($dbh, "xref", ['sens','xref','typ','notes'], $x); } 
+	    # Special hack for simulating sens->entry xrefs...
+	    foreach $x (@{$s->{_eref}}) {
+		$x->{sens} = $sid;
+		dbinsert_eref ($dbh, $x); } }
+	foreach $x (@{$entr->{_dial}}) {
+	    $x->{entr} = $eid;
+	    dbinsert ($dbh, "dial", ['entr','kw'], $x); }
+	foreach $x (@{$entr->{_lang}}) {
+	    $x->{entr} = $eid;
+	    dbinsert ($dbh, "lang", ['entr','kw'], $x); }
+	$dbh->commit();
+	return ($eid, $seq); }
+
+    sub dbinsert_eref { my ($dbh, $eref) = @_;
+	# $eref is nearly the same as an $xref record but does not
+`	# have any .xref member.  Instead it has an .eid member
+	# that identifies an entry, to all of whose senses database
+	# xref rows will be generated.  This is to simulate the current
+	# jmdict xml file's sense->entry xref semantics.
+	my ($sql, $sth, @args);
+	$sql = "INSERT INTO xref(sens,xref,typ,notes) " .
+		"(SELECT ?,s.id,?,? FROM entr e JOIN sens s ON s.entr=e.id WHERE e.id=?)";
+	@args = ($eref->{sens}, $eref->{typ}, $eref->{notes}, $eref->{eid});
+	$sth = $dbh->prepare_cached ($sql);
+	$sth->execute (@args); }
+
+
+    sub get_seq { my ($dbh) = @_;
+	my $sql = "SELECT NEXTVAL('seq')";
+	my $a = $dbh->selectrow_arrayref($sql);
+	return $a->[0]; }
 
     1;

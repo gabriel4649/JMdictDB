@@ -271,7 +271,7 @@ use strict; use warnings;
 
     sub dbinsert_eref { my ($dbh, $eref) = @_;
 	# $eref is nearly the same as an $xref record but does not
-`	# have any .xref member.  Instead it has an .eid member
+	# have any .xref member.  Instead it has an .eid member
 	# that identifies an entry, to all of whose senses database
 	# xref rows will be generated.  This is to simulate the current
 	# jmdict xml file's sense->entry xref semantics.

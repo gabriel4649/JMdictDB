@@ -7,6 +7,7 @@
   <title>JMdict</title>
 </head>
 <body>
+  <h1>JMdict Database Entries</h1>
   <span tal:repeat="e entries">
     <div class="entry">
       Seq: <span tal:replace="e/seq">seqnum</span>
@@ -33,7 +34,7 @@
 	</span>
 
       <br tal:if="e/_restr"/>
-      <span tal:if="e/_kanj">【</span>
+      <span tal:if="e/_kanj" tal:omot-tag="">【</span>
       <span tal:repeat="r e/_rdng">
 	<span tal:condition="not:repeat/start" tal:omit-tag="">； </span>
 	<span class="rdng" tal:content="r/txt">reading text</span>
@@ -52,7 +53,7 @@
 	  <span class="rfreq" tal:if="r/_rfreq" tal:content="freqs: ',' r/_rfreq">rfreq</span>]
 	  </span>
 	</span>
-      <span tal:if="e/_kanj">】</span>
+      <span tal:if="e/_kanj" tal:omit-tag="">】</span>
 
       <ol>
         <span class="senses" tal:repeat="s e/_sens">
@@ -72,18 +73,27 @@
 	    <span class="fld" tal:if="s/_fld">
 	      <span tal:replace="kwfulls: 'MISC' ',' s/_fld">fields</span>]
 	      </span>
-	    <span class="pkid">{id:<span tal:replace="s/ord">s.ord</span>/<span tal:replace="s/id">s.id</span>}</span><br/>
+	    <span class="pkid">{id:<span tal:replace="s/id">s.id</span>/<span tal:replace="s/ord">s.ord</span>}</span><br/>
+
+	    <span class="note" tal:if="s/notes">
+	      《<span tal:replace="s/notes">sense-notes</span>》<br/>
+	      </span>
+
 	    <span tal:repeat="g s/_gloss">
-	      <span class="glang" tal:replace="kwabbr: 'LANG' g/lang">lang</span>: 
-	      <span class="gloss" tal:replace="g/txt">gloss text</span>
-	      <span class="pkid">{id:<span tal:replace="g/ord">g.ord</span>/<span tal:replace="g/id">g.id</span>}</span><br/>
+	      <!-- <span class="glang" tal:replace="kwabbr: 'LANG' g/lang">lang</span>: -->
+	      ○ <span class="gloss" tal:replace="g/txt">gloss text</span>
+	      <span class="pkid">{id:<span tal:replace="g/id">g.id</span>/<span tal:replace="g/ord">g.ord</span>}</span><br/>
 	      </span>
 	    <span tal:if="true:s/_xref">Cross references:
 	      <ul>
 		<li tal:repeat="x s/_xref">
 		  <span tal:replace="kwabbr: 'XREF' x/typ">xref-type</span>:
-		  <a tal:attributes="href string:entr.pl?e=${x/id}" tal:content="x/seq">seq-num</a>
-		  <span tal:replace="x/txt">xref-text</span>
+		  <a tal:attributes="href string:entr.pl?e=${x/eid}" tal:content="x/seq">seq-num</a>
+		  <span tal:replace="x/kanj">xref-kanj</span>
+		  <span tal:if="x/kanj" tal:omit-tag="">【</span>
+		  <span tal:replace="x/rdng">xref-rdng</span>
+		  <span tal:if="x/kanj" tal:omit-tag="">】</span>
+		  <span tal:if="x/notes" replace="x/notes">xref-note</span>
 		  </li>
 		</ul>
 	      </span>
@@ -91,8 +101,12 @@
 	      <ul>
 		<li tal:repeat="x s/_xrer">
 		  <span tal:replace="kwabbr: 'XREF' x/typ">xref-type</span>:
-		  <a tal:attributes="href string:entr.pl?e=${x/id}" tal:content="x/seq">seq-num</a>
-		  <span tal:replace="x/txt">xref-text</span>
+		  <a tal:attributes="href string:entr.pl?e=${x/eid}" tal:content="x/seq">seq-num</a>
+		  <span tal:replace="x/kanj">xref-kanj</span>
+		  <span tal:if="x/kanj" tal:omit-tag="">【</span>
+		  <span tal:replace="x/rdng">xref-rdng</span>
+		  <span tal:if="x/kanj" tal:omit-tag="">】</span>
+		  <span tal:if="x/notes" replace="x/notes">xref-note</span>
 		  </li>
 		</ul>
 	      </span>

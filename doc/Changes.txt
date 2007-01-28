@@ -1,4 +1,83 @@
 
+2007-01-28	smcgraw@frii.com
+
+	* load_jmdict.pl
+	Change increment used for "ord" columns from 10 to 1.
+
+	* perl/lib/jmdict.pm
+	Fix errant keystroke that causes syntax error.
+
+2007-01-27	smcgraw@frii.com
+
+	* perl/cgi/entr.css
+	Add entry.notice and entry.caution formats.
+
+	* perl/cgi/entr.pl
+	Add validation of url parameters.
+	Generate error page if parameters are bad..
+
+	* perl/cgi/nwform.pl
+	* perl/cgi/nwconf.pl
+	* perl/cgi/nesub.pl
+	New: Page generators for Add New Word web interface.
+
+	* perl/lib/jmdict.pm
+	Fix: jstr_classify not setting KATAKANA bit properly.
+	Add functions dbinsert() and addrentr().
+	Provide more info in cross ref display: In EntrList()
+	  change the sql used to read xref data.
+	
+	* perl/lib/jmdictcgi.pm
+	New: Support functions for the cgi code.
+
+	* perl/lib/tal/entr.tal
+	Provide more info in cross ref display: adjust template to
+	  use more detailed xref data.
+	Display sense notes.
+	Display id info as {id/ord} rather than {ord/id}.
+	Comment out gloss lang since we will be using the english
+	  only jmdict from here on.  (The non-english enties in
+	  the jmdict.xml file are merged in from other projects
+	  and won't be maintained by the jmdict project, at least 
+	  imediately.)
+	Add h1 title.
+
+	* perl/lib/tal/srchres.tal
+	Add h1 title.
+
+	* perl/lib/tal/srchform.tal
+	Add notice about priority of Id Number search.
+	Add usage notes at bottom of page.
+	Make seq number search the defaut option (was entry id)
+	Change titles of id number search text boxes.
+	Change default for gA search compare from "<=" to ">=".
+	Add h1 title.
+
+	* perl/lib/tal/nwform.tal
+	* perl/lib/tal/nwconf.tal
+	New: Templates for Add New Word web interface.
+
+	* perl/lib/jmdictxml.pm
+	Fix: correct missing trailing space in expanded entity 
+	  text for RINF/uk.
+
+	* pg/syncseq.sql
+	Update the new "seq" sequence (see mktables.sql).
+
+	* pg/mkfk.sql
+	Fix: missing fk in stagk to kanj.id.
+
+	* pg/mktables.sql
+	Add new sequence "seq" to provide seq numbers for table
+	  "entr".  These expected to be obtained and used by the
+	  application code -- they are not used as entr.seq default
+	  values.
+
+	* pg/mkviews.sql
+	Provide more info in cross ref display: replace view sref
+	  with xsum and xsumr for generating sens->entry xref records
+	  from db's native sens->sens data.
+
 2007-01-15	smcgraw@frii.com
 
 	* perl/load_googits.pl [1.3]

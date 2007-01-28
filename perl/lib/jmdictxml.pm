@@ -49,7 +49,7 @@ our %JM2ID = (
 		'word containing irregular kana usage' => 3,
 		'out-dated or obsolete kana usage' => 4,
 		'rare' => 5,
-		'word usually written using kana alone' => 6,
+		'word usually written using kana alone ' => 6,
 		'word usually written using kanji alone ' => 7, },
 	
 	FLD => {		# kwfld

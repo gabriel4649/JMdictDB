@@ -1,0 +1,147 @@
+﻿<html xmlns:tal="http://purl.org/petal/1.0/">
+<!--? Copyright (c) 2007 Stuart McGraw -->
+<!--? $Revision$ $Date$ -->
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link rel="stylesheet" type="text/css" href="entr.css"/>
+  <title>JMdict</title>
+</head>
+<body>
+  <h1>Confirm New Entry</h1>
+  <span tal:repeat="e entries">
+    <div class="entry">
+      <span class="warnings" tal:if="true:chklist">
+	<span class="caution">Caution:</span>
+	The following existing entries contain kanji or readings
+	that exist in your proposed entry.  Before submitting your
+	entry, please make sure that it is not a duplicate of, or
+	should not be an amendment to, one of these entries.
+	<ol>
+	  <li tal:repeat="c chklist">
+	    <a tal:attributes="href string:entr.pl?q=${c/seq}" tal:content="c/seq">seq</span>
+	    <span tal:if="c/kanj" tal:content="c/kanj" tal:omit-tag="">kanji</span>
+	    <span tal:if="c/kanj">【</span>
+	    <span tal:content="c/rdng" tal:omit-tag="">reading</span>
+	    <span tal:if="c/kanj">】</span>
+	    <span tal:content="c/gloss" tal:omit-tag="">gloss</span>
+	    </li>
+	  </ol>
+	<hr/>
+	Your entry:<br/>
+	</span>
+      <span class="dial" tal:condition="e/_dial">, 
+        Dialect: <span tal:replace="kwabbrs: 'DIAL' ',' e/_dial">dial</span>
+	</span>
+      <span class="lang" tal:if="e/_lang">, 
+	Original lang: <span tal:replace="kwabbrs: 'LANG' ',' e/_lang">lang</span>
+	</span>
+
+      <br/> 
+      <span tal:if="e/_kanj" tal:repeat="k e/_kanj" tal:omit-tag="">
+	<span tal:condition="not:repeat/start" tal:omit-tag="">； </span>
+	<span class="kanj" tal:content="k/txt">kanji text</span>
+	<span class="kattrs" tal:if="or:k/_kinf k/_kfreq">
+	  [<span class="kinf" tal:if="k/_kinf" tal:content="kwabbrs: 'KINF' ',' k/_kinf">kinf</span>
+	   <span tal:if="and: k/_kinf k/_kfreq" tal:replace="string:/">/</span>
+	   <span class="kfreq" tal:if="k/_kfreq" tal:content="freqs: ',' k/_kfreq">kfreq</span>]
+	  </span>
+	</span>
+
+      <br tal:if="e/_restr"/>
+      <span tal:if="true:e/_kanj">【</span>
+      <span tal:repeat="r e/_rdng">
+	<span tal:condition="not:repeat/start" tal:omit-tag="">； </span>
+	<span class="rdng" tal:content="r/txt">reading text</span>
+	<span class="restr" tal:if="true:/r/_restr">(
+	  <span tal:if="eq: string:1 r/_restr" tal:omit-tag="">no kanji</span>
+	  <span tal:if="not:eq: string:1 r/_restr" tal:omit-tag="">
+	    <span tal:repeat="z r/_restr" tal:omit-tag="">
+	      <span tal:if="not:repeat/start" tal:omit-tag="">,</span>
+	      <span tal:replace="z/txt"/>
+	      </span>
+	    </span>)
+	  </span>
+	<span class="rattrs" tal:if="or:r/_rinf r/_rfreq">
+	  [<span class="rinf" tal:if="r/_rinf" tal:content="kwabbrs: 'RINF' ',' r/_rinf">rinf</span>
+	  <span tal:if="and: r/_rinf r/_rfreq" tal:replace="string:/">/</span>
+	  <span class="rfreq" tal:if="r/_rfreq" tal:content="freqs: ',' r/_rfreq">rfreq</span>]
+	  </span>
+	</span>
+      <span tal:if="true:e/_kanj">】</span>
+
+      <ol>
+        <span class="senses" tal:repeat="s e/_sens">
+	  <li class="sense">
+	    <span class="stag" tal:if="s/_stag/0">
+	      (<span tal:if="s/_stag" tal:repeat="z s/_stag" tal:omit-tag="">
+		<span tal:if="not:repeat/start" tal:omit-tag="">,</span>
+		<span tal:replace="z/txt" tal:omit-tag="">stag-restr</span>
+		</span> only)
+	      </span>
+	    <span class="pos" tal:if="s/_pos">
+	      [<span tal:replace="kwabbrs: 'POS' ',' s/_pos">pos</pos>]
+	      </span>
+	    <span class="misc" tal:if="s/_misc">
+	      [<span tal:replace="kwabbrs: 'MISC' ',' s/_misc">misc</span>]
+	      </span>
+	    <span class="fld" tal:if="s/_fld">
+	      <span tal:replace="kwfulls: 'MISC' ',' s/_fld">fields</span>]
+	      </span>
+
+	    <span class="note" tal:if="s/notes">
+	      <br/>《<span tal:replace="s/notes">sense-notes</span>》<br/>
+	      </span>
+
+	    <span tal:repeat="g s/_gloss">
+	      <br/><!-- <span class="glang" tal:replace="kwabbr: 'LANG' g/lang">lang</span>: -->
+	      ○ <span class="gloss" tal:replace="g/txt">gloss text</span>
+	      </span>
+	    <span tal:if="true:s/_xref"><br/>Cross references:
+	      <ul>
+		<li tal:repeat="x s/_xref">
+		  <span tal:replace="kwabbr: 'XREF' x/typ">xref-type</span>:
+		  <a tal:attributes="href string:entr.pl?e=${x/id}" tal:content="x/seq">seq-num</a>
+		  <span tal:replace="x/kanj">xref-kanj</span>
+		  <span tal:if="x/kanj" tal:omit-tag="">【</span>
+		  <span tal:replace="x/rdng">xref-rdng</span>
+		  <span tal:if="x/kanj" tal:omit-tag="">】</span>
+		  <span tal:if="x/notes" replace="x/notes">xref-note</span>
+		  </li>
+		</ul>
+	      </span>
+	    </li>
+	  </span>
+        </ol>
+
+      <span tal:if="e/has_audio" tal:omit-tag="">Audio:
+	<dl>
+	  <span tal:repeat="r e/_rdng" tal:omit-tag="">
+	    <span tal:if="true:r/_audio" tal:omit-tag="">
+	      <dt tal:content="r/txt">reading-text</dt>
+	      <dd tal:repeat="a r/_audio">
+		<a tal:attributes="href string:noaudio.html" tal:content="a/fname">filename</a>
+		<span tal:replace="string:(${a/strt}:${a/leng})">(start:length)</span>
+		</dd>
+	      </span>
+	    </span>
+	  </dl>
+	</span>
+
+      <span tal:if="e/_hist" tal:omit-tag="">History:
+	<ol>
+	  <li tal:repeat="h e/_hist">
+	      <span class="hhdr" tal:replace="string: ${kwabbr:'STAT' h/stat} ${h/dt} ${h/who}">hist-header</span>
+	      <pre class="hnotes" tal:if="h/notes" tal:content="h/notes">hist-notes</pre>
+	    </li>
+	  </ol>
+	</span>
+
+      <form action="nwsub.pl" method="get">
+	<input type="hidden" name="entr" value="${serialized}"/>
+	<input type="Submit" value="Submit this entry as a new word"/>
+	</form>
+
+      </div>
+    </span>
+  </body>
+</html>

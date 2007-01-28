@@ -7,6 +7,7 @@
   <title>JMdict search form</title>
 </head>
 <body class="srchfrm">
+<h1>JMdict Search</h1>
 <form method="get" action="srchres.pl" name="srchres">
   <table class="form">
     <tbody>
@@ -87,27 +88,30 @@
               <table class="idsrch">
                 <tbody>
                   <tr>
-                    <td>Table:</td>
+                    <td>Id Number:</td>
                     <td>
                     <select name="idtyp">
-                    <option value="entr">Entry</option>
-                    <option value="seqnum">Seq num</option>
-                    <option value="rdng">Reading</option>
-                    <option value="kanj">Kanji</option>
-                    <option value="sens">Sense</option>
-                    <option value="gloss">Gloss</option>
+                    <option value="seqnum">Entry Seq</option>
+                    <option value="entr">Entry Id</option>
+                    <option value="rdng">Reading Id</option>
+                    <option value="kanj">Kanji Id</option>
+                    <option value="sens">Sense Id</option>
+                    <option value="gloss">Gloss Id</option>
                     </select>
                     </td>
                   </tr>
-                  <tr>
-                  </tr>
-                  <tr>
-                    <td>Id number:</td>
+                   <tr>
+                    <td>Value:</td>
                     <td><input name="idval" size="7"/></td>
                   </tr>
+		  <tr>
+		    <td class="notice" colspan="2">Search by Id number superceeds all other criteria.</td>
+		  </tr>
+		  <tr>
+		    <td colspan="2"><input name="search" value="Search" type="submit"/></td>
+		  </tr>
                 </tbody>
-              </table>
-	      <br/><input name="search" value="Search" type="submit"/> 
+              </table> 
               </td>
             </tr>
 	    <tr><td colspan="2"> </td></tr>
@@ -142,9 +146,9 @@
 	      &nbsp;&nbsp;
 	      <input name="freq" value="ga" type="checkbox"/>gA
               <select name="gacmp">
-              <option selected="selected">&lt;=</option>
+              <option>&lt;=</option>
               <option>=</option>
-              <option>&gt;=</option>
+              <option selected="selected">&gt;=</option>
               </select>
               <input name="gaval" size="8"/></span>
 	      </td>
@@ -184,5 +188,33 @@
     </tbody>
   </table>
 </form>
+<span class="notes">
+  Notes...
+  <ul>
+    <li>ID search superceeds all other criteria.  If you want to search by 
+      any of the other criteria, make sure the Value text box is empty.</li>
+    <li>The text search rows and other sections are ANDed together.</li> 
+    <li>Within the attribute sections, all selections are ORed together.
+      For example, if both "suf" and "pref" are checked in the PoS section, 
+      entries that are either suffixes or prefixes will be found.</li>
+    <li>If "Search In" is Auto, the given text will be searched for according 
+      to the characters in the search string.  If the search string contains:
+      <ul> 
+        <li>any kanji characters: the kanji table is searched.</li>
+        <li>kana characters but no kanji: the reading table is searched.</li>
+        <li>neither kanji nor kana characters: the gloss table is searched.</li>
+        </ul>
+      You can explicitly specify the table if you want to override this (to search
+      for kanji strings that contain a particular kana substring for example.)
+      </li>
+    <li>If Freqency of Use criteria are given, an entry will match if the critera
+       occur in either the reading FoU or the kanji FoU.</li>
+    <li>When criteria are ANDed, they are considered across the entire entry.
+      For example if a gloss string and a PoS atrribute are specified, any entry 
+      containing both will returned, even when they occur in different senses.</li>
+    <li>For an explanation of the attribute codes, see 
+      <a href="http://www.csse.monash.edu.au/~jwb/wwwjdicinf.html#code_tag">this page</a>.</li>
+    </ul>
+  </span>
 </body>
 </html>

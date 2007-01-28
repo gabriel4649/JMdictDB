@@ -17,7 +17,6 @@
 	    substr('$Date$',7,-11));
 
 # To do:
-# Add usage/help message.
 # Add command line option to give a directory for the
 #   temporary files.
 # Better performance if we use SAX instead of XML::Twig?
@@ -44,6 +43,8 @@ else {
     binmode(STDERR, ":encoding(utf-8)");
     eval { binmode($DB::OUT, ":encoding(utf-8)"); } }
 
+$::Ordincr = 1;	# "ord" columns in tables rdng, kanj, sens and gloss 
+		#   will start at and be incremented by this value.
 
 main: {
 	my ($twig, $infn, $outfn, $tmpfiles, $tmp);
@@ -153,7 +154,7 @@ sub do_entry { my ($seq, $entry) = @_;
 
 sub do_kanj { my ($keles) = @_;
 	my ($ord, $txt, $k, @x, $kmap);
-	$ord = 10; $kmap = {};
+	$ord = $::Ordincr; $kmap = {};
 	foreach $k (@$keles) {
 	    $txt = ($k->get_xpath ("keb"))[0]->text;
 	    # (id,entr,ord,txt)
@@ -161,7 +162,7 @@ sub do_kanj { my ($keles) = @_;
 	    if (@x = $k->get_xpath ("ke_inf")) { do_kinfs (\@x); }
 	    if (@x = $k->get_xpath ("ke_pri")) { do_kfrqs (\@x); }
 	    $kmap->{$txt} = $::jid;
-	    $ord += 10; 
+	    $ord += $::Ordincr; 
 	    $::jid += 1; }
 	return $kmap; }
 
@@ -181,7 +182,7 @@ sub do_kfrqs { my ($kfrqs) = @_;
 
 sub do_rdng { my ($reles, $kmap) = @_;
 	my ($ord, $txt, $r, $z, @x, $rmap, %restr);
-	$ord = 10;  $rmap = {}; %restr = ();
+	$ord = $::Ordincr;  $rmap = {}; %restr = ();
 	foreach $r (@$reles) {
 	    $txt = ($r->get_xpath ("reb"))[0]->text;
 	    # (id,entr,ord,txt)
@@ -195,7 +196,7 @@ sub do_rdng { my ($reles, $kmap) = @_;
 		if (! defined ($restr{$::rid})) { $restr{$::rid} = {}; }
 		$restr{$::rid} = 1; }
 	    $rmap->{$txt} = $::rid;
-	    $ord += 10; 
+	    $ord += $::Ordincr; 
 	    $::rid += 1; }
 	if (%restr) { do_restr ($::Frestr, \%restr, $rmap, $kmap); }
 	return $rmap; }
@@ -216,7 +217,7 @@ sub do_rfrqs { my ($rfrqs) = @_;
 
 sub do_sens { my ($sens, $kmap, $rmap) = @_;
 	my ($ord, $txt, $s, @x, @p, @pp, $z, %smap, %stagr, %stagk);
-	$ord=10;  @pp=(); %smap=(); %stagr=(); %stagk=();
+	$ord=$::Ordincr;  @pp=(); %smap=(); %stagr=(); %stagk=();
 	foreach $s (@$sens) {
 	    $txt = "\\N";
 	    if (@x = $s->get_xpath ("s_inf")) { $txt = $x[0]->text; }
@@ -237,21 +238,21 @@ sub do_sens { my ($sens, $kmap, $rmap) = @_;
 		if (! defined ($stagk{$::sid})) { $stagk{$::sid} = {}; }
 		$stagk{$::sid}->{$kmap->{$z->text}} = 1; }
 	    $smap{$s::id} = $::sid;
-	    $ord += 10; 
+	    $ord += $::Ordincr; 
 	    $::sid += 1; }
 	if (%stagr) { do_restr ($::Fstagr, \%stagr, \%smap, $rmap); }
 	if (%stagk) { do_restr ($::Fstagk, \%stagk, \%smap, $kmap); } }
 
 sub do_glos { my ($gloss) = @_;
 	my ($g, $ord, $lang, $txt);
-	$ord = 10;
+	$ord = $::Ordincr;
 	foreach $g (@$gloss) {
 	    $lang = undef; $lang = $g->att("g_lang");
 	    $lang = $lang ? $::JM2ID{LANG}{$lang} : $::JM2ID{LANG}{"en"}; 
 	    ($txt = $g->text) =~ s/\\/\\\\/go;
 	    # (id,sens,ord,lang,txt,notes)
 	    print $::Fglos "$::gid\t$::sid\t$ord\t$lang\t$txt\t\\N\n"; 
-	    $ord += 10;
+	    $ord += $::Ordincr;
 	    $::gid += 1; } }
 
 sub do_pos { my ($pos) = @_;

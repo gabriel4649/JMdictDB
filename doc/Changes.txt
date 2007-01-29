@@ -1,3 +1,20 @@
+2007-01-29	smcgraw@frii.com
+
+	* Tag T010
+	This tag preceeds a major revision of the database schema
+	  that affects nearly all the files.  At this point, the
+	  loader scripts (load_jmdict.pl, reload.sql, postload.sql),
+	  work as does showentr.pl and the cgi scripts although the
+	  latter have not been tested much.  load_googits.pl may 
+	  work but its easier/faster/better to load the raw googit
+	  data into a temp table and update the kfreq/rfreq tables 
+	  using queries based on that.
+	  The python and mysql directories remain obsolete.
+
+2007-01-29	smcgraw@frii.com
+
+	* pg/syncseq.sql
+	Remove duplicate line.
 
 2007-01-28	smcgraw@frii.com
 

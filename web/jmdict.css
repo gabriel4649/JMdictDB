@@ -10,6 +10,7 @@
 .status		{font-size: 80%; color: #FF0000}
 .caution	{color: #FF0000}
 .notice		{font-size: 55%; color: #FF0000}
+.notes		{font-size: 75%;}
 
 /* Search results list */
 .results	{background: #E8FFF0; 
@@ -21,7 +22,7 @@
 .resrow    	{vertical-align: top;}
 .seq,.gloss	{font-size: 80%;}
 .heading   	{border-width: thin;}
-.debug		{.font-size: 60%;}
+.debug		{font-size: 60%;}
 
 /* Search form */
 .form	    	{background: #E8FFF0; 

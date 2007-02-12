@@ -47,15 +47,15 @@
 	  </span>
 	</span>
 
-      <br tal:if="e/_restr"/>
-      <span tal:if="true:e/_kanj">【</span>
+      <br tal:if="e/HAS_RESTR"/>
+      <span tal:if="true:e/_kanj" tal:omit-tag="">【</span>
       <span tal:repeat="r e/_rdng">
 	<span tal:condition="not:repeat/start" tal:omit-tag="">； </span>
 	<span class="rdng" tal:content="r/txt">reading text</span>
-	<span class="restr" tal:if="true:/r/_restr">(
-	  <span tal:if="eq: string:1 r/_restr" tal:omit-tag="">no kanji</span>
-	  <span tal:if="not:eq: string:1 r/_restr" tal:omit-tag="">
-	    <span tal:repeat="z r/_restr" tal:omit-tag="">
+	<span class="restr" tal:if="true:/r/_RESTR">(
+	  <span tal:if="eq: string:1 r/_RESTR" tal:omit-tag="">no kanji</span>
+	  <span tal:if="not:eq: string:1 r/_RESTR" tal:omit-tag="">
+	    <span tal:repeat="z r/_RESTR" tal:omit-tag="">
 	      <span tal:if="not:repeat/start" tal:omit-tag="">,</span>
 	      <span tal:replace="z/txt"/>
 	      </span>
@@ -69,11 +69,12 @@
 	</span>
       <span tal:if="true:e/_kanj">】</span>
 
-      <ol>
-        <span class="senses" tal:repeat="s e/_sens">
-	  <li class="sense">
-	    <span class="stag" tal:if="s/_stag/0">
-	      (<span tal:if="s/_stag" tal:repeat="z s/_stag" tal:omit-tag="">
+      <table class="senses" border="0">
+        <tr class="sense" tal:repeat="s e/_sens">
+	  <td valign="top" tal:content="string:${s/sens}.">n.</td>
+	  <td colspan="2">
+	    <span class="stag" tal:if="s/_STAG">
+	      (<span tal:if="s/_STAG" tal:repeat="z s/_STAG" tal:omit-tag="">
 		<span tal:if="not:repeat/start" tal:omit-tag="">,</span>
 		<span tal:replace="z/txt" tal:omit-tag="">stag-restr</span>
 		</span> only)
@@ -86,34 +87,42 @@
 	      </span>
 	    <span class="fld" tal:if="s/_fld">
 	      <span tal:replace="kwfulls: 'MISC' ',' s/_fld">fields</span>]
-	      </span>
+	      </span><br/>
 
 	    <span class="note" tal:if="s/notes">
-	      <br/>《<span tal:replace="s/notes">sense-notes</span>》<br/>
+	      《<span tal:replace="s/notes">sense-notes</span>》<br/>
 	      </span>
 
 	    <span tal:repeat="g s/_gloss">
-	      <br/><!-- <span class="glang" tal:replace="kwabbr: 'LANG' g/lang">lang</span>: -->
-	      ○ <span class="gloss" tal:replace="g/txt">gloss text</span>
+	      <span tal:if="not: eq: g/lang string:1" omit-tag="">
+	        <span class="glang" tal:replace="kwabbr: 'LANG' g/lang">lang</span>:
+		</span>
+	      <span class="gloss" tal:replace="string:${g/gloss}. ${g/txt}">n. gloss text</span><br/>
 	      </span>
-	    <span tal:if="true:s/_xref"><br/>Cross references:
-	      <ul>
-		<li tal:repeat="x s/_xref">
+	    <table class="xrefs" tal:if="or: true:s/_erefs true:s/_erers">
+	      <tr tal:if="true:s/_erefs">
+		<td colspan="2">Cross references:</td>   
+	        </tr>
+	      <tr tal:if="true:s/_erefs" tal:repeat="x s/_erefs">
+		<td>&nbsp;</td>
+		<td>
 		  <span tal:replace="kwabbr: 'XREF' x/typ">xref-type</span>:
-		  <a tal:attributes="href string:entr.pl?e=${x/id}" tal:content="x/seq">seq-num</a>
-		  <span tal:replace="x/kanj">xref-kanj</span>
-		  <span tal:if="x/kanj" tal:omit-tag="">【</span>
-		  <span tal:replace="x/rdng">xref-rdng</span>
-		  <span tal:if="x/kanj" tal:omit-tag="">】</span>
+		  <a tal:attributes="href string:entr.pl?e=${x/entr/id}" tal:content="x/entr/seq">seq-num</a>
+		  <span tal:if="gt: x/entr/nsens string:1">
+		    (<span tal:replace="join: ',' x/sens">senses</span>)</span>
+		  <span tal:replace="x/entr/kanj">xref-kanj</span>
+		  <span tal:if="x/entr/kanj" tal:omit-tag="">【</span>
+		  <span tal:replace="x/entr/rdng">xref-rdng</span>
+		  <span tal:if="x/entr/kanj" tal:omit-tag="">】</span>
 		  <span tal:if="x/notes" replace="x/notes">xref-note</span>
-		  </li>
-		</ul>
-	      </span>
-	    </li>
-	  </span>
-        </ol>
+		  </td>
+		</tr>
+	      </table>
+	    </td>
+	  </tr>
+        </table>
 
-      <span tal:if="e/has_audio" tal:omit-tag="">Audio:
+      <span tal:if="e/HAS_AUDIO" tal:omit-tag="">Audio:
 	<dl>
 	  <span tal:repeat="r e/_rdng" tal:omit-tag="">
 	    <span tal:if="true:r/_audio" tal:omit-tag="">

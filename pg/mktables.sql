@@ -63,7 +63,7 @@ CREATE TABLE entr (
     id SERIAL NOT NULL PRIMARY KEY,
     src SMALLINT NOT NULL,
     seq INT NOT NULL,
-    stat SMALLINT NOT NULL DEFAULT 2,
+    stat SMALLINT NOT NULL,
     notes TEXT);
 
 CREATE SEQUENCE seq 
@@ -71,37 +71,40 @@ CREATE SEQUENCE seq
    NO CYCLE OWNED BY entr.seq;
 
 CREATE TABLE rdng (
-    id SERIAL NOT NULL PRIMARY KEY,
     entr INT NOT NULL,
-    ord SMALLINT NOT NULL,
-    txt VARCHAR(2048) NOT NULL);
+    rdng SMALLINT NOT NULL,
+    txt VARCHAR(2048) NOT NULL,
+    PRIMARY KEY(entr,rdng));
 
 CREATE TABLE kanj (
-    id SERIAL NOT NULL PRIMARY KEY,
     entr INT NOT NULL,
-    ord SMALLINT NOT NULL,
-    txt VARCHAR(2048) NOT NULL);
+    kanj SMALLINT NOT NULL,
+    txt VARCHAR(2048) NOT NULL,
+    PRIMARY KEY(entr,kanj));
 
 CREATE TABLE sens (
-    id SERIAL NOT NULL PRIMARY KEY,
     entr INT NOT NULL,
-    ord SMALLINT NOT NULL,
-    notes TEXT);
+    sens SMALLINT NOT NULL,
+    notes TEXT,
+    PRIMARY KEY(entr,sens));
 
 CREATE TABLE gloss (
-    id SERIAL NOT NULL PRIMARY KEY,
-    sens INT NOT NULL,
-    ord SMALLINT NOT NULL,
+    entr INT NOT NULL,
+    sens SMALLINT NOT NULL,
+    gloss SMALLINT NOT NULL,
     lang SMALLINT NOT NULL,
     txt VARCHAR(2048) NOT NULL,
-    notes TEXT);
+    notes TEXT,
+    PRIMARY KEY(entr,sens,gloss));
 
 CREATE TABLE xref (
-    sens INT NOT NULL,
-    xref INT NOT NULL,
+    entr INT NOT NULL,
+    sens SMALLINT NOT NULL,
+    xentr INT NOT NULL,
+    xsens SMALLINT NOT NULL,
     typ SMALLINT NOT NULL,
     notes TEXT,
-    PRIMARY KEY (sens,xref,typ));
+    PRIMARY KEY (entr,sens,xentr,xsens,typ));
 
 CREATE TABLE hist (
     id SERIAL NOT NULL PRIMARY KEY,
@@ -114,7 +117,8 @@ CREATE TABLE hist (
 
 CREATE TABLE audio (
     id SERIAL NOT NULL PRIMARY KEY,
-    rdng INT NOT NULL,
+    entr INT NOT NULL,
+    rdng SMALLINT NOT NULL,
     fname VARCHAR(255) NOT NULL,
     strt INT NOT NULL,
     leng INT NOT NULL);
@@ -126,22 +130,25 @@ CREATE TABLE editor (
     notes TEXT);
 
 CREATE TABLE xresolv (
-    sens INT NOT NULL,
+    entr INT NOT NULL,
+    sens SMALLINT NOT NULL,
     typ SMALLINT NOT NULL,
     txt VARCHAR(250) NOT NULL);
 
 
 CREATE TABLE kfreq (
-    kanj INT NOT NULL,
+    entr INT NOT NULL,
+    kanj SMALLINT NOT NULL,
     kw SMALLINT NOT NULL,
     value INT,
-    PRIMARY KEY (kanj,kw));
+    PRIMARY KEY (entr,kanj,kw));
 
 CREATE TABLE rfreq (
-    rdng INT NOT NULL,
+    entr INT NOT NULL,
+    rdng SMALLINT NOT NULL,
     kw SMALLINT NOT NULL,
     value INT,
-    PRIMARY KEY (rdng,kw));
+    PRIMARY KEY (entr,rdng,kw));
 
 CREATE TABLE dial (
     entr INT NOT NULL,
@@ -149,14 +156,16 @@ CREATE TABLE dial (
     PRIMARY KEY (entr,kw));
 
 CREATE TABLE fld (
-    sens INT NOT NULL,
+    entr INT NOT NULL,
+    sens SMALLINT NOT NULL,
     kw SMALLINT NOT NULL,
-    PRIMARY KEY (sens,kw));
+    PRIMARY KEY (entr,sens,kw));
 
 CREATE TABLE kinf (
-    kanj INT NOT NULL,
+    entr INT NOT NULL,
+    kanj SMALLINT NOT NULL,
     kw SMALLINT NOT NULL,
-    PRIMARY KEY (kanj,kw));
+    PRIMARY KEY (entr,kanj,kw));
 
 CREATE TABLE lang (
     entr INT NOT NULL,
@@ -164,33 +173,39 @@ CREATE TABLE lang (
     PRIMARY KEY (entr,kw));
 
 CREATE TABLE misc (
-    sens INT NOT NULL,
+    entr INT NOT NULL,
+    sens SMALLINT NOT NULL,
     kw SMALLINT NOT NULL,
-    PRIMARY KEY (sens,kw));
+    PRIMARY KEY (entr,sens,kw));
 
 CREATE TABLE pos (
-    sens INT NOT NULL,
-    kw SMALLINT NOT NULL,
-    PRIMARY KEY (sens,kw));
+    entr INT NOT NULL,
+    sens SMALLINT NOT NULL,
+    kw SMALLINT  NOT NULL,
+    PRIMARY KEY (entr,sens,kw));
 
 CREATE TABLE rinf (
-    rdng INT NOT NULL,
+    entr INT NOT NULL,
+    rdng SMALLINT NOT NULL,
     kw SMALLINT NOT NULL,
-    PRIMARY KEY (rdng,kw));
+    PRIMARY KEY (entr,rdng,kw));
 
 
 
 CREATE TABLE restr (
-    rdng INT NOT NULL,
-    kanj INT NOT NULL,
-    PRIMARY KEY (rdng,kanj));
+    entr INT NOT NULL,
+    rdng SMALLINT NOT NULL,
+    kanj SMALLINT NOT NULL,
+    PRIMARY KEY (entr,rdng,kanj));
 
 CREATE TABLE stagr (
-    sens INT NOT NULL,
-    rdng INT NOT NULL,
-    PRIMARY KEY (sens,rdng));
+    entr INT NOT NULL,
+    sens SMALLINT NOT NULL,
+    rdng SMALLINT NOT NULL,
+    PRIMARY KEY (entr,sens,rdng));
 
 CREATE TABLE stagk (
-    sens INT NOT NULL,
-    kanj INT NOT NULL,
-    PRIMARY KEY (sens,kanj));
+    entr INT NOT NULL,
+    sens SMALLINT NOT NULL,
+    kanj SMALLINT NOT NULL,
+    PRIMARY KEY (entr,sens,kanj));

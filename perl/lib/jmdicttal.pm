@@ -74,11 +74,26 @@ $Petal::Hash::MODIFIERS->{'kwfulls:'} = sub { my ($hash, $args) = @_;
 	return join ($d, @a); };
 
 $Petal::Hash::MODIFIERS->{'freqs:'} = sub { my ($hash, $args) = @_;
-	my ( @a, $d, $e);
+	my (@a, $d, $e);
 	@a = jmdicttal::split_args ($args);
 	$d = $hash->jmdicttal::fetch_arg ($a[0]);
 	$e = $hash->jmdicttal::fetch_arg ($a[1]);
 	@a = map ($::KW->{FREQ}{$_->{kw}}{kw}.($_->{value}), @$e);
 	return join ($d, @a); };
+
+$Petal::Hash::MODIFIERS->{'h2l:'} = sub { my ($hash, $args) = @_;
+	# Hash-to-list
+	my (@a, $h, $k, $v);
+	$h = $hash->jmdicttal::fetch_arg ($args);
+	while (($k, $v) = each %$h) { push (@a, {key=>$k, val=>$v}); }
+	@a = sort {$a->{key} cmp $b->{key}} @a;
+	return (\@a); };
+
+$Petal::Hash::MODIFIERS->{'join:'} = sub { my ($hash, $args) = @_;
+	my ($a, $b, $e1, $e2);
+	($e1, $e2) = jmdicttal::split_args ($args);
+	$a = $hash->jmdicttal::fetch_arg ($e1);
+	$b = $hash->jmdicttal::fetch_arg ($e2);
+	return join($a, @$b); };
 
 1;

@@ -33,17 +33,11 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	$entrs = unserialize ( $x );
 	foreach $entr ($entrs) {
 	    $entr->{stat} = 1; # Force entr.stat=New.
-	    rename_xrefs ($entr);
+	    #rename_xrefs ($entr);
 	    ($eid,$seq) = addentr ($dbh, $entr); 
 	    push (@added, [$eid,$seq]); }
 	results_page (\@added);
 	$dbh->disconnect; }
-
-    sub rename_xrefs { my ($entr) = @_;
-	foreach my $s (@{$entr->{_sens}}) {
-	    next if (!$s->{_xref});
-	    $s->{_eref} = $s->{_xref};  
-	    $s->{_xref} = undef; } }
 
     sub results_page { my ($added) = @_;
 	my @m = map ("\n      <a href=\"entr.pl?q=$_->[1]\">$_->[1]</a>", @$added);

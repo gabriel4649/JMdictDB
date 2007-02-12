@@ -1,3 +1,136 @@
+
+2007-02-11	smcgraw@frii.com
+
+	Changed primary keys on tables "rdng", "kanj", "sens", "gloss",
+	  from a single SERIAL column to composite key based on the 
+	  table "entr"s "id" column and the former "ord" column.  For
+	  example, the primary key of the rdng table was surregate key
+	  using a SERIAL column named "id".  Now it is a composite key
+	  ("entr","rdng") where "entr" is a foreign key to entr.id, and
+	  rdng a small number (1, 2,..) that replaces the former "ord"
+	  column.  This change also affects all tables that have foreign
+	  keys to the changed tables mentioned above.
+
+	  Pros:
+	  - More natural representation, e.g. reading now identified
+	    as reading 3 of entry 55555, rather than an arbitrary 
+	    number.
+	  - Allows simpler code when dealing with audio, xrefs, etc,
+	    because associated entry id is always available and does  
+	    not have to be recovered using a more complicated query.
+	  - Eliminates the need to lookup entries by sens.id, rdng.id, 
+	    etc, in user interfaces.
+	  - Greatly reduces the space required by the largest tables
+	    by eliminating a 4-byte integer from each row.
+	  - Eliminates need for extra sequence tables to support the
+	    SERIAL columns.
+	  - Number of indexes needed is greatly reduced. 
+	  Cons:
+	  - Joins between the changed tables and their children now
+	    need to be done on two columns rather than one.  Grand-
+	    children will need three columns (but there aren't any yet.)
+	  - Children of the changed tables need extra column (2-byte)
+	    (but because these tables are much smaller than their parent
+	    table, the space saving in the parent table greatly outweighs
+	    the greater space needed by these child tables.)
+
+	Other changes:
+	--------------
+
+	* perl/load_jmdict.pl
+	Pk/fk changes on major tables.
+	Use "Deleted..." comments to create D history records.  
+	  Unparsable comments are written to new output file
+	  skipped_comments.log.
+	Add -e option to specify encoding used for interactive
+	  and debug messages.  Program still bombs when converting
+	  unconvertable characters (european character in gloss to
+	  shift_jis on Windows for example) which limits usefulness
+	  of this option.
+
+	* perl/showentr.pl
+	Pk/fk changes on major tables.
+	Add -e option to specify encoding used for interactive
+	  and debug messages.  Program still bombs when converting
+	  unconvertable characters (european character in gloss to
+	  shift_jis on Windows for example) which limits usefulness
+	  of this option.
+
+	* perl/cgi/entr.css
+	Format for notes and debug info.
+
+	* perl/cgi/entr.pl
+	Pk/fk changes on major tables.
+	Add debug info displayed at bottom of page such as executed
+	  sql statements and various timings.) 
+	Display xrefs as target entry info followed by a parenthesised
+	  list of senses of there are more than one.
+
+	* perl/cgi/nwconf.pl
+	Pk/fk changes on major tables.
+	Rewite code that handles xref info for display.
+	Allow target sense specifiers in xref text field.
+	Do more validity checking of xrefs (eg complain if the xref 
+	  resolved to more than one entry and explicit senses given.)
+	Display xrefs as target entry info followed by a parenthesised
+	  list of senses of there are more than one.
+
+	* perl/cgi/nwsub.pl 
+	Pk/fk changes on major tables.
+	Use xref info rather than eref info when writing new entry
+	  to database.
+
+	* perl/cgi/srchform.pl
+	Pk/fk changes on major tables.
+	Changes corresponding to the jmdict modularization changes.
+	Remove id search capability for sens, rdng, kanj, gloss.
+	build_search_sql() and extend_from() (nee mk_from_clause())
+	  were complete rewritten.
+
+	* perl/lib/jmdict.pm
+	Pk/fk changes on major tables.
+	Make into regular perl module 
+	Collect debug info for later displaye (such as executed sql 
+	  statements and various timings.) 
+	In Find() address performance problem created my using a temp
+	  table to keep search results, by running a VACUUM ANALYZE
+	  on it.
+	Functions irestr(),istagr(),istagk() no longer used and 
+	  removed.
+	New functions bld_erefs(),xrefs2xrefs(),xrefs2erefs(),fmtkr(),
+	  zip(),linkrecs().
+	
+	* perl/lib/jmdicttal.pm
+	Add pertal modifiers "h2l" (convert a hash to a list) and "join"
+	  (like perl join()).
+
+	* perl/lib/tal/entr.tal perl/lib/tal/nwconf.tal
+	Pk/fk changes on major tables.
+	Use tables rather than lists for layout.
+	Use a consise display for cross-references with each target
+	  entry listed only once.  (However, this does does not
+	  provide for displaying xref notes.)
+	When displaying cross-refs, explicity list target senses
+	  when there is more than one. 
+	Add debug info displayed at bottom of page such as executed
+	  sql statements and various timings.) 
+
+	* perl/lib/tal/srchform.tal
+	Pk/fk changes on major tables.
+	Remove id search capability for sens, rdng, kanj, gloss.
+
+	* per/lib/tal/srchres.tal
+	Add debug info displayed at bottom of page such as executed
+	  sql statements and various timings.) 
+
+	* pg/mkfk.sql pg/mktables.sql pg/xresolv.sql pg/syncseq.sql pg/mkindex.sql 
+	Pk/fk changes on major tables.
+
+	* pg/mkviews.sql
+	Pk/fk changes on major tables.
+	Replace view entr_summary with esum.
+	New view xrefesum.
+
 2007-01-29	smcgraw@frii.com
 
 	* Tag T010

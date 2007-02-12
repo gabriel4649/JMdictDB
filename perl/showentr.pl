@@ -12,43 +12,51 @@ use strict;  use warnings;
 use Encode;  use DBI;
 use Getopt::Std ('getopts');
 
-BEGIN {push (@INC, "./lib");}
-use jmdict;
 
-    binmode(STDOUT, ":utf8");
+BEGIN {push (@INC, "./lib");}
+use kwdsStatic;
+use jmdict;  
 
     main: {
-	my ($dbh, $entries, $e, @qlist, @elist, @slist, 
-	    @whr, $sql, $sens, $tmptbl, $dbname, $user, $pw);
+	my ($dbh, $entries, $e, @qlist, @elist, $enc, $host,
+	    $dbname, $user, $pw);
 
-	getopts ("hd:u:p:", \%::Opts);
-	if ($::Opts{h}) { usage (0); }
-	$user = $::Opts{u} || "postgres";
-	$pw = $::Opts{p} || "";
-	$dbname = $::Opts{db} || "jmdict";
+	if (!getopts ("hd:u:p:r:e:", \%::Opts) or $::Opts{h}) { usage (0); }
+	$enc =    $::Opts{e} || "utf8";
+	$user =   $::Opts{u} || "postgres";
+	$pw =     $::Opts{p} || "";
+	$dbname = $::Opts{d} || "jmdict";
+	$host =   $::Opts{r} || "";
 
-	$dbh = DBI->connect("dbi:Pg:dbname=$dbname", "$user", "$pw", 
+	my $oldfh = select(STDERR); $| = 1; select($oldfh);
+	binmode(STDOUT, ":encoding($enc)");
+	binmode(STDERR, ":encoding($enc)");
+	eval { binmode($DB::OUT, ":encoding($enc)"); }; $dbh=$DB::OUT;
+
+	if ($host) { $host = ";host=$host"; }
+	$dbh = DBI->connect("dbi:Pg:dbname=$dbname$host", $user, $pw, 
 			{ PrintWarn=>0, RaiseError=>1, AutoCommit=>0 } );
 	$dbh->{pg_enable_utf8} = 1;
-	$::KW = Kwds ($dbh);
+
+	$::KW = $kwdsStatic::Kwds;
 
 	foreach (@ARGV) {
 	    if (m/^[0-9]/)  { push (@qlist, int ($_)); }
 	    elsif (m/^q/i) { push (@qlist, int (substr ($_, 1))); }
 	    elsif (m/^e/i) { push (@elist, int (substr ($_, 1))); }
-	    elsif (m/^s/i) { push (@slist, int (substr ($_, 1))); }
 	    else { print STDERR "Invalid argument skipped: $_" } }
-	if (@qlist) { push (@whr, "e.seq IN (" . join(",",map('?',@qlist)) . ")"); }
-	if (@elist) { push (@whr, "e.id  IN (" . join(",",map('?',@elist)) . ")"); }
-	if (@slist) { push (@whr, "s.id  IN (" . join(",",map('?',@slist)) . ")"); }
-	if (@slist) { $sens = "JOIN sens s ON s.entr=e.id"; }
-	else { $sens = ""; }
-	$sql = "SELECT e.id FROM entr e $sens WHERE " . join (" OR ", @whr);
-	$tmptbl = Find ($dbh, $sql, [@qlist, @elist, @slist]);
-
-	$entries = EntrList ($dbh, $tmptbl);
+	$entries = get_entries ($dbh, \@elist, \@qlist);
 	foreach $e (@$entries) { p_entry ($e); }
 	$dbh->disconnect(); }
+
+    sub get_entries { my ($dbh, $elist, $qlist) = @_;
+	my (@whr, $sql, $tmptbl, $entries);
+	if (@$qlist) { push (@whr, "e.seq IN (" . join(",",map('?',@$qlist)) . ")"); }
+	if (@$elist) { push (@whr, "e.id  IN (" . join(",",map('?',@$elist)) . ")"); }
+	$sql = "SELECT e.id FROM entr e WHERE " . join (" OR ", @whr);
+	$tmptbl = Find ($dbh, $sql, [@$qlist, @$elist]);
+	$entries = EntrList ($dbh, $tmptbl);
+	return $entries; }
 	
     sub p_entry { my ($e) = @_;
 	my (@x, $x, $s, $n, $stat);
@@ -77,8 +85,8 @@ use jmdict;
 	$txt = $k->{txt};  
 	@f = map ($::KW->{FREQ}{$_->{kw}}{kw}."$_->{value}", @{$k->{_kfreq}});
 	push (@f, map ($::KW->{KINF}{$_->{kw}}{kw}, @{$k->{_kinf}}));
-	($txt .= "[" . join ("/", @f) . "]") if (@f);
-	$txt .= "\{$k->{ord}/$k->{id}\}";
+	($txt .= "[" . join (",", @f) . "]") if (@f);
+	$txt = "$k->{kanj}.$txt";
 	return $txt; }
 
     sub f_rdng { my ($r, $kanj) = @_;
@@ -86,35 +94,37 @@ use jmdict;
 	$txt = $r->{txt};  
 	@f = map ($::KW->{FREQ}{$_->{kw}}{kw}."$_->{value}", @{$r->{_rfreq}});
 	push (@f, map ($::KW->{KINF}{$_->{kw}}{kw}, @{$r->{_rinf}}));
-	($txt .= "[" . join ("/", @f) . "]") if (@f);
+	($txt .= "[" . join (",", @f) . "]") if (@f);
 	if ($kanj and ($restr = $r->{_restr})) {  # That's '=', not '=='.
 	    if (scalar (@$restr) == scalar (@$kanj)) { $txt .= "\x{3010}no kanji\x{3011}"; }
 	    else {
-		$klist = filt ($kanj, $restr, 'kanj');
+		$klist = filt ($kanj, ["kanj"], $restr, ["kanj"]);
 		$txt .= "\x{3010}" . join ("; ", map ($_->{txt}, @$klist)) . "\x{3011}"; } }
-	$txt .= "\{$r->{ord}/$r->{id}\}";
+	$txt = "$r->{rdng}.$txt";
 	return $txt; }
 
     sub p_sens { my ($s, $n, $kanj, $rdng) = @_;
-	my ($pos, $misc, $fld, $restrs, $g, @r, $stagr, $stagk);
+	my ($pos, $misc, $fld, $restrs, $lang, $g, @r, $stagr, $stagk);
 
-	$pos = join (";", map ($::KW->{POS}{$_->{kw}}{kw}, @{$s->{_pos}}));
+	$pos = join (",", map ($::KW->{POS}{$_->{kw}}{kw}, @{$s->{_pos}}));
 	if ($pos) { $pos = "[$pos]"; }
-	$misc = join (";", map ($::KW->{MISC}{$_->{kw}}{kw}, @{$s->{_misc}}));
+	$misc = join (",", map ($::KW->{MISC}{$_->{kw}}{kw}, @{$s->{_misc}}));
 	if ($misc) { $misc = "[$misc]"; }
-	$fld = join (";", map ($::KW->{FLD}{$_->{kw}}{kw}, @{$s->{_fld}}));
+	$fld = join (",", map ($::KW->{FLD}{$_->{kw}}{kw}, @{$s->{_fld}}));
 	if ($fld) { $fld = " $fld term"; }
 
 	if ($kanj and ($stagk = $s->{_stagk})) { # That's '=', not '=='.
-	    push (@r, @{filt ($kanj, $stagk, "kanj")}); }
+	    push (@r, @{filt ($kanj, ["kanj"], $stagk, ["kanj"])}); }
 	if ($rdng and ($stagr = $s->{_stagr})) { # That's '=', not '=='.
-	    push (@r, @{filt ($rdng, $stagr, "rdng")}); }
+	    push (@r, @{filt ($rdng, ["rdng"], $stagr, ["rdng"])}); }
 	$restrs = @r ? "(" . join (", ", map ($_->{txt}, @r)) . " only) " : "";
 
-	print "$n. $restrs$pos$misc$fld \{$s->{ord}/$s->{id}\}\n";
+	print "$s->{sens}. $restrs$pos$misc$fld\n";
 	if ($s->{notes}) { print "  $s->{notes}\n"; }
 	foreach $g (@{$s->{_gloss}}) {
-	    print "  " . $::KW->{LANG}{$g->{lang}}{kw} . ": $g->{txt} \{$g->{ord}/$g->{id}\}\n"; }
+	    if ($g->{lang} == 1) { $lang = "" }
+	    else { $lang = "(" . $::KW->{LANG}{$g->{lang}}{kw} . ") "; }
+	    print "  $g->{gloss}. $lang$g->{txt}\n"; }
 	p_xref ($s->{_xref}, "Cross references:"); 
 	p_xref ($s->{_xrer}, "Reverse references:"); }
 
@@ -142,34 +152,39 @@ use jmdict;
 	foreach $x (@$xrefs) {
 	    if (!$sep_done) { print "  $sep\n";  $sep_done = 1; }
 	    $t = $::KW->{XREF}{$x->{typ}}{descr};
-	    print "    $t: $x->{txt} (seq. $x->{seq})\n"; } }
+	    print "    $t: $x->{seq} " . fmtkr ($x->{kanj}, $x->{rdng}) . "\n"; } }
 
 
 sub usage { my ($exitstat) = @_;
 	print <<EOT;
 
-Usage: showentr.pl [['q']entry_seq] ['e'entry_id] ['s'sense_id]
+Usage: showentr.pl [options] [['q']entry_seq] ['e'entry_id]
 
 Arguments:
 	A list of entries to display:
-	A number or number prefixed with the letter 'q' is interpreted
-	  as an entry sequence number.
-	A number prefexed with the letter 'e' is interpreted as an
-	  entry id number.
-	A number prefixed with the letter 's' is interpreted as a sense
-	  id number and the entry containing that sense is displayed.
+	  - A number or number prefixed with the letter 'q' is 
+	    interpreted as an entry sequence number.
+	  - A number prefixed with the letter 'e' is interpreted 
+	    as an entry id number.
 
 Options:
-	-d -- Name of database to use.  Default is "jmdict".
-	-u -- Username to use when connecting to database.
-	        Default is "postgres".
-	-p -- Password to use when connecting to database.
-	        No default.
+	-d dbname -- Name of database to use.  Default is "jmdict".
+	-r host	-- Name of machine hosting the database.  Default
+		is "localhost".
+	-e encoding -- Encoding to use for stdout and stderr.
+	 	Default is "utf-8".  Windows users running with 
+		a Japanese locale may wish to use "cp932".
 	-h -- (help) print this text and exit.
 
-Currently all output is in utf-8 which and requires a display enviroment
-the works with utf-8.  ln particular, output will not display correctly on 
-Windows systems using cp932 default encoding.
+	  ***WARNING***
+	  The following two options are not recommended because 
+	  their values will be visible to anyone who can run a 
+	  \"ps\" command.
+
+	-u username -- Username to use when connecting to database.
+	        Default is "postgres".
+	-p password -- Password to use when connecting to database.
+	        No default.
 EOT
 	exit $exitstat; }
 

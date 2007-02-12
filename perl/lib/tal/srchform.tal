@@ -93,10 +93,6 @@
                     <select name="idtyp">
                     <option value="seqnum">Entry Seq</option>
                     <option value="entr">Entry Id</option>
-                    <option value="rdng">Reading Id</option>
-                    <option value="kanj">Kanji Id</option>
-                    <option value="sens">Sense Id</option>
-                    <option value="gloss">Gloss Id</option>
                     </select>
                     </td>
                   </tr>

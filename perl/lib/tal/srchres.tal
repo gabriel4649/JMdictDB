@@ -33,6 +33,10 @@
       <input name="show" value="Display selected entries" type="submit" tal:condition="true:results"/> 
       </form>
     </div>
-  <div class="debug" tal:condition="sql" tal:content="sql"/>
+  <div class="debug" tal:if="true:dbg">
+    <span tal:repeat="d h2l: dbg">
+      <span tal:replace="d/key">key</span>: <span tal:replace="d/val">value</span><br/>
+      </span>
+    </div>
   </body>
 </html>

@@ -1,3 +1,12 @@
+2007-02-12	smcgraw@frii.com
+
+	Add top level README.txt.
+	Explicitly add GPL license terms.
+	Remove obolete mysql/ and python/ directories.
+	Remove perl/README.txt (replaced my ./README.txt)
+	Remove perl/load_googits.pl (better to load raw data into database
+	  table and create k/rfreq data with db query.  Will be documented 
+	  later.)
 
 2007-02-11	smcgraw@frii.com
 

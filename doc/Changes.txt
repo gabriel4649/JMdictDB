@@ -1,9 +1,24 @@
+2007-02-14	smcgraw@frii.com
+
+	* schema.vsd
+	Microsoft Visio file schema.vsd removed, replaced by schema.dia.
+
+	* schema.dia
+	Replaces schema.vsd.  Created with Dia (http://live.gnome.org/Dia)
+	  which is a free (GPL) interactive drawing app with many of the
+	  capabilities of Visio, and which runs under both Unix/Linux and
+	  Windows.  
+	Updated for current schema.
+
+	* schema.png
+	Created from schema.dia.
+
 2007-02-12	smcgraw@frii.com
 
 	Add top level README.txt.
 	Explicitly add GPL license terms.
 	Remove obolete mysql/ and python/ directories.
-	Remove perl/README.txt (replaced my ./README.txt)
+	Remove perl/README.txt (replaced by ./README.txt)
 	Remove perl/load_googits.pl (better to load raw data into database
 	  table and create k/rfreq data with db query.  Will be documented 
 	  later.)

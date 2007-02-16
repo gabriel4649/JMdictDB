@@ -1,22 +1,22 @@
 #!/usr/bin/env perl
-##########################################################################
-#
-#   This file is part of JMdictDB.  
+#######################################################################
+#   This file is part of JMdictDB. 
+#   Copyright (c) 2006,2007 Stuart McGraw 
+# 
 #   JMdictDB is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
-#   (at your option) any later version.
+#   it under the terms of the GNU General Public License as published 
+#   by the Free Software Foundation; either version 2 of the License, 
+#   or (at your option) any later version.
+# 
 #   JMdictDB is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
+# 
 #   You should have received a copy of the GNU General Public License
-#   along with Foobar; if not, write to the Free Software Foundation, Inc.,
-#   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
-#
-#   Copyright (c) 2006,2007 Stuart McGraw 
-#
-############################################################################
+#   along with JMdictDB; if not, write to the Free Software Foundation,
+#   51 Franklin Street, Fifth Floor, Boston, MA  02110#1301, USA
+#######################################################################
 
 @VERSION = (substr('$Revision$',11,-2), \
 	    substr('$Date$',7,-11));
@@ -33,8 +33,8 @@ $|=1;
 *ee = \&encode_entities;
 
     main: {
-	my ($dbh, $cgi, $tmptbl, $tmpl, $sql, $entries, $e, @qlist, @errs,
-	    @elist, @whr, $dbname, $username, $pw, $s);
+	my ($dbh, $cgi, $tmptbl, $tmpl, $sql, $entries,
+	    $e, @qlist, @errs, @elist, @whr, $s);
 	binmode (STDOUT, ":encoding(utf-8)");
 	$::Debug = {};
 	$cgi = new CGI;
@@ -44,12 +44,7 @@ $|=1;
 	@elist = $cgi->param ('e'); validaten (\@elist, \@errs);
 	if (@errs) { errors_page (\@errs);  exit; } 
 
-	open (F, "../lib/jmdict.cfg") or die ("Can't open database config file\n");
-	($dbname, $username, $pw) = split (' ', <F>); close (F);
-	$dbh = DBI->connect("dbi:Pg:dbname=$dbname", $username, $pw, 
-			{ PrintWarn=>0, RaiseError=>1, AutoCommit=>0 } );
-	$dbh->{pg_enable_utf8} = 1;
-	$::KW = Kwds ($dbh);
+	$dbh = dbopen ();  $::KW = Kwds ($dbh);
 
 	if (@qlist) { push (@whr, "e.seq IN (" . join(",",map('?',(@qlist))) . ")"); }
 	if (@elist) { push (@whr, "e.id  IN (" . join(",",map('?',(@elist))) . ")"); }
@@ -100,10 +95,14 @@ $|=1;
 	my ($e, $s);
 	foreach $e (@$entrs) {
 	    foreach $s (@{$e->{_sens}}) {
-		next if (!$s->{_stagr} and !$s->{_stagk});
-		$s->{_STAG} = [map ($_->{txt},
-		    (@{filt ($e->{_rdng}, ["rdng"], $s->{_stagr}, ["rdng"])},
-		     @{filt ($e->{_kanj}, ["kanj"], $s->{_stagk}, ["kanj"])}))]; } } }
+		my @stag;
+		if ($s->{_stagk} and @{$s->{_stagk}}) {
+		    push (@stag, map ($_->{txt},
+		      @{filt ($e->{_kanj}, ["kanj"], $s->{_stagk}, ["kanj"])})); }
+		if ($s->{_stagr} and @{$s->{_stagr}}) {
+		    push (@stag, map ($_->{txt},
+		      @{filt ($e->{_rdng}, ["rdng"], $s->{_stagr}, ["rdng"])})); }
+		$s->{_STAG} = @stag ? \@stag : undef; } } }
 
     sub set_audio_flag { my ($entrs) = @_; 
 

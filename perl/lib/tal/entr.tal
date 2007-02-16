@@ -72,7 +72,7 @@
 	      [<span tal:replace="kwabbrs: 'MISC' ',' s/_misc">misc</span>]
 	      </span>
 	    <span class="fld" tal:if="s/_fld">
-	      <span tal:replace="kwfulls: 'MISC' ',' s/_fld">fields</span>]
+	      {<span tal:replace="kwfulls: 'FLD' ',' s/_fld">fields</span>}
 	      </span><br/>
 
 	    <span class="note" tal:if="s/notes">

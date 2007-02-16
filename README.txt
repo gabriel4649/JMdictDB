@@ -11,13 +11,16 @@ Discussion takes place on the edict-jmdict@yahoo.com mailing
 list (http://groups.yahoo.com/group/edict-jmdict/)
 
 The software in this package copyrighted by Stuart McGraw, 
-<smcgraw@frii.com> (erxcept where otherwise notes) and licensed 
+<smcgraw@frii.com> (except where otherwise noted) and licensed 
 under the GNU General Public License version 2.  See the file 
 COPYING.txt for details.
 
 JMdictDB comes with ABSOLUTELY NO WARRANTY.
 
-This package contains the following diretories:
+The most recent version of this code may be downloaded at
+http://www.edrdg.org/~smg/.
+
+This package contains the following directories:
   ./		    Package dirtectory.
   ./perl/	    Perl tools.
   ./perl/cgi/	    CGI scripts.
@@ -57,7 +60,6 @@ The code is developed and tested on Microsoft Windows 2000,
 Fedora Core 6, and Debian, with either Apache (on Unix/Linux)
 of IIS (on MS Windows) as a web server.  The webserver should
 be configured to run Perl CGI scripts.
-he following software. 
 
 Some additional Perl modules are also needed (install using
 CPAN on Unix/Linux or Activestate's PPM on Windows).
@@ -71,7 +73,7 @@ verified.
     Petal [2.19]
     Petal::Utils [0.06]
     DBI [1.52]
-    DBD::Pg [1.49] (I was not able to get DBD::PgPP to work on Windows). 
+    DBD::Pg [1.49] (Did not work with DBD::PgPP on Windows). 
     XML::Twig [3.26]
   Apache [2.2] (on Unix/Linux systems) or
   or IIS [6.0] (on MS Windows systems)
@@ -109,10 +111,14 @@ lines) are relative to the package top level directory.]
 	psql -U postgres -d jmdict <../jmdict.dmp
 	psql -U postgres -d jmdict -f postload.sql
 
+   (You may want or need to use a username other than
+   "postgres" depending on how your Postgresql installation
+   is configured.  The above should work for an "out-of-
+   the box installation.)
    In addition to the normal Postgresql "notice" messages, 
    the output from postload.sql will include a list of
    unresolvable cross-references.  These will be displayed
-   as utf-8 with will result in mojibake if you are running 
+   as utf-8 which will result in mojibake if you are running 
    on a cp932 MS Windows system.  You can regenerate the 
    the info later in readable form.
 
@@ -125,7 +131,7 @@ lines) are relative to the package top level directory.]
    execute cgi scripts from the ./perl/cgi/ directory in its
    current location.
 
-   Create a file lib/jmdict.cfg containing one line containg
+   Create a file lib/jmdict.cfg containing one line containing
    three space separated words which are repectively, the name
    of the jmdict database, the postgres username to use, and the 
    password for that username.  For example:
@@ -150,6 +156,9 @@ ANNOTATED MANIFEST
 
 ./Changes.txt...................CVS change log.
 ./COPYING.txt...................GNU General Public License Terms.
+./README.txt....................This file.
+./schema.dia....................Dia source for database schema diagram.
+./schema.png....................Database schema diagram.
 ./perl/
 ./perl/load_jmdict.pl...........Generates Postegresql load file from JMdict XML file.
 ./perl/showentr.pl..............Command line tool to show database entries.
@@ -183,7 +192,7 @@ ANNOTATED MANIFEST
 ./pg/reload.sql.................Execute scripts to initialze database and create schema.
 ./pg/syncseq.sql................Set seqence numbers after jmdict load.
 ./pg/xresolv.sql................Create xrefs after jmdict load.
-./pg/data/......................kw/* files contain static keyword table data,
+./pg/data/......................data/kw* files contain static keyword table data,
 ./pg/data/kwdial.sql
 ./pg/data/kwfld.sql
 ./pg/data/kwfreq.sql

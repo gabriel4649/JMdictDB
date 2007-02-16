@@ -1,22 +1,22 @@
 #!/usr/bin/env perl
-##########################################################################
-#
-#   This file is part of JMdictDB.  
+#######################################################################
+#   This file is part of JMdictDB. 
+#   Copyright (c) 2007 Stuart McGraw 
+# 
 #   JMdictDB is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
-#   (at your option) any later version.
+#   it under the terms of the GNU General Public License as published 
+#   by the Free Software Foundation; either version 2 of the License, 
+#   or (at your option) any later version.
+# 
 #   JMdictDB is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
+# 
 #   You should have received a copy of the GNU General Public License
-#   along with Foobar; if not, write to the Free Software Foundation, Inc.,
-#   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
-#
-#   Copyright (c) 2007 Stuart McGraw 
-#
-############################################################################
+#   along with JMdictDB; if not, write to the Free Software Foundation,
+#   51 Franklin Street, Fifth Floor, Boston, MA  02110#1301, USA
+#######################################################################
 
 @VERSION = (substr('$Revision$',11,-2), \
 	    substr('$Date$',7,-11));
@@ -35,18 +35,10 @@ binmode (STDOUT, ":utf8");
 eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 
     main: {
-	my ($dbh, $cgi, $dbname, $username, $pw, $tmpl, $entr, 
-	    $entrs, $errs, $serialized, $chklist);
+	my ($dbh, $cgi, $tmpl, $entr, $entrs, $errs, $serialized, $chklist);
 	$cgi = new CGI;
-
 	print "Content-type: text/html\n\n";
-
-	open (F, "../lib/jmdict.cfg") or die ("Can't open database config file\n");
-	($dbname, $username, $pw) = split (' ', <F>); close (F);
-	$dbh = DBI->connect("dbi:Pg:dbname=$dbname", $username, $pw, 
-			{ PrintWarn=>0, RaiseError=>1, AutoCommit=>0 } );
-	$dbh->{pg_enable_utf8} = 1;
-	$::KW = Kwds ($dbh);
+	$dbh = dbopen ();  $::KW = Kwds ($dbh);
 
 	($entr, $errs) = cgientr ($dbh, $cgi);
 	$entrs = [$entr];

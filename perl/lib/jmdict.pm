@@ -1,21 +1,21 @@
-##########################################################################
-#
-#   This file is part of JMdictDB.  
+#######################################################################
+#   This file is part of JMdictDB. 
+#   Copyright (c) 2006,2007 Stuart McGraw 
+# 
 #   JMdictDB is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
-#   (at your option) any later version.
+#   it under the terms of the GNU General Public License as published 
+#   by the Free Software Foundation; either version 2 of the License, 
+#   or (at your option) any later version.
+# 
 #   JMdictDB is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
+# 
 #   You should have received a copy of the GNU General Public License
-#   along with Foobar; if not, write to the Free Software Foundation, Inc.,
-#   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
-#
-#   Copyright (c) 2006,2007 Stuart McGraw 
-#
-############################################################################
+#   along with JMdictDB; if not, write to the Free Software Foundation,
+#   51 Franklin Street, Fifth Floor, Boston, MA  02110#1301, USA
+#######################################################################
 
 package jmdict;
 use strict; use warnings;
@@ -26,7 +26,7 @@ BEGIN {
     @EXPORT_OK = qw(Tables KANA HIRAGANA KATAKANA KANJ); 
     @EXPORT = qw(dbread dbinsert Kwds kwrecs addids mktmptbl Find EntrList 
 		    matchup filt jstr_classify addentr erefs2xrefs xrefs2erefs
-		    get_seq zip fmtkr bld_erefs); }
+		    get_seq zip fmtkr bld_erefs dbopen); }
 
 our(@VERSION) = (substr('$Revision$',11,-2), \
 	         substr('$Date$',7,-11));
@@ -125,15 +125,27 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	return $tmpnm; }
 
     sub EntrList { my ($dbh, $cond, $args, $eord) = @_;
+	# $dbh -- An open database connection.
+	# $cond -- Either:
+	#   1. Name of a table containing entry id numbers, or,
+	#   2. A where clause (including the word "WHERE") that references
+	#   only fields in table "entr", which will have alias "e".
+	# $args -- If the form of $cond is (2), this argument is a ref to 
+	#   a list of arguments for the where clause given in $cond.  
+	#   If the form of $cond is (1), this argument is ignored.
+	# $eord -- Optional ORDER BY clause (including the words "ORDER BY")
+	#   used to order the returned set of entries.
+
 	my ($where, $com);
 	if (!defined ($args)) {$args = []; }
 	if (-1 != index ($cond, " ")) { 
 	    $where = $cond; 
-	    $com = "FROM entr e"; }
+	    $com = "FROM entr e"; 
+	    if (!defined ($eord)) { $eord = ""; } }
 	else {  
 	    $where = ""; 
 	    $com = "FROM entr e JOIN $cond t ON t.id=e.id ";
-	    $eord = "ORDER BY t.ord" }
+	    $eord = "ORDER BY t.ord"; }
 
 	  my $start = time();
 	my $entr  = dbread ($dbh, "SELECT e.* $com $where $eord", $args);
@@ -458,5 +470,16 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    for ($i=0; $i<$n; $i++) { push (@$x, $_[$i]->[$j]); }
 	    push (@a, $x); }
 	return \@a; }
+
+    use DBI;
+    sub dbopen { my ($cfgfile) = @_;
+	my ($dbname, $username, $pw, $host, $dbh);
+	if (!$cfgfile) { $cfgfile = "../lib/jmdict.cfg"; }
+	open (F, $cfgfile) or die ("Can't open database config file\n");
+	($dbname, $username, $pw) = split (/ /, <F>); close (F);
+	$dbh = DBI->connect("dbi:Pg:dbname=$dbname", $username, $pw, 
+			{ PrintWarn=>0, RaiseError=>1, AutoCommit=>0 } );
+	$dbh->{pg_enable_utf8} = 1;
+	return $dbh; }
 
     1;

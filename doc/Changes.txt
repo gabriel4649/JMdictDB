@@ -1,3 +1,67 @@
+2007-02-17	smcgraw@frii.com
+
+	* pg/mkviews.sql
+	Add new view ssum.
+	Fix typo and tweak readability in GPL notice.
+
+	* Changes.txt
+	Added additional item to the "cons" section of the pk/fk change 
+	  description in the 2007-02-11 entry.
+
+2007-02-16	smcgraw@frii.com
+
+	* README.txt [1.2]
+	Fix typos and make other minor corrections.
+
+	* perl/lib/tal/entr.tal [1.5]
+	* perl/lib/tal/nwconf.tal [1.2]
+	Fix: display of field keywords in senses was wrong.
+
+	* perl/cgi/entr.pl [1.7]
+	Fix: If a sense had a stagr restiction but no stagk restriction,
+	  fmtstag() would erroneously include all the kanji in the
+	  combined list it generates.
+	Move db open code to jmdict.pm.
+	Fix typo and tweak readability in GPL notice.
+
+	* perl/cgi/nwconf.pl [1.3]
+	* perl/cgi/nwform.pl [1.2]
+	* perl/cgi/nwsub.pl [1.3]
+	* perl/cgi/srchform.pl [1.3]
+	* perl/cgi/srchres.pl [1.4] 
+	Move db open code to jmdict.pm.
+	Fix typo and tweak readability in GPL notice.
+
+	* perl/lib/jmdict.pm [1.10]
+	Fix: uninitialized string in EntrList() when $cond is a "where" clause.
+	New: dbopen() function to encapsulate reading a config file to get
+	  database login credenials, something needed by all the cgi scripts.
+	Fix typo and tweak readability in GPL notice.
+
+	* perl/lib/jmdictcgi.pm [1.3]
+	* perl/lib/jmdicttal.pm [1.6]
+	* perl/lib/jmdictxml.pm [1.5]
+	* perl/load_jmdict.pl [1.15]
+	* perl/showentr.pl [1.8]
+	* pg/data/kwdial.sql [1.4]
+	* pg/data/kwfld.sql [1.3]
+	* pg/data/kwfreq.sql [1.4]
+	* pg/data/kwkinf.sql [1.3]
+	* pg/data/kwlang.sql [1.3]
+	* pg/data/kwmisc.sql [1.4]
+	* pg/data/kwpos.sql [1.4]
+	* pg/data/kwrinf.sql [1.4]
+	* pg/data/kwsrc.sql [1.3]
+	* pg/data/kwstat.sql [1.4]
+	* pg/data/kwxref.sql [1.3]
+	* pg/mkfk.sql [1.7]
+	* pg/mkindex.sql [1.7]
+	* pg/mkperms.sql [1.6]
+	* pg/mktables.sql [1.11]
+	* pg/syncseq.sql [1.6]
+	* pg/xresolv.sql [1.4]
+	Fix typo and tweak readability in GPL notice.
+
 2007-02-14	smcgraw@frii.com
 
 	* schema.vsd
@@ -7,7 +71,7 @@
 	Replaces schema.vsd.  Created with Dia (http://live.gnome.org/Dia)
 	  which is a free (GPL) interactive drawing app with many of the
 	  capabilities of Visio, and which runs under both Unix/Linux and
-	  Windows.  
+	  Windows.
 	Updated for current schema.
 
 	* schema.png
@@ -57,6 +121,15 @@
 	    (but because these tables are much smaller than their parent
 	    table, the space saving in the parent table greatly outweighs
 	    the greater space needed by these child tables.)
+	  - Ordering of senses, readings, etc within an entry is no longer
+	    independent of the table's pk (bad in general), but this is not
+	    a problem because:
+	    - It *is* idependent of the full pk, only dependent of the part
+	      of the pk relevent to one entry.
+	    - Because all foreign keys to the pk's are created with "ON UPDATE
+	      CASCADE", the within-entry part of the key can be changed to 
+	      adjust the order, and any related foreign keys will automatically
+	      be updated by the database to the new value.
 
 	Other changes:
 	--------------

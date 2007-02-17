@@ -1,15 +1,18 @@
 -------------------------------------------------------------------------
---  This file is part of JMdictDB.  
+--  This file is part of JMdictDB. 
+--
 --  JMdictDB is free software; you can redistribute it and/or modify
---  it under the terms of the GNU General Public License as published by
---  the Free Software Foundation; either version 2 of the License, or
---  (at your option) any later version.
---   JMdictDB is distributed in the hope that it will be useful,
+--  it under the terms of the GNU General Public License as published 
+--  by the Free Software Foundation; either version 2 of the License, 
+--  or (at your option) any later version.
+--
+--  JMdictDB is distributed in the hope that it will be useful,
 --  but WITHOUT ANY WARRANTY; without even the implied warranty of
 --  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 --  GNU General Public License for more details.
+--
 --  You should have received a copy of the GNU General Public License
---  along with Foobar; if not, write to the Free Software Foundation, Inc.,
+--  along with JMdictDB; if not, write to the Free Software Foundation,
 --  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 --
 --  Copyright (c) 2006,2007 Stuart McGraw 
@@ -48,6 +51,23 @@ CREATE VIEW esum AS (
 	    FROM sens s WHERE s.entr=e.id ORDER BY s.sens) AS ss) AS gloss,
 	(SELECT COUNT(*) FROM sens WHERE sens.entr=e.id) AS nsens
     FROM entr e);
+
+-----------------------------------------------------------
+-- Provide a pseudo-sens table with an additional column
+-- "txt" that contains an aggregation of all the glosses
+-- for that sense concatenated into a single string with
+-- each gloss delimited with the string "; ".
+------------------------------------------------------------
+CREATE VIEW ssum AS (
+    SELECT s.entr,s.sens,
+       (SELECT ARRAY_TO_STRING(ACCUM(sg.txt), '; ') 
+        FROM (SELECT g.txt 
+	          FROM gloss g 
+	          WHERE g.sens=s.sens AND g.entr=s.entr 
+	          ORDER BY g.gloss) AS sg
+        ORDER BY entr,sens) AS txt,
+        s.notes
+    FROM sens s);
 
 ---------------------------------------------------------
 -- For every entry, give the number of associated reading,

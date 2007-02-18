@@ -162,6 +162,7 @@ ANNOTATED MANIFEST
 ./Changes.txt...................CVS change log.
 ./COPYING.txt...................GNU General Public License Terms.
 ./README.txt....................This file.
+./Makefile......................Simpify some common tasks (Unix/Linux only).
 ./schema.dia....................Dia source for database schema diagram.
 ./schema.png....................Database schema diagram.
 

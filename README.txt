@@ -1,9 +1,12 @@
-These files are part of the JMdictDB project.
+$Revision$
+$Date$
+http://www.edrdg.org/~smg/
 
-This is a informal project to put the contents of Jim Breen's
-(http://www.csse.monash.edu.au/~jwb/japanese.html)
+The JMdictDB project is an informal project to put the contents 
+of Jim Breen's
+  (http://www.csse.monash.edu.au/~jwb/japanese.html)
 JMdict Japanese-English dictionary data 
-(http://www.csse.monash.edu.au/~jwb/edict_doc.html)
+  (http://www.csse.monash.edu.au/~jwb/edict_doc.html)
 into a database, and provide a web-based maintenance system
 for it.
 
@@ -21,13 +24,13 @@ The most recent version of this code may be downloaded at
 http://www.edrdg.org/~smg/.
 
 This package contains the following directories:
-  ./		    Package dirtectory.
-  ./perl/	    Perl tools.
-  ./perl/cgi/	    CGI scripts.
-  ./perl/lib/	    Library modules.
+  ./                Package dirtectory.
+  ./perl/           Perl tools.
+  ./perl/cgi/       CGI scripts.
+  ./perl/lib/       Library modules.
   ./perl/lib/tal/   PETAL templates.
-  ./pg/		    Database scripts.
-  ./pg/data/	    Database static data.
+  ./pg/             Database scripts.
+  ./pg/data/        Database static data.
 See "ANNOTATED MANIFEST" below for more details.
 
 
@@ -35,10 +38,10 @@ See "ANNOTATED MANIFEST" below for more details.
 STATUS
 ======
 
-This code in under development and is pre-alpha quality.
+This code is under development and is pre-alpha quality.
 Everything here is subject to future change.  The web pages
 currently use Perl/cgi.  These will be changed, most likely
-to Apache/modperl, when the ui is stabilized.
+to Apache/modperl, when the UI is stabilized.
 
 
 ============
@@ -50,7 +53,7 @@ be running on a JMdict project server, for the purpose of
 receiving additions and corrections to the JMdict data.
 
 However, you may wish to install a local copy of this software
-for two reasons
+for two reasons:
 - To contribute development work to the JMdict project.
 - To use or adapt the code here to a project of your own.
 
@@ -58,11 +61,11 @@ Requirements
 ------------
 The code is developed and tested on Microsoft Windows 2000, 
 Fedora Core 6, and Debian, with either Apache (on Unix/Linux)
-of IIS (on MS Windows) as a web server.  The webserver should
+or IIS (on MS Windows) as a web server.  The webserver should
 be configured to run Perl CGI scripts.
 
-Some additional Perl modules are also needed (install using
-CPAN on Unix/Linux or Activestate's PPM on Windows).
+Some additional Perl modules are also needed (may be installed
+using CPAN on Unix/Linux or Activestate's PPM on Windows).
 Version numbers are the versions currently in use in the 
 author's development environment -- the software may work
 fine with earlier or later versions, but this has not been 
@@ -114,13 +117,15 @@ lines) are relative to the package top level directory.]
    (You may want or need to use a username other than
    "postgres" depending on how your Postgresql installation
    is configured.  The above should work for an "out-of-
-   the box installation.)
+   the-box" Postgresql installation.)
    In addition to the normal Postgresql "notice" messages, 
    the output from postload.sql will include a list of
    unresolvable cross-references.  These will be displayed
    as utf-8 which will result in mojibake if you are running 
-   on a cp932 MS Windows system.  You can regenerate the 
-   the info later in readable form.
+   on a system configured for something other than utf-8 (e.g.
+   an MS Windows system configured for Japanese which uses 
+   the cp932 character encoding).  You can regenerate the 
+   info again later in readable form.
 
    You should now be able to run the ./perl/showentr.pl
    script to look at jmdict entries from the database.
@@ -159,29 +164,34 @@ ANNOTATED MANIFEST
 ./README.txt....................This file.
 ./schema.dia....................Dia source for database schema diagram.
 ./schema.png....................Database schema diagram.
+
 ./perl/
 ./perl/load_jmdict.pl...........Generates Postegresql load file from JMdict XML file.
 ./perl/showentr.pl..............Command line tool to show database entries.
+
 ./perl/cgi
-./perl/cgi/entr.css.............CSS style sheet of all cgi pages.
+./perl/cgi/entr.css.............CSS style sheet for all cgi pages.
 ./perl/cgi/entr.pl..............Show entry details page.
 ./perl/cgi/nwconf.pl............Confim new entry page.
 ./perl/cgi/nwform.pl............Add new entry form.
 ./perl/cgi/nwsub.pl.............Add new entry action.
 ./perl/cgi/srchform.pl..........JMdictDB general entry search form.
 ./perl/cgi/srchres.pl...........Search results list.
+
 ./perl/lib/
 ./perl/lib/jmdict.pm............General use functions.
 ./perl/lib/jmdictcgi.pm.........CGI-specfic functions.
 ./perl/lib/jmdicttal.pm.........PETAL modifiers.
 ./perl/lib/jmdictxml.pm.........JMdict XML parsing/generating functions.
+
 ./perl/lib/tal
 ./perl/lib/tal/entr.tal.........PETAL template for entr.pl.
 ./perl/lib/tal/nwconf.tal.......PETAL template for nwconf.pl.
 ./perl/lib/tal/nwform.tal.......PETAL template for nwform.pl.
 ./perl/lib/tal/srchform.tal.....PETAL template for srchfom.pl.
 ./perl/lib/tal/srchres.tal......PETAL template for srchres.pl.
-./pg/...........................Scripts initialize database.
+
+./pg/...........................Scripts for database initialization.
 ./pg/loadkw.sql.................Load the data/kw* data into database.
 ./pg/mkfk.sql...................Create foreign keys.
 ./pg/mkindex.sql................Create indexes.
@@ -192,6 +202,7 @@ ANNOTATED MANIFEST
 ./pg/reload.sql.................Execute scripts to initialze database and create schema.
 ./pg/syncseq.sql................Set seqence numbers after jmdict load.
 ./pg/xresolv.sql................Create xrefs after jmdict load.
+
 ./pg/data/......................data/kw* files contain static keyword table data,
 ./pg/data/kwdial.sql
 ./pg/data/kwfld.sql

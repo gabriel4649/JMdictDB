@@ -31,7 +31,6 @@ use Getopt::Std ('getopts');
 
 
 BEGIN {push (@INC, "./lib");}
-use kwdsStatic;
 use jmdict;  
 
     main: {
@@ -54,8 +53,7 @@ use jmdict;
 	$dbh = DBI->connect("dbi:Pg:dbname=$dbname$host", $user, $pw, 
 			{ PrintWarn=>0, RaiseError=>1, AutoCommit=>0 } );
 	$dbh->{pg_enable_utf8} = 1;
-
-	$::KW = $kwdsStatic::Kwds;
+	$::KW = Kwds ($dbh);
 
 	foreach (@ARGV) {
 	    if (m/^[0-9]/)  { push (@qlist, int ($_)); }

@@ -1,10 +1,21 @@
 
 2007-02-17	smcgraw@frii.com
 
+	* Makefile
+	New.  Nothing equivalent for Windows yet.  
+
 	* README.txt
 	More typos and tweaks.
 
-	* perl/lib/tab/nwform.tal
+	* perl/showentr.pl [1.9]
+	Revert use of experimental KwdsStatic module.  That was not
+	  supposed to get into main branch yet.
+
+	* perl/lib/jmdict.pm
+	Fix: trailing \n in the db credentials line read from jmdict.cfg
+	  which was causing authentication to fail on my Fedora test machine.
+
+	* perl/lib/tal/nwform.tal [1.2]
 	Change header at top of page so there is some way to distingish
 	  it from the real wwwjdict form.
 

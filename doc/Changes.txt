@@ -1,4 +1,24 @@
 
+2007-02-18	smcgraw@frii.com
+
+	* Tag T011
+	This code released as development snapshot jmdict-T011.tgz on Arakawa.
+
+	* Makefile
+	Fixes and enhancements.
+
+	* perl/cgi/nwconf.pl
+	Fix: When creating history record, was erroneously using ref's for 
+	  {comment} and {who}, rather than strings.
+
+	* perl/cgi/nwsub.pl
+	Fix: Check for exactly one hist record, and reset it's timesstamp
+	  since there could be long delay between when it was set in nwconf.pl
+	  and when nwsub.pl gets it. 
+
+	* perl/lib/jmdict.pm
+	Fix: addentr() was not writing history records to the database.
+
 2007-02-17	smcgraw@frii.com
 
 	* Makefile

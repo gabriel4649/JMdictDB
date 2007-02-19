@@ -19,7 +19,7 @@
 
 package jmdict;
 use strict; use warnings;
-use Time::HiRes ('time');
+use Time::HiRes ('time'); 
 
 BEGIN {
     use Exporter(); our (@ISA, @EXPORT_OK, @EXPORT); @ISA = qw(Exporter);
@@ -279,10 +279,13 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	return $r; }
 
     sub addentr { my ($dbh, $entr) = @_;
-	my ($eid, $seq, $nrdng, $nkanj, $nsens, $ngloss, $cntr2, $r, $k, $s, $g, $x);
+	my ($eid, $seq, $nrdng, $nkanj, $nsens, $ngloss, $cntr2, $r, $k, $s, $g, $x, $h);
 	$entr->{seq} = $seq = get_seq ($dbh); 
 	$entr->{src} = 1;
 	$entr->{id} = $eid = dbinsert ($dbh, "entr", ['src','seq','stat','notes'], $entr);
+	foreach $h (@{$entr->{_hist}}) {
+	    $h->{entr} = $eid; 
+	    dbinsert ($dbh, "hist", ['entr','stat','dt','who','diff','notes'], $h); }
 	$nrdng = $nkanj = $nsens = $ngloss = 1;
 	foreach $k (@{$entr->{_kanj}}) {
 	    $k->{entr} = $eid;  $k->{kanj} = $nkanj;

@@ -24,6 +24,7 @@
 use strict; use warnings;
 use CGI; use Encode 'decode_utf8'; use DBI; 
 use Petal; use Petal::Utils; 
+use POSIX ('strftime');
 
 BEGIN {push (@INC, "../lib");}
 use jmdict; use jmdictcgi; use jmdicttal;
@@ -38,11 +39,18 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	print "Content-type: text/html\n\n";
 	$dbh = dbopen ();  $::KW = Kwds ($dbh);
 
+	# We do little error checking here because the url parameters came 
+	# from one of our pages and should be ok.  If someone synthesizes 
+	# bad url parameters, we feel no obligation to give them nice errors
+	# messages.  Any serious or security problems will be caught be the 
+	# database's integrity checking.
+
 	$x = $cgi->param ("entr");
 	$entrs = unserialize ( $x );
 	foreach $entr ($entrs) {
 	    $entr->{stat} = 1; # Force entr.stat=New.
-	    #rename_xrefs ($entr);
+	    if (1 != scalar(@{$entr->{_hist}})) { die ("Expected exactly 1 hist record"); }
+	    $entr->{_hist}[0]{dt} = strftime ("%Y-%m-%d %H:%M:00-00", gmtime());  
 	    ($eid,$seq) = addentr ($dbh, $entr); 
 	    push (@added, [$eid,$seq]); }
 	results_page (\@added);

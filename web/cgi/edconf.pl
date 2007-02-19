@@ -191,12 +191,12 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	    $comment .= "References:\n$reference"; }
 
 	# Create a history record for display.  A real record will 
-	# be recreated with the entry is actually comitted to the 
+	# be recreated when the entry is actually comitted to the 
 	# database.
 
 	$now = strftime "%Y-%m-%d %H:%M:%S", localtime;
 	$hist = {id=>0, entr=>0, stat=>1, dt=>$now, 
-		  who=>\$who, diff=>'', notes=>\$comment };
+		  who=>$who, diff=>'', notes=>$comment };
 
 	# Tie all the pieces together to make an entry structure to
 	# give back to the caller, along with any errors we encountered.

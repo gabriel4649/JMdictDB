@@ -13,10 +13,11 @@ for it.
 Discussion takes place on the edict-jmdict@yahoo.com mailing 
 list (http://groups.yahoo.com/group/edict-jmdict/)
 
-The software in this package copyrighted by Stuart McGraw, 
-<smcgraw@frii.com> (except where otherwise noted) and licensed 
-under the GNU General Public License version 2.  See the file 
-COPYING.txt for details.
+The software in this package is copyrighted by 
+Stuart McGraw, <smcg4191x@frxii.com>(remove x's) 
+(except where otherwise noted) 
+and licensed under the GNU General Public License version 2.  
+See the file COPYING.txt for details.
 
 JMdictDB comes with ABSOLUTELY NO WARRANTY.
 
@@ -24,7 +25,7 @@ The most recent version of this code may be downloaded at
 http://www.edrdg.org/~smg/.
 
 This package contains the following directories:
-  ./                Package dirtectory.
+  ./                Package directory.
   ./perl/           Perl tools.
   ./perl/cgi/       CGI scripts.
   ./perl/lib/       Library modules.
@@ -52,8 +53,7 @@ Eventually, the system resulting from this development will
 be running on a JMdict project server, for the purpose of
 receiving additions and corrections to the JMdict data.
 
-However, you may wish to install a local copy of this software
-for two reasons:
+However, you may wish to install a local copy of this software:
 - To contribute development work to the JMdict project.
 - To use or adapt the code here to a project of your own.
 

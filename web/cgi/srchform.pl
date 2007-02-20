@@ -54,7 +54,7 @@ binmode (STDOUT, ":utf8");
 	    $kw = $i->{kw};
 	    if ($kw ne "nf" and $kw ne "gA") { 
 		push (@freq, $kw."1"); 
-		if ($kw ne "spec") { push (@freq, $kw."2"); } } }
+		push (@freq, $kw."2"); } }
 
 	$tmpl = new Petal (file=>'../lib/tal/srchform.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );

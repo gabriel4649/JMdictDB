@@ -48,15 +48,15 @@ TAL_FILES = perl/lib/tal/entr.tal \
 	perl/lib/tal/srchres.tal
 
 all:
-	@echo 'You must supply an explicit target with this makefile: \
-	  jmdict.dmp -- Create Postgres load file from jmdict xml file. \
-	  loaddb -- Create load file and load it into database. \
-	  mkdist -- Make development snapshot distribution file. \
-	  web -- Install cgi and other web files to the appropriate places.'
+	@echo 'You must supply an explicit target with this makefile:'
+	@echo '  jmdict.xml -- Get latest jmdict xml file from Monash.'
+	@echo '  jmdict.dmp -- Create Postgres load file from jmdict xml file.'
+	@echo '  loaddb -- Initialize new database and load jmdict.dmp.'
+	@echo '  dist -- Make development snapshot distribution file.'
+	@echo '  web -- Install cgi and other web files to the appropriate places.'
 
 jmdict.dmp: jmdict.xml
-	cd perl; \
-	perl load_jmdict.pl -o ../jmdict.dmp ../jmdict.xml
+	cd perl && perl load_jmdict.pl -o ../jmdict.dmp ../jmdict.xml
 
 jmdict.xml: 
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/JMdict_e.gz
@@ -64,13 +64,12 @@ jmdict.xml:
 	mv JMdict_e jmdict.xml
 
 loaddb: jmdict.dmp
-	cd pg; \
-	@echo 'Initializing jmdict database...'; \
-	psql -U postgres -f reload.sql; \
-	@echo 'Loading jmdict XML data...'; \
-	psql -U postgres -d jmdict <../jmdict.dmp; \
-	@echo 'Building indexes and doing other post-load actions...'; \
-	psql -U postgres -d jmdict -f postload.sql
+	@echo 'Initializing jmdict database...'
+	cd pg && psql -U postgres -f reload.sql
+	@echo 'Loading jmdict XML data...'
+	cd pg && psql -U postgres -d jmdict <../jmdict.dmp
+	@echo 'Building indexes and doing other post-load actions...'
+	cd pg && psql -U postgres -d jmdict -f postload.sql
 
 clean:
 	rm -f jmdict.tgz
@@ -78,7 +77,7 @@ clean:
 	find -name '*.tmp' -type f -print0 | xargs -0 /bin/rm -f
 	find -name skipped_comments.log -type f -print0 | xargs -0 /bin/rm -f
 
-mkdist: 
+dist: 
 	tar -cz -f jmdict.tgz \
 	  --exclude 'CVS' --exclude '*.log' --exclude '*~' --exclude '*.tmp' \
 	  --exclude '\#*' --exclude '\.*' \

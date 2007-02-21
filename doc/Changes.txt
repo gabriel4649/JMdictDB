@@ -1,6 +1,14 @@
 
 2007-02-20	smcgrawx@frxii.com
 
+	* Makefile
+	In target "jmdict.xml", remove JMdict file before running
+	  wget.  If JMdict file exists, wget will create new file with
+	  a ".1" suffix and rest of commands will operate on wrong 
+	  file.
+
+2007-02-20	smcgrawx@frxii.com
+
 	* perl/load_jmdict.pl
 	Don't skip "news1/2" frequency values any more.  Ref jb email to
 	  edict list, 2007-02-20, in which he said he sometimes manually

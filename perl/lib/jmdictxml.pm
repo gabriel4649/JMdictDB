@@ -40,9 +40,9 @@ our %JM2ID = (
 	FREQ => {		# kwfreq
 		'ichi' => 1,
 		'gai' => 2,
-		'jdd' => 3,
 		'spec' => 4,
-		'nf' => 5, },
+		'nf' => 5, 
+		'news' => 7, },
 	
 	NAME => {		# kwmisc
 		'family or surname' => 81,

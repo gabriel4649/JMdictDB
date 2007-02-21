@@ -1,21 +1,52 @@
 
+2007-02-20	smcgrawx@frxii.com
+
+	* perl/load_jmdict.pl
+	Don't skip "news1/2" frequency values any more.  Ref jb email to
+	  edict list, 2007-02-20, in which he said he sometimes manually
+	  changes news1/2 values so the <=/>nf24 correspondence is not
+	  neccessarily true.  This change will add them to database so
+	  can investigate best way to handle.
+	Log skipped duplicate nfxx and newsx freq values.  jb edict list 
+	  mail (2007-02-15 reply to frenchquacky) says that these are
+	  (contrary to what I thought) significant.  Need to gather info 
+	  on how/many where they are to formulate plan to handle since
+	  current data model does not allow.
+	Replaced the "skipped_comments" logging code with something more
+	  general.  Accept a -l option for logfile name and use that for
+	  all log messages.
+	Set a global $::Seq with current seq number for use in log messages.
+	  I don't think any line numbers other than for <entry> and comment
+	  lines is available from XML::Twig, unless we set up tag handlers
+	  which seems like a lot of work. 
+
+	* perl/lib/jmdictxml.pm
+	Add 'news' value to FREQs.  (See load_jmdict.pl comments.)
+	Remove 'jdd' value from FREQs.  (This should have been done
+	  along with the change to pg/data/kwfreq.sql on 2007-02-19.)
+
+	* pg/data/kwfreq.sql
+	Add 'news' keyword.  (See load_jmdict.pl comments.)
+
 2007-02-19	smcgrawx@frxii.com
 
 	* Makefile
 	Get rid of most continued command lines.  This provides better error
 	  termination and in the "all" target they did not display as desired
 	  on Debian.
-	Clarify the help mesage in the "all" target.
+	Clarify the help message in the "all" target.
 
 	* Changes.txt README.txt
 	Obsfucate email address since these files now exposed on internet.
 
 	* perl/cgi/srchform.pl [1.5]
-	Remove line of code that surpressed generating the "spec2" option box
-	  since spec2 tags do actually exist.  Not sure why I thought they didn't.
+	Remove line of code that supressed generating the "spec2" option box
+	  since spec2 tags do actually exist.  Not sure why I thought they 
+	  didn't.
 
 	* pg/data/kwfreq.sql [1.5]
-	Remove "jdd" keyword per jb post to edict email list, 2007-02-19.
+	Remove "jdd" keyword (no longer used in jmdict xml file) per jb post 
+	  to edict email list, 2007-02-19.
 
 2007-02-18	smcgrawx@frxii.com
 
@@ -167,6 +198,9 @@
 	    not have to be recovered using a more complicated query.
 	  - Eliminates the need to lookup entries by sens.id, rdng.id, 
 	    etc, in user interfaces.
+	  - Eliminates some possibilities for inconsistencies such
+	    as restr's that have reading and kanji from different
+	    entries.
 	  - Greatly reduces the space required by the largest tables
 	    by eliminating a 4-byte integer from each row.
 	  - Eliminates need for extra sequence tables to support the
@@ -737,7 +771,7 @@
 	  anything because the generated sql asked for rows where the
 	  same gloss was simulataneously equal to g1 and g2.  Now, g1
 	  and g2 need only occur in the same sense.  (We probably
-	  want "in the same entry" iunstead, but that will need to 
+	  want "in the same entry" instead, but that will need to 
 	  wait.)  Same problem also occured (and ws fixed) for kanji 
 	  and reading searches too.
 
@@ -782,7 +816,7 @@
 	Remove function rslv_refs() since it is no longer used
 	  by anything.  
 	Add function build_search_sql() and its helper, 
-	  mk_from_clasuse()  This is a slightly rewritten version
+	  mk_from_clause()  This is a slightly rewritten version
 	  of what was in showentr.py.
 
 	* showentr.py[1.7]

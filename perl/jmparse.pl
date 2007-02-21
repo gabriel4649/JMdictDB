@@ -50,9 +50,9 @@ BEGIN {push (@INC, "./lib");}
 use jmdictxml ('%JM2ID');
 
 main: {
-	my ($twig, $infn, $outfn, $tmpfiles, $tmp, $enc);
+	my ($twig, $infn, $outfn, $tmpfiles, $tmp, $enc, $logfn);
 
-	getopts ("o:c:s:e:kh", \%::Opts);
+	getopts ("o:c:s:e:l:kh", \%::Opts);
 	if ($::Opts{h}) { usage (0); }
 	$enc = $::Opts{e} || "utf-8";
 	binmode(STDOUT, ":encoding($enc)");
@@ -61,6 +61,7 @@ main: {
 
 	$infn = shift (@ARGV) || "JMdict";
 	$outfn = $::Opts{o} || "JMdict.dmp";
+	$logfn = $::Opts{l} || "load_jmdict.log";
 
 	  # Make STDERR unbuffered so we print "."s, one at 
 	  # a time, as a sort of progress bar.  
@@ -77,7 +78,7 @@ main: {
 
 	  # Initialize global variables and open all the 
 	  # temporary table files. 
-	$tmpfiles = initialize ();
+	$tmpfiles = initialize ($logfn);
 
 	  # Parse the give xml file.  The entry_ele sub given 
 	  # when the $twig was created does all the work of
@@ -93,7 +94,7 @@ main: {
 	finalize ($outfn, $tmpfiles, !$::Opts{k}); 
 	print STDERR ("Done\n"); }
 
-sub initialize {
+sub initialize { my ($logfn) = @_;
 	my ($t);
 	my @tmpfiles = (
 	  [\$::Fentr, "load01.tmp", "COPY entr(id,src,seq,stat,notes) FROM stdin;"],
@@ -124,8 +125,7 @@ sub initialize {
 	foreach $t (@tmpfiles) {
 	    open (${$t->[0]}, ">:utf8", $t->[1]) or \
 		  die ("Can't open $t->[1]: $!\n") }
-	open ($::Fskiplog, ">:utf8", "skipped_comments.log") or \
-	    die ("Can't open load_jmdict_skipped.log: $!\n");
+	open ($::Flog, ">:utf8", $logfn) or die ("Can't open $logfn: $!\n");
 	return \@tmpfiles; }
 
 sub finalize { my ($outfn, $tmpfls, $del) = @_;
@@ -148,6 +148,7 @@ sub entry_handler { my ($t, $entry ) = @_;
 	if (!($::cntr % 1385)) { print STDERR "."; } 
 	$::cntr += 1;
 	$seq = ($entry->get_xpath("ent_seq"))[0]->text;
+	$::Seq = $seq;	# For log messages.
 	if (!$::started_at and (!$::Opts{s} or $seq eq $::Opts{s})) { 
 	    $::processing = 1;  $::started_at = $::cntr }
 	return if (! $::processing);
@@ -167,7 +168,7 @@ sub comment_handler { my ($t, $entry ) = @_;
 	    $seq = $1; if ($2) { $notes = $2; } }
 	else { 
 	    $ln = $t->current_line();
-	    print $::Fskiplog "$ln: $c\n"; return; }
+	    print $::Flog "Line $ln: unparsable comment: $c\n"; return; }
 
 	$dt = "1990-01-01 00:00:00-00";
 	# (id,src,seq,stat,note)
@@ -360,20 +361,60 @@ sub do_hist { my ($hist) = @_;
 	    $::hid += 1; } }
 
 sub freqs { my ($frqs) = @_;
-	my ($i, $kw, $val, %dupnuke);
+	# Process a list of re_pri or ke_pri elements, @$frqs
+	# by converting to database id's and eliminatng duplicates.
+	#
+	# Each element text is split into a alpha keyword part
+	# and a numeric value part.  The keyword is looked up
+	# to find its database id number.  The value is then 
+	# put into a hash, keyed by its id number which assures
+	# that there is only a single instance of each id number 
+	# (a requirement of the data model enforced by the database).
+	# If more than one id value is encountered, the one with
+	# the lowest value is kept, and a log message written noting
+	# the one that is thrown away.  This is to handle the 
+	# the "nfxx" elements, which sometimes have multiple values.
+
+	my ($i, $kw, $val, %dupnuke, $ignored, $kwstr, %revlookup, $type);
 	foreach $i (@$frqs) {
-	    ($kw, $val) = parse_freq ($i->text);
-	    if (!defined ($dupnuke{$kw}) or $dupnuke{$kw} < $val) { 
-		$dupnuke{$kw} = $val; } }
+	    # Convert the string (e.g "nf30") into numeric (id,value)
+	    # pair (like 4,30).
+	    ($kw, $val, $kwstr) = parse_freq ($i->text);
+	    $revlookup{$kw} = $kwstr;	# For use in log messages.
+
+	    # Check for duplicate id's.  If id not in hash, no dup.
+	    if (!defined ($dupnuke{$kw})) { $dupnuke{$kw} = $val; }
+	    else { 
+		$ignored = "";  $type = $i->name;
+		# If id is in the hash, then this id has already been seen.
+		if ($val < $dupnuke{$kw}) { 
+		    # The new value is less than the previous value
+		    # so save the old value (convert back to string)
+		    # for log message, and replace with new value.
+		    $ignored = $revlookup{$kw} . $dupnuke{$kw};
+		    $dupnuke{$kw} = $val; }
+		elsif ($val > $dupnuke{$kw}) { 
+		    # New value bigger, ignore it but note value for log.
+		    $ignored = $i->text }
+		# Else new value is equal to old, silently ignore.
+		if ($ignored) {
+		    print $::Flog "seq $::Seq: ignored dup freq ($type): $ignored\n"; } } }
+	# Return (a ref to) the hash with unique id's to caller. 
 	return \%dupnuke; }
 
 sub parse_freq { my ($fstr) = @_;
-	my ($i, $kw, $val);
+	# Convert a re_pri or ke_pri element string (e.g "nf30") into
+	# numeric (id,value) pair (like 4,30) (4 is the id number of 
+	# keyword "nf" in the database table "kwfreq", and we get it 
+	# by looking it up in JM2ID (from jmdictxml.pm). In addition 
+	# to the id,value pair, we also return keyword string.
+
+	my ($i, $kw, $val, $kwstr);
 	($fstr =~ m/([a-z]+)(\d+)/io) or die ("Bad x_pri string: $fstr\n");
-	return () if $1 eq "news";
-	($kw = $::JM2ID{FREQ}{$1}) or die ("Unrecognized x_pri string: /$fstr/\n");
-	$val = int ($2);
-	return ($kw, $val); }
+	$kwstr = $1;  $val = int ($2);
+	#return () if $kwstr eq "news";
+	($kw = $::JM2ID{FREQ}{$kwstr}) or die ("Unrecognized x_pri string: /$fstr/\n");
+	return ($kw, $val, $kwstr); }
 
 sub pgesc { my ($str) = @_; 
 	# Escape characters that are special to the Postgresql COPY
@@ -390,7 +431,8 @@ sub usage { my ($exitstat) = @_;
 	print <<EOT;
 
 Usage: load_jmdict.pl [-o output-filename] [-c entry-count] \\
-		      [-s start-seq-num] [-k]  [xml-filename]
+		      [-s start-seq-num] [-k]  [-l logfile] \\
+		      [xml-filename]
 
 Arguments:
 	xml-filename -- Name of input jmdict xml file.  Default 
@@ -403,6 +445,8 @@ Options:
 	-k -- (keep) do not delete temporary files.
 	-e encoding -- Ecoding to use when writing messages to stderr
 	    and stdout.  Default is "utf-8".
+	-l logfile -- Name of file to write log messages to.  Default 
+	    is "load_jmdict.log".
 	-h -- (help) print this text and exit.
 EOT
 	exit $exitstat; }

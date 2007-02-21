@@ -72,8 +72,7 @@ binmode (STDOUT, ":utf8");
 	if ($@) {
 	    print "Content-type: text/html\n\n<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body>";
 	    print "<pre> $@ </pre>\n<pre>$sql2</pre>\n<pre>".join(", ", @$sql_args)."</pre></body></html>\n";
-	    exit (1);
-	    }
+	    exit (1); }
 	if (scalar (@$rs) == 1) {
 	    printf ("Location: entr.pl?e=%d\n\n", $rs->[0]{id}); }
 	else {
@@ -107,37 +106,101 @@ binmode (STDOUT, ":utf8");
 	return $s; }
 
     sub freq_srch_clause { my ($freq, $nfval, $nfcmp, $gaval, $gacmp) = @_;
+	# Create a pair of 3-tuples (build_search_sql() "conditions")
+	# that build_search_sql() will use to create a sql statement 
+	# that will incorporate the freq-of-use criteria defined by
+	# our parameters:
+	#
+	# $freq -- List of string values of a freq option checkboxes, e.g. "ichi2".
+	# $nfval -- String containing an "nf" number ("1" - "48").
+	# $nfcmp -- String containing one of ">=", "=", "<=".
+	# gaval -- String containing a gA number.
+	# gacmp -- Same as nfcmp.
+
 	my ($f, $domain, $value, %x, $k, $v, $kwid, @whr, $whr);
+
+	# Freq items consist of a domain (such as "ichi" or "nf")
+	# and a value (such as "1" or "35").
+	# Process the checkboxes by creating a hash indexed by 
+	# by domain and with each value a list of freq values.
+
 	foreach $f (@$freq) {
+	    # Split into text (domain) and numeric (value) parts.
 	    ($domain, $value) = ($f =~ m/(^[A-Za-z_-]+)(\d*)$/);
+	    # We will handle "nfxx" and "gAxxxx" later.
 	    next if ($domain eq "nf" or $domain eq "ga");
+	    # If this domain not in hash yet, add it.
 	    if (!defined ($x{$domain})) { $x{$domain} = []; }
+	    # Append this value to the list.
 	    push (@{$x{$domain}}, $value); }
+
+	# Now process each domain and it's list of values...
+
 	while (($k,$v) = each (%x)) {
+	    # Convert the domain string to a kwfreq table id number.
 	    $kwid = $::KW->{FREQ}{$k}{id};
-	    if (scalar(@$v)==2 or $k eq"spec") { push (@whr, sprintf (
+
+	    # The following assumes that the range of values are 
+	    # limited to 1 and 2.
+
+	    if (scalar(@$v)==2) { push (@whr, sprintf (
+		# As an optimization, if there are 2 values, they must be 1 and 2, 
+		# so no need to check value in query, just see if the domain exists.
+		# FIXME: The above is false, there could be two "1" values.
+		# FIXME: The above assumes only 1 and 2 are allowed.  Currently
+		#   true but may change in future.
 		"(kfreq.kw=%s OR rfreq.kw=%s)", $kwid,$kwid)); }
-		# Above assumes only values possible are 1 and 2.
 	    elsif (scalar(@$v) == 1) { push (@whr, sprintf (
+		# If there is only one value we need to look for kw with
+		# that value.
 		"((kfreq.kw=%s AND kfreq.value=%s) OR (rfreq.kw=%s AND rfreq.value=%s))",
 		$kwid, $v->[0], $kwid, $v->[0])); }
 	    elsif (scalar(@$v) > 2) { push (@whr, sprintf (
+		# If there are more than 2 values then we look for them explicitly
+		# using an IN() construct.
 		"((kfreq.kw=%s AND kfreq.value IN (%s)) OR (rfreq.kw=%s AND rfreq.value IN (%s)))",
 		$k, join(",",@$v), $k, join(",",@$v))); }
+	    # A 0 or negative length list should be impossible.
 	    else { die; } }
+
+	# Handle the "nfxx" items specially here.
+
 	if (grep ($_ eq "nf", @$freq) and $nfval) {
+	    # Convert the domain string to a kwfreq table id number.
 	    $kwid = $::KW->{FREQ}{nf}{id};
+	    # Build list of "where" clause parts using the requested comparison and value.
 	    push (@whr, sprintf (
 		"((kfreq.kw=%s AND kfreq.value%s%s) OR (rfreq.kw=%s AND rfreq.value%s%s))",
 		$kwid, $nfcmp, $nfval,  $kwid, $nfcmp, $nfval)); }
+
+	# Handle the "gAxx" items specially here.
+
 	if (grep ($_ eq "ga", @$freq) and $gaval) {
+	    # Convert the domain string to a kwfreq table id number.
 	    $kwid = $::KW->{FREQ}{gA}{id};
+	    # Build list of "where" clause parts using the requested comparison and value.
 	    push (@whr, sprintf (
 		"((kfreq.kw=%s AND kfreq.value%s%s) OR (rfreq.kw=%s AND rfreq.value%s%s))",
 		$kwid, $gacmp, $gaval,  $kwid, $gacmp, $gaval)); }
 
+	# Now, @whr is a list of all the various freq ewlated conditions that 
+	# were  selected.  We change it into a clause by connecting them all 
+	# with " OR".
 	$whr = "(" . join(" OR ", @whr) . ")";
+
+	# If there were no freq related conditions...
 	return [] if (!$whr);
+
+	# Return two triples suitable for use by build-search_sql().  That function
+	# will build sql that effectivly "AND"s all the conditions (each specified 
+	# in a triple) given to it.  Our freq conditions applies to two tables 
+	# (rfreq and kfreq) and we want them OR'd not AND'd.  So we cheat and use a
+	# strisk in front of table name to tell build_search_sql() to use left joins
+	# rather than inner joins when refering to that condition's table.  This will
+	# result in the inclusion in the result set of rfreq rows that match the
+	# criteria, even if there are no matching kfreq rows (and visa versa). 
+	# The where clause refers to both the rfreq and kfreq tables, so need only
+	# be given in one constion triple rather than in each. 
 	return (["*rfreq","",[]],["*kfreq",$whr,[]]); }
 
     sub build_search_sql { my ($condlist) = @_;

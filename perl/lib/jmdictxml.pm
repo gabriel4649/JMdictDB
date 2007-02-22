@@ -77,11 +77,11 @@ our %JM2ID = (
 		'gikun (meaning) reading' => 2,
 		'out-dated or obsolete kana usage' => 3,
 		'word containing irregular kana usage' => 4,
+		'word usually written using kanji alone ' => 5,
 
 		# Deprecated...
 		'rare' => 201,
-		'word usually written using kana alone ' => 202,
-		'word usually written using kanji alone ' => 203, },
+		'word usually written using kana alone ' => 202, },
 	
 	FLD => {		# kwfld
 		'Buddhist term' => 1,

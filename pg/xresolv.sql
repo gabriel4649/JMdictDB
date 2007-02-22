@@ -43,15 +43,4 @@ INSERT INTO xref(entr,sens,xentr,xsens,typ,notes)
       JOIN rdng r ON r.txt=v.txt  
       JOIN sens s ON r.entr=s.entr);
 
------------------------------------------------------
--- Following query will report all entries in
--- xresolv that are not resolvable...
------------------------------------------------------
-SELECT e.seq,e.id,v.sens,v.typ,v.txt
-  FROM xresolv v 
-  JOIN entr e ON e.id=v.entr
-  LEFT JOIN rdng r ON r.txt=v.txt
-  LEFT JOIN kanj k ON k.txt=v.txt
-  WHERE r.txt IS NULL AND k.txt IS NULL
-  ORDER BY e.seq,v.sens
 

@@ -18,6 +18,8 @@
 --  Copyright (c) 2006,2007 Stuart McGraw 
 ---------------------------------------------------------------------------
 
+-- Changes here should also be made to jmdictxml.pm.
+
 INSERT INTO kwlang(id,kw,descr) VALUES(0, 'ja','Japanese');
 INSERT INTO kwlang(id,kw,descr) VALUES(1, 'en','English');
 INSERT INTO kwlang(id,kw,descr) VALUES(2, 'ai','Aino');

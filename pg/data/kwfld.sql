@@ -18,6 +18,8 @@
 --  Copyright (c) 2006,2007 Stuart McGraw 
 ---------------------------------------------------------------------------
 
+-- Changes here should also be made to jmdictxml.pm.
+
 INSERT INTO kwfld(id,kw,descr) VALUES(1,'Buddh','Buddhist term');
 INSERT INTO kwfld(id,kw,descr) VALUES(2,'comp','computer terminology');
 INSERT INTO kwfld(id,kw,descr) VALUES(3,'food','food term');

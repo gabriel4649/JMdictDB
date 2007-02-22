@@ -18,6 +18,8 @@
 --  Copyright (c) 2006,2007 Stuart McGraw 
 ---------------------------------------------------------------------------
 
+-- Changes here should also be made to jmdictxml.pm.
+
 INSERT INTO kwkinf(id,kw,descr) VALUES(1, 'iK', 'word containing irregular kanji usage');
 INSERT INTO kwkinf(id,kw,descr) VALUES(2, 'io', 'irregular okurigana usage');
 INSERT INTO kwkinf(id,kw,descr) VALUES(3, 'oK', 'word containing out-dated kanji');

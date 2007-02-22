@@ -18,6 +18,8 @@
 --  Copyright (c) 2006,2007 Stuart McGraw 
 ---------------------------------------------------------------------------
 
+-- Changes here should also be made to jmdictxml.pm.
+
 INSERT INTO kwdial(id,kw,descr) VALUES(1,'std','Tokyo-ben (std)');
 INSERT INTO kwdial(id,kw,descr) VALUES(2,'ksb','Kansai-ben');
 INSERT INTO kwdial(id,kw,descr) VALUES(3,'ktb','Kantou-ben');

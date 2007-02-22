@@ -22,15 +22,9 @@
 	    substr('$Date$',7,-11));
 
 # This program will read a JMdict.xml file and create
-# an output file containing postgresql data load commands
-# that will, when executes, load the JMdict data into an
+# an output file containing postgresql data COPY commands
+# that will, when executeD, load the JMdict data into an
 # appropriately configured Postgresql database.
-#
-# Special handling: 
-# - propagate PoS through senses.
-# - do xrefs/ants in 2nd pass
-# - ke_pri, re_pri: ignore (redundant) newsX values.
-# - record only 1 nfXX when multiple values present. (niy)
 #
 # To do:
 # Add command line option to give a directory for the
@@ -47,7 +41,7 @@ use Getopt::Std ('getopts');
 use strict;
 
 BEGIN {push (@INC, "./lib");}
-use jmdictxml ('%JM2ID');
+use jmdictxml ('%JM2ID'); # Maps xml expanded entities to kw* table id's.
 
 main: {
 	my ($twig, $infn, $outfn, $tmpfiles, $tmp, $enc, $logfn);
@@ -67,12 +61,12 @@ main: {
 	  # a time, as a sort of progress bar.  
 	$tmp = select(STDERR); $| = 1; select($tmp);
 
-	  # Create an XML parser instance.  'twig_roots' is
-	  # a hash whose keys (one) name the elements to be 
-	  # parsed, and value(s) give the name of a subroutine
-	  # to be called to process the parsed element. 
+	  # Create an XML parser instance. 'twig_handlers' is
+	  # a hash whose keys name the elements to be parsed,
+	  # and value(s) give the name of a subroutine to be
+	  # called to process the parsed element. 
 	$twig = XML::Twig->new (twig_handlers => { 
-				    entry=>\&entry_handler,
+				    entry    =>\&entry_handler,
 				   '#COMMENT'=>\&comment_handler}, 
 				comments=>'process');
 
@@ -80,9 +74,13 @@ main: {
 	  # temporary table files. 
 	$tmpfiles = initialize ($logfn);
 
-	  # Parse the give xml file.  The entry_ele sub given 
+	  # Parse the given xml file.  The entry_ele sub given 
 	  # when the $twig was created does all the work of
-	  # writing the parsed data to the tables files.
+	  # writing the parsed data to the tables files.  
+	  # The parsefile() method is called inside an eval because
+	  # we want to catch the die("done") thrown by the entry
+	  # handler sub when it want to quit early (due to the
+	  # -c option).
 	print STDERR "Parsing xml file $infn\n";
 	eval { $twig->parsefile( $infn ); };
 	die if ($@ and $@ ne "done\n"); 
@@ -129,6 +127,9 @@ sub initialize { my ($logfn) = @_;
 	return \@tmpfiles; }
 
 sub finalize { my ($outfn, $tmpfls, $del) = @_;
+	# Close all the temp files, merge them all intro the single 
+	# output file, and delete them (if no -k option).
+
 	my ($t, $tmpfn);
 	open (FOUT, ">:utf8", $outfn) or die ("Can\'t open $outfn: $!\n");
 	foreach $t (@$tmpfls) {
@@ -144,6 +145,13 @@ sub finalize { my ($outfn, $tmpfls, $del) = @_;
 	close (FOUT); } 
 
 sub entry_handler { my ($t, $entry ) = @_;
+	# Process each <entry> element.   When we're called (because we
+	# were listed in the twig_handlers option of the Twig->new() call
+	# in main()), a complete entry has been parsed including everthing
+	# inside it.  We do the entry-related bookkeeping stuff here, and 
+	# call do_pentry() to deal with the jmdict info contained in the
+	# entry.
+
 	my ($seq, @x, $kmap, $rmap);
 	if (!($::cntr % 1385)) { print STDERR "."; } 
 	$::cntr += 1;
@@ -158,6 +166,12 @@ sub entry_handler { my ($t, $entry ) = @_;
 	$t->purge; 0;}
 
 sub comment_handler { my ($t, $entry ) = @_;
+	# Process each comment.  We get called when a comment is seen
+	# because  we were listed ('#COMMENT') in the twig_handlers option
+	# of the Twig->new() call in main().  We look for comments that
+	# described entry deletions and create synthetic 'D' status entries
+	# for them.
+
 	my ($c, $seq, $notes, $dt, $ln); 
 	return if (! $::processing);
 	$c = $entry->{comment};
@@ -212,6 +226,7 @@ sub do_kinfs { my ($kinfs, $ord) = @_;
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{KINF}{$txt}) or \
 		die ("Unknown ke_inf text: /$txt/\n");
+	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated kinf string '$txt'\n"; }
 	    print $::Fkinf "$::eid\t$ord\t$kw\n"; } }
 
 sub do_kfrqs { my ($kfrqs, $ord) = @_;
@@ -246,6 +261,7 @@ sub do_rinfs { my ($rinfs, $ord) = @_;
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{RINF}{$txt}) or \
 		die ("Unknown re_inf text: /$txt/\n") ;
+	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated rinf string '$txt'\n"; }
 	    print $::Frinf "$::eid\t$ord\t$kw\n"; } }
 
 sub do_rfrqs { my ($rfrqs, $ord) = @_;
@@ -298,6 +314,7 @@ sub do_pos { my ($pos, $ord) = @_;
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{POS}{$txt}) or \
 		die ("Unknown \'pos\' text: /$txt/\n");
+	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated pos string '$txt'\n"; }
 	    print $::Fpos "$::eid\t$ord\t$kw\n"; } }
 
 sub do_misc { my ($misc, $ord) = @_;
@@ -306,6 +323,7 @@ sub do_misc { my ($misc, $ord) = @_;
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{MISC}{$txt}) or \
 		die ("Unknown \'misc\' text: /$txt/\n");
+	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated misc string '$txt'\n"; }
 	    print $::Fmisc "$::eid\t$ord\t$kw\n"; } }
 
 sub do_fld { my ($fld, $ord) = @_;
@@ -314,6 +332,7 @@ sub do_fld { my ($fld, $ord) = @_;
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{FLD}{$txt}) or \
 		die ("Unknown \'fld\' text: /$txt/\n");
+	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated fld string '$txt'\n"; }
 	    print $::Ffld "$::eid\t$ord\t$kw\n"; } }
 
 sub do_dial { my ($dial) = @_;
@@ -322,6 +341,7 @@ sub do_dial { my ($dial) = @_;
 	    $txt = substr ($i->text, 0, -1);
 	    ($kw = $::JM2ID{DIAL}{$txt}) or \
 		die ("Unknown \'dial\' text: /$txt/\n");
+	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated dial string '$txt'\n"; }
 	    print $::Fdial "$::eid\t$kw\n"; } }
 
 sub do_lang { my ($lang) = @_;
@@ -330,6 +350,7 @@ sub do_lang { my ($lang) = @_;
 	    $txt = substr ($i->text, 0, -1);
 	    ($kw = $::JM2ID{LANG}{$txt}) or \
 		die ("Unknown \'lang\' text: /$txt/\n");
+	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated lang string '$txt'\n"; }
 	    print $::Flang "$::eid\t$kw\n"; } }
 
 sub do_restr { my ($file, $restr, $amap, $bmap) = @_;
@@ -380,12 +401,14 @@ sub freqs { my ($frqs) = @_;
 	    # Convert the string (e.g "nf30") into numeric (id,value)
 	    # pair (like 4,30).
 	    ($kw, $val, $kwstr) = parse_freq ($i->text);
+	    $type = $i->name;
+	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated $type keyword '$i->text'\n"; }
 	    $revlookup{$kw} = $kwstr;	# For use in log messages.
 
 	    # Check for duplicate id's.  If id not in hash, no dup.
 	    if (!defined ($dupnuke{$kw})) { $dupnuke{$kw} = $val; }
 	    else { 
-		$ignored = "";  $type = $i->name;
+		$ignored = ""; 
 		# If id is in the hash, then this id has already been seen.
 		if ($val < $dupnuke{$kw}) { 
 		    # The new value is less than the previous value
@@ -398,7 +421,7 @@ sub freqs { my ($frqs) = @_;
 		    $ignored = $i->text }
 		# Else new value is equal to old, silently ignore.
 		if ($ignored) {
-		    print $::Flog "seq $::Seq: ignored dup freq ($type): $ignored\n"; } } }
+		    print $::Flog "Seq $::Seq: ignored dup freq ($type): $ignored\n"; } } }
 	# Return (a ref to) the hash with unique id's to caller. 
 	return \%dupnuke; }
 

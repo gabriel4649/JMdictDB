@@ -33,8 +33,19 @@ use Exporter ();  @ISA = 'Exporter';
 # values are not appropriate for this since they are not
 # neccessarily the same as the xml entity strings.
 #
+# Deprecated items were used in jmdict at one time but 
+# are not supposed to occur in current versions.  They
+# remain in here in case they reappear (has been known
+# to happen), or there is a need to load an old version
+# of jmdict.  They are given values >=200 and if encountered
+# by load_jmdict.pl, will elicit a warning message.
+# References are edict list posts from Jim Breen:
+#   2006-09-15, 2007-02-19, 2007-02-21
+#
+# !!!!!
 # This file should be updated if the data in any of the
 # xml-related kw* tables is changed, and visa versa.
+# !!!!!
 
 our %JM2ID = (
 	FREQ => {		# kwfreq
@@ -64,11 +75,13 @@ our %JM2ID = (
 	RINF => {		# kwrinf
 		'ateji (phonetic) reading' => 1,
 		'gikun (meaning) reading' => 2,
-		'word containing irregular kana usage' => 3,
-		'out-dated or obsolete kana usage' => 4,
-		'rare' => 5,
-		'word usually written using kana alone ' => 6,
-		'word usually written using kanji alone ' => 7, },
+		'out-dated or obsolete kana usage' => 3,
+		'word containing irregular kana usage' => 4,
+
+		# Deprecated...
+		'rare' => 201,
+		'word usually written using kana alone ' => 202,
+		'word usually written using kanji alone ' => 203, },
 	
 	FLD => {		# kwfld
 		'Buddhist term' => 1,
@@ -97,17 +110,19 @@ our %JM2ID = (
 		'idiomatic expression ' => 13,
 		'manga slang' => 14,
 		'male term or language' => 15,
-		'male slang' => 16,
 		'obsolete term' => 17,
 		'obscure term' => 18,
 		'polite (teineigo) language ' => 19,
 		'rare' => 20,
 		'slang' => 21,
 		'word usually written using kana alone ' => 22,
-		'word usually written using kanji alone ' => 23,
 		'vulgar expression or word ' => 24,
 		'sensitive' => 25,
-		'ateji (phonetic) reading' => 26, },
+
+		# Deprecated...
+		'male slang' => 201, 
+		'ateji (phonetic) reading' => 202,
+		'word usually written using kanji alone ' => 203, },
 	
 	POS => {		# kwpos
 		'adjective (keiyoushi)' => 1,
@@ -116,24 +131,18 @@ our %JM2ID = (
 		'pre-noun adjectival (rentaishi)' => 4,
 		'`taru\' adjective' => 5,
 		'adverb (fukushi)' => 6,
-		'adverbial noun' => 7,
 		'adverb taking the `to\' particle' => 8,
 		'auxiliary' => 9,
 		'auxiliary adjective' => 54,
 		'auxiliary verb' => 10,
-		'computer terminology' => 11,
 		'conjunction' => 12,
 		'Expressions (phrases, clauses, etc.)' => 13,
 		'interjection (kandoushi)' => 14,
-		'irregular okurigana usage' => 15,
-		'irregular verb' => 16,
 		'noun (common) (futsuumeishi)' => 17,
 		'adverbial noun (fukushitekimeishi)' => 18,
 		'noun, used as a suffix' => 19,
 		'noun, used as a prefix' => 20,
 		'noun (temporal) (jisoumeishi)' => 21,
-		'negative (in a negative sentence, or with negative verb)' => 22,
-		'negative verb (when used with)' => 23,
 		'numeric' => 24,
 		'prefix ' => 25,
 		'particle ' => 26,
@@ -161,9 +170,17 @@ our %JM2ID = (
 		'suru verb - irregular' => 48,
 		'zuru verb - (alternative form of -jiru verbs)' => 49,
 		'transitive verb' => 50,
-		'masculine gender' => 51,
-		'feminine gender' => 52,
-		'neuter gender' => 53, },
+
+		# Deprecated...
+		'adverbial noun' => 201,
+		'computer terminology' => 202,
+		'irregular okurigana usage' => 203,
+		'irregular verb' => 204,
+		'negative (in a negative sentence, or with negative verb)' => 205,
+		'negative verb (when used with)' => 206,
+		'masculine gender' => 207,
+		'feminine gender' => 208,
+		'neuter gender' => 209, },
 	
 	DIAL => {		# kwdial
 		'std' => 1,

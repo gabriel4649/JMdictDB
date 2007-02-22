@@ -32,7 +32,7 @@ $|=1;
 binmode (STDOUT, ":utf8");
 
     main: {
-	my ($dbh, $cgi, $tmpl, @s, @y, @t, $col, 
+	my ($dbh, $cgi, $tmpl, @s, @y, @t, $col, @kinf, @rinf, @fld,
 	    @pos, @misc, @src, @stat, @freq, $nfval, $nfcmp, $gaval, $gacmp, 
 	    $idval, $idtbl, $sql, $sql_args, $sql2, $rs, $i, $freq, @condlist);
 	binmode (STDOUT, ":encoding(utf-8)");
@@ -42,8 +42,9 @@ binmode (STDOUT, ":utf8");
 	$s[0]=$cgi->param("s1"); $y[0]=$cgi->param("y1"); $t[0]=decode_utf8($cgi->param("t1"));
 	$s[1]=$cgi->param("s2"); $y[1]=$cgi->param("y2"); $t[1]=decode_utf8($cgi->param("t2"));
 	$s[2]=$cgi->param("s3"); $y[2]=$cgi->param("y3"); $t[2]=decode_utf8($cgi->param("t3"));
-	@pos=$cgi->param("pos"); @misc=$cgi->param("misc"); @stat=$cgi->param("stat"); 
-	@src=$cgi->param("src"); @freq=$cgi->param("freq");
+	@pos=$cgi->param("pos");   @misc=$cgi->param("misc"); @fld=$cgi->param("fld");
+	@rinf=$cgi->param("rinf"); @kinf=$cgi->param("kinf"); @freq=$cgi->param("freq");
+	@src=$cgi->param("src");   @stat=$cgi->param("stat"); 
 	$nfval=$cgi->param("nfval"); $nfcmp=$cgi->param("nfcmp");
 	$gaval=$cgi->param("gaval"); $gacmp=$cgi->param("gacmp");
 	$idval=$cgi->param("idval"); $idtbl=$cgi->param("idtyp");
@@ -59,6 +60,8 @@ binmode (STDOUT, ":utf8");
 		    push (@condlist, str_match_clause ($s[$i],$y[$i],$t[$i],$i)); } }
 	    if (@pos)  { push (@condlist, ["pos", getsel("pos.kw", \@pos), []]); }
 	    if (@misc) { push (@condlist, ["misc",getsel("misc.kw", \@misc),[]]); }
+	    if (@kinf) { push (@condlist, ["kinf",getsel("kinf.kw", \@kinf),[]]); }
+	    if (@rinf) { push (@condlist, ["rinf",getsel("rinf.kw", \@rinf),[]]); }
 	    if (@src)  { push (@condlist, ["entr e",getsel("e.src", \@src), []]); }
 	    if (@stat) { push (@condlist, ["entr e",getsel("e.stat", \@stat),[]]); }
 	    if (@freq) { push (@condlist, freq_srch_clause (\@freq, $nfval, $nfcmp, $gaval, $gacmp)); }

@@ -32,18 +32,21 @@ $|=1;
 binmode (STDOUT, ":utf8");
 
     main: {
-	my ($dbh, $cgi, $tmptbl, $tmpl, 
+	my ($dbh, $cgi, $tmptbl, $tmpl, @kinf, @rinf,
 	    $pos, $misc, @freq, @src, $stat, $i, @x, $kw);
 	binmode (STDOUT, ":encoding(utf-8)");
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
 	$dbh = dbopen ();  $::KW = Kwds ($dbh);
 
-	@x = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'POS'));
+	@x = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<200, kwrecs ($::KW, 'POS')));
 	$pos = reshape (\@x, 10);
 
-	@x = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'MISC'));
+	@x = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<200, kwrecs ($::KW, 'MISC')));
 	$misc = reshape (\@x, 10);
+
+	@kinf  = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<200, kwrecs ($::KW, 'KINF')));
+	@rinf  = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<200, kwrecs ($::KW, 'RINF')));
 
 	@src  = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'SRC'));
 
@@ -58,7 +61,8 @@ binmode (STDOUT, ":utf8");
 
 	$tmpl = new Petal (file=>'../lib/tal/srchform.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
-	print $tmpl->process ({pos=>$pos, misc=>$misc, stat=>$stat, freq=>\@freq});
+	print $tmpl->process ({pos=>$pos, misc=>$misc, stat=>$stat, freq=>\@freq,
+				rinf=>\@rinf, kinf=>\@kinf});
 	$dbh->disconnect; }
 
     sub reshape { my ($array, $ncols, $default) = @_;

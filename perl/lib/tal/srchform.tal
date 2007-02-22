@@ -110,6 +110,7 @@
               </table> 
               </td>
             </tr>
+
 	    <tr><td colspan="2"> </td></tr>
             <tr>
               <td colspan="2"><span class="descriptor">Status:</span>
@@ -124,6 +125,7 @@
               </table>
               </td>
             </tr>
+
 	    <tr><td colspan="2"><hr width="100%"/></td></tr>
             <tr>
               <td colspan="2"><span class="descriptor">Frequency of use:</span><br/>
@@ -149,6 +151,37 @@
               <input name="gaval" size="8"/></span>
 	      </td>
             </tr>
+
+	    <tr><td colspan="2"><hr width="100%"/></td></tr>
+            <tr>
+              <td colspan="2"><span class="descriptor">Kanji Info:</span>
+              <table class="optgroup">
+                <tbody>
+                  <tr>
+		    <td tal:repeat="c kinf">
+                      <input name="kinf" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/> 
+		    </td>
+                  </tr>
+                </tbody>
+              </table>
+              </td>
+            </tr>
+
+	    <tr><td colspan="2"><hr width="100%"/></td></tr>
+            <tr>
+              <td colspan="2"><span class="descriptor">Readingi Info:</span>
+              <table class="optgroup">
+                <tbody>
+                  <tr>
+		    <td tal:repeat="c rinf">
+                      <input name="rinf" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/> 
+		    </td>
+                  </tr>
+                </tbody>
+              </table>
+              </td>
+            </tr>
+
 	    <tr><td colspan="2"><hr width="100%"/></td></tr>
             <tr>
               <td colspan="2"><span class="descriptor">Part-of-speech attributes:</span>
@@ -163,6 +196,7 @@
               </table>
               </td>
             </tr>
+
 	    <tr><td colspan="2"><hr width="100%"/></td></tr>
             <tr>
               <td colspan="2"><span class="descriptor">Misc attributes:</span>
@@ -177,6 +211,7 @@
               </table>
               </td>
             </tr>
+
           </tbody>
         </table>
         </td>

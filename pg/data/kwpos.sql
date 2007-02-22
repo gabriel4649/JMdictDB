@@ -18,30 +18,26 @@
 --  Copyright (c) 2006,2007 Stuart McGraw 
 ---------------------------------------------------------------------------
 
+-- Changes here should also be made to jmdictxml.pm.
+
 INSERT INTO kwpos(id,kw,descr) VALUES( 1, 'adj',    'adjective (keiyoushi)');
 INSERT INTO kwpos(id,kw,descr) VALUES( 2, 'adj-na', 'adjectival nouns or quasi-adjectives (keiyodoshi)');
 INSERT INTO kwpos(id,kw,descr) VALUES( 3, 'adj-no', 'nouns which may take the genitive case particle `no''');
 INSERT INTO kwpos(id,kw,descr) VALUES( 4, 'adj-pn', 'pre-noun adjectival (rentaishi)');
 INSERT INTO kwpos(id,kw,descr) VALUES( 5, 'adj-t',  '`taru'' adjective');
 INSERT INTO kwpos(id,kw,descr) VALUES( 6, 'adv',    'adverb (fukushi)');
-INSERT INTO kwpos(id,kw,descr) VALUES( 7, 'adv-n',  'adverbial noun');
 INSERT INTO kwpos(id,kw,descr) VALUES( 8, 'adv-to', 'adverb taking the `to'' particle');
 INSERT INTO kwpos(id,kw,descr) VALUES( 9, 'aux',    'auxiliary');
 INSERT INTO kwpos(id,kw,descr) VALUES(54, 'aux-adj','auxiliary adjective');
 INSERT INTO kwpos(id,kw,descr) VALUES(10, 'aux-v',  'auxiliary verb');
-INSERT INTO kwpos(id,kw,descr) VALUES(11, 'comp',   'computer terminology');
 INSERT INTO kwpos(id,kw,descr) VALUES(12, 'conj',   'conjunction');
 INSERT INTO kwpos(id,kw,descr) VALUES(13, 'exp',    'Expressions (phrases, clauses, etc.)');
 INSERT INTO kwpos(id,kw,descr) VALUES(14, 'int',    'interjection (kandoushi)');
-INSERT INTO kwpos(id,kw,descr) VALUES(15, 'io',     'irregular okurigana usage');
-INSERT INTO kwpos(id,kw,descr) VALUES(16, 'iv',     'irregular verb');
 INSERT INTO kwpos(id,kw,descr) VALUES(17, 'n',      'noun (common) (futsuumeishi)');
 INSERT INTO kwpos(id,kw,descr) VALUES(18, 'n-adv',  'adverbial noun (fukushitekimeishi)');
 INSERT INTO kwpos(id,kw,descr) VALUES(19, 'n-suf',  'noun, used as a suffix');
 INSERT INTO kwpos(id,kw,descr) VALUES(20, 'n-pref', 'noun, used as a prefix');
 INSERT INTO kwpos(id,kw,descr) VALUES(21, 'n-t',    'noun (temporal) (jisoumeishi)');
-INSERT INTO kwpos(id,kw,descr) VALUES(22, 'neg',    'negative (in a negative sentence, or with negative verb)');
-INSERT INTO kwpos(id,kw,descr) VALUES(23, 'neg-v',  'negative verb (when used with)');
 INSERT INTO kwpos(id,kw,descr) VALUES(24, 'num',    'numeric');
 INSERT INTO kwpos(id,kw,descr) VALUES(25, 'pref',   'prefix');
 INSERT INTO kwpos(id,kw,descr) VALUES(26, 'prt',    'particle');
@@ -69,7 +65,16 @@ INSERT INTO kwpos(id,kw,descr) VALUES(47, 'vs-s',   'suru verb - special class')
 INSERT INTO kwpos(id,kw,descr) VALUES(48, 'vs-i',   'suru verb - irregular');
 INSERT INTO kwpos(id,kw,descr) VALUES(49, 'vz',     'zuru verb - (alternative form of -jiru verbs)');
 INSERT INTO kwpos(id,kw,descr) VALUES(50, 'vt',     'transitive verb');
-INSERT INTO kwpos(id,kw,descr) VALUES(51, 'mg',     'masculine gender');
-INSERT INTO kwpos(id,kw,descr) VALUES(52, 'fg',     'feminine gender');
-INSERT INTO kwpos(id,kw,descr) VALUES(53, 'ng',     'neuter gender');
+
+-- Deprecated, see jmdictxml.pm.
+INSERT INTO kwpos(id,kw,descr) VALUES(201, 'adv-n', 'adverbial noun');
+INSERT INTO kwpos(id,kw,descr) VALUES(202, 'comp',  'computer terminology');
+INSERT INTO kwpos(id,kw,descr) VALUES(203, 'neg',   'negative (in a negative sentence, or with negative verb)');
+INSERT INTO kwpos(id,kw,descr) VALUES(204, 'neg-v', 'negative verb (when used with)');
+INSERT INTO kwpos(id,kw,descr) VALUES(205, 'io',    'irregular okurigana usage');
+INSERT INTO kwpos(id,kw,descr) VALUES(206, 'iv',    'irregular verb');
+INSERT INTO kwpos(id,kw,descr) VALUES(207, 'mg',    'masculine gender');
+INSERT INTO kwpos(id,kw,descr) VALUES(208, 'fg',    'feminine gender');
+INSERT INTO kwpos(id,kw,descr) VALUES(209, 'ng',    'neuter gender');
+
 

@@ -18,6 +18,8 @@
 --  Copyright (c) 2006,2007 Stuart McGraw 
 ---------------------------------------------------------------------------
 
+-- Changes here should also be made to jmdictxml.pm.
+
 INSERT INTO kwmisc(id,kw,descr) VALUES(1,  'X',       'rude or X-rated term (not displayed in educational software)');
 INSERT INTO kwmisc(id,kw,descr) VALUES(2,  'abbr',    'abbreviation');
 INSERT INTO kwmisc(id,kw,descr) VALUES(3,  'arch',    'archaism');
@@ -33,18 +35,23 @@ INSERT INTO kwmisc(id,kw,descr) VALUES(12, 'hum',     'humble (kenjougo) languag
 INSERT INTO kwmisc(id,kw,descr) VALUES(13, 'id',      'idiomatic expression');
 INSERT INTO kwmisc(id,kw,descr) VALUES(14, 'm-sl',    'manga slang');
 INSERT INTO kwmisc(id,kw,descr) VALUES(15, 'male',    'male term or language');
-INSERT INTO kwmisc(id,kw,descr) VALUES(16, 'male-sl', 'male slang');
 INSERT INTO kwmisc(id,kw,descr) VALUES(17, 'obs',     'obsolete term');
 INSERT INTO kwmisc(id,kw,descr) VALUES(18, 'obsc',    'obscure term');
 INSERT INTO kwmisc(id,kw,descr) VALUES(19, 'pol',     'polite (teineigo) language');
 INSERT INTO kwmisc(id,kw,descr) VALUES(20, 'rare',    'rare');
 INSERT INTO kwmisc(id,kw,descr) VALUES(21, 'sl',      'slang');
 INSERT INTO kwmisc(id,kw,descr) VALUES(22, 'uk',      'word usually written using kana alone');
-INSERT INTO kwmisc(id,kw,descr) VALUES(23, 'uK',      'word usually written using kanji alone');
 INSERT INTO kwmisc(id,kw,descr) VALUES(24, 'vulg',    'vulgar expression or word');
 INSERT INTO kwmisc(id,kw,descr) VALUES(25, 'sens',    'sensitive');
-INSERT INTO kwmisc(id,kw,descr) VALUES(99, 'ateji',   'ateji (phonetic) reading');
-INSERT INTO kwmisc(id,kw,descr) VALUES(26, 'proverb', 'proverb');
-INSERT INTO kwmisc(id,kw,descr) VALUES(27, 'aphorism','aphorism (pithy saying)');
-INSERT INTO kwmisc(id,kw,descr) VALUES(28, 'quote',   'quotation');
-INSERT INTO kwmisc(id,kw,descr) VALUES(29, 'senryuu', 'senryuu (comic haiku)');
+
+-- Experimental, for eample sentences and possibly useful for future jmdict.
+INSERT INTO kwmisc(id,kw,descr) VALUES(81, 'proverb', 'proverb');
+INSERT INTO kwmisc(id,kw,descr) VALUES(82, 'aphorism','aphorism (pithy saying)');
+INSERT INTO kwmisc(id,kw,descr) VALUES(83, 'quote',   'quotation');
+--INSERT INTO kwmisc(id,kw,descr) VALUES(84, 'senryuu', 'senryuu (comic haiku)');
+
+-- Deprecated, see jmdictxml.pm.
+INSERT INTO kwmisc(id,kw,descr) VALUES(201, 'male-sl', 'male slang');
+INSERT INTO kwmisc(id,kw,descr) VALUES(202, 'ateji',   'ateji (phonetic) reading');
+INSERT INTO kwmisc(id,kw,descr) VALUES(203, 'uK',      'word usually written using kanji alone');
+

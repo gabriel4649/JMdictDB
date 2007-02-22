@@ -1,4 +1,48 @@
 
+2007-02-22	smcgrawx@frxii.com
+
+	* perl/lib/jmdictxml.pm [1.8]
+	Fix: Update value of rinf.uK to match kwrinf.sql.
+
+2007-02-21	smcgrawx@frxii.com
+
+	* perl/load_jmdict.pl [1.17]
+	Check for use of deprecated keywords and print warning
+	  to logfile.
+	Add comments.
+	
+	* perl/lib/jmdictxml.pm [1.7]
+	Deprecate items that are no longer used in current jmdict 
+	  xml files.
+
+	* pg/data/kwmisc.sql [1.5]
+	* pg/data/kwpos.sql [1.5]
+	* pg/data/kwrinf.sql [1.5]
+	Deprecate items that are no longer used in current jmdict 
+	  xml files.
+	Add comment about tracking jmdictxml.pm.
+
+	* pg/data/kwdial.sql [1.5]
+	* pg/data/kwfld.sql [1.4]
+	* pg/data/kwfreq.sql [1.7]
+	* pg/data/kwkinf.sql [1.4]
+	* pg/data/kwlang.sql [1.4]
+	Add comment about tracking jmdictxml.pm.
+
+	* Makefile [1.5]
+	In target "clean", don't delete skipped_comments.log since 
+	  load_jmdict.pl no longer creates that file.
+
+	* perl/lib/tal/srchform.tal [1.4]
+	* perl/cgi/srchform.pl [1.5]
+	* perl/cgi/srchres.pl [1.6]
+	Add search for kinf, rinf attributes.
+
+	* pg/xresolv.sql [1.5]
+	Remove the query that displays unresolvable xrefs.  That info
+	  is lost in postload.sql's copious output and can be dislayed
+	  later if needed.
+
 2007-02-21	smcgrawx@frxii.com
 
 	* perl/cgi/srchres.pl

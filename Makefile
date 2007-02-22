@@ -50,19 +50,19 @@ TAL_FILES = perl/lib/tal/entr.tal \
 all:
 	@echo 'You must supply an explicit target with this makefile:'
 	@echo '  jmdict.xml -- Get latest jmdict xml file from Monash.'
-	@echo '  jmdict.dmp -- Create Postgres load file from jmdict xml file.'
+	@echo '  jmdict.dmp -- Create Postgres load file from jmdict.xml file.'
 	@echo '  loaddb -- Initialize new database and load jmdict.dmp.'
 	@echo '  dist -- Make development snapshot distribution file.'
 	@echo '  web -- Install cgi and other web files to the appropriate places.'
-
-jmdict.dmp: jmdict.xml
-	cd perl && perl load_jmdict.pl -o ../jmdict.dmp ../jmdict.xml
 
 jmdict.xml: 
 	rm -f JMdict_e.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/JMdict_e.gz
 	gunzip JMdict_e.gz
 	mv JMdict_e jmdict.xml
+
+jmdict.dmp: jmdict.xml
+	cd perl && perl load_jmdict.pl -o ../jmdict.dmp ../jmdict.xml
 
 loaddb: jmdict.dmp
 	@echo 'Initializing jmdict database...'
@@ -76,7 +76,6 @@ clean:
 	rm -f jmdict.tgz
 	find -name '*~' -type f -print0 | xargs -0 /bin/rm -f
 	find -name '*.tmp' -type f -print0 | xargs -0 /bin/rm -f
-	find -name skipped_comments.log -type f -print0 | xargs -0 /bin/rm -f
 
 dist: 
 	tar -cz -f jmdict.tgz \

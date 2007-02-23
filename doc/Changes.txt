@@ -1,4 +1,13 @@
 
+2007-02-23	smcgrawx@frxii.com
+
+	* perl/lib/tal/srchform.tal [1.4]
+	* perl/cgi/srchform.pl [1.5]
+	* perl/cgi/srchres.pl [1.6]
+	Add section for fld (field) attributes.
+	Correct typo in Readng Info caption.
+	Add Reset button.
+
 2007-02-22	smcgrawx@frxii.com
 
 	* perl/lib/jmdictxml.pm [1.8]

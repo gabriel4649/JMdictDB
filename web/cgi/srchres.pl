@@ -58,12 +58,13 @@ binmode (STDOUT, ":utf8");
 	    for $i (0..2) {
 		if ($t[$i]) { 
 		    push (@condlist, str_match_clause ($s[$i],$y[$i],$t[$i],$i)); } }
-	    if (@pos)  { push (@condlist, ["pos", getsel("pos.kw", \@pos), []]); }
-	    if (@misc) { push (@condlist, ["misc",getsel("misc.kw", \@misc),[]]); }
-	    if (@kinf) { push (@condlist, ["kinf",getsel("kinf.kw", \@kinf),[]]); }
-	    if (@rinf) { push (@condlist, ["rinf",getsel("rinf.kw", \@rinf),[]]); }
-	    if (@src)  { push (@condlist, ["entr e",getsel("e.src", \@src), []]); }
-	    if (@stat) { push (@condlist, ["entr e",getsel("e.stat", \@stat),[]]); }
+	    if (@pos)  { push (@condlist, ["pos",   getsel("pos.kw",  \@pos), []]); }
+	    if (@misc) { push (@condlist, ["misc",  getsel("misc.kw", \@misc),[]]); }
+	    if (@fld)  { push (@condlist, ["fld",   getsel("fld.kw",  \@fld), []]); }
+	    if (@kinf) { push (@condlist, ["kinf",  getsel("kinf.kw", \@kinf),[]]); }
+	    if (@rinf) { push (@condlist, ["rinf",  getsel("rinf.kw", \@rinf),[]]); }
+	    if (@src)  { push (@condlist, ["entr e",getsel("e.src",   \@src), []]); }
+	    if (@stat) { push (@condlist, ["entr e",getsel("e.stat",  \@stat),[]]); }
 	    if (@freq) { push (@condlist, freq_srch_clause (\@freq, $nfval, $nfcmp, $gaval, $gacmp)); }
 	    ($sql, $sql_args) = build_search_sql (\@condlist); }
 

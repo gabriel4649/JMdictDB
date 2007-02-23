@@ -104,7 +104,8 @@
 		    <td class="notice" colspan="2">Search by Id number superceeds all other criteria.</td>
 		  </tr>
 		  <tr>
-		    <td colspan="2"><input name="search" value="Search" type="submit"/></td>
+		    <td><input name="search" value="Search" type="submit"/></td>
+		    <td><input type="reset" value="Reset"/></td>
 		  </tr>
                 </tbody>
               </table> 
@@ -169,7 +170,7 @@
 
 	    <tr><td colspan="2"><hr width="100%"/></td></tr>
             <tr>
-              <td colspan="2"><span class="descriptor">Readingi Info:</span>
+              <td colspan="2"><span class="descriptor">Reading Info:</span>
               <table class="optgroup">
                 <tbody>
                   <tr>
@@ -205,6 +206,21 @@
                   <tr tal:repeat="r misc">
                     <td tal:repeat="c r"> 
                       <input name="misc" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/> 
+		    </td>
+                  </tr>
+                </tbody>
+              </table>
+              </td>
+            </tr>
+
+	    <tr><td colspan="2"><hr width="100%"/></td></tr>
+            <tr>
+              <td colspan="2"><span class="descriptor">Field:</span>
+              <table class="optgroup">
+                <tbody>
+                  <tr>
+		    <td tal:repeat="c fld">
+                      <input name="fld" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/> 
 		    </td>
                   </tr>
                 </tbody>

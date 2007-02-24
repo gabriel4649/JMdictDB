@@ -230,10 +230,10 @@ sub do_kinfs { my ($kinfs, $ord) = @_;
 	    print $::Fkinf "$::eid\t$ord\t$kw\n"; } }
 
 sub do_kfrqs { my ($kfrqs, $ord) = @_;
-	my ($kw, $f);
-	$f = freqs ($kfrqs);
-	foreach $kw (sort (keys (%$f))) {
-	    if ($kw) { print $::Fkfrq "$::eid\t$ord\t$kw\t$f->{$kw}\n"; } } }
+	my ($kw, $f, $kw, $val, $kwstr);
+	foreach $f (@$kfrqs) {
+	    ($kw, $val, $kwstr) = parse_freq ($f->text, $f->name);
+	    if ($kw) { print $::Fkfrq "$::eid\t$ord\t$kw\t$val\n"; } } }
 
 sub do_rdng { my ($reles, $kmap) = @_;
 	my ($ord, $txt, $r, $z, @x, $rmap, %restr);
@@ -265,10 +265,10 @@ sub do_rinfs { my ($rinfs, $ord) = @_;
 	    print $::Frinf "$::eid\t$ord\t$kw\n"; } }
 
 sub do_rfrqs { my ($rfrqs, $ord) = @_;
-	my ($kw, $f);
-	$f = freqs ($rfrqs);
-	foreach $kw (sort (keys (%$f))) {
-	    if ($kw) { print $::Frfrq "$::eid\t$ord\t$kw\t$f->{$kw}\n"; } } }
+	my ($kw, $f, $kw, $val, $kwstr);
+	foreach $f (@$rfrqs) {
+	    ($kw, $val, $kwstr) = parse_freq ($f->text, $f->name);
+	    if ($kw) { print $::Frfrq "$::eid\t$ord\t$kw\t$val\n"; } } }
 
 sub do_sens { my ($sens, $kmap, $rmap) = @_;
 	my ($ord, $txt, $s, @x, @p, @pp, $z, %smap, %stagr, %stagk);
@@ -381,62 +381,20 @@ sub do_hist { my ($hist) = @_;
 	    else { die ("Unexpected <upd_detl> contents: $op"); }
 	    $::hid += 1; } }
 
-sub freqs { my ($frqs) = @_;
-	# Process a list of re_pri or ke_pri elements, @$frqs
-	# by converting to database id's and eliminatng duplicates.
-	#
-	# Each element text is split into a alpha keyword part
-	# and a numeric value part.  The keyword is looked up
-	# to find its database id number.  The value is then 
-	# put into a hash, keyed by its id number which assures
-	# that there is only a single instance of each id number 
-	# (a requirement of the data model enforced by the database).
-	# If more than one id value is encountered, the one with
-	# the lowest value is kept, and a log message written noting
-	# the one that is thrown away.  This is to handle the 
-	# the "nfxx" elements, which sometimes have multiple values.
-
-	my ($i, $kw, $val, %dupnuke, $ignored, $kwstr, %revlookup, $type);
-	foreach $i (@$frqs) {
-	    # Convert the string (e.g "nf30") into numeric (id,value)
-	    # pair (like 4,30).
-	    ($kw, $val, $kwstr) = parse_freq ($i->text);
-	    $type = $i->name;
-	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated $type keyword '$i->text'\n"; }
-	    $revlookup{$kw} = $kwstr;	# For use in log messages.
-
-	    # Check for duplicate id's.  If id not in hash, no dup.
-	    if (!defined ($dupnuke{$kw})) { $dupnuke{$kw} = $val; }
-	    else { 
-		$ignored = ""; 
-		# If id is in the hash, then this id has already been seen.
-		if ($val < $dupnuke{$kw}) { 
-		    # The new value is less than the previous value
-		    # so save the old value (convert back to string)
-		    # for log message, and replace with new value.
-		    $ignored = $revlookup{$kw} . $dupnuke{$kw};
-		    $dupnuke{$kw} = $val; }
-		elsif ($val > $dupnuke{$kw}) { 
-		    # New value bigger, ignore it but note value for log.
-		    $ignored = $i->text }
-		# Else new value is equal to old, silently ignore.
-		if ($ignored) {
-		    print $::Flog "Seq $::Seq: ignored dup freq ($type): $ignored\n"; } } }
-	# Return (a ref to) the hash with unique id's to caller. 
-	return \%dupnuke; }
-
-sub parse_freq { my ($fstr) = @_;
+sub parse_freq { my ($fstr, $ptype) = @_;
 	# Convert a re_pri or ke_pri element string (e.g "nf30") into
 	# numeric (id,value) pair (like 4,30) (4 is the id number of 
 	# keyword "nf" in the database table "kwfreq", and we get it 
 	# by looking it up in JM2ID (from jmdictxml.pm). In addition 
 	# to the id,value pair, we also return keyword string.
+	# $ptype is a string used only in error or warning messages 
+	# and is typically either "re_pri" or "ke_pri".
 
 	my ($i, $kw, $val, $kwstr);
 	($fstr =~ m/([a-z]+)(\d+)/io) or die ("Bad x_pri string: $fstr\n");
 	$kwstr = $1;  $val = int ($2);
-	#return () if $kwstr eq "news";
-	($kw = $::JM2ID{FREQ}{$kwstr}) or die ("Unrecognized x_pri string: /$fstr/\n");
+	($kw = $::JM2ID{FREQ}{$kwstr}) or die ("Unrecognized $ptype string: /$fstr/\n");
+	if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated $ptype keyword '$i->text'\n"; }
 	return ($kw, $val, $kwstr); }
 
 sub pgesc { my ($str) = @_; 

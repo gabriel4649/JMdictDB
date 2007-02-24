@@ -160,14 +160,14 @@ CREATE TABLE kfreq (
     kanj SMALLINT NOT NULL,
     kw SMALLINT NOT NULL,
     value INT,
-    PRIMARY KEY (entr,kanj,kw));
+    PRIMARY KEY (entr,kanj,kw,value));
 
 CREATE TABLE rfreq (
     entr INT NOT NULL,
     rdng SMALLINT NOT NULL,
     kw SMALLINT NOT NULL,
     value INT,
-    PRIMARY KEY (entr,rdng,kw));
+    PRIMARY KEY (entr,rdng,kw,value));
 
 CREATE TABLE dial (
     entr INT NOT NULL,

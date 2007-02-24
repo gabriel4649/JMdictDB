@@ -1,4 +1,35 @@
 
+2007-02-24	smcgrawx@frxii.com
+
+	* perl/load_jmdict.pl
+	* pg/mktables.sql
+	Change primary key of tables rfreq and kfreq to include column
+	  "value".  This will allow a kanji or reading to have multiple
+	  freq tag belonging to the same scale (e.g. a reading could 
+	  have both "ichi1" and "ichi2" tag simultaneously.)
+
+	The handling of re_inf and ke_inf tag is broken.
+	I had not realized that when two tags with the same scale (e.g.
+	"nf20" and "nf34" occurred on the same keb or reb element, it 
+	indicates a pairing with another element with the same tag [1][2].  
+	I was assuming the pri tags were independent and thus such conflicting 
+	tags were illogical and dropped one.  The changes to the above two
+	files allow the rfreq and kfreq tables to store all the pri tags,
+	for a reb/keb, even if they have the same scale.  This makes the 
+	data model identical with that in the jmdict xml file, but it is
+	(from a rdbms point of view) unnormalized and should be improved.
+
+	This will probably need a schema change to fix, since we need 
+	to model a different kind of information (pri information about 
+	reading-kanji pairs, not (neccessarily) about individual readings
+`	or kanji).  But until we do that fix, this will allow the database 
+	to present the same info as wwwjdic, and contain all the tag into 
+	which will help when exploring for a better solution.
+
+	[1] Jim Breen, email to edict mailing list, 2007-02-15 in response
+	    to Marc (frenchquacky).
+	[2] Comment describing the ke_pri entity in the jmdict xml DTD.
+
 2007-02-23	smcgrawx@frxii.com
 
 	* perl/lib/tal/srchform.tal [1.4]

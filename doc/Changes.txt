@@ -1,12 +1,25 @@
 
+2007-02-25	smcgrawx@frxii.com
+
+	* Tag T012
+
 2007-02-24	smcgrawx@frxii.com
 
-	* perl/load_jmdict.pl
-	* pg/mktables.sql
+	* perl/lib/jmdict.pm [1.13]
+	The big pk/fk change made on 2007-02-11 makes it possible to 
+	  greatly simplify the queries used in EntrList() to read in
+	  a (set of) object(s).
+
+2007-02-24	smcgrawx@frxii.com
+
+	* perl/load_jmdict.pl [1.18]
+	* pg/mktables.sql [1.11]
 	Change primary key of tables rfreq and kfreq to include column
 	  "value".  This will allow a kanji or reading to have multiple
 	  freq tag belonging to the same scale (e.g. a reading could 
-	  have both "ichi1" and "ichi2" tag simultaneously.)
+	  have both "ichi1" and "ichi2" tag simultaneously.)  In
+	  load_jmfict.pl remove function freqs() which was responsible
+	  for discarding duplicates.
 
 	The handling of re_inf and ke_inf tag is broken.
 	I had not realized that when two tags with the same scale (e.g.

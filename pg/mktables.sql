@@ -155,19 +155,14 @@ CREATE TABLE xresolv (
     txt VARCHAR(250) NOT NULL);
 
 
-CREATE TABLE kfreq (
+CREATE TABLE freq (
     entr INT NOT NULL,
-    kanj SMALLINT NOT NULL,
+    rdng SMALLINT NULL,
+    kanj SMALLINT NULL,
     kw SMALLINT NOT NULL,
     value INT,
-    PRIMARY KEY (entr,kanj,kw,value));
-
-CREATE TABLE rfreq (
-    entr INT NOT NULL,
-    rdng SMALLINT NOT NULL,
-    kw SMALLINT NOT NULL,
-    value INT,
-    PRIMARY KEY (entr,rdng,kw,value));
+    UNIQUE (entr,rdng,kanj,kw),
+    CHECK (rdng NOTNULL OR kanj NOTNULL));
 
 CREATE TABLE dial (
     entr INT NOT NULL,

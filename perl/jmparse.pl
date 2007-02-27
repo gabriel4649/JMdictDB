@@ -98,10 +98,9 @@ sub initialize { my ($logfn) = @_;
 	  [\$::Fentr, "load01.tmp", "COPY entr(id,src,seq,stat,notes) FROM stdin;"],
 	  [\$::Fkanj, "load02.tmp", "COPY kanj(entr,kanj,txt) FROM stdin;"],
 	  [\$::Fkinf, "load03.tmp", "COPY kinf(entr,kanj,kw) FROM stdin;"],
-	  [\$::Fkfrq, "load04.tmp", "COPY kfreq(entr,kanj,kw,value) FROM stdin;"],
 	  [\$::Frdng, "load05.tmp", "COPY rdng(entr,rdng,txt) FROM stdin;"],
 	  [\$::Frinf, "load06.tmp", "COPY rinf(entr,rdng,kw) FROM stdin;"],
-	  [\$::Frfrq, "load07.tmp", "COPY rfreq(entr,rdng,kw,value) FROM stdin;"],
+	  [\$::Ffrq,  "load07.tmp", "COPY freq(entr,rdng,kanj,kw,value) FROM stdin;"],
 	  [\$::Fsens, "load08.tmp", "COPY sens(entr,sens,notes) FROM stdin;"],
 	  [\$::Fpos,  "load09.tmp", "COPY pos(entr,sens,kw) FROM stdin;"],
 	  [\$::Fmisc, "load10.tmp", "COPY misc(entr,sens,kw) FROM stdin;"],
@@ -196,29 +195,30 @@ sub comment_handler { my ($t, $entry ) = @_;
 	$t->purge; 0; }
 
 sub do_entry { my ($seq, $entry) = @_;
-	my (@x, $kmap, $rmap);
+	my (@x, $kmap, $rmap, $fklist, $frlist);
 	# (id,src,seq,stat,note)
 	print $::Fentr "$::eid\t$::srcid\t$seq\t2\t\\N\n";
-	if (@x = $entry->get_xpath("k_ele")) { $kmap = do_kanj (\@x); }
-	if (@x = $entry->get_xpath("r_ele")) { $rmap = do_rdng (\@x, $kmap); }
+	if (@x = $entry->get_xpath("k_ele")) { ($kmap, $fklist) = do_kanj (\@x); }
+	if (@x = $entry->get_xpath("r_ele")) { ($rmap, $frlist) = do_rdng (\@x, $kmap); }
 	if (@x = $entry->get_xpath("sense")) { do_sens (\@x, $kmap, $rmap); }
 	if (@x = $entry->get_xpath("info/dial")) { do_dial (\@x); }
 	if (@x = $entry->get_xpath("info/lang")) { do_lang (\@x); }
 	if (@x = $entry->get_xpath("info/audit")) { do_hist (\@x); }
+	do_freqs ($frlist, $fklist);
 	$::eid += 1; }
 
 sub do_kanj { my ($keles) = @_;
-	my ($ord, $txt, $k, @x, $kmap);
-	$ord = 1; $kmap = {};
+	my ($ord, $txt, $k, @x, %kmap, @flist);
+	$ord = 1; 
 	foreach $k (@$keles) {
 	    $txt = ($k->get_xpath ("keb"))[0]->text;
 	    # (entr,ord,txt)
 	    print $::Fkanj "$::eid\t$ord\t$txt\n";
 	    if (@x = $k->get_xpath ("ke_inf")) { do_kinfs (\@x, $ord); }
-	    if (@x = $k->get_xpath ("ke_pri")) { do_kfrqs (\@x, $ord); }
-	    $kmap->{$txt} = $ord;
+	    if (@x = $k->get_xpath ("ke_pri")) { freqs (\@x, $ord, \@flist); }
+	    $kmap{$txt} = $ord;
 	    $ord += 1; }
-	return $kmap; }
+	return (\%kmap, \@flist); }
 
 sub do_kinfs { my ($kinfs, $ord) = @_;
 	my ($i, $kw, $txt);
@@ -229,31 +229,25 @@ sub do_kinfs { my ($kinfs, $ord) = @_;
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated kinf string '$txt'\n"; }
 	    print $::Fkinf "$::eid\t$ord\t$kw\n"; } }
 
-sub do_kfrqs { my ($kfrqs, $ord) = @_;
-	my ($kw, $f, $kw, $val, $kwstr);
-	foreach $f (@$kfrqs) {
-	    ($kw, $val, $kwstr) = parse_freq ($f->text, $f->name);
-	    if ($kw) { print $::Fkfrq "$::eid\t$ord\t$kw\t$val\n"; } } }
-
 sub do_rdng { my ($reles, $kmap) = @_;
-	my ($ord, $txt, $r, $z, @x, $rmap, %restr);
-	$ord = 1;  $rmap = {}; %restr = ();
+	my ($ord, $txt, $r, $z, @x, %rmap, %restr, @flist);
+	$ord = 1; 
 	foreach $r (@$reles) {
 	    $txt = ($r->get_xpath ("reb"))[0]->text;
 	    # (entr,ord,txt)
 	    print $::Frdng "$::eid\t$ord\t$txt\n";
 	    if (@x = $r->get_xpath ("re_inf")) { do_rinfs (\@x, $ord); }
-	    if (@x = $r->get_xpath ("re_pri")) { do_rfrqs (\@x, $ord); }
+	    if (@x = $r->get_xpath ("re_pri")) { freqs (\@x, $ord, \@flist); }
 	    for $z ($r->get_xpath ("re_restr")) { 
 		if (! defined ($restr{$ord})) { $restr{$ord} = {}; }
 		$restr{$ord}->{$kmap->{$z->text}} = 1; }
 	    if ($r->get_xpath ("re_nokanji")) { 
 		if (! defined ($restr{$ord})) { $restr{$ord} = {}; }
 		$restr{$ord} = 1; }
-	    $rmap->{$txt} = $ord;
+	    $rmap{$txt} = $ord;
 	    $ord += 1; }
-	if (%restr) { do_restr ($::Frestr, \%restr, $rmap, $kmap); }
-	return $rmap; }
+	if (%restr) { do_restr ($::Frestr, \%restr, \%rmap, $kmap); }
+	return (\%rmap, \@flist); }
 
 sub do_rinfs { my ($rinfs, $ord) = @_;
 	my ($i, $kw, $txt);
@@ -263,12 +257,6 @@ sub do_rinfs { my ($rinfs, $ord) = @_;
 		die ("Unknown re_inf text: /$txt/\n") ;
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated rinf string '$txt'\n"; }
 	    print $::Frinf "$::eid\t$ord\t$kw\n"; } }
-
-sub do_rfrqs { my ($rfrqs, $ord) = @_;
-	my ($kw, $f, $kw, $val, $kwstr);
-	foreach $f (@$rfrqs) {
-	    ($kw, $val, $kwstr) = parse_freq ($f->text, $f->name);
-	    if ($kw) { print $::Frfrq "$::eid\t$ord\t$kw\t$val\n"; } } }
 
 sub do_sens { my ($sens, $kmap, $rmap) = @_;
 	my ($ord, $txt, $s, @x, @p, @pp, $z, %smap, %stagr, %stagk);
@@ -381,6 +369,83 @@ sub do_hist { my ($hist) = @_;
 	    else { die ("Unexpected <upd_detl> contents: $op"); }
 	    $::hid += 1; } }
 
+sub do_freqs { my ($rfrqs, $kfrqs) = @_;
+	# Process collected re_pri (in @$rfrqs) and ke_pri (in @$kfrqs) info.  
+	# This data is collected during the processing of the re_ele and ke_ele
+	# elements but processing is deferred to here, where we find matching 
+	# values that indicate tags that apply to pairs of reading-kanji values.
+	# $::eid is used when writing the table data files so this sub must be
+	# called in the same entry context that the @$rfrqs and @$kfrqs were 
+	# generated in.
+
+	my ($fr, $fk, $nr, $nk, %rmatched, %kmatched, $x, %dupchk);
+
+	# Each element in @$rfrqs and @kfrqs is a 3-element array:
+	#  0 - rdng or kanj number.
+	#  1 - freq kw tag id number (scale).
+	#  2 - scale value.
+	# A reading and kanji tag match if the tag id's and values match. 
+
+	# Go though every posible pair of readings and kanji tags.  If a 
+	# match is found, add a record to the freq table for that tag with
+	# the rdng and kanj numbers of the reading and kanji.  Remember 
+	# (in hashes %rmatched and %kmatched) that these tags were written
+	# to the freq table.
+
+	$nr = -1;
+	foreach $fr (@$rfrqs) {
+	    $nr ++;  $nk = -1;
+	    foreach $fk (@$kfrqs) {
+		$nk++;
+		if ($fr->[1] eq $fk->[1] and $fr->[2] eq $fk->[2]) {
+		    $x = "$fr->[0]_$fk->[0]_$fr->[1]";
+		    if ($dupchk{$x}) {
+			print $::Flog "Seq $::Seq: skipped duplicate pri pair '$x $fr->[2]'\n"; }
+		    else { 
+			print $::Ffrq "$::eid\t$fr->[0]\t$fk->[0]\t$fr->[1]\t$fr->[2]\n";
+			$dupchk{$x} = 1; }
+		    $rmatched{$nr} = 1;  $kmatched{$nk} = 1; } } }
+
+	# Go through the reading freq tags looking for any that weren't paired
+	# with a kanji tag, and write out a record for them.
+
+	if ($rfrqs and @$rfrqs) {
+	    for ($nr=0; $nr<scalar(@$rfrqs); $nr++) {
+		next if ($rmatched{$nr});
+		$fr = $rfrqs->[$nr];
+		$x = "$fr->[0]_null_$fr->[1]";
+		if ($dupchk{$x}) {
+		    print $::Flog "Seq $::Seq: skipped duplicate re_pri '$x $fr->[2]'\n"; }
+		else {
+		    print $::Ffrq "$::eid\t$fr->[0]\t\\N\t$fr->[1]\t$fr->[2]\n";
+		    $dupchk{$x} = 1; } } }
+
+	# Go through the kanji freq tags looking for any that weren't paired
+	# with a reading tag, and write out a record for them.
+
+	if ($kfrqs and @$kfrqs) {
+	    for ($nk=0; $nk<scalar(@$kfrqs); $nk++) {
+		next if ($kmatched{$nk});
+		$fk = $kfrqs->[$nk];
+		$x = "null_$fk->[0]_$fk->[1]";
+		if ($dupchk{$x}) {
+		    print $::Flog "Seq $::Seq: skipped duplicate ke_pri '$x $fr->[2]'\n"; }
+		else {   
+		    print $::Ffrq "$::eid\t\\N\t$fk->[0]\t$fk->[1]\t$fk->[2]\n"; 
+		    $dupchk{$x} = 1; } } } }
+
+sub freqs { my ($frqs, $ord, $flist) = @_;
+	# Process a list of [kr]e_pri elements, by parsing each into a kwfreq
+	# tag id number (scale), a scale value.  These two items and the reading
+	# or kanji order number are added to list @$flist as a ref to 3-element
+	# array. 
+
+	my ($kw, $val, $kwstr, $f, %fmap);
+	foreach $f (@$frqs) {
+	    ($kw, $val, $kwstr) = parse_freq ($f->text, $f->name);  
+	    $fmap{$kwstr} = [$ord, $kw, $val]; } 
+	push (@$flist, values (%fmap)); }
+
 sub parse_freq { my ($fstr, $ptype) = @_;
 	# Convert a re_pri or ke_pri element string (e.g "nf30") into
 	# numeric (id,value) pair (like 4,30) (4 is the id number of 
@@ -391,11 +456,11 @@ sub parse_freq { my ($fstr, $ptype) = @_;
 	# and is typically either "re_pri" or "ke_pri".
 
 	my ($i, $kw, $val, $kwstr);
-	($fstr =~ m/([a-z]+)(\d+)/io) or die ("Bad x_pri string: $fstr\n");
+	($fstr =~ m/^([a-z]+)(\d+)$/io) or die ("Bad x_pri string: $fstr\n");
 	$kwstr = $1;  $val = int ($2);
 	($kw = $::JM2ID{FREQ}{$kwstr}) or die ("Unrecognized $ptype string: /$fstr/\n");
 	if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated $ptype keyword '$i->text'\n"; }
-	return ($kw, $val, $kwstr); }
+	return ($kw, $val, $fstr); }
 
 sub pgesc { my ($str) = @_; 
 	# Escape characters that are special to the Postgresql COPY

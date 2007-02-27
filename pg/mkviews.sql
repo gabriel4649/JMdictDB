@@ -167,9 +167,9 @@ CREATE VIEW xrefesum AS (
 -- View prdng is identical except it is on  table "rdng"
 -- instead of table "kanj".
 -------------------------------------------------------------
-CREATE VIEW pkanj AS (
+CREATE VIEW pkfreq AS (
     SELECT k.*, exists (
-        SELECT * FROM kfreq f
+        SELECT * FROM freq f
           WHERE f.entr=k.entr AND f.kanj=k.kanj AND
             -- ichi1, gai1, jdd1, spec1
             ((f.kw IN (1,2,3,4) AND f.value=1) 
@@ -179,7 +179,7 @@ CREATE VIEW pkanj AS (
  
 CREATE VIEW prdng AS (
     SELECT r.*, exists (
-        SELECT * FROM rfreq f
+        SELECT * FROM freq f
           WHERE f.entr=r.entr AND f.rdng=r.rdng AND
             -- ichi1, gai1, jdd1, spec1
             ((f.kw IN (1,2,3,4) AND f.value=1) 
@@ -212,19 +212,15 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
 	    SELECT lastval() INTO _p1_;
 	    INSERT INTO kinf(entr,kanj,kw) 
 	      (SELECT _p0_,_p1_,kw FROM kinf i WHERE i.entr=rec.entr AND i.kanj=rec.kanj);
-	    INSERT INTO kfreq(entr,kanj,kw,value) 
-	      (SELECT _p0_,_p1_,kw,value FROM kfreq f WHERE f.entr=rec.entr AND f.kanj=rec.kanj);
 	    END LOOP;
 	FOR rec IN (SELECT * FROM rdng WHERE entr=entrid) LOOP
 	    INSERT INTO rdng(entr,rdng,txt) VALUES(_p0_,rec.rdng,rec.txt);
 	    SELECT lastval() INTO _p1_;
 	    INSERT INTO rinf(entr,rdng,kw) 
 	      (SELECT _p0_,_p1_,kw FROM rinf i WHERE i.entr=rec.entr AND i.rdng=rec.rdng);
-	    INSERT INTO rfreq(entr,rdng,kw,value) 
-	      (SELECT _p0_,_p1_,kw,value FROM rfreq f WHERE f.entr=rec.entr AND f.rdng=rec.rdng);
 	    INSERT INTO audio(entr,rdng,fname,strt,leng) 
 	      (SELECT _p0_,_p1_,fname,strt,leng FROM audio a WHERE a.entr=rec.entr AND a.rdng=rec.rdng);
-	    END LOOP;
+	    END LOOP;	    
 	FOR rec IN (SELECT * FROM sens WHERE entr=entrid) LOOP
 	    INSERT INTO sens(entr,sens,notes) VALUES(_p0_,rec.sens,rec.notes);
 	    SELECT lastval() INTO _p1_;
@@ -242,6 +238,9 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
 	    INSERT INTO xref(entr,sens,xentr,xsens,typ,notes) 
 	      (SELECT sens,_p0_,_p1_,typ,notes FROM xref x WHERE x.xentr=rec.entr AND x.xsens=rec.sens);
 	    END LOOP;
+
+	INSERT INTO freq(entr,kanj,kw,value) 
+	  (SELECT _p0_,rdng,kanj,kw,value FROM freq z WHERE z.entr=entrid);
 
 	INSERT INTO restr(entr,rdng,kanj)
 	  (SELECT _p0_,rdng,kanj FROM restr z WHERE z.entr=entrid);

@@ -38,12 +38,11 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    hist =>  {pk=>["id"],                  parent=>"entr", fk=>["entr"], al=>"h"},
 	    rdng =>  {pk=>["entr","rdng"],         parent=>"entr", fk=>["entr"], al=>"r"},
 	    rinf =>  {pk=>["entr","rdng","kw"],    parent=>"rdng", fk=>["entr","rdng"], al=>"ri"},
-	    rfreq => {pk=>["entr","rdng","kw"],    parent=>"rdng", fk=>["entr","rdng"], al=>"rf"},
 	    audio => {pk=>["id"],                  parent=>"rdng", fk=>["entr","rdng"], al=>"a"},
 	    restr => {pk=>["entr","rdng","kanj"],  parent=>"rdng", fk=>["entr","rdng"], al=>"rk"},
 	    kanj =>  {pk=>["entr","kanj"],         parent=>"entr", fk=>["entr"], al=>"k"},
 	    kinf =>  {pk=>["entr","kanj","kw"],    parent=>"kanj", fk=>["entr","kanj"], al=>"ki"},
-	    kfreq => {pk=>["entr","kanj","kw"],    parent=>"kanj", fk=>["entr","kanj"], al=>"kf"},
+	    freq =>  {pk=>["entr","rdng","kanj","kw"],parent=>"entr", fk=>["entr"], al=>"q"},
 	    sens =>  {pk=>["entr","sens"],         parent=>"entr", fk=>["entr"], al=>"s"},
 	    gloss => {pk=>["entr","sens","gloss"], parent=>"sens", fk=>["entr","sens"], al=>"g"},
 	    pos =>   {pk=>["entr","sens","pos"],   parent=>"sens", fk=>["entr","sens"], al=>"p"},
@@ -153,11 +152,9 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	my $lang  = dbread ($dbh, "SELECT x.* $com JOIN lang  x ON x.entr=e.id $where;", $args);
 	my $hist  = dbread ($dbh, "SELECT x.* $com JOIN hist  x ON x.entr=e.id $where;", $args);
 	my $rdng  = dbread ($dbh, "SELECT r.* $com JOIN rdng  r ON r.entr=e.id $where ORDER BY r.entr,r.rdng;", $args);
-	my $rfreq = dbread ($dbh, "SELECT x.* $com JOIN rfreq x ON x.entr=e.id $where;", $args);
 	my $rinf  = dbread ($dbh, "SELECT x.* $com JOIN rinf  x ON x.entr=e.id $where;", $args);
 	my $audio = dbread ($dbh, "SELECT x.* $com JOIN audio x ON x.entr=e.id $where;", $args);
 	my $kanj  = dbread ($dbh, "SELECT k.* $com JOIN kanj  k ON k.entr=e.id $where ORDER BY k.entr,k.kanj;", $args);
-	my $kfreq = dbread ($dbh, "SELECT x.* $com JOIN kfreq x ON x.entr=e.id $where;", $args);
 	my $kinf  = dbread ($dbh, "SELECT x.* $com JOIN kinf  x ON x.entr=e.id $where;", $args);
 	my $sens  = dbread ($dbh, "SELECT s.* $com JOIN sens  s ON s.entr=e.id $where ORDER BY s.entr,s.sens;", $args);
 	my $gloss = dbread ($dbh, "SELECT x.* $com JOIN gloss x ON x.entr=e.id $where ORDER BY x.entr,x.sens,x.gloss;", $args);
@@ -170,6 +167,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	my $xref  = dbread ($dbh, "SELECT x.* $com JOIN xref  x ON x.entr=e.id $where;", $args);
 	my $xrer  = dbread ($dbh, "SELECT x.* $com JOIN xref  x ON x.xentr=e.id $where;", $args);
 	my $erefs = dbread ($dbh, "SELECT DISTINCT z.eid,z.seq,z.rdng,z.kanj,z.nsens $com JOIN xrefesum z ON z.id=e.id $where;", $args);
+	my $freq  = dbread ($dbh, "SELECT x.* $com JOIN freq  x ON x.entr=e.id $where;", $args);
 	$::Debug->{'Obj retrieval time'} = time() - $start;
 
 	matchup ("_dial",  $entr, ["id"],  $dial,  ["entr"]);
@@ -178,15 +176,14 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	matchup ("_kanj",  $entr, ["id"],  $kanj,  ["entr"]);
 	matchup ("_sens",  $entr, ["id"],  $sens,  ["entr"]);
 	matchup ("_hist",  $entr, ["id"],  $hist,  ["entr"]);
-	matchup ("_rfreq", $rdng, ["entr","rdng"], $rfreq, ["entr","rdng"]);
 	matchup ("_rinf",  $rdng, ["entr","rdng"], $rinf,  ["entr","rdng"]);
 	matchup ("_audio", $rdng, ["entr","rdng"], $audio, ["entr","rdng"]);
-	matchup ("_kfreq", $kanj, ["entr","kanj"], $kfreq, ["entr","kanj"]);
 	matchup ("_kinf",  $kanj, ["entr","kanj"], $kinf,  ["entr","kanj"]);
 	matchup ("_gloss", $sens, ["entr","sens"], $gloss, ["entr","sens"]);
 	matchup ("_pos",   $sens, ["entr","sens"], $pos,   ["entr","sens"]);
 	matchup ("_misc",  $sens, ["entr","sens"], $misc,  ["entr","sens"]);
 	matchup ("_fld",   $sens, ["entr","sens"], $fld,   ["entr","sens"]);
+	matchup ("_freq",  $entr, ["entr"], $freq, ["entr"]);
 	matchup ("_restr", $rdng, ["entr","rdng"], $restr, ["entr","rdng"]);
 	matchup ("_stagr", $sens, ["entr","sens"], $stagr, ["entr","sens"]);
 	matchup ("_stagk", $sens, ["entr","sens"], $stagk, ["entr","sens"]);
@@ -195,6 +192,9 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	## linkrecs ("_entr", $xref, ["xentr"], $erefs, ["eid"]);
 	## linkrecs ("_entr", $xrer, ["entr"],  $erefs, ["eid"]);
 	bld_erefs ($entr, $erefs);
+	# Next two should probably be done by callers, not us.
+	matchup ("_rfreq", $rdng, ["entr","rdng"], $freq,  ["entr","rdng"]);
+	matchup ("_kfreq", $kanj, ["entr","kanj"], $freq,  ["entr","kanj"]);
 	return $entr; }
  
     sub matchup { my ($listattr, $parents, $pks, $children, $fks) = @_;
@@ -206,7 +206,6 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	# in the parent.  The list of matching children in created
 	# as the value of the key $listattr on the parent element 
 	# hash.
-	# If the child matches no parent element, matchup() dies.
 	# Matchup() is used to link database records from a foreign
 	# key table to the record of the primary key table.
 
@@ -214,9 +213,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	foreach $p (@$parents) { $p->{$listattr} = (); }
 	foreach $c (@$children) {
 	    $p = lookup ($parents, $pks, $c, $fks);
-	    if ($p) { push (@{$p->{$listattr}}, $c); }
-	    else { die ("Parent not found when building $listattr, fk=" .
-			join(",",$fks) . "\n"); } } }
+	    if ($p) { push (@{$p->{$listattr}}, $c); } } }
 
     sub linkrecs { my ($listattr, $parents, $pks, $children, $fks) = @_;
 	my ($p, $c, $m);
@@ -250,7 +247,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	foreach $p (@$parents) {
 	    $found = 1;
 	    for ($i=0; $i<scalar(@$pks); $i++) {
-		next if ($p->{$pks->[$i]} eq $child->{$fks->[$i]}); 
+		next if (($p->{$pks->[$i]} || 0) eq ($child->{$fks->[$i]} || 0)); 
 		$found = 0;  }
 	    if ($found) { 
 		if ($multpk) { push (@results, $p); } 
@@ -293,9 +290,6 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    foreach $x (@{$k->{_kinf}}) {
 		$x->{entr} = $eid;  $x->{kanj} = $nkanj;
 		dbinsert ($dbh, "kinf", ['entr','kanj','kw'], $x); }
-	    foreach $x (@{$k->{_kfreq}}) {
-		$x->{entr} = $eid;  $x->{kanj} = $nkanj;
-		dbinsert ($dbh, "kfreq", ['entr','kanj','kw','value'], $x); } 
 	    $nkanj++; }
 	foreach $r (@{$entr->{_rdng}}) {
 	    $r->{entr} = $eid;  $r->{rdng} = $nrdng;
@@ -303,9 +297,6 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    foreach $x (@{$r->{_rinf}}) {
 		$x->{$entr} = $eid;  $x->{rdng} = $nrdng;
 		dbinsert ($dbh, "rinf", ['entr','rdng','kw'], $x); }
-	    foreach $x (@{$r->{_rfreq}}) {
-		$x->{$entr} = $eid;  $x->{rdng} = $nrdng;
-		dbinsert ($dbh, "rfreq", ['entr','rdng','kw','value'], $x); }
 	    foreach $x (@{$r->{_audio}}) {
 		$x->{$entr} = $eid;  $x->{rdng} = $nrdng;
 		dbinsert ($dbh, "audio", ['entr','rdng','fname','strt','leng'], $x); }
@@ -314,6 +305,9 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 		$x->{kanj} = $x->{kanj}{kanj};
 		dbinsert ($dbh, "restr", ['entr','rdng','kanj'], $x); }
 	    $nrdng++; }
+	foreach $x (@{$entr->{_freq}}) {
+	    $x->{entr} = $eid;  
+	    dbinsert ($dbh, "freq", ['entr','rdng','kanj','kw','value'], $x); } 
 	foreach $s (@{$entr->{_sens}}) {
 	    $s->{entr} = $eid;  $s->{sens} = $nsens;
 	    dbinsert ($dbh, "sens", ['entr','sens','notes'], $s);
@@ -459,7 +453,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	return $txt; }
 
     sub zip {
-	# Takes a arbitrary number of arguments of references to arrays
+	# Takes an arbitrary number of arguments of references to arrays
 	# of the same length, and creates and returns a reference to an
 	# array of references to arrays where each array consists on one
 	# element from each of the input arrays.  For example, given 3 

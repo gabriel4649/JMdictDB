@@ -1,4 +1,69 @@
 
+2007-02-27	smcgrawx@frxii.com
+
+	This change set replaces the kfreq and rfreq tables, that 
+	held frequency-of-use data for readings and kanji respectively,
+	with a single table, freq.  Most foU elements refer not to
+	a reading or kanji independently, but to a reading-kanji pair.
+	The freq table has columns [entr,rdng,kanj,kw,value] that 
+	allows representation of rk pairs.  To allow for the minority 
+	cases were a FoU datum refers to an individual reading or kanji
+	we allow rdng and kanj to be NULL, with a constraint that forces
+	at least one to be non-null.  Ideally we would like the table's
+	primary key to be the first four columns, but primary keys may
+	not contain nullable columns in many rdbms' including Postgresql.
+	However we do enforce a unique constraint on each row, although
+	the implementation is non-obvious since a standard unique 
+	constraint does not work as desired with nullable columns.
+
+	One problem not yet fixed is that when a reading (or kanji) is
+	paired with two kanji (or reading) with the same FoU rtag, the
+	tag will displayed twice on the reading (or kanji).  This is 
+	easily fixed, but can be fixed in a couple different places and
+	I'm not sure yet which is best.
+
+	* pg/mktables.sql [1.13]
+	* pg/mkfk.sql [1.8]
+	Replace tables"rfreq" and "kfreq" with table "freq".  
+
+	* pg/mkindex.sql [1.8]
+	We can't put a pk on table freq because the rdng and kanj columns 
+	  are nullable so a unique index is next best thing.  But nullable
+	  columns also prevent a stock unique constraint from working as
+	  we want.  So we build a special index that will handle nulls. 
+
+	* pg/mkviews.sql [1.10]
+	Adjust wiews pkanj, prdng, and dupentr for the freq table change.
+
+	* pg/mkperms.sql [1.7]
+	Adjust for replacement of rfreq/kfreq with freq.
+
+	* load_jmdict.pl [1.19]
+	Adjust for replacement of rfreq/kfreq with freq.  Specifically
+	  we have to accumulate but not process the ke_pri and re_pri
+	  info while processing the reading and kanji elements, and
+	  afterwards, find any matching re_pri and ke_pri tags and
+	  coallesce them before writing the freq table data.
+
+	* perl/lib/jmdict.pm [1.14]
+	In matchup() don't die if all children records are not assigned
+	  to a parent.  We need this because we will read "freq" tables
+	  records, some of which be be assigned to rdng parents, some to
+	  kanj parents.
+	EntrList(): use data from freq table rather than rfreq and kfreq.
+
+	* perl/cgi/srchres.pl [1.9]
+	Adjust code in freq_srch_clause() for schema change.
+
+	* schema.dia [1.2]
+	Update for the schema change: replace tables kfreq, rfreq with
+	  table freq.
+
+	* schema.png [1.4]
+	Regenerated from updated schema.dia.
+	Export with dimensions 1508x1024 rather than the default 1033x687
+`	  which makes text more readable.
+
 2007-02-25	smcgrawx@frxii.com
 
 	* Tag T012

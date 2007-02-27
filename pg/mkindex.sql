@@ -26,6 +26,7 @@
   -- CREATE UNIQUE INDEX kanj_txt1 ON kanj(entr,txt);
   CREATE INDEX gloss_txt ON gloss(txt);
   -- CREATE UNIQUE INDEX gloss_txt1 ON gloss(sens,txt);
+  CREATE UNIQUE INDEX freq_idx1 ON freq(entr,(coalesce(rdng,999)),(coalesce(kanj,999)),kw); 
   CREATE INDEX xref_xentr ON xref(xentr,xsens);
   CREATE INDEX hist_entr ON hist(entr);
   CREATE INDEX hist_dt ON hist(dt);

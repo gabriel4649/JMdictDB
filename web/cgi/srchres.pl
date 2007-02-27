@@ -153,17 +153,15 @@ binmode (STDOUT, ":utf8");
 		# FIXME: The above is false, there could be two "1" values.
 		# FIXME: The above assumes only 1 and 2 are allowed.  Currently
 		#   true but may change in future.
-		"(kfreq.kw=%s OR rfreq.kw=%s)", $kwid,$kwid)); }
+		"(freq.kw=%s)", $kwid)); }
 	    elsif (scalar(@$v) == 1) { push (@whr, sprintf (
 		# If there is only one value we need to look for kw with
 		# that value.
-		"((kfreq.kw=%s AND kfreq.value=%s) OR (rfreq.kw=%s AND rfreq.value=%s))",
-		$kwid, $v->[0], $kwid, $v->[0])); }
+		"(freq.kw=%s AND freq.value=%s)", $kwid, $v->[0])); }
 	    elsif (scalar(@$v) > 2) { push (@whr, sprintf (
 		# If there are more than 2 values then we look for them explicitly
 		# using an IN() construct.
-		"((kfreq.kw=%s AND kfreq.value IN (%s)) OR (rfreq.kw=%s AND rfreq.value IN (%s)))",
-		$k, join(",",@$v), $k, join(",",@$v))); }
+		"(freq.kw=%s AND freq.value IN (%s))", $k, join(",",@$v))); }
 	    # A 0 or negative length list should be impossible.
 	    else { die; } }
 
@@ -174,8 +172,7 @@ binmode (STDOUT, ":utf8");
 	    $kwid = $::KW->{FREQ}{nf}{id};
 	    # Build list of "where" clause parts using the requested comparison and value.
 	    push (@whr, sprintf (
-		"((kfreq.kw=%s AND kfreq.value%s%s) OR (rfreq.kw=%s AND rfreq.value%s%s))",
-		$kwid, $nfcmp, $nfval,  $kwid, $nfcmp, $nfval)); }
+		"(freq.kw=%s AND freq.value%s%s)", $kwid, $nfcmp, $nfval)); }
 
 	# Handle the "gAxx" items specially here.
 
@@ -184,8 +181,7 @@ binmode (STDOUT, ":utf8");
 	    $kwid = $::KW->{FREQ}{gA}{id};
 	    # Build list of "where" clause parts using the requested comparison and value.
 	    push (@whr, sprintf (
-		"((kfreq.kw=%s AND kfreq.value%s%s) OR (rfreq.kw=%s AND rfreq.value%s%s))",
-		$kwid, $gacmp, $gaval,  $kwid, $gacmp, $gaval)); }
+		"(freq.kw=%s AND freq.value%s%s)", $kwid, $gacmp, $gaval)); }
 
 	# Now, @whr is a list of all the various freq ewlated conditions that 
 	# were  selected.  We change it into a clause by connecting them all 
@@ -205,7 +201,7 @@ binmode (STDOUT, ":utf8");
 	# criteria, even if there are no matching kfreq rows (and visa versa). 
 	# The where clause refers to both the rfreq and kfreq tables, so need only
 	# be given in one constion triple rather than in each. 
-	return (["*rfreq","",[]],["*kfreq",$whr,[]]); }
+	return (["freq",$whr,[]]); }
 
     sub build_search_sql { my ($condlist) = @_;
 

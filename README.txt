@@ -26,6 +26,7 @@ http://www.edrdg.org/~smg/.
 
 This package contains the following directories:
   ./                Package directory.
+  ./doc/            Documentation.
   ./perl/           Perl tools.
   ./perl/cgi/       CGI scripts.
   ./perl/lib/       Library modules.
@@ -163,8 +164,10 @@ ANNOTATED MANIFEST
 ./COPYING.txt...................GNU General Public License Terms.
 ./README.txt....................This file.
 ./Makefile......................Simpify some common tasks (Unix/Linux only).
-./schema.dia....................Dia source for database schema diagram.
-./schema.png....................Database schema diagram.
+
+./doc/schema.dia................Dia source for database schema diagram.
+./doc/schema.png................Database schema diagram.
+./doc/schema.odt................Schema documentation source (OpenOffice Writer).
 
 ./perl/
 ./perl/load_jmdict.pl...........Generates Postegresql load file from JMdict XML file.

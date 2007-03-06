@@ -131,18 +131,6 @@ CREATE VIEW rk_valid AS (
 -- same except that the summary is for the entry pointed to 
 -- by column "sens" (the reverse direction).  
 -------------------------------------------------------------
--- CREATE VIEW xsum AS (
---     SELECT x.entr,x.sens,x.xentr,x.xsens,x.typ,x.notes,e.seq,e.kanj,e.rdng,e.nsens
--- 	FROM xref x
--- 	JOIN esum e ON e.id=x.xentr
--- 	ORDER BY x.entr,x.sens,x.typ,x.xentr,x.xsens);
-
--- CREATE VIEW xsumr AS (
---     SELECT x.entr,x.sens,x.xentr,x.xsens,x.typ,x.notes,e.seq,e.kanj,e.rdng,e.nsens
--- 	FROM xref x
--- 	JOIN esum e ON e.id=x.entr
--- 	ORDER BY x.entr,x.sens,x.typ,x.xentr,x.xsens);
-
 CREATE VIEW xrefesum AS (
     SELECT DISTINCT z.entr AS id,e.id AS eid,e.seq,e.rdng,e.kanj,e.nsens 
         FROM esum e
@@ -194,7 +182,7 @@ CREATE VIEW prdng AS (
 -------------------------------------------------------------
 CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
     DECLARE
-	_p0_ INT; _p1_ INT; rec RECORD; REC2 record; rc INT;
+	_p0_ INT;
     BEGIN
 	INSERT INTO entr(src,seq,stat,notes) 
 	  (SELECT src,seq,3,notes FROM entr WHERE id=entrid);
@@ -207,49 +195,42 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
 	INSERT INTO hist(entr,stat,dt,who,diff,notes) 
 	  (SELECT _p0_,stat,dt,who,diff,notes FROM hist WHERE hist.entr=entrid);
 
-	FOR rec IN (SELECT * FROM kanj WHERE entr=entrid) LOOP
-	    INSERT INTO kanj(entr,kanj,txt) VALUES(_p0_,rec.kanj,rec.txt);
-	    SELECT lastval() INTO _p1_;
-	    INSERT INTO kinf(entr,kanj,kw) 
-	      (SELECT _p0_,_p1_,kw FROM kinf i WHERE i.entr=rec.entr AND i.kanj=rec.kanj);
-	    END LOOP;
-	FOR rec IN (SELECT * FROM rdng WHERE entr=entrid) LOOP
-	    INSERT INTO rdng(entr,rdng,txt) VALUES(_p0_,rec.rdng,rec.txt);
-	    SELECT lastval() INTO _p1_;
-	    INSERT INTO rinf(entr,rdng,kw) 
-	      (SELECT _p0_,_p1_,kw FROM rinf i WHERE i.entr=rec.entr AND i.rdng=rec.rdng);
-	    INSERT INTO audio(entr,rdng,fname,strt,leng) 
-	      (SELECT _p0_,_p1_,fname,strt,leng FROM audio a WHERE a.entr=rec.entr AND a.rdng=rec.rdng);
-	    END LOOP;	    
-	FOR rec IN (SELECT * FROM sens WHERE entr=entrid) LOOP
-	    INSERT INTO sens(entr,sens,notes) VALUES(_p0_,rec.sens,rec.notes);
-	    SELECT lastval() INTO _p1_;
+	INSERT INTO kanj(entr,kanj,txt) 
+	  (SELECT _p0_,kanj,txt FROM kanj WHERE entr=entrid);
+	INSERT INTO kinf(_p0_,kanj,kw)
+	  (SELECT _p0_,kanj,kw FROM kinf WHERE entr=entrid);
 
-	    INSERT INTO pos(entr,sens,kw) 
-	      (SELECT _p0_,_p1_,kw FROM pos p WHERE p.entr=rec.entr AND p.sens=rec.sens);
-	    INSERT INTO misc(entr,sens,kw) 
-	      (SELECT _p0_,_p1_,kw FROM misc m WHERE m.entr=rec.entr AND m.sens=rec.sens);
-	    INSERT INTO fld(entr,sens,kw) 
-	      (SELECT _p0_,_p1_,kw FROM fld f WHERE f.entr=rec.entr AND f.sens=rec.sens);
-	    INSERT INTO gloss(entr,sens,ord,lang,txt,notes) 
-	      (SELECT _p0_,_p1_,ord,lang,txt,notes FROM gloss g WHERE g.entr=rec.entr AND g.sens=rec.sens);
-	    INSERT INTO xref(entr,sens,xentr,xsens,typ,notes) 
-	      (SELECT _p0_,_p1_,xref,typ,notes FROM xref x WHERE x.entr=rec.entr AND x.sens=rec.sens);
-	    INSERT INTO xref(entr,sens,xentr,xsens,typ,notes) 
-	      (SELECT sens,_p0_,_p1_,typ,notes FROM xref x WHERE x.xentr=rec.entr AND x.xsens=rec.sens);
+	INSERT INTO rdng(entr,rdng,txt) 
+	  (SELECT _p0_,rdng,txt FROM rdng WHERE entr=entrid);
+	INSERT INTO rinf(_p0_,rdng,kw)
+	  (SELECT _p0_,rdng,kw FROM rinf WHERE entr=entrid);
+	INSERT INTO audio(entr,rdng,fname,strt,leng) 
+	  (SELECT _p0_,rdng,fname,strt,leng FROM audio a WHERE a.entr=entrid);
+	    
+	INSERT INTO sens(entr,sens,notes) 
+	  (SELECT _p0_,sens,notes FROM sens WHERE entr=entrid);
+	INSERT INTO pos(entr,sens,kw) 
+	  (SELECT _p0_,sens,kw FROM pos WHERE entr=entrid);
+	INSERT INTO misc(entr,sens,kw) 
+	  (SELECT _p0_,sens,kw FROM misc WHERE entr=entrid);
+	INSERT INTO fld(entr,sens,kw) 
+	  (SELECT _p0_,sens,kw FROM fld WHERE entr=entrid);
+	INSERT INTO gloss(entr,sens,gloss,lang,txt,notes) 
+	  (SELECT _p0_,sens,gloss,lang,txt,notes FROM gloss WHERE entr=entrid);
+	INSERT INTO xref(entr,sens,xentr,xsens,typ,notes) 
+	  (SELECT _p0_,sens,xentr,xsens,typ,notes FROM xref WHERE entr=entrid);
+	INSERT INTO xref(entr,sens,xentr,xsens,typ,notes) 
+	  (SELECT entr,sens,_p0_,xsens,typ,notes FROM xref WHERE xentr=entrid);
 	    END LOOP;
 
 	INSERT INTO freq(entr,kanj,kw,value) 
-	  (SELECT _p0_,rdng,kanj,kw,value FROM freq z WHERE z.entr=entrid);
-
+	  (SELECT _p0_,rdng,kanj,kw,value FROM freq WHERE entr=entrid);
 	INSERT INTO restr(entr,rdng,kanj)
-	  (SELECT _p0_,rdng,kanj FROM restr z WHERE z.entr=entrid);
-
+	  (SELECT _p0_,rdng,kanj FROM restr WHERE entr=entrid);
 	INSERT INTO stagr(entr,sens,rdng)
-	  (SELECT _p0_,sens,rdng FROM stagr z WHERE z.entr=entrid);
-
+	  (SELECT _p0_,sens,rdng FROM stagr WHERE entr=entrid);
 	INSERT INTO stagk(entr,sens,kanj)
-	  (SELECT _p0_,sens,kanj FROM stagk z WHERE z.entr=entrid);
+	  (SELECT _p0_,sens,kanj FROM stagk WHERE entr=entrid);
 
 	RETURN _p0_;
 	END;

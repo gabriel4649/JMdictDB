@@ -1,4 +1,27 @@
 
+2007-03-05	smcgrawx@frxii.com
+
+	* pg/mkviews.sql [1.11]
+	As result of the 2007-02-11 pk/fk change, the dupentr stored proc
+	  can be greatly simplified:  all loops can be removed and all
+	  needed rows copied with simple insert statements.
+	Remove unused views "xsum" and "xsumr".
+
+	* doc/
+	Add new directory for documentation.
+
+	* doc/schema.dia [1.2]
+	* doc/schema.png [1.5]
+	Move from top-level directory into doc/.  This was done in
+	  the CVS respository so it is retroactive.	
+
+	* doc/schema.odt [1.1]
+	New file.  Open Office Writer documentation for the database
+	  schema.
+
+	* README.txt [1.6]
+	Update for new doc directory, addition of the schema.odt file.
+
 2007-02-27	smcgrawx@frxii.com
 
 	This change set replaces the kfreq and rfreq tables, that 

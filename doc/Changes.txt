@@ -1,10 +1,51 @@
 
+2007-03-09	smcgrawx@frxii.com
+
+	* T013 tagged
+	Released on Arakawa.
+
+	* doc/schema.odt [1.2]
+	Many tweeks.
+	Added new section "Using SQL".
+
+	* doc/schema.html [1.1]
+	New file.  Add html version exported from schema.odt for 
+	  those without Open Office.
+
+	* doc/tut0.pl [1.1]
+	* doc/tut1.pl [1.1]
+	* doc/tut2.pl [1.1]
+	* doc/tut3.pl [1.1]
+	New files.  API tutorials.
+
+	* perl/showentr.pl [1.10]
+	Fix: Xrefs display broken since jmdict.pm[1.8] (when EntrList() 
+	  was changed to put xref summary info in {_erefs} rather than
+	  {_xref}).  Regression tests would have caught this.
+	Added a lot of comments.
+
+	* perl/lib/jmdict.pm [1.15]
+	Added a lot of comments.
+	EntrList(): make all three restriction lists available from top
+	  of entr object.
+
+	* perl/lib/jmdicted.pm [1.1]
+	New file.  Functions for making (and to come, parsing)
+	  edictish text.
+
+	* Makefile [1.6]
+	Include doc files in target "dist".
+
+	* README.txt [1.7]
+	Added documentation section.
+	Updated manifest.
+
 2007-03-05	smcgrawx@frxii.com
 
 	* pg/mkviews.sql [1.11]
-	As result of the 2007-02-11 pk/fk change, the dupentr stored proc
-	  can be greatly simplified:  all loops can be removed and all
-	  needed rows copied with simple insert statements.
+	As result of the 2007-02-11 pk/fk change, the dupentr stored 
+	  proc can be greatly simplified:  all loops can be removed 
+	  and all needed rows copied with simple insert statements.
 	Remove unused views "xsum" and "xsumr".
 
 	* doc/

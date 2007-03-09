@@ -45,6 +45,36 @@ Everything here is subject to future change.  The web pages
 currently use Perl/cgi.  These will be changed, most likely
 to Apache/modperl, when the UI is stabilized.
 
+=============
+DOCUMENTATION
+=============
+Database schema:
+  doc/schema.odt(.html) -- The schema is comprehensively 
+	documented in this Open Office Writer document.
+	If you do not have Open Office can read schema.html
+	which was produced from it.  
+
+  doc/schema.dia(.png) -- A diagram of the database tables
+	and their relationships.  View schema.png id you do
+	not have the open source Dia application.
+
+API Documentation: 
+  README.txt -- This file.
+  tut0.pl, tut1.pl, tut2.pl, tut3.pl -- These tutorials are
+	also executable Perl scripts.  You can run them under
+	the perl debugger and step through the statements, 
+	interactively examining variables, while reading 
+	the extensive comments.  They discuss:
+
+	tut0 -- Database connections.
+	tut1 -- Using the Kwds() "virtual keyword tables".
+	tut2 -- Finding and retrieving entries.
+	tut4 -- Structure and use of entry objects.	
+
+  perl/showentr.pl -- This is a command line tool for 
+	displaying JMdict entries from the database.  It
+	is well documented making it useful for understanding
+	the use of the API in a real (if tiny) application.
 
 ============
 INSTALLATION
@@ -168,6 +198,11 @@ ANNOTATED MANIFEST
 ./doc/schema.dia................Dia source for database schema diagram.
 ./doc/schema.png................Database schema diagram.
 ./doc/schema.odt................Schema documentation source (OpenOffice Writer).
+./doc/schema.html...............Schema documentation (html).
+./doc/tut0.pl...................API executable tutorial, Database connections.
+./doc/tut1.pl...................API executable tutorial, The Kwds() structure.
+./doc/tut2.pl...................API executable tutorial, Finding and Getting Entries.
+./doc/tut3.pl...................API executable tutorial, The Entry Object.
 
 ./perl/
 ./perl/load_jmdict.pl...........Generates Postegresql load file from JMdict XML file.

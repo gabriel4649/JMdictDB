@@ -81,7 +81,7 @@ dist:
 	tar -cz -f jmdict.tgz \
 	  --exclude 'CVS' --exclude '*.log' --exclude '*~' --exclude '*.tmp' \
 	  --exclude '\#*' --exclude '\.*' \
-	  README.txt Changes.txt Makefile schema.dia schema.png perl pg
+	  README.txt Changes.txt Makefile doc/schema* doc/tut* perl pg
 
 web:	webcgi weblib webtal webcss
 webcss:	$(CSS_FILES:perl/cgi/%=$(CSS_DIR)/%)

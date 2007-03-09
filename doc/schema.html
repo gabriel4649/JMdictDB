@@ -1,0 +1,1327 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
+	<META NAME="CREATED" CONTENT="20020715;12385300">
+	<META NAME="CHANGEDBY" CONTENT="Stuart McGraw">
+	<META NAME="CHANGED" CONTENT="20070308;23534400">
+	<META NAME="SDENDNOTE" CONTENT="ARABIC;;[;]">
+	<STYLE>
+	<!--
+		@page { size: 8.27in 11.69in; margin-left: 1.25in; margin-right: 1.25in; margin-top: 1in; margin-bottom: 1in }
+		P { margin-bottom: 0.08in }
+		H1 { margin-top: 0.17in; margin-bottom: 0.08in; page-break-before: always; page-break-after: auto }
+		H1.western { font-family: "Thorndale", serif; font-size: 16pt }
+		H1.cjk { font-family: "Andale Sans UI"; font-size: 16pt }
+		H1.ctl { font-family: "Tahoma"; font-size: 16pt }
+		H2 { margin-top: 0.17in; margin-bottom: 0.08in }
+		H2.western { font-family: "Thorndale", serif; font-size: 14pt; font-style: italic }
+		H2.cjk { font-family: "Andale Sans UI"; font-size: 14pt; font-style: italic }
+		H2.ctl { font-family: "Tahoma"; font-size: 14pt; font-style: italic }
+		P.list-ctl { font-family: "Tahoma" }
+		P.list-2-start-western { margin-left: 0.5in; text-indent: -0.25in; margin-bottom: 0.08in }
+		P.list-2-start-cjk { margin-left: 0.5in; text-indent: -0.25in; margin-bottom: 0.08in }
+		P.list-2-start-ctl { margin-left: 0.5in; text-indent: -0.25in; margin-bottom: 0.08in; font-family: "Tahoma" }
+		TD P { margin-bottom: 0.08in }
+		P.sdendnote { margin-left: 0.2in; text-indent: -0.2in; margin-bottom: 0.2in; background: transparent; font-size: 10pt; page-break-before: auto }
+		A:link { color: #000000 }
+		SAMP.western { font-size: 9pt }
+		SAMP.cjk { font-family: "DejaVu LGC Sans Mono", monospace }
+		A.sdendnoteanc { font-size: 57% }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" LINK="#000000" DIR="LTR">
+<P ALIGN=CENTER STYLE="margin-bottom: 0.2in"><FONT SIZE=5 STYLE="font-size: 20pt">A
+Schema Representation of JMdict</FONT></P>
+<P STYLE="margin-bottom: 0.2in">This note describes how JMdict
+data[<A CLASS="sdendnoteanc" NAME="sdendnote1anc" HREF="#sdendnote1sym"><SUP>1</SUP></A>]
+is represented in the database developed for the JMdictDB project[<A CLASS="sdendnoteanc" NAME="sdendnote2anc" HREF="#sdendnote2sym"><SUP>2</SUP></A>].
+It assumes you understand the how the JMdict data is represented in
+the JMdict XML file[<A CLASS="sdendnoteanc" NAME="sdendnote3anc" HREF="#sdendnote3sym"><SUP>3</SUP></A>]
+and the basics of relational database design.</P>
+<P STYLE="margin-bottom: 0.2in">Source code to create, load, and
+access a JMdict database is available at the JMdictDB project
+website[<A CLASS="sdendnoteanc" NAME="sdendnote4anc" HREF="#sdendnote4sym"><SUP>4</SUP></A>].
+ The current implementation uses Postgresql[<A CLASS="sdendnoteanc" NAME="sdendnote5anc" HREF="#sdendnote5sym"><SUP>5</SUP></A>],
+but the schema design attempts to avoid dependence on features unique
+to Postgresql, so the schema should be implementable using other
+relational database products after adjusting the scripts' syntax to
+the appropriate flavor of SQL. 
+</P>
+<P STYLE="margin-bottom: 0.2in">A relationship diagram of the
+database is available in the file schema.png[<A CLASS="sdendnoteanc" NAME="sdendnote6anc" HREF="#sdendnote6sym"><SUP>6</SUP></A>].</P>
+<P STYLE="margin-bottom: 0.2in">The scripts that create the database
+(and are thus the ultimate authority regarding the schema) are
+available in the source code distribution in directory pg/.   The
+tables described in this document are created in mktables.sql. 
+Foreign keys are defined in mkfk.sql, and indexes in mkindex.sql. 
+The JMdict database also includes a number of views, functions, and
+other database objects that are not discussed in this paper but are
+defined in mkviews.sql. 
+</P>
+<DIV ID="Table of Contents1" DIR="LTR" STYLE="background: transparent">
+	<DIV ID="Table of Contents1_Head" DIR="LTR">
+		<P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT SIZE=4 STYLE="font-size: 16pt"><B>Table
+		of Contents</B></FONT></P>
+	</DIV>
+	<P STYLE="margin-bottom: 0in; page-break-before: auto">1. Overview	2</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">1.1.Parent/Child
+	Tables and Primary/Foreign keys.	2</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">1.2.Keyword
+	Tables	4</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">1.3.Keyword
+	Lists	4</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">1.4.Restrictions:
+	restr, stagr, stagk	5</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">1.5.ke_pri, re_pri
+	Generalization	5</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">1.6.Cross-references	6</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">1.7.XML
+	Round-tripping	6</P>
+	<P STYLE="margin-bottom: 0in; page-break-before: auto">2. An Example
+	Entry	8</P>
+	<P STYLE="margin-bottom: 0in; page-break-before: auto">3.Using
+	SQL	12</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">3.1.Retrieving an
+	Entry's Data	12</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">3.2.Finding
+	Entries	12</P>
+	<P STYLE="margin-left: 0.2in; margin-bottom: 0in">3.3.Views	13</P>
+	<P STYLE="margin-bottom: 0in; page-break-before: auto">4. Annotated
+	Schema	14</P>
+</DIV>
+<P STYLE="margin-bottom: 0.2in"><BR><BR>
+</P>
+<OL>
+	<LI><H1 CLASS="western"> Overview</H1>
+</OL>
+<P STYLE="margin-bottom: 0.2in">Roughly, each element type in the
+JMdict XML is modeled by a separate table in the database.  The
+hierarchical structure of the XML is mirrored by the tables being
+linked in parent-child relationships using foreign keys in child
+tables that refer to the primary keys of parent tables.  Table <I><U>entr</U></I>
+is at the top of the hierarchy and each row in <I><U>entr</U></I>
+corresponds to an &lt;entry&gt; element in the JMdict XML.  
+</P>
+<P STYLE="margin-bottom: 0.2in">The correspondence of tables and
+JMdict XML elements is not absolute however; in some cases where no
+more than one sub-element is possible, the sub-element's information
+may be contained in a column of the table corresponding to the
+containing element.  In some cases the JMdict XML semantics have been
+modified to better fit relational data semantics, or to allow more
+representational capabilities.</P>
+<OL>
+	<OL>
+		<LI><H2 CLASS="western">Parent/Child Tables and Primary/Foreign
+		keys.</H2>
+	</OL>
+</OL>
+<P STYLE="margin-bottom: 0.2in">Each JMdict entry is represented by a
+row in table <I><U>entr</U></I> and each row has a integer field <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
+containing an arbitrary but unique integer that identifies the row
+(and the entry). Each <I><U>entr</U></I> row contains some
+information about its entry, but most of the entry's information (for
+example readings or senses) is in other tables connected to the <I><U>entr</U></I>
+table by primary key / foreign key relationships.</P>
+<P STYLE="margin-bottom: 0.2in">Each of these &quot;child&quot;
+tables has a column <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+that is a foreign key to the primary key column <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
+in their parent table, <I><U>entr</U></I> (abbreviated <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>).
+ It is primary key / foreign key relations like this that tie
+together all the information for a single entry even though that
+information is distributed over multiple tables. In addition, the
+child tables of <I><U>entr</U></I> have another column, usually given
+the same name as the table itself, whose value is a small integer
+that serves to both disambiguate the child table's rows within the
+entry, and to order them. Thus, the table <I><U>sens</U></I> has two
+columns, <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>,
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens</SPAN></SPAN></I>,
+and all rows representing senses of a given entry will have the same
+value in the <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+field, and values like 1, 2, 3, etc, in the <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens</SPAN></SPAN></I>
+field. The <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens</SPAN></SPAN></I>
+columns together form the primary key of the <I><U>sens</U></I>
+table.</P>
+<P STYLE="margin-bottom: 0.2in">Some of the child tables in turn have
+their own child tables. The table <I><U>gloss</U></I> is a child
+table of <I><U>sens</U></I>. It has columns <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens</SPAN></SPAN></I>
+which relate its rows to particular senses in table <I><U>sens</U></I>,
+and a column <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">gloss</SPAN></SPAN></I>
+to disambiguate and order the glosses within each sense. The table's
+primary key consists of the columns <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>,
+<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens</SPAN></SPAN></I>,
+<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">gloss</SPAN></SPAN></I>.</P>
+<P STYLE="margin-bottom: 0.2in">There are a few other tables in
+addition to <I><U>entr</U></I> that use an arbitrary but unique
+integer as a primary key, instead of the composite keys described
+above. They are <I><U>audio</U></I> and <I><U>hist</U></I>.  These <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
+numbers are used by the database to connect rows to related rows in
+other tables.  They can change over time and will probably be
+different in different database instances, and thus should never be
+saved outside the database as row identifiers.</P>
+<P STYLE="margin-bottom: 0.2in">The following table shows the
+database tables as a hierarchy with parent-child relationships
+denoted by indentation of the table names:</P>
+<P STYLE="margin-bottom: 0.2in"><BR><BR>
+</P>
+<TABLE WIDTH=100% BORDER=1 BORDERCOLOR="#000000" CELLPADDING=4 CELLSPACING=0>
+	<COL WIDTH=53*>
+	<COL WIDTH=72*>
+	<COL WIDTH=131*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P><B>Database table name</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P><B>JMdict XML element</B></P>
+		</TD>
+		<TD WIDTH=51%>
+			<P><B>Information</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P><B>entr</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;entr&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Entries</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;<B>hist</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;audit&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Entry change history</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;<B>dial</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;dial&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Dialect(s)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;<B>lang</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;klang&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Source language(s)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;<B>kanj</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;ke_ele&gt;, &lt;keb&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Kanji text</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>kinf</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;ke_inf&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Kanji supplementary info</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;<B>rdng</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;re_ele&gt;, &lt;reb&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Reading (kana) text</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>rinf</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;re_inf&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Reading supplementary info</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>audio</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Reading sound clip</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;<B>sens</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;sense&gt;, &lt;s_info&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Sense 
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>pos</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;pos&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Part-of speech</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>misc</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;misc&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Misc. sense info</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>fld</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;field&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Field of use</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>gloss</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;gloss&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>English and other language glosses</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=3 WIDTH=100% HEIGHT=64 VALIGN=TOP>
+			<P><BR><BR>
+			</P>
+			<P>There are some tables that have two parents and thus don't fit
+			neatly into the hierarchical picture above:</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>restr</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P STYLE="font-style: normal; font-weight: medium">&lt;restr&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P STYLE="font-style: normal; font-weight: medium">Invalid
+			reading-kanji pairs. [parents: (<I><U>rdng</U></I>, <I><U>kanj</U></I>)]</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>stagr</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;stagr&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Invalid sense-reading pairs. [parents: (<I><U>sens</U></I>,
+			<I><U>rdng</U></I>)]</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>stagk</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;stagk&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Invalid sens-kanji pairs. [parents: (<I><U>sens</U></I>, <I><U>kanj</U></I>)]</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>freq</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;re_pri&gt;, &lt;ke_pri&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Frequency-of-use info for reading-kanji pairs. [parents: (<I><U>rdng</U></I>,
+			<I><U>kanj</U></I>)]</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>xref</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;xref&gt;, &lt;ant&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Cross-references to other entries. [parents: (<I><U>sens</U></I>,
+			<I><U>sens</U></I>)]</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0.2in"><BR>The <I><U>restr</U></I> table,
+for example, contains information about invalid combinations of
+readings and kanji and therefore needs to reference rows in both of
+the tables <I><U>rdng</U></I> and <I><U>kanj</U></I>. The primary
+keys of those two tables are (<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr,rdng</SPAN></SPAN></I>)
+and (<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr,kanj</SPAN></SPAN></I>)
+respectively. Since the referenced readings and kanji are always in
+the same entry, the <I><U>restr</U></I> table need only reference the
+entr column once, so the columns in <I><U>restr</U></I> will be
+(<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr,rdng,
+kanj</SPAN></SPAN></I>) constituting the foreign keys (<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr,rdng</SPAN></SPAN></I>)
+and (<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr,kanj</SPAN></SPAN></I>).
+ The <I><U>stagr</U></I> and <I><U>stagk</U></I> tables are similar.</P>
+<P STYLE="margin-bottom: 0.2in">The table <I><U>xref</U></I> also has
+two parents, both senses. The first is the sense the cross-reference
+is from, and the second, the sense (in a different entry) the
+cross-reference is to. Because the senses exist in different entries,
+the <I><U>xref</U></I> table uses the columns (<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>,<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens</SPAN></SPAN></I>,<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">xentr</SPAN></SPAN></I>,<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">xsens</SPAN></SPAN></I>)
+to form the foreign keys (<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr,sens</SPAN></SPAN></I>)
+and (<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">xentr,xsens</SPAN></SPAN></I>)
+for the &quot;from&quot; and &quot;to&quot; senses respectively.</P>
+<OL>
+	<OL START=2>
+		<LI><H2 CLASS="western">Keyword Tables</H2>
+	</OL>
+</OL>
+<P STYLE="margin-bottom: 0.2in">In the JMdict XML file, XML entities
+and abbreviations are used to encode reoccurring text strings. For
+example the entity &quot;&amp;io;&quot; stands for &quot;io&quot;,
+and its longer form, &quot;irregular okurigana usage&quot;.</P>
+<P STYLE="margin-bottom: 0.2in">In the database, small integers are
+used for this purpose.  Each set of related keywords is placed in its
+own table, and other tables that need to refer to a keyword store the
+appropriate id number. The keyword tables are all named with the
+prefix &quot;kw&quot; and we sometimes collectively refer to them as
+&quot;the kw* tables&quot;. (Such tables are also sometimes called
+&quot;lookup tables&quot; in database literature.)  We also use the
+words “keyword” and “tag” somewhat interchangeably, although
+the former tends to occur in the context of the database, and the
+latter in the context of the JMdict XML.</P>
+<P STYLE="margin-bottom: 0.2in">Here are the contents of the <I><U>kinf</U></I>
+table, which contains the keywords used in the <I><U>kinf</U></I>
+table (which in turn corresponds to the &lt;ke_inf&gt; elements in
+the JMdict XML file).</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><KBD><FONT SIZE=2 STYLE="font-size: 9pt">select
+* from kwkinf;<BR>id | kw |
+descr<BR>---+----+---------------------------------------<BR>1</FONT><KBD><FONT SIZE=2 STYLE="font-size: 9pt">&nbsp;</FONT><KBD><FONT SIZE=2 STYLE="font-size: 9pt">&nbsp;</FONT></KBD></KBD><FONT SIZE=2 STYLE="font-size: 9pt">|
+iK | word containing irregular kanji usage<BR>2</FONT><KBD><FONT SIZE=2 STYLE="font-size: 9pt">&nbsp;</FONT><KBD><FONT SIZE=2 STYLE="font-size: 9pt">&nbsp;</FONT></KBD></KBD><FONT SIZE=2 STYLE="font-size: 9pt">|
+io | irregular okurigana usage<BR>3</FONT><KBD><FONT SIZE=2 STYLE="font-size: 9pt">&nbsp;</FONT><KBD><FONT SIZE=2 STYLE="font-size: 9pt">&nbsp;</FONT></KBD></KBD><FONT SIZE=2 STYLE="font-size: 9pt">|
+oK | word containing out-dated kanji<BR>4</FONT><KBD><FONT SIZE=2 STYLE="font-size: 9pt">&nbsp;</FONT><KBD><FONT SIZE=2 STYLE="font-size: 9pt">&nbsp;</FONT></KBD></KBD><FONT SIZE=2 STYLE="font-size: 9pt">|
+ik | word containing irregular kana usage</FONT></KBD></FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in">kw* tables that correspond to
+entities and abbreviations used in JMdict xml are: <I><U>kwdial</U></I>,
+<I><U>kwfreq</U></I>, <I><U>kwkinf</U></I>, <I><U>kwlang</U></I>,
+<I><U>kwrinf</U></I>.</P>
+<P STYLE="margin-bottom: 0.2in">There are several kw* tables that
+don't correspond to anything in JMdict: <I><U>kwsrc</U></I>, <I><U>kwstat</U></I>,
+<I><U>kwxref</U></I>.</P>
+<P STYLE="margin-bottom: 0.2in">The keyword tables are colored green
+in the schema diagram.</P>
+<OL>
+	<OL START=3>
+		<LI><H2 CLASS="western">Keyword Lists</H2>
+	</OL>
+</OL>
+<P STYLE="margin-bottom: 0.2in">Some information in JMdict and the
+database is essentially lists of keywords. For example, a kanji text
+might have one of more keywords from the <I><U>kinf</U></I> table
+attached to it. These lists are stored in tables that have a foreign
+key to the table with the elements the list is attached to, and a
+foreign key to the appropriate keyword table. For example table <I><U>kinf</U></I>
+holds the ke_inf tags for the kanji elements. It has columns (<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr,
+kanj, kw</SPAN></SPAN></I>).  <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kanj</SPAN></SPAN></I>
+together identify a specific kanji element that a keyword applies to,
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kw</SPAN></SPAN></I>
+identifies the appropriate ke_inf keyword in table <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwkinf</SPAN></SPAN></I>.</P>
+<P STYLE="margin-bottom: 0.2in">The tables that contain such keyword
+lists are: <I><U>dial</U></I>, <I><U>fld</U></I>, <I><U>freq</U></I>,
+<I><U>kinf</U></I>, <I><U>lang</U></I>, <I><U>misc</U></I>, <I><U>pos</U></I>,
+<I><U>rinf</U></I>. 
+</P>
+<P STYLE="margin-bottom: 0.2in">Not all references to the kw* tables
+occur from these keyword list tables though. In some cases where only
+one instance of a tag is possible, a reference may occur from one of
+the other tables. For example, the <I><U>gloss</U></I> table contains
+a column <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">lang</SPAN></SPAN></I>
+that references <I><U>kwlang</U></I>, This is appropriate since a
+gloss can never have more than one language tag.</P>
+<P STYLE="margin-bottom: 0.2in">The use of integers rather that the
+short text strings for keywords might seem cumbersome initially, but
+in practice, one quickly learns the equivalences. This separation
+allows the short and long text, which is really only relevant for
+display to users, to change, while the numeric id values, relevant to
+application code, remain invariant. Application code seldom needs to
+execute joins with the kw* tables, because they will usually read the
+keyword tables into memory at startup and resolve numeric id's to
+strings (and the reverse) programmatically using the in-memory
+tables. Finally, if one really does want to work with the text
+strings in joins, it is easy to define views on the keyword list
+tables that have the kw* tables pre-joined and present an additional
+column containing the keyword text.</P>
+<P STYLE="margin-bottom: 0.2in">The keyword list tables are colored
+yellow in the schema diagram.</P>
+<OL>
+	<OL START=4>
+		<LI><H2 CLASS="western">Restrictions: <I><U>restr</U></I>, <I><U>stagr</U></I>,
+		<I><U>stagk</U></I></H2>
+	</OL>
+</OL>
+<P STYLE="margin-bottom: 0.2in">In the JMdict XML file, these
+elements describe restrictions on the use of reading-kanji,
+sense-reading, and sense-kanji (respectively) pairs by enumerating
+the <EM>valid</EM> pairs.  
+</P>
+<P STYLE="margin-bottom: 0.2in">In the database, those restrictions
+are given by listing <EM>invalid</EM> pairs. Although this creates an
+impedance mismatch when displaying such information (which will
+generally be displayed as valid combinations), it is more consistent,
+simplifies queries that incorporate this information, and eliminates
+the need for explicitly representing related information such as the
+&lt;re_nokanji&gt; element.</P>
+<P STYLE="margin-bottom: 0.2in">The restriction tables are colored
+light blue in the schema diagram.</P>
+<OL>
+	<OL START=5>
+		<LI><H2 CLASS="western">ke_pri, re_pri Generalization</H2>
+	</OL>
+</OL>
+<P STYLE="margin-bottom: 0.2in">The ke_pri and re_pri elements in the
+JMdict XML are used to convey information about frequency-of-use
+metrics using values such as &quot;ichi1&quot;, &quot;ichi2&quot;,
+&quot;ns14&quot;, etc.  Rather than mimicking JMdict's keyword based
+approach, the database schema generalizes the notion of
+frequency-of-use by using a scale indicator such as &quot;ichi&quot;
+or &quot;nf&quot;, and a metric such as &quot;1&quot;, &quot;14&quot;,
+etc. Thus &quot;ichi1&quot; is replaced by the keyword, value pair
+(&quot;ichi&quot;,1) and &quot;nf14&quot; by (&quot;nf&quot;,14). 
+This allows for the inclusion of other finer-grained metrics in the
+future such as page counts from Internet search engines like Google.</P>
+<P STYLE="margin-bottom: 0.2in">Most ke_pri and re_pri elements in
+JMdict xml occur as equi-valued pairs, that is there might be a
+ke_pri element with the value &quot;nf32&quot; on a particular kani
+element, and a re_pri tag also with the value &quot;nf32&quot; on a
+particular reading element. The equal values imply that the
+frequency-of-use indicator refers to the tagged kanji and readings as
+a pair, not to each independently. There are some ke_pri or re_pri
+that are not paired and they apply to the kanji or reading alone. 
+</P>
+<P STYLE="margin-bottom: 0.2in">In the database we represent ke_pri
+and re_pri elements in table <I><U>freq</U></I>. Each row contains
+columns <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng</SPAN></SPAN></I>
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kanj</SPAN></SPAN></I>
+which references a reading and a kanji, thus a single row represents
+a reading-kanji pair. Either (but not both) may be NULL should the
+value apply to a reading or kanji alone.  Two other columns are <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kw</SPAN></SPAN></I>
+which identifies the scale (by referring to table <I><U>kwfreq</U></I>),
+e.g. &quot;nf&quot;, and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">value</SPAN></SPAN></I>
+that gives the metric, e.g. 34, on the scale.</P>
+<OL>
+	<OL START=6>
+		<LI><H2 CLASS="western">Cross-references</H2>
+	</OL>
+</OL>
+<P STYLE="margin-bottom: 0.2in">In the JMdict XML file, there are two
+kinds of cross references, &lt;xref&gt; (&quot;see also&quot;) and
+&lt;ant&gt; (&quot;antonym&quot;). Both are located within senses,
+and specify the target of the cross-ref as a kanji or reading text
+string. This effects sense<FONT FACE="DejaVu LGC Sans, sans-serif">→</FONT>entry
+cross references, and, since there is no guarantee that a kanji or
+reading string will uniquely identify a single entry, may also be a
+one-to-many reference.</P>
+<P STYLE="margin-bottom: 0.2in">In the database both (and possibly
+other) kinds of cross references are modeled in table <I><U>xref</U></I>.
+As in JMdict XML, cross references occur within senses, which is
+represented in the <I><U>xref</U></I> table using columns <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens</SPAN></SPAN></I>
+to indentify the originating sense. Differing from JMdict XML, the
+<I><U>xref</U></I> table gives the target of the cross-reference as a
+another entry-sense pair, <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">xentr</SPAN></SPAN></I>
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">xsens</SPAN></SPAN></I>
+which results in each cross-reference pointing to a specific sense in
+one specific entry rather than an entire entry (or set of entries). 
+If  a cross-reference to multiple senses or multiple entries is
+wanted, multiple rows in the xref table are used.  Table <I><U>xref</U></I>
+also has a column <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">typ</SPAN></SPAN></I>
+that gives the type of cross-ref, and whose values are defined in
+table <I><U>kwxref</U></I>.</P>
+<P STYLE="margin-bottom: 0.2in">The cross reference table is colored
+purple in the schema diagram.</P>
+<OL>
+	<OL START=7>
+		<LI><H2 CLASS="western">XML Round-tripping</H2>
+	</OL>
+</OL>
+<P STYLE="margin-bottom: 0.2in">The following are things I am aware
+of that may differ between the JMdict XML loaded into the database,
+and JMdict XML recreated from the database:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0.2in">Comments in the XML that
+	describe (in an expected format) deleted entries are turned into
+	database deleted entries and can be regenerated although not
+	necessarily at the same place in the xml file. Other comments will
+	be lost.</P>
+	<LI><P STYLE="margin-bottom: 0.2in">Element order may vary. The
+	following elements will retain the original order: k_ele, r_ele,
+	sense, gloss.  Entry elements in the current JMdict are in seq
+	number order and can be regenerated in that order.  Where that order
+	to change though, it would not be preserved in the regenerated XML. 
+	The order of all other elements is not preserved.</P>
+	<LI><P STYLE="margin-bottom: 0.2in">The text strings used to refer
+	to cross-references may be different because the original values may
+	be a subset of the target's headwords, and are recreated from the
+	target without knowledge of the exact subset.</P>
+	<LI><P STYLE="margin-bottom: 0.2in">The database can represent
+	information that currently has no means of representation in the
+	JMdict XML. Specifically:</P>
+	<LI><P CLASS="list-2-start-western">Cross-references can refer to
+	specific target senses.</P>
+	<LI><P CLASS="list-2-start-western">Cross-references can refer to a
+	specific entry even when there multiple references with the same
+	reading or kanji text.</P>
+	<LI><P CLASS="list-2-start-western">Cross-references may have more
+	types that just the “see also” and “antonym” types available
+	in the current JMdict XML.</P>
+	<LI><P CLASS="list-2-start-western">Readings can have sound clips.</P>
+	<LI><P CLASS="list-2-start-western">There may be keyword values in
+	the kw* tables and used in the database that do not have equivalent
+	entities defined in the JMdict DTD.</P>
+	<LI><P CLASS="list-2-start-western">Some items (e.g. entries and
+	glosses) have a <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">notes</SPAN></SPAN></I>
+	column that can contain additional ad-hoc information.  JMdict has
+	no means of representing this information.</P>
+	<P STYLE="margin-bottom: 0.2in">If entries are created that make use
+	of these capabilities, the additional information will not be
+	representable in a regenerated JMdict XML file.</P>
+</UL>
+<OL START=2>
+	<LI><H1 CLASS="western"> An Example Entry</H1>
+</OL>
+<P STYLE="margin-bottom: 0.2in">This section looks at the actual
+table data used to store a JMdict entry, using data extracted from a
+live database.</P>
+<P STYLE="margin-bottom: 0.2in">Here is entry 1211370 as displayed by
+wwwjdic:</P>
+<P STYLE="margin-left: 0.5in; text-indent: -0.01in; margin-bottom: 0.2in">
+<FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">堪能</SPAN></FONT>(P);
+<FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">勘能 【たんのう</SPAN></FONT>(<FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">堪能</SPAN></FONT>)(P);
+<FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">かんのう</SPAN></FONT>(ok)<FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">】
+</SPAN></FONT>(adj-na) (1) proficient; skillful; (n,vs) (2)
+satisfaction; (n,vs) (3) {Buddh} fortitude; (P)</P>
+<P STYLE="margin-bottom: 0.2in">And here is its representation in the
+JMdictDB database:</P>
+<P STYLE="margin-bottom: 0.2in">Table <I><U>entr</U></I> row:</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><KBD>select
+* from entr where seq=1211370;<BR>id<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|<KBD>
+</KBD>src<KBD> </KBD>|<KBD> </KBD>seq<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|<KBD>
+</KBD>stat<KBD> </KBD>|<KBD>
+</KBD>notes<BR>------+-----+---------+------+-------<BR>20894<KBD> </KBD>|<KBD>
+</KBD>1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD>|<KBD>
+</KBD>1211370<KBD> </KBD>|<KBD> </KBD>2<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|</KBD></FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in"><I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
+is an arbitrary number as assigned when the entry was created.  Its
+purpose is to provide an anchor that related rows in other tables can
+refer to. Since it may change over time and may be different in
+different database instances, it should never be saved externally as
+a means of identifying an entry; use <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">seq
+</SPAN></SPAN></I>for that.</P>
+<P STYLE="margin-bottom: 0.2in"><I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">src</SPAN></SPAN></I>
+says what collection of entries this entry belongs to and refers to
+table <I><U>kwsrc</U></I>.<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>.
+<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>=1
+in that table says this entry is part of JMdict. Currently all
+entries are JMdict entries but in the future the database might also
+contain other kinds of entries such as the JMnedict names.</P>
+<P STYLE="margin-bottom: 0.2in"><I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">seq</SPAN></SPAN></I>
+is the same as the &lt;ent_seq&gt; element in JMdict XML file and
+identifies each JMdict entry across time and space.</P>
+<P STYLE="margin-bottom: 0.2in"><I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">stat</SPAN></SPAN></I>
+gives that status of this entry. It refers to table <I><U>kwstat</U></I>
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id=</SPAN></SPAN></I>2
+in that table is &quot;active&quot;. There are other <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">stat</SPAN></SPAN></I>
+values for new or modified entries awaiting approval, deleted
+entries, rejected entries, etc.</P>
+<P STYLE="margin-bottom: 0.2in"><I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">notes</SPAN></SPAN></I>
+is a text field that can contain arbitrary information pertaining to
+an entry that is intended to be displayed to users.</P>
+<P STYLE="margin-bottom: 0.2in">Table <I><U>rdng</U></I> rows</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">select
+* from rdng where entr=20894;<BR>entr<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD>|
+rdng | txt<BR>------+------+----------<BR>20894 | 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+</FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN LANG="ja-JP">たんのう</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><BR>20894
+| 2<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+</FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN LANG="ja-JP">かんのう</SPAN></FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in"><I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+identifies the entry the row belongs to. <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng</SPAN></SPAN></I>
+disambiguates and orders multiple readings belonging to the same
+entry.  <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng
+</SPAN></SPAN></I>together constitute the primary key and any other
+tables that refers to specific readings (such as <I><U>audio</U></I>
+or <I><U>restr</U></I> will contain a foreign key to these two
+columns.  <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">txt</SPAN></SPAN></I>
+is the reading text. It is expected to have at least one kana
+character and should not contain any kanji characters.</P>
+<P STYLE="margin-bottom: 0.2in">Table <I><U>kanj</U></I> rows</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">select
+* from kanj where entr=20894;<BR>entr<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD>|
+kanj | txt<BR>------+------+------<BR>20894 | 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+</FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN LANG="ja-JP">堪能</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><BR>20894
+| 2<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+</FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN LANG="ja-JP">勘能</SPAN></FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in">This is structured like table <I><U>rdng</U></I>.
+Kanji text is expected to contain at least one kanji character.</P>
+<P STYLE="margin-bottom: 0.2in">Table <I><U>sens</U></I> rows</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">select
+* from sens where entr=20894;<BR>entr<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD>|
+sens | notes<BR>------+------+-------<BR>20894 | 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|<BR>20894
+| 2<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|<BR>20894
+| 3<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|</FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in">There is a <I><U>sens</U></I> row for
+each sense in the entry. <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+says which entry the sense belongs to, <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens</SPAN></SPAN></I>
+disambiguates and orders the senses. <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens</SPAN></SPAN></I>
+together constitute the primary key. <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">notes
+</SPAN></SPAN></I>contains an optional text providing some
+information unique to this sense that is intended to be displayed to
+users.</P>
+<P STYLE="margin-bottom: 0.2in">Table <I><U>gloss</U></I> rows</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">select
+* from gloss where entr=20894;<BR>entr<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD>|
+sens | gloss | lang | txt<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD>|
+notes<BR>------+------+-------+------+--------------+-------<BR>20894
+| 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|
+1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+proficient<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD>|<BR>20894
+| 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+2<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|
+1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+skillful<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|<BR>20894
+| 2<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|
+1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+satisfaction |<BR>20894 | 3<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|
+1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+fortitude<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|</FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in">In this table we see the first two
+rows are glosses for the first sense, the second row is a gloss for
+second sense, and the third row a gloss for the third sense.  The
+<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">lang</SPAN></SPAN></I>
+values are all 1, indicating english (from table <I><U>kwlang</U></I>).
+ Because this database instance was loaded from a JMdict_e file,
+there are no non-english glosses in it.  Had it been loaded from the
+full JMdict file, that would not be the case.</P>
+<P STYLE="margin-bottom: 0.2in">Table <I><U>pos</U></I> rows</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">select
+* from pos where entr=20894;<BR>entr<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD>|
+sens | kw<BR>------+------+----<BR>20894 | 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+2<BR>20894 | 2<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+17<BR>20894 | 2<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+46<BR>20894 | 3<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+17<BR>20894 | 3<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+46</FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in">The <I><U>pos</U></I> table contains
+a list of part-of-speech keywords for each sense of an entry.  Again,
+<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+identifies the entry and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens</SPAN></SPAN></I>
+the sense.  <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kw</SPAN></SPAN></I>
+refers to the <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
+column of table <I><U>kwpos</U></I>. Looking in that table we see the
+2 is &quot;adj-na&quot;, 17 is &quot;n&quot;, and 46 is &quot;vs&quot;:</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">select
+* from kwpos where id in (2,17,46);<BR>id
+|<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD>kw<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD>|<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD>descr<BR>---+--------+---------------------------------------------------<BR><KBD>&nbsp;</KBD>2
+| adj-na | adjectival nouns or quasi-adjectives (keiyodoshi)<BR>17 |
+n<KBD>&nbsp;&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|
+noun (common) (futsuumeishi)<BR>46 | vs<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|
+noun or participle which takes the aux. verb suru</FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in">Table <I><U>fld</U></I> rows</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">select
+* from fld where entr=20894;<BR>entr<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD>|
+sens | kw<BR>------+------+----<BR>20894 | 3<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+1</FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in"><I><U>fld</U></I> is a keyword list
+table like <I><U>pos</U></I>: <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr
+</SPAN></SPAN></I>identifies the entry and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens</SPAN></SPAN></I>
+the sense. <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kw</SPAN></SPAN></I>
+refers to the <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
+column of table <I><U>kwfld</U></I>.  Looking in that table we see
+the 1 is &quot;Buddh&quot;.</P>
+<P STYLE="margin-bottom: 0.2in">Table <I><U>rinf</U></I> rows</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">select
+* from rinf where entr=20894;<BR>entr<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD>|
+rdng | kw<BR>------+------+----<BR>20894 | 2<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+3</FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in">The <I><U>rinf</U></I> table contains
+a list of &lt;re_inf&gt; keywords for each reading of an entry.  <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+identifies the entry and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng</SPAN></SPAN></I>
+the reading.  <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kw</SPAN></SPAN></I>
+refers to the <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
+column of table <I><U>kwrinf</U></I>.  In this case, <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kw</SPAN></SPAN></I>=3
+indicates the rinf keyword, &quot;ok&quot; (&quot;out-dated or
+obsolete kana usage&quot;).  It applies only to reading 2 (<FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">かんのう</SPAN></FONT>).</P>
+<P STYLE="margin-bottom: 0.2in">The entry we are examining here has
+no data in the <I><U>kinf</U></I> table, but that table is the same
+except its second column is <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kanj</SPAN></SPAN></I>
+rather than <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng</SPAN></SPAN></I>
+and the kw column references table <I><U>kwkinf</U></I> rather than
+<I><U>kwrinf</U></I>.</P>
+<P STYLE="margin-bottom: 0.2in">Table <I><U>restr</U></I> rows</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">select
+* from restr where entr=20894;<BR>entr<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD>|
+rdng | kanj<BR>------+------+------<BR>20894 | 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+2</FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in">Contains &lt;re_restr&gt; element
+info used when not all combinations of reading and kanji are valid.
+<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+identifies the entry, <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng</SPAN></SPAN></I>
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kanj
+</SPAN></SPAN></I>identify a reading and kanji pair that are <EM>not
+valid</EM> together. Note that this is the opposite of the JMdict XML
+where re_restr elements identify <EM>valid</EM> pairs.  Since only
+the pair <FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">たんのう
+</SPAN></FONT>/ <FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">勘能
+</SPAN></FONT>is listed as invalid, the combinations  <FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">たんのう
+</SPAN></FONT>/ <FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">堪能</SPAN></FONT>,
+ <FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">かんのう </SPAN></FONT>/
+ <FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">堪能</SPAN></FONT>,
+ and  <FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">かんのう </SPAN></FONT>/
+ <FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">勘能 </SPAN></FONT>are
+valid.</P>
+<P STYLE="margin-bottom: 0.2in">There is no special indicator for the
+&quot;re_nokanji&quot; tag that exists in JMdict XML -- simply having
+<I><U>restr</U></I> rows for every kanji in an entry paired with one
+of the readings in sufficient to indicate that reading is &quot;nokanji&quot;.</P>
+<P STYLE="margin-bottom: 0.2in">It is the application 's
+responsibility to generate “valid” restr pairs or the “nokanji”
+flag from the existing data if that is how the information is to be
+presented.</P>
+<P STYLE="margin-bottom: 0.2in">Table <I><U>freq</U></I> rows</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">select
+* from freq where entr=20894;<BR>entr<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD>|
+rdng | kanj | kw | value<BR>------+------+------+----+-------<BR>20894
+| 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+5<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD>| 16<BR>20894 | 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+7<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD>| 1</FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in">Table freq contains frequency-of-use
+information found in JMdict in the re_pri and ke_pri elements.   As
+mentioned earlier, a frequency of use datum usually applies to a
+reading-kanji pair, but if not, one of the columns <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng</SPAN></SPAN></I>
+or <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kanj</SPAN></SPAN></I>
+may be NULL.   This will be the case for entries without kanji text,
+and of frequency metric derived from purely lexicographic means such
+as from Internet search engine page counts.  The <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kw</SPAN></SPAN></I>
+column refers to the table <I><U>kwfreq:</U></I></P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">jmdict=#
+select * from kwfreq where id in (5,7);<BR> id |&nbsp;&nbsp;kw&nbsp;&nbsp;|
+descr<BR>----+------+-------<BR>&nbsp;&nbsp;5 | nf&nbsp;&nbsp;&nbsp;|<BR>&nbsp;&nbsp;7
+| news |</FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in">So the data shown tells us that the
+kanji-1/reading-1 pair (<FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">堪能
+</SPAN></FONT>/ <FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">たんのう</SPAN></FONT>)
+has the frequency-of-use tags, “nf16” (5,16) and “news1”
+(7,1).</P>
+<P STYLE="margin-bottom: 0.2in">This entry has no dialect, source
+language, misc info, kinf info, etc, so a queries like the following
+will return 0 rows:</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">select
+* from dial where entr=20894;<BR>entr | kw<BR>-----+----<BR>(0 rows)</FONT></FONT></P>
+<OL START=3>
+	<LI><H1 CLASS="western">Using SQL</H1>
+</OL>
+<P STYLE="margin-bottom: 0.2in">This section describes how the table
+structures and relations previously discussed affect the SQL you
+write to find and extract data.</P>
+<OL>
+	<OL>
+		<LI><H2 CLASS="western">Retrieving an Entry's Data</H2>
+	</OL>
+</OL>
+<P STYLE="margin-bottom: 0.2in">If you are writing SQL as part of an
+application, extraction of data is easy in most cases.  That is
+because there is probably a library API that you can use that will
+extract all the data needed and construct an object representation of
+the entry in application code.  In this case the library API will
+take care of the SQL for you, if you know the entries you want.  In
+the JMdictDB code, the Perl library module jmdict.pm contains
+function EntrList() which does this.</P>
+<P STYLE="margin-bottom: 0.2in">Even if you need to write the SQL
+yourself (perhaps because you are creating such an API function) it
+is quite simple.  Because all the tables have a column <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+you need to execute a set of SQL statements, one for each table, with
+a WHERE clause that specifies the the <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
+values you are interested in.  For example (in Perl):</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=1 STYLE="font-size: 8pt">$sth
+  = $dbh-&gt;execute (“SELECT * FROM entr WHERE id IN (?,?)”,
+[$id1,$id2]);<BR>$entr  = $sth-&gt;fetchall ();<BR>$sth   =
+$dbh-&gt;execute (“SELECT * FROM kanj WHERE entr IN (?,?)”,
+[$id1,$id2]);<BR>$kanj  = $sth-&gt;fetchall ();<BR>$sth   =
+$dbh-&gt;execute (“SELECT * FROM kinf WHERE id IN (?,?)”,
+[$id1,$id2,]);<BR>$kinf  = $sth-&gt;fetchall ();<BR>$sth   =
+$dbh-&gt;execute (“SELECT * FROM kfreq WHERE id IN (?,?)”,
+[$id1,$id2]);<BR>$kfreq = $sth-&gt;fetchall ();<BR>$sth   =
+$dbh-&gt;execute (“SELECT * FROM rdng WHERE id IN (?,?)”,
+[$id1,$id2]);<BR>$rdng  = $sth-&gt;fetchall ();<BR>$sth   =
+$dbh-&gt;execute (“SELECT * FROM sens WHERE id IN (?,?)”,
+[$id1,$id2]);<BR>$sens  = $sth-&gt;fetchall ();<BR>[...]</FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in">Having gotten all the needed rows for
+the entries $id1 and $id2 in variables $entr, $kanj, etc., you can
+now use that data to build the objects representing the two entries.</P>
+<OL>
+	<OL START=2>
+		<LI><H2 CLASS="western">Finding Entries</H2>
+	</OL>
+</OL>
+<P STYLE="margin-bottom: 0.2in">When you need to find information,
+the SQL becomes more complex.  The basic rule is that you need to
+join together those tables that have columns that are part of your
+search criteria.  Fortunately, because the relationship hierarchy is
+simple and fixed, this too is usually quite straight forward.  Since
+you will usually want to know which entries meet the criteria, you
+will be interested in getting the <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>
+values.  In many cases you may not even need a join.</P>
+<P STYLE="margin-bottom: 0.2in">For example, to find the entries that
+have a reading, “<FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">つける”</SPAN></FONT>,
+the following is sufficient:</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><BR>SELECT
+entr FROM rdng WHERE txt='</FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN LANG="ja-JP">つける</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">';<BR></FONT></FONT><BR><BR>
+</P>
+<P STYLE="margin-bottom: 0.2in">Of course, if the criteria include
+information that is in different tables, a join or some other
+combination of the tables is inevitable.   To find the entries that
+contain both “<FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">つけ”
+</SPAN></FONT>and “<FONT FACE="Andale Sans UI"><SPAN LANG="ja-JP">漬”</SPAN></FONT>,
+and have a sense with a PoS that is a noun:</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">SELECT
+DISTINCT r.entr <BR>  FROM rdng r <BR>  JOIN kanj k ON k.entr=r.entr
+<BR>  JOIN pos p ON p.entr=k.entr<BR>  WHERE r.txt LIKE '%</FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN LANG="ja-JP">つけ</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">%'
+<BR>    AND k.txt LIKE '%</FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN LANG="ja-JP">漬</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">%'<BR>
+   AND p.kw = 17;</FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in">“17” is the <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
+number of the “noun” keyword in table <I><U>kwpos</U></I>.  
+</P>
+<P STYLE="margin-bottom: 0.2in">If you need more than just the
+<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>,
+say the entry's sequence number, then the <I><U>entr</U></I> table
+will also need to be included:</P>
+<P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
+<FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">SELECT
+DISTINCT e.seq <BR>  FROM entr e<BR>  JOIN rdng r ON r.entr=e.id<BR> 
+JOIN kanj k ON k.entr=r.entr <BR>  JOIN pos p ON p.entr=k.entr<BR> 
+WHERE r.txt LIKE '%</FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN LANG="ja-JP">つけ</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">%'
+<BR>    AND k.txt LIKE '%</FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN LANG="ja-JP">漬</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">%'<BR>
+   AND p.kw != 17;</FONT></FONT></P>
+<P STYLE="margin-bottom: 0.2in">It is noteworthy that the <I><U>sens</U></I>
+table was not needed in the above two queries, even though it is
+between <I><U>entr</U></I> and <I><U>pos</U></I> in the table
+hierarchy.</P>
+<OL>
+	<OL START=3>
+		<LI><H2 CLASS="western">Views</H2>
+	</OL>
+</OL>
+<P>The scripts that build that database include mkviews.sql which
+creates a number of useful views and functions, including ones to
+provide a (somewhat simplified) edict-ish textual summary of an
+entry, list valid and invalid reading-kanji combinations based on
+table <I><U>restr</U></I>, present meta-information about entries
+such as the number of kanji, readings and senses each has, and
+others.  They are currently still in too much flux to document yet,
+but will be included in a future version of this paper.  
+</P>
+<P>In the meantime, the comments in pg/mkviews.sql may be useful. 
+</P>
+<P STYLE="margin-bottom: 0.2in"><BR><BR>
+</P>
+<OL START=4>
+	<LI><H1 CLASS="western"> Annotated Schema</H1>
+</OL>
+<P>The Postgresql DDL statements below will create the tables
+described above.  They are based on revision 1.13 (2007/02/27) of
+mktables.sql.  As commonly happens, this documentation may lag behind
+the code and so should not be taken as definitive.<SAMP CLASS="western"><BR></SAMP><BR><BR>
+</P>
+<P><SAMP CLASS="western">CREATE TABLE entr (<BR>    id SERIAL NOT
+NULL PRIMARY KEY,<BR>      -- Arbitrary and unique integer to
+identify entries within<BR>      -- the database.  We don't want to
+use <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">seq</SPAN></SPAN></I>
+as the PK because<BR>      -- the database may include entries from
+non-JMdict sources<BR>      -- (such as JMnedict) in the future and
+those source may not<BR>      -- have seq numbers.<BR>      -- All
+rows in other tables related to an entry will have a <BR>      --
+foreign key pointing to the entry's <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
+value.<BR>    src SMALLINT NOT NULL,<BR>      -- Indicates where this
+entry came from (1=jmdict).  <BR>      -- References <I><U>kwsrc</U></I>.<BR>
+   seq INT NOT NULL,<BR>      -- Sequence number.  This number maps
+to the &lt;ent_seq&gt;<BR>      -- element of the JMdict XML file,
+and is intended<BR>      -- to be a stable identifier of a particular
+word.  (The <BR>      -- <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
+column is *not* suitable for uses spanning either<BR>      -- time or
+space.)</SAMP></P>
+<P><SAMP CLASS="western">    </SAMP><SAMP CLASS="western">stat
+SMALLINT NOT NULL,<BR>      -- References table <I><U>kwstat</U></I>
+and indicates the status of this<BR>      -- entry.  Typical values
+are &quot;active&quot;, &quot;new&quot;, &quot;modified&quot;.<BR>   
+  -- &quot;delete pending&quot;, &quot;deleted&quot;, etc.<BR>   
+notes TEXT<BR>      -- Arbitrary textual information about this
+entry.  Will be<BR>      -- displayed by applications.<BR>    
+);<BR><BR>CREATE SEQUENCE seq <BR>      -- This is a sequence for
+getting new <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.seq</SPAN></SPAN></I>
+values.  It is<BR>      -- not <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.seq</SPAN></SPAN></I>'s
+default value and applications are expected<BR>      -- to get new
+seq values and apply them when needed.<BR>      -- MAXVALUE is
+&lt;9000000 in order not to intrude of the space <BR>      --
+reserved for the jis212 entries.<BR>    INCREMENT 10 MINVALUE 1000000
+MAXVALUE 8999999 <BR>      NO CYCLE OWNED BY entr.seq;<BR><BR>CREATE
+TABLE rdng (<BR>      -- Defines the reading (or other kana
+representation)<BR>      -- of an entry.  All entries are expected to
+have at <BR>      -- least one reading row.  <SAMP CLASS="western">Maps
+to the JMdict XML element<BR>      -- &lt;re_ele&gt;.</SAMP><BR>   
+entr INT NOT NULL,<BR>      -- FK to entr.id to identify the entry
+that this reading <BR>      -- belongs to.<BR>    rdng SMALLINT NOT
+NULL,<BR>      -- Disambiguates and orders multiple readings in an
+entry.<BR>    txt VARCHAR(2048) NOT NULL,<BR>      -- The reading
+text.  Should contain at least one kana <BR>      -- character and
+should not contain any kanji characters.<BR>      -- <SAMP CLASS="western">Maps
+to the JMdict XML element &lt;reb&gt;.</SAMP><BR>    PRIMARY
+KEY(entr,rdng));<BR><BR>CREATE TABLE kanj (<BR>      -- Defines a
+kanji text associated with an entry.  An entries<BR>      -- may not
+have any kanji rows.  Maps to the JMdict XML element<BR>      --
+&lt;ke_ele&gt;.<BR>    entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>
+to identify the entry that this kanji <BR>      -- string belongs
+to.<BR>    kanj SMALLINT NOT NULL,<BR>      -- Disambiguates and
+orders multiple kanji in an entry.<BR>    txt VARCHAR(2048) NOT
+NULL,<BR>      -- The kanji text.  Should contain at least one kani <BR>
+     -- character.  Maps to the JMdict XML element &lt;keb&gt;.<BR>  
+ PRIMARY KEY(entr,kanj));</SAMP></P>
+<P><SAMP CLASS="western"><BR>CREATE TABLE sens (<BR>      --
+Represents an individual sense in an entry.  Maps to the <BR>      --
+the JMdict XML element &lt;sense&gt;.<BR>    entr INT NOT NULL,<BR>  
+   -- FK to entr.id to identify the entry that this sense <BR>     
+-- belongs to.<BR>    sens SMALLINT NOT NULL,<BR>      --
+Disambiguates and orders multiple senses in an entry.<BR>    notes
+TEXT,<BR>      -- Arbitrary additional textual information pertaining
+to <BR>      -- this sense.  Maps to the JMdict XML &lt;s_info&gt;
+element.<BR>    PRIMARY KEY(entr,sens));<BR><BR>CREATE TABLE gloss (<BR>
+     -- Represents a gloss in a sense.  Maps to the JMdict XML<BR>   
+  -- &lt;gloss&gt; element.<BR>    entr INT NOT NULL,<BR>      -- FK
+to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>
+to identify the entry this gloss belongs to.<BR>    sens SMALLINT NOT
+NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.sens</SPAN></SPAN></I>
+to identify the sense this gloss belongs to.<BR>    gloss SMALLINT
+NOT NULL,<BR>      -- Disambiguates and orders multiple glosses in a
+sense.<BR>    lang SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwlang.id</SPAN></SPAN></I>.
+ Language of this gloss.<BR>    txt VARCHAR(2048) NOT NULL,<BR>     
+-- The gloss text.<BR>    notes TEXT,<BR>      -- Arbitrary
+additional textual information pertaining to <BR>      -- this gloss.
+ <BR>    PRIMARY KEY(entr,sens,gloss));<BR><BR>CREATE TABLE xref (<BR>
+     -- Models various types of cross-references between entries (or<BR>
+     -- more accurately, between senses of entries.)  Maps
+approximately<BR>      -- to JMdict XML elements &lt;xref&gt; and
+&lt;ant&gt;.<BR>    entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies the entry this cross-reference<BR>      -- belongs to.<BR>
+   sens SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.id</SPAN></SPAN></I>.
+ Identifies the sense this cross-reference<BR>      -- belongs to.<BR>
+   xentr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies the entry this cross-reference<BR>      -- points to.<BR>
+   xsens SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.id</SPAN></SPAN></I>.
+ Identifies the sense this cross-reference<BR>      -- points to.<BR>
+   typ SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwxref.id</SPAN></SPAN></I>.
+ Identifies the type of cross reference.<BR>    notes TEXT,<BR>     
+-- Additional textual information pertaining to this cross-<BR>     
+-- reference for display to user when this cross-reference<BR>     
+-- is displayed.<BR>    PRIMARY KEY (entr,sens,xentr,xsens,typ));</SAMP></P>
+<P><SAMP CLASS="western"><BR>CREATE TABLE hist (<BR>      -- This
+table maintains a series of history records for each<BR>      --
+entry that documents significant changes to the entry.<BR>      --
+Maps roughly to JMdict element &lt;audit&gt;.<BR>    id SERIAL NOT
+NULL PRIMARY KEY,<BR>      -- Arbitrary and unique integer to
+identify individual hist <BR>      -- records within the database. <BR>
+   entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies the entry this history record<BR>      -- belongs to.<BR>
+   stat SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwstat.id</SPAN></SPAN></I>.
+ Status of entry before the change this<BR>      -- record documents
+was made.<BR>    dt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),<BR>
+     -- Date and time changes were made.<BR>    who VARCHAR(250),<BR>
+     -- Text string describing the user who made the changes.<BR>   
+diff TEXT,<BR>      -- Text string that documents the difference
+between the original<BR>      -- and changed entries.<BR>    notes
+TEXT<BR>      -- Additional textual information pertaining to this
+change.<BR>      );<BR><BR>CREATE TABLE audio (<BR>      --
+Represents a sound clip that is an audio version of a reading.<BR>   
+id SERIAL NOT NULL PRIMARY KEY,<BR>      -- Arbitrary and unique
+integer to identify individual audio <BR>      -- records within the
+database. <BR>    entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies the entry this audio record<BR>      -- belongs to.<BR>  
+ rdng SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng.rdng</SPAN></SPAN></I>.
+ Identifies the reading this audio record<BR>      -- belongs to.<BR>
+   fname VARCHAR(255) NOT NULL,<BR>      -- Filename (including path)
+of file containing the sound clip. <BR>    strt INT NOT NULL,<BR>    
+ -- Time in milliseconds to the start of the sound clip in the <BR>  
+   -- file.<BR>    leng INT NOT NULL);<BR>      -- Length of the
+sound clip in milliseconds.<BR><BR>CREATE TABLE editor (<BR>      --
+Rows in this table describe authenticated  editors.<BR>      -- This
+table's design has not been finalized yet.<BR>    id SERIAL NOT NULL
+PRIMARY KEY,<BR>      -- Arbitrary and unique integer to identify
+editors. <BR>    name VARCHAR(80) NOT NULL,<BR>      -- Editor's
+name.<BR>    email VARCHAR(250),<BR>      -- Editor's email address.<BR>
+   notes TEXT);<BR><BR>CREATE TABLE xresolv (<BR>      -- This table
+is used only during loading the database from<BR>      -- a JMdict
+XML file.  It holds xref strings prior to resoling<BR>      -- them
+to actual entry/senses.<BR>    entr INT NOT NULL,<BR>    sens
+SMALLINT NOT NULL,<BR>    typ SMALLINT NOT NULL,<BR>    txt
+VARCHAR(250) NOT NULL);<BR><BR><BR>CREATE TABLE freq (<BR>      --
+Contains frequency-of-use items from the JMdict XML &lt;ke_pri&gt;<BR>
+     -- &lt;re_pri&gt; elements, and other sources.<BR>    entr INT
+NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies the entry this datum is associated<BR>      -- with.<BR> 
+  rdng SMALLINT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng.rdng</SPAN></SPAN></I>.
+ Identifies the reading item that this datum<BR>      -- applies to. 
+May be NULL if it applies to only a kanji element.<BR>    kanj
+SMALLINT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kanj.kanj</SPAN></SPAN></I>.
+ Identifies the kanji item that this datum<BR>      -- applies to. 
+May be NULL if it applies to only a reading element.<BR>    kw
+SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwfreq.id</SPAN></SPAN></I>.
+ Identifies the FoU scale in table <I><U>kwfreq</U></I>.<BR>    value
+INT,<BR>      -- The value of the datum on the scale identified by
+<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kw</SPAN></SPAN></I>.<BR>
+   UNIQUE (entr,rdng,kanj,kw),<BR>    CHECK (rdng NOTNULL OR kanj
+NOTNULL));<BR><BR>CREATE TABLE dial (<BR>      -- Provides lists of
+dialects for entries.  This information<BR>      -- corresponds to
+the JMdict XML &lt;dial&gt; element.<BR>    entr INT NOT NULL,<BR>   
+  -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies entry that dialect applies to.<BR>    kw SMALLINT NOT
+NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwdial.id</SPAN></SPAN></I>.
+ Identifies the dialect keyword.<BR>    PRIMARY KEY
+(entr,kw));<BR><BR>CREATE TABLE fld (<BR>      -- Provides lists of
+fields for entries.  This information<BR>      -- corresponds to the
+JMdict XML &lt;field&gt; element.<BR>    entr INT NOT NULL,<BR>     
+-- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies entry that field applies to.<BR>    sens SMALLINT NOT
+NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.sens</SPAN></SPAN></I>.
+ Identifies the sense that field applies to.<BR>    kw SMALLINT NOT
+NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwfld.id</SPAN></SPAN></I>.
+ Identifies the field keyword.<BR>    PRIMARY KEY
+(entr,sens,kw));<BR><BR>CREATE TABLE kinf (<BR>      -- Provides
+lists of kanji info tags for kanji items.  This<BR>      --
+information corresponds to the JMdict XML &lt;ke_inf&gt; element.<BR>
+   entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies entry that the kinf tag applies to.<BR>    kanj SMALLINT
+NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kanj.kanj</SPAN></SPAN></I>.
+ Identifies the kanji item that kinf tag<BR>      -- applies to.<BR> 
+  kw SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwkinf.id</SPAN></SPAN></I>.
+ Identifies the kanji info keyword.<BR>    PRIMARY KEY
+(entr,kanj,kw));<BR><BR>CREATE TABLE lang (<BR>      -- Provides
+lists of (source) language for entries.  This<BR>      -- information
+corresponds to the JMdict XML &lt;lang&gt; element.<BR>    entr INT
+NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies entry that field applies to.<BR>    kw SMALLINT NOT
+NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwlang.id</SPAN></SPAN></I>.
+ Identifies the language keyword.<BR>    PRIMARY KEY
+(entr,kw));<BR><BR>CREATE TABLE misc (<BR>      -- Provides lists of
+misc tags for senses.  This information<BR>      -- corresponds to
+the JMdict XML &lt;misc&gt; element.<BR>    entr INT NOT NULL,<BR>   
+  -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies entry that misc tag applies to.<BR>    sens SMALLINT NOT
+NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.sens</SPAN></SPAN></I>.
+ Identifies the sense that misc tag applies to.<BR>    kw SMALLINT
+NOT NULL,<BR>     -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwmisc.id</SPAN></SPAN></I>.
+ Identifies the misc keyword.<BR>    PRIMARY KEY
+(entr,sens,kw));<BR><BR>CREATE TABLE pos (<BR>      -- Provides lists
+of pos (part-of-speech) tags for senses.  <BR>      -- This
+information corresponds to the JMdict XML &lt;pos&gt; element.<BR>   
+entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies entry that pos tag applies to.<BR>    sens SMALLINT NOT
+NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.sens</SPAN></SPAN></I>.
+ Identifies the sense that pos tag applies to.<BR>    kw SMALLINT 
+NOT NULL,<BR>     -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwpos.id</SPAN></SPAN></I>.
+ Identifies the pos keyword.<BR>    PRIMARY KEY
+(entr,sens,kw));<BR><BR>CREATE TABLE rinf (<BR>      -- Provides
+lists of reading info tags for reading items.  This<BR>      --
+information corresponds to the JMdict XML &lt;re_inf&gt; element.<BR>
+   entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies entry that the rinf tag applies to.<BR>    rdng SMALLINT
+NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng.rdng</SPAN></SPAN></I>.
+ Identifies the reading item that rinf tag<BR>      -- applies to.<BR>
+  kw SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwrinf.id</SPAN></SPAN></I>.
+ Identifies the reading info keyword.<BR>    PRIMARY KEY
+(entr,rdng,kw));<BR><BR><BR><BR>CREATE TABLE restr (<BR>      --
+Lists invalid pairs of reading and kanji elements.<BR>      -- Note
+that this is the inverse of the representation in JMdict<BR>      --
+<SAMP CLASS="western">XML </SAMP>file where &lt;restr&gt; elements
+list the _valid_ pairs.<BR>    entr INT NOT NULL,<BR>      -- FK to
+<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies entry that the restriction applies to.<BR>    rdng
+SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng.rdng</SPAN></SPAN></I>.
+ Identifies the reading within the entry that <BR>      -- <SAMP CLASS="western">the
+</SAMP>restriction applies to.<BR>    kanj SMALLINT NOT NULL,<BR>    
+ -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kanj.kanj</SPAN></SPAN></I>.
+ Identifies the kanji within the entry that the <BR>      --
+restriction applies to.<BR>    PRIMARY KEY (entr,rdng,kanj));<BR><BR>CREATE
+TABLE stagr (<BR>      -- Lists invalid pairs of sense and reading
+elements.<BR>      -- Note that this is the inverse of the
+representation in JMdict<BR>      -- <SAMP CLASS="western">XML </SAMP>file
+where &lt;stagr&gt; elements list the _valid_ pairs.<BR>    entr INT
+NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies entry that the restriction applies to.<BR>    sens
+SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.sens</SPAN></SPAN></I>.
+ Identifies the sense within the entry that <BR>      -- <SAMP CLASS="western">the
+</SAMP>restriction applies to.<BR>   rdng SMALLINT NOT NULL,<BR>     
+-- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng.rdng</SPAN></SPAN></I>.
+ Identifies the reading within the entry that  <BR>      -- the
+restriction applies to.<BR>    PRIMARY KEY (entr,sens,rdng));<BR><BR>CREATE
+TABLE stagk (<BR>      -- Lists invalid pairs of sense and kanji
+elements.<BR>      -- Note that this is the inverse of the
+representation in JMdict <BR>      -- XML file where &lt;stagk&gt;
+elements list the _valid_ pairs.<BR>    entr INT NOT NULL,<BR>     
+-- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies entry that the restriction applies to.<BR>    sens
+SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.sens</SPAN></SPAN></I>.
+ Identifies the sense within the entry that  <BR>      -- the
+restriction applies to.<BR>    kanj SMALLINT NOT NULL,<BR>      -- FK
+to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kanj.kanj</SPAN></SPAN></I>.
+ Identifies the kanji within the entry that  <BR>      -- the
+restriction applies to.<BR>    PRIMARY KEY (entr,sens,kanj));<BR><BR><BR><BR>--
+All keyword tables names' start with &quot;kw&quot; and have the<BR>--
+same structure.  The primary key is a small integer <BR>-- and that
+is what is used in other table to refer to a<BR>-- keyword.  he other
+two columns, 'kw' and 'descr' provide<BR>-- a short text
+abbreviation, and a longer textual description<BR>-- for use in
+displays to users.<BR><BR>CREATE TABLE kwdial (<BR>    id SMALLINT
+PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
+VARCHAR(255));<BR><BR>CREATE TABLE kwfreq (<BR>    id SMALLINT
+PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
+VARCHAR(255));<BR><BR>CREATE TABLE kwfld (<BR>    id SMALLINT PRIMARY
+KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
+VARCHAR(255));<BR><BR>CREATE TABLE kwkinf (<BR>    id SMALLINT
+PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL,<BR>      -- 'kw' not
+declared UNIQUE because there are some<BR>      -- rows where kw
+differs only in case, and this (at<BR>      -- in some of the locales
+used during testing) violated<BR>      -- the unique constraint.<BR> 
+  descr VARCHAR(255));<BR><BR>CREATE TABLE kwlang (<BR>    id
+SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>   
+descr VARCHAR(255));<BR><BR>CREATE TABLE kwmisc (<BR>    id SMALLINT
+PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL,<BR>      -- 'kw' not
+declared UNIQUE because there are some<BR>      -- rows where kw
+differs only in case, and this (at<BR>      -- in some of the locales
+used during testing) violated<BR>      -- the unique constraint.<BR> 
+  descr VARCHAR(255));<BR><BR>CREATE TABLE kwpos (<BR>    id SMALLINT
+PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
+VARCHAR(255));<BR><BR>CREATE TABLE kwrinf (<BR>    id SMALLINT
+PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
+VARCHAR(255));<BR><BR>CREATE TABLE kwsrc (<BR>    id SMALLINT PRIMARY
+KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
+VARCHAR(255));<BR><BR>CREATE TABLE kwstat (<BR>    id SMALLINT
+PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
+VARCHAR(255));<BR><BR>CREATE TABLE kwxref (<BR>    id SMALLINT
+PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
+VARCHAR(255));<BR></SAMP><BR><BR>
+</P>
+<DIV ID="sdendnote1">
+	<P CLASS="sdendnote" STYLE="margin-left: 0in; text-indent: 0in"><A CLASS="sdendnotesym" NAME="sdendnote1sym" HREF="#sdendnote1anc">[1]</A><A HREF="http://www.jb.something/">
+	http://www.csse.monash.edu.au/~jwb/edict_doc.html</A></P>
+</DIV>
+<DIV ID="sdendnote2">
+	<P CLASS="sdendnote"><A CLASS="sdendnotesym" NAME="sdendnote2sym" HREF="#sdendnote2anc">[2]</A><A HREF="http://www.edrdg.org/~smg/">http://www.edrdg.org/~smg/</A></P>
+</DIV>
+<DIV ID="sdendnote3">
+	<P CLASS="sdendnote"><A CLASS="sdendnotesym" NAME="sdendnote3sym" HREF="#sdendnote3anc">[3]</A>The
+	JMdict file is available in two forms: an English-only gloss version
+	(<A HREF="ftp://ftp.cc.monash.edu.au/pub/nihongo/JMdict_e.gz">ftp://ftp.cc.monash.edu.au/pub/nihongo/JMdict_e.gz</A>),
+	and a multi-lingual gloss version
+	(<A HREF="ftp://ftp.cc.monash.edu.au/pub/nihongo/JMdict.gz">ftp://ftp.cc.monash.edu.au/pub/nihongo/JMdict.gz</A>
+	) that is a superset of the English-only version.  The JMdict
+	database schema and tools support both versions.  However, the
+	non-English glosses in the multi-lingual version were merged in from
+	other non-JMdict project files and the integration leaves something
+	to be desired so most of the JMdictDB development work uses the
+	English-only version.</P>
+</DIV>
+<DIV ID="sdendnote4">
+	<P CLASS="sdendnote"><A CLASS="sdendnotesym" NAME="sdendnote4sym" HREF="#sdendnote4anc">[4]</A><A HREF="http://www.edrdg.org/~smg/">http://www.edrdg.org/~smg/</A>.
+	 The JMdictDB source code licensed under the GPL and is available
+	for download at this URL.</P>
+</DIV>
+<DIV ID="sdendnote5">
+	<P CLASS="sdendnote"><A CLASS="sdendnotesym" NAME="sdendnote5sym" HREF="#sdendnote5anc">[5]</A><A HREF="http://www.edrdg.org/~smg/">http://www.postgresql.org/</A></P>
+</DIV>
+<DIV ID="sdendnote6">
+	<P CLASS="sdendnote"><A CLASS="sdendnotesym" NAME="sdendnote6sym" HREF="#sdendnote6anc">[6]</A>The
+	schema.png file is distributed with the JMdictDB source code, or at
+	<A HREF="http://www.edrdg.org/~smg/">http://www.edrdg.org/~smg/jmdict/schema.png</A></P>
+</DIV>
+</BODY>
+</HTML>

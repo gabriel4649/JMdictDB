@@ -24,7 +24,11 @@
 	  </tr>
 	<tr class="resrow" tal:repeat="r results">
 	  <td><input type="checkbox" name="e" tal:attributes="value r/id"/></td>
-	  <td class="seq" tal:content="r/seq"/>
+	  <td class="seq">
+	    <span tal:if="eq: r/src string:1" tal:replace="string:J"/>
+	    <span tal:if="eq: r/src string:2" tal:replace="string:N"/>
+	    <span tal:content="r/seq"/>
+	    </td>
 	  <td class="rdng" tal:content="r/rdng"/>
 	  <td class="kanj" tal:content="r/kanj"/>
 	  <td class="gloss" tal:content="r/gloss"/>

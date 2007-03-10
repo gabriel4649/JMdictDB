@@ -35,18 +35,18 @@
 #   cause fatal error.  Should non-fatally map to a printable
 #   hex format or "?" or something.
 
-use XML::Twig;
-use Encode;
+use strict; 
+use XML::Twig; use Encode; use DBI;
 use Getopt::Std ('getopts');
-use strict;
 
 BEGIN {push (@INC, "./lib");}
 use jmdictxml ('%JM2ID'); # Maps xml expanded entities to kw* table id's.
 
 main: {
-	my ($twig, $infn, $outfn, $tmpfiles, $tmp, $enc, $logfn);
+	my ($twig, $infn, $outfn, $tmpfiles, $tmp, $enc, $logfn,
+	    $user, $pw, $dbname, $host);
 
-	getopts ("o:c:s:e:l:kh", \%::Opts);
+	getopts ("o:c:s:b:e:l:i:t:u:p:d:r:kh", \%::Opts);
 	if ($::Opts{h}) { usage (0); }
 	$enc = $::Opts{e} || "utf-8";
 	binmode(STDOUT, ":encoding($enc)");
@@ -54,8 +54,13 @@ main: {
 	eval { binmode($DB::OUT, ":encoding($enc)"); };
 
 	$infn = shift (@ARGV) || "JMdict";
-	$outfn = $::Opts{o} || "JMdict.dmp";
-	$logfn = $::Opts{l} || "load_jmdict.log";
+	$outfn =  $::Opts{o} || "JMdict.dmp";
+	$logfn =  $::Opts{l} || "load_jmdict.log";
+
+	$user =   $::Opts{u} || "postgres";
+	$pw =     $::Opts{p} || "";
+	$dbname = $::Opts{d} || "jmdict";
+	$host =   $::Opts{r} || "";
 
 	  # Make STDERR unbuffered so we print "."s, one at 
 	  # a time, as a sort of progress bar.  
@@ -68,11 +73,14 @@ main: {
 	$twig = XML::Twig->new (twig_handlers => { 
 				    entry    =>\&entry_handler,
 				   '#COMMENT'=>\&comment_handler}, 
+				start_tag_handlers => {
+				    entry => \&set_linenum},
 				comments=>'process');
 
 	  # Initialize global variables and open all the 
 	  # temporary table files. 
-	$tmpfiles = initialize ($logfn);
+	$tmpfiles = initialize ($logfn, $::Opts{t}, $::Opts{i}, 
+				$user, $pw, $dbname, $host);
 
 	  # Parse the given xml file.  The entry_ele sub given 
 	  # when the $twig was created does all the work of
@@ -92,32 +100,49 @@ main: {
 	finalize ($outfn, $tmpfiles, !$::Opts{k}); 
 	print STDERR ("Done\n"); }
 
-sub initialize { my ($logfn) = @_;
-	my ($t);
+sub initialize { my ($logfn, $tmpdir, $iopt, $user, $pw, $dbname, $host) = @_;
+	my ($t, $td, $i1, $i2);
+	if (!$tmpdir) { $td = ""; }
+	else { ($td = $tmpdir) =~ s/[\/\\]$//; }
 	my @tmpfiles = (
-	  [\$::Fentr, "load01.tmp", "COPY entr(id,src,seq,stat,notes) FROM stdin;"],
-	  [\$::Fkanj, "load02.tmp", "COPY kanj(entr,kanj,txt) FROM stdin;"],
-	  [\$::Fkinf, "load03.tmp", "COPY kinf(entr,kanj,kw) FROM stdin;"],
-	  [\$::Frdng, "load05.tmp", "COPY rdng(entr,rdng,txt) FROM stdin;"],
-	  [\$::Frinf, "load06.tmp", "COPY rinf(entr,rdng,kw) FROM stdin;"],
-	  [\$::Ffrq,  "load07.tmp", "COPY freq(entr,rdng,kanj,kw,value) FROM stdin;"],
-	  [\$::Fsens, "load08.tmp", "COPY sens(entr,sens,notes) FROM stdin;"],
-	  [\$::Fpos,  "load09.tmp", "COPY pos(entr,sens,kw) FROM stdin;"],
-	  [\$::Fmisc, "load10.tmp", "COPY misc(entr,sens,kw) FROM stdin;"],
-	  [\$::Ffld,  "load11.tmp", "COPY fld(entr,sens,kw) FROM stdin;"],
-	  [\$::Fxref, "load12.tmp", "COPY xresolv(entr,sens,typ,txt) FROM stdin;"],
-	  [\$::Fglos, "load13.tmp", "COPY gloss(entr,sens,gloss,lang,txt,notes) FROM stdin;"],
-	  [\$::Fdial, "load14.tmp", "COPY dial(entr,kw) FROM stdin;"],
-	  [\$::Flang, "load15.tmp", "COPY lang(entr,kw) FROM stdin;"],
-	  [\$::Frestr, "load16.tmp", "COPY restr(entr,rdng,kanj) FROM stdin;"],
-	  [\$::Fstagr, "load17.tmp", "COPY stagr(entr,sens,rdng) FROM stdin;"],
-	  [\$::Fstagk, "load18.tmp", "COPY stagk(entr,sens,kanj) FROM stdin;"],
-	  [\$::Fhist, "load19.tmp", "COPY hist(id,entr,stat,dt,who,diff,notes) FROM stdin;"] );
+	  [\$::Fentr,  "${td}load01.tmp", "COPY entr(id,src,seq,stat,notes) FROM stdin;"],
+	  [\$::Fkanj,  "${td}load02.tmp", "COPY kanj(entr,kanj,txt) FROM stdin;"],
+	  [\$::Fkinf,  "${td}load03.tmp", "COPY kinf(entr,kanj,kw) FROM stdin;"],
+	  [\$::Frdng,  "${td}load05.tmp", "COPY rdng(entr,rdng,txt) FROM stdin;"],
+	  [\$::Frinf,  "${td}load06.tmp", "COPY rinf(entr,rdng,kw) FROM stdin;"],
+	  [\$::Ffrq,   "${td}load07.tmp", "COPY freq(entr,rdng,kanj,kw,value) FROM stdin;"],
+	  [\$::Fsens,  "${td}load08.tmp", "COPY sens(entr,sens,notes) FROM stdin;"],
+	  [\$::Fpos,   "${td}load09.tmp", "COPY pos(entr,sens,kw) FROM stdin;"],
+	  [\$::Fmisc,  "${td}load10.tmp", "COPY misc(entr,sens,kw) FROM stdin;"],
+	  [\$::Ffld,   "${td}load11.tmp", "COPY fld(entr,sens,kw) FROM stdin;"],
+	  [\$::Fxref,  "${td}load12.tmp", "COPY xresolv(entr,sens,typ,txt) FROM stdin;"],
+	  [\$::Fglos,  "${td}load13.tmp", "COPY gloss(entr,sens,gloss,lang,txt,notes) FROM stdin;"],
+	  [\$::Fdial,  "${td}load14.tmp", "COPY dial(entr,kw) FROM stdin;"],
+	  [\$::Flang,  "${td}load15.tmp", "COPY lang(entr,kw) FROM stdin;"],
+	  [\$::Frestr, "${td}load16.tmp", "COPY restr(entr,rdng,kanj) FROM stdin;"],
+	  [\$::Fstagr, "${td}load17.tmp", "COPY stagr(entr,sens,rdng) FROM stdin;"],
+	  [\$::Fstagk, "${td}load18.tmp", "COPY stagk(entr,sens,kanj) FROM stdin;"],
+	  [\$::Fhist,  "${td}load19.tmp", "COPY hist(id,entr,stat,dt,who,diff,notes) FROM stdin;"] );
 
-	$::srcid = 1; $::cntr = 0;
-	  # Following globals are used to maintain the row 'id'
-	  # numbers for tables entr and hist respectively.
-	$::eid = $::hid = 1;
+	  # Counter for the number of entries processed.
+	$::cntr = 0;
+
+	if ($iopt) {
+	      # Extract the starting values of $::eid and $::hist from 
+	      # the $iop options.
+	    ($i1, $i2) = split ($iopt); 
+	    $::eid = int($i1);  $::hid = int($i1); }
+	else {
+	      # Get the starting values of $::eid and $::hist from the
+	      # max values of entr.id and hist.id found in the database.
+	      # If that database id numbers change between the time we
+	      # read them, and our output file is loaded, the result will
+	      # probably be duplicate key errors.
+	      # FIXME: should be able to explicitly give these values 
+	      #   on the commandline.
+	    ($::eid, $::hid) = get_max_ids ($user, $pw, $dbname, $host); }
+	if (!$::eid or !$::hid) {
+	    die ("Did not get valid entr.id or hist.id value, please check -i\n"); }
 
 	foreach $t (@tmpfiles) {
 	    open (${$t->[0]}, ">:utf8", $t->[1]) or \
@@ -143,6 +168,29 @@ sub finalize { my ($outfn, $tmpfls, $del) = @_;
 	    if ($del) {unlink ($t->[1]); } } 
 	close (FOUT); } 
 
+sub get_max_ids { my ($user, $pw, $dbname, $host) = @_;
+	# Get and return 1 + the max values of entr.id and hist.id
+	# found in the database defined by the connection parameters
+	# we were called with.
+
+	my ($dbh, $sql, $rs);
+
+	if ($host) { $host = ";host=$host"; }
+	$dbh = DBI->connect("dbi:Pg:dbname=$dbname$host", $user, $pw, 
+			{ PrintWarn=>0, RaiseError=>1, AutoCommit=>0 } );
+	$dbh->{pg_enable_utf8} = 1;
+	$sql = "SELECT 1+COALESCE((SELECT MAX(id) FROM entr),0) AS entr," .
+		     " 1+COALESCE((SELECT MAX(id) FROM hist),0) AS hist";
+	$rs = $dbh->selectall_arrayref ($sql);
+	$dbh->disconnect();
+	return ($rs->[0][0], $rs->[0][0]); }
+
+sub set_linenum { my ($t, $entry ) = @_;
+	# Remember the line number at the start of an entry for use
+	# in error message or as a ent_seq number substitute for
+	# JMnedict entries.
+	$::Ln = $t->current_line(); }
+
 sub entry_handler { my ($t, $entry ) = @_;
 	# Process each <entry> element.   When we're called (because we
 	# were listed in the twig_handlers option of the Twig->new() call
@@ -152,16 +200,17 @@ sub entry_handler { my ($t, $entry ) = @_;
 	# entry.
 
 	my ($seq, @x, $kmap, $rmap);
-	if (!($::cntr % 1385)) { print STDERR "."; } 
+	if (!($::cntr % 1395)) { print STDERR "."; } 
 	$::cntr += 1;
-	$seq = ($entry->get_xpath("ent_seq"))[0]->text;
+	eval { $seq = ($entry->get_xpath("ent_seq"))[0]->text; };
+	if (!$seq) { $seq = $::Ln; }
 	$::Seq = $seq;	# For log messages.
-	if (!$::started_at and (!$::Opts{s} or $seq eq $::Opts{s})) { 
+	if (!$::started_at and (!$::Opts{b} or int($seq) >= int($::Opts{b}))) { 
 	    $::processing = 1;  $::started_at = $::cntr }
 	return if (! $::processing);
 	if ($::Opts{c} and ($::cntr - $::started_at >= int($::Opts{c}))) {
 	     die ("done\n"); }
-	do_entry ($seq, $entry);
+	do_entry ($seq, $entry, $::Opts{s});
 	$t->purge; 0;}
 
 sub comment_handler { my ($t, $entry ) = @_;
@@ -194,13 +243,16 @@ sub comment_handler { my ($t, $entry ) = @_;
 	$::eid += 1;  $::hid += 1; 
 	$t->purge; 0; }
 
-sub do_entry { my ($seq, $entry) = @_;
-	my (@x, $kmap, $rmap, $fklist, $frlist);
+sub do_entry { my ($seq, $entry, $srcid) = @_;
+	my (@x, $kmap, $rmap, $fklist, $frlist, @t);
+	@t = $entry->get_xpath("trans");
+	if (!$srcid) { $srcid = @t ? 2 : 1; }
 	# (id,src,seq,stat,note)
-	print $::Fentr "$::eid\t$::srcid\t$seq\t2\t\\N\n";
+	print $::Fentr "$::eid\t$srcid\t$seq\t2\t\\N\n";
 	if (@x = $entry->get_xpath("k_ele")) { ($kmap, $fklist) = do_kanj (\@x); }
 	if (@x = $entry->get_xpath("r_ele")) { ($rmap, $frlist) = do_rdng (\@x, $kmap); }
 	if (@x = $entry->get_xpath("sense")) { do_sens (\@x, $kmap, $rmap); }
+	if (@t) 			     { do_sens (\@t, $kmap, $rmap); }
 	if (@x = $entry->get_xpath("info/dial")) { do_dial (\@x); }
 	if (@x = $entry->get_xpath("info/lang")) { do_lang (\@x); }
 	if (@x = $entry->get_xpath("info/audit")) { do_hist (\@x); }
@@ -269,11 +321,13 @@ sub do_sens { my ($sens, $kmap, $rmap) = @_;
 	    @p = $s->get_xpath ("pos");
 	    if (!@p) { @p = @pp; }
 	    if (@p) { do_pos (\@p, $ord); @pp = @p; }
-	    if (@x = $s->get_xpath ("misc"))  { do_misc (\@x, $ord); }
-	    if (@x = $s->get_xpath ("field")) { do_fld  (\@x, $ord); }
-	    if (@x = $s->get_xpath ("gloss")) { do_glos (\@x, $ord); }
-	    if (@x = $s->get_xpath ("xref"))  { do_xref ("see", \@x, $ord); }
-	    if (@x = $s->get_xpath ("ant"))   { do_xref ("ant", \@x, $ord); }
+	    if (@x = $s->get_xpath ("misc"))      { do_misc (\@x, $ord); }
+	    if (@x = $s->get_xpath ("field"))     { do_fld  (\@x, $ord); }
+	    if (@x = $s->get_xpath ("gloss"))     { do_glos (\@x, $ord); }
+	    if (@x = $s->get_xpath ("xref"))      { do_xref ("see", \@x, $ord); }
+	    if (@x = $s->get_xpath ("ant"))       { do_xref ("ant", \@x, $ord); }
+	    if (@x = $s->get_xpath ("name_type")) { do_pos  (\@x, $ord); }
+	    if (@x = $s->get_xpath ("trans_det")) { do_glos (\@x, $ord); }
 	    for $z ($s->get_xpath ("stagr")) { 
 		if (! defined ($stagr{$ord})) { $stagr{$ord} = {}; }
 		$stagr{$ord}->{$rmap->{$z->text}} = 1; }
@@ -475,24 +529,64 @@ sub pgesc { my ($str) = @_;
 
 sub usage { my ($exitstat) = @_;
 	print <<EOT;
+load_jmdict.pl reads a jmdict xml file such as JMdict or JMnedict and
+creates a Postgresql loader file that can be susequently used to load
+the data into a properly pre-configured database.  
 
-Usage: load_jmdict.pl [-o output-filename] [-c entry-count] \\
-		      [-s start-seq-num] [-k]  [-l logfile] \\
+Usage: load_jmdict.pl [-s srcid] [-o output-filename] 
+		      [-c entry-count] [-b start-seq-num] \\  
+		      [-k]  [-l logfile] \\
 		      [xml-filename]
 
 Arguments:
 	xml-filename -- Name of input jmdict xml file.  Default 
 	  is "JMdict".
 Options:
+	-h -- (help) print this text and exit.
 	-o output-filename -- Name of output postgresql dump file. 
 	    Default is "JMdict.dmp"
+	-s srcid -- Number that will be for entries' src id, 1 for
+	`   JMdict entries, 2 for JMnedict entries.  If not given,
+	    load_jmdict will attempt to detemine automatically on
+	    an entry-by-entry basis by looking for a <trans> element.
 	-c entry-count -- Number of entries to process.
-	-s start-seq-num -- Sequence number of first entry to process.
+	-b begin-seq-num -- Sequence number of first entry to process.
 	-k -- (keep) do not delete temporary files.
-	-e encoding -- Ecoding to use when writing messages to stderr
+	-e encoding -- Encoding to use when writing messages to stderr
 	    and stdout.  Default is "utf-8".
 	-l logfile -- Name of file to write log messages to.  Default 
 	    is "load_jmdict.log".
+	-t dir -- Directory in which to create the temp files.  
+	    Default is the current directory.
+	-i eid,hid -- Specifies the initial numeric values that will 
+	    be used for entr.id and hist.id.  There may be no space 
+	    around the comma.  If -i is not given, the values will be 
+	    read from the database using the connection parameters
+	    given by -r, -d, -u -p.
+
+	If -i was not given, the following options will be used to 
+	connect to a database in order to read the max entr.id and
+	hist.id values.  If the dmp file is loaded into a different
+	database, or if the max entr.id or hist.id values change
+	between load_jmdict.pl's read and loading the dump file, it
+	is likely duplicate key errors will occur.
+
+	-d dbname -- Name of database to use.  Default is "jmdict".
+	-r host	-- Name of machine hosting the database.  Default
+		is "localhost".
+	-e encoding -- Encoding to use for stdout and stderr.
+	 	Default is "utf-8".  Windows users running with 
+		a Japanese locale may wish to use "cp932".
 	-h -- (help) print this text and exit.
+
+	  ***WARNING***
+	  The following two options are not recommended for use 
+	  on a multi-user machine because their values will be 
+	  visible to anyone who can run a \"ps\" command.
+
+	-u username -- Username to use when connecting to database.
+	        Default is "postgres".
+	-p password -- Password to use when connecting to database.
+	        No default.
 EOT
 	exit $exitstat; }

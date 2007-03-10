@@ -171,6 +171,18 @@ our %JM2ID = (
 		'zuru verb - (alternative form of -jiru verbs)' => 49,
 		'transitive verb' => 50,
 
+		# JMnedict names
+		'family or surname' => 181,
+		'place name' => 182,
+		'unclassified name' => 183,
+		'company name' => 184,
+		'product name' => 185,
+		'male given name or forename' => 186,
+		'female given name or forename' => 187,
+		'full name of a particular person' => 188,
+		'given name or forename, gender not specified' => 189,
+		'railway station' => 190,
+
 		# Deprecated...
 		'adverbial noun' => 201,
 		'computer terminology' => 202,

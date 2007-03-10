@@ -66,6 +66,18 @@ INSERT INTO kwpos(id,kw,descr) VALUES(48, 'vs-i',   'suru verb - irregular');
 INSERT INTO kwpos(id,kw,descr) VALUES(49, 'vz',     'zuru verb - (alternative form of -jiru verbs)');
 INSERT INTO kwpos(id,kw,descr) VALUES(50, 'vt',     'transitive verb');
 
+-- JMnedict name types.
+INSERT INTO kwpos(id,kw,descr) VALUES(181, 'surname', 'family or surname');
+INSERT INTO kwpos(id,kw,descr) VALUES(182, 'place',   'place name');
+INSERT INTO kwpos(id,kw,descr) VALUES(183, 'unclass', 'unclassified name');
+INSERT INTO kwpos(id,kw,descr) VALUES(184, 'company', 'company name');
+INSERT INTO kwpos(id,kw,descr) VALUES(185, 'product', 'product name');
+INSERT INTO kwpos(id,kw,descr) VALUES(186, 'masc',    'male given name or forename');
+INSERT INTO kwpos(id,kw,descr) VALUES(187, 'fem',     'female given name or forename');
+INSERT INTO kwpos(id,kw,descr) VALUES(188, 'person',  'full name of a particular person');
+INSERT INTO kwpos(id,kw,descr) VALUES(189, 'given',   'given name or forename, gender not specified');
+INSERT INTO kwpos(id,kw,descr) VALUES(190, 'station', 'railway station');
+
 -- Deprecated, see jmdictxml.pm.
 INSERT INTO kwpos(id,kw,descr) VALUES(201, 'adv-n', 'adverbial noun');
 INSERT INTO kwpos(id,kw,descr) VALUES(202, 'comp',  'computer terminology');

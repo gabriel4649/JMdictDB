@@ -48,7 +48,7 @@ binmode (STDOUT, ":utf8");
 	@fld  = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<200, kwrecs ($::KW, 'FLD')));
 	@kinf = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<200, kwrecs ($::KW, 'KINF')));
 	@rinf = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<200, kwrecs ($::KW, 'RINF')));
-	@src  = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'SRC'));
+	@src  = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<200, kwrecs ($::KW, 'SRC')));
 
 	@x = sort ({$a->{descr} cmp $b->{descr}} kwrecs ($::KW, 'STAT'));
 	$stat = reshape (\@x, 3);
@@ -62,7 +62,7 @@ binmode (STDOUT, ":utf8");
 	$tmpl = new Petal (file=>'../lib/tal/srchform.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
 	print $tmpl->process ({pos=>$pos, misc=>$misc, stat=>$stat, freq=>\@freq,
-				rinf=>\@rinf, kinf=>\@kinf, fld=>\@fld});
+				rinf=>\@rinf, kinf=>\@kinf, fld=>\@fld, src=>\@src});
 	$dbh->disconnect; }
 
     sub reshape { my ($array, $ncols, $default) = @_;

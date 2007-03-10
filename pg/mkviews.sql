@@ -37,7 +37,7 @@ CREATE AGGREGATE accum (
 -- with the delimiter " / ".
 ------------------------------------------------------------
 CREATE VIEW esum AS (
-    SELECT e.id,e.seq,
+    SELECT e.id,e.seq,e.src,e.stat,e.notes,
 	(SELECT ARRAY_TO_STRING(ACCUM(sr.txt), '; ') 
 	 FROM (SELECT r.txt FROM rdng r WHERE r.entr=e.id ORDER BY r.rdng) AS sr) AS rdng,
 	(SELECT ARRAY_TO_STRING(ACCUM(sk.txt), '; ')
@@ -132,7 +132,7 @@ CREATE VIEW rk_valid AS (
 -- by column "sens" (the reverse direction).  
 -------------------------------------------------------------
 CREATE VIEW xrefesum AS (
-    SELECT DISTINCT z.entr AS id,e.id AS eid,e.seq,e.rdng,e.kanj,e.nsens 
+    SELECT DISTINCT z.entr AS id,e.id AS eid,e.seq,e.src,e.stat,e.rdng,e.kanj,e.nsens 
         FROM esum e
 	JOIN 
 	    (SELECT s.entr,x.xentr

@@ -129,6 +129,21 @@
 
 	    <tr><td colspan="2"><hr width="100%"/></td></tr>
             <tr>
+              <td colspan="2"><span class="descriptor">Dictionary:</span>
+              <table class="optgroup">
+                <tbody>
+                  <tr>
+		    <td tal:repeat="c src">
+                      <input name="src" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/> 
+		    </td>
+                  </tr>
+                </tbody>
+              </table>
+              </td>
+            </tr>
+
+	    <tr><td colspan="2"><hr width="100%"/></td></tr>
+            <tr>
               <td colspan="2"><span class="descriptor">Frequency of use:</span><br/>
               <span tal:repeat="z freq" class="optgroup">
                 <input name="freq" tal:attributes="value z" tal:content="z" type="checkbox"/> 

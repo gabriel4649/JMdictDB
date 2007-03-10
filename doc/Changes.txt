@@ -1,4 +1,43 @@
 
+2007-03-10
+
+	* perl/load_jmdict.pl [1.20]
+	Support for loading JMnedict data.
+	Option to start entr.id number at other than 1, either by 
+	  giving explicitly on command line, or reading from database.
+	Add command line option to create temp files in other than
+	  current directory.
+
+	* cgi/srchform.pl [1.8]
+	Support for "src" group:
+	When generating "src" option list, grep out item>200 as done
+	  for other option groups.
+	Pass the src option group to the tal template.
+
+	* lib/tal/entr.tal [1.7]
+	Support for "src" group: show dict after seq number.
+
+	* lib/tal/srchform.tal [1.7]
+	Support for "src" group: add "src" section.
+
+	* lib/tal/srchres.tal [1.4]
+	Support for "src" group: show a single letter indicator
+	  for each result that that indicates its dictionary.
+
+	* lib/jmdictxml.pm [1.9]
+	* pg/data/kwpos.sql [1.6]
+	Support for jmnedict data: add pos keywords for jmnedict
+	  <name_type> tags.
+
+	* pg/mkviews.sql [1.12]
+	Support for "src" group: add columns entr.src, .stat, and .notes
+	  to views esum and xrefesum.
+
+	* pg/data/kwsrc.sql [1.4]
+	Support for "src" group: change id of keyword "examples" from
+	  3 to 203 so that is won't show up in srchform.pl/tal src
+	  section checkboxes.
+
 2007-03-09	smcgrawx@frxii.com
 
 	* T013 tagged

@@ -134,7 +134,7 @@
                 <tbody>
                   <tr>
 		    <td tal:repeat="c src">
-                      <input name="src" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/> 
+                      <input name="src" tal:condition="c" tal:attributes="value c/id; checked decode:c/id 1 1" tal:content="c/kw" type="checkbox"/> 
 		    </td>
                   </tr>
                 </tbody>

@@ -1,5 +1,12 @@
 
-2007-03-10
+2007-03-10	smcgrawx@frxii.com
+
+	* lib/tal/srchform.tal [1.7]
+	Make jmdict dictionary checked by default.  Requires fix to
+	  Petal/Utils/Decode.pm, see 
+	  http://article.gmane.org/gmane.comp.lang.perl.modules.petal/369
+
+2007-03-10	smcgrawx@frxii.com
 
 	* perl/load_jmdict.pl [1.20]
 	Support for loading JMnedict data.

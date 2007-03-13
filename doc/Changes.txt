@@ -1,3 +1,28 @@
+2007-03-13	smcgrawx@frxii.com
+
+	* T014 tag
+	Released on Arakawa.
+
+	* perl/load_jmdict.pl 1.21]
+	Fix: -i option didn't work.
+	Fix: entr.src not set for deleted entries created from comments
+	  which cause subsequent db load t fail.
+	Print initial values eid, hid values when starting, in case user 
+	  (me) forgets about -i option and runs before database was init'd.
+
+	* perl/showentr.pl [1.11]
+	FIX: rinf keywords were printing using text from kinf.
+
+	* perl/lib/jmdict.pm [1.16]
+	The erefs query is very slow.  Until we can speed it up, get a
+	  speed improvement for majority cases by not running it if we
+	  know there are no xrefs because $xref and $xrer are empty.
+
+	* pg/mkviews.sql [1.13]
+	Fix: stored procedure "dupentr" had several syntax errors.
+	Add view eksum.  Like esum but doesn't include senses/glosses.
+	Change view xrefesum to use eksum instead of esum to speed it 
+	  up a little.
 
 2007-03-10	smcgrawx@frxii.com
 

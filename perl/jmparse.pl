@@ -130,8 +130,8 @@ sub initialize { my ($logfn, $tmpdir, $iopt, $user, $pw, $dbname, $host) = @_;
 	if ($iopt) {
 	      # Extract the starting values of $::eid and $::hist from 
 	      # the $iop options.
-	    ($i1, $i2) = split ($iopt); 
-	    $::eid = int($i1);  $::hid = int($i1); }
+	    ($i1, $i2) = split (/,/, $iopt); 
+	    $::eid = int($i1);  $::hid = int($i2); }
 	else {
 	      # Get the starting values of $::eid and $::hist from the
 	      # max values of entr.id and hist.id found in the database.
@@ -143,6 +143,7 @@ sub initialize { my ($logfn, $tmpdir, $iopt, $user, $pw, $dbname, $host) = @_;
 	    ($::eid, $::hid) = get_max_ids ($user, $pw, $dbname, $host); }
 	if (!$::eid or !$::hid) {
 	    die ("Did not get valid entr.id or hist.id value, please check -i\n"); }
+	print STDERR "Initial entr.id = $::eid, hist.id = $::hid\n";
 
 	foreach $t (@tmpfiles) {
 	    open (${$t->[0]}, ">:utf8", $t->[1]) or \
@@ -183,7 +184,7 @@ sub get_max_ids { my ($user, $pw, $dbname, $host) = @_;
 		     " 1+COALESCE((SELECT MAX(id) FROM hist),0) AS hist";
 	$rs = $dbh->selectall_arrayref ($sql);
 	$dbh->disconnect();
-	return ($rs->[0][0], $rs->[0][0]); }
+	return ($rs->[0][0], $rs->[0][1]); }
 
 sub set_linenum { my ($t, $entry ) = @_;
 	# Remember the line number at the start of an entry for use
@@ -220,7 +221,7 @@ sub comment_handler { my ($t, $entry ) = @_;
 	# described entry deletions and create synthetic 'D' status entries
 	# for them.
 
-	my ($c, $seq, $notes, $dt, $ln); 
+	my ($c, $seq, $notes, $dt, $ln, $srcid); 
 	return if (! $::processing);
 	$c = $entry->{comment};
 	if ($c =~ m/^\s*Deleted:\s*(\d{7}) with (\d{7})\s*(.*)/) {
@@ -233,8 +234,9 @@ sub comment_handler { my ($t, $entry ) = @_;
 	    print $::Flog "Line $ln: unparsable comment: $c\n"; return; }
 
 	$dt = "1990-01-01 00:00:00-00";
+	$srcid = 1;  # Assume JJMdict.
 	# (id,src,seq,stat,note)
-	print $::Fentr "$::eid\t$::srcid\t$seq\t4\t\\N\n";
+	print $::Fentr "$::eid\t$srcid\t$seq\t4\t\\N\n";
 
 	# Should we create a synthetic N record before creating the D record?
 	# (id,entr,stat,dt,who,diff,notes)

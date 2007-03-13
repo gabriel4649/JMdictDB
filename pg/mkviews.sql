@@ -53,6 +53,18 @@ CREATE VIEW esum AS (
     FROM entr e);
 
 -----------------------------------------------------------
+-- Like esum but without sense/gloss.
+------------------------------------------------------------
+CREATE VIEW eksum AS (
+    SELECT e.id,e.seq,e.src,e.stat,e.notes,
+	(SELECT ARRAY_TO_STRING(ACCUM(sr.txt), '; ') 
+	 FROM (SELECT r.txt FROM rdng r WHERE r.entr=e.id ORDER BY r.rdng) AS sr) AS rdng,
+	(SELECT ARRAY_TO_STRING(ACCUM(sk.txt), '; ')
+	 FROM (SELECT k.txt FROM kanj k WHERE k.entr=e.id ORDER BY k.kanj) AS sk) AS kanj,
+	(SELECT COUNT(*) FROM sens WHERE sens.entr=e.id) AS nsens
+    FROM entr e);
+
+-----------------------------------------------------------
 -- Provide a pseudo-sens table with an additional column
 -- "txt" that contains an aggregation of all the glosses
 -- for that sense concatenated into a single string with
@@ -126,14 +138,17 @@ CREATE VIEW rk_valid AS (
         ) AS sub ON sub.rdng=r.rdng AND sub.eid=e.id);
 
 -------------------------------------------------------------
--- For each xref, provide a summary of the entry containing
--- the sense that the "xsens" column points to.  xsumr is the
--- same except that the summary is for the entry pointed to 
--- by column "sens" (the reverse direction).  
+-- For each entry, provide entry summaries for all the entry
+-- that are referenced by any xref of the entry, or is 
+-- referenced by any xref.  This is useful to get a full
+-- xref target entry summaries for display.
 -------------------------------------------------------------
 CREATE VIEW xrefesum AS (
-    SELECT DISTINCT z.entr AS id,e.id AS eid,e.seq,e.src,e.stat,e.rdng,e.kanj,e.nsens 
-        FROM esum e
+    SELECT DISTINCT z.entr AS id, -- id of source entry
+	    e2.id AS eid,         -- id of target entries 
+				  -- remainder of target entry info...
+	    e2.seq,e2.src,e2.stat,e2.rdng,e2.kanj,e2.nsens 
+        FROM eksum e2
 	JOIN 
 	    (SELECT s.entr,x.xentr
 		FROM sens s 
@@ -197,12 +212,12 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
 
 	INSERT INTO kanj(entr,kanj,txt) 
 	  (SELECT _p0_,kanj,txt FROM kanj WHERE entr=entrid);
-	INSERT INTO kinf(_p0_,kanj,kw)
+	INSERT INTO kinf(entr,kanj,kw)
 	  (SELECT _p0_,kanj,kw FROM kinf WHERE entr=entrid);
 
 	INSERT INTO rdng(entr,rdng,txt) 
 	  (SELECT _p0_,rdng,txt FROM rdng WHERE entr=entrid);
-	INSERT INTO rinf(_p0_,rdng,kw)
+	INSERT INTO rinf(entr,rdng,kw)
 	  (SELECT _p0_,rdng,kw FROM rinf WHERE entr=entrid);
 	INSERT INTO audio(entr,rdng,fname,strt,leng) 
 	  (SELECT _p0_,rdng,fname,strt,leng FROM audio a WHERE a.entr=entrid);
@@ -221,7 +236,6 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
 	  (SELECT _p0_,sens,xentr,xsens,typ,notes FROM xref WHERE entr=entrid);
 	INSERT INTO xref(entr,sens,xentr,xsens,typ,notes) 
 	  (SELECT entr,sens,_p0_,xsens,typ,notes FROM xref WHERE xentr=entrid);
-	    END LOOP;
 
 	INSERT INTO freq(entr,kanj,kw,value) 
 	  (SELECT _p0_,rdng,kanj,kw,value FROM freq WHERE entr=entrid);

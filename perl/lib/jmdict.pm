@@ -208,10 +208,12 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	my $restr = dbread ($dbh, "SELECT x.* $com JOIN restr x ON x.entr=e.id $where;", $args);
 	my $stagr = dbread ($dbh, "SELECT x.* $com JOIN stagr x ON x.entr=e.id $where;", $args);
 	my $stagk = dbread ($dbh, "SELECT x.* $com JOIN stagk x ON x.entr=e.id $where;", $args);
+	my $freq  = dbread ($dbh, "SELECT x.* $com JOIN freq  x ON x.entr=e.id $where;", $args);
 	my $xref  = dbread ($dbh, "SELECT x.* $com JOIN xref  x ON x.entr=e.id $where;", $args);
 	my $xrer  = dbread ($dbh, "SELECT x.* $com JOIN xref  x ON x.xentr=e.id $where;", $args);
-	my $erefs = dbread ($dbh, "SELECT DISTINCT z.eid,z.seq,z.rdng,z.kanj,z.nsens $com JOIN xrefesum z ON z.id=e.id $where;", $args);
-	my $freq  = dbread ($dbh, "SELECT x.* $com JOIN freq  x ON x.entr=e.id $where;", $args);
+	my $erefs = [];
+	if (@$xref or @$xrer) {
+	    $erefs = dbread ($dbh, "SELECT DISTINCT z.eid,z.seq,z.rdng,z.kanj,z.nsens $com JOIN xrefesum z ON z.id=e.id $where;", $args); }
 	$::Debug->{'Obj retrieval time'} = time() - $start;
 
 	matchup ("_dial",  $entr, ["id"],  $dial,  ["entr"]);

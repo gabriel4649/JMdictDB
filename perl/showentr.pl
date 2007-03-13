@@ -302,7 +302,7 @@ use jmdict;
 
 	  # To that list add rinfo strings.
 
-	push (@f, map ($::KW->{KINF}{$_->{kw}}{kw}, @{$r->{_rinf}}));
+	push (@f, map ($::KW->{RINF}{$_->{kw}}{kw}, @{$r->{_rinf}}));
 
 	  # Join the rfreq/rinf strings together with commas, 
 	  # enclose in brackets, and combine with the reading text.

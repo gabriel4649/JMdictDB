@@ -107,7 +107,7 @@
         <dia:point val="40.25,2.25"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="37.0473,1.6825;43.4702,2.685"/>
+        <dia:rectangle val="37.0473,1.7;43.4527,2.65"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
@@ -257,7 +257,7 @@ for the JMdictDB project (http://www.edrdg.org/~smg/)#</dia:string>
         <dia:point val="72,14.75"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="71.95,14.7;80.25,22.2"/>
+        <dia:rectangle val="71.95,14.7;80.25,23"/>
       </dia:attribute>
       <dia:attribute name="elem_corner">
         <dia:point val="72,14.75"/>
@@ -266,7 +266,7 @@ for the JMdictDB project (http://www.edrdg.org/~smg/)#</dia:string>
         <dia:real val="8.1999999999999993"/>
       </dia:attribute>
       <dia:attribute name="elem_height">
-        <dia:real val="7.4000000000000004"/>
+        <dia:real val="8.1999999999999993"/>
       </dia:attribute>
       <dia:attribute name="name">
         <dia:string>#audio#</dia:string>
@@ -355,30 +355,7 @@ for the JMdictDB project (http://www.edrdg.org/~smg/)#</dia:string>
       <dia:attribute name="attributes">
         <dia:composite type="umlattribute">
           <dia:attribute name="name">
-            <dia:string>#* id#</dia:string>
-          </dia:attribute>
-          <dia:attribute name="type">
-            <dia:string>#serial#</dia:string>
-          </dia:attribute>
-          <dia:attribute name="value">
-            <dia:string>##</dia:string>
-          </dia:attribute>
-          <dia:attribute name="comment">
-            <dia:string>##</dia:string>
-          </dia:attribute>
-          <dia:attribute name="visibility">
-            <dia:enum val="3"/>
-          </dia:attribute>
-          <dia:attribute name="abstract">
-            <dia:boolean val="false"/>
-          </dia:attribute>
-          <dia:attribute name="class_scope">
-            <dia:boolean val="false"/>
-          </dia:attribute>
-        </dia:composite>
-        <dia:composite type="umlattribute">
-          <dia:attribute name="name">
-            <dia:string>#  entr#</dia:string>
+            <dia:string>#* entr#</dia:string>
           </dia:attribute>
           <dia:attribute name="type">
             <dia:string>#int4#</dia:string>
@@ -401,13 +378,36 @@ for the JMdictDB project (http://www.edrdg.org/~smg/)#</dia:string>
         </dia:composite>
         <dia:composite type="umlattribute">
           <dia:attribute name="name">
-            <dia:string>#  rdng#</dia:string>
+            <dia:string>#* rdng#</dia:string>
           </dia:attribute>
           <dia:attribute name="type">
             <dia:string>#int2#</dia:string>
           </dia:attribute>
           <dia:attribute name="value">
             <dia:string>#FK1#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="comment">
+            <dia:string>##</dia:string>
+          </dia:attribute>
+          <dia:attribute name="visibility">
+            <dia:enum val="3"/>
+          </dia:attribute>
+          <dia:attribute name="abstract">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="class_scope">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+        </dia:composite>
+        <dia:composite type="umlattribute">
+          <dia:attribute name="name">
+            <dia:string>#* audio#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="type">
+            <dia:string>#int2#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="value">
+            <dia:string>##</dia:string>
           </dia:attribute>
           <dia:attribute name="comment">
             <dia:string>##</dia:string>
@@ -474,6 +474,29 @@ for the JMdictDB project (http://www.edrdg.org/~smg/)#</dia:string>
           </dia:attribute>
           <dia:attribute name="type">
             <dia:string>#int4#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="value">
+            <dia:string>##</dia:string>
+          </dia:attribute>
+          <dia:attribute name="comment">
+            <dia:string>##</dia:string>
+          </dia:attribute>
+          <dia:attribute name="visibility">
+            <dia:enum val="3"/>
+          </dia:attribute>
+          <dia:attribute name="abstract">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="class_scope">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+        </dia:composite>
+        <dia:composite type="umlattribute">
+          <dia:attribute name="name">
+            <dia:string>#  notes#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="type">
+            <dia:string>#text#</dia:string>
           </dia:attribute>
           <dia:attribute name="value">
             <dia:string>##</dia:string>
@@ -1401,13 +1424,13 @@ for the JMdictDB project (http://www.edrdg.org/~smg/)#</dia:string>
       <dia:attribute name="attributes">
         <dia:composite type="umlattribute">
           <dia:attribute name="name">
-            <dia:string>#* id#</dia:string>
+            <dia:string>#* entr#</dia:string>
           </dia:attribute>
           <dia:attribute name="type">
-            <dia:string>#serial#</dia:string>
+            <dia:string>#int4#</dia:string>
           </dia:attribute>
           <dia:attribute name="value">
-            <dia:string>##</dia:string>
+            <dia:string>#FK1#</dia:string>
           </dia:attribute>
           <dia:attribute name="comment">
             <dia:string>##</dia:string>
@@ -1424,13 +1447,13 @@ for the JMdictDB project (http://www.edrdg.org/~smg/)#</dia:string>
         </dia:composite>
         <dia:composite type="umlattribute">
           <dia:attribute name="name">
-            <dia:string>#  entr#</dia:string>
+            <dia:string>#* hist#</dia:string>
           </dia:attribute>
           <dia:attribute name="type">
-            <dia:string>#int4#</dia:string>
+            <dia:string>#int2#</dia:string>
           </dia:attribute>
           <dia:attribute name="value">
-            <dia:string>#FK1#</dia:string>
+            <dia:string>##</dia:string>
           </dia:attribute>
           <dia:attribute name="comment">
             <dia:string>##</dia:string>
@@ -7317,7 +7340,7 @@ restriction#</dia:string>
         <dia:point val="54.75,31.75"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="54.75,31.1825;55.7675,32.185"/>
+        <dia:rectangle val="54.75,31.2;55.75,32.15"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
@@ -7350,7 +7373,7 @@ restriction#</dia:string>
         <dia:point val="52.25,23.75"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="52.25,23.1825;53.2675,24.185"/>
+        <dia:rectangle val="52.25,23.2;53.25,24.15"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
@@ -7449,7 +7472,7 @@ restriction#</dia:string>
         <dia:point val="56,23.75"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="56,23.1825;57.0175,24.185"/>
+        <dia:rectangle val="56,23.2;57,24.15"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">

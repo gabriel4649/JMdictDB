@@ -6,7 +6,7 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
 	<META NAME="CREATED" CONTENT="20020715;12385300">
 	<META NAME="CHANGEDBY" CONTENT="Stuart McGraw">
-	<META NAME="CHANGED" CONTENT="20070308;23534400">
+	<META NAME="CHANGED" CONTENT="20070313;13493600">
 	<META NAME="SDENDNOTE" CONTENT="ARABIC;;[;]">
 	<STYLE>
 	<!--
@@ -156,10 +156,7 @@ to disambiguate and order the glosses within each sense. The table's
 primary key consists of the columns <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>,
 <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens</SPAN></SPAN></I>,
 <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">gloss</SPAN></SPAN></I>.</P>
-<P STYLE="margin-bottom: 0.2in">There are a few other tables in
-addition to <I><U>entr</U></I> that use an arbitrary but unique
-integer as a primary key, instead of the composite keys described
-above. They are <I><U>audio</U></I> and <I><U>hist</U></I>.  These <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
+<P STYLE="margin-bottom: 0.2in">The <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.<SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">i</SPAN></SPAN>d</SPAN></SPAN></I>
 numbers are used by the database to connect rows to related rows in
 other tables.  They can change over time and will probably be
 different in different database instances, and thus should never be
@@ -1107,11 +1104,11 @@ approximately<BR>      -- to JMdict XML elements &lt;xref&gt; and
 <P><SAMP CLASS="western"><BR>CREATE TABLE hist (<BR>      -- This
 table maintains a series of history records for each<BR>      --
 entry that documents significant changes to the entry.<BR>      --
-Maps roughly to JMdict element &lt;audit&gt;.<BR>    id SERIAL NOT
-NULL PRIMARY KEY,<BR>      -- Arbitrary and unique integer to
-identify individual hist <BR>      -- records within the database. <BR>
-   entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+Maps roughly to JMdict element &lt;audit&gt;.<BR>    entr INT NOT
+NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
  Identifies the entry this history record<BR>      -- belongs to.<BR>
+   hist SMALLINT NOT NULL,<BR><SAMP CLASS="western">      --
+Disambiguates and orders multiple hist records with an entry.</SAMP><BR>
    stat SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwstat.id</SPAN></SPAN></I>.
  Status of entry before the change this<BR>      -- record documents
 was made.<BR>    dt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),<BR>
@@ -1122,12 +1119,12 @@ between the original<BR>      -- and changed entries.<BR>    notes
 TEXT<BR>      -- Additional textual information pertaining to this
 change.<BR>      );<BR><BR>CREATE TABLE audio (<BR>      --
 Represents a sound clip that is an audio version of a reading.<BR>   
-id SERIAL NOT NULL PRIMARY KEY,<BR>      -- Arbitrary and unique
-integer to identify individual audio <BR>      -- records within the
-database. <BR>    entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
  Identifies the entry this audio record<BR>      -- belongs to.<BR>  
  rdng SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng.rdng</SPAN></SPAN></I>.
  Identifies the reading this audio record<BR>      -- belongs to.<BR>
+   audio SMALL INT NOT NULL,<BR><SAMP CLASS="western">      --
+Disambiguates and orders multiple audio records within an entry.<BR></SAMP>
    fname VARCHAR(255) NOT NULL,<BR>      -- Filename (including path)
 of file containing the sound clip. <BR>    strt INT NOT NULL,<BR>    
  -- Time in milliseconds to the start of the sound clip in the <BR>  

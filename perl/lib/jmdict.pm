@@ -35,10 +35,10 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    entr =>  {pk=>["id"],                  parent=>"",     fk=>["entr"], al=>"e"},
 	    dial =>  {pk=>["entr","kw"],           parent=>"entr", fk=>["entr"], al=>"d"},
 	    lang =>  {pk=>["entr","kw"],           parent=>"entr", fk=>["entr"], al=>"l"},
-	    hist =>  {pk=>["id"],                  parent=>"entr", fk=>["entr"], al=>"h"},
+	    hist =>  {pk=>["entr","hist"],         parent=>"entr", fk=>["entr"], al=>"h"},
 	    rdng =>  {pk=>["entr","rdng"],         parent=>"entr", fk=>["entr"], al=>"r"},
 	    rinf =>  {pk=>["entr","rdng","kw"],    parent=>"rdng", fk=>["entr","rdng"], al=>"ri"},
-	    audio => {pk=>["id"],                  parent=>"rdng", fk=>["entr","rdng"], al=>"a"},
+	    audio => {pk=>["entr","rdng"],         parent=>"rdng", fk=>["entr","rdng"], al=>"a"},
 	    restr => {pk=>["entr","rdng","kanj"],  parent=>"rdng", fk=>["entr","rdng"], al=>"rk"},
 	    kanj =>  {pk=>["entr","kanj"],         parent=>"entr", fk=>["entr"], al=>"k"},
 	    kinf =>  {pk=>["entr","kanj","kw"],    parent=>"kanj", fk=>["entr","kanj"], al=>"ki"},
@@ -352,30 +352,30 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	# The addition is executed in a transaction so that if there
 	# is an error, nothing will have been added to the database.
 
-	my ($eid, $seq, $nrdng, $nkanj, $nsens, $ngloss, $cntr2, $r, $k, $s, $g, $x, $h);
-	$entr->{seq} = $seq = get_seq ($dbh); 
-	$entr->{src} = 1;
+	my ($eid, $seq, $nrdng, $nkanj, $nsens, $ngloss, $nhist, $naudio, 
+	    $cntr2, $r, $k, $s, $g, $x, $h);
+	if ($entr->{seq} == 0 and $entr->{src} == 1) {	# 1:kw:jmdict
+	    $entr->{seq} = $seq = get_seq ($dbh); }
 	$entr->{id} = $eid = dbinsert ($dbh, "entr", ['src','seq','stat','notes'], $entr);
 	foreach $h (@{$entr->{_hist}}) {
-	    $h->{entr} = $eid; 
-	    dbinsert ($dbh, "hist", ['entr','stat','dt','who','diff','notes'], $h); }
-	$nrdng = $nkanj = $nsens = $ngloss = 1;
+	    $h->{entr} = $eid;  $h->{hist} = ++$nhist;
+	    dbinsert ($dbh, "hist", ['entr','hist','stat','dt','who','diff','notes'], $h); }
 	foreach $k (@{$entr->{_kanj}}) {
-	    $k->{entr} = $eid;  $k->{kanj} = $nkanj;
+	    $k->{entr} = $eid;  $k->{kanj} = ++$nkanj;
 	    dbinsert ($dbh, "kanj", ['entr','kanj','txt'], $k);
 	    foreach $x (@{$k->{_kinf}}) {
 		$x->{entr} = $eid;  $x->{kanj} = $nkanj;
 		dbinsert ($dbh, "kinf", ['entr','kanj','kw'], $x); }
 	    $nkanj++; }
 	foreach $r (@{$entr->{_rdng}}) {
-	    $r->{entr} = $eid;  $r->{rdng} = $nrdng;
+	    $r->{entr} = $eid;  $r->{rdng} = ++$nrdng;
 	    dbinsert ($dbh, "rdng", ['entr','rdng','txt'], $r);
 	    foreach $x (@{$r->{_rinf}}) {
 		$x->{$entr} = $eid;  $x->{rdng} = $nrdng;
 		dbinsert ($dbh, "rinf", ['entr','rdng','kw'], $x); }
 	    foreach $x (@{$r->{_audio}}) {
-		$x->{$entr} = $eid;  $x->{rdng} = $nrdng;
-		dbinsert ($dbh, "audio", ['entr','rdng','fname','strt','leng'], $x); }
+		$x->{$entr} = $eid;  $x->{rdng} = $nrdng;  $x->{audio} = ++$naudio;
+		dbinsert ($dbh, "audio", ['entr','rdng','audio','fname','strt','leng','notes'], $x); }
 	    foreach $x (@{$r->{_restr}}) {
 		$x->{$entr} = $eid;  $x->{rdng} = $nrdng; 
 		$x->{kanj} = $x->{kanj}{kanj};
@@ -385,11 +385,10 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    $x->{entr} = $eid;  
 	    dbinsert ($dbh, "freq", ['entr','rdng','kanj','kw','value'], $x); } 
 	foreach $s (@{$entr->{_sens}}) {
-	    $s->{entr} = $eid;  $s->{sens} = $nsens;
+	    $s->{entr} = $eid;  $s->{sens} = ++$nsens;
 	    dbinsert ($dbh, "sens", ['entr','sens','notes'], $s);
-	    $ngloss = 1;
 	    foreach $g (@{$s->{_gloss}}) {
-		$g->{entr} = $eid; $g->{sens} = $nsens; $g->{gloss} = $ngloss++;
+		$g->{entr} = $eid; $g->{sens} = $nsens; $g->{gloss} = ++$ngloss;
 		dbinsert ($dbh, "gloss", ['entr','sens','gloss','lang','txt','notes'], $g); }
 	    foreach $x (@{$s->{_pos}}) {
 		$x->{entr} = $eid; $x->{sens} = $nsens;
@@ -411,8 +410,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    foreach $x (@{$s->{_xref}}) {
 		$x->{entr} = $eid; $x->{sens} = $nsens; 
 		$x->{xref} = $x->{xref}{id};
-		dbinsert ($dbh, "xref", ['entr','sens','xentr','xsens','typ','notes'], $x); }
-	    $nsens++; }
+		dbinsert ($dbh, "xref", ['entr','sens','xentr','xsens','typ','notes'], $x); } }
 	foreach $x (@{$entr->{_dial}}) {
 	    $x->{entr} = $eid;
 	    dbinsert ($dbh, "dial", ['entr','kw'], $x); }

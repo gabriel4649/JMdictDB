@@ -124,22 +124,31 @@ lines) are relative to the package top level directory.]
    wish, which contains non-english glosses in addition
    to the english ones.)
 
-2. cd to the ./perl subdirectory and run the load_jmdict.pl 
-   script to create a Postgresql load file.  The example 
+2. cd to the ./perl subdirectory and run the jmparse.pl 
+   script to create an intermediate file.  The example 
    below assumes you unpacked the JMdict.gz file to 
    ./JMdict. 
 
-        ./load_jmdict.pl -o ../jmdict.dmp ../JMdict
+        ./jmparse.pl -o ../jmdict.pgx ../JMdict
 
-   Run load_jmdict.pl with the -h option for usage info.
-   load_jmdict.pl will write the load file as specified by
+   Run jmparse.pl with the -h option for usage info.
+   jmparse.pl will write the intemediate file as specified by
    the -o option.  It also processes comments in the jmdict 
    file to get info about deleted entries, and and will record
    any unparsable comments to the file "skipped_comments.txt".
-   
+   jmparse.pl does not do any database access.
+
+3. Run the jmload.pl command to convert the the intermediate 
+   file produced by jmparse.pl to a Postgresql loadable dump
+   file, by replacing the relative entr.id numbers in the 
+   former, with that actual entr.id numbers appropriate to 
+   the database the data will be loaded into. 
+
+	./jmload.pl -i 1 -o ../jmdict.dmp ../jmdict.pgx
+
 3. cd to ./pg/ and do the following.  The second command
    assumes as above that the jmdict load file created
-   by load_jmdict.pl is ../jmdct.dmp.
+   by jmload.pl is ../jmdct.dmp.
 
 	psql -U postgres -f reload.sql
 	psql -U postgres -d jmdict <../jmdict.dmp
@@ -205,7 +214,8 @@ ANNOTATED MANIFEST
 ./doc/tut3.pl...................API executable tutorial, The Entry Object.
 
 ./perl/
-./perl/load_jmdict.pl...........Generates Postegresql load file from JMdict XML file.
+./perl/jmparse.pl...............Generates intemediate, rebasable  file from JMdict XML file.
+./perl/jmload.pl................Generates Postegresql load file from intermediate file.
 ./perl/showentr.pl..............Command line tool to show database entries.
 
 ./perl/cgi

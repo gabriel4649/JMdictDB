@@ -61,8 +61,11 @@ jmdict.xml:
 	gunzip JMdict_e.gz
 	mv JMdict_e jmdict.xml
 
-jmdict.dmp: jmdict.xml
-	cd perl && perl load_jmdict.pl -o ../jmdict.dmp ../jmdict.xml
+jmdict.pgx: jmdict.xml
+	cd perl && perl jmparse.pl -o ../jmdict.pgx ../jmdict.xml
+
+jmdict.dmp: jmdict.pgx
+	cd perl && perl jmload.pl -i 1 -o ../jmdict.dmp ../jmdict.pgx
 
 loaddb: jmdict.dmp
 	@echo 'Initializing jmdict database...'

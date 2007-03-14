@@ -195,7 +195,7 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	# database.
 
 	$now = strftime "%Y-%m-%d %H:%M:%S", localtime;
-	$hist = {id=>0, entr=>0, stat=>1, dt=>$now, 
+	$hist = {entr=>0, hist=>0, stat=>1, dt=>$now, 
 		  who=>$who, diff=>'', notes=>$comment };
 
 	# Tie all the pieces together to make an entry structure to

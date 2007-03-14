@@ -49,6 +49,7 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	$entrs = unserialize ( $x );
 	foreach $entr ($entrs) {
 	    $entr->{stat} = 1; # Force entr.stat=New.
+	    $entr->{src}  = 1; # Force entr.src=jmdict.
 	    if (1 != scalar(@{$entr->{_hist}})) { die ("Expected exactly 1 hist record"); }
 	    $entr->{_hist}[0]{dt} = strftime ("%Y-%m-%d %H:%M:00-00", gmtime());  
 	    ($eid,$seq) = addentr ($dbh, $entr); 

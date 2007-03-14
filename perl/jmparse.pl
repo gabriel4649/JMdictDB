@@ -22,18 +22,9 @@
 	    substr('$Date$',7,-11));
 
 # This program will read a JMdict.xml file and create
-# an output file containing postgresql data COPY commands
-# that will, when executeD, load the JMdict data into an
-# appropriately configured Postgresql database.
-#
-# To do:
-# Add command line option to give a directory for the
-#   temporary files.
-# Better performance if we use SAX instead of XML::Twig?
-# shift_jis output encoding on windows doesn't really
-#   work -- get unmappable utf8 characters in gloss which
-#   cause fatal error.  Should non-fatally map to a printable
-#   hex format or "?" or something.
+# an output file containing postgresql data COPY commands.
+# The file can be loaded into a Postgresql jmdict database
+# after subsequent processing with jmload.pl.
 
 use strict; 
 use XML::Twig; use Encode; use DBI;
@@ -46,7 +37,7 @@ main: {
 	my ($twig, $infn, $outfn, $tmpfiles, $tmp, $enc, $logfn,
 	    $user, $pw, $dbname, $host);
 
-	getopts ("o:c:s:b:e:l:i:t:u:p:d:r:kh", \%::Opts);
+	getopts ("o:c:s:b:e:l:t:kh", \%::Opts);
 	if ($::Opts{h}) { usage (0); }
 	$enc = $::Opts{e} || "utf-8";
 	binmode(STDOUT, ":encoding($enc)");
@@ -55,12 +46,7 @@ main: {
 
 	$infn = shift (@ARGV) || "JMdict";
 	$outfn =  $::Opts{o} || "JMdict.dmp";
-	$logfn =  $::Opts{l} || "load_jmdict.log";
-
-	$user =   $::Opts{u} || "postgres";
-	$pw =     $::Opts{p} || "";
-	$dbname = $::Opts{d} || "jmdict";
-	$host =   $::Opts{r} || "";
+	$logfn =  $::Opts{l} || "jmparse.log";
 
 	  # Make STDERR unbuffered so we print "."s, one at 
 	  # a time, as a sort of progress bar.  
@@ -79,8 +65,7 @@ main: {
 
 	  # Initialize global variables and open all the 
 	  # temporary table files. 
-	$tmpfiles = initialize ($logfn, $::Opts{t}, $::Opts{i}, 
-				$user, $pw, $dbname, $host);
+	$tmpfiles = initialize ($logfn, $::Opts{t});
 
 	  # Parse the given xml file.  The entry_ele sub given 
 	  # when the $twig was created does all the work of
@@ -100,7 +85,7 @@ main: {
 	finalize ($outfn, $tmpfiles, !$::Opts{k}); 
 	print STDERR ("Done\n"); }
 
-sub initialize { my ($logfn, $tmpdir, $iopt, $user, $pw, $dbname, $host) = @_;
+sub initialize { my ($logfn, $tmpdir) = @_;
 	my ($t, $td, $i1, $i2);
 	if (!$tmpdir) { $td = ""; }
 	else { ($td = $tmpdir) =~ s/[\/\\]$//; }
@@ -122,28 +107,12 @@ sub initialize { my ($logfn, $tmpdir, $iopt, $user, $pw, $dbname, $host) = @_;
 	  [\$::Frestr, "${td}load16.tmp", "COPY restr(entr,rdng,kanj) FROM stdin;"],
 	  [\$::Fstagr, "${td}load17.tmp", "COPY stagr(entr,sens,rdng) FROM stdin;"],
 	  [\$::Fstagk, "${td}load18.tmp", "COPY stagk(entr,sens,kanj) FROM stdin;"],
-	  [\$::Fhist,  "${td}load19.tmp", "COPY hist(id,entr,stat,dt,who,diff,notes) FROM stdin;"] );
+	  [\$::Fhist,  "${td}load19.tmp", "COPY hist(entr,hist,stat,dt,who,diff,notes) FROM stdin;"] );
 
 	  # Counter for the number of entries processed.
 	$::cntr = 0;
 
-	if ($iopt) {
-	      # Extract the starting values of $::eid and $::hist from 
-	      # the $iop options.
-	    ($i1, $i2) = split (/,/, $iopt); 
-	    $::eid = int($i1);  $::hid = int($i2); }
-	else {
-	      # Get the starting values of $::eid and $::hist from the
-	      # max values of entr.id and hist.id found in the database.
-	      # If that database id numbers change between the time we
-	      # read them, and our output file is loaded, the result will
-	      # probably be duplicate key errors.
-	      # FIXME: should be able to explicitly give these values 
-	      #   on the commandline.
-	    ($::eid, $::hid) = get_max_ids ($user, $pw, $dbname, $host); }
-	if (!$::eid or !$::hid) {
-	    die ("Did not get valid entr.id or hist.id value, please check -i\n"); }
-	print STDERR "Initial entr.id = $::eid, hist.id = $::hid\n";
+	$::eid = 1; 
 
 	foreach $t (@tmpfiles) {
 	    open (${$t->[0]}, ">:utf8", $t->[1]) or \
@@ -168,23 +137,6 @@ sub finalize { my ($outfn, $tmpfls, $del) = @_;
 		close (FIN); } 
 	    if ($del) {unlink ($t->[1]); } } 
 	close (FOUT); } 
-
-sub get_max_ids { my ($user, $pw, $dbname, $host) = @_;
-	# Get and return 1 + the max values of entr.id and hist.id
-	# found in the database defined by the connection parameters
-	# we were called with.
-
-	my ($dbh, $sql, $rs);
-
-	if ($host) { $host = ";host=$host"; }
-	$dbh = DBI->connect("dbi:Pg:dbname=$dbname$host", $user, $pw, 
-			{ PrintWarn=>0, RaiseError=>1, AutoCommit=>0 } );
-	$dbh->{pg_enable_utf8} = 1;
-	$sql = "SELECT 1+COALESCE((SELECT MAX(id) FROM entr),0) AS entr," .
-		     " 1+COALESCE((SELECT MAX(id) FROM hist),0) AS hist";
-	$rs = $dbh->selectall_arrayref ($sql);
-	$dbh->disconnect();
-	return ($rs->[0][0], $rs->[0][1]); }
 
 sub set_linenum { my ($t, $entry ) = @_;
 	# Remember the line number at the start of an entry for use
@@ -236,13 +188,13 @@ sub comment_handler { my ($t, $entry ) = @_;
 	$dt = "1990-01-01 00:00:00-00";
 	$srcid = 1;  # Assume JJMdict.
 	# (id,src,seq,stat,note)
-	print $::Fentr "$::eid\t$srcid\t$seq\t4\t\\N\n";
+	print $::Fentr "\$\$E\$\$$::eid\t$srcid\t$seq\t4\t\\N\n";
 
 	# Should we create a synthetic N record before creating the D record?
 	# (id,entr,stat,dt,who,diff,notes)
 	$notes = pgesc ($notes);
-	print $::Fhist "$::hid\t$::eid\t4\t$dt\tfrom JMdict.xml\t\\N\t$notes\n"; 
-	$::eid += 1;  $::hid += 1; 
+	print $::Fhist "\$\$E\$\$$::eid\t1\t4\t$dt\tfrom JMdict.xml\t\\N\t$notes\n"; 
+	$::eid += 1; 
 	$t->purge; 0; }
 
 sub do_entry { my ($seq, $entry, $srcid) = @_;
@@ -250,7 +202,7 @@ sub do_entry { my ($seq, $entry, $srcid) = @_;
 	@t = $entry->get_xpath("trans");
 	if (!$srcid) { $srcid = @t ? 2 : 1; }
 	# (id,src,seq,stat,note)
-	print $::Fentr "$::eid\t$srcid\t$seq\t2\t\\N\n";
+	print $::Fentr "\$\$E\$\$$::eid\t$srcid\t$seq\t2\t\\N\n";
 	if (@x = $entry->get_xpath("k_ele")) { ($kmap, $fklist) = do_kanj (\@x); }
 	if (@x = $entry->get_xpath("r_ele")) { ($rmap, $frlist) = do_rdng (\@x, $kmap); }
 	if (@x = $entry->get_xpath("sense")) { do_sens (\@x, $kmap, $rmap); }
@@ -267,7 +219,7 @@ sub do_kanj { my ($keles) = @_;
 	foreach $k (@$keles) {
 	    $txt = ($k->get_xpath ("keb"))[0]->text;
 	    # (entr,ord,txt)
-	    print $::Fkanj "$::eid\t$ord\t$txt\n";
+	    print $::Fkanj "\$\$E\$\$$::eid\t$ord\t$txt\n";
 	    if (@x = $k->get_xpath ("ke_inf")) { do_kinfs (\@x, $ord); }
 	    if (@x = $k->get_xpath ("ke_pri")) { freqs (\@x, $ord, \@flist); }
 	    $kmap{$txt} = $ord;
@@ -281,7 +233,7 @@ sub do_kinfs { my ($kinfs, $ord) = @_;
 	    ($kw = $::JM2ID{KINF}{$txt}) or \
 		die ("Unknown ke_inf text: /$txt/\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated kinf string '$txt'\n"; }
-	    print $::Fkinf "$::eid\t$ord\t$kw\n"; } }
+	    print $::Fkinf "\$\$E\$\$$::eid\t$ord\t$kw\n"; } }
 
 sub do_rdng { my ($reles, $kmap) = @_;
 	my ($ord, $txt, $r, $z, @x, %rmap, %restr, @flist);
@@ -289,7 +241,7 @@ sub do_rdng { my ($reles, $kmap) = @_;
 	foreach $r (@$reles) {
 	    $txt = ($r->get_xpath ("reb"))[0]->text;
 	    # (entr,ord,txt)
-	    print $::Frdng "$::eid\t$ord\t$txt\n";
+	    print $::Frdng "\$\$E\$\$$::eid\t$ord\t$txt\n";
 	    if (@x = $r->get_xpath ("re_inf")) { do_rinfs (\@x, $ord); }
 	    if (@x = $r->get_xpath ("re_pri")) { freqs (\@x, $ord, \@flist); }
 	    for $z ($r->get_xpath ("re_restr")) { 
@@ -310,7 +262,7 @@ sub do_rinfs { my ($rinfs, $ord) = @_;
 	    ($kw = $::JM2ID{RINF}{$txt}) or \
 		die ("Unknown re_inf text: /$txt/\n") ;
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated rinf string '$txt'\n"; }
-	    print $::Frinf "$::eid\t$ord\t$kw\n"; } }
+	    print $::Frinf "\$\$E\$\$$::eid\t$ord\t$kw\n"; } }
 
 sub do_sens { my ($sens, $kmap, $rmap) = @_;
 	my ($ord, $txt, $s, @x, @p, @pp, $z, %smap, %stagr, %stagk);
@@ -319,7 +271,7 @@ sub do_sens { my ($sens, $kmap, $rmap) = @_;
 	    $txt = "\\N";
 	    if (@x = $s->get_xpath ("s_inf")) { $txt = $x[0]->text; }
 	    # (entr,ord,note)
-	    print $::Fsens "$::eid\t$ord\t$txt\n";
+	    print $::Fsens "\$\$E\$\$$::eid\t$ord\t$txt\n";
 	    @p = $s->get_xpath ("pos");
 	    if (!@p) { @p = @pp; }
 	    if (@p) { do_pos (\@p, $ord); @pp = @p; }
@@ -349,7 +301,7 @@ sub do_glos { my ($gloss, $ord) = @_;
 	    $lang = $lang ? $::JM2ID{LANG}{$lang} : $::JM2ID{LANG}{"en"}; 
 	    ($txt = $g->text) =~ s/\\/\\\\/go;
 	    # (entr,sens,ord,lang,txt,notes)
-	    print $::Fglos "$::eid\t$ord\t$gord\t$lang\t$txt\t\\N\n"; 
+	    print $::Fglos "\$\$E\$\$$::eid\t$ord\t$gord\t$lang\t$txt\t\\N\n"; 
 	    $gord += 1; } }
 
 sub do_pos { my ($pos, $ord) = @_;
@@ -359,7 +311,7 @@ sub do_pos { my ($pos, $ord) = @_;
 	    ($kw = $::JM2ID{POS}{$txt}) or \
 		die ("Unknown \'pos\' text: /$txt/\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated pos string '$txt'\n"; }
-	    print $::Fpos "$::eid\t$ord\t$kw\n"; } }
+	    print $::Fpos "\$\$E\$\$$::eid\t$ord\t$kw\n"; } }
 
 sub do_misc { my ($misc, $ord) = @_;
 	my ($i, $kw, $txt);
@@ -368,7 +320,7 @@ sub do_misc { my ($misc, $ord) = @_;
 	    ($kw = $::JM2ID{MISC}{$txt}) or \
 		die ("Unknown \'misc\' text: /$txt/\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated misc string '$txt'\n"; }
-	    print $::Fmisc "$::eid\t$ord\t$kw\n"; } }
+	    print $::Fmisc "\$\$E\$\$$::eid\t$ord\t$kw\n"; } }
 
 sub do_fld { my ($fld, $ord) = @_;
 	my ($i, $kw, $txt);
@@ -377,7 +329,7 @@ sub do_fld { my ($fld, $ord) = @_;
 	    ($kw = $::JM2ID{FLD}{$txt}) or \
 		die ("Unknown \'fld\' text: /$txt/\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated fld string '$txt'\n"; }
-	    print $::Ffld "$::eid\t$ord\t$kw\n"; } }
+	    print $::Ffld "\$\$E\$\$$::eid\t$ord\t$kw\n"; } }
 
 sub do_dial { my ($dial) = @_;
 	my ($i, $kw, $txt);
@@ -386,7 +338,7 @@ sub do_dial { my ($dial) = @_;
 	    ($kw = $::JM2ID{DIAL}{$txt}) or \
 		die ("Unknown \'dial\' text: /$txt/\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated dial string '$txt'\n"; }
-	    print $::Fdial "$::eid\t$kw\n"; } }
+	    print $::Fdial "\$\$E\$\$$::eid\t$kw\n"; } }
 
 sub do_lang { my ($lang) = @_;
 	my ($i, $kw, $txt);
@@ -395,7 +347,7 @@ sub do_lang { my ($lang) = @_;
 	    ($kw = $::JM2ID{LANG}{$txt}) or \
 		die ("Unknown \'lang\' text: /$txt/\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated lang string '$txt'\n"; }
-	    print $::Flang "$::eid\t$kw\n"; } }
+	    print $::Flang "\$\$E\$\$$::eid\t$kw\n"; } }
 
 sub do_restr { my ($file, $restr, $amap, $bmap) = @_;
 	my ($a, $b, $r);
@@ -403,7 +355,7 @@ sub do_restr { my ($file, $restr, $amap, $bmap) = @_;
 	    foreach $b (sort (values (%$bmap))) {
 		next if (!($r = $restr->{$a}));
 		if ($r == 1 or !$r->{$b}) { 
-		    print $file "$::eid\t$a\t$b\n"; } } } }
+		    print $file "\$\$E\$\$$::eid\t$a\t$b\n"; } } } }
 
 sub do_xref { my ($xtyp, $xref, $ord) = @_;
 	my ($x, $txt, $kw);
@@ -411,19 +363,20 @@ sub do_xref { my ($xtyp, $xref, $ord) = @_;
 	foreach $x (@$xref) {
 	    $txt = $x->text;
 	    # (entr,sens,lang,txt,notes)
-	    print $::Fxref "$::eid\t$ord\t$kw\t$txt\n"; } }
+	    print $::Fxref "\$\$E\$\$$::eid\t$ord\t$kw\t$txt\n"; } }
 
 sub do_hist { my ($hist) = @_;
-	my ($x, $dt, $op);
+	my ($x, $dt, $op, $nhist);
+	$nhist = 0;
 	foreach $x (@$hist) {
+	    $nhist++;
 	    $dt = ($x->get_xpath ("upd_date"))[0]->text; # Assume just one.
 	    $dt .= " 00:00:00-00";  # Add a time.
 	    $op = ($x->get_xpath ("upd_detl"))[0]->text; # Assume just one.
 	    if ($op eq "Entry created") {
-		# (id,entr,stat,dt,who,diff,notes)
-		print $::Fhist "$::hid\t$::eid\t2\t$dt\tfrom JMdict.xml\t\\N\t\\N\n"; }
-	    else { die ("Unexpected <upd_detl> contents: $op"); }
-	    $::hid += 1; } }
+		# (entr,hist,stat,dt,who,diff,notes)
+		print $::Fhist "\$\$E\$\$$::eid\t$nhist\t2\t$dt\tfrom JMdict.xml\t\\N\t\\N\n"; }
+	    else { die ("Unexpected <upd_detl> contents: $op"); } } }
 
 sub do_freqs { my ($rfrqs, $kfrqs) = @_;
 	# Process collected re_pri (in @$rfrqs) and ke_pri (in @$kfrqs) info.  
@@ -458,7 +411,7 @@ sub do_freqs { my ($rfrqs, $kfrqs) = @_;
 		    if ($dupchk{$x}) {
 			print $::Flog "Seq $::Seq: skipped duplicate pri pair '$x $fr->[2]'\n"; }
 		    else { 
-			print $::Ffrq "$::eid\t$fr->[0]\t$fk->[0]\t$fr->[1]\t$fr->[2]\n";
+			print $::Ffrq "\$\$E\$\$$::eid\t$fr->[0]\t$fk->[0]\t$fr->[1]\t$fr->[2]\n";
 			$dupchk{$x} = 1; }
 		    $rmatched{$nr} = 1;  $kmatched{$nk} = 1; } } }
 
@@ -473,7 +426,7 @@ sub do_freqs { my ($rfrqs, $kfrqs) = @_;
 		if ($dupchk{$x}) {
 		    print $::Flog "Seq $::Seq: skipped duplicate re_pri '$x $fr->[2]'\n"; }
 		else {
-		    print $::Ffrq "$::eid\t$fr->[0]\t\\N\t$fr->[1]\t$fr->[2]\n";
+		    print $::Ffrq "\$\$E\$\$$::eid\t$fr->[0]\t\\N\t$fr->[1]\t$fr->[2]\n";
 		    $dupchk{$x} = 1; } } }
 
 	# Go through the kanji freq tags looking for any that weren't paired
@@ -487,7 +440,7 @@ sub do_freqs { my ($rfrqs, $kfrqs) = @_;
 		if ($dupchk{$x}) {
 		    print $::Flog "Seq $::Seq: skipped duplicate ke_pri '$x $fr->[2]'\n"; }
 		else {   
-		    print $::Ffrq "$::eid\t\\N\t$fk->[0]\t$fk->[1]\t$fk->[2]\n"; 
+		    print $::Ffrq "\$\$E\$\$$::eid\t\\N\t$fk->[0]\t$fk->[1]\t$fk->[2]\n"; 
 		    $dupchk{$x} = 1; } } } }
 
 sub freqs { my ($frqs, $ord, $flist) = @_;
@@ -531,13 +484,14 @@ sub pgesc { my ($str) = @_;
 
 sub usage { my ($exitstat) = @_;
 	print <<EOT;
-load_jmdict.pl reads a jmdict xml file such as JMdict or JMnedict and
-creates a Postgresql loader file that can be susequently used to load
-the data into a properly pre-configured database.  
+jmparse.pl reads a jmdict xml file such as JMdict or JMnedict and
+creates a file that can be subsequently processed by jmload.pl them
+loaded into a jmdict Postgresql database.
 
-Usage: load_jmdict.pl [-s srcid] [-o output-filename] 
+Usage: jmparse.pl [-s srcid] [-o output-filename] 
 		      [-c entry-count] [-b start-seq-num] \\  
-		      [-k]  [-l logfile] \\
+		      [-k]  [-l logfile] [-t tempfile-dir] \\
+		      [-e encoding] \\
 		      [xml-filename]
 
 Arguments:
@@ -549,7 +503,7 @@ Options:
 	    Default is "JMdict.dmp"
 	-s srcid -- Number that will be for entries' src id, 1 for
 	`   JMdict entries, 2 for JMnedict entries.  If not given,
-	    load_jmdict will attempt to detemine automatically on
+	    jmparse will attempt to determine automatically on
 	    an entry-by-entry basis by looking for a <trans> element.
 	-c entry-count -- Number of entries to process.
 	-b begin-seq-num -- Sequence number of first entry to process.
@@ -557,38 +511,9 @@ Options:
 	-e encoding -- Encoding to use when writing messages to stderr
 	    and stdout.  Default is "utf-8".
 	-l logfile -- Name of file to write log messages to.  Default 
-	    is "load_jmdict.log".
+	    is "jmparse.log".
 	-t dir -- Directory in which to create the temp files.  
 	    Default is the current directory.
-	-i eid,hid -- Specifies the initial numeric values that will 
-	    be used for entr.id and hist.id.  There may be no space 
-	    around the comma.  If -i is not given, the values will be 
-	    read from the database using the connection parameters
-	    given by -r, -d, -u -p.
 
-	If -i was not given, the following options will be used to 
-	connect to a database in order to read the max entr.id and
-	hist.id values.  If the dmp file is loaded into a different
-	database, or if the max entr.id or hist.id values change
-	between load_jmdict.pl's read and loading the dump file, it
-	is likely duplicate key errors will occur.
-
-	-d dbname -- Name of database to use.  Default is "jmdict".
-	-r host	-- Name of machine hosting the database.  Default
-		is "localhost".
-	-e encoding -- Encoding to use for stdout and stderr.
-	 	Default is "utf-8".  Windows users running with 
-		a Japanese locale may wish to use "cp932".
-	-h -- (help) print this text and exit.
-
-	  ***WARNING***
-	  The following two options are not recommended for use 
-	  on a multi-user machine because their values will be 
-	  visible to anyone who can run a \"ps\" command.
-
-	-u username -- Username to use when connecting to database.
-	        Default is "postgres".
-	-p password -- Password to use when connecting to database.
-	        No default.
 EOT
 	exit $exitstat; }

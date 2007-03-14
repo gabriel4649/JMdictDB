@@ -126,21 +126,24 @@ CREATE TABLE xref (
     PRIMARY KEY (entr,sens,xentr,xsens,typ));
 
 CREATE TABLE hist (
-    id SERIAL NOT NULL PRIMARY KEY,
     entr INT NOT NULL,
+    hist SMALLINT NOT NULL,
     stat SMALLINT NOT NULL,
     dt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     who VARCHAR(250),
     diff TEXT,
-    notes TEXT);
+    notes TEXT,
+    PRIMARY KEY(entr,hist));
 
 CREATE TABLE audio (
-    id SERIAL NOT NULL PRIMARY KEY,
     entr INT NOT NULL,
     rdng SMALLINT NOT NULL,
+    audio SMALLINT NOT NULL,
     fname VARCHAR(255) NOT NULL,
     strt INT NOT NULL,
-    leng INT NOT NULL);
+    leng INT NOT NULL,
+    notes TEXT,
+    PRIMARY KEY(entr,rdng,audio));
 
 CREATE TABLE editor (
     id SERIAL NOT NULL PRIMARY KEY,

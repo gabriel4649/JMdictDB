@@ -170,7 +170,7 @@ use jmdict;
 	# Print an entry.
 	# $e -- Reference to an entry hash.
 
-	my (@x, $x, $s, $n, $stat);
+	my (@x, $x, $s, $n, $stat, $src);
 
 	  # $e->{stat} is the value of the "stat" column 
 	  # for this entry.  It is a number that corresponds
@@ -179,9 +179,10 @@ use jmdict;
 	  # number up in the STAT secotion of the kw table 
 	  # data structure in $::KW.
 	$stat = $::KW->{STAT}{$e->{stat}}{kw};
+	$src  = $::KW->{SRC}{$e->{src}}{kw};
 
 	  # Print basic info about the entry (seq num, status, and id number.)
-	print "\nEntry $e->{seq} [$stat] \{$e->{id}\}";
+	print "\nEntry $e->{seq} [$stat] $src \{$e->{id}\}";
 
 	  # Print a list of dialects if there are any.
 	  # The map() call will return a list created from its first 
@@ -427,16 +428,17 @@ use jmdict;
 	    next if (!($audio = $r->{_audio}));
 	    $rtxt = "  " . $r->{txt} . ":";
 	    foreach $a (@$audio) {
-		print "$rtxt $a->{fname} $a->{strt}/$a->{leng} \{$a->{id}\}\n";
+		print "$rtxt $a->{rdng}. $a->{fname} $a->{strt}/$a->{leng}\n";
 		$rtxt = "    "; } } }
 
 #-----------------------------------------------------------------------
 
     sub p_hist { my ($hists) = @_;
-	my ($h, $n);
+	my ($h, $n, $kw);
 	print "History:\n";
 	foreach $h (@$hists) {
-	    print "  $h->{stat} $h->{dt} $h->{who} \{$h->{id}\}\n";
+	    $kw = $::KW->{STAT}{$h->{stat}}{kw};
+	    print "  $h->{hist}. $kw $h->{dt} $h->{who}\n";
 	    if ($n = $h->{notes}) { # That's an '=', not '=='.
 		$n =~ s/(\n.)/    $1/;
 		print "    $n\n"; } } }

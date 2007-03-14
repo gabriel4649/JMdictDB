@@ -28,10 +28,8 @@
   -- CREATE UNIQUE INDEX gloss_txt1 ON gloss(sens,txt);
   CREATE UNIQUE INDEX freq_idx1 ON freq(entr,(coalesce(rdng,999)),(coalesce(kanj,999)),kw); 
   CREATE INDEX xref_xentr ON xref(xentr,xsens);
-  CREATE INDEX hist_entr ON hist(entr);
   CREATE INDEX hist_dt ON hist(dt);
   CREATE INDEX hist_who ON hist(who);
-  CREATE INDEX audio_entr ON audio(entr);
   CREATE INDEX audio_fname ON audio(fname);
   CREATE INDEX xresolv_sens ON xresolv(entr,sens);
   CREATE INDEX xresolv_txt ON xresolv(txt);

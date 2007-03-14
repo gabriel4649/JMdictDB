@@ -157,7 +157,7 @@ CREATE VIEW xrefesum AS (
 	    SELECT s.entr,x.entr
 		FROM sens s
 		JOIN xref x ON x.xentr=s.entr AND x.xsens=s.sens) 
-	  AS z ON z.xentr=e.id);
+	  AS z ON z.xentr=e2.id);
 
 -------------------------------------------------------------
 -- Provide a view of table "kanj" with additional column
@@ -207,8 +207,8 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
 	  (SELECT _p0_,kw FROM dial WHERE dial.entr=entrid);
 	INSERT INTO lang(entr,kw) 
 	  (SELECT _p0_,kw FROM lang WHERE lang.entr=entrid);
-	INSERT INTO hist(entr,stat,dt,who,diff,notes) 
-	  (SELECT _p0_,stat,dt,who,diff,notes FROM hist WHERE hist.entr=entrid);
+	INSERT INTO hist(entr,hist,stat,dt,who,diff,notes) 
+	  (SELECT _p0_,hist,stat,dt,who,diff,notes FROM hist WHERE hist.entr=entrid);
 
 	INSERT INTO kanj(entr,kanj,txt) 
 	  (SELECT _p0_,kanj,txt FROM kanj WHERE entr=entrid);
@@ -219,8 +219,8 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
 	  (SELECT _p0_,rdng,txt FROM rdng WHERE entr=entrid);
 	INSERT INTO rinf(entr,rdng,kw)
 	  (SELECT _p0_,rdng,kw FROM rinf WHERE entr=entrid);
-	INSERT INTO audio(entr,rdng,fname,strt,leng) 
-	  (SELECT _p0_,rdng,fname,strt,leng FROM audio a WHERE a.entr=entrid);
+	INSERT INTO audio(entr,rdng,audio,fname,strt,leng) 
+	  (SELECT _p0_,rdng,audio,fname,strt,leng FROM audio a WHERE a.entr=entrid);
 	    
 	INSERT INTO sens(entr,sens,notes) 
 	  (SELECT _p0_,sens,notes FROM sens WHERE entr=entrid);

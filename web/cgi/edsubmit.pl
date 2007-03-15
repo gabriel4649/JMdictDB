@@ -53,6 +53,7 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	    if (1 != scalar(@{$entr->{_hist}})) { die ("Expected exactly 1 hist record"); }
 	    $entr->{_hist}[0]{dt} = strftime ("%Y-%m-%d %H:%M:00-00", gmtime());  
 	    ($eid,$seq) = addentr ($dbh, $entr); 
+	    $dbh->commit ();
 	    push (@added, [$eid,$seq]); }
 	results_page (\@added);
 	$dbh->disconnect; }

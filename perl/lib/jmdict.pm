@@ -349,8 +349,6 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	# Thus ordered items like the rdng records have the rndg
 	# fields renumbered from 1 regardless of the values initially
 	# in them.  
-	# The addition is executed in a transaction so that if there
-	# is an error, nothing will have been added to the database.
 
 	my ($eid, $seq, $nrdng, $nkanj, $nsens, $ngloss, $nhist, $naudio, 
 	    $cntr2, $r, $k, $s, $g, $x, $h);
@@ -417,7 +415,6 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	foreach $x (@{$entr->{_lang}}) {
 	    $x->{entr} = $eid;
 	    dbinsert ($dbh, "lang", ['entr','kw'], $x); }
-	$dbh->commit();
 	return ($eid, $seq); }
 
     sub bld_erefs { my ($entries, $esum) = @_;

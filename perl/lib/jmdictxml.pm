@@ -19,7 +19,7 @@
 
 package jmdictxml;
 use Exporter ();  @ISA = 'Exporter';
-@EXPORT_OK = ('%JM2ID','@VERSION'); 
+@EXPORT_OK = ('%JM2ID','%EX2ID','@VERSION'); 
 
 @VERSION = (substr('$Revision$',11,-2), \
 	    substr('$Date$',7,-11));
@@ -244,4 +244,23 @@ our %JM2ID = (
 		'ex' => 5,
 		'uses' => 6,
 		'pref' => 7,},);
+
+# Bracketed  notes found in examples file A lines, mapped to MISC keywords.
+
+our %EX2ID = (
+	'aphorism'		=> [82],
+	'bible'			=> [83,"Biblical"],
+	'f'			=> [9],
+	'idiom'			=> [13],
+	'm'			=> [15],
+	'nelson at trafalgar.'	=> [83,"Nelson at Trafalgar"],
+	'prov'			=> [81],
+	'proverb. shakespeare'	=> [81,'Shakespeare'],
+	'proverb'		=> [81],
+	'psalm 26'		=> [83,"Biblical"],
+	'quotation'		=> [83],
+	'bible quote'		=> [83,"Biblical"],
+	'from song lyrics'	=> [83,"Song lyrics"],
+	'senryuu'		=> [83,"Senryuu"],);
+
 1;

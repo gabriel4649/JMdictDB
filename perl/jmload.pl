@@ -84,11 +84,10 @@ sub get_max_ids { my ($user, $pw, $dbname, $host) = @_;
 	$dbh = DBI->connect("dbi:Pg:dbname=$dbname$host", $user, $pw, 
 			{ PrintWarn=>0, RaiseError=>1, AutoCommit=>0 } );
 	$dbh->{pg_enable_utf8} = 1;
-	$sql = "SELECT 1+COALESCE((SELECT MAX(id) FROM entr),0) AS entr," .
-		     " 1+COALESCE((SELECT MAX(id) FROM hist),0) AS hist";
+	$sql = "SELECT 1+COALESCE((SELECT MAX(id) FROM entr),0) AS entr";
 	$rs = $dbh->selectall_arrayref ($sql);
 	$dbh->disconnect();
-	return ($rs->[0][0], $rs->[0][1]); }
+	return $rs->[0][0]; }
 
 sub usage { my ($exitstat) = @_;
 	print <<EOT;

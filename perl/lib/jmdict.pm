@@ -68,8 +68,8 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	$sth = $dbh->prepare_cached ($sql);
 	$sth->execute (@$args);
 	while ($r = $sth->fetchrow_hashref) { push (@rs, $r); }
-	  ##print "$sql (" . join(",",@$args) . ")\n";
-	  ##print "time: " . (time() - $start) . "\n";
+	    {no warnings qw(uninitialized); 
+	    if ($::Debug{prtsql}) {print "$sql (" . join(",",@$args) . ")\n";}}
 	return \@rs; }
 
     sub dbinsert { my ($dbh, $table, $cols, $hash) = @_;
@@ -84,6 +84,8 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 		join(",", @$cols)  . 
 		") VALUES(" . join (",", split(//, "?" x scalar(@$cols))) . ")";
 	@args = map ($hash->{$_}, @$cols);
+	    {no warnings qw(uninitialized); 
+	    if ($::Debug{prtsql}) {print "$sql (" . join(",",@args) . ")\n";}}
 	$sth = $dbh->prepare_cached ($sql);
 	$sth->execute (@args);
 	$id = $dbh->last_insert_id (undef, undef, $table, undef);

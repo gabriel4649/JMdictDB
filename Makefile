@@ -68,11 +68,8 @@ jmdict.dmp: jmdict.pgx
 	cd perl && perl jmload.pl -i 1 -o ../jmdict.dmp ../jmdict.pgx
 
 loaddb: jmdict.dmp
-	@echo 'Initializing jmdict database...'
 	cd pg && psql -U postgres -f reload.sql
-	@echo 'Loading jmdict XML data...'
 	cd pg && psql -U postgres -d jmdict <../jmdict.dmp
-	@echo 'Building indexes and doing other post-load actions...'
 	cd pg && psql -U postgres -d jmdict -f postload.sql
 
 clean:

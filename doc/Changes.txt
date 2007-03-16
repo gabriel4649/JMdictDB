@@ -1,3 +1,24 @@
+2007-03-15	smcgrawx@frxii.com
+
+	* perl/jmload.pl [1.2]
+	Fix: Code in get_max_ids() was still trying to read hist.id which
+	  no longer exists.
+
+	* perl/exload.pl [1.1]
+	New file.  Load database from examples file.  This version is
+	  extremely slow (~12 hr on 900Mhz desktop pc on full examples
+	  file, and algorithm for resolving text to db entry needs more 
+	  work.  Commited for the historical record.
+
+	* perl/lib/jmdict.pm [1.19]
+	Add debugging statement to print sql and args received by dbread()
+	  and dbinsert().
+
+	* perl/lib/jmdictxml.pm [1.10]
+	Add struct for decoding the A line notes in Examples file.
+
+	* Makefile
+	Remove noisy echo commands.
 
 2007-03-14	smcgrawx@frxii.com
 

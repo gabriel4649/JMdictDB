@@ -51,6 +51,7 @@ $|=1;
 	$sql = "SELECT e.id FROM entr e WHERE " . join (" OR ", @whr);
 	$tmptbl = Find ($dbh, $sql, [@qlist, @elist]);
 	$entries = EntrList ($dbh, $tmptbl);
+	xrefdetails ($dbh, $tmptbl, $entries);
 
 	fmt_restr ($entries); 
 	fmt_stag ($entries); 

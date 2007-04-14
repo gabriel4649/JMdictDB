@@ -14,4 +14,6 @@ create database jmdict encoding 'utf8';
 \c jmdict
 \i mktables.sql
 \i loadkw.sql
+\i mkviews.sql
+\i mkperms.sql
 

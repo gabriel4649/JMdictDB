@@ -132,8 +132,8 @@
               <td colspan="2"><span class="descriptor">Dictionary:</span>
               <table class="optgroup">
                 <tbody>
-                  <tr>
-		    <td tal:repeat="c src">
+                  <tr tal:repeat="r src">
+		    <td tal:repeat="c r">
                       <input name="src" tal:condition="c" tal:attributes="value c/id; checked decode:c/id 1 1" tal:content="c/kw" type="checkbox"/> 
 		    </td>
                   </tr>

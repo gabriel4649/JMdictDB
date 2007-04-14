@@ -114,8 +114,19 @@ verified.
 
 Procedure
 ---------
-[Note: relative file paths below (except in command 
-lines) are relative to the package top level directory.]
+Note: relative file paths below (except in command 
+lines) are relative to the package top level directory.
+
+Note: A Makefile is provided that automates most of 
+these steps which runs on any unix-like system with 
+GNU make.  It also runs under Windows if Cygwin tools
+are available.  It will be documented here in the 
+future, but the procedure below doesn't use it.
+
+Note: The following procedure describes loading the
+JMdict data into the database.  Tools are provided that
+will also load JMnedict and the Examples files but the
+procedure has not been documented yet.
 
 1. Get a copy of the current JMdict_e.gz file from 
    ftp://ftp.cc.monash.edu.au/pub/nihongo/JMdict_e.gz
@@ -129,13 +140,13 @@ lines) are relative to the package top level directory.]
    below assumes you unpacked the JMdict.gz file to 
    ./JMdict. 
 
-        ./jmparse.pl -o ../jmdict.pgx ../JMdict
+        ./jmparse.pl -o ../jmdict.pgi ../JMdict
 
    Run jmparse.pl with the -h option for usage info.
-   jmparse.pl will write the intemediate file as specified by
+   jmparse.pl will write the intermediate file as specified by
    the -o option.  It also processes comments in the jmdict 
    file to get info about deleted entries, and and will record
-   any unparsable comments to the file "skipped_comments.txt".
+   any unparsable comments to the file "jmdict.log".
    jmparse.pl does not do any database access.
 
 3. Run the jmload.pl command to convert the the intermediate 
@@ -144,7 +155,7 @@ lines) are relative to the package top level directory.]
    former, with that actual entr.id numbers appropriate to 
    the database the data will be loaded into. 
 
-	./jmload.pl -i 1 -o ../jmdict.dmp ../jmdict.pgx
+	./jmload.pl -i 1 -o ../jmdict.dmp ../jmdict.pgi
 
 3. cd to ./pg/ and do the following.  The second command
    assumes as above that the jmdict load file created
@@ -214,9 +225,12 @@ ANNOTATED MANIFEST
 ./doc/tut3.pl...................API executable tutorial, The Entry Object.
 
 ./perl/
-./perl/jmparse.pl...............Generates intemediate, rebasable  file from JMdict XML file.
-./perl/jmload.pl................Generates Postegresql load file from intermediate file.
+./perl/jmparse.pl...............Generates intermediate, rebasable  file from JMdict XML file.
+./perl/jmload.pl................Generates Postegresql load file from jmdict intermediate file.
+./perl/exparse.pl...............Generates intermediate, rebasable  file from Examples file.
+./perl/exload.pl................Generates Postegresql load file from Examples intermediate file.
 ./perl/showentr.pl..............Command line tool to show database entries.
+./perl/mkkwmod.pl...............Creates lib/kwstatic file.
 
 ./perl/cgi
 ./perl/cgi/entr.css.............CSS style sheet for all cgi pages.
@@ -232,6 +246,9 @@ ANNOTATED MANIFEST
 ./perl/lib/jmdictcgi.pm.........CGI-specfic functions.
 ./perl/lib/jmdicttal.pm.........PETAL modifiers.
 ./perl/lib/jmdictxml.pm.........JMdict XML parsing/generating functions.
+./perl/lib/jmdictpgi.pm.........JMdict .pgi file functions.
+./perl/lib/jmdicted.pm..........Edict parsing/formatting functions.
+./perl/lib/kwstatic.pm..........Static kw data (created by perl/mkkwmod.pl)
 
 ./perl/lib/tal
 ./perl/lib/tal/entr.tal.........PETAL template for entr.pl.
@@ -251,6 +268,9 @@ ANNOTATED MANIFEST
 ./pg/reload.sql.................Execute scripts to initialze database and create schema.
 ./pg/syncseq.sql................Set seqence numbers after jmdict load.
 ./pg/xresolv.sql................Create xrefs after jmdict load.
+./pg/drpindex.sql...............Drop indexes (created by mkindex.pl)
+./pg/mkindex.sql................Create indexes (created by mkindex.pl)
+./pg/mkindex.pl.................Creates mkindex.sql and drpindex.sql.
 
 ./pg/data/......................data/kw* files contain static keyword table data,
 ./pg/data/kwdial.sql

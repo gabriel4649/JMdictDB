@@ -29,6 +29,15 @@ LIB_DIR = $(HOME)/public_html/lib
 
 ##############################################################################
 
+PG_USER = -U postgres
+PG_HOST =
+
+### WARNING...
+### If you change the database name below, you must also
+### change it in reload.sql.
+PG_DB = jmdict
+
+
 CSS_FILES = perl/cgi/entr.css
 
 CGI_FILES = perl/cgi/entr.pl \
@@ -50,10 +59,26 @@ TAL_FILES = perl/lib/tal/entr.tal \
 all:
 	@echo 'You must supply an explicit target with this makefile:'
 	@echo '  jmdict.xml -- Get latest jmdict xml file from Monash.'
-	@echo '  jmdict.dmp -- Create Postgres load file from jmdict.xml file.'
-	@echo '  loaddb -- Initialize new database and load jmdict.dmp.'
+	@echo '  jmdict.pgi -- Create intermediate load file from jmdict.xml file.'
+	@echo '  jmdict.dmp -- Create Postgres load file from intermediate file.'
+	@echo '  loadjm -- Initialize database and load jmdict.dmp.'
+	@echo
+	@echo '  jmnedict.xml -- Get latest jmnedict xml file from Monash.'
+	@echo '  jmnedict.pgi -- Create intermediate load file from jmdict.xml file.'
+	@echo '  jmnedict.dmp -- Create Postgres load file from intermediate file.'
+	@echo '  loadne -- Initialize database and load jmdict.dmp.'
+	@echo
+	@echo '  examples.txt -- Get latest Examples file from Monash.'
+	@echo '  examples.pgi -- Create intermediate load file from jmdict.xml file.'
+	@echo '  examples.dmp -- Create Postgres load file from intermediate file.'
+	@echo '  loadex -- Initialize database and load jmdict.dmp.'
+	@echo
+	@echo '  loadall -- Initialize database and load jmdict, jmnedict, and examples.'
+	@echo
 	@echo '  dist -- Make development snapshot distribution file.'
 	@echo '  web -- Install cgi and other web files to the appropriate places.'
+
+#------ Load JMdict -----------------------------------------------------
 
 jmdict.xml: 
 	rm -f JMdict_e.gz
@@ -61,16 +86,77 @@ jmdict.xml:
 	gunzip JMdict_e.gz
 	mv JMdict_e jmdict.xml
 
-jmdict.pgx: jmdict.xml
-	cd perl && perl jmparse.pl -o ../jmdict.pgx ../jmdict.xml
+jmdict.pgi: jmdict.xml
+	cd perl && perl jmparse.pl -l ../jmdict.log -o ../jmdict.pgi ../jmdict.xml
 
-jmdict.dmp: jmdict.pgx
-	cd perl && perl jmload.pl -i 1 -o ../jmdict.dmp ../jmdict.pgx
+jmdict.dmp: jmdict.pgi
+	cd perl && perl jmload.pl -i 1 -o ../jmdict.dmp ../jmdict.pgi
 
-loaddb: jmdict.dmp
-	cd pg && psql -U postgres -f reload.sql
-	cd pg && psql -U postgres -d jmdict <../jmdict.dmp
-	cd pg && psql -U postgres -d jmdict -f postload.sql
+
+loadjm: jmdict.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) -f reload.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmdict.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f postload.sql
+
+#------ Load JMnedict ----------------------------------------------------
+
+# Assumes the jmdict has been loaded into database already.
+
+jmnedict.xml: 
+	rm -f JMnedict.xml.gz
+	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/JMnedict.xml.gz
+	gunzip JMnedict.xml.gz
+	mv JMnedict.xml jmnedict.xml
+
+jmnedict.pgi: jmnedict.xml
+	cd perl && perl jmparse.pl -l ../jmnedict.log -o ../jmnedict.pgi ../jmnedict.xml
+
+jmnedict.dmp: jmnedict.pgi
+	cd perl && perl jmload.pl -o ../jmnedict.dmp ../jmnedict.pgi
+
+loadne: jmnedict.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmnedict.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f syncseq.sql
+	
+#------ Load examples ---------------------------------------------------
+
+examples.txt: 
+	rm -f examples.utf8.gz
+	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/examples.utf8.gz
+	gunzip examples.utf8.gz
+	mv examples.utf8 >examples.txt
+
+examples.pgi: examples.txt
+	cd perl && perl exparse.pl -o ../examples.pgi ../examples.txt >../exparse.log
+
+examples.dmp: examples.pgi
+	cd perl && perl jmload.pl -o ../examples.dmp ../examples.pgi
+
+loadex:
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../examples.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f syncseq.sql
+
+#------ Load all three -------------------------------------------------
+
+loadall: jmdict.dmp jmnedict.pgi examples.txt
+	cd pg && psql $(PG_HOST) $(PG_USER) -f reload.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmdict.dmp
+
+	cd perl && perl jmload.pl -o ../jmnedict.dmp ../jmnedict.pgi
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmnedict.dmp
+
+	# exparse.pl resolves from existing jmdict database so 
+	# examples.pgi has to be regenerated when jmdict db changes.
+	# Indexes are vital.
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f mkindex.sql
+	psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -c "VACUUM ANALYZE"
+	cd perl && perl exparse.pl -o ../examples.pgi ../examples.txt >../examples.log
+	cd perl && perl jmload.pl -o ../examples.dmp ../examples.pgi
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f drpindex.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../examples.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f postload.sql
+
+#------ Other ----------------------------------------------------------
 
 clean:
 	rm -f jmdict.tgz

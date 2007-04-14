@@ -37,7 +37,7 @@ CREATE AGGREGATE accum (
 -- with the delimiter " / ".
 ------------------------------------------------------------
 CREATE VIEW esum AS (
-    SELECT e.id,e.seq,e.src,e.stat,e.notes,
+    SELECT e.id,e.seq,e.src,e.stat,e.notes,e.srcnote,
 	(SELECT ARRAY_TO_STRING(ACCUM(sr.txt), '; ') 
 	 FROM (SELECT r.txt FROM rdng r WHERE r.entr=e.id ORDER BY r.rdng) AS sr) AS rdng,
 	(SELECT ARRAY_TO_STRING(ACCUM(sk.txt), '; ')
@@ -56,13 +56,33 @@ CREATE VIEW esum AS (
 -- Like esum but without sense/gloss.
 ------------------------------------------------------------
 CREATE VIEW eksum AS (
-    SELECT e.id,e.seq,e.src,e.stat,e.notes,
+    SELECT e.id,e.seq,e.src,e.stat,e.notes,e.srcnote,
 	(SELECT ARRAY_TO_STRING(ACCUM(sr.txt), '; ') 
 	 FROM (SELECT r.txt FROM rdng r WHERE r.entr=e.id ORDER BY r.rdng) AS sr) AS rdng,
 	(SELECT ARRAY_TO_STRING(ACCUM(sk.txt), '; ')
 	 FROM (SELECT k.txt FROM kanj k WHERE k.entr=e.id ORDER BY k.kanj) AS sk) AS kanj,
 	(SELECT COUNT(*) FROM sens WHERE sens.entr=e.id) AS nsens
     FROM entr e);
+
+-------------------------------------------------------------
+-- For each entry, provide entry summaries for all the entry
+-- that are referenced by any xref of the entry, or is 
+-- referenced by any xref.  This is useful to get a full
+-- xref target entry summaries for display.
+-------------------------------------------------------------
+CREATE VIEW xrefesum AS (
+    -- Fixme: Should have DISTINCT added but doing so makes query 
+    -- run 3 orders of magnituse slower, when e1.id is restricted
+    -- by JOIN rather than WHERE clause.
+    SELECT e1.id, -- id of source entry
+	   x.typ,
+	   e2.id AS eid,         -- id of target entries 
+				  -- remainder of target entry info...
+	   e2.seq,e2.src,e2.stat,e2.nsens,e2.rdng,e2.kanj,e2.gloss
+	FROM entr e1
+        JOIN xref x ON (x.entr=e1.id OR x.xentr=e1.id)
+	JOIN esum e2 ON (x.entr=e2.id OR x.xentr=e2.id)
+	WHERE e2.id != e1.id);
 
 -----------------------------------------------------------
 -- Provide a pseudo-sens table with an additional column
@@ -136,28 +156,6 @@ CREATE VIEW rk_valid AS (
             LEFT JOIN restr z ON z.entr=e.id AND z.rdng=r.rdng AND z.kanj=k.kanj
           WHERE z.rdng IS NULL
         ) AS sub ON sub.rdng=r.rdng AND sub.eid=e.id);
-
--------------------------------------------------------------
--- For each entry, provide entry summaries for all the entry
--- that are referenced by any xref of the entry, or is 
--- referenced by any xref.  This is useful to get a full
--- xref target entry summaries for display.
--------------------------------------------------------------
-CREATE VIEW xrefesum AS (
-    SELECT DISTINCT z.entr AS id, -- id of source entry
-	    e2.id AS eid,         -- id of target entries 
-				  -- remainder of target entry info...
-	    e2.seq,e2.src,e2.stat,e2.rdng,e2.kanj,e2.nsens 
-        FROM eksum e2
-	JOIN 
-	    (SELECT s.entr,x.xentr
-		FROM sens s 
-	        JOIN xref x ON x.entr=s.entr AND x.sens=s.sens
-	    UNION 
-	    SELECT s.entr,x.entr
-		FROM sens s
-		JOIN xref x ON x.xentr=s.entr AND x.xsens=s.sens) 
-	  AS z ON z.xentr=e2.id);
 
 -------------------------------------------------------------
 -- Provide a view of table "kanj" with additional column

@@ -40,7 +40,7 @@ use jmdict;
 	    $dbname, $user, $pw);
 
 	  # Read and parse command line options.
-	if (!getopts ("hd:u:p:r:e:", \%::Opts) or $::Opts{h}) { usage (0); }
+	if (!getopts ("hvd:u:p:r:e:", \%::Opts) or $::Opts{h}) { usage (0); }
 
 	  # Set some local variables based on the command line 
 	  # options given or defaults where options not given.
@@ -49,6 +49,7 @@ use jmdict;
 	$pw =     $::Opts{p} || "";
 	$dbname = $::Opts{d} || "jmdict";
 	$host =   $::Opts{r} || "";
+	if ($::Opts{v}) { $::Debug{prtsql} = 1; }
 
 	  # Make stderr unbuffered.
 	my $oldfh = select(STDERR); $| = 1; select($oldfh);
@@ -62,7 +63,7 @@ use jmdict;
 	  # so as to not tereminate program in this case.
 	eval { binmode($DB::OUT, ":encoding($enc)"); }; $dbh=$DB::OUT;
 
-	  # Connecet to the database.  Option PrintWarn is off to reduce
+	  # Connect to the database.  Option PrintWarn is off to reduce
 	  # message noise.  RaiseError is on so we don't need to check
 	  # return code after every database operation,; error will
 	  # cause exception.  AutoCommit off because we want to control
@@ -160,6 +161,13 @@ use jmdict;
 	  # use it to read the data for all the entries, contruct 
 	  # objects for tham, and return the list to us...
 	$entries = EntrList ($dbh, $tmptbl);
+
+	  # The entries returned by EntrList() contain only the raw
+	  # xref records (entry and sense numbers) which are very useful
+	  # for display.  Call xrefdetails() to get summary info for 
+	  # all those xrefs.  By giving the third arg, we ask xrefdetails()
+	  # to distribute the info into each entry, in key {_erefs}.
+	xrefdetails ($dbh, $tmptbl, $entries);
 
 	  # ... which we return to our caller.
 	return $entries; }
@@ -466,17 +474,19 @@ use jmdict;
 
 	      # Get the text for the xref type.
 
-	    $t = $::KW->{XREF}{$x->{typ}}{descr};
+	    $t = ucfirst ($::KW->{XREF}{$x->{typ}}{kw});
 
 	      # Get the target entry's text.  If only readings, use as-is.
 	      # If has kanji, use that followed by reading in brackets.
 
-	    if ($x->{entr}{kanj}) { $txt = $x->{entr}{rdng}; }
-	    else { $txt = "$x->{entr}{kanj}\x{3010}$x->{entr}{rdng}\x{3011}";}
+	    if ($x->{entr}{kanj} && $x->{entr}{rdng}) { 
+		$txt = "$x->{entr}{kanj}\x{3010}$x->{entr}{rdng}\x{3011}"; }
+	    else { $txt = $x->{entr}{kanj} || $x->{entr}{rdng}; }
+	    $txt .= (" " . $x->{entr}{gloss});
 
 	      # If the number of senses pointed to by our xrefs is the
 	      # same as the number of senses in the target entry, don't
-	      # mentions the sendse at all.  This xref points to entire 
+	      # mentions the senses at all.  This xref points to entire 
 	      # entry.  Otherwise, give the senses pointed to a list of
 	      # sense numbers.
 	      # N.B. might want to always print the list if number of 
@@ -512,6 +522,7 @@ Options:
 	-e encoding -- Encoding to use for stdout and stderr.
 	 	Default is "utf-8".  Windows users running with 
 		a Japanese locale may wish to use "cp932".
+	-v -- (Verbose) print debugging info.
 	-h -- (help) print this text and exit.
 
 	  ***WARNING***

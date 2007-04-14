@@ -21,7 +21,7 @@
 @VERSION = (substr('$Revision$',11,-2), \
 	    substr('$Date$',7,-11));
 
-# This program will adjust the relative eid numbers in the .pgx
+# This program will adjust the relative eid numbers in the .pgi
 # file produced by jmload.pl to fixed values for a specific database.
 # The .dmp file produced by this program cam then be loaded into
 # that database.
@@ -42,7 +42,7 @@ main: {
 	binmode(STDERR, ":encoding($enc)");
 	eval { binmode($DB::OUT, ":encoding($enc)"); };
 
-	$infn = shift (@ARGV) || "JMdict.pgx";
+	$infn = shift (@ARGV) || "JMdict.pgi";
 	$outfn  = $::Opts{o} || "JMdict.dmp";
 
 	$user   = $::Opts{u} || "postgres";
@@ -64,6 +64,7 @@ main: {
 	if (!$eid =~ m/^-?\d+$/) {
 	    die ("Did not get valid entr.id  value, please check -i\n"); }
 	print STDERR "Initial entr.id = $eid\n";
+	$eid--;  # Adjust for fact that .pgi file numbers start at 1.
 
 	open (FIN, "<:utf8", $infn) or die ("Can't open $infn: $!\n");
 	open (FOUT, ">:utf8", $outfn) or die ("Can't open $outfn: $!\n");
@@ -92,18 +93,18 @@ sub get_max_ids { my ($user, $pw, $dbname, $host) = @_;
 sub usage { my ($exitstat) = @_;
 	print <<EOT;
 
-jmload.pl reads a .pgx such a produced by jmparse.pl and converts it
+jmload.pl reads a .pgi such a produced by jmparse.pl and converts it
 into a loadable Postgresql dmp file by converting the relative entry 
-id numbers in the .pgx fie to actual numbers for a specific database.
+id numbers in the .pgi fie to actual numbers for a specific database.
 
 Usage: jmparse.pl [-o output-filename] [-i starting-id-value] \\
 		      [-u username] [-p password] [-d database] \\
 		      [-r host] [-e encoding] \\
-		    [pgx-filename]
+		    [pgi-filename]
 
 Arguments:
-	pgx-filename -- Name of input file that was created by
-	  jmparse.pl.  Default is "JMdict.pgx".
+	pgi-filename -- Name of input file that was created by
+	  jmparse.pl.  Default is "JMdict.pgi".
 Options:
 	-h -- (help) print this text and exit.
 	-o output-filename -- Name of output postgresql dump file. 

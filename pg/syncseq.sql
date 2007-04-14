@@ -23,4 +23,5 @@
 
 SELECT setval('entr_id_seq', (SELECT max(id) FROM entr));
 SELECT setval('seq', (SELECT MAX(seq) FROM entr WHERE seq<9000000));
+VACUUM ANALYZE
 

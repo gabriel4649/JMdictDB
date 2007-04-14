@@ -26,7 +26,7 @@ BEGIN {
     @EXPORT_OK = qw(Tables KANA HIRAGANA KATAKANA KANJ); 
     @EXPORT = qw(dbread dbinsert Kwds kwrecs addids mktmptbl Find EntrList 
 		    matchup filt jstr_classify addentr erefs2xrefs xrefs2erefs
-		    get_seq zip fmtkr bld_erefs dbopen); }
+		    get_seq zip fmtkr bld_erefs dbopen xrefdetails setkeys); }
 
 our(@VERSION) = (substr('$Revision$',11,-2), \
 	         substr('$Date$',7,-11));
@@ -65,11 +65,11 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	my ($sth, @rs, $r, $start);
 	if (!defined ($args)) {$args = []; }
 	$start = time();
+	    {no warnings qw(uninitialized); 
+	    if ($::Debug{prtsql}) {print "$sql (" . join(",",@$args) . ")\n";}}
 	$sth = $dbh->prepare_cached ($sql);
 	$sth->execute (@$args);
 	while ($r = $sth->fetchrow_hashref) { push (@rs, $r); }
-	    {no warnings qw(uninitialized); 
-	    if ($::Debug{prtsql}) {print "$sql (" . join(",",@$args) . ")\n";}}
 	return \@rs; }
 
     sub dbinsert { my ($dbh, $table, $cols, $hash) = @_;
@@ -169,7 +169,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	# call EntrList() with it.
 	return $tmpnm; }
 
-    sub EntrList { my ($dbh, $cond, $args, $eord) = @_;
+    sub EntrList { my ($dbh, $tmptbl) = @_;
 	# $dbh -- An open database connection.
 	# $cond -- Either:
 	#   1. Name of a table containing entry id numbers, or,
@@ -181,41 +181,27 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	# $eord -- Optional ORDER BY clause (including the words "ORDER BY")
 	#   used to order the returned set of entries.
 
-	my ($where, $com);
-	if (!defined ($args)) {$args = []; }
-	if (-1 != index ($cond, " ")) { 
-	    $where = $cond; 
-	    $com = "FROM entr e"; 
-	    if (!defined ($eord)) { $eord = ""; } }
-	else {  
-	    $where = ""; 
-	    $com = "FROM entr e JOIN $cond t ON t.id=e.id ";
-	    $eord = "ORDER BY t.ord"; }
-
 	  my $start = time();
-	my $entr  = dbread ($dbh, "SELECT e.* $com $where $eord", $args);
-	my $dial  = dbread ($dbh, "SELECT x.* $com JOIN dial  x ON x.entr=e.id $where;", $args);
-	my $lang  = dbread ($dbh, "SELECT x.* $com JOIN lang  x ON x.entr=e.id $where;", $args);
-	my $hist  = dbread ($dbh, "SELECT x.* $com JOIN hist  x ON x.entr=e.id $where;", $args);
-	my $rdng  = dbread ($dbh, "SELECT r.* $com JOIN rdng  r ON r.entr=e.id $where ORDER BY r.entr,r.rdng;", $args);
-	my $rinf  = dbread ($dbh, "SELECT x.* $com JOIN rinf  x ON x.entr=e.id $where;", $args);
-	my $audio = dbread ($dbh, "SELECT x.* $com JOIN audio x ON x.entr=e.id $where;", $args);
-	my $kanj  = dbread ($dbh, "SELECT k.* $com JOIN kanj  k ON k.entr=e.id $where ORDER BY k.entr,k.kanj;", $args);
-	my $kinf  = dbread ($dbh, "SELECT x.* $com JOIN kinf  x ON x.entr=e.id $where;", $args);
-	my $sens  = dbread ($dbh, "SELECT s.* $com JOIN sens  s ON s.entr=e.id $where ORDER BY s.entr,s.sens;", $args);
-	my $gloss = dbread ($dbh, "SELECT x.* $com JOIN gloss x ON x.entr=e.id $where ORDER BY x.entr,x.sens,x.gloss;", $args);
-	my $misc  = dbread ($dbh, "SELECT x.* $com JOIN misc  x ON x.entr=e.id $where;", $args);
-	my $pos   = dbread ($dbh, "SELECT x.* $com JOIN pos   x ON x.entr=e.id $where;", $args);
-	my $fld   = dbread ($dbh, "SELECT x.* $com JOIN fld   x ON x.entr=e.id $where;", $args);
-	my $restr = dbread ($dbh, "SELECT x.* $com JOIN restr x ON x.entr=e.id $where;", $args);
-	my $stagr = dbread ($dbh, "SELECT x.* $com JOIN stagr x ON x.entr=e.id $where;", $args);
-	my $stagk = dbread ($dbh, "SELECT x.* $com JOIN stagk x ON x.entr=e.id $where;", $args);
-	my $freq  = dbread ($dbh, "SELECT x.* $com JOIN freq  x ON x.entr=e.id $where;", $args);
-	my $xref  = dbread ($dbh, "SELECT x.* $com JOIN xref  x ON x.entr=e.id $where;", $args);
-	my $xrer  = dbread ($dbh, "SELECT x.* $com JOIN xref  x ON x.xentr=e.id $where;", $args);
-	my $erefs = [];
-	if (@$xref or @$xrer) {
-	    $erefs = dbread ($dbh, "SELECT DISTINCT z.eid,z.seq,z.rdng,z.kanj,z.nsens $com JOIN xrefesum z ON z.id=e.id $where;", $args); }
+	my $entr  = dbread ($dbh, "SELECT e.* FROM $tmptbl t JOIN entr  e ON e.id=t.id ORDER BY t.ord");
+	my $dial  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN dial  x ON x.entr=t.id;");
+	my $lang  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN lang  x ON x.entr=t.id;");
+	my $hist  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN hist  x ON x.entr=t.id;");
+	my $rdng  = dbread ($dbh, "SELECT r.* FROM $tmptbl t JOIN rdng  r ON r.entr=t.id ORDER BY r.entr,r.rdng;");
+	my $rinf  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN rinf  x ON x.entr=t.id;");
+	my $audio = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN audio x ON x.entr=t.id;");
+	my $kanj  = dbread ($dbh, "SELECT k.* FROM $tmptbl t JOIN kanj  k ON k.entr=t.id ORDER BY k.entr,k.kanj;");
+	my $kinf  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN kinf  x ON x.entr=t.id;");
+	my $sens  = dbread ($dbh, "SELECT s.* FROM $tmptbl t JOIN sens  s ON s.entr=t.id ORDER BY s.entr,s.sens;");
+	my $gloss = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN gloss x ON x.entr=t.id ORDER BY x.entr,x.sens,x.gloss;");
+	my $misc  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN misc  x ON x.entr=t.id;");
+	my $pos   = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN pos   x ON x.entr=t.id;");
+	my $fld   = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN fld   x ON x.entr=t.id;");
+	my $restr = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN restr x ON x.entr=t.id;");
+	my $stagr = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN stagr x ON x.entr=t.id;");
+	my $stagk = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN stagk x ON x.entr=t.id;");
+	my $freq  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN freq  x ON x.entr=t.id;");
+	my $xref  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN xref  x ON x.entr=t.id;");
+	my $xrer  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN xref  x ON x.xentr=t.id;");
 	$::Debug->{'Obj retrieval time'} = time() - $start;
 
 	matchup ("_dial",  $entr, ["id"],  $dial,  ["entr"]);
@@ -237,9 +223,6 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	matchup ("_stagk", $sens, ["entr","sens"], $stagk, ["entr","sens"]);
 	matchup ("_xref",  $sens, ["entr","sens"], $xref,  ["entr","sens"]);
 	matchup ("_xrer",  $sens, ["entr","sens"], $xrer,  ["xentr","xsens"]);
-	## linkrecs ("_entr", $xref, ["xentr"], $erefs, ["eid"]);
-	## linkrecs ("_entr", $xrer, ["entr"],  $erefs, ["eid"]);
-	bld_erefs ($entr, $erefs);
 	# Next two should probably be done by callers, not us.
 	matchup ("_rfreq", $rdng, ["entr","rdng"], $freq,  ["entr","rdng"]);
 	matchup ("_kfreq", $kanj, ["entr","kanj"], $freq,  ["entr","kanj"]);
@@ -326,99 +309,45 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	if (!@results) { return (); }
 	return \@results; } 
 
-    our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
+    sub xrefdetails { my ($dbh, $tmptbl, $entrs) = @_;
+	# Get xref details.  The entry structures returned by EntrList() 
+	# contain only the raw xref records (which have only the target
+	# sens.entr and sens.sens numbers) -- not very useful for display
+	# to users.  Xrefdetails will get summary records for all targets
+	# (both forward and reverse) for all the xrefs in a set on entries.
+	# The set is defined by a table whose name is $tmptbl and should
+	# be the same as was given to EntrList().  $entrs is optional but
+	# if supplied, xrefdetails() will distribute the xref summary 
+	# info to each entry in @$entrs, in the member (_erefs}.
 
-    sub jstr_classify { my ($str) = @_;
-	# Returns an integer with bits set according to whether the
-	# indicated type of characters are present in string $str.
-	#     1 - Kana (either hiragana or katakana)
-	#     2 - Hiragana
-	#     4 - Katakana
-	#     8 - Kanji
+	my ($erefs, $sql, $sqf, $x1, $x2);
+	  # The following sql sans the join with $tmptbl was in a view but 
+	  # though it was quite fast when restricted with a "where" clause
+	  # if was 3 orders of magnitude slower when restrict by a join with
+	  # $tmptbl.  Including $tmptbl in the qery itself seems to work
+	  # around the problem.
+	$sqf = "SELECT e1.id,e2.id AS eid,".
+		   "e2.seq,e2.src,e2.stat,e2.nsens,e2.rdng,e2.kanj,e2.gloss ".
+		"FROM entr e1 ".
+		"JOIN %s t on t.id=e1.id ".
+        	"JOIN xref x ON (x.entr=e1.id OR x.xentr=e1.id) ".
+		"JOIN esum e2 ON (x.entr=e2.id OR x.xentr=e2.id) ".
+		"WHERE e2.id!=e1.id %s ".
+		"GROUP BY e1.id,x.typ,e2.id,e2.seq,e2.src,e2.stat,".
+		         "e2.nsens,e2.rdng,e2.kanj,e2.gloss ";
+	  # Get the non-examples xrefs...
+	$sql = sprintf ($sqf, $tmptbl, "AND x.typ!=5");
+	$x1 = dbread ($dbh, $sql);  
+	  # ...but only a random subset of the copius example xrefs.
+	$sql = sprintf ($sqf, $tmptbl, "AND x.typ=5") . " ORDER BY RANDOM() LIMIT 10";
+	$x2 = dbread ($dbh, $sql);  # Get the non-examples xrefs.
+	  # Merge them together.
 
-	my ($r, $n); $r = 0;
-	foreach (split (//, $str)) {
-	    $n = ord();
-	    if    ($n >= 0x3040 and $n <= 0x309F) { $r |= ($HIRAGANA | $KANA); }
-	    elsif ($n >= 0x30A0 and $n <= 0x30FF) { $r |= ($KATAKANA | $KANA); }
-	    elsif ($n >= 0x4E00 and $n <= 0x9FFF) { $r |= $KANJI; } }
-	return $r; }
-
-    sub addentr { my ($dbh, $entr) = @_;
-	# Write the entry defined by %$entr to the database open
-	# on connection $dbh.  Note the values in the primary key
-	# fields of the records in $entr are ignored and regenerated.
-	# Thus ordered items like the rdng records have the rndg
-	# fields renumbered from 1 regardless of the values initially
-	# in them.  
-
-	my ($eid, $seq, $nrdng, $nkanj, $nsens, $ngloss, $nhist, $naudio, 
-	    $cntr2, $r, $k, $s, $g, $x, $h);
-	if ($entr->{seq} == 0 and $entr->{src} == 1) {	# 1:kw:jmdict
-	    $entr->{seq} = $seq = get_seq ($dbh); }
-	$entr->{id} = $eid = dbinsert ($dbh, "entr", ['src','seq','stat','notes'], $entr);
-	foreach $h (@{$entr->{_hist}}) {
-	    $h->{entr} = $eid;  $h->{hist} = ++$nhist;
-	    dbinsert ($dbh, "hist", ['entr','hist','stat','dt','who','diff','notes'], $h); }
-	foreach $k (@{$entr->{_kanj}}) {
-	    $k->{entr} = $eid;  $k->{kanj} = ++$nkanj;
-	    dbinsert ($dbh, "kanj", ['entr','kanj','txt'], $k);
-	    foreach $x (@{$k->{_kinf}}) {
-		$x->{entr} = $eid;  $x->{kanj} = $nkanj;
-		dbinsert ($dbh, "kinf", ['entr','kanj','kw'], $x); }
-	    $nkanj++; }
-	foreach $r (@{$entr->{_rdng}}) {
-	    $r->{entr} = $eid;  $r->{rdng} = ++$nrdng;
-	    dbinsert ($dbh, "rdng", ['entr','rdng','txt'], $r);
-	    foreach $x (@{$r->{_rinf}}) {
-		$x->{$entr} = $eid;  $x->{rdng} = $nrdng;
-		dbinsert ($dbh, "rinf", ['entr','rdng','kw'], $x); }
-	    foreach $x (@{$r->{_audio}}) {
-		$x->{$entr} = $eid;  $x->{rdng} = $nrdng;  $x->{audio} = ++$naudio;
-		dbinsert ($dbh, "audio", ['entr','rdng','audio','fname','strt','leng','notes'], $x); }
-	    foreach $x (@{$r->{_restr}}) {
-		$x->{$entr} = $eid;  $x->{rdng} = $nrdng; 
-		$x->{kanj} = $x->{kanj}{kanj};
-		dbinsert ($dbh, "restr", ['entr','rdng','kanj'], $x); }
-	    $nrdng++; }
-	foreach $x (@{$entr->{_freq}}) {
-	    $x->{entr} = $eid;  
-	    dbinsert ($dbh, "freq", ['entr','rdng','kanj','kw','value'], $x); } 
-	foreach $s (@{$entr->{_sens}}) {
-	    $s->{entr} = $eid;  $s->{sens} = ++$nsens;
-	    dbinsert ($dbh, "sens", ['entr','sens','notes'], $s);
-	    foreach $g (@{$s->{_gloss}}) {
-		$g->{entr} = $eid; $g->{sens} = $nsens; $g->{gloss} = ++$ngloss;
-		dbinsert ($dbh, "gloss", ['entr','sens','gloss','lang','txt','notes'], $g); }
-	    foreach $x (@{$s->{_pos}}) {
-		$x->{entr} = $eid; $x->{sens} = $nsens;
-		dbinsert ($dbh, "pos", ['entr','sens','kw'], $x); }
-	    foreach $x (@{$s->{_misc}}) {
-		$x->{entr} = $eid; $x->{sens} = $nsens;
-		dbinsert ($dbh, "misc", ['entr','sens','kw'], $x); }
-	    foreach $x (@{$s->{_fld}}) {
-		$x->{entr} = $eid; $x->{sens} = $nsens;
-		dbinsert ($dbh, "fld", ['entr','sens','kw'], $x); }
-	    foreach $x (@{$s->{_stagr}}) {
-		$x->{entr} = $eid; $x->{sens} = $nsens;
-		$x->{rdng} = $x->{rdng}{id};
-		dbinsert ($dbh, "stagr", ['entr','sens','rdng'], $x); }
-	    foreach $x (@{$s->{_stagk}}) {
-		$x->{entr} = $eid; $x->{sens} = $nsens;
-		$x->{kanj} = $x->{kanj}{id};
-		dbinsert ($dbh, "stagk", ['entr','sens','kanj'], $x); }
-	    foreach $x (@{$s->{_xref}}) {
-		$x->{entr} = $eid; $x->{sens} = $nsens; 
-		$x->{xref} = $x->{xref}{id};
-		dbinsert ($dbh, "xref", ['entr','sens','xentr','xsens','typ','notes'], $x); } }
-	foreach $x (@{$entr->{_dial}}) {
-	    $x->{entr} = $eid;
-	    dbinsert ($dbh, "dial", ['entr','kw'], $x); }
-	foreach $x (@{$entr->{_lang}}) {
-	    $x->{entr} = $eid;
-	    dbinsert ($dbh, "lang", ['entr','kw'], $x); }
-	return ($eid, $seq); }
-
+	$erefs = \(@$x1, @$x2);
+	  # And build an erefs structure from them.
+	if ($entrs) { bld_erefs ($entrs, $erefs); }
+	return $erefs; }
+    
     sub bld_erefs { my ($entries, $esum) = @_;
 	# For each sense in each entry in @$entries, assign to
 	# key "_erefs" a structure containing the sense's xrefs
@@ -505,7 +434,11 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    if ($h{$k}) { push (@{$h{$k}{sens}}, $x->{$targs}); }
 	    else { 
 		if (!($e = $ehash{$x->{$targe}})) {	# "=", not "=="!
-		    die ("xref2eref(): Entry summary info not found for target eid $ehash{$x->{$targe}}"); }
+		    #die ("xref2eref(): Entry summary info not found for target eid $ehash{$x->{$targe}}"); }
+		    # Above commented out since we currently only retrieve summary
+		    # info for a subset of xrefs, so now just ignore xrefs for which
+		    # we can't find summary info.
+		    next; }
 		$h{$k} = {srce=>$x->{$srce}, srcs=>$x->{$srcs}, typ=>$x->{typ},entr=>$e,sens=>[$x->{$targs}]}; } }
 	foreach $v (values (%h)) { push (@a, $v); }
 	@a = sort {($a->{srce} <=> $b->{srce}) || 
@@ -513,6 +446,132 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 		   ($a->{typ}  <=> $b->{typ})  || 
 		   ($a->{entr}{eid} <=> $b->{entr}{eid})} @a;
 	return \@a; }
+
+our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
+
+    sub jstr_classify { my ($str) = @_;
+	# Returns an integer with bits set according to whether the
+	# indicated type of characters are present in string $str.
+	#     1 - Kana (either hiragana or katakana)
+	#     2 - Hiragana
+	#     4 - Katakana
+	#     8 - Kanji
+
+	my ($r, $n); $r = 0;
+	foreach (split (//, $str)) {
+	    $n = ord();
+	    if    ($n >= 0x3040 and $n <= 0x309F) { $r |= ($HIRAGANA | $KANA); }
+	    elsif ($n >= 0x30A0 and $n <= 0x30FF) { $r |= ($KATAKANA | $KANA); }
+	    elsif ($n >= 0x4E00 and $n <= 0x9FFF) { $r |= $KANJI; } }
+	return $r; }
+
+    sub setkeys { my ($e, $eid) = @_;
+	# Set the foreign and primary key values in each record.
+	my ($k, $r, $s, $g, $x, $nkanj, $nrdng, $nsens, $ngloss, $nhist);
+	if ($eid) { $e->{id} = $eid; }
+	die ("No entr.id number found or received") if (!$e->{id});
+	if ($e->{_kanj}) { foreach $k (@{$e->{_kanj}}) {
+	    $k->{entr} = $eid;
+	    $k->{kanj} = ++$nkanj;
+	    if ($k->{_kinf})  { foreach $x (@{$k->{_kinf}})  { $x->{entr} = $eid;  $x->{kanj} = $nkanj; } }
+	    if ($k->{_freq})  { foreach $x (@{$k->{_freq}})  { $x->{entr} = $eid;  $x->{kanj} = $nkanj; } }
+	    if ($k->{_restr}) { foreach $x (@{$k->{_restr}}) { $x->{entr} = $eid;  $x->{kanj} = $nkanj; } }
+	    if ($k->{_stagk}) { foreach $x (@{$k->{_stagk}}) { $x->{entr} = $eid;  $x->{kanj} = $nkanj; } } } }
+	if ($e->{_rdng}) { foreach $r (@{$e->{_rdng}}) {
+	    $r->{entr} = $eid;  $r->{rdng} = ++$nrdng;
+	    if ($r->{_rinf})  { foreach $x (@{$r->{_rinf}})  { $x->{entr} = $eid;  $x->{rdng} = $nrdng; } }
+	    if ($r->{_audio}) { foreach $x (@{$r->{_audio}}) { $x->{entr} = $eid;  $x->{rdng} = $nrdng; } }
+	    if ($r->{_freq})  { foreach $x (@{$r->{_freq}})  { $x->{entr} = $eid;  $x->{rdng} = $nrdng; } }
+	    if ($r->{_restr}) { foreach $x (@{$r->{_restr}}) { $x->{entr} = $eid;  $x->{rdng} = $nrdng; } }
+	    if ($r->{_stagr}) { foreach $x (@{$r->{_stagr}}) { $x->{entr} = $eid;  $x->{rdng} = $nrdng; } } } }
+	if ($e->{_sens}) { foreach $s (@{$e->{_sens}}) {
+	    $s->{entr} = $eid;  $s->{sens} = ++$nsens;
+	    if ($s->{_gloss}) { foreach $g (@{$s->{_gloss}}) { $g->{entr} = $eid;  $g->{sens} = $nsens;
+							         $g->{gloss} = ++$ngloss; } }
+	    if ($s->{_pos})   { foreach $x (@{$s->{_pos}})   { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
+	    if ($s->{_misc})  { foreach $x (@{$s->{_misc}})  { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
+	    if ($s->{_fld})   { foreach $x (@{$s->{_fld}})   { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
+	    if ($s->{_stagk}) { foreach $x (@{$s->{_stagk}}) { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
+	    if ($s->{_stagr}) { foreach $x (@{$s->{_stagr}}) { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
+	    if ($s->{_xrslv}) { foreach $x (@{$s->{_xrslv}}) { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
+	    if ($s->{_xref})  { foreach $x (@{$s->{_xref}})  { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
+	    if ($s->{_xrer})  { foreach $x (@{$s->{_xrer}})  { $x->{xentr}= $eid;  $x->{xsens}= $nsens; } } } }
+	if ($e->{_dial}) { foreach $x (@{$e->{_dial}})       { $x->{entr} = $eid; } }
+	if ($e->{_lang}) { foreach $x (@{$e->{_lang}})       { $x->{entr} = $eid; } }
+	if ($e->{_hist}) { foreach $x (@{$e->{_hist}})       { $x->{entr} = $eid;  $x->{hist} = ++$nhist; } } }
+
+    sub addentr { my ($dbh, $entr) = @_;
+	# Write the entry defined by %$entr to the database open
+	# on connection $dbh.  Note the values in the primary key
+	# fields of the records in $entr are ignored and regenerated.
+	# Thus ordered items like the rdng records have the rndg
+	# fields renumbered from 1 regardless of the values initially
+	# in them.  
+
+	my ($eid, $seq, $nrdng, $nkanj, $nsens, $ngloss, $nhist, $naudio, 
+	    $cntr2, $r, $k, $s, $g, $x, $h);
+	if ($entr->{seq} == 0 and $entr->{src} == 1) {	# 1:kw:jmdict
+	    $entr->{seq} = $seq = get_seq ($dbh); }
+	$entr->{id} = $eid = dbinsert ($dbh, "entr", ['src','seq','stat','srcnote','notes'], $entr);
+	foreach $h (@{$entr->{_hist}}) {
+	    $h->{entr} = $eid;  $h->{hist} = ++$nhist;
+	    dbinsert ($dbh, "hist", ['entr','hist','stat','dt','who','diff','notes'], $h); }
+	foreach $k (@{$entr->{_kanj}}) {
+	    $k->{entr} = $eid;  $k->{kanj} = ++$nkanj;
+	    dbinsert ($dbh, "kanj", ['entr','kanj','txt'], $k);
+	    foreach $x (@{$k->{_kinf}}) {
+		$x->{entr} = $eid;  $x->{kanj} = $nkanj;
+		dbinsert ($dbh, "kinf", ['entr','kanj','kw'], $x); } }
+	foreach $r (@{$entr->{_rdng}}) {
+	    $r->{entr} = $eid;  $r->{rdng} = ++$nrdng;
+	    dbinsert ($dbh, "rdng", ['entr','rdng','txt'], $r);
+	    foreach $x (@{$r->{_rinf}}) {
+		$x->{$entr} = $eid;  $x->{rdng} = $nrdng;
+		dbinsert ($dbh, "rinf", ['entr','rdng','kw'], $x); }
+	    foreach $x (@{$r->{_audio}}) {
+		$x->{$entr} = $eid;  $x->{rdng} = $nrdng;  $x->{audio} = ++$naudio;
+		dbinsert ($dbh, "audio", ['entr','rdng','audio','fname','strt','leng','notes'], $x); }
+	    foreach $x (@{$r->{_restr}}) {
+		$x->{$entr} = $eid;  $x->{rdng} = $nrdng; 
+		$x->{kanj} = $x->{kanj}{kanj};
+		dbinsert ($dbh, "restr", ['entr','rdng','kanj'], $x); } }
+	foreach $x (@{$entr->{_freq}}) {
+	    $x->{entr} = $eid;  
+	    dbinsert ($dbh, "freq", ['entr','rdng','kanj','kw','value'], $x); } 
+	foreach $s (@{$entr->{_sens}}) {
+	    $s->{entr} = $eid;  $s->{sens} = ++$nsens;
+	    dbinsert ($dbh, "sens", ['entr','sens','notes'], $s);
+	    foreach $g (@{$s->{_gloss}}) {
+		$g->{entr} = $eid; $g->{sens} = $nsens; $g->{gloss} = ++$ngloss;
+		dbinsert ($dbh, "gloss", ['entr','sens','gloss','lang','txt'], $g); }
+	    foreach $x (@{$s->{_pos}}) {
+		$x->{entr} = $eid; $x->{sens} = $nsens;
+		dbinsert ($dbh, "pos", ['entr','sens','kw'], $x); }
+	    foreach $x (@{$s->{_misc}}) {
+		$x->{entr} = $eid; $x->{sens} = $nsens;
+		dbinsert ($dbh, "misc", ['entr','sens','kw'], $x); }
+	    foreach $x (@{$s->{_fld}}) {
+		$x->{entr} = $eid; $x->{sens} = $nsens;
+		dbinsert ($dbh, "fld", ['entr','sens','kw'], $x); }
+	    foreach $x (@{$s->{_stagr}}) {
+		$x->{entr} = $eid; $x->{sens} = $nsens;
+		$x->{rdng} = $x->{rdng}{id};
+		dbinsert ($dbh, "stagr", ['entr','sens','rdng'], $x); }
+	    foreach $x (@{$s->{_stagk}}) {
+		$x->{entr} = $eid; $x->{sens} = $nsens;
+		$x->{kanj} = $x->{kanj}{id};
+		dbinsert ($dbh, "stagk", ['entr','sens','kanj'], $x); }
+	    foreach $x (@{$s->{_xref}}) {
+		$x->{entr} = $eid; $x->{sens} = $nsens; 
+		$x->{xref} = $x->{xref}{id};
+		dbinsert ($dbh, "xref", ['entr','sens','xentr','xsens','typ','notes'], $x); } }
+	foreach $x (@{$entr->{_dial}}) {
+	    $x->{entr} = $eid;
+	    dbinsert ($dbh, "dial", ['entr','kw'], $x); }
+	foreach $x (@{$entr->{_lang}}) {
+	    $x->{entr} = $eid;
+	    dbinsert ($dbh, "lang", ['entr','kw'], $x); }
+	return ($eid, $seq); }
 
     sub get_seq { my ($dbh) = @_;
 	# Get and return a new entry sequence number.

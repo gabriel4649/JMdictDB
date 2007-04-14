@@ -32,6 +32,7 @@ use Getopt::Std ('getopts');
 
 BEGIN {push (@INC, "./lib");}
 use jmdictxml ('%JM2ID'); # Maps xml expanded entities to kw* table id's.
+use jmdict; use jmdictpgi; use kwstatic;
 
 main: {
 	my ($twig, $infn, $outfn, $tmpfiles, $tmp, $enc, $logfn,
@@ -45,8 +46,9 @@ main: {
 	eval { binmode($DB::OUT, ":encoding($enc)"); };
 
 	$infn = shift (@ARGV) || "JMdict";
-	$outfn =  $::Opts{o} || "JMdict.dmp";
+	$outfn =  $::Opts{o} || "JMdict.pgi";
 	$logfn =  $::Opts{l} || "jmparse.log";
+	$::eid = 0;
 
 	  # Make STDERR unbuffered so we print "."s, one at 
 	  # a time, as a sort of progress bar.  
@@ -85,95 +87,62 @@ main: {
 	finalize ($outfn, $tmpfiles, !$::Opts{k}); 
 	print STDERR ("Done\n"); }
 
-sub initialize { my ($logfn, $tmpdir) = @_;
-	my ($t, $td, $i1, $i2);
-	if (!$tmpdir) { $td = ""; }
-	else { ($td = $tmpdir) =~ s/[\/\\]$//; }
-	my @tmpfiles = (
-	  [\$::Fentr,  "${td}load01.tmp", "COPY entr(id,src,seq,stat,notes) FROM stdin;"],
-	  [\$::Fkanj,  "${td}load02.tmp", "COPY kanj(entr,kanj,txt) FROM stdin;"],
-	  [\$::Fkinf,  "${td}load03.tmp", "COPY kinf(entr,kanj,kw) FROM stdin;"],
-	  [\$::Frdng,  "${td}load05.tmp", "COPY rdng(entr,rdng,txt) FROM stdin;"],
-	  [\$::Frinf,  "${td}load06.tmp", "COPY rinf(entr,rdng,kw) FROM stdin;"],
-	  [\$::Ffrq,   "${td}load07.tmp", "COPY freq(entr,rdng,kanj,kw,value) FROM stdin;"],
-	  [\$::Fsens,  "${td}load08.tmp", "COPY sens(entr,sens,notes) FROM stdin;"],
-	  [\$::Fpos,   "${td}load09.tmp", "COPY pos(entr,sens,kw) FROM stdin;"],
-	  [\$::Fmisc,  "${td}load10.tmp", "COPY misc(entr,sens,kw) FROM stdin;"],
-	  [\$::Ffld,   "${td}load11.tmp", "COPY fld(entr,sens,kw) FROM stdin;"],
-	  [\$::Fxref,  "${td}load12.tmp", "COPY xresolv(entr,sens,typ,txt) FROM stdin;"],
-	  [\$::Fglos,  "${td}load13.tmp", "COPY gloss(entr,sens,gloss,lang,txt,notes) FROM stdin;"],
-	  [\$::Fdial,  "${td}load14.tmp", "COPY dial(entr,kw) FROM stdin;"],
-	  [\$::Flang,  "${td}load15.tmp", "COPY lang(entr,kw) FROM stdin;"],
-	  [\$::Frestr, "${td}load16.tmp", "COPY restr(entr,rdng,kanj) FROM stdin;"],
-	  [\$::Fstagr, "${td}load17.tmp", "COPY stagr(entr,sens,rdng) FROM stdin;"],
-	  [\$::Fstagk, "${td}load18.tmp", "COPY stagk(entr,sens,kanj) FROM stdin;"],
-	  [\$::Fhist,  "${td}load19.tmp", "COPY hist(entr,hist,stat,dt,who,diff,notes) FROM stdin;"] );
-
-	  # Counter for the number of entries processed.
-	$::cntr = 0;
-
-	$::eid = 1; 
-
-	foreach $t (@tmpfiles) {
-	    open (${$t->[0]}, ">:utf8", $t->[1]) or \
-		  die ("Can't open $t->[1]: $!\n") }
-	open ($::Flog, ">:utf8", $logfn) or die ("Can't open $logfn: $!\n");
-	return \@tmpfiles; }
-
-sub finalize { my ($outfn, $tmpfls, $del) = @_;
-	# Close all the temp files, merge them all intro the single 
-	# output file, and delete them (if no -k option).
-
-	my ($t, $tmpfn);
-	open (FOUT, ">:utf8", $outfn) or die ("Can\'t open $outfn: $!\n");
-	foreach $t (@$tmpfls) {
-	    $tmpfn = $t->[1];
-	    close (${$t->[0]});
-	    if ((stat ($tmpfn))[7] != 0) {
-		open (FIN, "<:utf8", $tmpfn) or die ("Can\'t open $tmpfn: $!\n");
-		print FOUT "\n" . $t->[2] . "\n";
-		while (<FIN>) { print FOUT; }
-		print FOUT "\\.\n";
-		close (FIN); } 
-	    if ($del) {unlink ($t->[1]); } } 
-	close (FOUT); } 
-
 sub set_linenum { my ($t, $entry ) = @_;
-	# Remember the line number at the start of an entry for use
-	# in error message or as a ent_seq number substitute for
-	# JMnedict entries.
+	  # This function is set as a XML-Twig start-handler for <entry>
+	  # tag, and remembers the line number at the start of an entry
+	  # for use in error message or as a ent_seq number substitute 
+	  # for JMnedict entries.
 	$::Ln = $t->current_line(); }
 
 sub entry_handler { my ($t, $entry ) = @_;
-	# Process each <entry> element.   When we're called (because we
-	# were listed in the twig_handlers option of the Twig->new() call
-	# in main()), a complete entry has been parsed including everthing
-	# inside it.  We do the entry-related bookkeeping stuff here, and 
-	# call do_pentry() to deal with the jmdict info contained in the
-	# entry.
+	  # This function is set as a XML-Twig handler for <entry> elements.
+	  # We are called after a complete entry has been parsed including
+	  # everthing inside it.  We do the entry-related bookkeeping stuff
+	  # here, and call do_entry() to deal with the jmdict info contained
+	  # in the entry.
 
 	my ($seq, @x, $kmap, $rmap);
+
+	  # $cntr counts the number of entries parsed.  The 1395 below was 
+	  # picked to procude about 80 dots in the "progress bar" for a full
+	  # jmdict.xml file.
 	if (!($::cntr % 1395)) { print STDERR "."; } 
 	$::cntr += 1;
+
+	  # Get the entry's seq number.  jmnedict won't have a <ent_seq> element
+	  # so executed inside an eval to trap the error.
 	eval { $seq = ($entry->get_xpath("ent_seq"))[0]->text; };
+
+	  # If there is no seq. number, use the entry's line number.  Save in
+	  # a global variable so sub's can use in error messages.
+
 	if (!$seq) { $seq = $::Ln; }
 	$::Seq = $seq;	# For log messages.
+
+	  # Check if we are past the -b seq number given by user.  If
+	  # so, call do_entry() to process it.  And exit if we hsve processed
+	  # the number of entry's given by -c.
 	if (!$::started_at and (!$::Opts{b} or int($seq) >= int($::Opts{b}))) { 
 	    $::processing = 1;  $::started_at = $::cntr }
 	return if (! $::processing);
 	if ($::Opts{c} and ($::cntr - $::started_at >= int($::Opts{c}))) {
 	     die ("done\n"); }
-	do_entry ($seq, $entry, $::Opts{s});
+	eval { do_entry ($seq, $entry, $::Opts{s}); };
+	if ($@) {
+	    print STDERR  "Seq $::Seq: $@";
+	    print $::Flog "Seq $::Seq: $@"; }
+
+	  # Free memory and other resorces used by the extry just processed.
 	$t->purge; 0;}
 
 sub comment_handler { my ($t, $entry ) = @_;
-	# Process each comment.  We get called when a comment is seen
-	# because  we were listed ('#COMMENT') in the twig_handlers option
-	# of the Twig->new() call in main().  We look for comments that
-	# described entry deletions and create synthetic 'D' status entries
-	# for them.
+	  # Process each comment.  We get called when a comment is seen
+	  # because  we were listed ('#COMMENT') in the twig_handlers option
+	  # of the Twig->new() call in main().  We look for comments that
+	  # described entry deletions and create synthetic 'D' status entries
+	  # for them.
 
-	my ($c, $seq, $notes, $dt, $ln, $srcid); 
+	my ($c, $seq, $notes, $dt, $ln, $srcid, $e); 
 	return if (! $::processing);
 	$c = $entry->{comment};
 	if ($c =~ m/^\s*Deleted:\s*(\d{7}) with (\d{7})\s*(.*)/) {
@@ -186,274 +155,235 @@ sub comment_handler { my ($t, $entry ) = @_;
 	    print $::Flog "Line $ln: unparsable comment: $c\n"; return; }
 
 	$dt = "1990-01-01 00:00:00-00";
-	$srcid = 1;  # Assume JJMdict.
+	$srcid = $KWSRC_jmdict;  # JMdict is only src with "deleted" comments.
 	# (id,src,seq,stat,note)
-	print $::Fentr "\$\$E\$\$$::eid\t$srcid\t$seq\t4\t\\N\n";
+	$e = {src=>$srcid, seq=>$seq, stat=>$KWSTAT_D};
 
-	# Should we create a synthetic N record before creating the D record?
-	# (id,entr,stat,dt,who,diff,notes)
+	  # Should we create a synthetic N record before creating the D record?
 	$notes = pgesc ($notes);
-	print $::Fhist "\$\$E\$\$$::eid\t1\t4\t$dt\tfrom JMdict.xml\t\\N\t$notes\n"; 
-	$::eid += 1; 
+	# (entr,hist,stat,dt,who,diff,notes)
+	$e->{_hist} = [{stat=>$KWSTAT_D, dt=>$dt, who=>"imported from JMdict.xml", notes=>$notes}];
+
+	  # Write out the entry to the temp files.
+	setkeys ($e, ++$::eid);
+	wrentr ($e);
+	  # Free memory and other resorces used by the extry just processed.
 	$t->purge; 0; }
 
 sub do_entry { my ($seq, $entry, $srcid) = @_;
-	my (@x, $kmap, $rmap, $fklist, $frlist, @t);
+	my (@x, $kmap, $rmap, @t, %fmap, $e);
+
+	  # If this entry has a "trans" element then this is a JMnedict source.
+	  # Otherwise assume it is JMdict.
 	@t = $entry->get_xpath("trans");
-	if (!$srcid) { $srcid = @t ? 2 : 1; }
+	if (!$srcid) { $srcid = @t ? $KWSRC_jmnedict : $KWSRC_jmdict; }
+
+	  # Create an entry record (a hash with the proper field names).
+	  # We don't need to provide the id field since that will be
+	  # automatically generated by setkeys(). 
 	# (id,src,seq,stat,note)
-	print $::Fentr "\$\$E\$\$$::eid\t$srcid\t$seq\t2\t\\N\n";
-	if (@x = $entry->get_xpath("k_ele")) { ($kmap, $fklist) = do_kanj (\@x); }
-	if (@x = $entry->get_xpath("r_ele")) { ($rmap, $frlist) = do_rdng (\@x, $kmap); }
-	if (@x = $entry->get_xpath("sense")) { do_sens (\@x, $kmap, $rmap); }
-	if (@t) 			     { do_sens (\@t, $kmap, $rmap); }
-	if (@x = $entry->get_xpath("info/dial")) { do_dial (\@x); }
-	if (@x = $entry->get_xpath("info/lang")) { do_lang (\@x); }
-	if (@x = $entry->get_xpath("info/audit")) { do_hist (\@x); }
-	do_freqs ($frlist, $fklist);
-	$::eid += 1; }
+	$e = {src=>$srcid, seq=>$seq, stat=>$KWSTAT_A};
+	if (@x = $entry->get_xpath("k_ele")) { $kmap = do_kanj ($e, \@x, \%fmap); }
+	if (@x = $entry->get_xpath("r_ele")) { $rmap = do_rdng ($e, \@x, $kmap, \%fmap); }
+	if (@x = $entry->get_xpath("sense")) { do_sens ($e, \@x, $kmap, $rmap); }
+	if (@t) 			     { do_sens ($e, \@t, $kmap, $rmap); }
+	if (@x = $entry->get_xpath("info/dial"))  { do_dial ($e, \@x); }
+	if (@x = $entry->get_xpath("info/lang"))  { do_lang ($e, \@x); }
+	if (@x = $entry->get_xpath("info/audit")) { do_hist ($e, \@x); }
+	mkfreqs (\%fmap);
+	setkeys ($e, ++$::eid);
+	wrentr ($e); }
 
-sub do_kanj { my ($keles) = @_;
-	my ($ord, $txt, $k, @x, %kmap, @flist);
-	$ord = 1; 
-	foreach $k (@$keles) {
-	    $txt = ($k->get_xpath ("keb"))[0]->text;
-	    # (entr,ord,txt)
-	    print $::Fkanj "\$\$E\$\$$::eid\t$ord\t$txt\n";
-	    if (@x = $k->get_xpath ("ke_inf")) { do_kinfs (\@x, $ord); }
-	    if (@x = $k->get_xpath ("ke_pri")) { freqs (\@x, $ord, \@flist); }
-	    $kmap{$txt} = $ord;
-	    $ord += 1; }
-	return (\%kmap, \@flist); }
+sub do_kanj { my ($e, $keles, $fmap) = @_;
+	my ($txt, $k, @x, %kmap, @flist, $ek);
+	if (!$e->{_kanj}) { $e->{_kanj} = []; }
+	foreach $ek (@$keles) {
+	    $txt = ($ek->get_xpath ("keb"))[0]->text;
+	    # (entr,kanj,txt)
+	    $kmap{$txt} = $k = {txt=>$txt};
+	    push (@{$e->{_kanj}}, $k);
+	    if (@x = $ek->get_xpath ("ke_inf")) { do_kinfs ($k, \@x); }
+	    if (@x = $ek->get_xpath ("ke_pri")) { do_freqs (0, $k, \@x, $fmap); } }
+	return \%kmap; }
 
-sub do_kinfs { my ($kinfs, $ord) = @_;
-	my ($i, $kw, $txt);
+sub do_kinfs { my ($k, $kinfs) = @_;
+	my ($i, $kw, $txt, %dupchk);
+	if ($k->{_kinf}) { $k->{_kinf} = []; }
 	foreach $i (@$kinfs) {
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{KINF}{$txt}) or \
 		die ("Unknown ke_inf text: /$txt/\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated kinf string '$txt'\n"; }
-	    print $::Fkinf "\$\$E\$\$$::eid\t$ord\t$kw\n"; } }
+	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: dupicate kinf string '$txt'\n"; }
+	    else {
+		$dupchk{$kw} = 1;
+	        push (@{$k->{_kinf}}, {kw=>$kw}); } } }
 
-sub do_rdng { my ($reles, $kmap) = @_;
-	my ($ord, $txt, $r, $z, @x, %rmap, %restr, @flist);
-	$ord = 1; 
-	foreach $r (@$reles) {
-	    $txt = ($r->get_xpath ("reb"))[0]->text;
-	    # (entr,ord,txt)
-	    print $::Frdng "\$\$E\$\$$::eid\t$ord\t$txt\n";
-	    if (@x = $r->get_xpath ("re_inf")) { do_rinfs (\@x, $ord); }
-	    if (@x = $r->get_xpath ("re_pri")) { freqs (\@x, $ord, \@flist); }
-	    for $z ($r->get_xpath ("re_restr")) { 
-		if (! defined ($restr{$ord})) { $restr{$ord} = {}; }
-		$restr{$ord}->{$kmap->{$z->text}} = 1; }
-	    if ($r->get_xpath ("re_nokanji")) { 
-		if (! defined ($restr{$ord})) { $restr{$ord} = {}; }
-		$restr{$ord} = 1; }
-	    $rmap{$txt} = $ord;
-	    $ord += 1; }
-	if (%restr) { do_restr ($::Frestr, \%restr, \%rmap, $kmap); }
-	return (\%rmap, \@flist); }
+sub do_rdng { my ($e, $reles, $kmap, $fmap) = @_;
+	my ($txt, $r, $z, @x, %rmap, $er, $u);
+	$e->{_rdng} = []; 
+	foreach $er (@$reles) {
+	    $txt = ($er->get_xpath ("reb"))[0]->text;
+	    $rmap {$txt} = $r = {txt=>$txt};
+	    # (entr,rdng,txt)
+	    push (@{$e->{_rdng}}, $r);
+	    if (@x = $er->get_xpath ("re_inf")) { do_rinfs ($r, \@x); }
+	    if (@x = $er->get_xpath ("re_pri")) { do_freqs ($r, 0, \@x, $fmap); }
+	    if ($er->get_xpath ("re_nokanji")) { 
+	        my (@u); foreach $z (values (%$kmap)) { push ( @u, $z); }
+		mkrestr ($r, $kmap, "_restr", \@u); }
+	    elsif (@x = $er->get_xpath ("re_restr")) { do_restrs ($r, \@x, "_restr", $kmap); } }
+	    return \%rmap; }
 
-sub do_rinfs { my ($rinfs, $ord) = @_;
-	my ($i, $kw, $txt);
+sub do_restrs { my ($arec, $restrele, $attrname, $bmap) = @_;
+	my (@u, $u, $i);
+	foreach $i (@$restrele) {
+	    $u = $bmap->{$i->text};
+	    if (!$u) { die ("Restriction target '$i->{text}' not found\n"); }
+	    push (@u, $u); }
+	mkrestr ($arec, $bmap, $attrname, \@u); }
+
+sub do_rinfs { my ($r, $rinfs) = @_;
+	my ($i, $kw, $txt, %dupchk);
+	if ($r->{_rinf}) { $r->{_rinf} = []; }
 	foreach $i (@$rinfs) {
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{RINF}{$txt}) or \
-		die ("Unknown re_inf text: /$txt/\n") ;
+		die ("Unknown re_inf text: /$txt/\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated rinf string '$txt'\n"; }
-	    print $::Frinf "\$\$E\$\$$::eid\t$ord\t$kw\n"; } }
+	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: dupicate rinf string '$txt'\n"; }
+	    else {
+		$dupchk{$kw} = 1;
+	        push (@{$r->{_rinf}}, {kw=>$kw}); } } }
 
-sub do_sens { my ($sens, $kmap, $rmap) = @_;
-	my ($ord, $txt, $s, @x, @p, @pp, $z, %smap, %stagr, %stagk);
-	$ord=1;  @pp=(); %smap=(); %stagr=(); %stagk=();
-	foreach $s (@$sens) {
-	    $txt = "\\N";
-	    if (@x = $s->get_xpath ("s_inf")) { $txt = $x[0]->text; }
-	    # (entr,ord,note)
-	    print $::Fsens "\$\$E\$\$$::eid\t$ord\t$txt\n";
-	    @p = $s->get_xpath ("pos");
+sub do_sens { my ($e, $sens, $kmap, $rmap) = @_;
+	my ($txt, $s, @x, @p, @pp, $z, %smap, %stagr, %stagk, $es);
+	@pp=(); %smap=(); %stagr=(); %stagk=(); $e->{_sens} = [];
+	foreach $es (@$sens) {
+	    $txt = undef;
+	    if (@x = $es->get_xpath ("s_inf")) { $txt = $x[0]->text; }
+	    $s = {note=>$txt};
+	    # (entr,sens,notes)
+	    push (@{$e->{_sens}}, $s);
+	    @p = $es->get_xpath ("pos");
 	    if (!@p) { @p = @pp; }
-	    if (@p) { do_pos (\@p, $ord); @pp = @p; }
-	    if (@x = $s->get_xpath ("misc"))      { do_misc (\@x, $ord); }
-	    if (@x = $s->get_xpath ("field"))     { do_fld  (\@x, $ord); }
-	    if (@x = $s->get_xpath ("gloss"))     { do_glos (\@x, $ord); }
-	    if (@x = $s->get_xpath ("xref"))      { do_xref ("see", \@x, $ord); }
-	    if (@x = $s->get_xpath ("ant"))       { do_xref ("ant", \@x, $ord); }
-	    if (@x = $s->get_xpath ("name_type")) { do_pos  (\@x, $ord); }
-	    if (@x = $s->get_xpath ("trans_det")) { do_glos (\@x, $ord); }
-	    for $z ($s->get_xpath ("stagr")) { 
-		if (! defined ($stagr{$ord})) { $stagr{$ord} = {}; }
-		$stagr{$ord}->{$rmap->{$z->text}} = 1; }
-	    for $z ($s->get_xpath ("stagk")) { 
-		if (! defined ($stagk{$ord})) { $stagk{$ord} = {}; }
-		$stagk{$ord}->{$kmap->{$z->text}} = 1; }
-	    $smap{$ord} = $ord;
-	    $ord += 1; }
-	if (%stagr) { do_restr ($::Fstagr, \%stagr, \%smap, $rmap); }
-	if (%stagk) { do_restr ($::Fstagk, \%stagk, \%smap, $kmap); } }
+	    if (@p) { do_pos ($s, \@p); @pp = @p; }
+	    if (@x = $es->get_xpath ("misc"))      { do_misc   ($s, \@x); }
+	    if (@x = $es->get_xpath ("field"))     { do_fld    ($s, \@x); }
+	    if (@x = $es->get_xpath ("gloss"))     { do_gloss  ($s, \@x); }
+	    if (@x = $es->get_xpath ("xref"))      { do_xref   ($s, \@x, $::JM2ID{XREF}{see}); }
+	    if (@x = $es->get_xpath ("ant"))       { do_xref   ($s, \@x, $::JM2ID{XREF}{ant}); }
+	    if (@x = $es->get_xpath ("name_type")) { do_pos    ($s, \@x); }
+	    if (@x = $es->get_xpath ("trans_det")) { do_gloss  ($s, \@x); }
+	    if (@x = $es->get_xpath ("stagr"))     { do_restrs ($s, \@x, "_stagr", $rmap); }
+	    if (@x = $es->get_xpath ("stagk"))     { do_restrs ($s, \@x, "_stagk", $kmap); } } }
 
-sub do_glos { my ($gloss, $ord) = @_;
-	my ($g, $gord, $lang, $txt);
-	$gord = 1;
+sub do_gloss { my ($s, $gloss) = @_;
+	my ($g, $lang, $txt);
+	$s->{_gloss} = [];
 	foreach $g (@$gloss) {
 	    $lang = undef; $lang = $g->att("g_lang");
 	    $lang = $lang ? $::JM2ID{LANG}{$lang} : $::JM2ID{LANG}{"en"}; 
 	    ($txt = $g->text) =~ s/\\/\\\\/go;
-	    # (entr,sens,ord,lang,txt,notes)
-	    print $::Fglos "\$\$E\$\$$::eid\t$ord\t$gord\t$lang\t$txt\t\\N\n"; 
-	    $gord += 1; } }
+	    # (entr,sens,gloss,lang,txt,notes)
+	    push (@{$s->{_gloss}}, {lang=>$lang, txt=>$txt}); } }
 
-sub do_pos { my ($pos, $ord) = @_;
-	my ($i, $kw, $txt);
+sub do_pos { my ($s, $pos) = @_;
+	my ($i, $kw, $txt, %dupchk);
+	$s->{_pos} = [];
 	foreach $i (@$pos) {
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{POS}{$txt}) or \
 		die ("Unknown \'pos\' text: /$txt/\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated pos string '$txt'\n"; }
-	    print $::Fpos "\$\$E\$\$$::eid\t$ord\t$kw\n"; } }
+	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate pos string '$txt'\n"; }
+	    else {
+		$dupchk{$kw} = 1;
+	        push (@{$s->{_pos}}, {kw=>$kw}); } } }
 
-sub do_misc { my ($misc, $ord) = @_;
-	my ($i, $kw, $txt);
+sub do_misc { my ($s, $misc) = @_;
+	my ($i, $kw, $txt, %dupchk);
+	$s->{_misc} = [];
 	foreach $i (@$misc) {
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{MISC}{$txt}) or \
 		die ("Unknown \'misc\' text: /$txt/\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated misc string '$txt'\n"; }
-	    print $::Fmisc "\$\$E\$\$$::eid\t$ord\t$kw\n"; } }
+	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate misc string '$txt'\n"; }
+	    else {
+		$dupchk{$kw} = 1;
+	        push (@{$s->{_misc}}, {kw=>$kw}); } } }
 
-sub do_fld { my ($fld, $ord) = @_;
-	my ($i, $kw, $txt);
+sub do_fld { my ($s, $fld) = @_;
+	my ($i, $kw, $txt, %dupchk);
+	$s->{_fld} = [];
 	foreach $i (@$fld) {
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{FLD}{$txt}) or \
 		die ("Unknown \'fld\' text: /$txt/\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated fld string '$txt'\n"; }
-	    print $::Ffld "\$\$E\$\$$::eid\t$ord\t$kw\n"; } }
+	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate fld string '$txt'\n"; }
+	    else {
+		$dupchk{$kw} = 1;
+	        push (@{$s->{_fld}}, {kw=>$kw}); } } }
 
-sub do_dial { my ($dial) = @_;
-	my ($i, $kw, $txt);
+sub do_dial { my ($e, $dial) = @_;
+	my ($i, $kw, $txt, %dupchk);
+	$e->{_dial} = [];
 	foreach $i (@$dial) {
 	    $txt = substr ($i->text, 0, -1);
 	    ($kw = $::JM2ID{DIAL}{$txt}) or \
 		die ("Unknown \'dial\' text: /$txt/\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated dial string '$txt'\n"; }
-	    print $::Fdial "\$\$E\$\$$::eid\t$kw\n"; } }
+	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate dial string '$txt'\n"; }
+	    else {
+		$dupchk{$kw} = 1;
+	        push (@{$e->{_dial}}, {kw=>$kw}); } } }
 
-sub do_lang { my ($lang) = @_;
-	my ($i, $kw, $txt);
+sub do_lang { my ($e, $lang) = @_;
+	my ($i, $kw, $txt, %dupchk);
+	$e->{_lang} = [];
 	foreach $i (@$lang) {
 	    $txt = substr ($i->text, 0, -1);
 	    ($kw = $::JM2ID{LANG}{$txt}) or \
 		die ("Unknown \'lang\' text: /$txt/\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated lang string '$txt'\n"; }
-	    print $::Flang "\$\$E\$\$$::eid\t$kw\n"; } }
+	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate lang string '$txt'\n"; }
+	    else {
+		$dupchk{$kw} = 1;
+	        push (@{$e->{_lang}}, {kw=>$kw}); } } }
 
-sub do_restr { my ($file, $restr, $amap, $bmap) = @_;
-	my ($a, $b, $r);
-	foreach $a (sort (values (%$amap))) {
-	    foreach $b (sort (values (%$bmap))) {
-		next if (!($r = $restr->{$a}));
-		if ($r == 1 or !$r->{$b}) { 
-		    print $file "\$\$E\$\$$::eid\t$a\t$b\n"; } } } }
-
-sub do_xref { my ($xtyp, $xref, $ord) = @_;
-	my ($x, $txt, $kw);
-	$kw = $::JM2ID{XREF}{$xtyp};
+sub do_xref { my ($s, $xref, $xtypkw) = @_;
+	my ($x);
 	foreach $x (@$xref) {
-	    $txt = $x->text;
 	    # (entr,sens,lang,txt,notes)
-	    print $::Fxref "\$\$E\$\$$::eid\t$ord\t$kw\t$txt\n"; } }
+	    if (!$s->{_xrslv}) { $s->{_xrslv} = []; }
+	    push (@{$s->{_xrslv}}, {kw=>$xtypkw, txt=>$x->text}); } }
 
-sub do_hist { my ($hist) = @_;
-	my ($x, $dt, $op, $nhist);
-	$nhist = 0;
+sub do_hist { my ($e, $hist) = @_;
+	my ($x, $dt, $op, $h);
 	foreach $x (@$hist) {
-	    $nhist++;
 	    $dt = ($x->get_xpath ("upd_date"))[0]->text; # Assume just one.
 	    $dt .= " 00:00:00-00";  # Add a time.
 	    $op = ($x->get_xpath ("upd_detl"))[0]->text; # Assume just one.
 	    if ($op eq "Entry created") {
+		if (!$e->{_hist}) { $h = $e->{_hist} = []; } 
 		# (entr,hist,stat,dt,who,diff,notes)
-		print $::Fhist "\$\$E\$\$$::eid\t$nhist\t2\t$dt\tfrom JMdict.xml\t\\N\t\\N\n"; }
+		push (@$h, {stat=>$KWSTAT_A, dt=>$dt, who=>"from JMdict.xml"}); }
 	    else { die ("Unexpected <upd_detl> contents: $op"); } } }
 
-sub do_freqs { my ($rfrqs, $kfrqs) = @_;
-	# Process collected re_pri (in @$rfrqs) and ke_pri (in @$kfrqs) info.  
-	# This data is collected during the processing of the re_ele and ke_ele
-	# elements but processing is deferred to here, where we find matching 
-	# values that indicate tags that apply to pairs of reading-kanji values.
-	# $::eid is used when writing the table data files so this sub must be
-	# called in the same entry context that the @$rfrqs and @$kfrqs were 
-	# generated in.
-
-	my ($fr, $fk, $nr, $nk, %rmatched, %kmatched, $x, %dupchk);
-
-	# Each element in @$rfrqs and @kfrqs is a 3-element array:
-	#  0 - rdng or kanj number.
-	#  1 - freq kw tag id number (scale).
-	#  2 - scale value.
-	# A reading and kanji tag match if the tag id's and values match. 
-
-	# Go though every posible pair of readings and kanji tags.  If a 
-	# match is found, add a record to the freq table for that tag with
-	# the rdng and kanj numbers of the reading and kanji.  Remember 
-	# (in hashes %rmatched and %kmatched) that these tags were written
-	# to the freq table.
-
-	$nr = -1;
-	foreach $fr (@$rfrqs) {
-	    $nr ++;  $nk = -1;
-	    foreach $fk (@$kfrqs) {
-		$nk++;
-		if ($fr->[1] eq $fk->[1] and $fr->[2] eq $fk->[2]) {
-		    $x = "$fr->[0]_$fk->[0]_$fr->[1]";
-		    if ($dupchk{$x}) {
-			print $::Flog "Seq $::Seq: skipped duplicate pri pair '$x $fr->[2]'\n"; }
-		    else { 
-			print $::Ffrq "\$\$E\$\$$::eid\t$fr->[0]\t$fk->[0]\t$fr->[1]\t$fr->[2]\n";
-			$dupchk{$x} = 1; }
-		    $rmatched{$nr} = 1;  $kmatched{$nk} = 1; } } }
-
-	# Go through the reading freq tags looking for any that weren't paired
-	# with a kanji tag, and write out a record for them.
-
-	if ($rfrqs and @$rfrqs) {
-	    for ($nr=0; $nr<scalar(@$rfrqs); $nr++) {
-		next if ($rmatched{$nr});
-		$fr = $rfrqs->[$nr];
-		$x = "$fr->[0]_null_$fr->[1]";
-		if ($dupchk{$x}) {
-		    print $::Flog "Seq $::Seq: skipped duplicate re_pri '$x $fr->[2]'\n"; }
-		else {
-		    print $::Ffrq "\$\$E\$\$$::eid\t$fr->[0]\t\\N\t$fr->[1]\t$fr->[2]\n";
-		    $dupchk{$x} = 1; } } }
-
-	# Go through the kanji freq tags looking for any that weren't paired
-	# with a reading tag, and write out a record for them.
-
-	if ($kfrqs and @$kfrqs) {
-	    for ($nk=0; $nk<scalar(@$kfrqs); $nk++) {
-		next if ($kmatched{$nk});
-		$fk = $kfrqs->[$nk];
-		$x = "null_$fk->[0]_$fk->[1]";
-		if ($dupchk{$x}) {
-		    print $::Flog "Seq $::Seq: skipped duplicate ke_pri '$x $fr->[2]'\n"; }
-		else {   
-		    print $::Ffrq "\$\$E\$\$$::eid\t\\N\t$fk->[0]\t$fk->[1]\t$fk->[2]\n"; 
-		    $dupchk{$x} = 1; } } } }
-
-sub freqs { my ($frqs, $ord, $flist) = @_;
+sub do_freqs { my ($rdng, $kanj, $feles, $fmap) = @_;
 	# Process a list of [kr]e_pri elements, by parsing each into a kwfreq
 	# tag id number (scale), a scale value.  These two items and the reading
 	# or kanji order number are added to list @$flist as a ref to 3-element
 	# array. 
 
-	my ($kw, $val, $kwstr, $f, %fmap);
-	foreach $f (@$frqs) {
+	my ($kw, $val, $kwstr, $f);
+	foreach $f (@$feles) {
 	    ($kw, $val, $kwstr) = parse_freq ($f->text, $f->name);  
-	    $fmap{$kwstr} = [$ord, $kw, $val]; } 
-	push (@$flist, values (%fmap)); }
+	    if (!$fmap->{$kwstr}) { $fmap->{$kwstr} = [[],[]]; }
+	    if ($rdng) { push (@{$fmap->{$kwstr}[0]}, $rdng); }
+	    if ($kanj) { push (@{$fmap->{$kwstr}[1]}, $kanj); } } }
 
 sub parse_freq { my ($fstr, $ptype) = @_;
 	# Convert a re_pri or ke_pri element string (e.g "nf30") into
@@ -470,6 +400,89 @@ sub parse_freq { my ($fstr, $ptype) = @_;
 	($kw = $::JM2ID{FREQ}{$kwstr}) or die ("Unrecognized $ptype string: /$fstr/\n");
 	if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated $ptype keyword '$i->text'\n"; }
 	return ($kw, $val, $fstr); }
+
+sub mkfreqs { my ($fhash) = @_;
+	my ($r, $k, $v, $kw, $val, $kwstr, @rdngs, @kanjs, 
+	    $frec, @flist, %dup_elim, $x, $t, $key);
+
+	# %$fhash contains the pri element data collected while parsing 
+	# one entry.
+	# %$fhash's keys are the pri values as text strings (e.g. "ichi2")
+	# that were found in the re_ele and ke_ele elements.
+	# The value associated with each of these keys is a 2-element list where
+	# the first element is a list of the rdng records that pri applies
+	# to, and the second element is a list of the kanj records that pri
+	# applies to.  Either (but not both) lists may have 0 elements.
+	#
+	# Our job is to generate "freq" table records for all the combinations
+	# of rdng and kanj in each %$fhash item, eliminate duplicates having
+	# the same (kw,rdng,kanj) values (choosing the one with the lowest 
+	# $val is such case), then assigning these freq records to the rdng
+	# and kanj records they belong to.
+
+	while (($k, $v) = each (%$fhash)) {  # For each pri value...
+
+	      # Parse the pri string into FREQ kw number and value number.
+	      # Since it was parsed before in do_freqs() we know it is valid
+	      # and needn't bother checking for errors here.
+	    ($kw, $val, $kwstr) = parse_freq ($k);
+
+	      # Get the rdng and kanj lists.
+	    @rdngs = @{$v->[0]};  @kanjs = @{$v->[1]};
+
+	    if (!@rdngs) {
+		foreach $k (@kanjs) { push (@flist, [$kw, $val, undef, $k, $kwstr]); } }
+	    elsif (!@kanjs) {
+		foreach $r (@rdngs) { push (@flist, [$kw, $val, $r, undef, $kwstr]); } }
+	    else {
+		foreach $r (@rdngs) {
+		    foreach $k (@kanjs) {
+			 push (@flist, [$kw, $val, $r, $k, $kwstr]); } } } }
+
+	for $x (@flist) {
+	    ($kw, $val, $r, $k, $kwstr) = @$x;
+	    $key = "$kw/$r/$k";
+	    if ($dup_elim{$key}) {
+		if ($val < $dup_elim{$key}->[1]) { 
+		    $t = $dup_elim{$key};
+		    $dup_elim{$key} = $x; 
+		    print $::Flog "Seq $::Seq: duplicate pri '$kwstr' ignored, '$t->[4]'\n"; }
+		else {
+		    print $::Flog "Seq $::Seq: duplicate pri '$kwstr' ignored, '$x->[4]'\n"; } }
+	    else { $dup_elim{$key} = $x; } }
+
+	while (($k, $v) = each (%dup_elim)) {
+	    ($kw, $val, $r, $k, $kwstr) = @$v;
+	    $frec = {kw=>$kw, value=>$val};
+	    if ($r) {
+		if (!$r->{_freq}) { $r->{_freq} = []; } 
+		push (@{$r->{_freq}}, $frec); }
+	    if ($k) {
+		if (!$k->{_freq}) { $k->{_freq} = []; } 
+		push (@{$k->{_freq}}, $frec); } } } 
+
+sub mkrestr { my ($a, $bmap, $attrname, $pos) = @_;
+	# %$a -- A rdng or sens record that has restrictions.
+	# @$pos -- An array containing refs to allowed restriction records.
+	#    items.
+	# %$bmap -- A hash, indexed by txt field, to the set of all possible
+	#    restriction items.  For example, foe "restr" restrictions this
+	#    would be a map of the entry's kanj records.
+	# $attrname -- Name of the key used for the restr list for both "a"
+	#    and "b" records.
+
+	my ($v, $u, $restr_rec, $found);
+	foreach $b (values (%$bmap)) {
+	    $found = 0;
+	    foreach $u (@$pos) {
+		next if ($b != $u);
+		$found = 1; }
+	    if (!$found) {
+		$restr_rec = {};
+		if (!$a->{$attrname}) { $a->{$attrname} = []; }
+		if (!$b->{$attrname}) { $b->{$attrname} = []; }
+		push (@{$a->{$attrname}}, $restr_rec);
+		push (@{$b->{$attrname}}, $restr_rec); } } } 
 
 sub pgesc { my ($str) = @_; 
 	# Escape characters that are special to the Postgresql COPY

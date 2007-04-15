@@ -1,0 +1,65 @@
+1	adj	adjective (keiyoushi)
+2	adj-na	adjectival nouns or quasi-adjectives (keiyodoshi)
+3	adj-no	nouns which may take the genitive case particle `no'
+4	adj-pn	pre-noun adjectival (rentaishi)
+5	adj-t	`taru' adjective
+6	adv	adverb (fukushi)
+8	adv-to	adverb taking the `to' particle
+9	aux	auxiliary
+54	aux-adj	auxiliary adjective
+10	aux-v	auxiliary verb
+12	conj	conjunction
+13	exp	Expressions (phrases, clauses, etc.)
+14	int	interjection (kandoushi)
+17	n	noun (common) (futsuumeishi)
+18	n-adv	adverbial noun (fukushitekimeishi)
+19	n-suf	noun, used as a suffix
+20	n-pref	noun, used as a prefix
+21	n-t	noun (temporal) (jisoumeishi)
+24	num	numeric
+25	pref	prefix
+26	prt	particle
+27	suf	suffix
+28	v1	Ichidan verb
+29	v5	Godan verb (not completely classified)
+30	v5aru	Godan verb - -aru special class
+31	v5b	Godan verb with `bu' ending
+32	v5g	Godan verb with `gu' ending
+33	v5k	Godan verb with `ku' ending
+34	v5k-s	Godan verb - Iku/Yuku special class
+35	v5m	Godan verb with `mu' ending
+36	v5n	Godan verb with `nu' ending
+37	v5r	Godan verb with `ru' ending
+38	v5r-i	Godan verb with `ru' ending (irregular verb)
+39	v5s	Godan verb with `su' ending
+40	v5t	Godan verb with `tsu' ending
+41	v5u	Godan verb with `u' ending
+42	v5u-s	Godan verb with `u' ending (special class)
+43	v5uru	Godan verb - Uru old class verb (old form of Eru)
+44	vi	intransitive verb
+45	vk	Kuru verb - special class
+46	vs	noun or participle which takes the aux. verb suru
+47	vs-s	suru verb - special class
+48	vs-i	suru verb - irregular
+49	vz	zuru verb - (alternative form of -jiru verbs)
+50	vt	transitive verb
+51	ctr	counter
+181	surname	family or surname
+182	place	place name
+183	unclass	unclassified name
+184	company	company name
+185	product	product name
+186	masc	male given name or forename
+187	fem	female given name or forename
+188	person	full name of a particular person
+189	given	given name or forename, gender not specified
+190	station	railway station
+201	adv-n	adverbial noun
+202	comp	computer terminology
+203	neg	negative (in a negative sentence, or with negative verb)
+204	neg-v	negative verb (when used with)
+205	io	irregular okurigana usage
+206	iv	irregular verb
+207	mg	masculine gender
+208	fg	feminine gender
+209	ng	neuter gender

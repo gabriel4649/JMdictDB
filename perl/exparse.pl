@@ -21,10 +21,32 @@
 @VERSION = (substr('$Revision$',11,-2), \
 	    substr('$Date$',7,-11));
 
-# This program will read a JMdict.xml file and create
+# This program will read an Examples file and create
 # an output file containing postgresql data COPY commands.
 # The file can be loaded into a Postgresql jmdict database
 # after subsequent processing with jmload.pl.
+#
+# The Example file "A" lines create database entries with 
+# a entr.src=3 which identifies them as from the Examples
+# files.  These entries will have an single kanji, single
+# sense, and single gloss.  They may have a misc tag and 
+# sense note if there was a parsable "[...]" comment on the
+# line.
+#
+# "B" line items create database xref table rows.  The kanji,
+# reading, or kanji/reading pair text is resolved by looking
+# in the database for matching entries from jmdict.  If no
+# matching entry is found, a warning is entered in the log
+# file and no xref genered for that B line item.  If multiple
+# entries are found, and a warning is genereated and multiple
+# xref's created.  If the B line item has no senses listed 
+# and the target entry has multiple senses, and xref is 
+# generated for each.  A warning is printed and no xref
+# created if a sence is specified that doesn't existing in
+# the target entry.
+# All xrefs have a typ=5 and the (entr,sens) fk points to the
+# example sentence entry, and the (xentr,xsens) fk points to 
+# jmdict entry.
 
 use strict;  use warnings;
 use Encode; use DBI;
@@ -33,6 +55,14 @@ use Getopt::Std ('getopts');
 BEGIN {push (@INC, "./lib");}
 use jmdict;  use jmdictxml ('%EX2ID'); use jmdictpgi;
 
+# Many of the B line references occur over and over again.
+# To avoid repeatedly looking them up in the database, memoize
+# the function that does the lookups (findentr).  The memoize
+# code will cache the call arguments and results, and when the 
+# same arguments are seen again later, will return the results
+# from cache rather then doing another timeconsuming database
+# query.
+ 
 use Memoize;
 memoize ('findentr');
 
@@ -78,6 +108,17 @@ main: {
 	if (!$::Opts{w}) { $dbh->disconnect(); } }
 	
 sub process { my ($dbh, $infn, $outfn, $begin, $count) = @_;
+
+	# Process the Examples file.  
+	# $dbh -- Open database handle we will use when resolving
+	#    the B line cross-references.
+	# $infn -- Name of ther input Examples file.
+	# $outfn -- Name of the output .pgi file.
+	# $begin -- Line number at which to begin processing.  Everythig
+	#    before that is sskipped.
+	# Number of example pairs to process.  Program will terminate
+	#    after this many have been done.
+
 	my ($ln, $aln, $bln, $jtxt, $etxt, $kwds, $cntr, $idxlist, $entr, $tmpfiles, $eid); 
 	open (FIN, "<:utf8", $infn) || die ("Can't open $infn: $!\n");
 	if (!$::Opts{n}) { $tmpfiles = initialize (); }
@@ -96,7 +137,9 @@ sub process { my ($dbh, $infn, $outfn, $begin, $count) = @_;
 		chomp ($@); msg ($@); next; }
 	    if (!$::Opts{w}) {	# w--parse only option
 		$entr = entrxref ($dbh, $jtxt, $etxt, $kwds, $::Lnnum, $idxlist);
-		if (!$::Opts{n} && $entr) { setkeys ($entr, ++$eid); wrentr ($entr); } }
+		if (!$::Opts{n} && $entr) { 
+		    setkeys ($entr, ++$eid); 
+		    wrentr ($entr); } }
 	    if (0 == $cntr % 2000) { print STDERR "."; }
 	    last if ($cntr >= $count);}
 	if ($cntr >= 2000) {print STDERR "\n"; }

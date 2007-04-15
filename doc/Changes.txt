@@ -1,6 +1,57 @@
 
 2007-04-14	smcgrawx@frxii.com
 
+	* pg/data/kwdial.csv [1.1]
+	* pg/data/kwfld.csv [1.1]
+	* pg/data/kwfreq.csv [1.1]
+	* pg/data/kwkinf.csv [1.1]
+	* pg/data/kwlang.csv [1.1]
+	* pg/data/kwmisc.csv [1.1]
+	* pg/data/kwpos.csv [1.1]
+	* pg/data/kwrinf.csv [1.1]
+	* pg/data/kwsrc.csv [1.1]
+	* pg/data/kwstat.csv [1.1]
+	* pg/data/kwxref.csv [1.1]
+	New file.  Replaces former .sql file of same name.
+
+	* pg/data/kwdial.sql [1.5]
+	* pg/data/kwfld.sql [1.4]
+	* pg/data/kwfreq.sql [1.7]
+	* pg/data/kwkinf.sql [1.4]
+	* pg/data/kwlang.sql [1.4]
+	* pg/data/kwmisc.sql [1.5]
+	* pg/data/kwpos.sql [1.6]
+	* pg/data/kwrinf.sql [1.5]
+	* pg/data/kwsrc.sql [1.5]
+	* pg/data/kwstat.sql [1.4]
+	* pg/data/kwxref.sql [1.3]
+	File deleted and replaced by corresponding .csv file.
+
+	* pg/loadkw.sql [1.4]
+	Change to load .csv files instead of .sql files.
+
+	* perl/mkkwmod.pl [1.2]
+	Now creates a kwstatic.pm file from the .csv files in 
+	  pg/data/ rather than from the database kw* tables.  
+	  No longer requires any database access.
+
+	* perl/lib/Makefile [1.1]
+	New file: Updates kwstatic.pm when pg/data/kw*.csv file changes.
+
+	* perl/lib/kwstatic.pm [1.2]
+	Fix: Previous version erroneously contained src keywords I 
+	  use in my personal implementation.
+	Updated to incorporate new pos "ctr" (counter) keyword added 
+	  to kwpos.csv.
+
+	* pg/data/kwpos.csv
+	* perl/lib/jmdictxml.pm
+	Add 'ctr' (counter) keyword that was added to jmdict dtd 
+	  around 2007-04-11,  See edict mailing list, 4/11/07 from
+	  Jim Breen.
+
+2007-04-14	smcgrawx@frxii.com
+
 	* perl/lib/jmdict.pm [1.20]
 	Fix: debugging code added to dbread() in previous rev was misplaced.
 	Fix: in addentr() the numbers going into rdng.rdng and kanj.kanj

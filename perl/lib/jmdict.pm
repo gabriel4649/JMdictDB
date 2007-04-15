@@ -341,11 +341,11 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	  # ...but only a random subset of the copius example xrefs.
 	$sql = sprintf ($sqf, $tmptbl, "AND x.typ=5") . " ORDER BY RANDOM() LIMIT 10";
 	$x2 = dbread ($dbh, $sql);  # Get the non-examples xrefs.
-	  # Merge them together.
 
-	$erefs = \(@$x1, @$x2);
+	  # Merge them together.
+	push (@$x1, @$x2); 
 	  # And build an erefs structure from them.
-	if ($entrs) { bld_erefs ($entrs, $erefs); }
+	if ($entrs) { bld_erefs ($entrs, $x1); }
 	return $erefs; }
     
     sub bld_erefs { my ($entries, $esum) = @_;
@@ -485,7 +485,7 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    if ($r->{_restr}) { foreach $x (@{$r->{_restr}}) { $x->{entr} = $eid;  $x->{rdng} = $nrdng; } }
 	    if ($r->{_stagr}) { foreach $x (@{$r->{_stagr}}) { $x->{entr} = $eid;  $x->{rdng} = $nrdng; } } } }
 	if ($e->{_sens}) { foreach $s (@{$e->{_sens}}) {
-	    $s->{entr} = $eid;  $s->{sens} = ++$nsens;
+	    $s->{entr} = $eid;  $s->{sens} = ++$nsens; $ngloss = 0;
 	    if ($s->{_gloss}) { foreach $g (@{$s->{_gloss}}) { $g->{entr} = $eid;  $g->{sens} = $nsens;
 							         $g->{gloss} = ++$ngloss; } }
 	    if ($s->{_pos})   { foreach $x (@{$s->{_pos}})   { $x->{entr} = $eid;  $x->{sens} = $nsens; } }

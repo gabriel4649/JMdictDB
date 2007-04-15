@@ -170,6 +170,7 @@ our %JM2ID = (
 		'suru verb - irregular' => 48,
 		'zuru verb - (alternative form of -jiru verbs)' => 49,
 		'transitive verb' => 50,
+		'counter' => 51,
 
 		# JMnedict names
 		'family or surname' => 181,

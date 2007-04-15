@@ -115,7 +115,9 @@ jmnedict.dmp: jmnedict.pgi
 	cd perl && perl jmload.pl -o ../jmnedict.dmp ../jmnedict.pgi
 
 loadne: jmnedict.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f drpindex.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmnedict.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f mkindex.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f syncseq.sql
 	
 #------ Load examples ---------------------------------------------------
@@ -132,8 +134,10 @@ examples.pgi: examples.txt
 examples.dmp: examples.pgi
 	cd perl && perl jmload.pl -o ../examples.dmp ../examples.pgi
 
-loadex:
+loadex: examples.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f drpindex.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../examples.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f mkindex.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f syncseq.sql
 
 #------ Load all three -------------------------------------------------

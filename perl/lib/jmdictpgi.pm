@@ -128,7 +128,11 @@ sub wrentr { my ($e) = @_;
 	    foreach $x (@{$s->{_stagk}}) {
 		pout ($::Fstagk, $etag, $x->{sens}, $x->{kanj}); }
 	    foreach $x (@{$s->{_xrslv}}) {
-		pout ($::Fxrsv, $etag, $x->{sens}, $x->{kw}, $x->{txt}); } }
+		pout ($::Fxrsv, $etag, $x->{sens}, $x->{kw}, $x->{txt}); } 
+	    foreach $x (@{$s->{_xref}}) {
+		pout ($::Fxref, $etag, $x->{sens}, $x->{xentr}, $x->{xsens}, $x->{typ}, $x->{notes}); } 
+	    foreach $x (@{$s->{_xrer}}) {
+		pout ($::Fxref, $etag, $x->{sens}, $x->{xentr}, $x->{xsens}, $x->{typ}, $x->{notes}); } }
 	foreach $x (@{$e->{_dial}}) {
 	    pout ($::Fdial, $etag, $x->{kw}); }
 	foreach $x (@{$e->{_lang}}) {

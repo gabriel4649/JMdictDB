@@ -97,6 +97,7 @@ loadjm: jmdict.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) -f reload.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmdict.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f postload.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f xresolv.sql
 
 #------ Load JMnedict ----------------------------------------------------
 
@@ -142,22 +143,19 @@ loadex: examples.dmp
 
 #------ Load all three -------------------------------------------------
 
-loadall: jmdict.dmp jmnedict.pgi examples.txt
+# Note that we cannot reuse jmnedict.dmp or examples.dmp since the
+# the number of entries may be different in the freshly loaded jmdict
+# set, invalidating the starting id numbers in the other .dmp files.
+
+loadall: jmdict.dmp jmnedict.pgi examples.pgi
 	cd pg && psql $(PG_HOST) $(PG_USER) -f reload.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmdict.dmp
 
 	cd perl && perl jmload.pl -o ../jmnedict.dmp ../jmnedict.pgi
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmnedict.dmp
 
-	# exparse.pl resolves from existing jmdict database so 
-	# examples.pgi has to be regenerated when jmdict db changes.
-	# Indexes are vital.
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f mkindex.sql
-	psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -c "VACUUM ANALYZE"
-	cd perl && perl exparse.pl -o ../examples.pgi ../examples.txt >../examples.log
 	cd perl && perl jmload.pl -o ../examples.dmp ../examples.pgi
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f drpindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../examples.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmnedict.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f postload.sql
 
 #------ Other ----------------------------------------------------------

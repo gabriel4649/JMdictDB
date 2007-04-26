@@ -189,6 +189,23 @@ CREATE VIEW prdng AS (
     FROM rdng r);
 
 -------------------------------------------------------------
+-- The first kanji and reading in an entry are significant
+-- because jmdict xml and some other apps use them as 
+-- entry "headwords" that identify the entry.  (Unfortunately
+-- they are not necessarilt unique, especially if there if
+-- it is an entry without kanji.)
+-- This view provide's the first reading and (if there is 
+-- one) first kanji for each entry.
+-------------------------------------------------------------
+CREATE VIEW hdwds AS (
+    SELECT e.id,r.txt AS rtxt,k.txt AS ktxt
+    FROM entr e
+    LEFT JOIN rdng r ON r.entr=e.id
+    LEFT JOIN kanj k ON k.entr=e.id
+    WHERE (r.rdng=1 OR r.rdng IS NULL)
+      AND (k.kanj=1 OR k.kanj IS NULL));
+
+-------------------------------------------------------------
 -- This function will replicate an entry by duplicating it's
 -- row in table entr and all child rows recursively (although
 -- this function is not recursive.)
@@ -269,5 +286,3 @@ CREATE OR REPLACE FUNCTION delentr(entrid int) RETURNS void AS $$
 	UPDATE entr SET stat=5 WHERE entr=entrid;
 	END;
     $$ LANGUAGE plpgsql;
-
-

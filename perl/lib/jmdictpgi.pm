@@ -51,7 +51,7 @@ sub initialize { my ($logfn, $tmpdir) = @_;
 	  [\$::Fpos,   "${td}load09.tmp", "COPY pos(entr,sens,kw) FROM stdin;"],
 	  [\$::Fmisc,  "${td}load10.tmp", "COPY misc(entr,sens,kw) FROM stdin;"],
 	  [\$::Ffld,   "${td}load11.tmp", "COPY fld(entr,sens,kw) FROM stdin;"],
-	  [\$::Fxrsv,  "${td}load12.tmp", "COPY xresolv(entr,sens,typ,txt) FROM stdin;"],
+	  [\$::Fxrsv,  "${td}load12.tmp", "COPY xresolv(entr,sens,ord,typ,rtxt,ktxt,tsens,notes) FROM stdin;"],
 	  [\$::Fxref,  "${td}load13.tmp", "COPY xref(entr,sens,xentr,xsens,typ,notes) FROM stdin;"],
 	  [\$::Fgloss, "${td}load14.tmp", "COPY gloss(entr,sens,gloss,lang,txt) FROM stdin;"],
 	  [\$::Fdial,  "${td}load15.tmp", "COPY dial(entr,kw) FROM stdin;"],
@@ -128,7 +128,9 @@ sub wrentr { my ($e) = @_;
 	    foreach $x (@{$s->{_stagk}}) {
 		pout ($::Fstagk, $etag, $x->{sens}, $x->{kanj}); }
 	    foreach $x (@{$s->{_xrslv}}) {
-		pout ($::Fxrsv, $etag, $x->{sens}, $x->{kw}, $x->{txt}); } 
+		# Warning, jmdict::setkeys() function does not set the _xresolv
+		# PK (entr,sens,ord).  Builder of the object responsible for that.
+		pout ($::Fxrsv, $etag, $x->{sens}, $x->{ord}, $x->{typ}, $x->{rtxt}, $x->{ktxt}, $x->{tsens}, $x->{notes}); } 
 	    foreach $x (@{$s->{_xref}}) {
 		pout ($::Fxref, $etag, $x->{sens}, $x->{xentr}, $x->{xsens}, $x->{typ}, $x->{notes}); } 
 	    foreach $x (@{$s->{_xrer}}) {
@@ -138,7 +140,7 @@ sub wrentr { my ($e) = @_;
 	foreach $x (@{$e->{_lang}}) {
 	    pout ($::Flang, $etag, $x->{kw}); }
 	foreach $x (@{$e->{_hist}}) {
-	    pout ($::Fhist, $etag, $x->{hist}, $x->{stat}, $x->{dt}, \
+	    pout ($::Fhist, $etag, $x->{hist}, $x->{stat}, $x->{dt}, 
 			                $x->{who}, $x->{diff}, $x->{notes}); }} }
 
 sub pout {

@@ -1,6 +1,12 @@
 
 2007-04-26	smcgrawx@frxii.com
 
+	* Makefile [1.12]
+	Fix: loadall target was loading jmnedict twice, examples
+	  not at all.
+
+2007-04-26	smcgrawx@frxii.com
+
 	* perl/exparse.pl [1.4]
 	Formerly, exparse would try to resolve the B line items against
 	  jmdict entries while running.  Changed so that it now, like 

@@ -103,10 +103,10 @@ sub entry_handler { my ($t, $entry ) = @_;
 
 	my ($seq, @x, $kmap, $rmap);
 
-	  # $cntr counts the number of entries parsed.  The 1395 below was 
+	  # $cntr counts the number of entries parsed.  The 1400 below was 
 	  # picked to procude about 80 dots in the "progress bar" for a full
 	  # jmdict.xml file.
-	if (!($::cntr % 1395)) { print STDERR "."; } 
+	if (!($::cntr % 1400)) { print STDERR "."; } 
 	$::cntr += 1;
 
 	  # Get the entry's seq number.  jmnedict won't have a <ent_seq> element
@@ -354,11 +354,15 @@ sub do_lang { my ($e, $lang) = @_;
 	        push (@{$e->{_lang}}, {kw=>$kw}); } } }
 
 sub do_xref { my ($s, $xref, $xtypkw) = @_;
-	my ($x);
+	my ($x, $t, $txt);
 	foreach $x (@$xref) {
 	    # (entr,sens,lang,txt,notes)
 	    if (!$s->{_xrslv}) { $s->{_xrslv} = []; }
-	    push (@{$s->{_xrslv}}, {kw=>$xtypkw, txt=>$x->text}); } }
+	    $t = jstr_classify ($x->text);
+	    if ($t & $jmdict::KANJI) {
+	        push (@{$s->{_xrslv}}, {typ=>$xtypkw, ktxt=>$x->text}); }
+	    else {
+		push (@{$s->{_xrslv}}, {typ=>$xtypkw, rtxt=>$x->text}); } } }
 
 sub do_hist { my ($e, $hist) = @_;
 	my ($x, $dt, $op, $h);

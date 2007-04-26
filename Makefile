@@ -155,7 +155,7 @@ loadall: jmdict.dmp jmnedict.pgi examples.pgi
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmnedict.dmp
 
 	cd perl && perl jmload.pl -o ../examples.dmp ../examples.pgi
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmnedict.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../examples.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f postload.sql
 
 #------ Other ----------------------------------------------------------

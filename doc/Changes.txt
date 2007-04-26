@@ -1,4 +1,69 @@
 
+2007-04-26	smcgrawx@frxii.com
+
+	* perl/exparse.pl [1.4]
+	Formerly, exparse would try to resolve the B line items against
+	  jmdict entries while running.  Changed so that it now, like 
+	  jmparse.pl, doesn't resolve but writes the unresolved text 
+	  strings to table xresolv from where they will be resolved 
+	  later.  Since the Examples file identifies xref targets by 
+	  possibly a reading, kanji, and sense number, the xresolv table
+	  was expanded with columns "rtxt", "ktxt", and "xsens" replacing
+	  the single "txt" column.  Also added a "ord" column since the 
+	  the B line items may be repeated and order matched order of
+	  aperance in the A line text. 
+	Since database access no longer needed for xref resolution, all
+	  the database stuff was ripped out.
+
+	* perl/jmparse.pl [1.24]
+	Adjust the interval at with the progress bar dots are printed in
+	  compensate for ever growing jmdict.xml file.
+	When creating xresolv table records, put text in field "rtxt" or
+	  "ktxt" as appropriate.
+
+	* perl/lib/jmdict.pm [1.22]
+	Change jstr_classify() to consider any c.p. greater than 0x4E00 to 
+	  be a kanji character.  Previously is was >0x4E00 and <=0x9FFF but 
+	  that resulted in entries with kanji strings like "CTIF" (where "C"
+	  is 0xFFxx) to be considered non-kanji even though it is stored in
+	  a kanj table row. 
+
+	* perl/lib/jmdictpgi.pm [1.3]
+	Fix: remove erroneous backslash in wrentr() that was causing hist.who
+	  fields to be generated as the string "SCALAR(..."
+	In wrentr() and initialize(), adjust for table xresolv now having 
+	  columns "rtxt" and "ktxt", rather than just single column "txt".
+
+	* pg/Makefile [1.2]
+	Fix: Wrong name for mkindex.pl command.
+
+	* pg/mktables.sql [1.16]
+	Replaced column txt in table xresolv with columns "ord", "rtxt",
+	  "ktxt", "xsens".  See perl/exparse.pl change note for more info.
+
+	* pg/mkviews.sql [1.16]
+	New view hdwds.
+
+	* pg/mkindex.pl [1.2]
+	Fix: was creating bad "DROP INDEX" commands in drpindex.sql.
+
+	* pg/mkindex.sql [1.11]
+	* pg/drpindex.sql [1.2]
+	Regenerated due to changes in mktables.sql.
+
+	* pg/postload.sql [1.7]
+	Don't call xresolv.sql anymore.  That is now called directly from
+	  makefile.
+
+	* pg/xresolv.sql [1.6]
+	Completely rewritten.  Now resolves all but 33 jmdict xrefs 
+	  (2007-04-15 JMdict).
+
+	* Makefile [1.11]
+	exparse now writes raw xrefs to table xresolv like jmparse rather 
+	  than resolving at parse time.  This means examples.pgi need not be
+	  regenerated when jmdict is.
+
 2007-04-15	smcgrawx@frxii.com
 
 	* perl/lib/jmdict.pm [1.21]

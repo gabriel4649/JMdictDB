@@ -1,6 +1,14 @@
 
 2007-04-26	smcgrawx@frxii.com
 
+	* Makefile [1.13]
+	Fix: loadall target did not run xresolv.sql.
+
+	* xresolv.sql [1.7]
+	Fix: bad table names.
+
+2007-04-26	smcgrawx@frxii.com
+
 	* Makefile [1.12]
 	Fix: loadall target was loading jmnedict twice, examples
 	  not at all.

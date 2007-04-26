@@ -462,12 +462,12 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    $n = ord();
 	    if    ($n >= 0x3040 and $n <= 0x309F) { $r |= ($HIRAGANA | $KANA); }
 	    elsif ($n >= 0x30A0 and $n <= 0x30FF) { $r |= ($KATAKANA | $KANA); }
-	    elsif ($n >= 0x4E00 and $n <= 0x9FFF) { $r |= $KANJI; } }
+	    elsif ($n >= 0x4E00)                  { $r |= $KANJI; } }
 	return $r; }
 
     sub setkeys { my ($e, $eid) = @_;
 	# Set the foreign and primary key values in each record.
-	my ($k, $r, $s, $g, $x, $nkanj, $nrdng, $nsens, $ngloss, $nhist);
+	my ($k, $r, $s, $g, $x, $nkanj, $nrdng, $nsens, $ngloss, $nhist, $nxr);
 	if ($eid) { $e->{id} = $eid; }
 	die ("No entr.id number found or received") if (!$e->{id});
 	if ($e->{_kanj}) { foreach $k (@{$e->{_kanj}}) {
@@ -485,7 +485,7 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    if ($r->{_restr}) { foreach $x (@{$r->{_restr}}) { $x->{entr} = $eid;  $x->{rdng} = $nrdng; } }
 	    if ($r->{_stagr}) { foreach $x (@{$r->{_stagr}}) { $x->{entr} = $eid;  $x->{rdng} = $nrdng; } } } }
 	if ($e->{_sens}) { foreach $s (@{$e->{_sens}}) {
-	    $s->{entr} = $eid;  $s->{sens} = ++$nsens; $ngloss = 0;
+	    $s->{entr} = $eid;  $s->{sens} = ++$nsens; $ngloss = 0;  $nxr = 0;
 	    if ($s->{_gloss}) { foreach $g (@{$s->{_gloss}}) { $g->{entr} = $eid;  $g->{sens} = $nsens;
 							         $g->{gloss} = ++$ngloss; } }
 	    if ($s->{_pos})   { foreach $x (@{$s->{_pos}})   { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
@@ -493,7 +493,8 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    if ($s->{_fld})   { foreach $x (@{$s->{_fld}})   { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
 	    if ($s->{_stagk}) { foreach $x (@{$s->{_stagk}}) { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
 	    if ($s->{_stagr}) { foreach $x (@{$s->{_stagr}}) { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
-	    if ($s->{_xrslv}) { foreach $x (@{$s->{_xrslv}}) { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
+	    if ($s->{_xrslv}) { foreach $x (@{$s->{_xrslv}}) { $x->{entr} = $eid;  $x->{sens} = $nsens;  
+								 $x->{ord} = ++$nxr } }
 	    if ($s->{_xref})  { foreach $x (@{$s->{_xref}})  { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
 	    if ($s->{_xrer})  { foreach $x (@{$s->{_xrer}})  { $x->{xentr}= $eid;  $x->{xsens}= $nsens; } } } }
 	if ($e->{_dial}) { foreach $x (@{$e->{_dial}})       { $x->{entr} = $eid; } }

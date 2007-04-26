@@ -1,20 +1,20 @@
 -- This file is recreated during the database build process.
 -- See Makefile for details.
 
-DROP INDEX IF EXISTS entr_seq;
-DROP INDEX IF EXISTS entr_stat;
-DROP INDEX IF EXISTS rdng_txt;
-DROP INDEX IF EXISTS kanj_txt;
-DROP INDEX IF EXISTS gloss_txt; 
-DROP INDEX IF EXISTS xref_xentr;
-DROP INDEX IF EXISTS hist_dt;
-DROP INDEX IF EXISTS hist_who;
-DROP INDEX IF EXISTS audio_fname;
-DROP INDEX IF EXISTS editor_email;
-DROP INDEX IF EXISTS editor_name;
-DROP INDEX IF EXISTS xresolv_sens;
-DROP INDEX IF EXISTS xresolv_txt;
-DROP INDEX IF EXISTS freq_idx1; 
+DROP INDEX entr_seq;
+DROP INDEX entr_stat;
+DROP INDEX rdng_txt;
+DROP INDEX kanj_txt;
+DROP INDEX gloss_txt; 
+DROP INDEX xref_xentr;
+DROP INDEX hist_dt;
+DROP INDEX hist_who;
+DROP INDEX audio_fname;
+DROP INDEX editor_email;
+DROP INDEX editor_name;
+DROP INDEX xresolv_rdng;
+DROP INDEX xresolv_kanj;
+DROP INDEX freq_idx1; 
 ALTER TABLE entr DROP CONSTRAINT entr_src_fkey;
 ALTER TABLE entr DROP CONSTRAINT entr_stat_fkey;
 ALTER TABLE rdng DROP CONSTRAINT rdng_entr_fkey;

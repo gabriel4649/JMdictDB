@@ -190,10 +190,16 @@ CREATE TABLE editor (
 CREATE TABLE xresolv (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
+    ord SMALLINT NOT NULL,
     typ SMALLINT NOT NULL,
-    txt VARCHAR(250) NOT NULL);
---CREATE INDEX xresolv_sens ON xresolv(entr,sens);
---CREATE INDEX xresolv_txt ON xresolv(txt);
+    rtxt VARCHAR(250),
+    ktxt VARCHAR(250),
+    tsens SMALLINT,
+    notes VARCHAR(250),
+    PRIMARY KEY(entr,sens,ord),
+    CHECK (rtxt NOTNULL OR ktxt NOTNULL));
+--CREATE INDEX xresolv_rdng ON xresolv(rtxt);
+--CREATE INDEX xresolv_kanj ON xresolv(ktxt);
 --ALTER TABLE xresolv ADD CONSTRAINT xresolv_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE xresolv ADD CONSTRAINT xresolv_typ_fkey FOREIGN KEY (typ) REFERENCES kwxref(id);
 

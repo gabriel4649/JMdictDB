@@ -32,15 +32,82 @@
 --  Copyright (c) 2006,2007 Stuart McGraw 
 ---------------------------------------------------------------------------
 
-INSERT INTO xref(entr,sens,xentr,xsens,typ,notes) 
-  (SELECT v.entr,v.sens,s.entr,s.sens,v.typ,NULL
+CREATE TABLE _xrsv(
+    entr INT NOT NULL,
+    sens INT NOT NULL,
+    ord INT NOT NULL,
+    xentr INT NOT NULL,
+    PRIMARY KEY (entr,sens,ord,xentr)); 
+CREATE INDEX xrsv_xentr ON xrsv(xentr);
+ALTER TABLE xrsv ADD CONSTRAINT xrsv_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
+
+INSERT INTO _xrsv(entr,sens,ord,xentr)
+
+    -- subselect #1: rtxt xrefs for which only one entry with 
+    -- the given reading (in any position) exists.
+    (SELECT 
+        v.entr,v.sens,v.ord,MAX(r.entr) AS xentr
     FROM xresolv v 
-      JOIN kanj k ON k.txt=v.txt 
-      JOIN sens s ON k.entr=s.entr
-  UNION
-  SELECT v.entr,v.sens,s.entr,s.sens,v.typ,NULL
+    JOIN entr e ON e.id=v.entr
+    JOIN rdng r ON r.txt=v.rtxt
+    JOIN entr e2 ON e2.id=r.entr
+    WHERE v.ktxt IS NULL AND e.src=1 AND e2.src=1
+    GROUP BY v.entr,v.sens,v.ord
+    HAVING COUNT(v.entr)=1
+
+    UNION
+
+    -- subselect #2: rtxt xrefs for which only one entry exists 
+    -- with the given reading as the first reading and having no kanji.
+    SELECT 
+        v.entr,v.sens,v.ord,MAX(r.entr) as xentr
     FROM xresolv v 
-      JOIN rdng r ON r.txt=v.txt  
-      JOIN sens s ON r.entr=s.entr);
+    JOIN entr e ON e.id=v.entr
+    JOIN rdng r ON r.txt=v.rtxt 
+    JOIN entr e2 ON e2.id=r.entr
+    WHERE v.ktxt IS NULL AND r.rdng=1 AND e.src=1 AND e2.src=1 
+      AND 0=(SELECT COUNT(*) FROM kanj k WHERE k.entr=r.entr)
+    GROUP BY v.entr,v.sens,v.ord
+    HAVING COUNT(r.entr)=1
+
+    UNION
+
+    -- subselect #3: ktxt xrefs for which only one entry with 
+    -- the given kanji (in any position) exists.. 
+    SELECT 
+        v.entr,v.sens,v.ord,MAX(k.entr) AS xentr
+    FROM xresolv v 
+    JOIN entr e ON e.id=v.entr
+    JOIN kanj k ON k.txt=v.ktxt 
+    JOIN entr e2 ON e2.id=k.entr
+    WHERE v.rtxt IS NULL AND e.src=1 AND e2.src=1
+    GROUP BY v.entr,v.sens,v.ord
+    HAVING COUNT(v.entr)=1
+
+    UNION
+
+    -- subselect #4: ktxt xrefs for which only one entry exists 
+    -- with the given kanji as the first kanji.
+    SELECT 
+        v.entr,v.sens,v.ord,MAX(k.entr) AS xentr
+    FROM xresolv v 
+    JOIN entr e ON e.id=v.entr
+    JOIN kanj k ON k.txt=v.ktxt 
+    JOIN entr e2 ON e2.id=k.entr
+    WHERE v.rtxt IS NULL AND k.kanj=1 AND e.src=1 AND e2.src=1
+    GROUP BY v.entr,v.sens,v.ord
+    HAVING COUNT(v.entr)=1
+    );
+
+VACUUM ANALYZE _xrsv;
+
+INSERT INTO xref(entr,sens,xentr,xsens,typ,notes)
+    (SELECT DISTINCT x.entr,x.sens,x.xentr,s.sens,z.typ,z.notes
+    FROM _xrsv x 
+    JOIN xresolv z ON z.entr=x.entr AND z.sens=x.sens AND z.ord=x.ord
+    JOIN sens s ON s.entr=x.xentr);
+
+VACUUM ANALYZE xref;
+
 
 

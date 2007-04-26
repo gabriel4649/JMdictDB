@@ -32,14 +32,14 @@
 --  Copyright (c) 2006,2007 Stuart McGraw 
 ---------------------------------------------------------------------------
 
-CREATE TABLE _xrsv(
+CREATE TABLE _xrsv (
     entr INT NOT NULL,
     sens INT NOT NULL,
     ord INT NOT NULL,
     xentr INT NOT NULL,
     PRIMARY KEY (entr,sens,ord,xentr)); 
-CREATE INDEX xrsv_xentr ON xrsv(xentr);
-ALTER TABLE xrsv ADD CONSTRAINT xrsv_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
+CREATE INDEX _xrsv_xentr ON _xrsv(xentr);
+ALTER TABLE _xrsv ADD CONSTRAINT _xrsv_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 
 INSERT INTO _xrsv(entr,sens,ord,xentr)
 
@@ -108,6 +108,3 @@ INSERT INTO xref(entr,sens,xentr,xsens,typ,notes)
     JOIN sens s ON s.entr=x.xentr);
 
 VACUUM ANALYZE xref;
-
-
-

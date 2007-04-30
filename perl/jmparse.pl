@@ -262,7 +262,7 @@ sub do_sens { my ($e, $sens, $kmap, $rmap) = @_;
 	foreach $es (@$sens) {
 	    $txt = undef;
 	    if (@x = $es->get_xpath ("s_inf")) { $txt = $x[0]->text; }
-	    $s = {note=>$txt};
+	    $s = {notes=>$txt};
 	    # (entr,sens,notes)
 	    push (@{$e->{_sens}}, $s);
 	    @p = $es->get_xpath ("pos");

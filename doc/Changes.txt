@@ -1,4 +1,20 @@
 
+2007-04-30	smcgrawx@frxii.com
+
+	T015 tag
+	Tagged prior to making changes for version 1.06 of the
+	  JMdict XML DTD.  These changes were made around
+	  2007/04/24-2007/04/30.  From the comments in the JMdict
+	  file:
+	  > Dropped the "*" from the end of the entry element.
+	  > Dropped the g_lang attribute in favour of xml:lang
+	  > Dropped the <lang> element and replaced it with <lsource>
+	  >   at the sense level.
+	  > Moved <dial> from the entry level to the source level.
+
+	* perl/jmparse.pl [1.25]
+	Fix: Sense notes were not being added to database.
+
 2007-04-26	smcgrawx@frxii.com
 
 	* Makefile [1.13]

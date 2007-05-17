@@ -38,9 +38,10 @@ main: {
 	my ($twig, $infn, $outfn, $tmpfiles, $tmp, $enc, $logfn,
 	    $user, $pw, $dbname, $host);
 
-	getopts ("o:c:s:b:e:l:t:kh", \%::Opts);
+	getopts ("o:c:s:b:e:l:t:g:kh", \%::Opts);
 	if ($::Opts{h}) { usage (0); }
 	$enc = $::Opts{e} || "utf-8";
+	if ($::Opts{g}) { $::Opts{g} = $::JM2ID{LANG}{$::Opts{g}}; }
 	binmode(STDOUT, ":encoding($enc)");
 	binmode(STDERR, ":encoding($enc)");
 	eval { binmode($DB::OUT, ":encoding($enc)"); };
@@ -187,10 +188,10 @@ sub do_entry { my ($seq, $entry, $srcid) = @_;
 	if (@x = $entry->get_xpath("r_ele")) { $rmap = do_rdng ($e, \@x, $kmap, \%fmap); }
 	if (@x = $entry->get_xpath("sense")) { do_sens ($e, \@x, $kmap, $rmap); }
 	if (@t) 			     { do_sens ($e, \@t, $kmap, $rmap); }
-	if (@x = $entry->get_xpath("info/dial"))  { do_dial ($e, \@x); }
-	if (@x = $entry->get_xpath("info/lang"))  { do_lang ($e, \@x); }
 	if (@x = $entry->get_xpath("info/audit")) { do_hist ($e, \@x); }
 	mkfreqs (\%fmap);
+	die ("Has no senses") if (scalar (@{$e->{_sens}}) < 1);
+	die ("Has no readings") if (scalar (@{$e->{_rdng}}) < 1);
 	setkeys ($e, ++$::eid);
 	wrentr ($e); }
 
@@ -233,7 +234,7 @@ sub do_rdng { my ($e, $reles, $kmap, $fmap) = @_;
 	        my (@u); foreach $z (values (%$kmap)) { push ( @u, $z); }
 		mkrestr ($r, $kmap, "_restr", \@u); }
 	    elsif (@x = $er->get_xpath ("re_restr")) { do_restrs ($r, \@x, "_restr", $kmap); } }
-	    return \%rmap; }
+	return \%rmap; }
 
 sub do_restrs { my ($arec, $restrele, $attrname, $bmap) = @_;
 	my (@u, $u, $i);
@@ -263,8 +264,6 @@ sub do_sens { my ($e, $sens, $kmap, $rmap) = @_;
 	    $txt = undef;
 	    if (@x = $es->get_xpath ("s_inf")) { $txt = $x[0]->text; }
 	    $s = {notes=>$txt};
-	    # (entr,sens,notes)
-	    push (@{$e->{_sens}}, $s);
 	    @p = $es->get_xpath ("pos");
 	    if (!@p) { @p = @pp; }
 	    if (@p) { do_pos ($s, \@p); @pp = @p; }
@@ -276,17 +275,29 @@ sub do_sens { my ($e, $sens, $kmap, $rmap) = @_;
 	    if (@x = $es->get_xpath ("name_type")) { do_pos    ($s, \@x); }
 	    if (@x = $es->get_xpath ("trans_det")) { do_gloss  ($s, \@x); }
 	    if (@x = $es->get_xpath ("stagr"))     { do_restrs ($s, \@x, "_stagr", $rmap); }
-	    if (@x = $es->get_xpath ("stagk"))     { do_restrs ($s, \@x, "_stagk", $kmap); } } }
+	    if (@x = $es->get_xpath ("stagk"))     { do_restrs ($s, \@x, "_stagk", $kmap); }
+	    if (@x = $es->get_xpath ("dial"))      { do_dial   ($s, \@x); }
+	    if (@x = $es->get_xpath ("lsource"))   { do_lsrc   ($s, \@x); }
+	    # (entr,sens,notes)
+	    if (scalar (\@{$s->{_gloss}}) > 0) { push (@{$e->{_sens}}, $s); }
+	    else {
+		# This sense has no glosses,
+		# If running with -g, this is normal so don't log 
+		# them.  Otherwise something is amiss.
+		if (!$::Opts{g}) {
+		    print $::Flog "Seq $::Seq: No glosses found in sense\n"; } } } }
 
 sub do_gloss { my ($s, $gloss) = @_;
-	my ($g, $lang, $txt);
+	my ($g, $lang, $lng, $txt);
 	$s->{_gloss} = [];
 	foreach $g (@$gloss) {
-	    $lang = undef; $lang = $g->att("g_lang");
-	    $lang = $lang ? $::JM2ID{LANG}{$lang} : $::JM2ID{LANG}{"en"}; 
+	    $lng = $g->att("xml:lang");
+	    $lang = $lng ? $::JM2ID{LANG}{$lng} : $KWLANG_en;
+	    if (!$lang && $lng) { print $::Flog "Seq $::Seq: invalid lang attribute '$lng'\n"; }
 	    ($txt = $g->text) =~ s/\\/\\\\/go;
 	    # (entr,sens,gloss,lang,txt,notes)
-	    push (@{$s->{_gloss}}, {lang=>$lang, txt=>$txt}); } }
+	    if (!$::Opts{g} or $::Opts{g}=$lang) {
+	        push (@{$s->{_gloss}}, {lang=>$lang, ginf=>$KWGINF_equ, txt=>$txt}); } } }
 
 sub do_pos { my ($s, $pos) = @_;
 	my ($i, $kw, $txt, %dupchk);
@@ -327,9 +338,9 @@ sub do_fld { my ($s, $fld) = @_;
 		$dupchk{$kw} = 1;
 	        push (@{$s->{_fld}}, {kw=>$kw}); } } }
 
-sub do_dial { my ($e, $dial) = @_;
+sub do_dial { my ($s, $dial) = @_;
 	my ($i, $kw, $txt, %dupchk);
-	$e->{_dial} = [];
+	$s->{_dial} = [];
 	foreach $i (@$dial) {
 	    $txt = substr ($i->text, 0, -1);
 	    ($kw = $::JM2ID{DIAL}{$txt}) or \
@@ -338,20 +349,22 @@ sub do_dial { my ($e, $dial) = @_;
 	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate dial string '$txt'\n"; }
 	    else {
 		$dupchk{$kw} = 1;
-	        push (@{$e->{_dial}}, {kw=>$kw}); } } }
+	        push (@{$s->{_dial}}, {kw=>$kw}); } } }
 
-sub do_lang { my ($e, $lang) = @_;
-	my ($i, $kw, $txt, %dupchk);
-	$e->{_lang} = [];
-	foreach $i (@$lang) {
-	    $txt = substr ($i->text, 0, -1);
-	    ($kw = $::JM2ID{LANG}{$txt}) or \
-		die ("Unknown \'lang\' text: /$txt/\n");
-	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated lang string '$txt'\n"; }
-	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate lang string '$txt'\n"; }
-	    else {
-		$dupchk{$kw} = 1;
-	        push (@{$e->{_lang}}, {kw=>$kw}); } } }
+sub do_lsrc { my ($s, $lsrc) = @_;
+	my ($i, $kw, $txt, $lang, $lng, $lskw, $kw, %dupchk);
+	$s->{_lsrc} = [];
+	foreach $i (@$lsrc) {
+	    $txt = $i->text;  
+	    $lang = $::JM2ID{LANG}{($lng=$i->att("xml:lang")) || "en"};
+	    if (!$lang) { die "Seq $::Seq: invalid lsource lang attribute '$lng'\n"; }
+	    if ($lang >= 200) { print $::Flog "Seq $::Seq: deprecated lsource lang '$lng'\n"; }
+	    $kw = $::JM2ID{LSRC}{($lskw=$i->att("ls_type")) || "full"};
+	    if (!$kw) { die "Seq $::Seq: invalid lsource type attribute '$lskw'\n"; }
+	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated lsource type '$lskw'\n"; }
+	    if ($kw != 1 and !$txt ) { 
+		print $::Flog "Seq $::Seq: non-default lsource type '$lskw' and no text\n"; }
+	    push (@{$s->{_lsrc}}, {kw=>$kw, lang=>$lang, txt=>$txt} ); } }
 
 sub do_xref { my ($s, $xref, $xtypkw) = @_;
 	my ($x, $t, $txt);
@@ -524,6 +537,9 @@ Options:
 	    an entry-by-entry basis by looking for a <trans> element.
 	-c entry-count -- Number of entries to process.
 	-b begin-seq-num -- Sequence number of first entry to process.
+	-g lang -- Include only gloss tag with language code 'lang'.
+	    If not given default is to include all glosses regardless
+	    of language.
 	-k -- (keep) do not delete temporary files.
 	-e encoding -- Encoding to use when writing messages to stderr
 	    and stdout.  Default is "utf-8".

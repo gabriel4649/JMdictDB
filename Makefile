@@ -59,24 +59,24 @@ TAL_FILES = perl/lib/tal/entr.tal \
 all:
 	@echo 'You must supply an explicit target with this makefile:'
 	@echo '  jmdict.xml -- Get latest jmdict xml file from Monash.'
-	@echo '  jmdict.pgi -- Create intermediate load file from jmdict.xml file.'
+	@echo '  jmdict.pgi -- Create intermediate file from jmdict.xml file.'
 	@echo '  jmdict.dmp -- Create Postgres load file from intermediate file.'
-	@echo '  loadjm -- Initialize database and load jmdict.dmp.'
+	@echo '  loadjm -- Initialize database and load jmdict.'
 	@echo
 	@echo '  jmnedict.xml -- Get latest jmnedict xml file from Monash.'
-	@echo '  jmnedict.pgi -- Create intermediate load file from jmdict.xml file.'
+	@echo '  jmnedict.pgi -- Create intermediate file from jmdict.xml file.'
 	@echo '  jmnedict.dmp -- Create Postgres load file from intermediate file.'
-	@echo '  loadne -- Initialize database and load jmdict.dmp.'
+	@echo '  loadne -- Load jmnedict into the existing database.'
 	@echo
 	@echo '  examples.txt -- Get latest Examples file from Monash.'
-	@echo '  examples.pgi -- Create intermediate load file from jmdict.xml file.'
+	@echo '  examples.pgi -- Create intermediate file from examples.xml file.'
 	@echo '  examples.dmp -- Create Postgres load file from intermediate file.'
-	@echo '  loadex -- Initialize database and load jmdict.dmp.'
+	@echo '  loadex -- Load examples into the existing database.'
 	@echo
 	@echo '  loadall -- Initialize database and load jmdict, jmnedict, and examples.'
 	@echo
-	@echo '  dist -- Make development snapshot distribution file.'
 	@echo '  web -- Install cgi and other web files to the appropriate places.'
+	@echo '  dist -- Make development snapshot distribution file.'
 
 #------ Load JMdict -----------------------------------------------------
 
@@ -163,14 +163,18 @@ loadall: jmdict.dmp jmnedict.pgi examples.pgi
 
 clean:
 	rm -f jmdict.tgz
+	find -name '*.log' -type f -print0 | xargs -0 /bin/rm -f
 	find -name '*~' -type f -print0 | xargs -0 /bin/rm -f
 	find -name '*.tmp' -type f -print0 | xargs -0 /bin/rm -f
+	find -name '\#*' -type f -print0 | xargs -0 /bin/rm -f
+	find -name '\.*' -type f -print0 | xargs -0 /bin/rm -f
 
 dist: 
+	# This should be run in a freshly checked out
+	# directory to avoid including spurious files.
 	tar -cz -f jmdict.tgz \
 	  --exclude 'CVS' --exclude '*.log' --exclude '*~' --exclude '*.tmp' \
-	  --exclude '\#*' --exclude '\.*' \
-	  README.txt Changes.txt Makefile doc/schema* doc/tut* perl pg
+	  --exclude '\#*' --exclude '\.*' .
 
 web:	webcgi weblib webtal webcss
 webcss:	$(CSS_FILES:perl/cgi/%=$(CSS_DIR)/%)

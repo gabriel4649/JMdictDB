@@ -35,6 +35,8 @@ This package contains the following directories:
   ./pg/data/        Database static data.
 See "ANNOTATED MANIFEST" below for more details.
 
+See doc/Changes.txt for CVS change log.
+
 
 ======
 STATUS
@@ -117,91 +119,78 @@ Procedure
 Note: relative file paths below (except in command 
 lines) are relative to the package top level directory.
 
-Note: A Makefile is provided that automates most of 
-these steps which runs on any unix-like system with 
-GNU make.  It also runs under Windows if Cygwin tools
-are available.  It will be documented here in the 
-future, but the procedure below doesn't use it.
+A Makefile is provided that automates the loading and
+updating of JMdictDB database.  It is presumed that 
+there is a functioning Postgresql instance, and that 
+you have access to the database "postgres" account.
 
-Note: The following procedure describes loading the
-JMdict data into the database.  Tools are provided that
-will also load JMnedict and the Examples files but the
-procedure has not been documented yet.
+The Makefile is usable on both *nix and Windows systems
+but the latter requires a working Gnu 'make' program.
+The Cygwin package (http://www.cygwin.com) provides a 
+full unix environment under Windows, including 'make'.
+Alternatively, stand-alone native versions of Gnu 'make'
+are available (see http://unxutils.sourceforge.net/ or
+http://www.mingw.org/ for example.)
 
-1. Get a copy of the current JMdict_e.gz file from 
-   ftp://ftp.cc.monash.edu.au/pub/nihongo/JMdict_e.gz
-   and uncompress it.
-   (You can also use the larger JMdict.gz file if you
-   wish, which contains non-english glosses in addition
-   to the english ones.)
+1. In the top level directory, run "make" which won't
+   do anything other than list the available targets 
+   that will do something.  For JMdict the targets are:
 
-2. cd to the ./perl subdirectory and run the jmparse.pl 
-   script to create an intermediate file.  The example 
-   below assumes you unpacked the JMdict.gz file to 
-   ./JMdict. 
+   jmdict.xml: 
+	Download the current JMdict_e.gz file from the 
+	Moash FTP site, and unpack it.
 
-        ./jmparse.pl -o ../jmdict.pgi ../JMdict
+   jmdict.pgi: 
+	Do target jmdict.xml if neccessary, then parse
+	the jmdict.xml file, generating a rebasable 
+	jmdict.pgi file and jmdict.log.  Note that 
+	this can take a long time (10's of minutes).
 
-   Run jmparse.pl with the -h option for usage info.
-   jmparse.pl will write the intermediate file as specified by
-   the -o option.  It also processes comments in the jmdict 
-   file to get info about deleted entries, and and will record
-   any unparsable comments to the file "jmdict.log".
-   jmparse.pl does not do any database access.
+   jmdict.dmp:
+	Do target jmdict.pgi if neccessary, then create
+	a Postgresql .dmp file with the entry id numbers
+	resolved.  
 
-3. Run the jmload.pl command to convert the the intermediate 
-   file produced by jmparse.pl to a Postgresql loadable dump
-   file, by replacing the relative entr.id numbers in the 
-   former, with that actual entr.id numbers appropriate to 
-   the database the data will be loaded into. 
+   loadjm:
+	Do target jmdict.dmp if neccessary, then delete
+	any existing jmdict database, create a new empty 
+	jmdict database, load the .dmp file and do all
+	the post load tasks like creating indexes, 
+	resolving xref's etc. After this, the database 
+	should be fully loaded and functional.
 
-	./jmload.pl -i 1 -o ../jmdict.dmp ../jmdict.pgi
+   There are similar sets of target for loading JMnedict
+   and the Examples file.
 
-3. cd to ./pg/ and do the following.  The second command
-   assumes as above that the jmdict load file created
-   by jmload.pl is ../jmdct.dmp.
+   There is target, "loadall", that will load all three files 
+   (JMdict, JMnedict, and Examples)
 
-	psql -U postgres -f reload.sql
-	psql -U postgres -d jmdict <../jmdict.dmp
-	psql -U postgres -d jmdict -f postload.sql
+   Note that currently, the Examples file cross references 
+   are not resolved to jmdict xrefs as part of the Makefile
+   directed install.
 
-   (You may want or need to use a username other than
-   "postgres" depending on how your Postgresql installation
-   is configured.  The above should work for an "out-of-
-   the-box" Postgresql installation.)
-   In addition to the normal Postgresql "notice" messages, 
-   the output from postload.sql will include a list of
-   unresolvable cross-references.  These will be displayed
-   as utf-8 which will result in mojibake if you are running 
-   on a system configured for something other than utf-8 (e.g.
-   an MS Windows system configured for Japanese which uses 
-   the cp932 character encoding).  You can regenerate the 
-   info again later in readable form.
+   There is a target, "web" to install the web CGI files.  
+   You will probably want to adjust the variables defining
+   the install directories (near the top of the Makefile)
+   before running this.
 
-   You should now be able to run the ./perl/showentr.pl
-   script to look at jmdict entries from the database.
-   Use -h options for usage info.
-
-4. Either copy the ./perl/cgi/ and ./perl/lib/ directories to
-   someplace enabled for cgi, or configure your web server to 
-   execute cgi scripts from the ./perl/cgi/ directory in its
-   current location.
-
-   Create a file lib/jmdict.cfg containing one line containing
-   three space separated words which are repectively, the name
-   of the jmdict database, the postgres username to use, and the 
-   password for that username.  For example:
+2. In the ./perl/lib directory, create a file lib/jmdict.cfg
+   containing one line containing three space separated words
+   which are repectively, the name of the jmdict database, the
+   postgres username to use, and the password for that username.
+   For example:
    
        jmdict postgres thepassword
 
-   This file must be readable by the user that the web server 
-   runs as.
+   Copy this file to any lib directories used by the active
+   cgi files.   This file must be readable by the user that
+   the web server runs as.
 
    You should now be able to go to the url corresponding to 
    srchform.pl and do searches for jmdict entries.  The url
    corresponding to nwform.pl will let you add new entries.
 
-5. (Optional)
+3. (Optional)
    Import Kale Stutzman's Google page count data into database.
    [...to be supplied...]
 
@@ -210,27 +199,29 @@ procedure has not been documented yet.
 ANNOTATED MANIFEST
 ==================
 
-./Changes.txt...................CVS change log.
 ./COPYING.txt...................GNU General Public License Terms.
 ./README.txt....................This file.
-./Makefile......................Simpify some common tasks (Unix/Linux only).
+./Makefile......................Simplify loading the database.
 
+./doc/README.txt................General information.
+./doc/Changes.txt...............[*] Detailed change log extracted from CVS.
+./doc/Makefile..................Generate processed documentation.
 ./doc/schema.dia................Dia source for database schema diagram.
-./doc/schema.png................Database schema diagram.
+./doc/schema.png................[*] Database schema diagram.
 ./doc/schema.odt................Schema documentation source (OpenOffice Writer).
-./doc/schema.html...............Schema documentation (html).
+./doc/schema.html...............[*] Schema documentation (html).
+./doc/TODO.html.................[*] To-do list. 
+./doc/todo.tal..................TAL template used to generate TODO.html.
 ./doc/tut0.pl...................API executable tutorial, Database connections.
 ./doc/tut1.pl...................API executable tutorial, The Kwds() structure.
 ./doc/tut2.pl...................API executable tutorial, Finding and Getting Entries.
 ./doc/tut3.pl...................API executable tutorial, The Entry Object.
 
 ./perl/
-./perl/jmparse.pl...............Generates intermediate, rebasable  file from JMdict XML file.
-./perl/jmload.pl................Generates Postegresql load file from jmdict intermediate file.
 ./perl/exparse.pl...............Generates intermediate, rebasable  file from Examples file.
-./perl/exload.pl................Generates Postegresql load file from Examples intermediate file.
+./perl/jmload.pl................Generates Postegresql load file from intermediate file.
+./perl/jmparse.pl...............Generates intermediate, rebasable  file from JMdict XML file.
 ./perl/showentr.pl..............Command line tool to show database entries.
-./perl/mkkwmod.pl...............Creates lib/kwstatic file.
 
 ./perl/cgi
 ./perl/cgi/entr.css.............CSS style sheet for all cgi pages.
@@ -259,8 +250,7 @@ ANNOTATED MANIFEST
 
 ./pg/...........................Scripts for database initialization.
 ./pg/loadkw.sql.................Load the data/kw* data into database.
-./pg/mkfk.sql...................Create foreign keys.
-./pg/mkindex.sql................Create indexes.
+./pg/mkindex.sql................Create indexes and foreign keys.
 ./pg/mkperms.sql................Set permissuions on database objects.
 ./pg/mktables.sql...............Create basic schema.
 ./pg/mkviews.sql................Create views.
@@ -268,22 +258,31 @@ ANNOTATED MANIFEST
 ./pg/reload.sql.................Execute scripts to initialze database and create schema.
 ./pg/syncseq.sql................Set seqence numbers after jmdict load.
 ./pg/xresolv.sql................Create xrefs after jmdict load.
-./pg/drpindex.sql...............Drop indexes (created by mkindex.pl)
-./pg/mkindex.sql................Create indexes (created by mkindex.pl)
-./pg/mkindex.pl.................Creates mkindex.sql and drpindex.sql.
+./pg/drpindex.sql...............Drop indexes (file created by mkindex.pl)
+./pg/mkindex.sql................Create indexes (file created by mkindex.pl)
 
 ./pg/data/......................data/kw* files contain static keyword table data,
 ./pg/data/kwdial.sql
 ./pg/data/kwfld.sql
 ./pg/data/kwfreq.sql
+./pg/data/kwginf.sql
 ./pg/data/kwkinf.sql
 ./pg/data/kwlang.sql
+./pg/data/kwlsrc.sql
 ./pg/data/kwmisc.sql
 ./pg/data/kwpos.sql
 ./pg/data/kwrinf.sql
 ./pg/data/kwsrc.sql
 ./pg/data/kwstat.sql
 ./pg/data/kwxref.sql
+
+./tools/........................Scripts used during development (by makefiles, etc.)
+./tools/mkindex.pl..............Creates ./pg/mkindex.sql and ./pg/drpindex.sql.
+./tools/mkkwmod.pl..............Creates ./perl/lib/kwstatic.pm file.
+./tools/mktodo.py...............Generate ./doc/TODO.html from revisions DB.
+./tools/mkchglog.py.............Generate ./doc/Changes.txt from revisions DB.
+./tools/simpleTalHelper.py......Required by mkchglog.py and mktodo.py.
+
 
 ===
 EOF

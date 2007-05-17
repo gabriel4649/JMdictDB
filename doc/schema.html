@@ -6,7 +6,7 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
 	<META NAME="CREATED" CONTENT="20020715;12385300">
 	<META NAME="CHANGEDBY" CONTENT="Stuart McGraw">
-	<META NAME="CHANGED" CONTENT="20070313;13493600">
+	<META NAME="CHANGED" CONTENT="20070501;23212000">
 	<META NAME="SDENDNOTE" CONTENT="ARABIC;;[;]">
 	<STYLE>
 	<!--
@@ -205,28 +205,6 @@ denoted by indentation of the table names:</P>
 	</TR>
 	<TR VALIGN=TOP>
 		<TD WIDTH=21%>
-			<P>&nbsp;&nbsp;&nbsp;&nbsp;<B>dial</B></P>
-		</TD>
-		<TD WIDTH=28%>
-			<P>&lt;dial&gt;</P>
-		</TD>
-		<TD WIDTH=51%>
-			<P>Dialect(s)</P>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD WIDTH=21%>
-			<P>&nbsp;&nbsp;&nbsp;&nbsp;<B>lang</B></P>
-		</TD>
-		<TD WIDTH=28%>
-			<P>&lt;klang&gt;</P>
-		</TD>
-		<TD WIDTH=51%>
-			<P>Source language(s)</P>
-		</TD>
-	</TR>
-	<TR VALIGN=TOP>
-		<TD WIDTH=21%>
 			<P>&nbsp;&nbsp;&nbsp;&nbsp;<B>kanj</B></P>
 		</TD>
 		<TD WIDTH=28%>
@@ -337,6 +315,28 @@ denoted by indentation of the table names:</P>
 			<P>English and other language glosses</P>
 		</TD>
 	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>dial</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;dial&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Dialect</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=21%>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>lsrc</B></P>
+		</TD>
+		<TD WIDTH=28%>
+			<P>&lt;lsource&gt;</P>
+		</TD>
+		<TD WIDTH=51%>
+			<P>Source language and word</P>
+		</TD>
+	</TR>
 	<TR>
 		<TD COLSPAN=3 WIDTH=100% HEIGHT=64 VALIGN=TOP>
 			<P><BR><BR>
@@ -415,7 +415,7 @@ respectively. Since the referenced readings and kanji are always in
 the same entry, the <I><U>restr</U></I> table need only reference the
 entr column once, so the columns in <I><U>restr</U></I> will be
 (<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr,rdng,
-kanj</SPAN></SPAN></I>) constituting the foreign keys (<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr,rdng</SPAN></SPAN></I>)
+kanj</SPAN></SPAN></I>) and its foreign keys are (<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr,rdng</SPAN></SPAN></I>)
 and (<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr,kanj</SPAN></SPAN></I>).
  The <I><U>stagr</U></I> and <I><U>stagk</U></I> tables are similar.</P>
 <P STYLE="margin-bottom: 0.2in">The table <I><U>xref</U></I> also has
@@ -444,7 +444,7 @@ prefix &quot;kw&quot; and we sometimes collectively refer to them as
 &quot;lookup tables&quot; in database literature.)  We also use the
 words “keyword” and “tag” somewhat interchangeably, although
 the former tends to occur in the context of the database, and the
-latter in the context of the JMdict XML.</P>
+latter in the context of the JMdict XML.\</P>
 <P STYLE="margin-bottom: 0.2in">Here are the contents of the <I><U>kinf</U></I>
 table, which contains the keywords used in the <I><U>kinf</U></I>
 table (which in turn corresponds to the &lt;ke_inf&gt; elements in
@@ -459,11 +459,20 @@ oK | word containing out-dated kanji<BR>4</FONT><KBD><FONT SIZE=2 STYLE="font-si
 ik | word containing irregular kana usage</FONT></KBD></FONT></FONT></P>
 <P STYLE="margin-bottom: 0.2in">kw* tables that correspond to
 entities and abbreviations used in JMdict xml are: <I><U>kwdial</U></I>,
-<I><U>kwfreq</U></I>, <I><U>kwkinf</U></I>, <I><U>kwlang</U></I>,
-<I><U>kwrinf</U></I>.</P>
-<P STYLE="margin-bottom: 0.2in">There are several kw* tables that
-don't correspond to anything in JMdict: <I><U>kwsrc</U></I>, <I><U>kwstat</U></I>,
-<I><U>kwxref</U></I>.</P>
+<I><U>kwfld</U></I>, <I><U>kwfreq</U></I>, <I><U>kwkinf</U></I>,
+<I><U>kwlang</U></I>, <I><U>kwlsrc</U></I>, <I><U>kwmisc</U></I>,
+<I><U>kwpos</U></I>, <I><U>kwrinf</U></I>.  There are several kw*
+tables that don't correspond to anything in JMdict: <I><U>kwsrc</U></I>,
+<I><U>kwstat</U></I>, <I><U>kwxref</U></I>.</P>
+<P STYLE="margin-bottom: 0.2in">The keyword tables' primary function
+is to enforce the use of valid keyword values in other tables by
+means of referential integrity.  For this purpose only the values in
+the keyword tables' <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
+columns are significant.  The <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kw</SPAN></SPAN></I>
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">descr</SPAN></SPAN></I>
+texts are available for the use of applications to use for display,
+but applications are free to map their own texts to the keyword id
+numbers.</P>
 <P STYLE="margin-bottom: 0.2in">The keyword tables are colored green
 in the schema diagram.</P>
 <OL>
@@ -483,9 +492,14 @@ and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent"
 together identify a specific kanji element that a keyword applies to,
 and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kw</SPAN></SPAN></I>
 identifies the appropriate ke_inf keyword in table <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwkinf</SPAN></SPAN></I>.</P>
+<P STYLE="margin-bottom: 0.2in">A few keyword list table have some
+other information in addition to the keywords.  The table <I><U>freq</U></I>
+for example contains freq keywords, and also a numeric value
+associated with each.  The rows in table <I><U>lsrc</U></I> contain
+an lsrc keyword and also a language keyword and text source word.</P>
 <P STYLE="margin-bottom: 0.2in">The tables that contain such keyword
 lists are: <I><U>dial</U></I>, <I><U>fld</U></I>, <I><U>freq</U></I>,
-<I><U>kinf</U></I>, <I><U>lang</U></I>, <I><U>misc</U></I>, <I><U>pos</U></I>,
+<I><U>kinf</U></I>, <I><U>lsrc</U></I>, <I><U>misc</U></I>, <I><U>pos</U></I>,
 <I><U>rinf</U></I>. 
 </P>
 <P STYLE="margin-bottom: 0.2in">Not all references to the kw* tables
@@ -635,8 +649,8 @@ and JMdict XML recreated from the database:</P>
 	<LI><P CLASS="list-2-start-western">There may be keyword values in
 	the kw* tables and used in the database that do not have equivalent
 	entities defined in the JMdict DTD.</P>
-	<LI><P CLASS="list-2-start-western">Some items (e.g. entries and
-	glosses) have a <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">notes</SPAN></SPAN></I>
+	<LI><P CLASS="list-2-start-western">The <I><U>entr</U></I> table has
+	a <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">notes</SPAN></SPAN></I>
 	column that can contain additional ad-hoc information.  JMdict has
 	no means of representing this information.</P>
 	<P STYLE="margin-bottom: 0.2in">If entries are created that make use
@@ -743,23 +757,23 @@ users.</P>
 <P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
 <FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">select
 * from gloss where entr=20894;<BR>entr<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD>|
-sens | gloss | lang | txt<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD>|
-notes<BR>------+------+-------+------+--------------+-------<BR>20894
+sens | gloss | lang |
+txt<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD></KBD><BR>------+------+-------+------+--------------<BR>20894
 | 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|
 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
-proficient<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD>|<BR>20894
+proficient<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD><BR>20894
 | 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
 2<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|
 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
-skillful<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|<BR>20894
+skillful<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD><BR>20894
 | 2<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|
 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
-satisfaction |<BR>20894 | 3<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
+satisfaction <BR>20894 | 3<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|
 1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|
-fortitude<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|</FONT></FONT></P>
+fortitude<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></FONT></FONT></P>
 <P STYLE="margin-bottom: 0.2in">In this table we see the first two
 rows are glosses for the first sense, the second row is a gloss for
 second sense, and the third row a gloss for the third sense.  The
@@ -1071,7 +1085,7 @@ the JMdict XML element &lt;sense&gt;.<BR>    entr INT NOT NULL,<BR>
 -- belongs to.<BR>    sens SMALLINT NOT NULL,<BR>      --
 Disambiguates and orders multiple senses in an entry.<BR>    notes
 TEXT,<BR>      -- Arbitrary additional textual information pertaining
-to <BR>      -- this sense.  Maps to the JMdict XML &lt;s_info&gt;
+to <BR>      -- this sense.  Maps to the JMdict XML &lt;s_inf&gt;
 element.<BR>    PRIMARY KEY(entr,sens));<BR><BR>CREATE TABLE gloss (<BR>
      -- Represents a gloss in a sense.  Maps to the JMdict XML<BR>   
   -- &lt;gloss&gt; element.<BR>    entr INT NOT NULL,<BR>      -- FK
@@ -1080,15 +1094,15 @@ to identify the entry this gloss belongs to.<BR>    sens SMALLINT NOT
 NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.sens</SPAN></SPAN></I>
 to identify the sense this gloss belongs to.<BR>    gloss SMALLINT
 NOT NULL,<BR>      -- Disambiguates and orders multiple glosses in a
-sense.<BR>    lang SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwlang.id</SPAN></SPAN></I>.
- Language of this gloss.<BR>    txt VARCHAR(2048) NOT NULL,<BR>     
--- The gloss text.<BR>    notes TEXT,<BR>      -- Arbitrary
-additional textual information pertaining to <BR>      -- this gloss.
- <BR>    PRIMARY KEY(entr,sens,gloss));<BR><BR>CREATE TABLE xref (<BR>
-     -- Models various types of cross-references between entries (or<BR>
-     -- more accurately, between senses of entries.)  Maps
-approximately<BR>      -- to JMdict XML elements &lt;xref&gt; and
-&lt;ant&gt;.<BR>    entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+sense.<BR>    lang SMALLINT NOT NULL,<BR>      -- FK to <I><U>kwlang</U></I><I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">.<SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></SPAN></SPAN></I>.
+ Language of this gloss.<BR>    ginf SMALLINT NOT NULL,<BR>      --
+FK to <I><U>kwginf</U></I>.<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>.
+ Type of gloss.<BR>    txt VARCHAR(2048) NOT NULL,<BR>      -- The
+gloss text.<BR>    PRIMARY KEY(entr,sens,gloss));<BR><BR>CREATE TABLE
+xref (<BR>      -- Models various types of cross-references between
+entries (or<BR>      -- more accurately, between senses of entries.) 
+Maps approximately<BR>      -- to JMdict XML elements &lt;xref&gt;
+and &lt;ant&gt;.<BR>    entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
  Identifies the entry this cross-reference<BR>      -- belongs to.<BR>
    sens SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.id</SPAN></SPAN></I>.
  Identifies the sense this cross-reference<BR>      -- belongs to.<BR>
@@ -1157,41 +1171,49 @@ INT,<BR>      -- The value of the datum on the scale identified by
 <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kw</SPAN></SPAN></I>.<BR>
    UNIQUE (entr,rdng,kanj,kw),<BR>    CHECK (rdng NOTNULL OR kanj
 NOTNULL));<BR><BR>CREATE TABLE dial (<BR>      -- Provides lists of
-dialects for entries.  This information<BR>      -- corresponds to
-the JMdict XML &lt;dial&gt; element.<BR>    entr INT NOT NULL,<BR>   
-  -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
- Identifies entry that dialect applies to.<BR>    kw SMALLINT NOT
-NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwdial.id</SPAN></SPAN></I>.
- Identifies the dialect keyword.<BR>    PRIMARY KEY
-(entr,kw));<BR><BR>CREATE TABLE fld (<BR>      -- Provides lists of
-fields for entries.  This information<BR>      -- corresponds to the
-JMdict XML &lt;field&gt; element.<BR>    entr INT NOT NULL,<BR>     
+dialects for senses.  This information<BR>      -- corresponds to the
+JMdict XML &lt;dial&gt; element.<BR>    entr INT NOT NULL,<BR>     
 -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies entry that dialect applies to.<BR><SAMP CLASS="western"> 
+  sens SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.sens</SPAN></SPAN></I>.
+ Identifies the sense that field applies to.<BR></SAMP>    kw
+SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwdial.id</SPAN></SPAN></I>.
+ Identifies the dialect keyword.<BR>    PRIMARY KEY
+(entr,sens,kw));<BR><BR>CREATE TABLE fld (<BR>      -- Provides lists
+of fields for entries.  This information<BR>      -- corresponds to
+the JMdict XML &lt;field&gt; element.<BR>    entr INT NOT NULL,<BR>  
+   -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
  Identifies entry that field applies to.<BR>    sens SMALLINT NOT
 NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.sens</SPAN></SPAN></I>.
  Identifies the sense that field applies to.<BR>    kw SMALLINT NOT
 NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwfld.id</SPAN></SPAN></I>.
  Identifies the field keyword.<BR>    PRIMARY KEY
-(entr,sens,kw));<BR><BR>CREATE TABLE kinf (<BR>      -- Provides
-lists of kanji info tags for kanji items.  This<BR>      --
-information corresponds to the JMdict XML &lt;ke_inf&gt; element.<BR>
-   entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+(entr,sens,kw));<BR><SAMP CLASS="western"><BR></SAMP>CREATE TABLE
+kinf (<BR>      -- Provides lists of kanji info tags for kanji items.
+ This<BR>      -- information corresponds to the JMdict XML &lt;ke_inf&gt;
+element.<BR>    entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
  Identifies entry that the kinf tag applies to.<BR>    kanj SMALLINT
 NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kanj.kanj</SPAN></SPAN></I>.
  Identifies the kanji item that kinf tag<BR>      -- applies to.<BR> 
   kw SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwkinf.id</SPAN></SPAN></I>.
  Identifies the kanji info keyword.<BR>    PRIMARY KEY
-(entr,kanj,kw));<BR><BR>CREATE TABLE lang (<BR>      -- Provides
-lists of (source) language for entries.  This<BR>      -- information
-corresponds to the JMdict XML &lt;lang&gt; element.<BR>    entr INT
-NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
- Identifies entry that field applies to.<BR>    kw SMALLINT NOT
-NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwlang.id</SPAN></SPAN></I>.
- Identifies the language keyword.<BR>    PRIMARY KEY
-(entr,kw));<BR><BR>CREATE TABLE misc (<BR>      -- Provides lists of
-misc tags for senses.  This information<BR>      -- corresponds to
-the JMdict XML &lt;misc&gt; element.<BR>    entr INT NOT NULL,<BR>   
-  -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+(entr,kanj,kw));<BR><BR>CREATE TABLE lsrc (<BR>      -- Provides the
+foreign language word and language for each<BR>      -- sense for
+imported words.  This information corresponds to<BR>      -- the
+JMdict XML &lt;lsource&gt; element.<BR>    entr INT NOT NULL,<BR>    
+ -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+ Identifies entry that field applies to.<BR><SAMP CLASS="western">   
+sens SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">enrt.sens</SPAN></SPAN></I>.
+ Identifies the sens item that lsrc tag<BR>      -- applies to.<BR>  
+ Kw SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwlsrc.id</SPAN></SPAN></I>.
+ Identifies the type of lsource tag<BR>      -- this is.<BR></SAMP>  
+ lang SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwlang.id</SPAN></SPAN></I>.
+ Identifies the language keyword.<BR>    txt VARCHAR(250)<BR>      --
+The word in language 'lang' from which this word sense <BR>      --
+was derived.<BR>    PRIMARY KEY (entr,sens,kw,txt));<BR><BR>CREATE
+TABLE misc (<BR>      -- Provides lists of misc tags for senses. 
+This information<BR>      -- corresponds to the JMdict XML &lt;misc&gt;
+element.<BR>    entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
  Identifies entry that misc tag applies to.<BR>    sens SMALLINT NOT
 NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.sens</SPAN></SPAN></I>.
  Identifies the sense that misc tag applies to.<BR>    kw SMALLINT
@@ -1263,27 +1285,31 @@ VARCHAR(255));<BR><BR>CREATE TABLE kwfreq (<BR>    id SMALLINT
 PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
 VARCHAR(255));<BR><BR>CREATE TABLE kwfld (<BR>    id SMALLINT PRIMARY
 KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
-VARCHAR(255));<BR><BR>CREATE TABLE kwkinf (<BR>    id SMALLINT
-PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL,<BR>      -- 'kw' not
-declared UNIQUE because there are some<BR>      -- rows where kw
-differs only in case, and this (at<BR>      -- in some of the locales
-used during testing) violated<BR>      -- the unique constraint.<BR> 
-  descr VARCHAR(255));<BR><BR>CREATE TABLE kwlang (<BR>    id
+VARCHAR(255));<BR><BR><SAMP CLASS="western">CREATE TABLE kwginf (<BR>
+   id SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>
+   descr VARCHAR(255));<BR></SAMP><BR>CREATE TABLE kwkinf (<BR>    id
+SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL,<BR>      --
+'kw' not declared UNIQUE because there are some<BR>      -- rows
+where kw differs only in case, and this (at<BR>      -- in some of
+the locales used during testing) violated<BR>      -- the unique
+constraint.<BR>    descr VARCHAR(255));<BR><BR>CREATE TABLE kwlang (<BR>
+   id SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>
+   descr VARCHAR(255));<BR><BR><SAMP CLASS="western">CREATE TABLE
+kwlsrc (<BR>    id SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT
+NULL UNIQUE,<BR>    descr VARCHAR(255));<BR></SAMP><BR>CREATE TABLE
+kwmisc (<BR>    id SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT
+NULL,<BR>      -- 'kw' not declared UNIQUE because there are some<BR>
+     -- rows where kw differs only in case, and this (at<BR>      --
+in some of the locales used during testing) violated<BR>      -- the
+unique constraint.<BR>    descr VARCHAR(255));<BR><BR>CREATE TABLE
+kwpos (<BR>    id SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT
+NULL UNIQUE,<BR>    descr VARCHAR(255));<BR><BR>CREATE TABLE kwrinf
+(<BR>    id SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL
+UNIQUE,<BR>    descr VARCHAR(255));<BR><BR>CREATE TABLE kwsrc (<BR>  
+ id SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR> 
+  descr VARCHAR(255));<BR><BR>CREATE TABLE kwstat (<BR>    id
 SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>   
-descr VARCHAR(255));<BR><BR>CREATE TABLE kwmisc (<BR>    id SMALLINT
-PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL,<BR>      -- 'kw' not
-declared UNIQUE because there are some<BR>      -- rows where kw
-differs only in case, and this (at<BR>      -- in some of the locales
-used during testing) violated<BR>      -- the unique constraint.<BR> 
-  descr VARCHAR(255));<BR><BR>CREATE TABLE kwpos (<BR>    id SMALLINT
-PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
-VARCHAR(255));<BR><BR>CREATE TABLE kwrinf (<BR>    id SMALLINT
-PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
-VARCHAR(255));<BR><BR>CREATE TABLE kwsrc (<BR>    id SMALLINT PRIMARY
-KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
-VARCHAR(255));<BR><BR>CREATE TABLE kwstat (<BR>    id SMALLINT
-PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
-VARCHAR(255));<BR><BR>CREATE TABLE kwxref (<BR>    id SMALLINT
+descr VARCHAR(255));<BR><BR>CREATE TABLE kwxref (<BR>    id SMALLINT
 PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
 VARCHAR(255));<BR></SAMP><BR><BR>
 </P>

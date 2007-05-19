@@ -17,8 +17,10 @@ KWDATA = \
 	$(KWDATADIR)kwdial.csv \
 	$(KWDATADIR)kwfld.csv  \
 	$(KWDATADIR)kwfreq.csv \
+	$(KWDATADIR)kwginf.csv \
 	$(KWDATADIR)kwkinf.csv \
 	$(KWDATADIR)kwlang.csv \
+	$(KWDATADIR)kwlsrc.csv \
 	$(KWDATADIR)kwmisc.csv \
 	$(KWDATADIR)kwpos.csv  \
 	$(KWDATADIR)kwrinf.csv \
@@ -27,6 +29,6 @@ KWDATA = \
 	$(KWDATADIR)kwxref.csv
 
 kwstatic.pm: $(KWDATA)
-	perl ../mkkwmod.pl -d ../../pg/data/ >kwstatic.pm
+	perl ../../tools/mkkwmod.pl -d ../../pg/data/ >kwstatic.pm
 
 .DELETE_ON_ERROR:

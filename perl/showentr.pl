@@ -212,15 +212,6 @@ use jmdict;
 	  # The join() call turns that list into a comma delimited 
 	  #   string.
 
-	print ", Dialect: "     . join(",", 
-		map ($::KW->{DIAL}{$_->{kw}}{kw}, @{$e->{_dial}})) if ($e->{_dial});
-
-	  # Print a list of origin languages.  Works the same way as
-	  # dialect above. 
-
-	print ", Origin lang: " . join(",", 
-		map ($::KW->{LANG}{$_->{kw}}{kw}, @{$e->{_lang}})) if ($e->{_lang}) ;
-
 	  # Print entry notes if any.
 
 	print "\n";
@@ -364,7 +355,8 @@ use jmdict;
 	# @$kanj -- List of kanj records for this sense's entry,  
 	# @$rdng -- List of rdng records for this sense's entry,  
 
-	my ($pos, $misc, $fld, $restrs, $lang, $g, @r, $stagr, $stagk);
+	my ($pos, $misc, $fld, $restrs, $lang, $g, @r,
+		$stagr, $stagk, @dl, $dl, $ginf);
 
 	  # Get a text string list of the sense's PoS abbreviations.
 
@@ -397,28 +389,56 @@ use jmdict;
 
 	$restrs = @r ? "(" . join (", ", map ($_->{txt}, @r)) . " only) " : "";
 
+	  # Get any dialects for this sense, and turn them into
+	  # a string.  Save in an array because will will join()
+	  # with source word info later.
+ 
+	if ($s->{_dial}) {
+	    push (@dl, "Dialect: " . join(", ", 
+		map ($::KW->{DIAL}{$_->{kw}}{kw}, @{$s->{_dial}}))); }
+
+	  # Get source word and source language info.  Turn into
+	  # a string with the source language in parens followed
+	  # by the source word.  Push onto the array with the dialect
+	  # string.
+
+	if ($s->{_lsrc}) {
+	    push (@dl, "From: " . join(", ", 
+		map ("(" . $::KW->{LANG}{$_->{lang}}{kw} . ")" . $_->{txt}, 
+		     @{$s->{_lsrc}}))); }
+
+	  # Now combine the dialect and sorce word strings into one.
+
+	$dl = @dl ? "  " . join ("; ", @dl) : "";
+
 	  # Print the sense info.
 
-	print "$s->{sens}. $restrs$pos$misc$fld\n";
+	print "$s->{sens}. $restrs$pos$misc$fld$dl\n";
 	if ($s->{notes}) { print "  $s->{notes}\n"; }
 
 	  # Do the glosses.
 
 	foreach $g (@{$s->{_gloss}}) {
 
-	      # If the lsanguage is no english (1) then get
+	      # If the language is not english (1) then get
 	      # the language's keyword enclosed in parens.
 
 	    if ($g->{lang} == 1) { $lang = "" }
 	    else { $lang = "(" . $::KW->{LANG}{$g->{lang}}{kw} . ") "; }
 
+	      # If there is a gloss tag other than "equ", then
+	      # get it enclosed in square brackets.
+
+	    if ($g->{ginf} == 1) { $ginf = "" }
+	    else { $ginf = "[" . $::KW->{GINF}{$g->{ginf}}{kw} . ":] "; }
+
 	      # Print the gloss number, language (if any), and gloss text. 
 
-	    print "  $g->{gloss}. $lang$g->{txt}\n"; }
+	    print "  $g->{gloss}. $lang$ginf$g->{txt}\n"; }
 
 	  # Print the cross references.  Although each sens record
 	  # has a {_xref} list, it is not very useful because all
-	  # it has is the cross-ref's entry idf and sens number.
+	  # it has is the cross-ref's entry id and sens number.
 	  # Insead, we'll use {_erefs} which also has the target 
 	  # entry's kanji and kana string, seq number, etc which
 	  # allows a much more informative display.  {_erers} is 

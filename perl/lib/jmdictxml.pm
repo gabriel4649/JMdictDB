@@ -70,18 +70,20 @@ our %JM2ID = (
 		'word containing irregular kanji usage' => 1,
 		'irregular okurigana usage' => 2,
 		'word containing out-dated kanji ' => 3,
-		'word containing irregular kana usage' => 4, },
+		'word containing irregular kana usage' => 4,
+		'ateji (phonetic) reading' => 5, },
 	
 	RINF => {		# kwrinf
-		'ateji (phonetic) reading' => 1,
-		'gikun (meaning) reading' => 2,
-		'out-dated or obsolete kana usage' => 3,
-		'word containing irregular kana usage' => 4,
-		'word usually written using kanji alone ' => 5,
+		'gikun (meaning) reading' => 1,
+		'out-dated or obsolete kana usage' => 2,
+		'word containing irregular kana usage' => 3,
+		'word usually written using kanji alone ' => 4,
 
 		# Deprecated...
 		'rare' => 201,
-		'word usually written using kana alone ' => 202, },
+		'word usually written using kana alone ' => 202,
+		'ateji (phonetic) reading' => 203,
+ },
 	
 	FLD => {		# kwfld
 		'Buddhist term' => 1,
@@ -104,7 +106,6 @@ our %JM2ID = (
 		'exclusively kanji' => 7,
 		'familiar language ' => 8,
 		'female term or language' => 9,
-		'gikun (meaning) reading' => 10,
 		'honorific or respectful (sonkeigo) language ' => 11,
 		'humble (kenjougo) language ' => 12,
 		'idiomatic expression ' => 13,
@@ -122,7 +123,8 @@ our %JM2ID = (
 		# Deprecated...
 		'male slang' => 201, 
 		'ateji (phonetic) reading' => 202,
-		'word usually written using kanji alone ' => 203, },
+		'word usually written using kanji alone ' => 203,
+		'gikun (meaning) reading' => 204, },
 	
 	POS => {		# kwpos
 		'adjective (keiyoushi)' => 1,
@@ -206,36 +208,27 @@ our %JM2ID = (
 		'tsug' => 8, },
 	
 	LANG => {		# kwlang
-		'ja' => 0,
 		'en' => 1,
 		'ai' => 2,
-		'ar' => 3,
-		'de' => 4,
-		'el' => 5,
-		'eo' => 6,
-		'es' => 7,
-		'fr' => 8,
-		'in' => 9,
-		'it' => 10,
-		'ko' => 11,
-		'lt' => 12,
-		'nl' => 13,
-		'no' => 14,
-		'pt' => 15,
-		'ru' => 16,
-		'sanskr' => 17,
-		'uk' => 18,
-		'zh' => 19,
-		'iw' => 20,
-		'pl' => 21,
-		'sv' => 22,
-		'bo' => 23,
-		'hi' => 24,
-		'ur' => 25,
-		'mn' => 26,
-		'kl' => 27,
-		'kr' => 28,
-		'sa' => 29, },
+		'ar' => 8,
+		'bo' => 20,
+		'de' => 35,
+		'el' => 38,
+		'es' => 150,
+		'fr' => 47,
+		'he' => 59,
+		'id' => 72,
+		'it' => 75,
+		'ko' => 90,
+		'la' => 94,
+		'ms' => 111,
+		'nl' => 119,
+		'no' => 122,
+		'pt' => 132,
+		'ru' => 138,
+		'sa' => 140,
+		'sv' => 157,
+		'zh' => 185, },
 
 	XREF =>	{		# kwxref;
 		'syn' => 1,
@@ -244,7 +237,17 @@ our %JM2ID = (
 		'cf' => 4,
 		'ex' => 5,
 		'uses' => 6,
-		'pref' => 7,},);
+		'pref' => 7, },
+
+	LSRC => {		# kwlsrc;
+		'full' => 1,
+		'part' => 2, },
+
+	GINF => {		# Not yet finalized!
+		'equ' => 1,
+		'lit' => 2,
+		'id' => 3,
+		'trans' => 4, }, );
 
 # Bracketed  notes found in examples file A lines, mapped to MISC keywords.
 

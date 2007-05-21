@@ -1,6 +1,7 @@
 -- This file is recreated during the database build process.
 -- See Makefile for details.
 
+\set ON_ERROR_STOP 1
 DROP INDEX entr_seq;
 DROP INDEX entr_stat;
 DROP INDEX rdng_txt;
@@ -30,17 +31,18 @@ ALTER TABLE hist DROP CONSTRAINT hist_stat_fkey;
 ALTER TABLE audio DROP CONSTRAINT audio_entr_fkey;
 ALTER TABLE xresolv DROP CONSTRAINT xresolv_entr_fkey;
 ALTER TABLE xresolv DROP CONSTRAINT xresolv_typ_fkey;
-ALTER TABLE freq DROP CONSTRAINT freq_entr_fkey;
-ALTER TABLE freq DROP CONSTRAINT freq_entr_fkey1;
-ALTER TABLE freq DROP CONSTRAINT freq_kw_fkey;
 ALTER TABLE dial DROP CONSTRAINT dial_entr_fkey;
 ALTER TABLE dial DROP CONSTRAINT dial_kw_fkey;
 ALTER TABLE fld DROP CONSTRAINT fld_entr_fkey;
 ALTER TABLE fld DROP CONSTRAINT fld_kw_fkey;
+ALTER TABLE freq DROP CONSTRAINT freq_entr_fkey;
+ALTER TABLE freq DROP CONSTRAINT freq_entr_fkey1;
+ALTER TABLE freq DROP CONSTRAINT freq_kw_fkey;
 ALTER TABLE kinf DROP CONSTRAINT kinf_entr_fkey;
 ALTER TABLE kinf DROP CONSTRAINT kinf_kw_fkey;
-ALTER TABLE lang DROP CONSTRAINT lang_entr_fkey;
-ALTER TABLE lang DROP CONSTRAINT lang_kw_fkey;
+ALTER TABLE lsrc DROP CONSTRAINT lsrc_entr_fkey;
+ALTER TABLE lsrc DROP CONSTRAINT lsrc_kw_fkey;
+ALTER TABLE lsrc DROP CONSTRAINT lsrc_lang_fkey;
 ALTER TABLE misc DROP CONSTRAINT misc_entr_fkey;
 ALTER TABLE misc DROP CONSTRAINT misc_kw_fkey;
 ALTER TABLE pos DROP CONSTRAINT pos_entr_fkey;

@@ -24,7 +24,7 @@ use jmdict;
 	  # Read all the kw .csv files, and build into a keyword table
 	  # structure assigned to $KW.
 
-	for $set qw(DIAL FLD FREQ KINF LANG MISC POS RINF SRC STAT XREF) {
+	for $set qw(DIAL FLD FREQ GINF KINF LANG LSRC MISC POS RINF SRC STAT XREF) {
 	    $fn = "kw" . lc ($set);
 	    kwcsv (\%KW, $set, $pgdatadir . $fn . ".csv"); }
 

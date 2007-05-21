@@ -4,10 +4,9 @@
 4	chn	children's language
 5	col	colloquialism
 6	derog	derogatory
-7	ek	exclusively kanji
+7	eK	exclusively kanji
 8	fam	familiar language
 9	fem	female term or language
-10	gikun	gikun (meaning) reading
 11	hon	honorific or respectful (sonkeigo) language
 12	hum	humble (kenjougo) language
 13	id	idiomatic expression
@@ -27,3 +26,5 @@
 201	male-sl	male slang
 202	ateji	ateji (phonetic) reading
 203	uK	word usually written using kanji alone
+204	gikun	gikun (meaning) reading
+205	ek	exclusively kanji

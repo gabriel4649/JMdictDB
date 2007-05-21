@@ -2,7 +2,7 @@
 use strict; use warnings;
 
 $::hdr = "-- This file is recreated during the database build process.\n" .
-	 "-- See Makefile for details.\n";
+	 "-- See Makefile for details.\n\n\\set ON_ERROR_STOP 1";
     main: {
 	my ($typ, @i, @fk);
 	$typ = shift (@ARGV);

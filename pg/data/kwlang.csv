@@ -1,30 +1,186 @@
-0	ja	Japanese
 1	en	English
-2	ai	Aino
-3	ar	Arabic
-4	de	German (Deutsch)
-5	el	Greek (Ellinika)
-6	eo	Esperanto
-7	es	Spanish
-8	fr	French
-9	in	Indonesian
-10	it	Italian
-11	ko	Korean
-12	lt	Latin
-13	nl	Dutch
-14	no	Norwegian
-15	pt	Portuguese
-16	ru	Russian
-17	sanskr	Sanskrit
-18	uk	Ukrainian
-19	zh	Chinese (Zhongwen)
-20	iw	Hebrew (Iwrith)
-21	pl	Polish
-22	sv	Swedish
-23	bo	Tibetan (Bodskad)
-24	hi	Hindi
-25	ur	Urdu
-26	mn	Mongolian
-27	kl	Inuit (formerly Eskimo)
-28	kr	Kanuri
-29	sa	Sanskrit
+2	ai	Ainu
+3	aa	Afar
+4	ab	Abkhazian
+5	af	Afrikaans
+6	ak	Akan
+7	am	Amharic
+8	ar	Arabic
+9	an	Aragonese
+10	as	Assamese
+11	av	Avaric
+12	ae	Avestan
+13	ay	Aymara
+14	az	Azerbaijani
+15	ba	Bashkir
+16	bm	Bambara
+17	be	Belarusian
+18	bn	Bengali
+19	bi	Bislama
+20	bo	Tibetan
+21	bs	Bosnian
+22	br	Breton
+23	bg	Bulgarian
+24	ca	Catalan
+25	cs	Czech
+26	ch	Chamorro
+27	ce	Chechen
+28	cu	Church Slavic
+29	cv	Chuvash
+30	kw	Cornish
+31	co	Corsican
+32	cr	Cree
+33	cy	Welsh
+34	da	Danish
+35	de	German
+36	dv	Dhivehi
+37	dz	Dzongkha
+38	el	Modern Greek (1453-)
+39	eo	Esperanto
+40	et	Estonian
+41	eu	Basque
+42	ee	Ewe
+43	fo	Faroese
+44	fa	Persian
+45	fj	Fijian
+46	fi	Finnish
+47	fr	French
+48	fy	Western Frisian
+49	ff	Fulah
+50	gd	Scottish Gaelic
+51	ga	Irish
+52	gl	Galician
+53	gv	Manx
+54	gn	Guarani
+55	gu	Gujarati
+56	ht	Haitian
+57	ha	Hausa
+58	sh	Serbo-Croatian
+59	he	Hebrew
+60	hz	Herero
+61	hi	Hindi
+62	ho	Hiri Motu
+63	hr	Croatian
+64	hu	Hungarian
+65	hy	Armenian
+66	ig	Igbo
+67	io	Ido
+68	ii	Sichuan Yi
+69	iu	Inuktitut
+70	ie	Interlingue
+71	ia	Interlingua (International Auxiliary Language Association)
+72	id	Indonesian
+73	ik	Inupiaq
+74	is	Icelandic
+75	it	Italian
+76	jv	Javanese
+77	ja	Japanese
+78	kl	Kalaallisut
+79	kn	Kannada
+80	ks	Kashmiri
+81	ka	Georgian
+82	kr	Kanuri
+83	kk	Kazakh
+84	km	Central Khmer
+85	ki	Kikuyu
+86	rw	Kinyarwanda
+87	ky	Kirghiz
+88	kv	Komi
+89	kg	Kongo
+90	ko	Korean
+91	kj	Kuanyama
+92	ku	Kurdish
+93	lo	Lao
+94	la	Latin
+95	lv	Latvian
+96	li	Limburgan
+97	ln	Lingala
+98	lt	Lithuanian
+99	lb	Luxembourgish
+100	lu	Luba-Katanga
+101	lg	Ganda
+102	mh	Marshallese
+103	ml	Malayalam
+104	mr	Marathi
+105	mk	Macedonian
+106	mg	Malagasy
+107	mt	Maltese
+108	mo	Moldavian
+109	mn	Mongolian
+110	mi	Maori
+111	ms	Malay (macrolanguage)
+112	my	Burmese
+113	na	Nauru
+114	nv	Navajo
+115	nr	South Ndebele
+116	nd	North Ndebele
+117	ng	Ndonga
+118	ne	Nepali
+119	nl	Dutch
+120	nn	Norwegian Nynorsk
+121	nb	Norwegian Bokmål
+122	no	Norwegian
+123	ny	Nyanja
+124	oc	Occitan (post 1500)
+125	oj	Ojibwa
+126	or	Oriya
+127	om	Oromo
+128	os	Ossetian
+129	pa	Panjabi
+130	pi	Pali
+131	pl	Polish
+132	pt	Portuguese
+133	ps	Pushto
+134	qu	Quechua
+135	rm	Romansh
+136	ro	Romanian
+137	rn	Rundi
+138	ru	Russian
+139	sg	Sango
+140	sa	Sanskrit
+141	si	Sinhala
+142	sk	Slovak
+143	sl	Slovenian
+144	se	Northern Sami
+145	sm	Samoan
+146	sn	Shona
+147	sd	Sindhi
+148	so	Somali
+149	st	Southern Sotho
+150	es	Spanish
+151	sq	Albanian
+152	sc	Sardinian
+153	sr	Serbian
+154	ss	Swati
+155	su	Sundanese
+156	sw	Swahili (macrolanguage)
+157	sv	Swedish
+158	ty	Tahitian
+159	ta	Tamil
+160	tt	Tatar
+161	te	Telugu
+162	tg	Tajik
+163	tl	Tagalog
+164	th	Thai
+165	ti	Tigrinya
+166	to	Tonga (Tonga Islands)
+167	tn	Tswana
+168	ts	Tsonga
+169	tk	Turkmen
+170	tr	Turkish
+171	tw	Twi
+172	ug	Uighur
+173	uk	Ukrainian
+174	ur	Urdu
+175	uz	Uzbek
+176	ve	Venda
+177	vi	Vietnamese
+178	vo	Volapük
+179	wa	Walloon
+180	wo	Wolof
+181	xh	Xhosa
+182	yi	Yiddish
+183	yo	Yoruba
+184	za	Zhuang
+185	zh	Chinese
+186	zu	Zulu

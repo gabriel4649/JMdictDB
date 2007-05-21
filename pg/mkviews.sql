@@ -218,10 +218,6 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
 	  (SELECT src,seq,3,notes FROM entr WHERE id=entrid);
 	SELECT lastval() INTO _p0_;
 
-	INSERT INTO dial(entr,kw) 
-	  (SELECT _p0_,kw FROM dial WHERE dial.entr=entrid);
-	INSERT INTO lang(entr,kw) 
-	  (SELECT _p0_,kw FROM lang WHERE lang.entr=entrid);
 	INSERT INTO hist(entr,hist,stat,dt,who,diff,notes) 
 	  (SELECT _p0_,hist,stat,dt,who,diff,notes FROM hist WHERE hist.entr=entrid);
 
@@ -245,8 +241,12 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
 	  (SELECT _p0_,sens,kw FROM misc WHERE entr=entrid);
 	INSERT INTO fld(entr,sens,kw) 
 	  (SELECT _p0_,sens,kw FROM fld WHERE entr=entrid);
-	INSERT INTO gloss(entr,sens,gloss,lang,txt,notes) 
-	  (SELECT _p0_,sens,gloss,lang,txt,notes FROM gloss WHERE entr=entrid);
+	INSERT INTO gloss(entr,sens,gloss,lang,ginf,txt,notes) 
+	  (SELECT _p0_,sens,gloss,lang,txt,ginf,notes FROM gloss WHERE entr=entrid);
+	INSERT INTO dial(entr,sens,kw) 
+	  (SELECT _p0_,kw FROM dial WHERE dial.entr=entrid);
+	INSERT INTO lsrc(entr,sens,kw,lang,txt) 
+	  (SELECT _p0_,kw FROM lsrc WHERE lang.entr=entrid);
 	INSERT INTO xref(entr,sens,xentr,xsens,typ,notes) 
 	  (SELECT _p0_,sens,xentr,xsens,typ,notes FROM xref WHERE entr=entrid);
 	INSERT INTO xref(entr,sens,xentr,xsens,typ,notes) 
@@ -278,8 +278,6 @@ CREATE OR REPLACE FUNCTION delentr(entrid int) RETURNS void AS $$
 	-- need only delete the top-level children to get 
 	-- rid of everything.
 	UPDATE entr SET stat=5 WHERE entr=entrid;
-	DELETE FROM dial WHERE entr=entrid;
-	DELETE FROM lang WHERE entr=entrid;
 	DELETE FROM kanj WHERE entr=entrid;
 	DELETE FROM rdng WHERE entr=entrid;
 	DELETE FROM sens WHERE entr=entrid;

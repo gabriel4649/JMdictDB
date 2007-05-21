@@ -44,12 +44,22 @@ CREATE TABLE kwfld (
     kw VARCHAR(20) NOT NULL UNIQUE,
     descr VARCHAR(255));
 
+CREATE TABLE kwginf (
+    id SMALLINT PRIMARY KEY,
+    kw VARCHAR(20) NOT NULL UNIQUE,
+    descr VARCHAR(255));
+
 CREATE TABLE kwkinf (
     id SMALLINT PRIMARY KEY,
     kw VARCHAR(20) NOT NULL,
     descr VARCHAR(255));
 
 CREATE TABLE kwlang (
+    id SMALLINT PRIMARY KEY,
+    kw VARCHAR(20) NOT NULL UNIQUE,
+    descr VARCHAR(255));
+
+CREATE TABLE kwlsrc (
     id SMALLINT PRIMARY KEY,
     kw VARCHAR(20) NOT NULL UNIQUE,
     descr VARCHAR(255));
@@ -104,7 +114,7 @@ CREATE SEQUENCE seq
 
 CREATE TABLE rdng (
     entr INT NOT NULL,
-    rdng SMALLINT NOT NULL,
+    rdng SMALLINT NOT NULL CHECK(rdng>0),
     txt VARCHAR(2048) NOT NULL,
     PRIMARY KEY(entr,rdng));
 --CREATE INDEX rdng_txt ON rdng(txt);
@@ -113,7 +123,7 @@ CREATE TABLE rdng (
 
 CREATE TABLE kanj (
     entr INT NOT NULL,
-    kanj SMALLINT NOT NULL,
+    kanj SMALLINT NOT NULL CHECK(kanj>0),
     txt VARCHAR(2048) NOT NULL,
     PRIMARY KEY(entr,kanj));
 --CREATE INDEX kanj_txt ON kanj(txt);
@@ -122,7 +132,7 @@ CREATE TABLE kanj (
 
 CREATE TABLE sens (
     entr INT NOT NULL,
-    sens SMALLINT NOT NULL,
+    sens SMALLINT NOT NULL CHECK(sens>0),
     notes TEXT,
     PRIMARY KEY(entr,sens));
 --ALTER TABLE sens ADD CONSTRAINT sens_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -130,8 +140,9 @@ CREATE TABLE sens (
 CREATE TABLE gloss (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
-    gloss SMALLINT NOT NULL,
-    lang SMALLINT NOT NULL,
+    gloss SMALLINT NOT NULL CHECK(gloss>0),
+    lang SMALLINT NOT NULL DEFAULT 1,
+    ginf SMALLINT NOT NULL DEFAULT 1,
     txt VARCHAR(2048) NOT NULL,
     PRIMARY KEY(entr,sens,gloss));
 --CREATE INDEX gloss_txt ON gloss(txt); 
@@ -142,7 +153,7 @@ CREATE TABLE gloss (
 CREATE TABLE xref (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
-    xentr INT NOT NULL,
+    xentr INT NOT NULL CHECK(xentr!=entr),
     xsens SMALLINT NOT NULL,
     typ SMALLINT NOT NULL,
     notes TEXT,
@@ -155,7 +166,7 @@ CREATE TABLE xref (
 
 CREATE TABLE hist (
     entr INT NOT NULL,
-    hist SMALLINT NOT NULL,
+    hist SMALLINT NOT NULL CHECK(hist>0),
     stat SMALLINT NOT NULL,
     dt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     who VARCHAR(250),
@@ -203,6 +214,24 @@ CREATE TABLE xresolv (
 --ALTER TABLE xresolv ADD CONSTRAINT xresolv_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE xresolv ADD CONSTRAINT xresolv_typ_fkey FOREIGN KEY (typ) REFERENCES kwxref(id);
 
+
+
+CREATE TABLE dial (
+    entr INT NOT NULL,
+    sens INT NOT NULL,
+    kw SMALLINT NOT NULL DEFAULT 1,
+    PRIMARY KEY (entr,sens,kw));
+--ALTER TABLE dial ADD CONSTRAINT dial_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
+--ALTER TABLE dial ADD CONSTRAINT dial_kw_fkey FOREIGN KEY (kw) REFERENCES kwdial(id);
+
+CREATE TABLE fld (
+    entr INT NOT NULL,
+    sens SMALLINT NOT NULL,
+    kw SMALLINT NOT NULL,
+    PRIMARY KEY (entr,sens,kw));
+--ALTER TABLE fld ADD CONSTRAINT fld_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
+--ALTER TABLE fld ADD CONSTRAINT fld_kw_fkey FOREIGN KEY (kw) REFERENCES kwfld(id);
+
 CREATE TABLE freq (
     entr INT NOT NULL,
     rdng SMALLINT NULL,
@@ -216,23 +245,6 @@ CREATE TABLE freq (
 --ALTER TABLE freq ADD CONSTRAINT freq_entr_fkey1 FOREIGN KEY (entr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE freq ADD CONSTRAINT freq_kw_fkey FOREIGN KEY (kw) REFERENCES kwfreq(id);
 
-
-
-CREATE TABLE dial (
-    entr INT NOT NULL,
-    kw SMALLINT NOT NULL,
-    PRIMARY KEY (entr,kw));
---ALTER TABLE dial ADD CONSTRAINT dial_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE dial ADD CONSTRAINT dial_kw_fkey FOREIGN KEY (kw) REFERENCES kwdial(id);
-
-CREATE TABLE fld (
-    entr INT NOT NULL,
-    sens SMALLINT NOT NULL,
-    kw SMALLINT NOT NULL,
-    PRIMARY KEY (entr,sens,kw));
---ALTER TABLE fld ADD CONSTRAINT fld_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE fld ADD CONSTRAINT fld_kw_fkey FOREIGN KEY (kw) REFERENCES kwfld(id);
-
 CREATE TABLE kinf (
     entr INT NOT NULL,
     kanj SMALLINT NOT NULL,
@@ -241,12 +253,16 @@ CREATE TABLE kinf (
 --ALTER TABLE kinf ADD CONSTRAINT kinf_entr_fkey FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE kinf ADD CONSTRAINT kinf_kw_fkey FOREIGN KEY (kw) REFERENCES kwkinf(id);
 
-CREATE TABLE lang (
+CREATE TABLE lsrc (
     entr INT NOT NULL,
-    kw SMALLINT NOT NULL,
-    PRIMARY KEY (entr,kw));
---ALTER TABLE lang ADD CONSTRAINT lang_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE lang ADD CONSTRAINT lang_kw_fkey FOREIGN KEY (kw) REFERENCES kwlang(id);
+    sens SMALLINT NOT NULL,
+    kw SMALLINT NOT NULL DEFAULT 1,
+    lang SMALLINT NOT NULL DEFAULT 1,
+    txt VARCHAR(250),
+    PRIMARY KEY (entr,sens,lang,txt));
+--ALTER TABLE lsrc ADD CONSTRAINT lsrc_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
+--ALTER TABLE lsrc ADD CONSTRAINT lsrc_kw_fkey FOREIGN KEY (kw) REFERENCES kwlsrc(id);
+--ALTER TABLE lsrc ADD CONSTRAINT lsrc_lang_fkey FOREIGN KEY (lang) REFERENCES kwlang(id);
 
 CREATE TABLE misc (
     entr INT NOT NULL,

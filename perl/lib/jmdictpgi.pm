@@ -53,9 +53,9 @@ sub initialize { my ($logfn, $tmpdir) = @_;
 	  [\$::Ffld,   "${td}load11.tmp", "COPY fld(entr,sens,kw) FROM stdin;"],
 	  [\$::Fxrsv,  "${td}load12.tmp", "COPY xresolv(entr,sens,ord,typ,rtxt,ktxt,tsens,notes) FROM stdin;"],
 	  [\$::Fxref,  "${td}load13.tmp", "COPY xref(entr,sens,xentr,xsens,typ,notes) FROM stdin;"],
-	  [\$::Fgloss, "${td}load14.tmp", "COPY gloss(entr,sens,gloss,lang,txt) FROM stdin;"],
-	  [\$::Fdial,  "${td}load15.tmp", "COPY dial(entr,kw) FROM stdin;"],
-	  [\$::Flang,  "${td}load16.tmp", "COPY lang(entr,kw) FROM stdin;"],
+	  [\$::Fgloss, "${td}load14.tmp", "COPY gloss(entr,sens,gloss,lang,ginf,txt) FROM stdin;"],
+	  [\$::Fdial,  "${td}load15.tmp", "COPY dial(entr,sens,kw) FROM stdin;"],
+	  [\$::Flsrc,  "${td}load16.tmp", "COPY lsrc(entr,sens,kw,lang,txt) FROM stdin;"],
 	  [\$::Frestr, "${td}load17.tmp", "COPY restr(entr,rdng,kanj) FROM stdin;"],
 	  [\$::Fstagr, "${td}load18.tmp", "COPY stagr(entr,sens,rdng) FROM stdin;"],
 	  [\$::Fstagk, "${td}load19.tmp", "COPY stagk(entr,sens,kanj) FROM stdin;"],
@@ -122,7 +122,11 @@ sub wrentr { my ($e) = @_;
 	    foreach $x (@{$s->{_fld}}) {
 		pout ($::Ffld, $etag, $x->{sens}, $x->{kw}); }
 	    foreach $x (@{$s->{_gloss}}) {
-		pout ($::Fgloss, $etag, $x->{sens}, $x->{gloss}, $x->{lang}, $x->{txt}); }
+		pout ($::Fgloss, $etag, $x->{sens}, $x->{gloss}, $x->{lang}, $x->{ginf}, $x->{txt}); }
+	    foreach $x (@{$s->{_dial}}) {
+		pout ($::Fdial, $etag, $x->{sens}, $x->{kw}); }
+	    foreach $x (@{$s->{_lsrc}}) {
+		pout ($::Flsrc, $etag, $x->{sens}, $x->{kw}, $x->{lang}, $x->{txt}); }
 	    foreach $x (@{$s->{_stagr}}) {
 		pout ($::Fstagr, $etag, $x->{sens}, $x->{rdng}); }
 	    foreach $x (@{$s->{_stagk}}) {
@@ -135,10 +139,6 @@ sub wrentr { my ($e) = @_;
 		pout ($::Fxref, $etag, $x->{sens}, $x->{xentr}, $x->{xsens}, $x->{typ}, $x->{notes}); } 
 	    foreach $x (@{$s->{_xrer}}) {
 		pout ($::Fxref, $etag, $x->{sens}, $x->{xentr}, $x->{xsens}, $x->{typ}, $x->{notes}); } }
-	foreach $x (@{$e->{_dial}}) {
-	    pout ($::Fdial, $etag, $x->{kw}); }
-	foreach $x (@{$e->{_lang}}) {
-	    pout ($::Flang, $etag, $x->{kw}); }
 	foreach $x (@{$e->{_hist}}) {
 	    pout ($::Fhist, $etag, $x->{hist}, $x->{stat}, $x->{dt}, 
 			                $x->{who}, $x->{diff}, $x->{notes}); }} }

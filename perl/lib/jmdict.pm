@@ -33,8 +33,6 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 
     our($Tables) = { 
 	    entr =>  {pk=>["id"],                  parent=>"",     fk=>["entr"], al=>"e"},
-	    dial =>  {pk=>["entr","kw"],           parent=>"entr", fk=>["entr"], al=>"d"},
-	    lang =>  {pk=>["entr","kw"],           parent=>"entr", fk=>["entr"], al=>"l"},
 	    hist =>  {pk=>["entr","hist"],         parent=>"entr", fk=>["entr"], al=>"h"},
 	    rdng =>  {pk=>["entr","rdng"],         parent=>"entr", fk=>["entr"], al=>"r"},
 	    rinf =>  {pk=>["entr","rdng","kw"],    parent=>"rdng", fk=>["entr","rdng"], al=>"ri"},
@@ -45,9 +43,11 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    freq =>  {pk=>["entr","rdng","kanj","kw"],parent=>"entr", fk=>["entr"], al=>"q"},
 	    sens =>  {pk=>["entr","sens"],         parent=>"entr", fk=>["entr"], al=>"s"},
 	    gloss => {pk=>["entr","sens","gloss"], parent=>"sens", fk=>["entr","sens"], al=>"g"},
-	    pos =>   {pk=>["entr","sens","pos"],   parent=>"sens", fk=>["entr","sens"], al=>"p"},
-	    misc =>  {pk=>["entr","sens","misc"],  parent=>"sens", fk=>["entr","sens"], al=>"m"},
-	    fld =>   {pk=>["entr","sens","fld"],   parent=>"sens", fk=>["entr","sens"], al=>"f"},
+	    pos =>   {pk=>["entr","sens","kw"],    parent=>"sens", fk=>["entr","sens"], al=>"p"},
+	    misc =>  {pk=>["entr","sens","kw"],    parent=>"sens", fk=>["entr","sens"], al=>"m"},
+	    fld =>   {pk=>["entr","sens","kw"],    parent=>"sens", fk=>["entr","sens"], al=>"f"},
+	    dial =>  {pk=>["entr","sens","kw"],    parent=>"sens", fk=>["entr","sens"], al=>"d"},
+	    lsrc =>  {pk=>["entr","sens","kw"],    parent=>"sens", fk=>["entr","sens"], al=>"l"},
 	    stagr => {pk=>["entr","sens","rdng"],  parent=>"sens", fk=>["entr","sens"], al=>"sr"},
 	    stagk => {pk=>["entr","sens","kanj"],  parent=>"sens", fk=>["entr","sens"], al=>"sk"},
 	    xrefe => {pk=>["entr","sens","xentr","xsens"], parent=>"sens", fk=>["entr","sens"], al=>"x"},
@@ -96,8 +96,10 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	$kw{DIAL} = $dbh->selectall_hashref("SELECT * FROM kwdial", "kw"); addids ($kw{DIAL});
 	$kw{FLD}  = $dbh->selectall_hashref("SELECT * FROM kwfld",  "kw"); addids ($kw{FLD});
 	$kw{FREQ} = $dbh->selectall_hashref("SELECT * FROM kwfreq", "kw"); addids ($kw{FREQ});
+	$kw{GINF} = $dbh->selectall_hashref("SELECT * FROM kwginf", "kw"); addids ($kw{GINF});
 	$kw{KINF} = $dbh->selectall_hashref("SELECT * FROM kwkinf", "kw"); addids ($kw{KINF});
 	$kw{LANG} = $dbh->selectall_hashref("SELECT * FROM kwlang", "kw"); addids ($kw{LANG});
+	$kw{LSRC} = $dbh->selectall_hashref("SELECT * FROM kwlsrc", "kw"); addids ($kw{LSRC});
 	$kw{MISC} = $dbh->selectall_hashref("SELECT * FROM kwmisc", "kw"); addids ($kw{MISC});
 	$kw{POS}  = $dbh->selectall_hashref("SELECT * FROM kwpos",  "kw"); addids ($kw{POS});
 	$kw{RINF} = $dbh->selectall_hashref("SELECT * FROM kwrinf", "kw"); addids ($kw{RINF});
@@ -183,8 +185,6 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 
 	  my $start = time();
 	my $entr  = dbread ($dbh, "SELECT e.* FROM $tmptbl t JOIN entr  e ON e.id=t.id ORDER BY t.ord");
-	my $dial  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN dial  x ON x.entr=t.id;");
-	my $lang  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN lang  x ON x.entr=t.id;");
 	my $hist  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN hist  x ON x.entr=t.id;");
 	my $rdng  = dbread ($dbh, "SELECT r.* FROM $tmptbl t JOIN rdng  r ON r.entr=t.id ORDER BY r.entr,r.rdng;");
 	my $rinf  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN rinf  x ON x.entr=t.id;");
@@ -196,6 +196,8 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	my $misc  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN misc  x ON x.entr=t.id;");
 	my $pos   = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN pos   x ON x.entr=t.id;");
 	my $fld   = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN fld   x ON x.entr=t.id;");
+	my $dial  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN dial  x ON x.entr=t.id;");
+	my $lsrc  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN lsrc  x ON x.entr=t.id;");
 	my $restr = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN restr x ON x.entr=t.id;");
 	my $stagr = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN stagr x ON x.entr=t.id;");
 	my $stagk = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN stagk x ON x.entr=t.id;");
@@ -204,8 +206,6 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	my $xrer  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN xref  x ON x.xentr=t.id;");
 	$::Debug->{'Obj retrieval time'} = time() - $start;
 
-	matchup ("_dial",  $entr, ["id"],  $dial,  ["entr"]);
-	matchup ("_lang",  $entr, ["id"],  $lang,  ["entr"]);
 	matchup ("_rdng",  $entr, ["id"],  $rdng,  ["entr"]);
 	matchup ("_kanj",  $entr, ["id"],  $kanj,  ["entr"]);
 	matchup ("_sens",  $entr, ["id"],  $sens,  ["entr"]);
@@ -217,6 +217,8 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	matchup ("_pos",   $sens, ["entr","sens"], $pos,   ["entr","sens"]);
 	matchup ("_misc",  $sens, ["entr","sens"], $misc,  ["entr","sens"]);
 	matchup ("_fld",   $sens, ["entr","sens"], $fld,   ["entr","sens"]);
+	matchup ("_dial",  $sens, ["entr","sens"], $dial,  ["entr","sens"]);
+	matchup ("_lsrc",  $sens, ["entr","sens"], $lsrc,  ["entr","sens"]);
 	matchup ("_freq",  $entr, ["entr"], $freq, ["entr"]);
 	matchup ("_restr", $rdng, ["entr","rdng"], $restr, ["entr","rdng"]);
 	matchup ("_stagr", $sens, ["entr","sens"], $stagr, ["entr","sens"]);
@@ -491,14 +493,14 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    if ($s->{_pos})   { foreach $x (@{$s->{_pos}})   { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
 	    if ($s->{_misc})  { foreach $x (@{$s->{_misc}})  { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
 	    if ($s->{_fld})   { foreach $x (@{$s->{_fld}})   { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
+	    if ($s->{_dial})  { foreach $x (@{$s->{_dial}})  { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
+	    if ($s->{_lsrc})  { foreach $x (@{$s->{_lsrc}})  { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
 	    if ($s->{_stagk}) { foreach $x (@{$s->{_stagk}}) { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
 	    if ($s->{_stagr}) { foreach $x (@{$s->{_stagr}}) { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
 	    if ($s->{_xrslv}) { foreach $x (@{$s->{_xrslv}}) { $x->{entr} = $eid;  $x->{sens} = $nsens;  
 								 $x->{ord} = ++$nxr } }
 	    if ($s->{_xref})  { foreach $x (@{$s->{_xref}})  { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
 	    if ($s->{_xrer})  { foreach $x (@{$s->{_xrer}})  { $x->{xentr}= $eid;  $x->{xsens}= $nsens; } } } }
-	if ($e->{_dial}) { foreach $x (@{$e->{_dial}})       { $x->{entr} = $eid; } }
-	if ($e->{_lang}) { foreach $x (@{$e->{_lang}})       { $x->{entr} = $eid; } }
 	if ($e->{_hist}) { foreach $x (@{$e->{_hist}})       { $x->{entr} = $eid;  $x->{hist} = ++$nhist; } } }
 
     sub addentr { my ($dbh, $entr) = @_;
@@ -544,7 +546,7 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    dbinsert ($dbh, "sens", ['entr','sens','notes'], $s);
 	    foreach $g (@{$s->{_gloss}}) {
 		$g->{entr} = $eid; $g->{sens} = $nsens; $g->{gloss} = ++$ngloss;
-		dbinsert ($dbh, "gloss", ['entr','sens','gloss','lang','txt'], $g); }
+		dbinsert ($dbh, "gloss", ['entr','sens','gloss','lang','ginf','txt'], $g); }
 	    foreach $x (@{$s->{_pos}}) {
 		$x->{entr} = $eid; $x->{sens} = $nsens;
 		dbinsert ($dbh, "pos", ['entr','sens','kw'], $x); }
@@ -554,6 +556,12 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    foreach $x (@{$s->{_fld}}) {
 		$x->{entr} = $eid; $x->{sens} = $nsens;
 		dbinsert ($dbh, "fld", ['entr','sens','kw'], $x); }
+	    foreach $x (@{$s->{_dial}}) {
+		$x->{entr} = $eid; $x->{sens} = $nsens;
+		dbinsert ($dbh, "dial", ['entr','sens','kw'], $x); }
+	    foreach $x (@{$entr->{_lsrc}}) {
+		$x->{entr} = $eid; $x->{sens} = $nsens;
+		dbinsert ($dbh, "lsrc", ['entr','sens','kw', 'lang','txt'], $x); }
 	    foreach $x (@{$s->{_stagr}}) {
 		$x->{entr} = $eid; $x->{sens} = $nsens;
 		$x->{rdng} = $x->{rdng}{id};
@@ -566,12 +574,6 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 		$x->{entr} = $eid; $x->{sens} = $nsens; 
 		$x->{xref} = $x->{xref}{id};
 		dbinsert ($dbh, "xref", ['entr','sens','xentr','xsens','typ','notes'], $x); } }
-	foreach $x (@{$entr->{_dial}}) {
-	    $x->{entr} = $eid;
-	    dbinsert ($dbh, "dial", ['entr','kw'], $x); }
-	foreach $x (@{$entr->{_lang}}) {
-	    $x->{entr} = $eid;
-	    dbinsert ($dbh, "lang", ['entr','kw'], $x); }
 	return ($eid, $seq); }
 
     sub get_seq { my ($dbh) = @_;

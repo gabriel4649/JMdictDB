@@ -16,12 +16,6 @@
         [<span tal:replace="kwfull: 'STAT' e/stat">[status]</span>]
 	</span>
       <span class="pkid">{id:<span tal:replace="e/id"/>}</span>
-      <span class="dial" tal:condition="e/_dial">, 
-        Dialect: <span tal:replace="kwabbrs: 'DIAL' ',' e/_dial">dial</span>
-	</span>
-      <span class="lang" tal:if="e/_lang">, 
-	Original lang: <span tal:replace="kwabbrs: 'LANG' ',' e/_lang">lang</span>
-	</span>
 
       <br/> 
       <span tal:if="e/_kanj" tal:repeat="k e/_kanj" tal:omit-tag="">
@@ -74,8 +68,21 @@
 	      </span>
 	    <span class="fld" tal:if="s/_fld">
 	      {<span tal:replace="kwfulls: 'FLD' ',' s/_fld">fields</span>}
-	      </span><br/>
+	      </span>
 
+	    <span class="dial" tal:condition="s/_dial">, 
+	      Dialect: <span tal:replace="kwabbrs: 'DIAL' ',' s/_dial">dial</span>
+	      </span>
+	    <span class="lang" tal:if="s/_lsrc">, 
+	      From: 
+	      <span tal:repeat="z s/_lsrc" tal:omit-tag="">
+		<span tal:if="not:repeat/start" tal:omit-tag="">,</span>
+		(<span tal:replace="kwabbr: 'LANG' z/lang">(xx)</span>)
+		<span tal:if="true:z/txt" tal:replace="z/txt">source word</span>
+		</span>
+	      </span>
+
+	    <br/>
 	    <span class="note" tal:if="s/notes">
 	      《<span tal:replace="s/notes">sense-notes</span>》<br/>
 	      </span>
@@ -83,6 +90,9 @@
 	    <span tal:repeat="g s/_gloss">
 	      <span tal:if="not: eq: g/lang string:1" omit-tag="">
 	        <span class="glang" tal:replace="kwabbr: 'LANG' g/lang">lang</span>:
+		</span>
+	      <span tal:if="not: eq: g/ginf string:1" omit-tag="">
+	        [<span class="ginf" tal:replace="kwabbr: 'GINF' g/ginf">lang</span>.]
 		</span>
 	      <span class="gloss" tal:replace="string:${g/gloss}. ${g/txt}">n. gloss text</span><br/>
 	      </span>

@@ -1,98 +1,200 @@
 
-2007-04-30	smcgrawx@frxii.com
+2007-05-21 18:00	smcgrawx@frxii.com
 
-	T015 tag
-	Tagged prior to making changes for version 1.06 of the
-	  JMdict XML DTD.  These changes were made around
-	  2007/04/24-2007/04/30.  From the comments in the JMdict
-	  file:
-	  > Dropped the "*" from the end of the entry element.
-	  > Dropped the g_lang attribute in favour of xml:lang
-	  > Dropped the <lang> element and replaced it with <lsource>
-	  >   at the sense level.
-	  > Moved <dial> from the entry level to the source level.
+	* Makefile [1.14]
+	Fix: Fix copy/paste errors in the messages produced by target "all".
+	  {52}
+	In target "dist" remove most of the exclude options since practice
+	  now is to make a distribution archive from a freshly checked out
+	  working directory.  In target "clean", add the file patterns that
+	  used to be excluded by target "dist", in case one wants to do
+	  things the old way. {53}
 
-	* perl/jmparse.pl [1.25]
-	Fix: Sense notes were not being added to database.
+	* README.txt [1.10]
+	Update the documentation for the schema changes related to jmdict dtd
+	  1.06 and gloss tags. {44}
+	Rewrite the install section based on using Makefile (which I have
+	  verified is useable on both Unix and Windows). {49}
 
-2007-04-26	smcgrawx@frxii.com
+	* doc/Makefile [1.1]
+	* doc/README.txt [1.1]
+	New: Added new files. {57}
 
-	* Makefile [1.13]
-	Fix: loadall target did not run xresolv.sql.
+	* doc/schema.dia [1.4]
+	* doc/schema.odt [1.4]
+	Update the documentation for the schema changes related to jmdict dtd
+	  1.06 and gloss tags. {44}
 
-	* xresolv.sql [1.7]
-	Fix: bad table names.
+	* doc/schema.html [1.3]
+	* doc/schema.png [1.6]
+	* perl/lib/kwstatic.pm [1.3]
+	* pg/drpindex.sql [1.3]
+	* pg/mkindex.sql [1.12]
+	Regenerated to track changes in prerequisite files. {36}
 
-2007-04-26	smcgrawx@frxii.com
+	* perl/jmparse.pl [1.26]
+	Update for the JMdict dtd changes to <lang>, <dial>. {40}
+	Add new command line option, -g, to restrict glosses processed for
+	  loading into database to those of the given language.  (This
+	  allows, for example, extracting only english glosses from the full,
+	  multi-language JMdict file.) {39}
+	Add support for gloss tags. {41}
 
-	* Makefile [1.12]
-	Fix: loadall target was loading jmnedict twice, examples
-	  not at all.
-
-2007-04-26	smcgrawx@frxii.com
-
-	* perl/exparse.pl [1.4]
-	Formerly, exparse would try to resolve the B line items against
-	  jmdict entries while running.  Changed so that it now, like 
-	  jmparse.pl, doesn't resolve but writes the unresolved text 
-	  strings to table xresolv from where they will be resolved 
-	  later.  Since the Examples file identifies xref targets by 
-	  possibly a reading, kanji, and sense number, the xresolv table
-	  was expanded with columns "rtxt", "ktxt", and "xsens" replacing
-	  the single "txt" column.  Also added a "ord" column since the 
-	  the B line items may be repeated and order matched order of
-	  aperance in the A line text. 
-	Since database access no longer needed for xref resolution, all
-	  the database stuff was ripped out.
-
-	* perl/jmparse.pl [1.24]
-	Adjust the interval at with the progress bar dots are printed in
-	  compensate for ever growing jmdict.xml file.
-	When creating xresolv table records, put text in field "rtxt" or
-	  "ktxt" as appropriate.
+	* perl/lib/Makefile [1.2]
+	Add new files kwginf.csv and kwlsrc.csv to dependencies. {28}
+	Move mkkwmod.pl to ./tools/ directory from ./perl/. {46}
 
 	* perl/lib/jmdict.pm [1.22]
-	Change jstr_classify() to consider any c.p. greater than 0x4E00 to 
-	  be a kanji character.  Previously is was >0x4E00 and <=0x9FFF but 
+	* perl/lib/jmdictpgi.pm [1.3]
+	* perl/lib/tal/entr.tal [1.8]
+	* perl/lib/tal/nwconf.tal [1.4]
+	Update for the JMdict dtd changes to <lang>, <dial>. {40}
+	Added gloss tag support. {43}
+
+	* perl/lib/jmdictxml.pm [1.12]
+	Update language tags to those currently in use in the 2007-05-01
+	  JMdict xml file.  Id's are from pg/kwlang.csv which includes all
+	  the ISO-639-1 two-letter codes, plus "ai" (Ainu). {27}
+
+	* perl/showentr.pl [1.14]
+	Dialect, lsource (was lang) display updated. {42}
+	Added gloss tag support. {43}
+
+	* pg/Makefile [1.3]
+	Move mkindex.pl to ./tools/ directory from ./pg/. {45}
+
+	* pg/data/kwginf.csv [1.1]
+	New table for gloss tags. {31}
+
+	* pg/data/kwlang.csv [1.2]
+	Generate from the ISO-639-3 list (iso-639-3_20070323.tab) at
+	  http://www.sil.org/iso639-3/download.asp, using script
+	  perl/tools/mklangcsv.pl (which is not in CVS yet). {30}
+
+	* pg/data/kwlsrc.csv [1.1]
+	New table for lsource types. {32}
+
+	* pg/data/kwmisc.csv [1.2]
+	Changes to "misc" keywords in jmdict dtd 1.06.    Add keyword "eK"
+	  (uppercase "K"), deprecate "ek" (lowercase "k")  and "gikun". {54}
+
+	* pg/data/kwrinf.csv [1.2]
+	Rinf "ateji" keyword deprecated in jmdict dtd 1.06. {55}
+
+	* pg/loadkw.sql [1.5]
+	Add the new tables kwginf, kwlsrc. {33}
+
+	* pg/mkperms.sql [1.8]
+	Add the new tables kwginf, kwlsrc, lsrc to load list, remove table
+	  lang. {34}
+
+	* pg/mktables.sql [1.17]
+	Add >0 constraints to rdng.rdng, kanj.kanj, sens.sens, gloss.gloss,
+	  hist.hist.  This makes it a little easier to enforce consecutive
+	  numbering on these columns. {25}
+	Changes to track jmdict changes:  + Gloss tags: add column ginf to
+	  table gloss and new table  kwginf.  + <dial> now a child of
+	  <sense>: make table dial child table of sense.  + <lang> replaced
+	  by <lsource>.  Replace table "lang" with table "lsrc" and make
+	  child table of "sens".  New table "kwlsrc". {26}
+
+	* pg/mkviews.sql [1.17]
+	Adjust functions dupentr and delentr for the dial, lsrc, and gloss
+	  table changes. {35}
+
+	* tools/mkindex.pl [1.3]
+	Fix: Was creating bad "DROP INDEX" commands in drpindex.sql. {17}
+	Move mkindex.pl to ./tools/ directory from ./pg/. {45}
+
+	* tools/mkkwmod.pl [1.3]
+	Add new files kwginf.csv and kwlsrc.csv to list used to generate
+	  kwstatic.pm. {29}
+
+2007-04-30 14:54	smcgrawx@frxii.com
+
+	Tag: T015  Tagged prior to making changes for version 1.06 of the
+	  JMdict XML DTD. {24}
+
+	* perl/jmparse.pl [1.25]
+	Fix: Sense notes were not being added to database. {3}
+
+2007-04-26 20:00	smcgrawx@frxii.com
+
+	* Makefile [1.13]
+	Fix: Loadall target did not run xresolv.sql. {4}
+
+	* pg/xresolv.sql [1.7]
+	Fix: Bad table names. {5}
+
+2007-04-26 11:00	smcgrawx@frxii.com
+
+	* Makefile [1.12]
+	Fix: Loadall target was loading jmnedict twice, examples not at all.
+	  {6}
+
+2007-04-26 09:00	smcgrawx@frxii.com
+
+	* Makefile [1.11]
+	exparse now writes raw xrefs to table xresolv like jmparse rather
+	  than resolving at parse time.  This means examples.pgi need not be
+	  regenerated when jmdict is. {22}
+
+	* perl/exparse.pl [1.4]
+	Since database access no longer needed for xref resolution, all  the
+	  database stuff was ripped out. {8}
+	Formerly, exparse would try to resolve the B line items against
+	  jmdict entries while running.  Changed so that it now, like
+	  jmparse.pl, doesn't resolve but writes the unresolved text
+	  strings to table xresolv from where they will be resolved   later.
+	  Since the Examples file identifies xref targets by   possibly a
+	  reading, kanji, and sense number, the xresolv table  was expanded
+	  with columns "rtxt", "ktxt", and "xsens" replacing  the single
+	  "txt" column.  Also added a "ord" column since the   the B line
+	  items may be repeated and order matched order of  appearance in the
+	  A line text. {7}
+
+	* perl/jmparse.pl [1.24]
+	When creating xresolv table records, put text in field "rtxt" or
+	  "ktxt" as appropriate. {10}
+	Adjust the interval at with the progress bar dots are printed in
+	  compensate for ever growing jmdict.xml file. {9}
+
+	* perl/lib/jmdict.pm [1.22]
+	Change jstr_classify() to consider any c.p. greater than 0x4E00 to
+	  be a kanji character.  Previously is was >0x4E00 and <=0x9FFF but
 	  that resulted in entries with kanji strings like "CTIF" (where "C"
 	  is 0xFFxx) to be considered non-kanji even though it is stored in
-	  a kanj table row. 
+	  a kanj table row. {11}
 
 	* perl/lib/jmdictpgi.pm [1.3]
-	Fix: remove erroneous backslash in wrentr() that was causing hist.who
-	  fields to be generated as the string "SCALAR(..."
-	In wrentr() and initialize(), adjust for table xresolv now having 
+	In wrentr() and initialize(), adjust for table xresolv now having
 	  columns "rtxt" and "ktxt", rather than just single column "txt".
+	  {13}
+	Fix: Remove erroneous backslash in wrentr() that was causing hist.who
+	  fields to be generated as the string "SCALAR(..." {12}
 
 	* pg/Makefile [1.2]
-	Fix: Wrong name for mkindex.pl command.
+	Fix: Wrong name for mkindex.pl command. {14}
+
+	* pg/drpindex.sql [1.2]
+	* pg/mkindex.sql [1.11]
+	Regenerated due to changes in mktables.sql. {19}
 
 	* pg/mktables.sql [1.16]
 	Replaced column txt in table xresolv with columns "ord", "rtxt",
 	  "ktxt", "xsens".  See perl/exparse.pl change note for more info.
+	  {15}
 
 	* pg/mkviews.sql [1.16]
-	New view hdwds.
-
-	* pg/mkindex.pl [1.2]
-	Fix: was creating bad "DROP INDEX" commands in drpindex.sql.
-
-	* pg/mkindex.sql [1.11]
-	* pg/drpindex.sql [1.2]
-	Regenerated due to changes in mktables.sql.
+	New view hdwds. {16}
 
 	* pg/postload.sql [1.7]
 	Don't call xresolv.sql anymore.  That is now called directly from
-	  makefile.
+	  makefile. {20}
 
 	* pg/xresolv.sql [1.6]
-	Completely rewritten.  Now resolves all but 33 jmdict xrefs 
-	  (2007-04-15 JMdict).
-
-	* Makefile [1.11]
-	exparse now writes raw xrefs to table xresolv like jmparse rather 
-	  than resolving at parse time.  This means examples.pgi need not be
-	  regenerated when jmdict is.
+	Completely rewritten.  Now resolves all but 33 jmdict xrefs
+	  (2007-04-15 JMdict). {21}
 
 2007-04-15	smcgrawx@frxii.com
 

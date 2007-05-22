@@ -1,4 +1,29 @@
 
+2007-05-22 09:19	smcgrawx@frxii.com
+
+	* Makefile [1.15]
+	Fix: Error in mv command of target "examples.txt". {62}
+	Fix: Examples file at Monash ftp site has extension ".utf", not
+	  ".utf8". {59}
+
+	* perl/exparse.pl [1.5]
+	Fix: Was failing to set ginf column value in gloss table output. {64}
+
+	* perl/jmparse.pl [1.27]
+	Fix: Some error messages included the seq number twice. {63}
+
+	* perl/lib/jmdictxml.pm [1.13]
+	Add lang "th" (Thai) which appears in the 2007-05-22 jmdict.xml file.
+	  {60}
+
+	* perl/lib/kwstatic.pm [1.4]
+	Update due to changes in prerequite files. {61}
+
+2007-05-21 22:54	smcgrawx@frxii.com
+
+	* doc/Makefile [1.2]
+	Move all the change log tools into doc/chglog/. {58}
+
 2007-05-21 18:00	smcgrawx@frxii.com
 
 	* Makefile [1.14]
@@ -11,10 +36,10 @@
 	  things the old way. {53}
 
 	* README.txt [1.10]
-	Update the documentation for the schema changes related to jmdict dtd
-	  1.06 and gloss tags. {44}
 	Rewrite the install section based on using Makefile (which I have
 	  verified is useable on both Unix and Windows). {49}
+	Update the documentation for the schema changes related to jmdict dtd
+	  1.06 and gloss tags. {44}
 
 	* doc/Makefile [1.1]
 	* doc/README.txt [1.1]

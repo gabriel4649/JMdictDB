@@ -124,10 +124,10 @@ loadne: jmnedict.dmp
 #------ Load examples ---------------------------------------------------
 
 examples.txt: 
-	rm -f examples.utf8.gz
-	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/examples.utf8.gz
-	gunzip examples.utf8.gz
-	mv examples.utf8 >examples.txt
+	rm -f examples.utf.gz
+	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/examples.utf.gz
+	gunzip examples.utf.gz
+	mv examples.utf examples.txt
 
 examples.pgi: examples.txt
 	cd perl && perl exparse.pl -o ../examples.pgi ../examples.txt >../exparse.log

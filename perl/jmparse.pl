@@ -357,10 +357,10 @@ sub do_lsrc { my ($s, $lsrc) = @_;
 	foreach $i (@$lsrc) {
 	    $txt = $i->text;  
 	    $lang = $::JM2ID{LANG}{($lng=$i->att("xml:lang")) || "en"};
-	    if (!$lang) { die "Seq $::Seq: invalid lsource lang attribute '$lng'\n"; }
+	    if (!$lang) { die "Invalid lsource lang attribute '$lng'\n"; }
 	    if ($lang >= 200) { print $::Flog "Seq $::Seq: deprecated lsource lang '$lng'\n"; }
 	    $kw = $::JM2ID{LSRC}{($lskw=$i->att("ls_type")) || "full"};
-	    if (!$kw) { die "Seq $::Seq: invalid lsource type attribute '$lskw'\n"; }
+	    if (!$kw) { die "Invalid lsource type attribute '$lskw'\n"; }
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated lsource type '$lskw'\n"; }
 	    if ($kw != 1 and !$txt ) { 
 		print $::Flog "Seq $::Seq: non-default lsource type '$lskw' and no text\n"; }

@@ -1,4 +1,8 @@
 
+2007-05-22 14:48	smcgrawx@frxii.com
+
+	Tag: T016 {65}
+
 2007-05-22 09:19	smcgrawx@frxii.com
 
 	* Makefile [1.15]
@@ -36,10 +40,10 @@
 	  things the old way. {53}
 
 	* README.txt [1.10]
-	Rewrite the install section based on using Makefile (which I have
-	  verified is useable on both Unix and Windows). {49}
 	Update the documentation for the schema changes related to jmdict dtd
 	  1.06 and gloss tags. {44}
+	Rewrite the install section based on using Makefile (which I have
+	  verified is useable on both Unix and Windows). {49}
 
 	* doc/Makefile [1.1]
 	* doc/README.txt [1.1]

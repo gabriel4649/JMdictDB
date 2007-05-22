@@ -32,17 +32,18 @@ schema.html: schema.odt
 	  "macro:///DannysLibrary.Conversion.ExportDoc(/home/stuart/jb/doc/$?,html)"
 
 # Following only works on Windows... (sigh)
-# Generate updated Changes.txt and todo.html files  from the change 
-# data in the ChgLog Microsoft Access database.  The database is not
-# distributed as part of the JMdictDB distribution.
+# Generate updated Changes.txt and todo.html files from the change 
+# data in the ChgLog Microsoft Access database.  The database and 
+# other tools in subdirectory ./chglog/ are not # distributed as
+# part of the JMdictDB distribution.
 
-TODO.html: ChgLog.mdb
-	../tools/mktodo.py  >TODO.html
+TODO.html: chglog/ChgLog.mdb
+	./chglog/mktodo.py chglog/ChgLog.mdb >TODO.html
 
 # Not all the old Change log entries have been imported into the 
 # database yet so append the old entries to those generated from
 # the database.
 
-Changes.txt: ChgLog.mdb Changes-old.txt
-	../tools/mkchglog.py >temp.txt
+Changes.txt: chglog/ChgLog.mdb Changes-old.txt
+	./chglog/mkchglog.py chglog/ChgLog.mdb >temp.txt
 	cat temp.txt Changes-old.txt >Changes.txt

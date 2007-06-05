@@ -130,7 +130,7 @@ examples.txt:
 	mv examples.utf examples.txt
 
 examples.pgi: examples.txt
-	cd perl && perl exparse.pl -o ../examples.pgi ../examples.txt >../exparse.log
+	cd perl && perl exparse.pl -o ../examples.pgi ../examples.txt >../examples.log
 
 examples.dmp: examples.pgi
 	cd perl && perl jmload.pl -o ../examples.dmp ../examples.pgi

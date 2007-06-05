@@ -18,7 +18,7 @@
 <body>
   <h1>JMdictDB To-Do List</h1>
   <span class="gendate">
-    This list was current as of 2007-05-22 16:24
+    This list was current as of 2007-06-05 09:05
     </span>
   <table class="todo">
     
@@ -34,17 +34,21 @@
         <td colspan="5">Priority 'high' items</td>
 	</tr>
       <tr class="row">
-	<td class="id">39</td>
+	<td class="id">66</td>
 	
-	  <td class="title" colspan="2">Multiple rdng/kanj tags displayed</td>
+	  <td class="title" colspan="2">Examples file syntax change</td>
 	  
 	
 	<td class="compld"></td>
-	<td class="entered">2007-02-26</td>
+	<td class="entered">2007-06-01 09:38</td>
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">If a reading (or kanji) has a the same FoU tag paired with two (or more) kanji (or readings), the tag will be shown twice (or more) on the reading  (or kanji).  Example: seq 1579780 (主人).</td>
+	<td class="descr" colspan="4">The Examples file now marks some sentenses as exemplars for specific jmdict words, using a double-quote (") character at the end of the B line item for the word.  See email from Paul Blay posted to the edict-jmdict email list on 2007-06-01: <br/>
+  http://tech.groups.yahoo.com/group/edict-jmdict/message/1574<br/>
+<br/>
+Need to fix exparse,pl to recognise this new syntax and somehow represent this information in the xref records, which are what are used to represent the B line items.
+</td>
 	</tr>
       
       
@@ -63,7 +67,28 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">srchres.pl -- Simplify build_search_table() and mk_from_clause().  Because of the 2007-02-11 pk/fk change, we don't need join all the parent tables of the table we're looking at -- the search target table can be joined directly and soley to "entr" which should greatly simplify the code.</td>
+	<td class="descr" colspan="4">srchres.pl -- Simplify build_search_table() and mk_from_clause().  Because of the 2007-02-11 pk/fk change, we don't need join all the parent tables of the table we're looking at -- the search target table can be joined directly and soley to "entr" which should greatly simplify the code.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">39</td>
+	
+	  <td class="title" colspan="2">Multiple rdng/kanj tags displayed</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-26</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">If a reading (or kanji) has a the same FoU tag paired with two (or more) kanji (or readings), the tag will be shown twice (or more) on the reading  (or kanji).  Example: seq 1579780 (主人).
+</td>
 	</tr>
       
       
@@ -82,7 +107,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">srchres.pl -- Search on gloss is case-sensitive, probably should not be.</td>
+	<td class="descr" colspan="4">srchres.pl -- Search on gloss is case-sensitive, probably should not be.
+</td>
 	</tr>
       
       
@@ -101,7 +127,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Need to limit number entries shown on "search results" page to some reasonable number to prevent trying to display huge results sets.</td>
+	<td class="descr" colspan="4">Need to limit number entries shown on "search results" page to some reasonable number to prevent trying to display huge results sets.
+</td>
 	</tr>
       
       
@@ -120,7 +147,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Need page that allows user to submit modifcations of existing entries.</td>
+	<td class="descr" colspan="4">Need page that allows user to submit modifcations of existing entries.
+</td>
 	</tr>
       
       
@@ -139,7 +167,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Write a script to generate Jim Breen's master file (used to generate in turn the various JMdict and Edict files) from the database.</td>
+	<td class="descr" colspan="4">Write a script to generate Jim Breen's master file (used to generate in turn the various JMdict and Edict files) from the database.
+</td>
 	</tr>
       
       
@@ -158,7 +187,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Support Apache/modperl.</td>
+	<td class="descr" colspan="4">Support Apache/modperl.
+</td>
 	</tr>
       
       
@@ -177,7 +207,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Need to work out details of approval process in terms of data changes and the web pages needed to support those changes. [Need "edit entry" page first]</td>
+	<td class="descr" colspan="4">Need to work out details of approval process in terms of data changes and the web pages needed to support those changes. [Need "edit entry" page first]
+</td>
 	</tr>
       
       
@@ -187,6 +218,36 @@
       <tr class="priohdr">
         <td colspan="5">Priority 'med' items</td>
 	</tr>
+      <tr class="row">
+	<td class="id">65</td>
+	
+	  <td class="title" colspan="2">display gloss tags following gloss number</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-05-23 14:07</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Currently in entr.tal and nwconf.tal, a gloss tag (if any) is displayed in square brackets in front of the gloss number, e.g.:<br/>
+<br/>
+  [lit.] 1. my gloss<br/>
+<br/>
+It would look better displayed after the gloss number:<br/>
+<br/>
+  1. [lit.] my gloss<br/>
+<br/>
+or possibly at the end of the gloss:<br/>
+<br/>
+  1. my gloss [lit.]
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
       <tr class="row">
 	<td class="id">13</td>
 	
@@ -198,7 +259,10 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Support PerlEx.  The author does a lot of the project development on a Windows machine and would like faster response both during devopment and for his own use of the project.  It would also be in keeping with the free-software nature of the project to make the software useful to the widest possible audience.<br/><br/>PerlEx comes with Activestate's Perl and provides fast execution of cgi scripts under Microsoft's IIS web server in (I think) a similar way to modperl's Modperl::Request.</td>
+	<td class="descr" colspan="4">Support PerlEx.  The author does a lot of the project development on a Windows machine and would like faster response both during devopment and for his own use of the project.  It would also be in keeping with the free-software nature of the project to make the software useful to the widest possible audience.<br/>
+<br/>
+PerlEx comes with Activestate's Perl and provides fast execution of cgi scripts under Microsoft's IIS web server in (I think) a similar way to modperl's Modperl::Request.
+</td>
 	</tr>
       
       
@@ -217,7 +281,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Add reset button to search results form.</td>
+	<td class="descr" colspan="4">Add reset button to search results form.
+</td>
 	</tr>
       
       
@@ -236,7 +301,10 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Need to find way to validate that db contents are same as jmdict.xml.  Just generating xml from database and diffing with original file probably won't work because we don't maintain same order of entities, comment positions, and parhaps other things.  xref targets won't be identical.<br/><br/>Maybe this could be done by generating a master file and letting Jim Breen do the validation against the current master file?</td>
+	<td class="descr" colspan="4">Need to find way to validate that db contents are same as jmdict.xml.  Just generating xml from database and diffing with original file probably won't work because we don't maintain same order of entities, comment positions, and parhaps other things.  xref targets won't be identical.<br/>
+<br/>
+Maybe this could be done by generating a master file and letting Jim Breen do the validation against the current master file?
+</td>
 	</tr>
       
       
@@ -255,7 +323,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">entr.pl -- If there is cross-ref and a reverse-ref to the same target in a sense, display only the cross-ref.</td>
+	<td class="descr" colspan="4">entr.pl -- If there is cross-ref and a reverse-ref to the same target in a sense, display only the cross-ref.
+</td>
 	</tr>
       
       
@@ -274,7 +343,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">jmdict.pm::dbopen() -- when reading jmdict.cfg, look for and use a remote host name.</td>
+	<td class="descr" colspan="4">jmdict.pm::dbopen() -- when reading jmdict.cfg, look for and use a remote host name.
+</td>
 	</tr>
       
       
@@ -293,7 +363,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Search by various history criteria: status / submitter / submitted date / text in comments / etc.</td>
+	<td class="descr" colspan="4">Search by various history criteria: status / submitter / submitted date / text in comments / etc.
+</td>
 	</tr>
       
       
@@ -312,7 +383,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Authentication for editors.  (work out process flow details first?)</td>
+	<td class="descr" colspan="4">Authentication for editors.  (work out process flow details first?)
+</td>
 	</tr>
       
       
@@ -331,7 +403,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Need an overall Design and Implementation docs</td>
+	<td class="descr" colspan="4">Need an overall Design and Implementation docs
+</td>
 	</tr>
       
       
@@ -350,7 +423,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">newsub.pl -- Is it safe to receive a Storable?</td>
+	<td class="descr" colspan="4">newsub.pl -- Is it safe to receive a Storable?
+</td>
 	</tr>
       
       
@@ -369,7 +443,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">nwsub.pl -- generating warnings that DB::OUT is not used.  Creates noise in web server log files.</td>
+	<td class="descr" colspan="4">nwsub.pl -- generating warnings that DB::OUT is not used.  Creates noise in web server log files.
+</td>
 	</tr>
       
       
@@ -388,7 +463,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">jmdict.pm -- The database expects text strings in table "rdng" to contain no kanji chars and in table "kanj" to contain at least one.  Function jstr_classify used to determine kana/kanji-ness.  However there are some jmdict items that have kanji text that jmdict::jstr_classify considers to be kana only.  Change jstr_classify?  Or do something else?</td>
+	<td class="descr" colspan="4">jmdict.pm -- The database expects text strings in table "rdng" to contain no kanji chars and in table "kanj" to contain at least one.  Function jstr_classify used to determine kana/kanji-ness.  However there are some jmdict items that have kanji text that jmdict::jstr_classify considers to be kana only.  Change jstr_classify?  Or do something else?
+</td>
 	</tr>
       
       
@@ -407,7 +483,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)</td>
+	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
+</td>
 	</tr>
       
       
@@ -426,7 +503,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Do other error checking (or could do these after data loaded into db): all senses have gloss?  All entries have sens and reading? ... (But remember that deleted entries have no sences or readings).</td>
+	<td class="descr" colspan="4">load_jmdict.pl -- Do other error checking (or could do these after data loaded into db): all senses have gloss?  All entries have sens and reading? ... (But remember that deleted entries have no sences or readings).
+</td>
 	</tr>
       
       
@@ -445,7 +523,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">jmdict, *.pl -- Decide on conventions re ord numbers and list indexes:  In EntrList struct, many things (eg rdng records) have both a "rdng" key and a index in list.  Some places we (eg showentr.pl filt() calls) we take the key number as definitive, other places (jmdict::addentr()) we take the index position as definitive.  Currently no problem because the two numbering methods are consistent but may be future operations that make them inconsistent which will  introduce bugs.  Should adopt some standard rules to control this?</td>
+	<td class="descr" colspan="4">jmdict, *.pl -- Decide on conventions re ord numbers and list indexes:  In EntrList struct, many things (eg rdng records) have both a "rdng" key and a index in list.  Some places we (eg showentr.pl filt() calls) we take the key number as definitive, other places (jmdict::addentr()) we take the index position as definitive.  Currently no problem because the two numbering methods are consistent but may be future operations that make them inconsistent which will  introduce bugs.  Should adopt some standard rules to control this?
+</td>
 	</tr>
       
       
@@ -464,7 +543,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Even .8s seems a little slow (even for my machine).  DB interface code uses DBI's fetch_hash methods.  I think this may need to a second db read in order to determine the column names. Need to determine: 1) Is that ttrue?  2) Does it account for a significant performace hit? Will is still be a problem running with modperl which will improve query caching?  If these are true then rewrite code so that we provide the column name info rather than reading from db.</td>
+	<td class="descr" colspan="4">Even .8s seems a little slow (even for my machine).  DB interface code uses DBI's fetch_hash methods.  I think this may need to a second db read in order to determine the column names. Need to determine: 1) Is that ttrue?  2) Does it account for a significant performace hit? Will is still be a problem running with modperl which will improve query caching?  If these are true then rewrite code so that we provide the column name info rather than reading from db.
+</td>
 	</tr>
       
       
@@ -485,7 +565,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">entr.tal, and probably others does not have very good control over whitespace.  For example, there is a space after the opening bracket of a FoU tag (e.g. ichi1)  but no space before the closing bracket.  If these templates get a life beyond development, need to go through them and fix whitespace.</td>
+	<td class="descr" colspan="4">entr.tal, and probably others does not have very good control over whitespace.  For example, there is a space after the opening bracket of a FoU tag (e.g. ichi1)  but no space before the closing bracket.  If these templates get a life beyond development, need to go through them and fix whitespace.
+</td>
 	</tr>
       
       
@@ -504,7 +585,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">cgi -- Do security audit of all pages.</td>
+	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
+</td>
 	</tr>
       
       
@@ -523,7 +605,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Need to write unit tests for library code</td>
+	<td class="descr" colspan="4">Need to write unit tests for library code
+</td>
 	</tr>
       
       
@@ -542,7 +625,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">For cgi pages, command scripts, etc.</td>
+	<td class="descr" colspan="4">For cgi pages, command scripts, etc.
+</td>
 	</tr>
       
       
@@ -561,7 +645,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Need to setup a test infrastructure.</td>
+	<td class="descr" colspan="4">Need to setup a test infrastructure.
+</td>
 	</tr>
       
       
@@ -580,7 +665,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Retrieving one or a set of jmdict entries involves executing ~20 sql select stements.  This takes anwhere from .8 to 30s on my (slow) development machine.  I don't understand this almost order-of-magnitutde variation.  Need to determine what's going on and find remedy.</td>
+	<td class="descr" colspan="4">Retrieving one or a set of jmdict entries involves executing ~20 sql select stements.  This takes anwhere from .8 to 30s on my (slow) development machine.  I don't understand this almost order-of-magnitutde variation.  Need to determine what's going on and find remedy.
+</td>
 	</tr>
       
       
@@ -599,7 +685,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Will this help performance? Informal timings done on cgi show that connect time is pretty quick but may be more significant when object retrieval times are improved. (ref Apache::DBI)</td>
+	<td class="descr" colspan="4">Will this help performance? Informal timings done on cgi show that connect time is pretty quick but may be more significant when object retrieval times are improved. (ref Apache::DBI)
+</td>
 	</tr>
       
       
@@ -618,7 +705,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">*.tal,entr.css -- The .css file is a mess.</td>
+	<td class="descr" colspan="4">*.tal,entr.css -- The .css file is a mess.
+</td>
 	</tr>
       
       
@@ -637,26 +725,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">cgi -- Better error handling for db and other errors.</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">21</td>
-	
-	  <td class="title" colspan="2">CGI html escaping</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.</td>
+	<td class="descr" colspan="4">cgi -- Better error handling for db and other errors.
+</td>
 	</tr>
       
       
@@ -675,7 +745,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.</td>
+	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
+</td>
 	</tr>
       
       
@@ -694,7 +765,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">jmdict.pm -- The xrefs stuff might be circularly linked.  How does that affect garbage collection in long-running process (e.g. modperl)?</td>
+	<td class="descr" colspan="4">jmdict.pm -- The xrefs stuff might be circularly linked.  How does that affect garbage collection in long-running process (e.g. modperl)?
+</td>
 	</tr>
       
       
@@ -713,7 +785,28 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">database -- write maintenance scripts to check for things that are hard to write contraints for: do all senses have at least one gloss?  do all (jmdict) entries have at least one sense and reading?, Are rdng,kanj,sens,gloss ord numbers consecutive?</td>
+	<td class="descr" colspan="4">database -- write maintenance scripts to check for things that are hard to write contraints for: do all senses have at least one gloss?  do all (jmdict) entries have at least one sense and reading?, Are rdng,kanj,sens,gloss ord numbers consecutive?
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">21</td>
+	
+	  <td class="title" colspan="2">CGI html escaping</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.
+</td>
 	</tr>
       
       
@@ -732,7 +825,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Check the everything storing a datetime value stores it in UTC or localtime with timezone.  Check that everything displaying a datetime does the same.</td>
+	<td class="descr" colspan="4">Check the everything storing a datetime value stores it in UTC or localtime with timezone.  Check that everything displaying a datetime does the same.
+</td>
 	</tr>
       
       
@@ -742,25 +836,6 @@
       <tr class="priohdr">
         <td colspan="5">Priority 'info' items</td>
 	</tr>
-      <tr class="row">
-	<td class="id">24</td>
-	
-	  <td class="title" colspan="2">Segregate sql code</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">perl -- Isolate all sql in library routines?</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
       <tr class="row">
 	<td class="id">20</td>
 	
@@ -772,7 +847,28 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">cgi -- At some point change GET form methods to POST.  (GET useful for debugging.)</td>
+	<td class="descr" colspan="4">cgi -- At some point change GET form methods to POST.  (GET useful for debugging.)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">24</td>
+	
+	  <td class="title" colspan="2">Segregate sql code</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">perl -- Isolate all sql in library routines?
+</td>
 	</tr>
       
       
@@ -791,7 +887,8 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">cgi -- Need to obsure email addresses for general display (unobsured on conf form ok if none other than submitter/authenticated editors can see.)</td>
+	<td class="descr" colspan="4">cgi -- Need to obsure email addresses for general display (unobsured on conf form ok if none other than submitter/authenticated editors can see.)
+</td>
 	</tr>
       
       
@@ -810,7 +907,9 @@
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Allow anyone anonymous read-only access to cvs repo via cvsweb, viewcvs, or similar.<br/>[CVS dir structure needs to settle down first.  Need reliable host since that repo will become primary repository.]</td>
+	<td class="descr" colspan="4">Allow anyone anonymous read-only access to cvs repo via cvsweb, viewcvs, or similar.<br/>
+[CVS dir structure needs to settle down first.  Need reliable host since that repo will become primary repository.]
+</td>
 	</tr>
       
       
@@ -832,11 +931,34 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">When loading the jmdict database from jmdict-20070522 via "make", we get the following message when xrefs are resolved:<br/><br/>&gt; psql:xresolv.sql:108: ERROR:  new row for relation "xref" violates check constraint "xref_check"</td>
+	<td class="descr" colspan="4">When loading the jmdict database from jmdict-20070522 via "make", we get the following message when xrefs are resolved:<br/>
+<br/>
+&gt; psql:xresolv.sql:108: ERROR:  new row for relation "xref" violates check constraint "xref_check"
+</td>
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="notes" colspan="4">mktables.sql-1.17 added a reasonable seeming constraint to table xref that disallows any xref where the sorce entry (column entr) and target entry (column xentr) are the same.<br/><br/>This constraint fails on 4 records:<br/><br/>jmdict=# select * from xref where entr=xentr;<br/>  entr  | sens | xentr  | xsens | typ | notes <br/>--------+------+--------+-------+-----+-------<br/>  16957 |    1 |  16957 |     1 |   3 | <br/>  71531 |    1 |  71531 |     1 |   3 | <br/> 108835 |    1 | 108835 |     1 |   3 | <br/> 114013 |    1 | 114013 |     1 |   3 |<br/><br/>The seq numbers of the above entries are:<br/> 1171620, 1724470, 2111170, 2163660<br/><br/>These seem to be due to jmdict entries that have an xref that refers to the same entry.  I.e. this is not a problem with jmdictdb.<br/><br/>Resolution: <br/>* Email the jmdict list with request for correction to jmdict.<br/>* Temporarily remove the constraint, load the data, delete the problem xrefs, and recreate the constraints.</td>
+	<td class="notes" colspan="4">mktables.sql-1.17 added a reasonable seeming constraint to table xref that disallows any xref where the sorce entry (column entr) and target entry (column xentr) are the same.<br/>
+<br/>
+This constraint fails on 4 records:<br/>
+<br/>
+jmdict=# select * from xref where entr=xentr;<br/>
+  entr  | sens | xentr  | xsens | typ | notes <br/>
+--------+------+--------+-------+-----+-------<br/>
+  16957 |    1 |  16957 |     1 |   3 | <br/>
+  71531 |    1 |  71531 |     1 |   3 | <br/>
+ 108835 |    1 | 108835 |     1 |   3 | <br/>
+ 114013 |    1 | 114013 |     1 |   3 |<br/>
+<br/>
+The seq numbers of the above entries are:<br/>
+ 1171620, 1724470, 2111170, 2163660<br/>
+<br/>
+These seem to be due to jmdict entries that have an xref that refers to the same entry.  I.e. this is not a problem with jmdictdb.<br/>
+<br/>
+Resolution: <br/>
+* Email the jmdict list with request for correction to jmdict.<br/>
+* Temporarily remove the constraint, load the data, delete the problem xrefs, and recreate the constraints.
+</td>
 	</tr>
       
       </span><span omit-tag="">
@@ -855,11 +977,15 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">Maintaining the change log manually in a text file is not too bad, but the html to-do list is a bear do to the lack of a decent html editor.  NVU: Haven't found good way to cut/paste table rows and it trashes any preexisting html source formatting.  Windows tools like Word or Frontpage write Microsoft flavored html.<br/><br/>Will try to write MS Access app (since I know Access and can do fast).  Since I am only one using it and only the results (change log and to-do list files) will go into the source code the proprietary nature of the tool is irrelevant.  This will change if/when other people contribute.</td>
+	<td class="descr" colspan="4">Maintaining the change log manually in a text file is not too bad, but the html to-do list is a bear do to the lack of a decent html editor.  NVU: Haven't found good way to cut/paste table rows and it trashes any preexisting html source formatting.  Windows tools like Word or Frontpage write Microsoft flavored html.<br/>
+<br/>
+Will try to write MS Access app (since I know Access and can do fast).  Since I am only one using it and only the results (change log and to-do list files) will go into the source code the proprietary nature of the tool is irrelevant.  This will change if/when other people contribute.
+</td>
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="notes" colspan="4">Done, see comments in task 42, "Bug tracking".</td>
+	<td class="notes" colspan="4">Done, see comments in task 42, "Bug tracking".
+</td>
 	</tr>
       
       </span><span omit-tag="">
@@ -878,7 +1004,8 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">Add constraint to the rdng.rdng, sens.sens, etc, that enforces &gt;0.   Add constraint to xref that prevents entr=xentr.</td>
+	<td class="descr" colspan="4">Add constraint to the rdng.rdng, sens.sens, etc, that enforces &gt;0.   Add constraint to xref that prevents entr=xentr.
+</td>
 	</tr>
       
       
@@ -898,7 +1025,8 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">Update for JMdict v1.06 DTD changes (&lt;dial&gt;, &lt;lang&gt;, keyword changes).</td>
+	<td class="descr" colspan="4">Update for JMdict v1.06 DTD changes (&lt;dial&gt;, &lt;lang&gt;, keyword changes).
+</td>
 	</tr>
       
       
@@ -918,7 +1046,8 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">Add experimental support for gloss tags.</td>
+	<td class="descr" colspan="4">Add experimental support for gloss tags.
+</td>
 	</tr>
       
       
@@ -938,11 +1067,13 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">Would be better than tracking bugs here.</td>
+	<td class="descr" colspan="4">Would be better than tracking bugs here.
+</td>
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="notes" colspan="4">Created a Microsoft Access database into which I put the per-file change log info that previously was entered into the Changes.txt file and the to-do items.  Both the Changes.txt and TODO.html files are now generated from the database data.  This is not adaquate for multiple contributors but is ok for now for me.</td>
+	<td class="notes" colspan="4">Created a Microsoft Access database into which I put the per-file change log info that previously was entered into the Changes.txt file and the to-do items.  Both the Changes.txt and TODO.html files are now generated from the database data.  This is not adaquate for multiple contributors but is ok for now for me.
+</td>
 	</tr>
       
       </span><span omit-tag="">
@@ -961,32 +1092,17 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">Use a static include file for at least kw-&gt;id mapping.  Right now, I either use $::KW which requires a database connection (which might not otherwise be needed), or hardwire id numbers in the code which will be impossible to find if the id numbers ever change.</td>
+	<td class="descr" colspan="4">Use a static include file for at least kw-&gt;id mapping.  Right now, I either use $::KW which requires a database connection (which might not otherwise be needed), or hardwire id numbers in the code which will be impossible to find if the id numbers ever change.
+</td>
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="notes" colspan="4">Resolution: <br/>1. Change the kw table load data files from sql inserts, to csv format.  This allows them to be easily read by other programs.<br/>2. Write perl/lib/mkkwmod.pl which will read the csv files and generate a perl module file (lib/kwstatic.pm).  The eliminates the need to extract the data from loaded database tables, something problematical in programs whose job is to load the database.<br/>3. Change loadkw.sql to load from csv file rather than sql inserts.</td>
+	<td class="notes" colspan="4">Resolution: <br/>
+1. Change the kw table load data files from sql inserts, to csv format.  This allows them to be easily read by other programs.<br/>
+2. Write perl/lib/mkkwmod.pl which will read the csv files and generate a perl module file (lib/kwstatic.pm).  The eliminates the need to extract the data from loaded database tables, something problematical in programs whose job is to load the database.<br/>
+3. Change loadkw.sql to load from csv file rather than sql inserts.
+</td>
 	</tr>
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row done">
-	<td class="id">50</td>
-	
-	
-	  <td class="title">Split jmdict parse process</td>
-	  <td class="prio">high</td>
-	  
-	<td class="compld">2007-03-13</td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr done">
-        <td> </td>
-	<td class="descr" colspan="4">jmparse.pl -- Rearchitect into two pieces:1) parse xml into a EntrList struct, 2) Library code to translate struct to file text.  This will make it easier to write loaders for other input sources.</td>
-	</tr>
-      
       
       </span><span omit-tag="">
       
@@ -1004,7 +1120,29 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">Support loading multiple datasets into database... Make loading a file to database a two-step process. (1) parse file into intemediate format with rebaseable id numbers. (2) adjust the id numbers as needed while loading the intermediate file into tables.  This allows loading things like jmnedict and the examples file.</td>
+	<td class="descr" colspan="4">Support loading multiple datasets into database... Make loading a file to database a two-step process. (1) parse file into intemediate format with rebaseable id numbers. (2) adjust the id numbers as needed while loading the intermediate file into tables.  This allows loading things like jmnedict and the examples file.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">50</td>
+	
+	
+	  <td class="title">Split jmdict parse process</td>
+	  <td class="prio">high</td>
+	  
+	<td class="compld">2007-03-13</td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">jmparse.pl -- Rearchitect into two pieces:1) parse xml into a EntrList struct, 2) Library code to translate struct to file text.  This will make it easier to write loaders for other input sources.
+</td>
 	</tr>
       
       
@@ -1024,7 +1162,8 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Modify to load jmnedict names data.</td>
+	<td class="descr" colspan="4">load_jmdict.pl -- Modify to load jmnedict names data.
+</td>
 	</tr>
       
       
@@ -1044,7 +1183,8 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Add option to create temp files in some other directory.</td>
+	<td class="descr" colspan="4">load_jmdict.pl -- Add option to create temp files in some other directory.
+</td>
 	</tr>
       
       
@@ -1064,7 +1204,8 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">mkviews.sql -- Flatten view dupentr.  Currently uses loops and processes an entry as a tree.  But with the pk/fk change of 2007-02-11, we can copy everthing needed by finding it using fk field "entr" and the other fields' values don't need changing, so all the looping no longer needed.</td>
+	<td class="descr" colspan="4">mkviews.sql -- Flatten view dupentr.  Currently uses loops and processes an entry as a tree.  But with the pk/fk change of 2007-02-11, we can copy everthing needed by finding it using fk field "entr" and the other fields' values don't need changing, so all the looping no longer needed.
+</td>
 	</tr>
       
       
@@ -1084,7 +1225,15 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">Original schema design mistakenly treats ke_pri and re_pri tags as independent.  Most commonly though, they are associated in pairs but schema design does not consider this and duisallows two pri tags on the same domain (e.g. "ichi1" and "ichi2" on the same reading or kanji.<br/>Some options are:<br/><br/>+ Change PK on rfreq and kfreq tables to include column "value".  This would mimic jmdict xml but the pairing would remain implicit and unnormalized.<br/><br/>+ Add new table with columns [entr,rdng,kanj,kw,value] (pk is first 4 columns) to store only those tags common to both reading and kanji.  Contiinue to use rfreq and kfreq for tags unique to reading and kanji.  Downside is need for union query to get all tags for a given reading or kanji.<br/><br/>+ Use new table with columns [entr,rdng,kanj,kw,value] to keep all pri tags, with reading-only or kanji-only tags indicated by nulls in columns kanj or rdng respectively.  Problem in that such a tavble can't have a natural pk since pk's can't contain nullable columns.  Enforcing a uniqueness contraint with null columns is doable but hackish.</td>
+	<td class="descr" colspan="4">Original schema design mistakenly treats ke_pri and re_pri tags as independent.  Most commonly though, they are associated in pairs but schema design does not consider this and duisallows two pri tags on the same domain (e.g. "ichi1" and "ichi2" on the same reading or kanji.<br/>
+Some options are:<br/>
+<br/>
++ Change PK on rfreq and kfreq tables to include column "value".  This would mimic jmdict xml but the pairing would remain implicit and unnormalized.<br/>
+<br/>
++ Add new table with columns [entr,rdng,kanj,kw,value] (pk is first 4 columns) to store only those tags common to both reading and kanji.  Contiinue to use rfreq and kfreq for tags unique to reading and kanji.  Downside is need for union query to get all tags for a given reading or kanji.<br/>
+<br/>
++ Use new table with columns [entr,rdng,kanj,kw,value] to keep all pri tags, with reading-only or kanji-only tags indicated by nulls in columns kanj or rdng respectively.  Problem in that such a tavble can't have a natural pk since pk's can't contain nullable columns.  Enforcing a uniqueness contraint with null columns is doable but hackish.
+</td>
 	</tr>
       
       
@@ -1104,7 +1253,8 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">Review keywords (jmdict entities) in jmdictxml.pm and the pg/data/kw*.sql files and eliminate those that aren't (supposed to be) in use, eg misc/uK.  If detected in xml file, print warning, use anyway, and don't die.</td>
+	<td class="descr" colspan="4">Review keywords (jmdict entities) in jmdictxml.pm and the pg/data/kw*.sql files and eliminate those that aren't (supposed to be) in use, eg misc/uK.  If detected in xml file, print warning, use anyway, and don't die.
+</td>
 	</tr>
       
       
@@ -1124,7 +1274,10 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Create skipped_comments log file some place other than current directory (or at lerast allow option) because it shouldn't be included in tar file when making a development snapshot.  Alternatively, automate snapshot creation and exclude skipped* file.<br/><br/>Added a -l option to specify logfile location.  In Makefile, dist target exclude *.log files.</td>
+	<td class="descr" colspan="4">load_jmdict.pl -- Create skipped_comments log file some place other than current directory (or at lerast allow option) because it shouldn't be included in tar file when making a development snapshot.  Alternatively, automate snapshot creation and exclude skipped* file.<br/>
+<br/>
+Added a -l option to specify logfile location.  In Makefile, dist target exclude *.log files.
+</td>
 	</tr>
       
       
@@ -1144,7 +1297,8 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">Write a makefile or something to copy the cgi and other file needed by web server to right place.</td>
+	<td class="descr" colspan="4">Write a makefile or something to copy the cgi and other file needed by web server to right place.
+</td>
 	</tr>
       
       
@@ -1164,7 +1318,8 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">Find a replacement for Microsoft Visio for schema diagram.</td>
+	<td class="descr" colspan="4">Find a replacement for Microsoft Visio for schema diagram.
+</td>
 	</tr>
       
       
@@ -1184,7 +1339,8 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">Update schema diagram.</td>
+	<td class="descr" colspan="4">Update schema diagram.
+</td>
 	</tr>
       
       
@@ -1204,7 +1360,8 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">Put everything under gpl.</td>
+	<td class="descr" colspan="4">Put everything under gpl.
+</td>
 	</tr>
       
       
@@ -1224,7 +1381,10 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">perl -- Move lib to under cgi?  (This dir needs to be accessible to the cgi scripts when installed in a cgi directory, but should not be accessible via a web server url.  Putting under the cgi dir wouldaccomplish this (at least for Apache, not sure about IIS.))<br/><br/>Don't do. Files in lib/ are used by perl/*.pl scripts as well as the cgi scripts, so moving it under cgi would be inappropriate.  Better way is to use standard Apache/IIS config options to deny access.</td>
+	<td class="descr" colspan="4">perl -- Move lib to under cgi?  (This dir needs to be accessible to the cgi scripts when installed in a cgi directory, but should not be accessible via a web server url.  Putting under the cgi dir wouldaccomplish this (at least for Apache, not sure about IIS.))<br/>
+<br/>
+Don't do. Files in lib/ are used by perl/*.pl scripts as well as the cgi scripts, so moving it under cgi would be inappropriate.  Better way is to use standard Apache/IIS config options to deny access.
+</td>
 	</tr>
       
       
@@ -1244,7 +1404,8 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">load-jmdict.pl -- Process comments about deleted entries and create synthetic "deleted" history records in database.</td>
+	<td class="descr" colspan="4">load-jmdict.pl -- Process comments about deleted entries and create synthetic "deleted" history records in database.
+</td>
 	</tr>
       
       
@@ -1264,11 +1425,16 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">entr.css -- move out of .cgi -- is inaccessible there on arakawa.<br/>Or better: read config file giving lib dirs, db info, etc.</td>
+	<td class="descr" colspan="4">entr.css -- move out of .cgi -- is inaccessible there on arakawa.<br/>
+Or better: read config file giving lib dirs, db info, etc.
+</td>
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="notes" colspan="4">Resolution:<br/>Left in cgi/ in development environment but make Makefile will move to different directory at install time (and update the *.tal files to match.)<br/>Potential problem: some cgi's write their own html (to create error pages for example).  Currently these don't use any .css but if they did, they would need to adjust location depending on whether they are running from the development directory, or web server cgi directory.</td>
+	<td class="notes" colspan="4">Resolution:<br/>
+Left in cgi/ in development environment but make Makefile will move to different directory at install time (and update the *.tal files to match.)<br/>
+Potential problem: some cgi's write their own html (to create error pages for example).  Currently these don't use any .css but if they did, they would need to adjust location depending on whether they are running from the development directory, or web server cgi directory.
+</td>
 	</tr>
       
       </span><span omit-tag="">
@@ -1287,11 +1453,13 @@
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">Need cgi page for adding a new entry.</td>
+	<td class="descr" colspan="4">Need cgi page for adding a new entry.
+</td>
 	</tr>
       <tr class="descr done">
         <td> </td>
-	<td class="notes" colspan="4">Used html from Jim Breen's wwwjdict New Submission page, since this is an illustriative test that the database can support at least the sae feature set as wwwjdic.</td>
+	<td class="notes" colspan="4">Used html from Jim Breen's wwwjdict New Submission page, since this is an illustriative test that the database can support at least the sae feature set as wwwjdic.
+</td>
 	</tr>
       
       </span>

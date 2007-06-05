@@ -27,15 +27,18 @@ http://www.edrdg.org/~smg/.
 This package contains the following directories:
   ./                Package directory.
   ./doc/            Documentation.
-  ./perl/           Perl tools.
+  ./perl/           Command line apps.
   ./perl/cgi/       CGI scripts.
   ./perl/lib/       Library modules.
   ./perl/lib/tal/   PETAL templates.
   ./pg/             Database scripts.
   ./pg/data/        Database static data.
-See "ANNOTATED MANIFEST" below for more details.
+  ./tools/	    Scripts used by Makefiles.
 
-See doc/Changes.txt for CVS change log.
+See the file doc/MANIFEST.txt for a full, annotated
+listing of all the files
+
+See doc/Changes.txt for the detailed CVS change log.
 
 
 ======
@@ -50,6 +53,7 @@ to Apache/modperl, when the UI is stabilized.
 =============
 DOCUMENTATION
 =============
+
 Database schema:
   doc/schema.odt(.html) -- The schema is comprehensively 
 	documented in this Open Office Writer document.
@@ -114,6 +118,10 @@ verified.
   Apache [2.2] (on Unix/Linux systems) or
   or IIS [6.0] (on MS Windows systems)
 
+On Windows you will also need a copy of the GNU "make"
+program if you want to use the Makefiles to automate some
+of the install procedures, see below.
+
 Procedure
 ---------
 Note: relative file paths below (except in command 
@@ -159,7 +167,7 @@ http://www.mingw.org/ for example.)
 	resolving xref's etc. After this, the database 
 	should be fully loaded and functional.
 
-   There are similar sets of target for loading JMnedict
+   There are similar sets of targets for loading JMnedict
    and the Examples file.
 
    There is target, "loadall", that will load all three files 
@@ -193,95 +201,6 @@ http://www.mingw.org/ for example.)
 3. (Optional)
    Import Kale Stutzman's Google page count data into database.
    [...to be supplied...]
-
-
-==================
-ANNOTATED MANIFEST
-==================
-
-./COPYING.txt...................GNU General Public License Terms.
-./README.txt....................This file.
-./Makefile......................Simplify loading the database.
-
-./doc/README.txt................General information.
-./doc/Changes.txt...............[*] Detailed change log extracted from CVS.
-./doc/Makefile..................Generate processed documentation.
-./doc/schema.dia................Dia source for database schema diagram.
-./doc/schema.png................[*] Database schema diagram.
-./doc/schema.odt................Schema documentation source (OpenOffice Writer).
-./doc/schema.html...............[*] Schema documentation (html).
-./doc/TODO.html.................[*] To-do list. 
-./doc/todo.tal..................TAL template used to generate TODO.html.
-./doc/tut0.pl...................API executable tutorial, Database connections.
-./doc/tut1.pl...................API executable tutorial, The Kwds() structure.
-./doc/tut2.pl...................API executable tutorial, Finding and Getting Entries.
-./doc/tut3.pl...................API executable tutorial, The Entry Object.
-
-./perl/
-./perl/exparse.pl...............Generates intermediate, rebasable  file from Examples file.
-./perl/jmload.pl................Generates Postegresql load file from intermediate file.
-./perl/jmparse.pl...............Generates intermediate, rebasable  file from JMdict XML file.
-./perl/showentr.pl..............Command line tool to show database entries.
-
-./perl/cgi
-./perl/cgi/entr.css.............CSS style sheet for all cgi pages.
-./perl/cgi/entr.pl..............Show entry details page.
-./perl/cgi/nwconf.pl............Confim new entry page.
-./perl/cgi/nwform.pl............Add new entry form.
-./perl/cgi/nwsub.pl.............Add new entry action.
-./perl/cgi/srchform.pl..........JMdictDB general entry search form.
-./perl/cgi/srchres.pl...........Search results list.
-
-./perl/lib/
-./perl/lib/jmdict.pm............General use functions.
-./perl/lib/jmdictcgi.pm.........CGI-specfic functions.
-./perl/lib/jmdicttal.pm.........PETAL modifiers.
-./perl/lib/jmdictxml.pm.........JMdict XML parsing/generating functions.
-./perl/lib/jmdictpgi.pm.........JMdict .pgi file functions.
-./perl/lib/jmdicted.pm..........Edict parsing/formatting functions.
-./perl/lib/kwstatic.pm..........Static kw data (created by perl/mkkwmod.pl)
-
-./perl/lib/tal
-./perl/lib/tal/entr.tal.........PETAL template for entr.pl.
-./perl/lib/tal/nwconf.tal.......PETAL template for nwconf.pl.
-./perl/lib/tal/nwform.tal.......PETAL template for nwform.pl.
-./perl/lib/tal/srchform.tal.....PETAL template for srchfom.pl.
-./perl/lib/tal/srchres.tal......PETAL template for srchres.pl.
-
-./pg/...........................Scripts for database initialization.
-./pg/loadkw.sql.................Load the data/kw* data into database.
-./pg/mkindex.sql................Create indexes and foreign keys.
-./pg/mkperms.sql................Set permissuions on database objects.
-./pg/mktables.sql...............Create basic schema.
-./pg/mkviews.sql................Create views.
-./pg/postload.sql...............Execute scripts after schema creation and jmdict data load.
-./pg/reload.sql.................Execute scripts to initialze database and create schema.
-./pg/syncseq.sql................Set seqence numbers after jmdict load.
-./pg/xresolv.sql................Create xrefs after jmdict load.
-./pg/drpindex.sql...............Drop indexes (file created by mkindex.pl)
-./pg/mkindex.sql................Create indexes (file created by mkindex.pl)
-
-./pg/data/......................data/kw* files contain static keyword table data,
-./pg/data/kwdial.sql
-./pg/data/kwfld.sql
-./pg/data/kwfreq.sql
-./pg/data/kwginf.sql
-./pg/data/kwkinf.sql
-./pg/data/kwlang.sql
-./pg/data/kwlsrc.sql
-./pg/data/kwmisc.sql
-./pg/data/kwpos.sql
-./pg/data/kwrinf.sql
-./pg/data/kwsrc.sql
-./pg/data/kwstat.sql
-./pg/data/kwxref.sql
-
-./tools/........................Scripts used during development (by makefiles, etc.)
-./tools/mkindex.pl..............Creates ./pg/mkindex.sql and ./pg/drpindex.sql.
-./tools/mkkwmod.pl..............Creates ./perl/lib/kwstatic.pm file.
-./tools/mktodo.py...............Generate ./doc/TODO.html from revisions DB.
-./tools/mkchglog.py.............Generate ./doc/Changes.txt from revisions DB.
-./tools/simpleTalHelper.py......Required by mkchglog.py and mktodo.py.
 
 
 ===

@@ -207,6 +207,7 @@ CREATE TABLE xresolv (
     ktxt VARCHAR(250),
     tsens SMALLINT,
     notes VARCHAR(250),
+    prio BOOLEAN DEFAULT FALSE,
     PRIMARY KEY(entr,sens,ord),
     CHECK (rtxt NOTNULL OR ktxt NOTNULL));
 --CREATE INDEX xresolv_rdng ON xresolv(rtxt);

@@ -135,18 +135,17 @@ sub parseb { my ($bln, $jtxt) = @_;
 	return \@res; }
 
 sub parsebitem { my ($s, $n, $jtxt) = @_;
-	my ($ktxt, $rtxt, $sens, $atxt, @sens);
+	my ($ktxt, $rtxt, $sens, $atxt, @sens, $prio);
 	die ("\"B\" line parse error in item $n: '$s'\n")
-	    if (!($s =~ m/^([^([{]+)(\((\S+)\))?(\[\d+\])*(\{(\S+)\})?\s*$/));
-	($ktxt,$rtxt,$sens,$atxt) = ($1, $3, $4, $6);
+	    if (!($s =~ m/^([^([{]+)(\((\S+)\))?(\[\d+\])*(\{(\S+)\})?(\x{203e})?\s*$/));
+	($ktxt,$rtxt,$sens,$atxt,$prio) = ($1, $3, $4, $6, $7);
 	die ("($rtxt) not kana in item $n\n") if ($rtxt && !kana_only ($rtxt));
-	if ($ktxt eq "\x{306F}") { return (); } # Special case particle "wa (ha)".
 	if (kana_only ($ktxt)) {
 	    die ("Double kana in item $n: '$ktxt', '$rtxt'\n") if ($rtxt);
 	    $rtxt = $ktxt;  $ktxt = undef; }
 	if ($sens) { @sens = grep (length ($_)>0, split (/[\[\]]+/, $sens)); }
 	die ("\{$atxt\} not in A line in item $n\n") if ($atxt && index ($jtxt, $atxt) < 0);
-	return [$ktxt,$rtxt,\@sens,$atxt]; }
+	return [$ktxt,$rtxt,\@sens,$atxt,$prio?1:0]; }
 
 sub hw { my ($ktxt, $rtxt) = @_;
 	if ($ktxt && $rtxt) { return "$ktxt($rtxt)"; }
@@ -175,22 +174,22 @@ sub mkxrslv { my ($idxlist) = @_;
 	# and "sens" are not set in the xrslv records; they are set
 	# by setids() just prior to writing to the database.
 
-	my ($x, @r, $s, $ktxt, $rtxt, $senslst, $note);
+	my ($x, @r, $s, $ktxt, $rtxt, $senslst, $note, $prio);
 	foreach $x (@$idxlist) {
-	    ($rtxt, $ktxt, $senslst, $note) = @$x;
+	    ($ktxt, $rtxt, $senslst, $note, $prio) = @$x;
 	    if (@$senslst) {
 		# A list of explicit sens were give in the B line, 
 		# create an xrslv record for each.
 		foreach $s (@$senslst) {
-	    	    push (@r, {ktxt=>$x->[0], rtxt=>$x->[1], tsens=>$s,
-				typ=>$KWXREF_uses, notes=>$x->[3]}); } }
+	    	    push (@r, {ktxt=>$ktxt, rtxt=>$rtxt, tsens=>$s,
+				typ=>$KWXREF_uses, notes=>$note, prio=>$prio}); } }
 	    else {
 		# This is not list of senses so this cross-ref will 
 		# apply to all the target's senses.  Don't set a "sens"
 		# field in the xrslv record will will result in a NULL
 		# in the database record.
-		push (@r, {ktxt=>$x->[0], rtxt=>$x->[1], 
-			    typ=>$KWXREF_uses, notes=>$x->[3]}); } }
+		push (@r, {ktxt=>$ktxt, rtxt=>$rtxt, 
+			    typ=>$KWXREF_uses, notes=>$note, prio=>$prio}); } }
 	return \@r; }
 
 sub kana_only { my ($txt) = @_; 

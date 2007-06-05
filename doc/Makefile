@@ -47,3 +47,8 @@ TODO.html: chglog/ChgLog.mdb
 Changes.txt: chglog/ChgLog.mdb Changes-old.txt
 	./chglog/mkchglog.py chglog/ChgLog.mdb >temp.txt
 	cat temp.txt Changes-old.txt >Changes.txt
+
+# Create manifest from the Access database file list.
+
+MANIFEST.txt: chglog/ChgLog.mdb
+	./chglog/mkmanifest.py chglog/ChgLog.mdb >MANIFEST.txt

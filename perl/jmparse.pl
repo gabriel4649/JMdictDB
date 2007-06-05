@@ -213,7 +213,7 @@ sub do_kinfs { my ($k, $kinfs) = @_;
 	foreach $i (@$kinfs) {
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{KINF}{$txt}) or \
-		die ("Unknown ke_inf text: /$txt/\n");
+		die ("Unknown ke_inf text: '$txt'\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated kinf string '$txt'\n"; }
 	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: dupicate kinf string '$txt'\n"; }
 	    else {
@@ -250,7 +250,7 @@ sub do_rinfs { my ($r, $rinfs) = @_;
 	foreach $i (@$rinfs) {
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{RINF}{$txt}) or \
-		die ("Unknown re_inf text: /$txt/\n");
+		die ("Unknown re_inf text: '$txt'\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated rinf string '$txt'\n"; }
 	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: dupicate rinf string '$txt'\n"; }
 	    else {
@@ -305,7 +305,7 @@ sub do_pos { my ($s, $pos) = @_;
 	foreach $i (@$pos) {
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{POS}{$txt}) or \
-		die ("Unknown \'pos\' text: /$txt/\n");
+		die ("Unknown \'pos\' text: '$txt'\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated pos string '$txt'\n"; }
 	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate pos string '$txt'\n"; }
 	    else {
@@ -318,7 +318,7 @@ sub do_misc { my ($s, $misc) = @_;
 	foreach $i (@$misc) {
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{MISC}{$txt}) or \
-		die ("Unknown \'misc\' text: /$txt/\n");
+		die ("Unknown \'misc\' text: '$txt'\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated misc string '$txt'\n"; }
 	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate misc string '$txt'\n"; }
 	    else {
@@ -331,7 +331,7 @@ sub do_fld { my ($s, $fld) = @_;
 	foreach $i (@$fld) {
 	    $txt = $i->text;
 	    ($kw = $::JM2ID{FLD}{$txt}) or \
-		die ("Unknown \'fld\' text: /$txt/\n");
+		die ("Unknown \'fld\' text: '$txt'\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated fld string '$txt'\n"; }
 	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate fld string '$txt'\n"; }
 	    else {
@@ -342,9 +342,11 @@ sub do_dial { my ($s, $dial) = @_;
 	my ($i, $kw, $txt, %dupchk);
 	$s->{_dial} = [];
 	foreach $i (@$dial) {
-	    $txt = substr ($i->text, 0, -1);
+	    $txt = $i->text;
+	    if (substr ($txt, -1) eq ":") { $txt = substr ($txt, 0, -1); }
+	    else { print $::Flog "Seq $::Seq: missing dialect colon: '$txt'\n"; }
 	    ($kw = $::JM2ID{DIAL}{$txt}) or \
-		die ("Unknown \'dial\' text: /$txt/\n");
+		die ("Unknown \'dial\' text: '$txt'\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated dial string '$txt'\n"; }
 	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate dial string '$txt'\n"; }
 	    else {
@@ -414,7 +416,7 @@ sub parse_freq { my ($fstr, $ptype) = @_;
 	my ($i, $kw, $val, $kwstr);
 	($fstr =~ m/^([a-z]+)(\d+)$/io) or die ("Bad x_pri string: $fstr\n");
 	$kwstr = $1;  $val = int ($2);
-	($kw = $::JM2ID{FREQ}{$kwstr}) or die ("Unrecognized $ptype string: /$fstr/\n");
+	($kw = $::JM2ID{FREQ}{$kwstr}) or die ("Unrecognized $ptype string: '$fstr'\n");
 	if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated $ptype keyword '$i->text'\n"; }
 	return ($kw, $val, $fstr); }
 

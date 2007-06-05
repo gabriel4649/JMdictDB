@@ -1,4 +1,53 @@
 
+2007-06-05 09:16	smcgrawx@frxii.com
+
+	* Makefile [1.16]
+	In target examples.pgi, change name of log file from exparse.log to
+	  examples.log. {75}
+
+	* README.txt [1.11]
+	* doc/MANIFEST [1.1]
+	* doc/Makefile [1.3]
+	New: Moved the file manifest list out of README.txt and into an
+	  independent file so that Makefile can (re-)generate it from the
+	  ChgLog Access database. {66}
+
+	* doc/schema.pdf [1.1]
+	New: Added to CVS after discovering that the copies in other working
+	  directories were out-of-date and it was not included in the T016
+	  snapshot {67}
+
+	* perl/cgi/nwconf.pl [1.7]
+	Move subs cgientr() and resolv_xrefs() from perl/cgi/nwconf.pl to
+	  perl/lib/jmdictcgi.pm {68}
+
+	* perl/exparse.pl [1.6]
+	* perl/lib/jmdictpgi.pm [1.5]
+	* pg/mktables.sql [1.18]
+	Support for exemplar sentences in Examples file. {71}
+
+	* perl/jmparse.pl [1.28]
+	Fix: Check for colon after dialect keyword.  Formerly blindy
+	  discarded last character, assuming it was a colon. {72}
+
+	* perl/lib/jmdictcgi.pm [1.4]
+	Move subs cgientr() and resolv_xrefs() from perl/cgi/nwconf.pl to
+	  perl/lib/jmdictcgi.pm {68}
+	Fix: When creating a gloss record in cgientr(), explicitly set a ginf
+	  value to prevent a "uninitializesd" warning and empty pair of
+	  brackets from being displayed in the page generated from
+	  nwconf.tal. {69}
+
+	* perl/lib/jmdictxml.pm [1.14]
+	Add language ty (Tahitian) {70}
+	Add dialect 'kyu'. {73}
+
+	* perl/lib/kwstatic.pm [1.5]
+	Rebuild due to prerequisite file changes. {74}
+
+	* pg/data/kwdial.csv [1.2]
+	Add dialect 'kyu'. {73}
+
 2007-05-22 14:48	smcgrawx@frxii.com
 
 	Tag: T016 {65}

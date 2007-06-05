@@ -205,7 +205,8 @@ our %JM2ID = (
 		'osb' => 5,
 		'tsb' => 6,
 		'thb' => 7,
-		'tsug' => 8, },
+		'tsug' => 8,
+		'kyu' => 9, },
 	
 	LANG => {		# kwlang
 		'en' => 1,
@@ -229,6 +230,7 @@ our %JM2ID = (
 		'sa' => 140,
 		'sv' => 157,
 		'th' => 164,
+		'ty' => 158,
 		'zh' => 185, },
 
 	XREF =>	{		# kwxref;

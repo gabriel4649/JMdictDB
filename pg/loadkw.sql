@@ -5,7 +5,6 @@
 \copy kwginf from '../pg/data/kwginf.csv' CSV delimiter E'\t'
 \copy kwkinf from '../pg/data/kwkinf.csv' CSV delimiter E'\t'
 \copy kwlang from '../pg/data/kwlang.csv' CSV delimiter E'\t'
-\copy kwlsrc from '../pg/data/kwlsrc.csv' CSV delimiter E'\t'
 \copy kwmisc from '../pg/data/kwmisc.csv' CSV delimiter E'\t'
 \copy kwpos  from '../pg/data/kwpos.csv'  CSV delimiter E'\t'
 \copy kwrinf from '../pg/data/kwrinf.csv' CSV delimiter E'\t'

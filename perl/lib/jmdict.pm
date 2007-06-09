@@ -47,7 +47,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    misc =>  {pk=>["entr","sens","kw"],    parent=>"sens", fk=>["entr","sens"], al=>"m"},
 	    fld =>   {pk=>["entr","sens","kw"],    parent=>"sens", fk=>["entr","sens"], al=>"f"},
 	    dial =>  {pk=>["entr","sens","kw"],    parent=>"sens", fk=>["entr","sens"], al=>"d"},
-	    lsrc =>  {pk=>["entr","sens","kw"],    parent=>"sens", fk=>["entr","sens"], al=>"l"},
+	    lsrc =>  {pk=>["entr","sens","lang","txt"],parent=>"sens", fk=>["entr","sens"], al=>"l"},
 	    stagr => {pk=>["entr","sens","rdng"],  parent=>"sens", fk=>["entr","sens"], al=>"sr"},
 	    stagk => {pk=>["entr","sens","kanj"],  parent=>"sens", fk=>["entr","sens"], al=>"sk"},
 	    xrefe => {pk=>["entr","sens","xentr","xsens"], parent=>"sens", fk=>["entr","sens"], al=>"x"},
@@ -99,7 +99,6 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	$kw{GINF} = $dbh->selectall_hashref("SELECT * FROM kwginf", "kw"); addids ($kw{GINF});
 	$kw{KINF} = $dbh->selectall_hashref("SELECT * FROM kwkinf", "kw"); addids ($kw{KINF});
 	$kw{LANG} = $dbh->selectall_hashref("SELECT * FROM kwlang", "kw"); addids ($kw{LANG});
-	$kw{LSRC} = $dbh->selectall_hashref("SELECT * FROM kwlsrc", "kw"); addids ($kw{LSRC});
 	$kw{MISC} = $dbh->selectall_hashref("SELECT * FROM kwmisc", "kw"); addids ($kw{MISC});
 	$kw{POS}  = $dbh->selectall_hashref("SELECT * FROM kwpos",  "kw"); addids ($kw{POS});
 	$kw{RINF} = $dbh->selectall_hashref("SELECT * FROM kwrinf", "kw"); addids ($kw{RINF});
@@ -561,7 +560,7 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 		dbinsert ($dbh, "dial", ['entr','sens','kw'], $x); }
 	    foreach $x (@{$entr->{_lsrc}}) {
 		$x->{entr} = $eid; $x->{sens} = $nsens;
-		dbinsert ($dbh, "lsrc", ['entr','sens','kw', 'lang','txt'], $x); }
+		dbinsert ($dbh, "lsrc", ['entr','sens','lang','txt','part','wasei'], $x); }
 	    foreach $x (@{$s->{_stagr}}) {
 		$x->{entr} = $eid; $x->{sens} = $nsens;
 		$x->{rdng} = $x->{rdng}{id};

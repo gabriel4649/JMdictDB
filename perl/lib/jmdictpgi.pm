@@ -55,7 +55,7 @@ sub initialize { my ($logfn, $tmpdir) = @_;
 	  [\$::Fxref,  "${td}load13.tmp", "COPY xref(entr,sens,xentr,xsens,typ,notes) FROM stdin;"],
 	  [\$::Fgloss, "${td}load14.tmp", "COPY gloss(entr,sens,gloss,lang,ginf,txt) FROM stdin;"],
 	  [\$::Fdial,  "${td}load15.tmp", "COPY dial(entr,sens,kw) FROM stdin;"],
-	  [\$::Flsrc,  "${td}load16.tmp", "COPY lsrc(entr,sens,kw,lang,txt) FROM stdin;"],
+	  [\$::Flsrc,  "${td}load16.tmp", "COPY lsrc(entr,sens,lang,txt,part,wasei) FROM stdin;"],
 	  [\$::Frestr, "${td}load17.tmp", "COPY restr(entr,rdng,kanj) FROM stdin;"],
 	  [\$::Fstagr, "${td}load18.tmp", "COPY stagr(entr,sens,rdng) FROM stdin;"],
 	  [\$::Fstagk, "${td}load19.tmp", "COPY stagk(entr,sens,kanj) FROM stdin;"],
@@ -126,7 +126,7 @@ sub wrentr { my ($e) = @_;
 	    foreach $x (@{$s->{_dial}}) {
 		pout ($::Fdial, $etag, $x->{sens}, $x->{kw}); }
 	    foreach $x (@{$s->{_lsrc}}) {
-		pout ($::Flsrc, $etag, $x->{sens}, $x->{kw}, $x->{lang}, $x->{txt}); }
+		pout ($::Flsrc, $etag, $x->{sens}, $x->{lang}, $x->{txt}, $x->{part}, $x->{wasei}); }
 	    foreach $x (@{$s->{_stagr}}) {
 		pout ($::Fstagr, $etag, $x->{sens}, $x->{rdng}); }
 	    foreach $x (@{$s->{_stagk}}) {

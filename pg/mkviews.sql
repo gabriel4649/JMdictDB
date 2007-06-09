@@ -245,7 +245,7 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
 	  (SELECT _p0_,sens,gloss,lang,txt,ginf,notes FROM gloss WHERE entr=entrid);
 	INSERT INTO dial(entr,sens,kw) 
 	  (SELECT _p0_,kw FROM dial WHERE dial.entr=entrid);
-	INSERT INTO lsrc(entr,sens,kw,lang,txt) 
+	INSERT INTO lsrc(entr,sens,lang,txt,part,wasei) 
 	  (SELECT _p0_,kw FROM lsrc WHERE lang.entr=entrid);
 	INSERT INTO xref(entr,sens,xentr,xsens,typ,notes) 
 	  (SELECT _p0_,sens,xentr,xsens,typ,notes FROM xref WHERE entr=entrid);

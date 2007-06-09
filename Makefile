@@ -80,7 +80,7 @@ all:
 
 #------ Load JMdict -----------------------------------------------------
 
-jmdict.xml: 
+jmdict.xml: subdirs
 	rm -f JMdict_e.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/JMdict_e.gz
 	gunzip JMdict_e.gz
@@ -103,7 +103,7 @@ loadjm: jmdict.dmp
 
 # Assumes the jmdict has been loaded into database already.
 
-jmnedict.xml: 
+jmnedict.xml: subdirs
 	rm -f JMnedict.xml.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/JMnedict.xml.gz
 	gunzip JMnedict.xml.gz
@@ -123,7 +123,7 @@ loadne: jmnedict.dmp
 	
 #------ Load examples ---------------------------------------------------
 
-examples.txt: 
+examples.txt: subdirs
 	rm -f examples.utf.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/examples.utf.gz
 	gunzip examples.utf.gz
@@ -147,7 +147,7 @@ loadex: examples.dmp
 # the number of entries may be different in the freshly loaded jmdict
 # set, invalidating the starting id numbers in the other .dmp files.
 
-loadall: jmdict.dmp jmnedict.pgi examples.pgi
+loadall: jmdict.dmp jmnedict.pgi examples.pgi subdirs
 	cd pg && psql $(PG_HOST) $(PG_USER) -f reload.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmdict.dmp
 
@@ -160,6 +160,10 @@ loadall: jmdict.dmp jmnedict.pgi examples.pgi
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f xresolv.sql
 
 #------ Other ----------------------------------------------------------
+
+subdirs:
+	cd pg/ && $(MAKE)
+	cd perl/lib/ && $(MAKE)
 
 clean:
 	rm -f jmdict.tgz

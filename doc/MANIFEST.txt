@@ -3,13 +3,14 @@ Makefile......................Simplify loading the database.
 README.txt....................General information.
 doc/..........................Documentation
 doc/Changes.txt...............[*] Detailed change log extracted from CVS.
+doc/MANIFEST.txt..............[*] List of files in distribution snapshot
 doc/Makefile..................Generate processed documentation.
-doc/MANIFEST.txt..............[*] This file.
 doc/README.txt................General information.
 doc/TODO.html.................[*] To-do list.
 doc/schema.dia................Dia source for database schema diagram.
 doc/schema.html...............[*] Schema documentation (html).
 doc/schema.odt................Schema documentation source (OpenOffice Writer).
+doc/schema.pdf................[*] PDF version of doc/schema.odt.
 doc/schema.png................[*] Database schema diagram.
 doc/tut0.pl...................API executable tutorial, Database connections.
 doc/tut1.pl...................API executable tutorial, The Kwds() structure.

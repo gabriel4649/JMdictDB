@@ -20,7 +20,6 @@ KWDATA = \
 	$(KWDATADIR)kwginf.csv \
 	$(KWDATADIR)kwkinf.csv \
 	$(KWDATADIR)kwlang.csv \
-	$(KWDATADIR)kwlsrc.csv \
 	$(KWDATADIR)kwmisc.csv \
 	$(KWDATADIR)kwpos.csv  \
 	$(KWDATADIR)kwrinf.csv \

@@ -404,7 +404,7 @@ use jmdict;
 
 	if ($s->{_lsrc}) {
 	    push (@dl, "From: " . join(", ", 
-		map (fmtlsrc ($_), @{$s->{_lsrc}})); }
+		map (f_lsrc ($_), @{$s->{_lsrc}}))); }
 
 	  # Now combine the dialect and sorce word strings into one.
 
@@ -451,13 +451,13 @@ use jmdict;
     sub f_lsrc { my ($lsrc) = @_;
 	my (@x, $x, $lang);
 	$x = "";
-	if ($lsrc->{part} or $lsrc->{wesei}) {
+	if ($lsrc->{part} or $lsrc->{wasei}) {
 	    push (@x, "p") if ($lsrc->{part});
 	    push (@x, "w") if ($lsrc->{wasei});
-	    $x = " (" . join (@x) . ")"; }
+	    $x = "(" . join (",", @x) . ")"; }
 	$lang = $::KW->{LANG}{$lsrc->{lang}}{kw};
 	if ($lang or $x) { $x = "$lang$x:" }
-	return $x . $lsrc->{txt}; }
+	return $x . "\"$lsrc->{txt}\""; }
 
 #-----------------------------------------------------------------------
 

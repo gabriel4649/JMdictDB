@@ -6,11 +6,11 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
 	<META NAME="CREATED" CONTENT="20020715;12385300">
 	<META NAME="CHANGEDBY" CONTENT="Stuart McGraw">
-	<META NAME="CHANGED" CONTENT="20070501;23212000">
+	<META NAME="CHANGED" CONTENT="20070608;13555500">
 	<META NAME="SDENDNOTE" CONTENT="ARABIC;;[;]">
 	<STYLE>
 	<!--
-		@page { size: 8.27in 11.69in; margin-left: 1.25in; margin-right: 1.25in; margin-top: 1in; margin-bottom: 1in }
+		@page { size: 8.27in 11.69in; margin-left: 1.25in; margin-right: 1.25in; margin-top: 1in; margin-bottom: 0.5in }
 		P { margin-bottom: 0.08in }
 		H1 { margin-top: 0.17in; margin-bottom: 0.08in; page-break-before: always; page-break-after: auto }
 		H1.western { font-family: "Thorndale", serif; font-size: 16pt }
@@ -460,10 +460,10 @@ ik | word containing irregular kana usage</FONT></KBD></FONT></FONT></P>
 <P STYLE="margin-bottom: 0.2in">kw* tables that correspond to
 entities and abbreviations used in JMdict xml are: <I><U>kwdial</U></I>,
 <I><U>kwfld</U></I>, <I><U>kwfreq</U></I>, <I><U>kwkinf</U></I>,
-<I><U>kwlang</U></I>, <I><U>kwlsrc</U></I>, <I><U>kwmisc</U></I>,
-<I><U>kwpos</U></I>, <I><U>kwrinf</U></I>.  There are several kw*
-tables that don't correspond to anything in JMdict: <I><U>kwsrc</U></I>,
-<I><U>kwstat</U></I>, <I><U>kwxref</U></I>.</P>
+<I><U>kwlang</U></I>, <I><U>kwmisc</U></I>, <I><U>kwpos</U></I>,
+<I><U>kwrinf</U></I>.  There are several kw* tables that don't
+correspond to anything in JMdict: <I><U>kwsrc</U></I>, <I><U>kwstat</U></I>,
+<I><U>kwxref</U></I>.</P>
 <P STYLE="margin-bottom: 0.2in">The keyword tables' primary function
 is to enforce the use of valid keyword values in other tables by
 means of referential integrity.  For this purpose only the values in
@@ -492,15 +492,14 @@ and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent"
 together identify a specific kanji element that a keyword applies to,
 and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kw</SPAN></SPAN></I>
 identifies the appropriate ke_inf keyword in table <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwkinf</SPAN></SPAN></I>.</P>
-<P STYLE="margin-bottom: 0.2in">A few keyword list table have some
+<P STYLE="margin-bottom: 0.2in">A few keyword list tables have some
 other information in addition to the keywords.  The table <I><U>freq</U></I>
 for example contains freq keywords, and also a numeric value
-associated with each.  The rows in table <I><U>lsrc</U></I> contain
-an lsrc keyword and also a language keyword and text source word.</P>
+associated with each.  
+</P>
 <P STYLE="margin-bottom: 0.2in">The tables that contain such keyword
 lists are: <I><U>dial</U></I>, <I><U>fld</U></I>, <I><U>freq</U></I>,
-<I><U>kinf</U></I>, <I><U>lsrc</U></I>, <I><U>misc</U></I>, <I><U>pos</U></I>,
-<I><U>rinf</U></I>. 
+<I><U>kinf</U></I>, <I><U>misc</U></I>, <I><U>pos</U></I>, <I><U>rinf</U></I>.
 </P>
 <P STYLE="margin-bottom: 0.2in">Not all references to the kw* tables
 occur from these keyword list tables though. In some cases where only
@@ -1021,7 +1020,7 @@ but will be included in a future version of this paper.
 	<LI><H1 CLASS="western"> Annotated Schema</H1>
 </OL>
 <P>The Postgresql DDL statements below will create the tables
-described above.  They are based on revision 1.13 (2007/02/27) of
+described above.  They are based on revision 1.19 (2007/06/08) of
 mktables.sql.  As commonly happens, this documentation may lag behind
 the code and so should not be taken as definitive.<SAMP CLASS="western"><BR></SAMP><BR><BR>
 </P>
@@ -1204,16 +1203,21 @@ JMdict XML &lt;lsource&gt; element.<BR>    entr INT NOT NULL,<BR>
  -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
  Identifies entry that field applies to.<BR><SAMP CLASS="western">   
 sens SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">enrt.sens</SPAN></SPAN></I>.
- Identifies the sens item that lsrc tag<BR>      -- applies to.<BR>  
- Kw SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwlsrc.id</SPAN></SPAN></I>.
- Identifies the type of lsource tag<BR>      -- this is.<BR></SAMP>  
- lang SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwlang.id</SPAN></SPAN></I>.
+ Identifies the sens item that lsrc tag<BR>      -- applies to.<BR></SAMP>
+   lang SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwlang.id</SPAN></SPAN></I>.
  Identifies the language keyword.<BR>    txt VARCHAR(250)<BR>      --
 The word in language 'lang' from which this word sense <BR>      --
-was derived.<BR>    PRIMARY KEY (entr,sens,kw,txt));<BR><BR>CREATE
-TABLE misc (<BR>      -- Provides lists of misc tags for senses. 
-This information<BR>      -- corresponds to the JMdict XML &lt;misc&gt;
-element.<BR>    entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+was derived.<BR>    part BOOLEAN,<BR>      -- When FALSE, indicates
+the entire Japanese word/sense was<BR>      -- derived from this
+source word.  When TRUE, only a part of<BR>      -- the Japanese word
+was derived from the source word.<BR>    wasei BOOLEAN,<BR>      --
+When FALSE, this source word or phrase is a valid word<BR>      -- or
+phrase with currency in its language.  When TRUE, this<BR>      --
+source word does not have currency in its language. <BR>    PRIMARY
+KEY (entr,sens,kw,txt));<BR><BR>CREATE TABLE misc (<BR>      --
+Provides lists of misc tags for senses.  This information<BR>      --
+corresponds to the JMdict XML &lt;misc&gt; element.<BR>    entr INT
+NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
  Identifies entry that misc tag applies to.<BR>    sens SMALLINT NOT
 NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.sens</SPAN></SPAN></I>.
  Identifies the sense that misc tag applies to.<BR>    kw SMALLINT
@@ -1294,22 +1298,20 @@ where kw differs only in case, and this (at<BR>      -- in some of
 the locales used during testing) violated<BR>      -- the unique
 constraint.<BR>    descr VARCHAR(255));<BR><BR>CREATE TABLE kwlang (<BR>
    id SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>
-   descr VARCHAR(255));<BR><BR><SAMP CLASS="western">CREATE TABLE
-kwlsrc (<BR>    id SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT
-NULL UNIQUE,<BR>    descr VARCHAR(255));<BR></SAMP><BR>CREATE TABLE
-kwmisc (<BR>    id SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT
-NULL,<BR>      -- 'kw' not declared UNIQUE because there are some<BR>
-     -- rows where kw differs only in case, and this (at<BR>      --
-in some of the locales used during testing) violated<BR>      -- the
-unique constraint.<BR>    descr VARCHAR(255));<BR><BR>CREATE TABLE
-kwpos (<BR>    id SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT
-NULL UNIQUE,<BR>    descr VARCHAR(255));<BR><BR>CREATE TABLE kwrinf
-(<BR>    id SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL
-UNIQUE,<BR>    descr VARCHAR(255));<BR><BR>CREATE TABLE kwsrc (<BR>  
- id SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR> 
-  descr VARCHAR(255));<BR><BR>CREATE TABLE kwstat (<BR>    id
+   descr VARCHAR(255));<BR><BR>CREATE TABLE kwmisc (<BR>    id
+SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL,<BR>      --
+'kw' not declared UNIQUE because there are some<BR>      -- rows
+where kw differs only in case, and this (at<BR>      -- in some of
+the locales used during testing) violated<BR>      -- the unique
+constraint.<BR>    descr VARCHAR(255));<BR><BR>CREATE TABLE kwpos (<BR>
+   id SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>
+   descr VARCHAR(255));<BR><BR>CREATE TABLE kwrinf (<BR>    id
 SMALLINT PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>   
-descr VARCHAR(255));<BR><BR>CREATE TABLE kwxref (<BR>    id SMALLINT
+descr VARCHAR(255));<BR><BR>CREATE TABLE kwsrc (<BR>    id SMALLINT
+PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
+VARCHAR(255));<BR><BR>CREATE TABLE kwstat (<BR>    id SMALLINT
+PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
+VARCHAR(255));<BR><BR>CREATE TABLE kwxref (<BR>    id SMALLINT
 PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
 VARCHAR(255));<BR></SAMP><BR><BR>
 </P>
@@ -1345,6 +1347,28 @@ VARCHAR(255));<BR></SAMP><BR><BR>
 	<P CLASS="sdendnote"><A CLASS="sdendnotesym" NAME="sdendnote6sym" HREF="#sdendnote6anc">[6]</A>The
 	schema.png file is distributed with the JMdictDB source code, or at
 	<A HREF="http://www.edrdg.org/~smg/">http://www.edrdg.org/~smg/jmdict/schema.png</A></P>
+</DIV>
+<DIV TYPE=FOOTER>
+	<TABLE WIDTH=100% BORDER=0 CELLPADDING=4 CELLSPACING=0>
+		<COL WIDTH=127*>
+		<COL WIDTH=44*>
+		<COL WIDTH=85*>
+		<TR VALIGN=TOP>
+			<TD WIDTH=50%>
+				<P><FONT SIZE=1 STYLE="font-size: 8pt">Stuart McGraw, 2007-06-08</FONT></P>
+			</TD>
+			<TD WIDTH=17%>
+				<P><BR>
+				</P>
+			</TD>
+			<TD WIDTH=33%>
+				<P ALIGN=RIGHT><FONT SIZE=1 STYLE="font-size: 8pt">Page <SDFIELD TYPE=PAGE SUBTYPE=RANDOM FORMAT=PAGE>20</SDFIELD>
+				of <SDFIELD TYPE=DOCSTAT SUBTYPE=PAGE FORMAT=PAGE>20</SDFIELD></FONT></P>
+			</TD>
+		</TR>
+	</TABLE>
+	<P STYLE="margin-bottom: 0.2in"><BR><BR>
+	</P>
 </DIV>
 </BODY>
 </HTML>

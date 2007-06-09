@@ -59,11 +59,6 @@ CREATE TABLE kwlang (
     kw VARCHAR(20) NOT NULL UNIQUE,
     descr VARCHAR(255));
 
-CREATE TABLE kwlsrc (
-    id SMALLINT PRIMARY KEY,
-    kw VARCHAR(20) NOT NULL UNIQUE,
-    descr VARCHAR(255));
-
 CREATE TABLE kwmisc (
     id SMALLINT PRIMARY KEY,
     kw VARCHAR(20) NOT NULL,
@@ -118,7 +113,7 @@ CREATE TABLE rdng (
     txt VARCHAR(2048) NOT NULL,
     PRIMARY KEY(entr,rdng));
 --CREATE INDEX rdng_txt ON rdng(txt);
-    -- CREATE UNIQUE INDEX rdng_txt1 ON rdng(entr,txt);
+--CREATE UNIQUE INDEX rdng_txt1 ON rdng(entr,txt);
 --ALTER TABLE rdng ADD CONSTRAINT rdng_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE kanj (
@@ -127,7 +122,7 @@ CREATE TABLE kanj (
     txt VARCHAR(2048) NOT NULL,
     PRIMARY KEY(entr,kanj));
 --CREATE INDEX kanj_txt ON kanj(txt);
-  -- CREATE UNIQUE INDEX kanj_txt1 ON kanj(entr,txt);
+--CREATE UNIQUE INDEX kanj_txt1 ON kanj(entr,txt);
 --ALTER TABLE kanj ADD CONSTRAINT kanj_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE sens (
@@ -146,7 +141,7 @@ CREATE TABLE gloss (
     txt VARCHAR(2048) NOT NULL,
     PRIMARY KEY(entr,sens,gloss));
 --CREATE INDEX gloss_txt ON gloss(txt); 
-    -- CREATE UNIQUE INDEX gloss_txt1 ON gloss(sens,txt);
+--CREATE UNIQUE INDEX gloss_txt1 ON gloss(entr,sens,txt);
 --ALTER TABLE gloss ADD CONSTRAINT gloss_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE gloss ADD CONSTRAINT gloss_lang_fkey FOREIGN KEY (lang) REFERENCES kwlang(id);
 
@@ -257,12 +252,12 @@ CREATE TABLE kinf (
 CREATE TABLE lsrc (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
-    kw SMALLINT NOT NULL DEFAULT 1,
     lang SMALLINT NOT NULL DEFAULT 1,
     txt VARCHAR(250),
+    part BOOLEAN DEFAULT FALSE,
+    wasei BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (entr,sens,lang,txt));
 --ALTER TABLE lsrc ADD CONSTRAINT lsrc_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE lsrc ADD CONSTRAINT lsrc_kw_fkey FOREIGN KEY (kw) REFERENCES kwlsrc(id);
 --ALTER TABLE lsrc ADD CONSTRAINT lsrc_lang_fkey FOREIGN KEY (lang) REFERENCES kwlang(id);
 
 CREATE TABLE misc (

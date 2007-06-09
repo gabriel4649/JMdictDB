@@ -5,8 +5,11 @@
 CREATE INDEX entr_seq ON entr(seq);
 CREATE INDEX entr_stat ON entr(stat) WHERE stat!=2;
 CREATE INDEX rdng_txt ON rdng(txt);
+CREATE UNIQUE INDEX rdng_txt1 ON rdng(entr,txt);
 CREATE INDEX kanj_txt ON kanj(txt);
+CREATE UNIQUE INDEX kanj_txt1 ON kanj(entr,txt);
 CREATE INDEX gloss_txt ON gloss(txt); 
+CREATE UNIQUE INDEX gloss_txt1 ON gloss(entr,sens,txt);
 CREATE INDEX xref_xentr ON xref(xentr,xsens);
 CREATE INDEX hist_dt ON hist(dt);
 CREATE INDEX hist_who ON hist(who);
@@ -41,7 +44,6 @@ ALTER TABLE freq ADD CONSTRAINT freq_kw_fkey FOREIGN KEY (kw) REFERENCES kwfreq(
 ALTER TABLE kinf ADD CONSTRAINT kinf_entr_fkey FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE kinf ADD CONSTRAINT kinf_kw_fkey FOREIGN KEY (kw) REFERENCES kwkinf(id);
 ALTER TABLE lsrc ADD CONSTRAINT lsrc_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE lsrc ADD CONSTRAINT lsrc_kw_fkey FOREIGN KEY (kw) REFERENCES kwlsrc(id);
 ALTER TABLE lsrc ADD CONSTRAINT lsrc_lang_fkey FOREIGN KEY (lang) REFERENCES kwlang(id);
 ALTER TABLE misc ADD CONSTRAINT misc_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE misc ADD CONSTRAINT misc_kw_fkey FOREIGN KEY (kw) REFERENCES kwmisc(id);

@@ -95,9 +95,14 @@
 	    <span class="lang" tal:if="s/_lsrc">, 
 	      From: 
 	      <span tal:repeat="z s/_lsrc" tal:omit-tag="">
-		<span tal:if="not:repeat/start" tal:omit-tag="">,</span>
-		(<span tal:replace="kwabbr: 'LANG' z/lang">(xx)</span>)
-		<span tal:if="true:z/txt" tal:replace="z/txt">source word</span>
+		<span tal:replace="kwabbr: 'LANG' z/lang">(xx)</span
+		><span tal:if="or: z/part z/wasei" tal:omit-tag=""
+		  >(<span tal:if="z/part" tal:replace="string: p">p</span
+		  ><span tal:if="and: z/part z/wasei" tal:replace="string: ,">,</span
+		  ><span tal:if="z/wasei" tal:replace="string: w">w</span
+		  >)</span
+		>:"<span tal:if="true:z/txt" tal:replace="z/txt">source word</span
+		>"<span tal:if="not:repeat/end" tal:omit-tag="">,</span>
 		</span>
 	      </span>
 
@@ -106,14 +111,16 @@
 	      </span>
 
 	    <span tal:repeat="g s/_gloss">
+	      <span class="gloss" tal:replace="string:${g/gloss}. ">num.</span>
 	      <span tal:if="not: eq: g/lang string:1" omit-tag="">
 	        <span class="glang" tal:replace="kwabbr: 'LANG' g/lang">lang</span>:
 		</span>
 	      <span tal:if="not: eq: g/ginf string:1" omit-tag="">
 	        [<span class="ginf" tal:replace="kwabbr: 'GINF' g/ginf">lang</span>.]
 		</span>
-	      <span class="gloss" tal:replace="string:${g/gloss}. ${g/txt}">n. gloss text</span><br/>
+	      <span class="gloss" tal:replace="g/txt">gloss</span><br/>
 	      </span>
+
 	    <table class="xrefs" tal:if="or: true:s/_erefs true:s/_erers">
 	      <tr tal:if="true:s/_erefs">
 		<td colspan="2">Cross references:</td>   

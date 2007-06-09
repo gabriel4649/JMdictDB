@@ -137,7 +137,7 @@ sub parseb { my ($bln, $jtxt) = @_;
 sub parsebitem { my ($s, $n, $jtxt) = @_;
 	my ($ktxt, $rtxt, $sens, $atxt, @sens, $prio);
 	die ("\"B\" line parse error in item $n: '$s'\n")
-	    if (!($s =~ m/^([^([{]+)(\((\S+)\))?(\[\d+\])*(\{(\S+)\})?(\x{203e})?\s*$/));
+	    if (!($s =~ m/^([^([{]+)(\((\S+)\))?(\[\d+\])*(\{(\S+)\})?(~)?\s*$/));
 	($ktxt,$rtxt,$sens,$atxt,$prio) = ($1, $3, $4, $6, $7);
 	die ("($rtxt) not kana in item $n\n") if ($rtxt && !kana_only ($rtxt));
 	if (kana_only ($ktxt)) {

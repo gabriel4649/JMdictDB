@@ -8,7 +8,7 @@ all:
 
 schema: schema.png schema.pdf schema.html
 
-changes: Changes.txt TODO.html
+changes: Changes.txt TODO.html MANIFEST.txt
 
 .DELETE_ON_ERROR:
 

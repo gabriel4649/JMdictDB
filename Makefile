@@ -87,7 +87,7 @@ jmdict.xml:
 	mv JMdict_e jmdict.xml
 
 jmdict.pgi: jmdict.xml
-	cd perl && perl jmparse.pl -l ../jmdict.log -o ../jmdict.pgi ../jmdict.xml
+	cd perl && perl jmparse.pl -y -l ../jmdict.log -o ../jmdict.pgi ../jmdict.xml
 
 jmdict.dmp: jmdict.pgi
 	cd perl && perl jmload.pl -i 1 -o ../jmdict.dmp ../jmdict.pgi

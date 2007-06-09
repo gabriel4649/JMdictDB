@@ -1,4 +1,21 @@
 
+2007-06-09 11:15	smcgrawx@frxii.com
+
+	* Makefile [1.18]
+	Do recursive makes on subdirectories pg/ and perl/lib/. {89}
+
+	* perl/lib/Makefile [1.3]
+	* tools/mkkwmod.pl [1.4]
+	Changes needed for removal of table "kwlsrc" but missed in the
+	  previous commit set. {90}
+
+	* perl/lib/kwstatic.pm [1.6]
+	Rebuild due to changes in prerequisite files. {80}
+
+	* perl/showentr.pl [1.16]
+	Fix: Syntax error and several typos introduced in the lsrc changes
+	  made in last revision. {88}
+
 2007-06-08 20:00	smcgrawx@frxii.com
 
 	* Makefile [1.17]

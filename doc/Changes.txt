@@ -1,4 +1,71 @@
 
+2007-06-08 20:00	smcgrawx@frxii.com
+
+	* Makefile [1.17]
+	Add option (-y) to extract "literal" and "lsource" information from
+	  glosses. {82}
+
+	* doc/MANIFEST.txt [1.2]
+	* doc/schema.dia [1.5]
+	Updated doc for changes to lsrc table, etc, in chgid-77. {83}
+
+	* doc/Makefile [1.4]
+	Fix: Add MANIFEST.txt to target "Changes". {87}
+
+	* doc/schema.html [1.4]
+	* doc/schema.pdf [1.2]
+	* doc/schema.png [1.7]
+	* pg/drpindex.sql [1.4]
+	* pg/mkindex.sql [1.13]
+	Rebuild due to changes in prerequisite files. {80}
+
+	* doc/schema.odt [1.5]
+	Updated doc for changes to lsrc table, etc, in chgid-77. {83}
+	Add footer with author, last update date, page number. {84}
+
+	* perl/exparse.pl [1.7]
+	Previous version looked for unicode overline character (0x203e) to
+	  identify the B line item for exemplar sentences because this was
+	  the character that was used in a few versions of the Examples file
+	  after this feature was introduced.  However, the Examples file was
+	  corrected after approx 2007/06/06 to use the advertised "~" (0x7e)
+	  character and exparse.pl was changed accordingly. {76}
+
+	* perl/jmparse.pl [1.29]
+	Adjust code for schema change to table lsrc made in chgid-77. {79}
+	Add option (-y) to extract "literal" and "lsource" information from
+	  glosses. {82}
+
+	* perl/lib/jmdict.pm [1.24]
+	* perl/lib/jmdictpgi.pm [1.6]
+	* perl/showentr.pl [1.15]
+	* pg/mkviews.sql [1.18]
+	Adjust code for schema change to table lsrc made in chgid-77. {79}
+
+	* perl/lib/tal/entr.tal [1.10]
+	* perl/lib/tal/nwconf.tal [1.6]
+	Put gloss tags after sense number, rather that in front of. {85}
+	Rearrange lsourcew display and include the "waasei" and "part"
+	  attributes as a letter in parens after the language code. {86}
+
+	* pg/data/kwginf.csv [1.2]
+	Remove "trans" entry.  JB currently proposing to treat "trans" info
+	  as lsource (table lsrc) entry, usually with "wasei" attribute. {81}
+
+	* pg/data/kwlsrc.csv []
+	* pg/loadkw.sql [1.6]
+	* pg/mkperms.sql [1.9]
+	Remove table kwlsrc and in table lsrc, replace column "kw" with
+	  columns "part" and "wasei". {77}
+
+	* pg/mktables.sql [1.19]
+	Activate unique indexes on the (entr,txt) columns of tables rdng,
+	  kanj, and gloss.  These were formerly disabled because of
+	  duplicates in the input files, but those problems have been
+	  corrected. {78}
+	Remove table kwlsrc and in table lsrc, replace column "kw" with
+	  columns "part" and "wasei". {77}
+
 2007-06-05 09:16	smcgrawx@frxii.com
 
 	* Makefile [1.16]
@@ -6,7 +73,7 @@
 	  examples.log. {75}
 
 	* README.txt [1.11]
-	* doc/MANIFEST [1.1]
+	* doc/MANIFEST.txt [1.1]
 	* doc/Makefile [1.3]
 	New: Moved the file manifest list out of README.txt and into an
 	  independent file so that Makefile can (re-)generate it from the
@@ -39,8 +106,8 @@
 	  nwconf.tal. {69}
 
 	* perl/lib/jmdictxml.pm [1.14]
-	Add language ty (Tahitian) {70}
 	Add dialect 'kyu'. {73}
+	Add language ty (Tahitian) {70}
 
 	* perl/lib/kwstatic.pm [1.5]
 	Rebuild due to prerequisite file changes. {74}

@@ -18,7 +18,7 @@
 <body>
   <h1>JMdictDB To-Do List</h1>
   <span class="gendate">
-    This list was current as of 2007-06-05 09:05
+    This list was current as of 2007-06-08 20:50
     </span>
   <table class="todo">
     
@@ -33,29 +33,6 @@
       <tr class="priohdr">
         <td colspan="5">Priority 'high' items</td>
 	</tr>
-      <tr class="row">
-	<td class="id">66</td>
-	
-	  <td class="title" colspan="2">Examples file syntax change</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-06-01 09:38</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">The Examples file now marks some sentenses as exemplars for specific jmdict words, using a double-quote (") character at the end of the B line item for the word.  See email from Paul Blay posted to the edict-jmdict email list on 2007-06-01: <br/>
-  http://tech.groups.yahoo.com/group/edict-jmdict/message/1574<br/>
-<br/>
-Need to fix exparse,pl to recognise this new syntax and somehow represent this information in the xref records, which are what are used to represent the B line items.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
       <tr class="row">
 	<td class="id">37</td>
 	
@@ -219,36 +196,6 @@ Need to fix exparse,pl to recognise this new syntax and somehow represent this i
         <td colspan="5">Priority 'med' items</td>
 	</tr>
       <tr class="row">
-	<td class="id">65</td>
-	
-	  <td class="title" colspan="2">display gloss tags following gloss number</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-05-23 14:07</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Currently in entr.tal and nwconf.tal, a gloss tag (if any) is displayed in square brackets in front of the gloss number, e.g.:<br/>
-<br/>
-  [lit.] 1. my gloss<br/>
-<br/>
-It would look better displayed after the gloss number:<br/>
-<br/>
-  1. [lit.] my gloss<br/>
-<br/>
-or possibly at the end of the gloss:<br/>
-<br/>
-  1. my gloss [lit.]
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">13</td>
 	
 	  <td class="title" colspan="2">Perlex</td>
@@ -353,9 +300,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">4</td>
+	<td class="id">15</td>
 	
-	  <td class="title" colspan="2">Editor search page</td>
+	  <td class="title" colspan="2">Query time</td>
 	  
 	
 	<td class="compld"></td>
@@ -363,27 +310,7 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Search by various history criteria: status / submitter / submitted date / text in comments / etc.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">6</td>
-	
-	  <td class="title" colspan="2">Editor authenication</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Authentication for editors.  (work out process flow details first?)
+	<td class="descr" colspan="4">Even .8s seems a little slow (even for my machine).  DB interface code uses DBI's fetch_hash methods.  I think this may need to a second db read in order to determine the column names. Need to determine: 1) Is that ttrue?  2) Does it account for a significant performace hit? Will is still be a problem running with modperl which will improve query caching?  If these are true then rewrite code so that we provide the column name info rather than reading from db.
 </td>
 	</tr>
       
@@ -413,9 +340,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">25</td>
+	<td class="id">4</td>
 	
-	  <td class="title" colspan="2">Untrusted storables</td>
+	  <td class="title" colspan="2">Editor search page</td>
 	  
 	
 	<td class="compld"></td>
@@ -423,7 +350,47 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">newsub.pl -- Is it safe to receive a Storable?
+	<td class="descr" colspan="4">Search by various history criteria: status / submitter / submitted date / text in comments / etc.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">29</td>
+	
+	  <td class="title" colspan="2">XML parse kw checks</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">6</td>
+	
+	  <td class="title" colspan="2">Editor authenication</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Authentication for editors.  (work out process flow details first?)
 </td>
 	</tr>
       
@@ -473,26 +440,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">29</td>
-	
-	  <td class="title" colspan="2">XML parse kw checks</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">30</td>
 	
 	  <td class="title" colspan="2">XML parse other checks</td>
@@ -533,9 +480,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">15</td>
+	<td class="id">25</td>
 	
-	  <td class="title" colspan="2">Query time</td>
+	  <td class="title" colspan="2">Untrusted storables</td>
 	  
 	
 	<td class="compld"></td>
@@ -543,7 +490,7 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Even .8s seems a little slow (even for my machine).  DB interface code uses DBI's fetch_hash methods.  I think this may need to a second db read in order to determine the column names. Need to determine: 1) Is that ttrue?  2) Does it account for a significant performace hit? Will is still be a problem running with modperl which will improve query caching?  If these are true then rewrite code so that we provide the column name info rather than reading from db.
+	<td class="descr" colspan="4">newsub.pl -- Is it safe to receive a Storable?
 </td>
 	</tr>
       
@@ -575,9 +522,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">23</td>
+	<td class="id">27</td>
 	
-	  <td class="title" colspan="2">CGI security audit</td>
+	  <td class="title" colspan="2">Database versioning</td>
 	  
 	
 	<td class="compld"></td>
@@ -585,27 +532,7 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">7</td>
-	
-	  <td class="title" colspan="2">Unit tests</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to write unit tests for library code
+	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
 </td>
 	</tr>
       
@@ -626,6 +553,26 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">For cgi pages, command scripts, etc.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">7</td>
+	
+	  <td class="title" colspan="2">Unit tests</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to write unit tests for library code
 </td>
 	</tr>
       
@@ -735,9 +682,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">27</td>
+	<td class="id">21</td>
 	
-	  <td class="title" colspan="2">Database versioning</td>
+	  <td class="title" colspan="2">CGI html escaping</td>
 	  
 	
 	<td class="compld"></td>
@@ -745,7 +692,7 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
+	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.
 </td>
 	</tr>
       
@@ -795,26 +742,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">21</td>
-	
-	  <td class="title" colspan="2">CGI html escaping</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">22</td>
 	
 	  <td class="title" colspan="2">UTC datetimes</td>
@@ -826,6 +753,26 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">Check the everything storing a datetime value stores it in UTC or localtime with timezone.  Check that everything displaying a datetime does the same.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">23</td>
+	
+	  <td class="title" colspan="2">CGI security audit</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
 </td>
 	</tr>
       
@@ -877,26 +824,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">32</td>
-	
-	  <td class="title" colspan="2">Email addr obsfucation</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- Need to obsure email addresses for general display (unobsured on conf form ok if none other than submitter/authenticated editors can see.)
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">41</td>
 	
 	  <td class="title" colspan="2">CVS access</td>
@@ -914,9 +841,115 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">32</td>
+	
+	  <td class="title" colspan="2">Email addr obsfucation</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Need to obsure email addresses for general display (unobsured on conf form ok if none other than submitter/authenticated editors can see.)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
       <tr class="header">
         <td colspan="5"><br>The following items have been completed...<br><br></td>
 	</tr>
+      
+      
+      <tr class="row done">
+	<td class="id">66</td>
+	
+	
+	  <td class="title">Examples file syntax change</td>
+	  <td class="prio">high</td>
+	  
+	<td class="compld">2007-06-08 20:00</td>
+	<td class="entered">2007-06-01 09:38</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">The Examples file now marks some sentenses as exemplars for specific jmdict words, using a tilde (~) character at the end of the B line item for the word.  See email from Paul Blay posted to the edict-jmdict email list on 2007-06-01: <br/>
+  http://tech.groups.yahoo.com/group/edict-jmdict/message/1574<br/>
+<br/>
+Need to fix exparse,pl to recognise this new syntax and somehow represent this information in the xref records, which are what are used to represent the B line items.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">67</td>
+	
+	
+	  <td class="title">Add support for "wasei" lsrc attribute</td>
+	  <td class="prio">med</td>
+	  
+	<td class="compld">2007-06-08 20:00</td>
+	<td class="entered">2007-06-08 06:18</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">Current thinking is that the "trans" text found in about 500 glosses will become an lsrc attribute ("wasei") rather than a gloss attribute as I anticipated in the previous schema version.  This will be a boolean value.<br/>
+<br/>
+In previous schema version, lsrc attributes "full" and "part" (partial) were treated like other keywords and coded in table kwlsrc.  However subsequent discussion on the edict-jmdict email list has clarified that these are mutually exclusive, and can be represented by a single boolean value in table lsrc.<br/>
+<br/>
+See:<br/>
+http://tech.groups.yahoo.com/group/edict-jmdict/message/1592<br/>
+http://tech.groups.yahoo.com/group/edict-jmdict/message/1607<br/>
+<br/>
+Since the "part" and "wasei" values are independent, it is awkward to represent them by a single list of keywords as the schema provided for up to now.<br/>
+<br/>
+Change is to replace the kw column with two boolean columns in table lsrc, remove table kwlsrc, and adjust the code to match.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">65</td>
+	
+	
+	  <td class="title">display gloss tags following gloss number</td>
+	  <td class="prio">med</td>
+	  
+	<td class="compld">2007-06-08 20:00</td>
+	<td class="entered">2007-05-23 14:07</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">Currently in entr.tal and nwconf.tal, a gloss tag (if any) is displayed in square brackets in front of the gloss number, e.g.:<br/>
+<br/>
+  [lit.] 1. my gloss<br/>
+<br/>
+It would look better displayed after the gloss number:<br/>
+<br/>
+  1. [lit.] my gloss<br/>
+<br/>
+or possibly at the end of the gloss:<br/>
+<br/>
+  1. my gloss [lit.]
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
       
       
       <tr class="row done">
@@ -1109,27 +1142,6 @@ Will try to write MS Access app (since I know Access and can do fast).  Since I 
       
       
       <tr class="row done">
-	<td class="id">47</td>
-	
-	
-	  <td class="title">Load multiple datasets</td>
-	  <td class="prio">high</td>
-	  
-	<td class="compld">2007-03-13</td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr done">
-        <td> </td>
-	<td class="descr" colspan="4">Support loading multiple datasets into database... Make loading a file to database a two-step process. (1) parse file into intemediate format with rebaseable id numbers. (2) adjust the id numbers as needed while loading the intermediate file into tables.  This allows loading things like jmnedict and the examples file.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row done">
 	<td class="id">50</td>
 	
 	
@@ -1142,6 +1154,27 @@ Will try to write MS Access app (since I know Access and can do fast).  Since I 
       <tr class="descr done">
         <td> </td>
 	<td class="descr" colspan="4">jmparse.pl -- Rearchitect into two pieces:1) parse xml into a EntrList struct, 2) Library code to translate struct to file text.  This will make it easier to write loaders for other input sources.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">47</td>
+	
+	
+	  <td class="title">Load multiple datasets</td>
+	  <td class="prio">high</td>
+	  
+	<td class="compld">2007-03-13</td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">Support loading multiple datasets into database... Make loading a file to database a two-step process. (1) parse file into intemediate format with rebaseable id numbers. (2) adjust the id numbers as needed while loading the intermediate file into tables.  This allows loading things like jmnedict and the examples file.
 </td>
 	</tr>
       
@@ -1349,27 +1382,6 @@ Added a -l option to specify logfile location.  In Makefile, dist target exclude
       
       
       <tr class="row done">
-	<td class="id">56</td>
-	
-	
-	  <td class="title">GPL code</td>
-	  <td class="prio">high</td>
-	  
-	<td class="compld">2007-02-12</td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr done">
-        <td> </td>
-	<td class="descr" colspan="4">Put everything under gpl.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row done">
 	<td class="id">60</td>
 	
 	
@@ -1384,6 +1396,27 @@ Added a -l option to specify logfile location.  In Makefile, dist target exclude
 	<td class="descr" colspan="4">perl -- Move lib to under cgi?  (This dir needs to be accessible to the cgi scripts when installed in a cgi directory, but should not be accessible via a web server url.  Putting under the cgi dir wouldaccomplish this (at least for Apache, not sure about IIS.))<br/>
 <br/>
 Don't do. Files in lib/ are used by perl/*.pl scripts as well as the cgi scripts, so moving it under cgi would be inappropriate.  Better way is to use standard Apache/IIS config options to deny access.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">56</td>
+	
+	
+	  <td class="title">GPL code</td>
+	  <td class="prio">high</td>
+	  
+	<td class="compld">2007-02-12</td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">Put everything under gpl.
 </td>
 	</tr>
       

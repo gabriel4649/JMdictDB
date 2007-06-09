@@ -107,7 +107,7 @@
         <dia:point val="40.25,2.25"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="37.0223,1.6825;43.4952,2.685"/>
+        <dia:rectangle val="37.0223,1.7;43.4777,2.65"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
@@ -4071,7 +4071,7 @@ keywords#</dia:string>
             <dia:string>#int2#</dia:string>
           </dia:attribute>
           <dia:attribute name="value">
-            <dia:string>#FK3#</dia:string>
+            <dia:string>#FK2#</dia:string>
           </dia:attribute>
           <dia:attribute name="comment">
             <dia:string>##</dia:string>
@@ -7745,7 +7745,7 @@ restriction#</dia:string>
         <dia:point val="10.75,25.75"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="10.75,25.1825;11.7675,26.185"/>
+        <dia:rectangle val="10.75,25.2;11.75,26.15"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
@@ -7778,7 +7778,7 @@ restriction#</dia:string>
         <dia:point val="19.75,32.5"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="19.75,31.9325;20.7675,32.935"/>
+        <dia:rectangle val="19.75,31.95;20.75,32.9"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">
@@ -9207,40 +9207,7 @@ restriction#</dia:string>
         <dia:enum val="3"/>
       </dia:attribute>
     </dia:object>
-    <dia:object type="Standard - Text" version="1" id="O129">
-      <dia:attribute name="obj_pos">
-        <dia:point val="16.25,35.25"/>
-      </dia:attribute>
-      <dia:attribute name="obj_bb">
-        <dia:rectangle val="16.25,34.7;17.25,35.65"/>
-      </dia:attribute>
-      <dia:attribute name="text">
-        <dia:composite type="text">
-          <dia:attribute name="string">
-            <dia:string>#FK3#</dia:string>
-          </dia:attribute>
-          <dia:attribute name="font">
-            <dia:font family="sans" style="0" name="Helvetica"/>
-          </dia:attribute>
-          <dia:attribute name="height">
-            <dia:real val="0.80000000000000004"/>
-          </dia:attribute>
-          <dia:attribute name="pos">
-            <dia:point val="16.25,35.25"/>
-          </dia:attribute>
-          <dia:attribute name="color">
-            <dia:color val="#000000"/>
-          </dia:attribute>
-          <dia:attribute name="alignment">
-            <dia:enum val="0"/>
-          </dia:attribute>
-        </dia:composite>
-      </dia:attribute>
-      <dia:attribute name="valign">
-        <dia:enum val="3"/>
-      </dia:attribute>
-    </dia:object>
-    <dia:object type="Standard - ZigZagLine" version="1" id="O130">
+    <dia:object type="Standard - ZigZagLine" version="1" id="O129">
       <dia:attribute name="obj_pos">
         <dia:point val="12,31.7"/>
       </dia:attribute>
@@ -9275,12 +9242,12 @@ restriction#</dia:string>
         <dia:connection handle="1" to="O19" connection="11"/>
       </dia:connections>
     </dia:object>
-    <dia:object type="Standard - Text" version="1" id="O131">
+    <dia:object type="Standard - Text" version="1" id="O130">
       <dia:attribute name="obj_pos">
         <dia:point val="10.75,32.5"/>
       </dia:attribute>
       <dia:attribute name="obj_bb">
-        <dia:rectangle val="10.75,31.9325;11.7675,32.935"/>
+        <dia:rectangle val="10.75,31.95;11.75,32.9"/>
       </dia:attribute>
       <dia:attribute name="text">
         <dia:composite type="text">

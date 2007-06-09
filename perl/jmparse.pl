@@ -38,7 +38,7 @@ main: {
 	my ($twig, $infn, $outfn, $tmpfiles, $tmp, $enc, $logfn,
 	    $user, $pw, $dbname, $host);
 
-	getopts ("o:c:s:b:e:l:t:g:kh", \%::Opts);
+	getopts ("o:c:s:b:e:l:t:g:kyh", \%::Opts) || usage (1);
 	if ($::Opts{h}) { usage (0); }
 	$enc = $::Opts{e} || "utf-8";
 	if ($::Opts{g}) { $::Opts{g} = $::JM2ID{LANG}{$::Opts{g}}; }
@@ -107,7 +107,7 @@ sub entry_handler { my ($t, $entry ) = @_;
 	  # $cntr counts the number of entries parsed.  The 1400 below was 
 	  # picked to procude about 80 dots in the "progress bar" for a full
 	  # jmdict.xml file.
-	if (!($::cntr % 1400)) { print STDERR "."; } 
+	if (!($::cntr % 1500)) { print STDERR "."; } 
 	$::cntr += 1;
 
 	  # Get the entry's seq number.  jmnedict won't have a <ent_seq> element
@@ -288,16 +288,25 @@ sub do_sens { my ($e, $sens, $kmap, $rmap) = @_;
 		    print $::Flog "Seq $::Seq: No glosses found in sense\n"; } } } }
 
 sub do_gloss { my ($s, $gloss) = @_;
-	my ($g, $lang, $lng, $txt);
+	my ($g, $lang, $lng, $txt, $lit, $trans, @lit);
 	$s->{_gloss} = [];
 	foreach $g (@$gloss) {
 	    $lng = $g->att("xml:lang");
 	    $lang = $lng ? $::JM2ID{LANG}{$lng} : $KWLANG_en;
 	    if (!$lang && $lng) { print $::Flog "Seq $::Seq: invalid lang attribute '$lng'\n"; }
 	    ($txt = $g->text) =~ s/\\/\\\\/go;
-	    # (entr,sens,gloss,lang,txt,notes)
-	    if (!$::Opts{g} or $::Opts{g}=$lang) {
-	        push (@{$s->{_gloss}}, {lang=>$lang, ginf=>$KWGINF_equ, txt=>$txt}); } } }
+	    $lit = $trans = "";
+	    if ($::Opts{y} and $txt =~ m/\(((lit:)|(trans:))/) { 
+		($txt,$lit,$trans) = extract_lit ($txt); }
+	    # (entr,sens,gloss,lang,txt)
+	    if ((!$::Opts{g} or $::Opts{g}=$lang) and $txt) {
+	        push (@{$s->{_gloss}}, {lang=>$lang, ginf=>$KWGINF_equ, txt=>$txt}); }
+	    if ($lit) {
+	        push (@lit, [$lang, $lit]); }	# Save and write after all reg. glosses.
+	    if ($trans) {
+	        push (@{$s->{_lsrc}}, {lang=>$KWLANG_en, txt=>$trans, part=>0, wasei=>1}); } }
+	foreach $lit (@lit) {
+	    push (@{$s->{_gloss}}, {lang=>$lit->[0], ginf=>$KWGINF_lit, txt=>$lit->[1]}); } }
 
 sub do_pos { my ($s, $pos) = @_;
 	my ($i, $kw, $txt, %dupchk);
@@ -366,7 +375,7 @@ sub do_lsrc { my ($s, $lsrc) = @_;
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated lsource type '$lskw'\n"; }
 	    if ($kw != 1 and !$txt ) { 
 		print $::Flog "Seq $::Seq: non-default lsource type '$lskw' and no text\n"; }
-	    push (@{$s->{_lsrc}}, {kw=>$kw, lang=>$lang, txt=>$txt} ); } }
+	    push (@{$s->{_lsrc}}, {lang=>$lang, txt=>$txt, part=>($kw==2?1:0), wasei=>0} ); } }
 
 sub do_xref { my ($s, $xref, $xtypkw) = @_;
 	my ($x, $t, $txt);
@@ -503,6 +512,13 @@ sub mkrestr { my ($a, $bmap, $attrname, $pos) = @_;
 		push (@{$a->{$attrname}}, $restr_rec);
 		push (@{$b->{$attrname}}, $restr_rec); } } } 
 
+sub extract_lit { my ($txt) = @_;
+	my ($lit, $trans) = ("", "");
+	if ($txt =~ s/\s*\(lit:\s*([^)]*)\)\s*/ /) { $lit = $1; }
+	if ($txt =~ s/\s*\(trans:\s*([^)]*)\)\s*/ /) { $trans = $1; }
+	$txt =~ s/^\s+//; $txt =~ s/\s+$//;
+	return ($txt, $lit, $trans); }
+
 sub pgesc { my ($str) = @_; 
 	# Escape characters that are special to the Postgresql COPY
 	# command.  Backslash characters are replaced by two backslash
@@ -522,7 +538,7 @@ loaded into a jmdict Postgresql database.
 
 Usage: jmparse.pl [-s srcid] [-o output-filename] 
 		      [-c entry-count] [-b start-seq-num] \\  
-		      [-k]  [-l logfile] [-t tempfile-dir] \\
+		      [-y] [-k] [-l logfile] [-t tempfile-dir] \\
 		      [-e encoding] \\
 		      [xml-filename]
 
@@ -542,6 +558,7 @@ Options:
 	-g lang -- Include only gloss tag with language code 'lang'.
 	    If not given default is to include all glosses regardless
 	    of language.
+	-y -- Extract literal and trans information from glosses.
 	-k -- (keep) do not delete temporary files.
 	-e encoding -- Encoding to use when writing messages to stderr
 	    and stdout.  Default is "utf-8".

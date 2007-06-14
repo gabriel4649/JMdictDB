@@ -105,6 +105,7 @@ INSERT INTO xref(entr,sens,xentr,xsens,typ,notes)
     (SELECT DISTINCT x.entr,x.sens,x.xentr,s.sens,z.typ,z.notes
     FROM _xrsv x 
     JOIN xresolv z ON z.entr=x.entr AND z.sens=x.sens AND z.ord=x.ord
-    JOIN sens s ON s.entr=x.xentr);
+    JOIN sens s ON s.entr=x.xentr
+    WHERE x.entr != x.xentr);
 
 VACUUM ANALYZE xref;

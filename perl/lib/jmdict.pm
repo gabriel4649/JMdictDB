@@ -26,7 +26,8 @@ BEGIN {
     @EXPORT_OK = qw(Tables KANA HIRAGANA KATAKANA KANJ); 
     @EXPORT = qw(dbread dbinsert Kwds kwrecs addids mktmptbl Find EntrList 
 		    matchup filt jstr_classify addentr erefs2xrefs xrefs2erefs
-		    get_seq zip fmtkr bld_erefs dbopen xrefdetails setkeys); }
+		    get_seq zip fmtkr bld_erefs dbopen xrefdetails setkeys
+		    resolv_xref fmt_jitem); }
 
 our(@VERSION) = (substr('$Revision$',11,-2), \
 	         substr('$Date$',7,-11));
@@ -229,7 +230,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	matchup ("_kfreq", $kanj, ["entr","kanj"], $freq,  ["entr","kanj"]);
 	# Make restr et.al. info available from the entry as well
 	# as from rdng, etc.  Should all other lists be available
-	# from the entr to?
+	# from the entr too?
 	matchup ("_restr", $entr, ["entr"], $restr, ["entr"]);
 	matchup ("_stagr", $entr, ["entr"], $stagr, ["entr"]);
 	matchup ("_stagk", $entr, ["entr"], $stagk, ["entr"]);
@@ -575,6 +576,118 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 		dbinsert ($dbh, "xref", ['entr','sens','xentr','xsens','typ','notes'], $x); } }
 	return ($eid, $seq); }
 
+    sub resolv_xref { my ($dbh, $kanj, $rdng, $slist, $typ,
+			   $one_entr_only, $one_sens_only) = @_;
+	# $dbh -- Handle to open database connection.
+	# $kanj -- If true, cross-ref target(s) must have this kanji text.
+	# $rdng -- If true, cross-ref target(s) must have this reading text.
+	# $slist -- Ref to array of sense numbers.  Resolved xrefs
+	#   will be limited to these target senses. 
+	# $typ -- (int) Type of reference per $::KW->{XREF}.
+	# $one_entr_only -- Error of xref resolves two more than one entry.
+	#   Regardless of this value, it is always an error is $slist is 
+	#   given and the xref resolves to more than one entry.
+	# $one_sens_only -- Error if $slist not given and any of the 
+	#   resolved entries have more than one sense. 
+	# 
+	# resolv_xref() returns a list of erefs.  Each eref item
+	# is a ref to a 3-element hash:
+	#
+	#   {typ} -- Integer XREF keyword id.
+	#
+	#   {entr} -- Reference to a record retrieved from view
+	#	esum that summerizes one entry.  It is a ref to
+	#       a hash with the following fields:
+	#
+	#	id -- Entry id number.
+	#	seq -- Entry seq. number.
+	#	src -- Entry src id number.
+	#	stat -- Entry status code (KW{STAT}{*}{id})
+	#	notes -- Entry note.
+	#	srcnote -- Entry source note.
+	#	rdng -- Entry's reading texts coalesced into one string.
+	#	kanj -- Entry's kanji texts coalesced into one string.
+	#	gloss -- Entry's gloss texts coalesced into one string.
+	#	nsens -- Total number of senses.
+	#
+	#   {sens} -- A reference to an array of numbers that
+	#	that are the specific xref targets in this entry. 
+	# 
+	# Thus each eref item represents N xrefs where N is 
+	# the number of elements in @{$item->{sens}}.  Coalescing
+	# all the xrefs for a single entry with entry summary
+	# info simplifies life for applications that need to 
+	# display summaries of xrefs.
+	#
+	# Prohibited conditions such as resolving to multiple
+	# entries when the $one_entr_only flag is true, are 
+	# signalled with die().  The caller may want to call 
+	# resolv_xref() within an eval() to catch these conditions.
+	
+	my ($sql, $r, $esums, $qlist, @erefs, $srecs, $eid, $q, $s,
+	    $krtxt, @args, @argtxt, @nosens, @multsens, %shash);
+
+	$krtxt = fmt_jitem ($kanj, $rdng, $slist);
+	if (!$::KW->{XREF}{$typ}) { die "Bad xref type value: $typ.\n"; }
+	if (0) { }
+	else {
+	    if ($kanj) { push (@args, $kanj); push (@argtxt, "k.txt=?"); }
+	    if ($rdng) { push (@args, $rdng); push (@argtxt, "r.txt=?"); }
+	    $sql = "SELECT DISTINCT s.* " .
+		  "FROM esum s " .
+		  "JOIN entr e ON e.id=s.id " .
+		  ($kanj ? "LEFT JOIN kanj k ON k.entr=e.id " : "") .
+		  ($rdng ? "LEFT JOIN rdng r ON r.entr=e.id " : "") .
+		  "WHERE " . join (" AND ", @argtxt);
+	    $esums = dbread ($dbh, $sql, \@args); }
+	if (scalar(@$esums) < 1) { die "No entries found for cross-reference '$krtxt'.\n"; }
+	if (scalar(@$esums) > 1 and ($one_entr_only or ($slist and @$slist))) {
+	    die "Multiple entries found for cross-reference '$krtxt'.\n"; }
+	foreach $r (@$esums) {
+	    push (@erefs, {typ=>$typ, entr=>$r, sens=>[]}); }
+
+	# For every target entry, get all it's sense numbers.  We need
+	# these for two reasons: 1) If explicit senses were targeted we
+	# need to check them against the actual senses. 2) If no explicit
+	# target senses were given, then we need them to generate erefs 
+	# to all the target senses.
+	# The code currently compares actual sense numbers; if the database
+	# could guarantee that sense numbers are always sequential from
+	# one, this code could be simplified and speeded up.
+
+	$qlist = join(",", map ("?", @erefs));
+	$sql = "SELECT entr,sens FROM sens WHERE entr IN ($qlist) ORDER BY entr,sens";
+	$srecs = dbread ($dbh, $sql, [map ($_->{entr}{id}, @erefs)]);
+	%shash = map (("$_->{entr}_$_->{sens}",1), @$srecs);
+
+	if ($slist && @$slist) {
+	    # The submitter gave some specific senses that the xref will
+	    # target, so check that they actually exist in the target entries...
+	    foreach $r (@erefs) {	# For each target entry...
+				        # Because of the muliple entry test above
+					# there will be only one entry in @erefs
+					# here (since there is a @$slist).
+		$eid = $r->{entr}{id};
+		@nosens = grep (!$shash{"${eid}_$_"}, @$slist);
+		die "Sense(s) ".join(",",@nosens)." not in target '$krtxt'.\n" if (@nosens);
+		$r->{sens} =  [@$slist]; } } 
+	else {
+	    # No specific senses given, so this xref(s) should target every
+	    # sense in the target entry(s), unless $one_sens_only is true
+	    # in which case all the xrefs must have only one sense or we 
+	    # raise an error.
+	    if ($one_sens_only) {
+		@multsens = grep ($_->{nsens}>1, @$esums);
+		if (@multsens) {
+		    if (scalar (@$esums) == 1) {
+		        die "The cross-reference target '$krtxt' has more than one sense.\n"; }
+		    else { 
+			die "One or more of the '$krtxt 'targets have more than one sense.\n"; } } }
+	    foreach $r (@erefs) {
+		$eid = $r->{entr}{id};
+	        $r->{sens} = [map ($_->{sens}, grep ($_->{entr}==$eid, @$srecs))]; } }
+	return \@erefs; } 
+
     sub get_seq { my ($dbh) = @_;
 	# Get and return a new entry sequence number.
 
@@ -591,6 +704,14 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	if ($kanj) { $txt = "$kanj\x{3010}$rdng\x{3011}"; }
 	else { $txt = $rdng; }
 	return $txt; }
+
+    sub fmt_jitem { my ($kanj, $rdng, $slist) = @_;
+	# Format a textual xref descriptor printing (typically 
+	# in an error message.)
+
+	my $krtext = ($kanj || "") . (($kanj && $rdng) ? "/" : "") . ($rdng || ""); 
+	if ($slist) { $krtext .= "[" . join (",", @$slist) . "]"; }
+	return $krtext; }
 
     sub zip {
 	# Takes an arbitrary number of arguments of references to arrays

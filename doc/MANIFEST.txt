@@ -10,7 +10,7 @@ doc/TODO.html.................[*] To-do list.
 doc/schema.dia................Dia source for database schema diagram.
 doc/schema.html...............[*] Schema documentation (html).
 doc/schema.odt................Schema documentation source (OpenOffice Writer).
-doc/schema.pdf................[*] PDF version of doc/schema.odt.
+doc/schema.pdf................[*] PDF version of doc/schema.odt
 doc/schema.png................[*] Database schema diagram.
 doc/tut0.pl...................API executable tutorial, Database connections.
 doc/tut1.pl...................API executable tutorial, The Kwds() structure.
@@ -24,6 +24,7 @@ perl/showentr.pl..............Command line tool to show database entries.
 perl/cgi/.....................CGI scripts
 perl/cgi/entr.css.............CSS style sheet for all cgi pages.
 perl/cgi/entr.pl..............Show entry details page.
+perl/cgi/jbparser.pl..........Page for interactively testing parser
 perl/cgi/nwconf.pl............Confirm new entry page.
 perl/cgi/nwform.pl............Add new entry form.
 perl/cgi/nwsub.pl.............Add new entry action.
@@ -31,9 +32,12 @@ perl/cgi/srchform.pl..........JMdictDB general entry search form.
 perl/cgi/srchres.pl...........Search results list.
 perl/lib/.....................Perl library modules
 perl/lib/Makefile.............Make kwstatic.pm file from pg/data/* files.
+perl/lib/jbparser.pm..........[*] Input language parser module
+perl/lib/jbparser.yp..........Input language parser
 perl/lib/jmdict.pm............General use functions.
 perl/lib/jmdictcgi.pm.........CGI-specfic functions.
 perl/lib/jmdicted.pm..........Edict parsing/formatting functions.
+perl/lib/jmdictfmt.pm.........Entry print formatting functions
 perl/lib/jmdictpgi.pm.........JMdict .pgi file functions.
 perl/lib/jmdicttal.pm.........PETAL modifiers.
 perl/lib/jmdictxml.pm.........JMdict XML parsing/generating functions.

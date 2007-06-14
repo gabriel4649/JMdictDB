@@ -18,7 +18,7 @@
 <body>
   <h1>JMdictDB To-Do List</h1>
   <span class="gendate">
-    This list was current as of 2007-06-08 20:50
+    This list was current as of 2007-06-14 14:09
     </span>
   <table class="todo">
     
@@ -85,6 +85,26 @@
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">srchres.pl -- Search on gloss is case-sensitive, probably should not be.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">1</td>
+	
+	  <td class="title" colspan="2">Approval process flow</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to work out details of approval process in terms of data changes and the web pages needed to support those changes. [Need "edit entry" page first]
 </td>
 	</tr>
       
@@ -172,19 +192,21 @@
       </span><span omit-tag="">
       
       
-      
+      <tr class="priohdr">
+        <td colspan="5">Priority 'med' items</td>
+	</tr>
       <tr class="row">
-	<td class="id">1</td>
+	<td class="id">68</td>
 	
-	  <td class="title" colspan="2">Approval process flow</td>
+	  <td class="title" colspan="2">Finish move of resolv_xref() to jmdict module</td>
 	  
 	
 	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
+	<td class="entered">2007-06-14 13:46</td>
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Need to work out details of approval process in terms of data changes and the web pages needed to support those changes. [Need "edit entry" page first]
+	<td class="descr" colspan="4">Change id {97} created a near duplicate of jmdictcgi::resolv_xref() in module jmdict.  Need to change jmdictcgi to call the jmdict version rather than continuing to use its own local version.
 </td>
 	</tr>
       
@@ -192,9 +214,7 @@
       </span><span omit-tag="">
       
       
-      <tr class="priohdr">
-        <td colspan="5">Priority 'med' items</td>
-	</tr>
+      
       <tr class="row">
 	<td class="id">13</td>
 	
@@ -542,46 +562,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">8</td>
-	
-	  <td class="title" colspan="2">Functional tests</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">For cgi pages, command scripts, etc.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">7</td>
-	
-	  <td class="title" colspan="2">Unit tests</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to write unit tests for library code
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">9</td>
 	
 	  <td class="title" colspan="2">Test environment</td>
@@ -593,6 +573,26 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">Need to setup a test infrastructure.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">8</td>
+	
+	  <td class="title" colspan="2">Functional tests</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">For cgi pages, command scripts, etc.
 </td>
 	</tr>
       
@@ -693,6 +693,26 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">7</td>
+	
+	  <td class="title" colspan="2">Unit tests</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to write unit tests for library code
 </td>
 	</tr>
       
@@ -990,7 +1010,10 @@ These seem to be due to jmdict entries that have an xref that refers to the same
 <br/>
 Resolution: <br/>
 * Email the jmdict list with request for correction to jmdict.<br/>
-* Temporarily remove the constraint, load the data, delete the problem xrefs, and recreate the constraints.
+* Temporarily remove the constraint, load the data, delete the problem xrefs, and recreate the constraints.<br/>
+<br/>
+2007-06-09: <br/>
+In xresolv.sql-1.8, the sql that loads xref from _xrsv was modified to skip any self-referencing xrefs.  A separate script will be written to detect and report self references.
 </td>
 	</tr>
       

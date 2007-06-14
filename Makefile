@@ -41,6 +41,7 @@ PG_DB = jmdict
 CSS_FILES = perl/cgi/entr.css
 
 CGI_FILES = perl/cgi/entr.pl \
+	perl/cgi/jbparser.pl \
 	perl/cgi/nwconf.pl \
 	perl/cgi/nwform.pl \
 	perl/cgi/nwsub.pl \
@@ -48,7 +49,9 @@ CGI_FILES = perl/cgi/entr.pl \
 	perl/cgi/srchres.pl 
 
 LIB_FILES = perl/lib/jmdict.pm \
-	perl/lib/jmdicttal.pm 
+	perl/lib/jmdictfmt.pm \
+	perl/lib/jmdicttal.pm \
+	perl/lib/jbparser.pm 
 
 TAL_FILES = perl/lib/tal/entr.tal \
 	perl/lib/tal/nwconf.tal \
@@ -201,12 +204,18 @@ $(CGI_DIR)/srchform.pl: perl/cgi/srchform.pl
 	cp -p $? $@
 $(CGI_DIR)/srchres.pl: perl/cgi/srchres.pl
 	cp -p $? $@
+$(CGI_DIR)/jbparser.pl: perl/cgi/jbparser.pl
+	cp -p $? $@
 
 $(LIB_DIR)/jmdict.pm: perl/lib/jmdict.pm
 	cp -p $? $@
 $(LIB_DIR)/jmdictcgi.pm: perl/lib/jmdictcgi.pm
 	cp -p $? $@
+$(LIB_DIR)/jmdictfmt.pm: perl/lib/jmdictfmt.pm
+	cp -p $? $@
 $(LIB_DIR)/jmdicttal.pm: perl/lib/jmdicttal.pm
+	cp -p $? $@
+$(LIB_DIR)/jbparser.pm: perl/lib/jbparser.pm
 	cp -p $? $@
 
 $(LIB_DIR)/tal/entr.tal: perl/lib/tal/entr.tal

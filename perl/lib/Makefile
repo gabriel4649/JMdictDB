@@ -27,7 +27,12 @@ KWDATA = \
 	$(KWDATADIR)kwstat.csv \
 	$(KWDATADIR)kwxref.csv
 
+all: kwstatic.pm jbparser.pm
+
 kwstatic.pm: $(KWDATA)
 	perl ../../tools/mkkwmod.pl -d ../../pg/data/ >kwstatic.pm
+
+jbparser.pm: jbparser.yp
+	yapp -s jbparser.yp
 
 .DELETE_ON_ERROR:

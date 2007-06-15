@@ -1148,8 +1148,8 @@ sub
 sub
 #line 185 "jbparser.yp"
 { dbgprt (1, "TEXT EQL TEXT -> tagitem"); 
-				  return [$_[1],$_[3]] if ($_[1] eq "note" or $_[1] eq "lit" or $_[1] eq "expl");
-				  return [$_[1],1,$_[3]] if ($_[1] eq "lsrc");
+				  return [$_[1],$_[3],1] if ($_[1] eq "note" or $_[1] eq "lit" or $_[1] eq "expl");
+				  return [$_[1],$_[3],1] if ($_[1] eq "lsrc");
 				  my ($x) = lookup_tag ($_[3], $_[1]);
 				  if ($x == -1) {
 				    error ("Unknown $_[1] keyword: '$_[3]'");
@@ -1167,11 +1167,11 @@ sub
 				  if ($_[1] ne "lsrc") {
 				    error ("Keyword must be \"lsrc\"");
 				    $_[0]->YYError (); }
-				  my ($l) = $::KW->{$_[3]};
-				  if (!$l) {
+				  my ($la) = $::KW->{LANG}{$_[3]}{id};
+				  if (!$la) {
 				    error ("Unrecognised language '$_[3]'");
 				    $_[0]->YYError (); }
-				  ["LSRC", $l, undef]; }
+				  ["lsrc", undef, $la]; }
 	],
 	[#Rule 32
 		 'tagitem', 5,
@@ -1182,11 +1182,11 @@ sub
 				  if ($_[1] ne "lsrc" and $_[1] ne "lit" and $_[1] ne "expl") {
 				    error ("Keyword not \"lsrc\", \"lit\", or \"expl\"");
 				    $_[0]->YYError (); }
-				  my ($l) = $::KW->{$_[3]};
-				  if (!$l) {
+				  my ($la) = $::KW->{LANG}{$_[3]}{id};
+				  if (!$la) {
 				    error ("Unrecognised language '$_[3]'");
 				    $_[0]->YYError (); }
-				  ["LSRC", $l, $_[5]]; }
+				  ["lsrc", $_[5], $la]; }
 	],
 	[#Rule 33
 		 'tagitem', 3,
@@ -1374,10 +1374,10 @@ sub
 			$errs++; }
 		    if ($jitem->[0]) { append ($sens, "_STAGK", $jitem->[0]); }
 		    if ($jitem->[1]) { append ($sens, "_STAGR", $jitem->[1]); } } }
-	    elsif ($typ eq "lsrc")  { append ($sens, "_lsrc",  {txt=>$t->[0], lang=>$t->[1]}); }
+	    elsif ($typ eq "lsrc")  { append ($sens, "_lsrc",  {txt=>$t->[0], lang=>($t->[1] || 1)}); }
 	    elsif ($typ eq "gloss") { append ($sens, "_gloss", {txt=>$t->[0]}); }
-	    elsif ($typ eq "lit")   { append ($sens, "_gloss", {txt=>$t->[0], lang=>$t->[1], ginf=>$KWGINF_lit}); }
-	    elsif ($typ eq "expl")  { append ($sens, "_gloss", {txt=>$t->[0], lang=>$t->[1], ginf=>$KWGINF_expl}); }
+	    elsif ($typ eq "lit")   { append ($sens, "_gloss", {txt=>$t->[0], lang=>($t->[1] || 1), ginf=>$KWGINF_lit}); }
+	    elsif ($typ eq "expl")  { append ($sens, "_gloss", {txt=>$t->[0], lang=>($t->[1] || 1), ginf=>$KWGINF_expl}); }
 	    elsif ($typ eq "note")  { 
 		if ($sens->{notes}) { error ("Only one sense note allowed"); $errs++ }
 		$sens->{notes} = $t->[0]; }

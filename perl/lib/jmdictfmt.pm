@@ -317,7 +317,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 #-----------------------------------------------------------------------
 
     sub f_lsrc { my ($lsrc) = @_;
-	my (@x, $x, $lang);
+	my (@x, $x, $lang, $txt);
 	$x = "";
 	if ($lsrc->{part} or $lsrc->{wasei}) {
 	    push (@x, "p") if ($lsrc->{part});
@@ -325,7 +325,9 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    $x = "(" . join (",", @x) . ")"; }
 	$lang = $::KW->{LANG}{$lsrc->{lang}}{kw};
 	if ($lang or $x) { $x = "$lang$x:" }
-	return $x . "\"$lsrc->{txt}\""; }
+	$txt = $lsrc->{txt};
+	if ($txt && ($txt =~ m/[^a-zA-Z0-9_-]/)) { $txt = "\"$txt\""; } 
+	return $x . $txt; }
 
 #-----------------------------------------------------------------------
 

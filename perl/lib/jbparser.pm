@@ -1070,14 +1070,14 @@ sub
 sub
 #line 142 "jbparser.yp"
 { dbgprt (1, "GTEXT -> glossset"); 
-				  [["gloss", trim ($_[1])]]; }
+				  [["gloss", gcleanup ($_[1])]]; }
 	],
 	[#Rule 21
 		 'glossset', 3,
 sub
 #line 145 "jbparser.yp"
 { dbgprt (1, "glossset SEMI GTEXT -> glossset");
-				  push (@{$_[1]}, ["gloss", trim ($_[3])]);
+				  push (@{$_[1]}, ["gloss", gcleanup ($_[3])]);
 				  $_[1]; }
 	],
 	[#Rule 22
@@ -1527,12 +1527,14 @@ sub
 	if (!($sens->{$key})) { $sens->{$key} = []; }
 	push (@{$sens->{$key}}, $item); }
 
-    sub trim { my ($txt) = @_;
+    sub gcleanup { my ($txt) = @_;
 
 	# Remove leading and trailing whitespace from string.
+	# Unescape escaped ';'s and '['s.
 
 	$txt =~ s/^[\s\x{3000}]+//;
 	$txt =~ s/[\s\x{3000}]+$//;
+	$txt =~ s/\\([;\[])/$1/g;
 	return $txt; }
 
     sub error { 

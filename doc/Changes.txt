@@ -1,4 +1,21 @@
 
+2007-06-14 18:51	smcgrawx@frxii.com
+
+	* Makefile [1.20]
+	Fix: Update "web" target: need additional files in lib dir for
+	  jbparser to work: jbparser.yp, kwstatic.pm {102}
+
+	* perl/cgi/jbparser.pl [1.2]
+	Fix: Remove Microsoft BOM which Apache web server doesn't like. {100}
+	Fix: Make permissions 755, also for Apache. {101}
+
+	* perl/lib/jbparser.pm [1.2]
+	Rebuild due to change in prerequisite file perl/lib/jbparser.yp {104}
+
+	* perl/lib/jbparser.yp [1.2]
+	Unescape backslashes in gloss text in function gcleanup(), which was
+	  renamed from trim(). {103}
+
 2007-06-14 14:09	smcgrawx@frxii.com
 
 	* Makefile [1.19]
@@ -156,8 +173,8 @@
 	  nwconf.tal. {69}
 
 	* perl/lib/jmdictxml.pm [1.14]
-	Add dialect 'kyu'. {73}
 	Add language ty (Tahitian) {70}
+	Add dialect 'kyu'. {73}
 
 	* perl/lib/kwstatic.pm [1.5]
 	Rebuild due to prerequisite file changes. {74}
@@ -206,10 +223,10 @@
 	  things the old way. {53}
 
 	* README.txt [1.10]
-	Update the documentation for the schema changes related to jmdict dtd
-	  1.06 and gloss tags. {44}
 	Rewrite the install section based on using Makefile (which I have
 	  verified is useable on both Unix and Windows). {49}
+	Update the documentation for the schema changes related to jmdict dtd
+	  1.06 and gloss tags. {44}
 
 	* doc/Makefile [1.1]
 	* doc/README.txt [1.1]

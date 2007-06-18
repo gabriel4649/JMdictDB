@@ -66,12 +66,12 @@ our($KWSRC_examples) = 3;
 our($KWSRC_jmdict) = 1;
 our($KWSRC_jmnedict) = 2;
 our($KWSTAT_A) = 2;
-our($KWSTAT_D) = 5;
+our($KWSTAT_D) = 4;
 our($KWSTAT_M) = 3;
 our($KWSTAT_N) = 1;
 our($KWSTAT_O) = 6;
 our($KWSTAT_R) = 8;
-our($KWSTAT_X) = 4;
+our($KWSTAT_X) = 5;
 our($KWRINF_ateji) = 203;
 our($KWRINF_gikun) = 1;
 our($KWRINF_ik) = 3;
@@ -1121,8 +1121,8 @@ our ($Kwds)   = do {
               1 => { descr => "New, approval pending\n", id => 1, kw => "N" },
               2 => { descr => "Active\n", id => 2, kw => "A" },
               3 => { descr => "Modified, approval pending\n", id => 3, kw => "M" },
-              4 => { descr => "Deleted\n", id => 4, kw => "X" },
-              5 => { descr => "Deleted, approval pending\n", id => 5, kw => "D" },
+              4 => { descr => "Deleted\n", id => 4, kw => "D" },
+              5 => { descr => "Deleted, approval pending\n", id => 5, kw => "X" },
               6 => { descr => "Obsoleted\n", id => 6, kw => "O" },
               8 => { descr => "Rejected\n", id => 8, kw => "R" },
               A => 'fix',
@@ -1475,12 +1475,12 @@ our ($Kwds)   = do {
   $a->{SRC}{jmdict} = $a->{SRC}{1};
   $a->{SRC}{jmnedict} = $a->{SRC}{2};
   $a->{STAT}{A} = $a->{STAT}{2};
-  $a->{STAT}{D} = $a->{STAT}{5};
+  $a->{STAT}{D} = $a->{STAT}{4};
   $a->{STAT}{M} = $a->{STAT}{3};
   $a->{STAT}{N} = $a->{STAT}{1};
   $a->{STAT}{O} = $a->{STAT}{6};
   $a->{STAT}{R} = $a->{STAT}{8};
-  $a->{STAT}{X} = $a->{STAT}{4};
+  $a->{STAT}{X} = $a->{STAT}{5};
   $a->{XREF}{ant} = $a->{XREF}{2};
   $a->{XREF}{cf} = $a->{XREF}{4};
   $a->{XREF}{ex} = $a->{XREF}{5};

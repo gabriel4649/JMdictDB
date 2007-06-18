@@ -1,7 +1,7 @@
 1	N	New, approval pending
 2	A	Active
 3	M	Modified, approval pending
-4	X	Deleted
-5	D	Deleted, approval pending
+4	D	Deleted
+5	X	Deleted, approval pending
 6	O	Obsoleted
 8	R	Rejected

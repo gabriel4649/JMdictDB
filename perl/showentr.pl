@@ -40,7 +40,7 @@ use jmdict;  use jmdictfmt;
 	    $dbname, $user, $pw);
 
 	  # Read and parse command line options.
-	if (!getopts ("hvd:u:p:r:e:", \%::Opts) or $::Opts{h}) { usage (0); }
+	if (!getopts ("hvd:u:p:r:e:j", \%::Opts) or $::Opts{h}) { usage (0); }
 
 	  # Set some local variables based on the command line 
 	  # options given or defaults where options not given.
@@ -107,7 +107,9 @@ use jmdict;  use jmdictfmt;
 	$entries = get_entries ($dbh, \@elist, \@qlist);
 
 	  # Go through the list of entries and print each.
-	foreach $e (@$entries) { print fmt_entr ($e); }
+	foreach $e (@$entries) { 
+	    if ($::Opts{j}) { print jel_entr ($e); }
+	    else { print fmt_entr ($e); } }
 
 	  # Cleanly disconnect from the database (and thus avoid
 	  # a warning message.)
@@ -193,6 +195,7 @@ Options:
 	-e encoding -- Encoding to use for stdout and stderr.
 	 	Default is "utf-8".  Windows users running with 
 		a Japanese locale may wish to use "cp932".
+	-j -- Generate output in "JEL" format.  
 	-v -- (Verbose) print debugging info.
 	-h -- (help) print this text and exit.
 

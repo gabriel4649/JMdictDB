@@ -36,7 +36,7 @@ use jmdict; use jbparser; use jmdictfmt;
 	$enc = "sjis";
 	#binmode(STDOUT, ":encoding($enc)");
 	#binmode(STDERR, ":encoding($enc)");
-	{no warnings qw(uninitialized); eval { binmode($DB::OUT, ":encoding($enc)"); }; };
+	{no warnings eval { binmode($DB::OUT, ":encoding($enc)"); }; };
 
 	$::Debug = {};
 	$cgi = new CGI;

@@ -43,20 +43,52 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	# from one of our pages and should be ok.  If someone synthesizes 
 	# bad url parameters, we feel no obligation to give them nice errors
 	# messages.  Any serious or security problems will be caught be the 
-	# database's integrity checking.
+	# database's integrity checking.  What we do preserve here (because
+	# database cannot check this) is the integrity of the history
+	# records -- the history records transferred to the new entry *must*
+	# come from the old entr (as identified by id received by url) with
+	# only one new one (from the submitter) added.  The sequence number
+	# and source id must also match the original entry.  New new entries
+	# must have only the history record provided by the submitter (not
+	# a bunch of fake ones.)  
 
 	$x = $cgi->param ("entr");
 	$entrs = unserialize ( $x );
 	foreach $entr ($entrs) {
-	    $entr->{stat} = 1; # Force entr.stat=New.
-	    $entr->{src}  = 1; # Force entr.src=jmdict.
-	    if (1 != scalar(@{$entr->{_hist}})) { die ("Expected exactly 1 hist record"); }
-	    $entr->{_hist}[0]{dt} = strftime ("%Y-%m-%d %H:%M:00-00", gmtime());  
+	    if (!$entr->{id}) {	# This is new entry. 
+		$entr->{stat} = $::KW->{STAT}{N}{id}; # Force entr.stat=New.
+		$entr->{seq} = 0;  # Force addentr() to assign seq number.
+		  # Prevent client from inserting extra bogus history.
+	        if (1 != scalar(@{$entr->{_hist}})) { die "Expected exactly 1 hist record"; } 
+	        $entr->{_hist}[0]{dt} = strftime ("%Y-%m-%d %H:%M:00-00", gmtime()); }
+	    else {
+		  # Reset seq, src, and history from original entr.
+		resethist ($dbh, $entr); }
+	        
 	    ($eid,$seq) = addentr ($dbh, $entr); 
 	    $dbh->commit ();
 	    push (@added, [$eid,$seq]); }
 	results_page (\@added);
 	$dbh->disconnect; }
+
+    sub resethist { my ($dbh, $entr) = @_;
+	my ($submitter_hist, $sql, $recs);
+	if (1 > scalar(@{$entr->{_hist}})) { die ("No hist records"); } 
+	$submitter_hist = $entr->{_hist}[0];
+	$submitter_hist->{dt} = strftime ("%Y-%m-%d %H:%M:00-00", gmtime());  
+	$entr->{stat} = $::KW->{STAT}{M}{id}; # Force entr.stat=New.
+	$sql = "SELECT e.seq,e.src FROM entr e WHERE e.id=?";
+	$recs = dbread ($dbh, $sql, [$entr->{id}]);
+	if ((scalar(@$recs)) != 1) { die "Entry id $entr->{id} not found, unable to update\n"; }
+
+	if ($entr->{seq} != $recs->[0]{seq}) { 
+	    die "Submitted seq number $entr->{seq} does not match original seq number $recs->[0]{seq}\n" }
+	if ($entr->{src} != $recs->[0]{src}) { 
+	    die "Submitted src id $entr->{src} does not match original src id $recs->[0]{src}\n" }
+	
+	$sql = "SELECT h.* FROM hist h WHERE entr=? ORDER BY h.dt DESC";
+	$recs = dbread ($dbh, $sql, [$entr->{id}]);
+	unshift (@$recs, $submitter_hist); }
 
     sub results_page { my ($added) = @_;
 	my @m = map ("\n      <a href=\"entr.pl?q=$_->[1]\">$_->[1]</a>", @$added);

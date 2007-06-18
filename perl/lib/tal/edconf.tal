@@ -7,7 +7,13 @@
   <title>JMdict</title>
 </head>
 <body>
-  <h1>Confirm New Entry</h1>
+  <h1>Confirm Submission</h1>
+    Please check the entry below carefully.  It it is what you wish 
+    to submit, click the submit button.  Otherwise, use your brower's
+    <b>Back</b> button to return to the Edit page and make corrections.
+    If you have having a problem entering the information you want,
+    please send email to 
+    <a href="mailto:jmdicthelp@somewhere.org">jmdicthelp@somewhere.org</a>
   <span tal:repeat="e entries">
     <div class="entry">
       <span class="warnings" tal:if="true:chklist">
@@ -29,14 +35,15 @@
 	<hr/>
 	Your entry:<br/>
 	</span>
-      <span class="dial" tal:condition="e/_dial">, 
-        Dialect: <span tal:replace="kwabbrs: 'DIAL' ',' e/_dial">dial</span>
-	</span>
-      <span class="lang" tal:if="e/_lang">, 
-	Original lang: <span tal:replace="kwabbrs: 'LANG' ',' e/_lang">lang</span>
-	</span>
 
-      <br/> 
+      <span tal:if="not:true:e/id" tal:omit-tag="">New Entry</span>
+      <span tal:if="true:e/id" tal:omit-tag="">
+	<span tal:replace="e/seq" tal:omit-tag="">seq</span>
+	(<span tal:replace="kwabbr: 'SRC' e/src" tal:omit-tag="">src</span>)
+	[<span tal:replace="kwabbr: 'STAT' e/stat" tal:omit-tag="">stat</span>]
+	{<span tal:replace="e/id" tal:omit-tag="">id</span>}
+	</span>
+      <br/>
       <span tal:if="e/_kanj" tal:repeat="k e/_kanj" tal:omit-tag="">
 	<span tal:condition="not:repeat/start" tal:omit-tag="">； </span>
 	<span class="kanj" tal:content="k/txt">kanji text</span>
@@ -168,9 +175,9 @@
 	  </ol>
 	</span>
 
-      <form action="nwsub.pl" method="get">
+      <form action="edsubmit.pl" method="get">
 	<input type="hidden" name="entr" value="${serialized}"/>
-	<input type="Submit" value="Submit this entry as a new word"/>
+	<input type="Submit" value="Submit"/>
 	</form>
 
       </div>

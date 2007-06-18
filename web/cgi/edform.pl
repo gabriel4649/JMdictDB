@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #######################################################################
 #   This file is part of JMdictDB. 
-#   Copyright (c) 2007 Stuart McGraw 
+#   Copyright (c) 2006,2007 Stuart McGraw 
 # 
 #   JMdictDB is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published 
@@ -26,23 +26,77 @@ use Cwd; use CGI; use Encode; use utf8; use DBI;
 use Petal; use Petal::Utils; 
 
 BEGIN {push (@INC, "../lib");}
-use jmdict; use jmdicttal;
+use jmdict; use jmdicttal; use jmdictfmt;
 
 $|=1;
 binmode (STDOUT, ":utf8");
+*ee = \&encode_entities;
 
     main: {
-	my ($dbh, $cgi, $tmptbl, $tmpl, @pos, @misc);
+	my ($dbh, $cgi, $tmpl, $tmptbl, @qlist, @elist, @errs, $sql, 
+	    @whr, $entries, $entr, $ktxt, $rtxt, $stxt);
 	binmode (STDOUT, ":encoding(utf-8)");
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
-	$dbh = dbopen ();  $::KW = Kwds ($dbh);
 
-	@pos = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'POS'));
-	@misc = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'MISC'));
+	@qlist = $cgi->param ('q'); validateq (\@qlist, \@errs);
+	@elist = $cgi->param ('e'); validaten (\@elist, \@errs);
+	if (@errs) { errors_page (\@errs);  exit; } 
 
-	$tmpl = new Petal (file=>'../lib/tal/nwform.tal', 
+	if (@qlist) { push (@whr, "e.seq IN (" . join(",",map('?',(@qlist))) . ")"); }
+	if (@elist) { push (@whr, "e.id  IN (" . join(",",map('?',(@elist))) . ")"); }
+	if (@whr) {
+	    $dbh = dbopen ();  $::KW = Kwds ($dbh);
+	    $sql = "SELECT e.id FROM entr e WHERE " . join (" OR ", @whr);
+	    $tmptbl = Find ($dbh, $sql, [@qlist, @elist]);
+	    $entries = EntrList ($dbh, $tmptbl);
+	    xrefdetails ($dbh, $tmptbl, $entries);
+	    $entr = $entries->[0];
+	    $ktxt = jel_kanjs ($entr->{_kanj});
+	    $rtxt = jel_rdngs ($entr->{_rdng}, $entr->{_kanj});
+	    $stxt = jel_senss ($entr->{_sens}, $entr->{_kanj}, $entr->{_rdng});
+	    $dbh->disconnect; }
+	else {
+	    $ktxt = $rtxt = "";
+	    $stxt = "[1][n]"; }
+
+	$tmpl = new Petal (file=>'../lib/tal/edform.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
-	print $tmpl->process ({pos=>\@pos, misc=>\@misc});
-	$dbh->disconnect; }
+	print $tmpl->process ({e=>$entr, ktxt=>$ktxt, rtxt=>$rtxt, stxt=>$stxt}); }
 
+    sub validaten { my ($list, $errs) = @_;
+	foreach my $p (@$list) {
+	    if (!($p =~ m/^\s*\d+\s*$/)) {
+		push (@$errs, "<br>Bad url parameter received: ".ee($p)); } } }
+
+    sub validateq { my ($list, $errs) = @_;
+	foreach my $p (@$list) {
+	    if (!($p =~ m/^\s*\d{7}\s*$/)) {
+		push (@$errs, "<br>Bad url parameter received: ".ee($p)); } } }
+
+    sub errors_page { my ($errs) = @_;
+	my $err_details = join ("\n    ", @$errs);
+	print <<EOT;
+<html>
+<head>
+  <title>Invalid parameters</title>
+  </head>
+<body>
+  <h2>URL Parameter errors</h2>
+  $err_details
+  <hr>
+  Parameter format:<br/>
+  <table border="0">
+    <tr><td>q=dddddd</td> 
+      <td>Display the entry having JMdict sequence number &lt;ddddddd&gt; (a 7-digit number).</td></tr>
+    <tr><td>e=n</td> 
+      <td>Display the entry having database id number &lt;n&gt;.</td></tr>
+    <tr><td>s=n</td> 
+      <td>Display the entry that contains the sense having database id number &lt;n&gt;.</td></tr>
+    </table>
+  Parameter types may be freely intermixed and any number of parameters 
+  may be given in a single url.
+  </body>
+</html>
+EOT
+	}

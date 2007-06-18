@@ -1,210 +1,104 @@
-﻿<html xmlns:tal="http://purl.org/petal/1.0/">
+<html xmlns:tal="http://purl.org/petal/1.0/">
 <!--? Copyright (c) 2007 Stuart McGraw -->
 <!--? $Revision$ $Date$ -->
 <head>
-  <META http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>WWWJDIC - New Entry Submission</title></head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link rel="stylesheet" type="text/css" href="entr.css"/>
+  <title>JMdict Entry Edit Form</title>
 </head>
-<body BGCOLOR="ivory" TEXT="black">
-  <b><span style="font-size: 16pt; font-family: Helvetica; color:  #00008B">Jim Breen's </span></b>
-  <b><span style="font-size: 24pt; font-family: Helvetica; color: #00008B">JMDICT Database Server</span></b>
-  <p/>
-  <span style="font-size: 12pt; font-family: Helvetica">
-    <font size="-1">
-      <b>Edit entry screen </b> 
-      [<a href="http://etext.virginia.edu/wwwjdic/wwwjdic.html">Home</a>]
-      [<a href="http://etext.lib.virginia.edu/cgi-local/breen/wwwjdic?9T">Translate&nbsp;Words</a>]
-      [<a href="http://etext.lib.virginia.edu/cgi-local/breen/wwwjdic?1C">Word&nbsp;Search</a>]
-      [<a href="http://etext.lib.virginia.edu/cgi-local/breen/wwwjdic?1B">Kanji&nbsp;Lookup</a>]
-      [<a href="http://etext.lib.virginia.edu/cgi-local/breen/wwwjdic?1R">Multiradical&nbsp;Kanji</a>]
-      [<a href="http://etext.lib.virginia.edu/cgi-local/breen/wwwjdic?10">Example&nbsp;Search</a>]
-      [<a href="http://etext.virginia.edu/wwwjdic/wwwjdicinf.html">Documentation</a>]
-      [<a href="http://etext.virginia.edu/wwwjdic/wwwjdicinf.html#code_tag">Dictionary-Codes</a>]
-      [<a href="http://etext.virginia.edu/wwwjdic/wwwjdicinf.html#copyr_tag">&#169;Copyright</a>]
-      [<a href="http://etext.virginia.edu/wwwjdic/wwwjdicinf.html#don_tag">Donations</a>]
-      [<a href="http://etext.lib.virginia.edu/cgi-local/breen/wwwnewword">New&nbsp;Entry/Amendment</a>]
-      </font>
-    </span>
-  <h3>New Entry or Amendment Submission Form</h3>
-  <FORM ACTION="nwconf.pl" METHOD="GET">
-    Use this form to submit a possible new entry or amendment to the JMDict/EDICT
-    electronic Japanese/English dictionary file. To suggest an amendment to an
-    existing entry, paste in the headword and reading and put the amendment details
-    into the English and/or Comment fields. 
-    <a href="http://www.csse.monash.edu.au/~jwb/wwwnewwordexpl.html" target="_BLANK" onclick="window.open(this.href,'newwin'); return false;">
-      (Important advice for people using this form for the first time)</a>.
-    <b>Note:</b> 
-    <ol type="a">
-      <li>new entry submissions will be automatically added to the WWWJDIC 
-        server, so take extra care. Amendments may take a while as they have to
-        be edited by hand.</li>
-      <li> all proposed new entries and amendments are viewable on the
-        <a href="http://www.csse.monash.edu.au/~jwb/dicsubs/"> submissions</a>
-        WWW site. Email addresses will not be included.</li>
-      </ol>
-    <table border="1" cellspacing="4">
+<body class="edform">
+<h1>JMdict Entry Edit Form</h1>
+<form method="get" action="edconf.pl" name="edconf">
+  <table class="form">
+    <tbody>
       <tr>
-	<td><input type="text" NAME="headw" size="60" VALUE=""/></td>
-	<td><b>Headword</b>. 
-	<font size="-2">In this
-	  field enter the main Japanese word of the proposed entry. This will usually 
-	  have one or more kanji. Use this field if the word is written only in
-	  hiragana and/or katakana.</font>
-	  </td>
-	</tr>
-      <tr>
-	<td>
-	  <input type="text"  NAME="headw" size="60" VALUE=""/><br/>
-	  <input type="text"  NAME="headw" size="60" VALUE=""/><br/>
-	  <input type="text"  NAME="headw" size="60" VALUE=""/>
-	  </td>
-	<td><b>Alternative headwords</b>. 
-	  <font size="-2">In these fields enter any alternative ways of writing the
-	    Japanese word, e.g. 合氣道 as an alternative to 合気道.</font>
-	  </td>
-	</tr>
-      <tr>
-	<td>
-	  <input type="text"  NAME="kana" size="60" VALUE=""/>
-	  </td>
-	<td><b>Reading  of the headword in kana</b>.
-	  <font size="-2">In this
-	    field enter the reading of the word in kana. Use hiragana, except where the 
-	    headword contains katakana, in which case use katakana here too. If the headword
-	    is only in kana, <b>do not</b> repeat it here.</font>
-	  </td>
-	</tr>
-      <tr>
-	<td>
-	  <input type="text"  NAME="kana" size="60" VALUE=""/><br/>
-	  <input type="text"  NAME="kana" size="60" VALUE=""/><br/>
-	  <input type="text"  NAME="kana" size="60" VALUE=""/>
-	  </td>
-	<td>
-	  <b>Alternative readings</b>.
-	  <font size="-2">In these fields enter any alternative readings of the word,
-	  e.g. 草原 has readings くさはら and そうげん</font>
-	  </td>
-	</tr>
-      <tr>
-	<td>
-	  <!-- <input type="text"  NAME="pos" size="60" VALUE=""/> -->
-	  <select NAME="pos">
-	    <option
-		tal:repeat="p pos"
-		tal:attributes="selected decode:$p/id '17' '1' nothing"
-		value="$p/id"
-		tal:content="string: ${p/kw} -- ${p/descr}">pos option</option>
-	    </select><br/>
-	  <select NAME="pos">
-	    <option SELECTED="1" VALUE=" " > (none)</option>
-	    <option tal:repeat="p pos" value="${p/id}" tal:content="string: ${p/kw} -- ${p/descr}">pos option</option>
-	    </select><br/>
-	  <select NAME="pos">
-	    <option SELECTED="1" VALUE=" " > (none)</option>
-	    <option tal:repeat="p pos" value="${p/id}" tal:content="string: ${p/kw} -- ${p/descr}">pos option</option>
-	    </select><br/>
-	  <select NAME="pos">
-	    <option SELECTED="1" VALUE=" " > (none)</option>
-	    <option tal:repeat="p pos" value="${p/id}" tal:content="string: ${p/kw} -- ${p/descr}">pos option</option>
-	    </select>
-	  </td>
-	<td>
-	  <b>Part of speech</b>. 
-	  <font size="-2">Select the "part of speech" of the word: noun, adjective, etc.
-	    There must be at least one, and you can have up to four.
-	    </font>
-	  </td>
-	</tr>
-      <tr>
-	<td>
-	  <!-- <input type="text"  NAME="misc" size="60" VALUE=""/> -->
-	  <select NAME="misc">
-	    <option SELECTED="1" VALUE=" " > (none)</option>
-	    <option tal:repeat="m misc" value="${m/id}" tal:content="string: ${m/kw} -- ${m/descr}">misc option</option>
-	    </select><br/>
-	  <select NAME="misc">
-	    <option SELECTED="1" VALUE=" " > (none)</option>
-	    <option tal:repeat="m misc" value="${m/id}" tal:content="string: ${m/kw} -- ${m/descr}">misc option</option>
-	    </select><br/>
-	  <select NAME="misc">
-	    <option SELECTED="1" VALUE=" " > (none)</option>
-	    <option tal:repeat="m misc" value="${m/id}" tal:content="string: ${m/kw} -- ${m/descr}">misc option</option>
-	    </select>
-	  </td>
-	<td>
-	  <b>Miscellaneous</b>. 
-	  <font size="-2">Select other codes relating to the word: uk, abbr, etc.
-	    You may have up to three such codes.
-	    </font>
-	  </td>
-	</tr>
-      <tr>
-	<td>
-	  <input type="text"  NAME="english" size="60" VALUE=""/><br/>
-	  <input type="text"  NAME="english" size="60" VALUE=""/><br/>
-	  <input type="text"  NAME="english" size="60" VALUE=""/><br/>
-	  <input type="text"  NAME="english" size="60" VALUE=""/><br/>
-	  <input type="text"  NAME="english" size="60" VALUE=""/><br/>
-	  <input type="text"  NAME="english" size="60" VALUE=""/>
-	  </td>
-	<td>
-	  <b>English meaning(s)</b>. 
-	  <font size="-2">Enter the meaning(s) of the word in English. One meaning
-	    per line, please. Where the
-	    word has several distinct senses, please keep them grouped, and put (1), (2), 
-	    etc. in front of the first translation in each sense. <b>Take care</b>
-	    that it is regular text; <b>not</b> Japanese double-width text.
-	    </font>
-	  </td>
-	</tr>
-      <tr>
-	<td>
-	  <input type="text"  NAME="crossref" size="60" VALUE=""/>
-	  </td>
-	<td>
-	  <b>Cross-Reference</B>
-	  <font size="-2">The headword of another entry to which this should be 
-	    cross-referenced.</font>
-	  </td>
-	</tr>
-      <tr>
-	<td>
-	  <textarea NAME="reference" WRAP="physical" COLS="60" ROWS="5" VALUE=""></textarea>
-	  </td>
-	<td>
-	  <b>References</b>. 
-	  <font size="-2">Indicate a verifiable source for the word. You may paste
-	    in an example of its use.</font>
-	  </td>
-	</tr>
-      <tr>
-	<td>
-	  <textarea NAME="comment" WRAP="physical" COLS="60" ROWS="5" VALUE=""></textarea>
-	  </td>
-	<td>
-	  <b>Comments</b>. 
-	  <font size="-2">Any comments you wish to make about the submission.</font>
-	  </td>
-	</tr>
-      <tr>
-	<td>
-	  <input type="text"  NAME="name" size="30" VALUE=""/><br/>
-	  <input type="text"  NAME="email" size="60" VALUE=""/>
-	  </td>
-	<td>
-	  <b>Your name and email address</b>. 
-	  <font size="-2">Include these if you wish an 
-	    acknowledgement and/or feedback on your submission.
-	    You can preset these values using the 
-	    <A HREF="http://etext.virginia.edu/wwwjdic/wwwcustom.html">customize</a>
-	    form.
-	    </font>
-	  </td>
-	</tr>
-      </table>
-    <input type="submit" value="Continue"/>
-    <input TYPE="reset" VALUE="Reset"/>
-    </form>
-  </body>
+        <td>
+        <table class="top">
+          <tbody>
+
+	    <tr>
+	      <td>Entry:</td>
+	      <td colspan="2">
+		<span tal:if="not:true:e" tal:omit-tag="">New Entry</span>
+		<span tal:if="true:e" tal:omit-tag="">
+		  <span tal:replace="e/seq" tal:omit-tag="">seq</span>
+		  (<span tal:replace="kwabbr: 'SRC' e/src" tal:omit-tag="">src</span>)
+		  [<span tal:replace="kwabbr: 'STAT' e/stat" tal:omit-tag="">stat</span>]
+		  {<span tal:replace="e/id" tal:omit-tag="">id</span>}
+		  </span>
+		</td>
+	      </tr>
+	    <tr>
+	      <td>Kanji:</td>
+	      <td><textarea tal:content="ktxt" name="kanj" wrap="physical" cols="60" rows="3"></textarea></td>
+	      <td>
+		<a href="kwhelp?tag=kinf">kinf</a> Kanji info<br/>
+		<a href="kwhelp?tag=freq">freq</a> Freq-of-use 
+		</td></tr>
+	    <tr>
+	      <td>Readings:</td>
+	      <td><textarea tal:content="rtxt" name="rdng" wrap="physical" cols="60" rows="3"></textarea></td>
+	      <td>
+		<a href="kwhelp?tag=rinf">rinf</a> Reading info<br/>
+		<a href="kwhelp?tag=freq">freq</a> Freq-of-use<br/>
+		<a href="kwhelp?tag=restr">restr</a> Restrictions
+		</td></tr>
+	    <tr>
+	      <td>Senses:</td>
+	      <td><textarea tal:content="stxt" name="sens" wrap="physical" cols="60" rows="8"></textarea></td>
+	      <td>
+		<a href="kwhelp?tag=ginf">ginf</a> Translation types<br/>
+		<a href="kwhelp?tag=pos">pos</a> Part-of-speech tags<br/>
+		<a href="kwhelp?tag=misc">misc</a> Usage tags<br/>
+		<a href="kwhelp?tag=fld">fld</a> Application domain<br/>
+		<a href="kwhelp?tag=dial">dial</a> Dialect<br/>
+		<a href="kwhelp?tag=freq">lsrc</a> Source language/word<br/>
+		<a href="kwhelp?tag=restr">restr</a> Restrictions<br/>
+		<a href="kwhelp?tag=xref">xref</a> Cross references<br/>
+		</td></tr>
+	    <tr>
+	      <td>References:</td>
+	      <td><textarea name="reference" wrap="physical" cols="60" rows="3"></textarea></td>
+	      <td>
+		</td></tr>
+	    <tr>
+	      <td>Comments:</td>
+	      <td><textarea name="comment" wrap="physical" cols="60" rows="3"></textarea></td>
+	      <td>
+		</td></tr>
+	    <tr>
+	      <td>Name:</td>
+	      <td><input type="text" name="name" size="30"/></td>
+	      <td>
+		</td></tr>
+	    <tr>
+	      <td>Email:</td>
+	      <td><input type="text" name="email" size="30"/></td>
+	      <td>
+		</td></tr>
+	    <tr>
+	      <td></td>
+	      <td colspan="2">
+		<input type="submit" value="Submit"/>
+		<input type="hidden" name="id"  tal:if="e" tal:attributes="value e/id"/>
+		<input type="hidden" name="seq" tal:if="e" tal:attributes="value e/seq"/>
+		<input type="hidden" name="src" tal:if="e" tal:attributes="value e/src"/>
+		<input type="hidden" name="stat" tal:if="e" tal:attributes="value e/stat"/>
+		<input type="hidden" name="notes" tal:if="e" tal:attributes="value e/notes"/>
+		<input type="hidden" name="srcnote" tal:if="e" tal:attributes="value e/srcnote"/>
+		<input type="hidden" name="etxt" tal:attributes="value etxt"/>
+		</td>
+	      </tr>
+
+            </tbody>
+          </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </form>
+<span class="notes">
+
+  </span>
+</body>
 </html>

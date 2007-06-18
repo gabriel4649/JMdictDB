@@ -296,7 +296,7 @@ sub do_gloss { my ($s, $gloss) = @_;
 	    if (!$lang && $lng) { print $::Flog "Seq $::Seq: invalid lang attribute '$lng'\n"; }
 	    ($txt = $g->text) =~ s/\\/\\\\/go;
 	    $lit = $trans = "";
-	    if ($::Opts{y} and $txt =~ m/\(((lit:)|(trans:))/) { 
+	    if ($::Opts{y} and $txt =~ m/(lit:)|(trans:)/) { 
 		($txt,$lit,$trans) = extract_lit ($txt); }
 	    # (entr,sens,gloss,lang,txt)
 	    if ((!$::Opts{g} or $::Opts{g}=$lang) and $txt) {
@@ -515,7 +515,9 @@ sub mkrestr { my ($a, $bmap, $attrname, $pos) = @_;
 sub extract_lit { my ($txt) = @_;
 	my ($lit, $trans) = ("", "");
 	if ($txt =~ s/\s*\(lit:\s*([^)]*)\)\s*/ /) { $lit = $1; }
-	if ($txt =~ s/\s*\(trans:\s*([^)]*)\)\s*/ /) { $trans = $1; }
+	elsif ($txt =~ s/\s*\(trans:\s*([^)]*)\)\s*/ /) { $trans = $1; }
+	elsif ($txt =~ s/^lit:\s*(.*)//) { $lit = $1; }
+	elsif ($txt =~ s/^trans:\s*(.*)//) { $trans = $1; }
 	$txt =~ s/^\s+//; $txt =~ s/\s+$//;
 	return ($txt, $lit, $trans); }
 

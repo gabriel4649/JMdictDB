@@ -267,8 +267,8 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 		push (@{$p->{$listattr}}, $c); } } }
 
     sub filt { my ($parents, $pks, $children, $fks) = @_;
-	# Return a list of all parents (each a hash) in @$parents that
-	# are not matched (in the $pks/$fks sense of lookup()) in
+	# Return a ref to a list of all parents (each a hash) in @$parents 
+	# that are not matched (in the $pks/$fks sense of lookup()) in
 	# @$children.
 	# One use of filt() is to invert the restr, stagr, stagk, etc,
 	# lists in order to convert them from the "invalid pair" form
@@ -278,7 +278,8 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	# reading, and $kanj is the list of kanji from the same entry,
 	# then 
 	#        filt ($kanj, ["kanj"], $restr, ["kanj"]);
-	# will return a list of kanj hashes that do not occur in @$restr.
+	# will return a reference to a list of kanj hashes that do not
+	# occur in @$restr.
 	
 	my ($p, $c, @list);
 	foreach $p (@$parents) {
@@ -511,10 +512,9 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	# fields renumbered from 1 regardless of the values initially
 	# in them.  
 
-	my ($eid, $seq, $nrdng, $nkanj, $nsens, $ngloss, $nhist, $naudio, 
+	my ($eid, $nrdng, $nkanj, $nsens, $ngloss, $nhist, $naudio, 
 	    $cntr2, $r, $k, $s, $g, $x, $h);
-	if ($entr->{seq} == 0 and $entr->{src} == 1) {	# 1:kw:jmdict
-	    $entr->{seq} = $seq = get_seq ($dbh); }
+	if (!$entr->{seq}) { $entr->{seq} = get_seq ($dbh, 'seq'); }
 	$entr->{id} = $eid = dbinsert ($dbh, "entr", ['src','seq','stat','srcnote','notes'], $entr);
 	foreach $h (@{$entr->{_hist}}) {
 	    $h->{entr} = $eid;  $h->{hist} = ++$nhist;
@@ -574,7 +574,7 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 		$x->{entr} = $eid; $x->{sens} = $nsens; 
 		$x->{xref} = $x->{xref}{id};
 		dbinsert ($dbh, "xref", ['entr','sens','xentr','xsens','typ','notes'], $x); } }
-	return ($eid, $seq); }
+	return ($eid, $entr->{seq}); }
 
     sub resolv_xref { my ($dbh, $kanj, $rdng, $slist, $typ,
 			   $one_entr_only, $one_sens_only) = @_;
@@ -688,10 +688,11 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	        $r->{sens} = [map ($_->{sens}, grep ($_->{entr}==$eid, @$srecs))]; } }
 	return \@erefs; } 
 
-    sub get_seq { my ($dbh) = @_;
+    sub get_seq { my ($dbh, $seqname) = @_;
 	# Get and return a new entry sequence number.
-
-	my $sql = "SELECT NEXTVAL('seq')";
+	if ($seqname ne "seq") { 
+ 	    die "Get_seq() doesn't support sequence '$seqname' yet\n"; }
+	my $sql = "SELECT NEXTVAL('$seqname')";
 	my $a = $dbh->selectrow_arrayref($sql);
 	return $a->[0]; }
 

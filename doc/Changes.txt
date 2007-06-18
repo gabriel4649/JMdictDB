@@ -1,9 +1,70 @@
 
+2007-06-17 21:44	smcgrawx@frxii.com
+
+	* Makefile [1.21]
+	Remove the subdirs dependencies added in previous revision -- they
+	  unconditionally cause the target to be out-of-date and remade.
+	  {116}
+	Renamed the nw*.* cgi and tal files to ed*.* {117}
+
+	* doc/schema.odt [1.6]
+	Add footnote to description of table "gloss" pointing out that gloss
+	  is a misnomer and the table holds several types of translational
+	  enties. {111}
+
+	* perl/cgi/edconf.pl [1.8]
+	* perl/cgi/edform.pl [1.4]
+	* perl/cgi/edsubmit.pl [1.8]
+	* perl/lib/tal/edconf.tal [1.7]
+	* perl/lib/tal/edform.tal [1.3]
+	Rewritten to support both new entries and edit of existing entries.
+	  {118}
+	Renamed the nw*.* cgi and tal files to ed*.* {117}
+
+	* perl/cgi/jbparser.pl [1.3]
+	* perl/lib/jbparser.pm [1.4]
+	Fix: Get rid of "DB::OUT" used only once" warning message that
+	  appears when running on *nix machines but nor MS Windows. {107}
+
+	* perl/jmparse.pl [1.30]
+	Function extract_lit() was missing literals matching "^lit:" (and
+	  similar for trans). {115}
+
+	* perl/lib/jbparser.yp [1.4]
+	Add new function qcleanup() like gcleanup but for quoted strings.
+	  {114}
+	In function gcleanup() reduce multiple WS characters to a single one.
+	  {113}
+	When creating lsrc and gloss records, make sure all fields are
+	  created even if they have default values (e.g. lang and ginf in
+	  gloss, and lang, part, and wasei in lsrc.) {112}
+
+	* perl/lib/jmdict.pm [1.26]
+	Minor clarification to comments in filt(). {110}
+
+	* perl/lib/jmdictfmt.pm [1.3]
+	Add jel_* functions for formattng entries in JEL (JMdict Edit
+	  Language). {109}
+
+	* perl/lib/kwstatic.pm [1.8]
+	* pg/data/kwstat.csv [1.2]
+	Swap kw values 'D' and 'X'.  X is now 5-"Deleted pending approval",
+	  and D is now 4-"Deleted".  jmparse.pl creates deleted entries with
+	  "stat" value of "D"  which was 5.  But they should be created as 4
+	  "Deleted".  Rather that change jmparse.pl, changed kwstat.csv.
+	  {108}
+
+	* perl/lib/tal/entr.tal [1.11]
+	Add "edit" button. {119}
+
+	* perl/showentr.pl [1.18]
+	Add -j option to format output in jel (jmdict edit language). {120}
+
 2007-06-14 21:15	smcgrawx@frxii.com
 
+	* perl/lib/jbparser.pm [1.3]
 	* perl/lib/jbparser.yp [1.3]
-	* perl/lib/jmdictcgi.pm [1.3]
-	Fix: Was not correctly parsing tags that included a laguage. {106}
+	Fix: Was not correctly parsing tags that included a language. {106}
 
 	* perl/lib/jmdictfmt.pm [1.2]
 	In function f_lsrc(), supress quotes arount the text string if empty
@@ -119,8 +180,8 @@
 	* pg/mkviews.sql [1.18]
 	Adjust code for schema change to table lsrc made in chgid-77. {79}
 
+	* perl/lib/tal/edconf.tal [1.6]
 	* perl/lib/tal/entr.tal [1.10]
-	* perl/lib/tal/nwconf.tal [1.6]
 	Put gloss tags after sense number, rather that in front of. {85}
 	Rearrange lsourcew display and include the "waasei" and "part"
 	  attributes as a letter in parens after the language code. {86}
@@ -161,7 +222,7 @@
 	  directories were out-of-date and it was not included in the T016
 	  snapshot {67}
 
-	* perl/cgi/nwconf.pl [1.7]
+	* perl/cgi/edconf.pl [1.7]
 	Move subs cgientr() and resolv_xrefs() from perl/cgi/nwconf.pl to
 	  perl/lib/jmdictcgi.pm {68}
 
@@ -268,8 +329,8 @@
 
 	* perl/lib/jmdict.pm [1.22]
 	* perl/lib/jmdictpgi.pm [1.3]
+	* perl/lib/tal/edconf.tal [1.4]
 	* perl/lib/tal/entr.tal [1.8]
-	* perl/lib/tal/nwconf.tal [1.4]
 	Update for the JMdict dtd changes to <lang>, <dial>. {40}
 	Added gloss tag support. {43}
 

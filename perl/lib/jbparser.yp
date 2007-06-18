@@ -18,8 +18,23 @@
 #   51 Franklin Street, Fifth Floor, Boston, MA  02110#1301, USA
 #######################################################################
 
-#ed::@VERSION = (substr('$Revision$',11,-2), \
+#@VERSION = (substr('$Revision$',11,-2), \
 #	    substr('$Date$',7,-11));
+
+# To-do:
+#   lsrc syntax needed for wasei, part flags.
+#   Need to be able to specify language of a plain gloss.
+#   Need to be able to specify an xref by seq number.
+#     (but what about multiple src's, or same seq with
+#     different stat's?  Could we use id number?)
+#   semicolon (we use as item separator in kanji and
+#     reading sections) is used in kanj text in 4 example 
+#     sentences.
+#   use of WS to sepatate kanji and reading sections
+#     is a problem because space occurs in example
+#     sentences' kanji (although most occurances seem
+#     to be clearly erroneous, or occur after a sentence
+#     terminator (periiod, question mark, etc).  
 
 use strict; #use warnings; 
 BEGIN {push (@INC, "../perl/lib");}
@@ -366,10 +381,11 @@ snums
 			$errs++; }
 		    if ($jitem->[0]) { append ($sens, "_STAGK", $jitem->[0]); }
 		    if ($jitem->[1]) { append ($sens, "_STAGR", $jitem->[1]); } } }
-	    elsif ($typ eq "lsrc")  { append ($sens, "_lsrc",  {txt=>$t->[0], lang=>($t->[1] || 1)}); }
-	    elsif ($typ eq "gloss") { append ($sens, "_gloss", {txt=>$t->[0]}); }
+	    elsif ($typ eq "lsrc")  { append ($sens, "_lsrc",  {txt=>$t->[0], lang=>($t->[1] || 1), part=>0, wasei=>0}); }
+	    elsif ($typ eq "gloss") { append ($sens, "_gloss", {txt=>$t->[0], lang=>1, ginf=>1}); }
 	    elsif ($typ eq "lit")   { append ($sens, "_gloss", {txt=>$t->[0], lang=>($t->[1] || 1), ginf=>$KWGINF_lit}); }
 	    elsif ($typ eq "expl")  { append ($sens, "_gloss", {txt=>$t->[0], lang=>($t->[1] || 1), ginf=>$KWGINF_expl}); }
+	    elsif ($typ eq "id")    { append ($sens, "_gloss", {txt=>$t->[0], lang=>($t->[1] || 1), ginf=>$KWGINF_id}); }
 	    elsif ($typ eq "note")  { 
 		if ($sens->{notes}) { error ("Only one sense note allowed"); $errs++ }
 		$sens->{notes} = $t->[0]; }
@@ -522,11 +538,25 @@ snums
     sub gcleanup { my ($txt) = @_;
 
 	# Remove leading and trailing whitespace from string.
+	# Replace multiple whitespace characters with one.
 	# Unescape escaped ';'s and '['s.
 
-	$txt =~ s/^[\s\x{3000}]+//;
-	$txt =~ s/[\s\x{3000}]+$//;
+	$txt =~ s/^[\s\x{3000}\n\r]+//s;
+	$txt =~ s/[\s\x{3000}\n\r]+$//s;
+	$txt =~ s/[\s\x{3000}\n\r]+$/ /sg;
 	$txt =~ s/\\([;\[])/$1/g;
+	return $txt; }
+
+    sub qcleanup { my ($txt) = @_;
+
+	# Remove leading and trailing whitespace from string.
+	# Replace multiple whitespace characters with one.
+	# Unescape escaped '"'s.
+
+	$txt =~ s/^[\s\x{3000}\n\r]+//s;
+	$txt =~ s/[\s\x{3000}\n\r]+$//s;
+	$txt =~ s/[\s\x{3000}\n\r]+$/ /sg;
+	$txt =~ s/\\(["])/$1/g;
 	return $txt; }
 
     sub error { 
@@ -641,9 +671,9 @@ snums
 		      # Classify it as kanji, reading (kana), or ordinary
 		      # text and return token accordingly.
 		    $t = jmdict::jstr_classify ($1);
-		    if ($t & $jmdict::KANJI) { return ("KTEXT", $1); }
-		    if ($t & $jmdict::KANA)  { return ("RTEXT", $1); }
-		    return ("TEXT", $1); } }
+		    if ($t & $jmdict::KANJI) { return ("KTEXT", qcleanup($1)); }
+		    if ($t & $jmdict::KANA)  { return ("RTEXT", qcleanup($1)); }
+		    return ("TEXT", qcleanup($1)); } }
 
 	    elsif ($s == 2) {	# Inside glosses section.
 		  # When parsing glosses the only spacial characters
@@ -654,7 +684,7 @@ snums
 		if ($txt =~ m/\G(\[\d+\])/cg)   { return ("SNUM", $1); }
 		  # Following regex allows "[" and ";" in the gloss text 
 		  # if escaped with a "\" character. 
-		if ($txt =~ m/\G((([^;\\\[])|(\\\[)|(\\;))+)/cg) { return ("GTEXT", $1); }
+		if ($txt =~ m/\G((([^;\\\[])|(\\\[)|(\\;))+)/cg) { return ("GTEXT", gcleanup($1)); }
 		if ($txt =~ m/\G;/cg) { return ("SEMI", ";"); } 
 		if ($txt =~ m/\G\[/cg) { return ("BRKTL", "["); } }
 

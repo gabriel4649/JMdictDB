@@ -168,6 +168,11 @@
 	  </ol>
 	</span>
 
+      <form action="edform.pl" method="get">
+	<input type="submit" value="Edit"/>
+	<input type="hidden" name="e" tal:attributes="value e/id"/>
+	</form>
+
       </div>
     </span>
   <div class="debug" tal:if="true:dbg">

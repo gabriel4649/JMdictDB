@@ -25,7 +25,8 @@ use jmdict;
 
 BEGIN {
     use Exporter(); our (@ISA, @EXPORT_OK, @EXPORT); @ISA = qw(Exporter);
-    @EXPORT = qw(fmt_entr); }
+    @EXPORT = qw(fmt_entr jel_entr jel_rdngs jel_kanjs jel_senss jel_kanj
+		 jel_rdng jel_sens jel_entr jel_entrhdr); }
 
 our(@VERSION) = (substr('$Revision$',11,-2), \
 	         substr('$Date$',7,-11));
@@ -317,12 +318,10 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 #-----------------------------------------------------------------------
 
     sub f_lsrc { my ($lsrc) = @_;
-	my (@x, $x, $lang, $txt);
-	$x = "";
-	if ($lsrc->{part} or $lsrc->{wasei}) {
-	    push (@x, "p") if ($lsrc->{part});
-	    push (@x, "w") if ($lsrc->{wasei});
-	    $x = "(" . join (",", @x) . ")"; }
+	my (@x, $x, $lang, $txt, @flags);
+	if ($lsrc->{wasei}) { push (@flags, "w"); } 
+	if ($lsrc->{part})  { push (@flags, "p"); } 
+	$x = @flags ? "(" . join (",", @flags) . ")" : "";
 	$lang = $::KW->{LANG}{$lsrc->{lang}}{kw};
 	if ($lang or $x) { $x = "$lang$x:" }
 	$txt = $lsrc->{txt};
@@ -408,3 +407,138 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	return $fmtstr; }
 
 	1;
+
+#===========================================================================
+
+    sub qtxt { my ($txt) = @_;
+	# Enclose $txt in quotes if it contains any 
+	# non-alphanumeric characters other than "_" or "-". 
+	# Escape internal quotes.
+	$txt =~ s/"/\\"/g;
+	if ($txt && ($txt =~ m/[^a-zA-Z0-9_-]/)) { $txt = "\"$txt\""; } 
+	return $txt; }
+
+    sub escgloss { my ($txt) = @_;
+	# Add backslash escape characters in front of any 
+	# ";" or "[" characters in $txt.  This s the escaping 
+	# used in glosses processed by the JEL parser.
+	$txt =~ s/([;\[])/\\$1/g;
+	return $txt; }
+
+    sub jel_kanjs { my ($kanjs) = @_;
+	my $txt = join ("\x{FF1B}", map (jel_kanj ($_), @$kanjs));
+	return $txt; }
+
+    sub jel_kanj { my ($kanj) = @_;
+	my ($txt, @kinf, @freq);
+	$txt = $kanj->{txt};
+	@kinf = map ($::KW->{KINF}{$_->{kw}}{kw}, @{$kanj->{_kinf}}); 
+	@freq = map ($::KW->{FREQ}{$_->{kw}}{kw}.$_->{value}, @{$kanj->{_kfreq}});
+	if (@kinf or @freq) { $txt .= "[" . join (",", (@kinf,@freq)) . "]"; }
+	return $txt; }
+
+    sub jel_rdngs { my ($rdngs, $kanjs) = @_;
+	my $txt = join ("\x{FF1B}", map (jel_rdng ($_, $kanjs), @$rdngs));
+	return $txt; }
+
+    sub jel_rdng { my ($rdng, $kanjs) = @_;
+	my ($txt, @rinf, @freq, $restrtxts, $ok_kanj);
+	$txt = $rdng->{txt};
+	@rinf = map ($::KW->{RINF}{$_->{kw}}{kw}, @{$rdng->{_rinf}}); 
+	@freq = map ($::KW->{FREQ}{$_->{kw}}{kw}.$_->{value}, @{$rdng->{_rfreq}});
+	if (@rinf or @freq) { $txt .= "[" . join (",", (@rinf, @freq)) . "]"; }
+	$restrtxts = restrtxts ($rdng->{_restr}, $kanjs, "kanj");
+	if (!ref ($restrtxts)) { 
+	    $txt .= "[restr=$restrtxts]"; }	# $restrtxts is "nokanki".
+	else { 
+	    if (@$restrtxts) { $txt .= "[restr=" . join(";", @$restrtxts) ."]"; } }
+	return $txt; }
+
+    sub restrtxts { my ($restrs, $kanjs, $key) = @_;
+	my (@restrtxts);
+	return [] if (!$restrs);
+	if (scalar(@$restrs) == scalar(@$kanjs)) { return ["no$key"]; }
+	@restrtxts = map ($_->{txt}, @{filt ($kanjs, [$key], $restrs, [$key])}); 
+	return \@restrtxts; }
+
+    sub jel_senss { my ($senss, $kanjs, $rdngs) = @_;
+	my ($s, $nsens, $txt, @stxts);
+	foreach $s (@$senss) {
+	    ++$nsens;
+	    if ($s->{sens}) {
+		die ("Error, sense $nsens has \{sens\} value of $s->{sens}\n")
+		    if ($s->{sens} != $nsens); }
+	    push (@stxts, jel_sens ($s, $kanjs, $rdngs, $nsens)); }
+	$txt = join ("\n", @stxts);
+	return $txt; }
+
+    sub jel_sens { my ($sens, $kanjs, $rdngs, $nsens) = @_;
+	my (@dial, @misc, @pos, @fld, $stagk, $stagr, @lsrc, $note,
+	    @gloss, @xref, $kwds, $dial, $restr, $lsrc, $g, $ginf,
+	    $t, $qtxt, $lastginf, @lines, $txt, @restr, $ginfkw);
+
+	@dial = map ($::KW->{DIAL}{$_->{kw}}{kw}, @{$sens->{_dial}}); 
+	@misc = map ($::KW->{MISC}{$_->{kw}}{kw}, @{$sens->{_misc}}); 
+	@pos  = map ($::KW-> {POS}{$_->{kw}}{kw}, @{$sens->{_pos}}); 
+	@fld  = map ($::KW-> {FLD}{$_->{kw}}{kw}, @{$sens->{_fld}}); 
+	$stagk = restrtxts ($sens->{_stagk}, $kanjs, "kanj");
+	$stagr = restrtxts ($sens->{_stagr}, $rdngs, "rdng");
+	@lsrc = map (f_lsrc($_), @{$sens->{_lsrc}});
+	@xref = map ("[".jel_xref ($_)."]", @{$sens->{_erefs}});
+
+	$kwds  = @pos   ? "[" . join (",", @pos) .  "]" : "";
+	$kwds .= @misc  ? "[" . join (",", @misc) . "]" : "";
+	$kwds .= @fld   ? "[" . join (",", @fld) .  "]" : "";
+	$dial  = @dial  ? "[dial=" . join (",", @dial) . "]" : "";
+	@restr = (@$stagk, @$stagr);
+	$restr = @restr ? ("[restr=" . join ("; ", @restr) . "]") : "";
+	$lsrc  = @lsrc  ? "[lsrc=" . join (", ", @lsrc) . "]" : "";
+	$note  = $sens->{notes} ? "[note=\"$sens->{notes}\"]" : "";
+
+	$lastginf = -1;
+	foreach $g (@{$sens->{_gloss}}) {
+	    $ginf = $g->{ginf};  $t = $g->{txt};
+	    if ($ginf != 1) {
+		$qtxt = qtxt ($g->{txt});
+		$ginfkw = $::KW->{GINF}{$ginf}{kw};
+		push (@gloss, "[$ginfkw=$qtxt]"); }
+	    else {
+		$t = escgloss ($g->{txt});
+		if ($lastginf != 1) { push (@gloss, $t); }
+		else { $gloss[-1] .= "; $t"; } }
+	    $lastginf = $ginf; }
+
+	push (@lines, "[$nsens]$kwds$dial");
+	push (@lines, "$restr$lsrc") if ($restr or $lsrc);
+	push (@lines, $note) if ($note);
+	push (@lines, @gloss);
+	push (@lines, @xref);
+	$txt = join ("\n  ", @lines);
+	return $txt; }
+
+    sub jel_xref { my ($eref) = @_;
+	my ($kanj, $rdng, $txt);
+	$kanj = $eref->{entr}{kanj};
+	$kanj =~ s/;.*//;
+	$rdng = $eref->{entr}{rdng};
+	$rdng =~ s/;.*//;
+	$txt = $kanj . (($kanj or $rdng) ? "/" : "") . $rdng;
+	if ($eref->{sens} and @{$eref->{sens}}) {
+	    $txt .= "[" . join(",", @{$eref->{sens}}) . "]"; }
+	$txt = $::KW->{XREF}{$eref->{typ}}{kw} . "=" . $txt;
+	return $txt; }
+
+    sub jel_entrhdr { my ($entr) = @_;
+	my ($src, $stat, $txt);
+	$src = $::KW->{SRC}{$entr->{src}}{kw};
+	$stat = $::KW->{STAT}{$entr->{stat}}{kw};
+	$txt = "$entr->{seq} ($src) [$stat] {$entr->{id}}";
+	return $txt; }
+
+    sub jel_entr { my ($entr) = @_;
+	my ($txt, @sects);
+	push (@sects, jel_entrhdr ($entr));
+	push (@sects, jel_kanjs ($entr->{_kanj})) if ($entr->{_kanj});
+	push (@sects, jel_rdngs ($entr->{_rdng}, $entr->{_kanj}));
+	push (@sects, jel_senss ($entr->{_sens}, $entr->{_kanj}, $entr->{_rdng}));
+	$txt .= join ("\n", @sects); }

@@ -22,12 +22,12 @@ perl/jmload.pl................Generates Postegresql load file from intermediate 
 perl/jmparse.pl...............Generates intermediate, rebasable  file from JMdict XML file.
 perl/showentr.pl..............Command line tool to show database entries.
 perl/cgi/.....................CGI scripts
+perl/cgi/edconf.pl............Confirm new/edit entry page.
+perl/cgi/edform.pl............New/edit entry form.
+perl/cgi/edsubmit.pl..........New/edit entry action.
 perl/cgi/entr.css.............CSS style sheet for all cgi pages.
 perl/cgi/entr.pl..............Show entry details page.
 perl/cgi/jbparser.pl..........Page for interactively testing parser
-perl/cgi/nwconf.pl............Confirm new entry page.
-perl/cgi/nwform.pl............Add new entry form.
-perl/cgi/nwsub.pl.............Add new entry action.
 perl/cgi/srchform.pl..........JMdictDB general entry search form.
 perl/cgi/srchres.pl...........Search results list.
 perl/lib/.....................Perl library modules
@@ -43,9 +43,9 @@ perl/lib/jmdicttal.pm.........PETAL modifiers.
 perl/lib/jmdictxml.pm.........JMdict XML parsing/generating functions.
 perl/lib/kwstatic.pm..........[*] Static kw data (file created by perl/mkkwmod.pl)
 perl/lib/tal/.................PETAL templates
+perl/lib/tal/edconf.tal.......PETAL template for edconf.pl.
+perl/lib/tal/edform.tal.......PETAL template for edform.pl.
 perl/lib/tal/entr.tal.........PETAL template for entr.pl.
-perl/lib/tal/nwconf.tal.......PETAL template for nwconf.pl.
-perl/lib/tal/nwform.tal.......PETAL template for nwform.pl.
 perl/lib/tal/srchform.tal.....PETAL template for srchfom.pl.
 perl/lib/tal/srchres.tal......PETAL template for srchres.pl.
 pg/...........................Postresql scripts

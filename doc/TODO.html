@@ -18,7 +18,7 @@
 <body>
   <h1>JMdictDB To-Do List</h1>
   <span class="gendate">
-    This list was current as of 2007-06-14 14:09
+    This list was current as of 2007-06-17 21:47
     </span>
   <table class="todo">
     
@@ -33,6 +33,94 @@
       <tr class="priohdr">
         <td colspan="5">Priority 'high' items</td>
 	</tr>
+      <tr class="row">
+	<td class="id">74</td>
+	
+	  <td class="title" colspan="2">Edit submission entry does not have orig's xrefs</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-06-17 19:58</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">When I used the edit form to edit and submit an edited entry that contained an xref (present on the edit form as a "[see=...]" item which I did not touch), the xref does not appear in the modified entry.<br/>
+This occured with entry seq 2149180.
+</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="notes" colspan="4">Using debugger, noted that the entr structure created in edsubmit.pl has a erefs substrucure, but no xrefs records.  This seems likely the cause.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">72</td>
+	
+	  <td class="title" colspan="2">Handle duplicate tags in jbparser.yp</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-06-17 14:20</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">In the JEL language parsed by jbparser, tags can be used in brackets without spectifying their type if they are not ambiguous.  Currently no check is made (parser uses fitrst one found).  Need to fix this.<br/>
+- When parser is looking for a sense tag, it should not consider same tag in, say, KINF, to be ambiguous.  I.e. lookup_tag() function needs to take an argument limiting scope.<br/>
+- Parser should exclude obsolete tags (id&gt;200) when considering ambiguity.<br/>
+- After taking above considerations into account, should return a "is ambiguous" code when tag is ambiguous.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">70</td>
+	
+	  <td class="title" colspan="2">jmdict::get_seq only work for jmdict seq numbers</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-06-17 13:08</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">When adding new entries, jmdict:;add_entr() call jmdict::get_seq() to get a new sequence number but the latter fuction returns only jmdict seq numbers.  Need to figure out how to genereate new seq numvers for other sources, and make get)seq() support them.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">69</td>
+	
+	  <td class="title" colspan="2">seq/src in urls</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-06-17 13:04</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi scripts and other scripts (eg showentr.pl) use seq numbers to identify entries but seq numbers are ambiguous without the src id.  Need to adopt a syntax that allows both seq number and src id (qqqqqqq/ss?), and change current uses of seq number to support it.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
       <tr class="row">
 	<td class="id">37</td>
 	
@@ -85,46 +173,6 @@
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">srchres.pl -- Search on gloss is case-sensitive, probably should not be.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">1</td>
-	
-	  <td class="title" colspan="2">Approval process flow</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to work out details of approval process in terms of data changes and the web pages needed to support those changes. [Need "edit entry" page first]
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">2</td>
-	
-	  <td class="title" colspan="2">Paged results</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to limit number entries shown on "search results" page to some reasonable number to prevent trying to display huge results sets.
 </td>
 	</tr>
       
@@ -192,9 +240,93 @@
       </span><span omit-tag="">
       
       
+      
+      <tr class="row">
+	<td class="id">1</td>
+	
+	  <td class="title" colspan="2">Approval process flow</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to work out details of approval process in terms of data changes and the web pages needed to support those changes. [Need "edit entry" page first]
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">2</td>
+	
+	  <td class="title" colspan="2">Paged results</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to limit number entries shown on "search results" page to some reasonable number to prevent trying to display huge results sets.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
       <tr class="priohdr">
         <td colspan="5">Priority 'med' items</td>
 	</tr>
+      <tr class="row">
+	<td class="id">73</td>
+	
+	  <td class="title" colspan="2">lit glosses w nested parens parsed wrong</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-06-17 19:22</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">In jmparse.pl, function extract_lit() uses the regex "/(lit:[^)]+)/ to extract the literal text.  But it appears that some such glosses contain parens as part of the lit text so the above pattern recognises it incorrectly.  For example, 2149180 (行ってまいります), has the gloss: "So long (lit:"(I'm) going and coming back")".
+</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="notes" colspan="4">Since this is a temp hack until JB decides on an xml representation, it may not be worth spending much time one.  Perhaps we could generate a warning and do manual fixup later since there probably aren't too many of these.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">71</td>
+	
+	  <td class="title" colspan="2">add fields in hist table</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-06-17 13:11</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Currently we combine the user and email fields on submissions forms and write to column 'user' in the hist table.  Similarly with fields "comments" and "references".  All of these items should go into their own columns in table hist.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
       <tr class="row">
 	<td class="id">68</td>
 	
@@ -320,46 +452,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">15</td>
-	
-	  <td class="title" colspan="2">Query time</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Even .8s seems a little slow (even for my machine).  DB interface code uses DBI's fetch_hash methods.  I think this may need to a second db read in order to determine the column names. Need to determine: 1) Is that ttrue?  2) Does it account for a significant performace hit? Will is still be a problem running with modperl which will improve query caching?  If these are true then rewrite code so that we provide the column name info rather than reading from db.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">11</td>
-	
-	  <td class="title" colspan="2">Design docs</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need an overall Design and Implementation docs
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">4</td>
 	
 	  <td class="title" colspan="2">Editor search page</td>
@@ -371,6 +463,26 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">Search by various history criteria: status / submitter / submitted date / text in comments / etc.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">6</td>
+	
+	  <td class="title" colspan="2">Editor authenication</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Authentication for editors.  (work out process flow details first?)
 </td>
 	</tr>
       
@@ -400,9 +512,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">6</td>
+	<td class="id">11</td>
 	
-	  <td class="title" colspan="2">Editor authenication</td>
+	  <td class="title" colspan="2">Design docs</td>
 	  
 	
 	<td class="compld"></td>
@@ -410,7 +522,27 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Authentication for editors.  (work out process flow details first?)
+	<td class="descr" colspan="4">Need an overall Design and Implementation docs
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">15</td>
+	
+	  <td class="title" colspan="2">Query time</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Even .8s seems a little slow (even for my machine).  DB interface code uses DBI's fetch_hash methods.  I think this may need to a second db read in order to determine the column names. Need to determine: 1) Is that ttrue?  2) Does it account for a significant performace hit? Will is still be a problem running with modperl which will improve query caching?  If these are true then rewrite code so that we provide the column name info rather than reading from db.
 </td>
 	</tr>
       
@@ -542,9 +674,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">27</td>
+	<td class="id">23</td>
 	
-	  <td class="title" colspan="2">Database versioning</td>
+	  <td class="title" colspan="2">CGI security audit</td>
 	  
 	
 	<td class="compld"></td>
@@ -552,7 +684,7 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
+	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
 </td>
 	</tr>
       
@@ -562,9 +694,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">9</td>
+	<td class="id">7</td>
 	
-	  <td class="title" colspan="2">Test environment</td>
+	  <td class="title" colspan="2">Unit tests</td>
 	  
 	
 	<td class="compld"></td>
@@ -572,7 +704,7 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Need to setup a test infrastructure.
+	<td class="descr" colspan="4">Need to write unit tests for library code
 </td>
 	</tr>
       
@@ -593,6 +725,26 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">For cgi pages, command scripts, etc.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">9</td>
+	
+	  <td class="title" colspan="2">Test environment</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to setup a test infrastructure.
 </td>
 	</tr>
       
@@ -682,9 +834,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">21</td>
+	<td class="id">27</td>
 	
-	  <td class="title" colspan="2">CGI html escaping</td>
+	  <td class="title" colspan="2">Database versioning</td>
 	  
 	
 	<td class="compld"></td>
@@ -692,27 +844,7 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">7</td>
-	
-	  <td class="title" colspan="2">Unit tests</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to write unit tests for library code
+	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
 </td>
 	</tr>
       
@@ -762,6 +894,26 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
+	<td class="id">21</td>
+	
+	  <td class="title" colspan="2">CGI html escaping</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">22</td>
 	
 	  <td class="title" colspan="2">UTC datetimes</td>
@@ -780,69 +932,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       </span><span omit-tag="">
       
       
-      
-      <tr class="row">
-	<td class="id">23</td>
-	
-	  <td class="title" colspan="2">CGI security audit</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
       <tr class="priohdr">
         <td colspan="5">Priority 'info' items</td>
 	</tr>
-      <tr class="row">
-	<td class="id">20</td>
-	
-	  <td class="title" colspan="2">CGI form post</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- At some point change GET form methods to POST.  (GET useful for debugging.)
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">24</td>
-	
-	  <td class="title" colspan="2">Segregate sql code</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">perl -- Isolate all sql in library routines?
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
       <tr class="row">
 	<td class="id">41</td>
 	
@@ -876,6 +968,46 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">cgi -- Need to obsure email addresses for general display (unobsured on conf form ok if none other than submitter/authenticated editors can see.)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">24</td>
+	
+	  <td class="title" colspan="2">Segregate sql code</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">perl -- Isolate all sql in library routines?
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">20</td>
+	
+	  <td class="title" colspan="2">CGI form post</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- At some point change GET form methods to POST.  (GET useful for debugging.)
 </td>
 	</tr>
       

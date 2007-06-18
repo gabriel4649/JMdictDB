@@ -41,9 +41,9 @@ PG_DB = jmdict
 CSS_FILES = perl/cgi/entr.css
 
 CGI_FILES = perl/cgi/entr.pl \
-	perl/cgi/nwconf.pl \
-	perl/cgi/nwform.pl \
-	perl/cgi/nwsub.pl \
+	perl/cgi/edconf.pl \
+	perl/cgi/edform.pl \
+	perl/cgi/edsubmit.pl \
 	perl/cgi/srchform.pl \
 	perl/cgi/srchres.pl \
 	perl/cgi/jbparser.pl
@@ -56,8 +56,8 @@ LIB_FILES = perl/lib/jmdict.pm \
 	perl/lib/kwstatic.pm 
 
 TAL_FILES = perl/lib/tal/entr.tal \
-	perl/lib/tal/nwconf.tal \
-	perl/lib/tal/nwform.tal \
+	perl/lib/tal/edconf.tal \
+	perl/lib/tal/edform.tal \
 	perl/lib/tal/srchform.tal \
 	perl/lib/tal/srchres.tal
 
@@ -85,7 +85,7 @@ all:
 
 #------ Load JMdict -----------------------------------------------------
 
-jmdict.xml: subdirs
+jmdict.xml: 
 	rm -f JMdict_e.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/JMdict_e.gz
 	gunzip JMdict_e.gz
@@ -108,7 +108,7 @@ loadjm: jmdict.dmp
 
 # Assumes the jmdict has been loaded into database already.
 
-jmnedict.xml: subdirs
+jmnedict.xml: 
 	rm -f JMnedict.xml.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/JMnedict.xml.gz
 	gunzip JMnedict.xml.gz
@@ -128,19 +128,19 @@ loadne: jmnedict.dmp
 	
 #------ Load examples ---------------------------------------------------
 
-examples.txt: subdirs
+examples.txt: 
 	rm -f examples.utf.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/examples.utf.gz
 	gunzip examples.utf.gz
 	mv examples.utf examples.txt
 
-examples.pgi: examples.txt
+examples.pgi: examples.txt 
 	cd perl && perl exparse.pl -o ../examples.pgi ../examples.txt >../examples.log
 
-examples.dmp: examples.pgi
+examples.dmp: examples.pgi 
 	cd perl && perl jmload.pl -o ../examples.dmp ../examples.pgi
 
-loadex: examples.dmp
+loadex: examples.dmp 
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f drpindex.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../examples.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f mkindex.sql
@@ -152,7 +152,7 @@ loadex: examples.dmp
 # the number of entries may be different in the freshly loaded jmdict
 # set, invalidating the starting id numbers in the other .dmp files.
 
-loadall: jmdict.dmp jmnedict.pgi examples.pgi subdirs
+loadall: jmdict.dmp jmnedict.pgi examples.pgi 
 	cd pg && psql $(PG_HOST) $(PG_USER) -f reload.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmdict.dmp
 
@@ -196,11 +196,11 @@ $(CSS_DIR)/entr.css: perl/cgi/entr.css
 
 $(CGI_DIR)/entr.pl: perl/cgi/entr.pl
 	cp -p $? $@
-$(CGI_DIR)/nwconf.pl: perl/cgi/nwconf.pl
+$(CGI_DIR)/edconf.pl: perl/cgi/edconf.pl
 	cp -p $? $@
-$(CGI_DIR)/nwform.pl: perl/cgi/nwform.pl
+$(CGI_DIR)/edform.pl: perl/cgi/edform.pl
 	cp -p $? $@
-$(CGI_DIR)/nwsub.pl: perl/cgi/nwsub.pl
+$(CGI_DIR)/edsubmit.pl: perl/cgi/edsubmit.pl
 	cp -p $? $@
 $(CGI_DIR)/srchform.pl: perl/cgi/srchform.pl
 	cp -p $? $@
@@ -228,10 +228,10 @@ $(LIB_DIR)/kwstatic.pm: perl/lib/kwstatic.pm
 $(LIB_DIR)/tal/entr.tal: perl/lib/tal/entr.tal
 	cp -p $? $@
 	perl -pi -e 's%href="entr.css"%href="$(CSS_URL)"%' $@
-$(LIB_DIR)/tal/nwconf.tal: perl/lib/tal/nwconf.tal
+$(LIB_DIR)/tal/edconf.tal: perl/lib/tal/edconf.tal
 	cp -p $? $@
 	perl -pi -e 's%href="entr.css"%href="$(CSS_URL)"%' $@
-$(LIB_DIR)/tal/nwform.tal: perl/lib/tal/nwform.tal
+$(LIB_DIR)/tal/edform.tal: perl/lib/tal/edform.tal
 	cp -p $? $@
 	perl -pi -e 's%href="entr.css"%href="$(CSS_URL)"%' $@
 $(LIB_DIR)/tal/srchform.tal: perl/lib/tal/srchform.tal

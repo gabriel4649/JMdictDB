@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+﻿#!/usr/bin/env perl
 #######################################################################
 #   This file is part of JMdictDB. 
 #   Copyright (c) 2007 Stuart McGraw 
@@ -36,7 +36,7 @@ use jmdict; use jbparser; use jmdictfmt;
 	$enc = "sjis";
 	#binmode(STDOUT, ":encoding($enc)");
 	#binmode(STDERR, ":encoding($enc)");
-	{no warnings eval { binmode($DB::OUT, ":encoding($enc)"); }; };
+	{no warnings; eval { binmode($DB::OUT, ":encoding($enc)"); }; };
 
 	$::Debug = {};
 	$cgi = new CGI;

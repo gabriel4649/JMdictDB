@@ -53,10 +53,10 @@ main: {
 	if (defined ($::Opts{i})) {
 	    $eid = int($::Opts{i}); }
 	else {
-	      # Get the starting values of $::eid and $::hist from the
-	      # max values of entr.id and hist.id found in the database.
-	      # If that database id numbers change between the time we
-	      # read them, and our output file is loaded, the result will
+	      # Get the starting value of $::eid from the
+	      # max values of entr.id found in the database.
+	      # If that database id number changes between the time we
+	      # read it, and our output file is loaded, the result will
 	      # probably be duplicate key errors.
 	      # FIXME: should be able to explicitly give these values 
 	      #   on the commandline.
@@ -75,9 +75,9 @@ main: {
 
 
 sub get_max_ids { my ($user, $pw, $dbname, $host) = @_;
-	# Get and return 1 + the max values of entr.id and hist.id
-	# found in the database defined by the connection parameters
-	# we were called with.
+	# Get and return 1 + the max values of entr.id found in the
+	# database defined by the connection parameters we were called
+	# with.
 
 	my ($dbh, $sql, $rs);
 
@@ -97,7 +97,7 @@ jmload.pl reads a .pgi such a produced by jmparse.pl and converts it
 into a loadable Postgresql dmp file by converting the relative entry 
 id numbers in the .pgi fie to actual numbers for a specific database.
 
-Usage: jmparse.pl [-o output-filename] [-i starting-id-value] \\
+Usage: jmload.pl [-o output-filename] [-i starting-id-value] \\
 		      [-u username] [-p password] [-d database] \\
 		      [-r host] [-e encoding] \\
 		    [pgi-filename]
@@ -110,16 +110,16 @@ Options:
 	-o output-filename -- Name of output postgresql dump file. 
 	    Default is "JMdict.dmp"
 	-i starting-id -- Starting number for entry id fields.
-	    It not give, jmload.pl will use the options below
-	    to read the max id number from the databas and start 
-	    with that number plus one.
+	    It not given, jmload.pl will connect to the database
+	    (using the options below) to read the max id number
+	    from the database and start with that number plus one.
 
 	If -i was not given, the following options will be used to 
-	connect to a database in order to read the max entr.id and
-	hist.id values.  If the dmp file is loaded into a different
-	database, or if the max entr.id or hist.id values change
-	between load_jmdict.pl's read and loading the dump file, it
-	is likely duplicate key errors will occur.
+	connect to a database in order to read the max entr.id value.
+        If the dmp file is loaded into a different database, or if
+	the max entr.id value changes between load_jmdict.pl's read
+	and loading the dump file, it is likely duplicate key errors 
+	will occur.
 
 	-d dbname -- Name of database to use.  Default is "jmdict".
 	-r host	-- Name of machine hosting the database.  Default

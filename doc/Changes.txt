@@ -1,4 +1,14 @@
 
+2007-07-12 13:13	smcgrawx@frxii.com
+
+	* perl/cgi/jbparser.pl [1.4]
+	Fix: Add missing semicolon left out in the previous DB::OUT warning
+	  message fix. {121}
+
+	* perl/jmload.pl [1.4]
+	Fix: Remove lingering obsolete references to hist.id in the comments
+	  and builtin help text. {122}
+
 2007-06-17 21:44	smcgrawx@frxii.com
 
 	* Makefile [1.21]
@@ -244,8 +254,8 @@
 	  nwconf.tal. {69}
 
 	* perl/lib/jmdictxml.pm [1.14]
-	Add dialect 'kyu'. {73}
 	Add language ty (Tahitian) {70}
+	Add dialect 'kyu'. {73}
 
 	* perl/lib/kwstatic.pm [1.5]
 	Rebuild due to prerequisite file changes. {74}

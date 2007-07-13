@@ -50,7 +50,7 @@
 	</span>
       <span tal:if="and: e/_kanj e/_rdng" tal:omit-tag="">】</span>
 
-      <table class="senses" border="0">
+      <table class="senses" border="0" tal:if="true:e/_sens">
 	<tr class="sense" tal:repeat="s e/_sens">
 	  <td valign="top" tal:content="string:${s/sens}.">n.</td>
 	  <td colspan="2">
@@ -92,15 +92,17 @@
 	      《<span tal:replace="s/notes">sense-notes</span>》<br/>
 	      </span>
 
-	    <span tal:repeat="g s/_gloss">
+	    <span tal:if="true:s/_gloss" tal:omit-tag="">
+	      <span tal:repeat="g s/_gloss" tal:omit-tag="">
 	      <span class="gloss" tal:replace="string:${g/gloss}. ">num.</span>
-	      <span tal:if="not: eq: g/lang string:1" omit-tag="">
-	        <span class="glang" tal:replace="kwabbr: 'LANG' g/lang">lang</span>:
+		<span tal:if="not: eq: g/lang string:1" omit-tag="">
+	          <span class="glang" tal:replace="kwabbr: 'LANG' g/lang">lang</span>:
+		  </span>
+		<span tal:if="not: eq: g/ginf string:1" omit-tag="">
+	          [<span class="ginf" tal:replace="kwabbr: 'GINF' g/ginf">lang</span>.]
+		  </span>
+		<span class="gloss" tal:replace="g/txt">gloss</span><br/>
 		</span>
-	      <span tal:if="not: eq: g/ginf string:1" omit-tag="">
-	        [<span class="ginf" tal:replace="kwabbr: 'GINF' g/ginf">lang</span>.]
-		</span>
-	      <span class="gloss" tal:replace="g/txt">gloss</span><br/>
 	      </span>
 
 	    <table class="xrefs" tal:if="or: true:s/_erefs true:s/_erers">

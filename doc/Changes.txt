@@ -1,4 +1,37 @@
 
+2007-07-13 17:07	smcgrawx@frxii.com
+
+	* perl/jmload.pl [1.5]
+	New options -m and -x to support the change to fixed entr.id numbers.
+	  {127}
+	Process files containing fixed entr.id numbers (now produced by
+	  jmparse.pl and exparse.pl, or ordinary pgdump files) rather than
+	  requiring the symbolic entr.id values used previously. {126}
+
+	* perl/lib/jmdictpgi.pm [1.7]
+	Make wrentr() write fixed entr.id numbers rather the symbolic form
+	  previously used. {125}
+	In finalize(), add additional parameter that will cause copy commands
+	  in output file to be wrapped in a transaction so that if anything
+	  fails when loading the file, nothing will be changed in the
+	  database. {129}
+
+	* perl/lib/tal/entr.tal [1.12]
+	Changed to allow display of entry even if there are no glosses in
+	  some senses, or no senses.  Previously those conditions caused the
+	  cgi/petal code to bomb. {128}
+
+	* pg/data/kwsrc.csv [1.2]
+	Add new column 'notes' to table kwsrc to allow recording some extra
+	  arbitrary info (e.g. file date). {124}
+
+	* pg/mktables.sql [1.20]
+	Fix: Add column 'lang' to the unique index gloss(entr,sens,lang,txt)
+	  since the different languages may have glosses with the same
+	  spelling. {123}
+	Add new column 'notes' to table kwsrc to allow recording some extra
+	  arbitrary info (e.g. file date). {124}
+
 2007-07-12 13:13	smcgrawx@frxii.com
 
 	* perl/cgi/jbparser.pl [1.4]
@@ -41,13 +74,13 @@
 	  similar for trans). {115}
 
 	* perl/lib/jbparser.yp [1.4]
-	Add new function qcleanup() like gcleanup but for quoted strings.
-	  {114}
-	In function gcleanup() reduce multiple WS characters to a single one.
-	  {113}
 	When creating lsrc and gloss records, make sure all fields are
 	  created even if they have default values (e.g. lang and ginf in
 	  gloss, and lang, part, and wasei in lsrc.) {112}
+	In function gcleanup() reduce multiple WS characters to a single one.
+	  {113}
+	Add new function qcleanup() like gcleanup but for quoted strings.
+	  {114}
 
 	* perl/lib/jmdict.pm [1.26]
 	Minor clarification to comments in filt(). {110}

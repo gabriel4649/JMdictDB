@@ -18,7 +18,7 @@
 <body>
   <h1>JMdictDB To-Do List</h1>
   <span class="gendate">
-    This list was current as of 2007-06-17 21:47
+    This list was current as of 2007-07-13 17:20
     </span>
   <table class="todo">
     
@@ -69,7 +69,7 @@ This occured with entry seq 2149180.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">In the JEL language parsed by jbparser, tags can be used in brackets without spectifying their type if they are not ambiguous.  Currently no check is made (parser uses fitrst one found).  Need to fix this.<br/>
+	<td class="descr" colspan="4">In the JEL language parsed by jbparser, tags can be used in brackets without spectifying their type if they are not ambiguous.  Currently no check is made (parser uses first one found).  Need to fix this.<br/>
 - When parser is looking for a sense tag, it should not consider same tag in, say, KINF, to be ambiguous.  I.e. lookup_tag() function needs to take an argument limiting scope.<br/>
 - Parser should exclude obsolete tags (id&gt;200) when considering ambiguity.<br/>
 - After taking above considerations into account, should return a "is ambiguous" code when tag is ambiguous.
@@ -182,6 +182,26 @@ This occured with entry seq 2149180.
       
       
       <tr class="row">
+	<td class="id">2</td>
+	
+	  <td class="title" colspan="2">Paged results</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to limit number entries shown on "search results" page to some reasonable number to prevent trying to display huge results sets.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">3</td>
 	
 	  <td class="title" colspan="2">Edit entry page</td>
@@ -260,29 +280,35 @@ This occured with entry seq 2149180.
       </span><span omit-tag="">
       
       
-      
+      <tr class="priohdr">
+        <td colspan="5">Priority 'med' items</td>
+	</tr>
       <tr class="row">
-	<td class="id">2</td>
+	<td class="id">76</td>
 	
-	  <td class="title" colspan="2">Paged results</td>
+	  <td class="title" colspan="2">Natural key for entries</td>
 	  
 	
 	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
+	<td class="entered">2007-07-13 15:50</td>
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Need to limit number entries shown on "search results" page to some reasonable number to prevent trying to display huge results sets.
+	<td class="descr" colspan="4">Entr rows currently use a surrogate primary key (auto-number int id column) but has not other way of uniquely identifying entries.  This is a problem when exporting/importing entries, or moving them between databases since there is no way to identify the target of inter-entry reference (xrefs for example) sinve the entry id may change on being reloaded.
 </td>
 	</tr>
-      
+      <tr class="descr">
+        <td> </td>
+	<td class="notes" colspan="4">We can't use (src,seq) as a pk because multiple copies of the same entry can exist with different or the same stat values (e.g. there can be several "updated, approval pending" versins of the same entry).<br/>
+<br/>
+Option: add a version number (small int) field to entr, say 'entr', to distinguish between otherwise indistinguishable entries, and make unique key (src,seq,entr).  Don't really want it to be the PK becaue it will make children table PK's too long.
+</td>
+	</tr>
       
       </span><span omit-tag="">
       
       
-      <tr class="priohdr">
-        <td colspan="5">Priority 'med' items</td>
-	</tr>
+      
       <tr class="row">
 	<td class="id">73</td>
 	
@@ -452,6 +478,26 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
+	<td class="id">29</td>
+	
+	  <td class="title" colspan="2">XML parse kw checks</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">4</td>
 	
 	  <td class="title" colspan="2">Editor search page</td>
@@ -492,26 +538,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">29</td>
-	
-	  <td class="title" colspan="2">XML parse kw checks</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">11</td>
 	
 	  <td class="title" colspan="2">Design docs</td>
@@ -532,26 +558,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">15</td>
-	
-	  <td class="title" colspan="2">Query time</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Even .8s seems a little slow (even for my machine).  DB interface code uses DBI's fetch_hash methods.  I think this may need to a second db read in order to determine the column names. Need to determine: 1) Is that ttrue?  2) Does it account for a significant performace hit? Will is still be a problem running with modperl which will improve query caching?  If these are true then rewrite code so that we provide the column name info rather than reading from db.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">17</td>
 	
 	  <td class="title" colspan="2">Newsub.pl warnings</td>
@@ -563,6 +569,26 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">nwsub.pl -- generating warnings that DB::OUT is not used.  Creates noise in web server log files.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">31</td>
+	
+	  <td class="title" colspan="2">Order index convention</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">jmdict, *.pl -- Decide on conventions re ord numbers and list indexes:  In EntrList struct, many things (eg rdng records) have both a "rdng" key and a index in list.  Some places we (eg showentr.pl filt() calls) we take the key number as definitive, other places (jmdict::addentr()) we take the index position as definitive.  Currently no problem because the two numbering methods are consistent but may be future operations that make them inconsistent which will  introduce bugs.  Should adopt some standard rules to control this?
 </td>
 	</tr>
       
@@ -612,9 +638,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">31</td>
+	<td class="id">15</td>
 	
-	  <td class="title" colspan="2">Order index convention</td>
+	  <td class="title" colspan="2">Query time</td>
 	  
 	
 	<td class="compld"></td>
@@ -622,7 +648,7 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">jmdict, *.pl -- Decide on conventions re ord numbers and list indexes:  In EntrList struct, many things (eg rdng records) have both a "rdng" key and a index in list.  Some places we (eg showentr.pl filt() calls) we take the key number as definitive, other places (jmdict::addentr()) we take the index position as definitive.  Currently no problem because the two numbering methods are consistent but may be future operations that make them inconsistent which will  introduce bugs.  Should adopt some standard rules to control this?
+	<td class="descr" colspan="4">Even .8s seems a little slow (even for my machine).  DB interface code uses DBI's fetch_hash methods.  I think this may need to a second db read in order to determine the column names. Need to determine: 1) Is that ttrue?  2) Does it account for a significant performace hit? Will is still be a problem running with modperl which will improve query caching?  If these are true then rewrite code so that we provide the column name info rather than reading from db.
 </td>
 	</tr>
       
@@ -654,6 +680,30 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
         <td colspan="5">Priority 'low' items</td>
 	</tr>
       <tr class="row">
+	<td class="id">77</td>
+	
+	  <td class="title" colspan="2">Stop using magic number keyword values</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-07-13 16:53</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Currently we use the hack of using values &gt;200 is the kw* tables to indicate that the kw is obsolete.  Some programs print warning messages when they encounter such keywords.  This is a hack and needs to be fix by adding a boolean "obsol' column to the keyword tables.<br/>
+<br/>
+There are some other similar cases:<br/>
+kwmisc -- Uses 1xx value keywords for jmnedict tags.  I don't think any programs make use of that coding though.<br/>
+kwpos -- Uses 3xx value keywords for extra PoS types used by experimental verb inflection stuff.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">38</td>
 	
 	  <td class="title" colspan="2">TAL whitespace</td>
@@ -665,126 +715,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">entr.tal, and probably others does not have very good control over whitespace.  For example, there is a space after the opening bracket of a FoU tag (e.g. ichi1)  but no space before the closing bracket.  If these templates get a life beyond development, need to go through them and fix whitespace.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">23</td>
-	
-	  <td class="title" colspan="2">CGI security audit</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">7</td>
-	
-	  <td class="title" colspan="2">Unit tests</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to write unit tests for library code
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">8</td>
-	
-	  <td class="title" colspan="2">Functional tests</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">For cgi pages, command scripts, etc.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">9</td>
-	
-	  <td class="title" colspan="2">Test environment</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to setup a test infrastructure.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">14</td>
-	
-	  <td class="title" colspan="2">Query time variation</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Retrieving one or a set of jmdict entries involves executing ~20 sql select stements.  This takes anwhere from .8 to 30s on my (slow) development machine.  I don't understand this almost order-of-magnitutde variation.  Need to determine what's going on and find remedy.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">16</td>
-	
-	  <td class="title" colspan="2">Connection pooling</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Will this help performance? Informal timings done on cgi show that connect time is pretty quick but may be more significant when object retrieval times are improved. (ref Apache::DBI)
 </td>
 	</tr>
       
@@ -814,9 +744,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">19</td>
+	<td class="id">16</td>
 	
-	  <td class="title" colspan="2">CGI error handling</td>
+	  <td class="title" colspan="2">Connection pooling</td>
 	  
 	
 	<td class="compld"></td>
@@ -824,7 +754,67 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">cgi -- Better error handling for db and other errors.
+	<td class="descr" colspan="4">Will this help performance? Informal timings done on cgi show that connect time is pretty quick but may be more significant when object retrieval times are improved. (ref Apache::DBI)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">14</td>
+	
+	  <td class="title" colspan="2">Query time variation</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Retrieving one or a set of jmdict entries involves executing ~20 sql select stements.  This takes anwhere from .8 to 30s on my (slow) development machine.  I don't understand this almost order-of-magnitutde variation.  Need to determine what's going on and find remedy.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">8</td>
+	
+	  <td class="title" colspan="2">Functional tests</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">For cgi pages, command scripts, etc.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">7</td>
+	
+	  <td class="title" colspan="2">Unit tests</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to write unit tests for library code
 </td>
 	</tr>
       
@@ -845,6 +835,66 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">19</td>
+	
+	  <td class="title" colspan="2">CGI error handling</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Better error handling for db and other errors.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">9</td>
+	
+	  <td class="title" colspan="2">Test environment</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to setup a test infrastructure.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">23</td>
+	
+	  <td class="title" colspan="2">CGI security audit</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
 </td>
 	</tr>
       
@@ -894,26 +944,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">21</td>
-	
-	  <td class="title" colspan="2">CGI html escaping</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">22</td>
 	
 	  <td class="title" colspan="2">UTC datetimes</td>
@@ -925,6 +955,26 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">Check the everything storing a datetime value stores it in UTC or localtime with timezone.  Check that everything displaying a datetime does the same.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">21</td>
+	
+	  <td class="title" colspan="2">CGI html escaping</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.
 </td>
 	</tr>
       
@@ -1016,6 +1066,41 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       <tr class="header">
         <td colspan="5"><br>The following items have been completed...<br><br></td>
 	</tr>
+      
+      
+      <tr class="row done">
+	<td class="id">75</td>
+	
+	
+	  <td class="title">use fixed entr.id's in .pgi files</td>
+	  <td class="prio">high</td>
+	  
+	<td class="compld">2007-07-13 17:19</td>
+	<td class="entered">2007-07-12 19:32</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">Currently we allow loading data from different sources by generating intemediate .pgi files that have symbolic entr.id numbers which are assigned real values (which depend upon what is already in the database) when the file is processed into a .dmp file by jmload.pl.<br/>
+<br/>
+This requires the .pgi file contain the specially formatted symbolic entr.id numbers which only the file loader programs know how to produce and jmload.pl knows how to convert to fixed values.<br/>
+<br/>
+I wanted to extract some entries from one database a load into a different database but that requires converting the entr.id numbers in to the symbolic form used by jmload.pl.<br/>
+<br/>
+We could have the loader programs generate fixed entr.id numbers and tell jmload.pl where the entr.id values are in the table data and let it adjust them without requiring the special symbolic form.  This will allow jmload.pl to work with any postgresql dump file.  Disadvantage is that this will make jmload.pl yet another piece of code that needs to be updated when a schema change occurs.
+</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="notes" colspan="4">jmdictpgi::wrentr() modified to write fixed entr.id numbers and since all the loader programs (currently jmparse.pl, exparse.pl) use this funtion for output, yjey all now generate fixed rather than symbolic entrid's.<br/>
+<br/>
+jmload.pl modified so that it knows what columns in each table contain entr.id numbers, and it will rebase those columns.  This allows it to work with any postgresql dump file that contains table data from those tables as well as the output of jmparse.pl and exparse.pl.<br/>
+<br/>
+However, it doesn't really handle xref table data well.  It allows the rebasing to be limited to a specific range of entr.id values and if the xref entr.id values are in that range they are rebased.  Otherwise they are left unchanged.  About as good as we can do until we have a entr.id-independent way of refering to entries (see task id 76).
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
       
       
       <tr class="row done">

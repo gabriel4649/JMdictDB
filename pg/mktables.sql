@@ -77,7 +77,8 @@ CREATE TABLE kwrinf (
 CREATE TABLE kwsrc (
     id SMALLINT PRIMARY KEY,
     kw VARCHAR(20) NOT NULL UNIQUE,
-    descr VARCHAR(255));
+    descr VARCHAR(255),
+    notes VARCHAR(255));
 
 CREATE TABLE kwstat (
     id SMALLINT PRIMARY KEY,
@@ -141,7 +142,7 @@ CREATE TABLE gloss (
     txt VARCHAR(2048) NOT NULL,
     PRIMARY KEY(entr,sens,gloss));
 --CREATE INDEX gloss_txt ON gloss(txt); 
---CREATE UNIQUE INDEX gloss_txt1 ON gloss(entr,sens,txt);
+--CREATE UNIQUE INDEX gloss_txt1 ON gloss(entr,sens,lang,txt);
 --ALTER TABLE gloss ADD CONSTRAINT gloss_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE gloss ADD CONSTRAINT gloss_lang_fkey FOREIGN KEY (lang) REFERENCES kwlang(id);
 

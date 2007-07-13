@@ -70,12 +70,14 @@ sub initialize { my ($logfn, $tmpdir) = @_;
 	    open ($::Flog, ">:utf8", $logfn) or die ("Can't open $logfn: $!\n"); }
 	return \@tmpfiles; }
 
-sub finalize { my ($outfn, $tmpfls, $del) = @_;
+sub finalize { my ($outfn, $tmpfls, $del, $trans) = @_;
 	# Close all the temp files, merge them all intro the single 
 	# output file, and delete them (if no -k option).
 
 	my ($t, $tmpfn);
 	open (FOUT, ">:utf8", $outfn) or die ("Can\'t open $outfn: $!\n");
+	if ($trans) {
+	    print FOUT "\\set ON_ERROR_STOP 1\nBEGIN;\n\n"; }
 	foreach $t (@$tmpfls) {
 	    $tmpfn = $t->[1];
 	    close (${$t->[0]});
@@ -86,13 +88,15 @@ sub finalize { my ($outfn, $tmpfls, $del) = @_;
 		print FOUT "\\.\n";
 		close (FIN); } 
 	    if ($del) {unlink ($t->[1]); } } 
+	if ($trans) {
+	    print FOUT "\nCOMMIT\n"; }
 	close (FOUT); } 
 
 sub wrentr { my ($e) = @_;
 	my ($etag, $k, $r, $s, $x);
 	die ("Entry object does not have a valid id number\n") 
 	    if ( $e->{id} <= 0 && $e->{id} ne "0");
-	$etag = "\$\$E\$\$$e->{id}";
+	$etag = "$e->{id}";
 
        {no warnings qw(uninitialized); 
 	pout ($::Fentr, $etag, $e->{src}, $e->{seq}, $e->{stat}, $e->{srcnote}, $e->{notes});

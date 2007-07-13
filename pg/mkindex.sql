@@ -9,7 +9,7 @@ CREATE UNIQUE INDEX rdng_txt1 ON rdng(entr,txt);
 CREATE INDEX kanj_txt ON kanj(txt);
 CREATE UNIQUE INDEX kanj_txt1 ON kanj(entr,txt);
 CREATE INDEX gloss_txt ON gloss(txt); 
-CREATE UNIQUE INDEX gloss_txt1 ON gloss(entr,sens,txt);
+CREATE UNIQUE INDEX gloss_txt1 ON gloss(entr,sens,lang,txt);
 CREATE INDEX xref_xentr ON xref(xentr,xsens);
 CREATE INDEX hist_dt ON hist(dt);
 CREATE INDEX hist_who ON hist(who);

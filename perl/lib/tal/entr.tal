@@ -16,6 +16,12 @@
         [<span tal:replace="kwfull: 'STAT' e/stat">[status]</span>]
 	</span>
       <span class="pkid">{id:<span tal:replace="e/id"/>}</span>
+      <span tal:if="true:e/srcnote">
+	<br/>Src Notes: <span tal:replace="e/srcnote" tal:omit-tag="">srcnote</span>
+        </span>
+      <span tal:if="true:e/notes">
+	<br/>Entry Notes: <span tal:replace="e/notes" tal:omit-tag="">srcnote</span>
+        </span>
 
       <br/> 
       <span tal:if="e/_kanj" tal:repeat="k e/_kanj" tal:omit-tag="">
@@ -73,7 +79,7 @@
 	    <span class="dial" tal:condition="s/_dial">, 
 	      Dialect: <span tal:replace="kwabbrs: 'DIAL' ',' s/_dial">dial</span>
 	      </span>
-	    <span class="lang" tal:if="s/_lsrc">, 
+	    <span class="lsrc" tal:if="s/_lsrc">, 
 	      From: 
 	      <span tal:repeat="z s/_lsrc" tal:omit-tag="">
 		<span tal:replace="kwabbr: 'LANG' z/lang">(xx)</span

@@ -16,6 +16,7 @@
     <a href="mailto:jmdicthelp@somewhere.org">jmdicthelp@somewhere.org</a>
   <span tal:repeat="e entries">
     <div class="entry">
+
       <span class="warnings" tal:if="true:chklist">
 	<span class="caution">Caution:</span>
 	The following existing entries contain kanji or readings
@@ -36,13 +37,24 @@
 	Your entry:<br/>
 	</span>
 
-      <span tal:if="not:true:e/id" tal:omit-tag="">New Entry</span>
-      <span tal:if="true:e/id" tal:omit-tag="">
-	<span tal:replace="e/seq" tal:omit-tag="">seq</span>
-	(<span tal:replace="kwabbr: 'SRC' e/src" tal:omit-tag="">src</span>)
-	[<span tal:replace="kwabbr: 'STAT' e/stat" tal:omit-tag="">stat</span>]
-	{<span tal:replace="e/id" tal:omit-tag="">id</span>}
+      <span tal:if="false:e/id" tal:omit-tag="">New Entry
+	(<span tal:replace="kwabbr: 'SRC' e/src">src</span>)
 	</span>
+      <span tal:if="true:e/id" tal:omit-tag="">
+        Seq: <span tal:replace="e/seq">seqnum</span>
+	  (<span tal:replace="kwabbr: 'SRC' e/src">src</span>)
+        <span class="status" tal:if="not:eq: string:2 e/stat">
+          [<span tal:replace="kwfull: 'STAT' e/stat">[status]</span>]
+	  </span>
+        <span class="pkid">{id:<span tal:replace="e/id"/>}</span>
+        </span>
+      <span tal:if="true:e/srcnote">
+	<br/>Src Notes: <span tal:replace="e/srcnote" tal:omit-tag="">srcnote</span>
+        </span>
+      <span tal:if="true:e/notes">
+	<br/>Entry Notes: <span tal:replace="e/notes" tal:omit-tag="">srcnote</span>
+        </span>
+
       <br/>
       <span tal:if="e/_kanj" tal:repeat="k e/_kanj" tal:omit-tag="">
 	<span tal:condition="not:repeat/start" tal:omit-tag="">； </span>

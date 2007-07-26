@@ -131,7 +131,7 @@ $|=1;
 
     sub validateq { my ($list, $errs) = @_;
 	foreach my $p (@$list) {
-	    if (!($p =~ m/^\s*\d{7}\s*$/)) {
+	    if (!($p =~ m/^\s*\d+\s*$/)) {
 		push (@$errs, "<br>Bad url parameter received: ".ee($p)); } } }
 
     sub errors_page { my ($errs) = @_;
@@ -148,7 +148,7 @@ $|=1;
   Parameter format:<br/>
   <table border="0">
     <tr><td>q=dddddd</td> 
-      <td>Display the entry having JMdict sequence number &lt;ddddddd&gt; (a 7-digit number).</td></tr>
+      <td>Display the entry having the sequence number &lt;n&gt;.</td></tr>
     <tr><td>e=n</td> 
       <td>Display the entry having database id number &lt;n&gt;.</td></tr>
     <tr><td>s=n</td> 

@@ -21,12 +21,12 @@
 -- $Revision$ $Date$
 -- JMdict schema for Postgresql
 
--- Note: The commented-out ALTER TABLE and CREATE INDEX statement
--- (any comment where the "--" starts in the first column and is
+-- Note: The commented-out ALTER TABLE and CREATE INDEX statements
+-- (where the comment's "--" starts in the first column and is
 -- followed immediately by text with no intervening space character,
--- is not really a comment.  It is extracted by a tool, put into 
+-- are not really comments.  They is extracted by a tool, put into 
 -- a separate file, and execute during the database build phase.
--- It is kept in here in comment form in order to provide a more
+-- They are kept in here in comment form in order to provide a more
 -- cohesive view of the schema.
 
 CREATE TABLE kwdial (
@@ -78,7 +78,8 @@ CREATE TABLE kwsrc (
     id SMALLINT PRIMARY KEY,
     kw VARCHAR(20) NOT NULL UNIQUE,
     descr VARCHAR(255),
-    notes VARCHAR(255));
+    notes VARCHAR(255),
+    seq VARCHAR(20));
 
 CREATE TABLE kwstat (
     id SMALLINT PRIMARY KEY,
@@ -95,7 +96,7 @@ CREATE TABLE kwxref (
 CREATE TABLE entr (
     id SERIAL NOT NULL PRIMARY KEY,
     src SMALLINT NOT NULL,
-    seq INT NOT NULL,
+    seq INT NOT NULL CHECK(seq>0),
     stat SMALLINT NOT NULL,
     srcnote VARCHAR(255) NULL,
     notes TEXT);
@@ -104,9 +105,39 @@ CREATE TABLE entr (
 --ALTER TABLE entr ADD CONSTRAINT entr_src_fkey FOREIGN KEY (src) REFERENCES kwsrc(id);
 --ALTER TABLE entr ADD CONSTRAINT entr_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
 
-CREATE SEQUENCE seq 
+CREATE SEQUENCE seq_jmdict	-- JMdict seq numbers.
    INCREMENT 10 MINVALUE 1000000 MAXVALUE 8999999 
    NO CYCLE OWNED BY entr.seq;
+CREATE SEQUENCE seq_jmnedict	-- JMnedict seq numbers.
+   OWNED BY entr.seq;
+CREATE SEQUENCE seq_examples	-- Examples file seq numbers.
+   OWNED BY entr.seq;
+CREATE SEQUENCE seq		-- Other seq numbers.
+   OWNED BY entr.seq;
+
+CREATE FUNCTION entr_seqdef() RETURNS trigger AS $entr_seqdef$
+    -- This function is used as an "insert" trigger on table 
+    -- 'entr'.  It checks the 'seq' field value and if NULL,
+    -- provides a default value from one of several sequences,
+    -- with the sequence used determined by the value if the
+    -- new row's 'src' field.  The name of the sequence to be
+    -- used is given in the 'seq' column of table 'kwsrc'.
+
+    DECLARE seqnm VARCHAR;
+    BEGIN
+        IF NEW.seq IS NOT NULL THEN 
+	    RETURN NEW;
+	    END IF;
+	SELECT seq INTO seqnm FROM kwsrc WHERE id=NEW.src;
+        NEW.seq :=  NEXTVAL(seqnm);
+        RETURN NEW;
+        END;
+    $entr_seqdef$ LANGUAGE plpgsql;
+
+CREATE TRIGGER entr_seqdef BEFORE INSERT ON entr
+    FOR EACH ROW EXECUTE PROCEDURE entr_seqdef();
+
+
 
 CREATE TABLE rdng (
     entr INT NOT NULL,

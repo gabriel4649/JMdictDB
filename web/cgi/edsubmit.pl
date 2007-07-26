@@ -57,7 +57,7 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	foreach $entr ($entrs) {
 	    if (!$entr->{id}) {	# This is new entry. 
 		$entr->{stat} = $::KW->{STAT}{N}{id}; # Force entr.stat=New.
-		$entr->{seq} = 0;  # Force addentr() to assign seq number.
+		$entr->{seq} = undef;  # Force addentr() to assign seq number.
 		  # Prevent client from inserting extra bogus history.
 	        if (1 != scalar(@{$entr->{_hist}})) { die "Expected exactly 1 hist record"; } 
 	        $entr->{_hist}[0]{dt} = strftime ("%Y-%m-%d %H:%M:00-00", gmtime()); }
@@ -81,9 +81,9 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	$recs = dbread ($dbh, $sql, [$entr->{id}]);
 	if ((scalar(@$recs)) != 1) { die "Entry id $entr->{id} not found, unable to update\n"; }
 
-	if ($entr->{seq} != $recs->[0]{seq}) { 
+	if ($entr->{seq} and $entr->{seq} != $recs->[0]{seq}) { 
 	    die "Submitted seq number $entr->{seq} does not match original seq number $recs->[0]{seq}\n" }
-	if ($entr->{src} != $recs->[0]{src}) { 
+	if ($entr->{src} and $entr->{src} != $recs->[0]{src}) { 
 	    die "Submitted src id $entr->{src} does not match original src id $recs->[0]{src}\n" }
 	
 	$sql = "SELECT h.* FROM hist h WHERE entr=? ORDER BY h.dt DESC";

@@ -231,8 +231,7 @@ sub do_rdng { my ($e, $reles, $kmap, $fmap) = @_;
 	    if (@x = $er->get_xpath ("re_inf")) { do_rinfs ($r, \@x); }
 	    if (@x = $er->get_xpath ("re_pri")) { do_freqs ($r, 0, \@x, $fmap); }
 	    if ($er->get_xpath ("re_nokanji")) { 
-	        my (@u); foreach $z (values (%$kmap)) { push ( @u, $z); }
-		mkrestr ($r, $kmap, "_restr", \@u); }
+		mkrestr ($r, $kmap, "_restr", []); }
 	    elsif (@x = $er->get_xpath ("re_restr")) { do_restrs ($r, \@x, "_restr", $kmap); } }
 	return \%rmap; }
 
@@ -490,14 +489,55 @@ sub mkfreqs { my ($fhash) = @_;
 		push (@{$k->{_freq}}, $frec); } } } 
 
 sub mkrestr { my ($a, $bmap, $attrname, $pos) = @_;
-	# %$a -- A rdng or sens record that has restrictions.
+	# Create restriction records for %$bmap items that are not
+	# found in @$pos.
+	#
+	# %$a -- A rdng or sens record.
+	# %$bmap -- A hash, indexed by txt field, to the set of all
+	#    possible restriction items (which will be kanj records
+	#    for restr or stagk restrictions or rdng records for stagr
+	#    restrictions.  The value of each element is the record
+	#    with that key text.  For example, for "restr" restrictions,
+	#    each item in this hash will be keyed by the 'txt' field of
+	#    a kanji record, and each value would be a ref to the kanji
+	#    record itself (which in turn is a hashref with only a single
+	#    item with the key 'txt'.)  We ask for a hash indexed by field
+	#    'txt' here, rather than actual record list, in order to speed
+	#    up lookups of matching txt values.  This hash will typically
+	#    be created by the caller once per entry and then used in
+	#    multiple calls to mkrestr() (one for each reading with
+	#    restrictions.)
+	# $attrname -- Name of the key used for the generated restr list.
+	#    An attribute of this name with be created in both %$a and in
+	#    each restricting item in %{%$bmap->{text}} item (which for
+	#    restr items will be each restricting kanj row).  The attributes
+	#    will contain a list of restriction records, which are simply
+	#    empty hashes.  (Empty because they contain no information 
+	#    other than who their parents are, and that info will be filled
+	#    in later, when the entry is written out.)
 	# @$pos -- An array containing refs to allowed restriction records.
-	#    items.
-	# %$bmap -- A hash, indexed by txt field, to the set of all possible
-	#    restriction items.  For example, foe "restr" restrictions this
-	#    would be a map of the entry's kanj records.
-	# $attrname -- Name of the key used for the restr list for both "a"
-	#    and "b" records.
+	#    items.  For 'restr' items for example, this would be a list of
+	#    the "restr" text strings parsed from the xml file.
+	#
+	# mkrestr() creates restriction records and attaches them to
+	# the appropriate parent records.  Restrictions are created 
+	# for every text item in %$bmap *not* found in @$pos.  In the
+	# case or restr restrictions, %$bmap contains the entry's full
+	# set of kanj records (already created by previously parsing
+	# the XML <k_ele> items), and @$pos, the text's of the restrictions
+	# given in the XML <restr> elements.  The <restr> elmements give
+	# "allowed" reading-kanji combinations but the database stores
+	# "disallowed" combinations which is why we do the set difference
+	# (%$bmap - @$pos) operation.
+	# 
+	# Note that each created restriction record will be simply an
+	# empty hash, but will be referenced twice, once from the 
+	# %$a item's _restr (or _stagr or _stagk) list, and once from 
+	# a %$bmap value's (which is a ref to a kanj or rdng record)
+	# _restr (or ...) list.  The restriction records apperance in 
+	# these lists is all that is needed to create that correct
+	# database record later; no other info is needed which is why
+	# the hash respresenting the restriction list item is empty.
 
 	my ($v, $u, $restr_rec, $found);
 	foreach $b (values (%$bmap)) {

@@ -18,14 +18,49 @@
 
 	    <tr>
 	      <td>Entry:</td>
-	      <td colspan="2">
-		<span tal:if="not:true:e" tal:omit-tag="">New Entry</span>
-		<span tal:if="true:e" tal:omit-tag="">
-		  <span tal:replace="e/seq" tal:omit-tag="">seq</span>
-		  (<span tal:replace="kwabbr: 'SRC' e/src" tal:omit-tag="">src</span>)
-		  [<span tal:replace="kwabbr: 'STAT' e/stat" tal:omit-tag="">stat</span>]
-		  {<span tal:replace="e/id" tal:omit-tag="">id</span>}
-		  </span>
+	      <td>
+
+		<!-- Entry block -->
+		<table width="100%">
+		  <tr tal:if="false:e">
+		    <td colspan="4">New Entry</td></tr>
+		  <tr tal:if="true:e">
+		    <td>Id:</td>
+		    <td tal:contents="e/id"></td>
+		    <td>Stat:</td>
+		    <td tal:contents="kwabbr: 'STAT' e/stat"></td>
+		    </tr>
+		  <tr>
+		    <td>Src:</td>
+		    <td>
+		      <select name="src">
+			<span tal:repeat="s srcs" tal:omit-tag="">
+			  <option name="src" tal:if="false:e" tal:attributes="value s/id" tal:contents="s/kw"/>
+			  <span tal:if="true:e" tal:omit-tag="">
+			    <option name="src" tal:if="eq: s/id e/src" selected="1" tal:attributes="value s/id" tal:contents="s/kw"/>
+			    <option name="src" tal:if="not:eq: s/id e/src"          tal:attributes="value s/id" tal:contents="s/kw"/>
+			    </span>
+			  </span>
+			</select>
+		      </td>
+		    <td>Seq:</td>
+		    <td tal:if="false:e"><input type="text" name="seq" size="8" tal:attributes="value 'default'"/></td>
+		    <td tal:if="true:e"><input type="text" name="seq" size="8" tal:attributes="value e/seq"/></td>
+		    </tr>
+		  <tr>
+		    <td>Src note:</td><td colspan="3">
+		      <input name="srcnote" tal:if="false:e" type="text" width="100%"/>
+		      <input name="srcnote" tal:if="true:e" type="text" width="100%" tal:attributes="value e/srcnote"/>
+		      </td>
+		    </tr>
+		  <tr>
+		    <td>Entr note:</td><td colspan="3">
+		      <textarea name="notes" tal:if="false:e" wrap="physical" width="100%" rows="3"></textarea>
+		      <textarea name="notes" tal:if="true:e" wrap="physical" width="100%" rows="3" tal:contents="e/notes"></textarea>
+		      </td>
+		    </tr>
+		  </table>
+
 		</td>
 	      </tr>
 	    <tr>
@@ -59,27 +94,30 @@
 	    <tr>
 	      <td>References:</td>
 	      <td><textarea name="reference" wrap="physical" cols="60" rows="3"></textarea></td>
-	      <td>
-		</td></tr>
+	      <td></td>
+	      </tr>
 	    <tr>
 	      <td>Comments:</td>
 	      <td><textarea name="comment" wrap="physical" cols="60" rows="3"></textarea></td>
-	      <td>
-		</td></tr>
+	      <td></td>
+	      </tr>
 	    <tr>
 	      <td>Name:</td>
 	      <td><input type="text" name="name" size="30"/></td>
-	      <td>
-		</td></tr>
+	      <td></td>
+	      </tr>
 	    <tr>
 	      <td>Email:</td>
 	      <td><input type="text" name="email" size="30"/></td>
-	      <td>
-		</td></tr>
+	      <td></td>
+	      </tr>
 	    <tr>
 	      <td></td>
-	      <td colspan="2">
+	      <td>
 		<input type="submit" value="Submit"/>
+		<label for="approved"> Approved:</label>
+		<input type="checkbox" name="approved" id="approved"/>
+
 		<input type="hidden" name="id"  tal:if="e" tal:attributes="value e/id"/>
 		<input type="hidden" name="seq" tal:if="e" tal:attributes="value e/seq"/>
 		<input type="hidden" name="src" tal:if="e" tal:attributes="value e/src"/>
@@ -88,6 +126,7 @@
 		<input type="hidden" name="srcnote" tal:if="e" tal:attributes="value e/srcnote"/>
 		<input type="hidden" name="etxt" tal:attributes="value etxt"/>
 		</td>
+	      <td></td>
 	      </tr>
 
             </tbody>

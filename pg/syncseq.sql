@@ -21,7 +21,9 @@
 
 -- $Revision$ $Date$
 
-SELECT setval('entr_id_seq', (SELECT max(id) FROM entr));
-SELECT setval('seq', (SELECT MAX(seq) FROM entr WHERE seq<9000000));
-VACUUM ANALYZE
+SELECT setval('entr_id_seq',  (SELECT max(id) FROM entr));
+SELECT setval('seq_jmdict',   (SELECT MAX(seq) FROM entr WHERE src=1 AND seq<9000000));
+SELECT setval('seq_jmnedict', (SELECT MAX(seq) FROM entr WHERE src=2));
+SELECT setval('seq_examples', (SELECT MAX(seq) FROM entr WHERE src=3));
+SELECT setval('seq',          (SELECT MAX(seq) FROM entr WHERE src>3));
 

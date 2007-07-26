@@ -34,7 +34,7 @@ binmode (STDOUT, ":utf8");
 
     main: {
 	my ($dbh, $cgi, $tmpl, $tmptbl, @qlist, @elist, @errs, $sql, 
-	    @whr, $entries, $entr, $ktxt, $rtxt, $stxt);
+	    @whr, $entries, $entr, $ktxt, $rtxt, $stxt, $srcs);
 	binmode (STDOUT, ":encoding(utf-8)");
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
@@ -43,10 +43,10 @@ binmode (STDOUT, ":utf8");
 	@elist = $cgi->param ('e'); validaten (\@elist, \@errs);
 	if (@errs) { errors_page (\@errs);  exit; } 
 
+	$dbh = dbopen ();  $::KW = Kwds ($dbh);
 	if (@qlist) { push (@whr, "e.seq IN (" . join(",",map('?',(@qlist))) . ")"); }
 	if (@elist) { push (@whr, "e.id  IN (" . join(",",map('?',(@elist))) . ")"); }
 	if (@whr) {
-	    $dbh = dbopen ();  $::KW = Kwds ($dbh);
 	    $sql = "SELECT e.id FROM entr e WHERE " . join (" OR ", @whr);
 	    $tmptbl = Find ($dbh, $sql, [@qlist, @elist]);
 	    $entries = EntrList ($dbh, $tmptbl);
@@ -54,15 +54,18 @@ binmode (STDOUT, ":utf8");
 	    $entr = $entries->[0];
 	    $ktxt = jel_kanjs ($entr->{_kanj});
 	    $rtxt = jel_rdngs ($entr->{_rdng}, $entr->{_kanj});
-	    $stxt = jel_senss ($entr->{_sens}, $entr->{_kanj}, $entr->{_rdng});
-	    $dbh->disconnect; }
+	    $stxt = jel_senss ($entr->{_sens}, $entr->{_kanj}, $entr->{_rdng}); }
 	else {
 	    $ktxt = $rtxt = "";
 	    $stxt = "[1][n]"; }
+	$dbh->disconnect; 
+
+	$srcs = [sort {lc($a->{kw}) cmp lc($b->{kw})} kwrecs ($::KW, "SRC")];
+	unshift (@$srcs,{id=>0,kw=>"",descr=>""});
 
 	$tmpl = new Petal (file=>'../lib/tal/edform.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
-	print $tmpl->process ({e=>$entr, ktxt=>$ktxt, rtxt=>$rtxt, stxt=>$stxt}); }
+	print $tmpl->process ({e=>$entr, ktxt=>$ktxt, rtxt=>$rtxt, stxt=>$stxt, srcs=>$srcs}); }
 
     sub validaten { my ($list, $errs) = @_;
 	foreach my $p (@$list) {

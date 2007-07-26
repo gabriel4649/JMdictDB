@@ -26,7 +26,7 @@ BEGIN {
     @EXPORT_OK = qw(Tables KANA HIRAGANA KATAKANA KANJ); 
     @EXPORT = qw(dbread dbinsert Kwds kwrecs addids mktmptbl Find EntrList 
 		    matchup filt jstr_classify addentr erefs2xrefs xrefs2erefs
-		    get_seq zip fmtkr bld_erefs dbopen xrefdetails setkeys
+		    zip fmtkr bld_erefs dbopen xrefdetails setkeys
 		    resolv_xref fmt_jitem); }
 
 our(@VERSION) = (substr('$Revision$',11,-2), \
@@ -512,68 +512,36 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	# fields renumbered from 1 regardless of the values initially
 	# in them.  
 
-	my ($eid, $nrdng, $nkanj, $nsens, $ngloss, $nhist, $naudio, 
-	    $cntr2, $r, $k, $s, $g, $x, $h);
-	if (!$entr->{seq}) { $entr->{seq} = get_seq ($dbh, 'seq'); }
-	$entr->{id} = $eid = dbinsert ($dbh, "entr", ['src','seq','stat','srcnote','notes'], $entr);
-	foreach $h (@{$entr->{_hist}}) {
-	    $h->{entr} = $eid;  $h->{hist} = ++$nhist;
+	my ($eid, $r, $k, $s, $g, $x, $h, $rs);
+	if (!$entr->{seq}) { $entr->{seq} = undef; }
+	$eid = dbinsert ($dbh, "entr", ['src','seq','stat','srcnote','notes'], $entr);
+	setkeys ($entr, $eid);
+	foreach $h (@{$entr->{_hist}})   {
 	    dbinsert ($dbh, "hist", ['entr','hist','stat','dt','who','diff','notes'], $h); }
-	foreach $k (@{$entr->{_kanj}}) {
-	    $k->{entr} = $eid;  $k->{kanj} = ++$nkanj;
+	foreach $k (@{$entr->{_kanj}})   {
 	    dbinsert ($dbh, "kanj", ['entr','kanj','txt'], $k);
-	    foreach $x (@{$k->{_kinf}}) {
-		$x->{entr} = $eid;  $x->{kanj} = $nkanj;
-		dbinsert ($dbh, "kinf", ['entr','kanj','kw'], $x); } }
-	foreach $r (@{$entr->{_rdng}}) {
-	    $r->{entr} = $eid;  $r->{rdng} = ++$nrdng;
+	    foreach $x (@{$k->{_kinf}})  { dbinsert ($dbh, "kinf",  ['entr','kanj','kw'], $x); } }
+	foreach $r (@{$entr->{_rdng}})   {
 	    dbinsert ($dbh, "rdng", ['entr','rdng','txt'], $r);
-	    foreach $x (@{$r->{_rinf}}) {
-		$x->{$entr} = $eid;  $x->{rdng} = $nrdng;
-		dbinsert ($dbh, "rinf", ['entr','rdng','kw'], $x); }
-	    foreach $x (@{$r->{_audio}}) {
-		$x->{$entr} = $eid;  $x->{rdng} = $nrdng;  $x->{audio} = ++$naudio;
-		dbinsert ($dbh, "audio", ['entr','rdng','audio','fname','strt','leng','notes'], $x); }
-	    foreach $x (@{$r->{_restr}}) {
-		$x->{$entr} = $eid;  $x->{rdng} = $nrdng; 
-		$x->{kanj} = $x->{kanj}{kanj};
-		dbinsert ($dbh, "restr", ['entr','rdng','kanj'], $x); } }
+	    foreach $x (@{$r->{_rinf}})  { dbinsert ($dbh, "rinf",  ['entr','rdng','kw'], $x); }
+	    foreach $x (@{$r->{_audio}}) { dbinsert ($dbh, "audio", ['entr','rdng','audio','fname','strt','leng','notes'], $x); }
+	    foreach $x (@{$r->{_restr}}) { dbinsert ($dbh, "restr", ['entr','rdng','kanj'], $x); } }
 	foreach $x (@{$entr->{_freq}}) {
-	    $x->{entr} = $eid;  
 	    dbinsert ($dbh, "freq", ['entr','rdng','kanj','kw','value'], $x); } 
 	foreach $s (@{$entr->{_sens}}) {
-	    $s->{entr} = $eid;  $s->{sens} = ++$nsens;
 	    dbinsert ($dbh, "sens", ['entr','sens','notes'], $s);
-	    foreach $g (@{$s->{_gloss}}) {
-		$g->{entr} = $eid; $g->{sens} = $nsens; $g->{gloss} = ++$ngloss;
-		dbinsert ($dbh, "gloss", ['entr','sens','gloss','lang','ginf','txt'], $g); }
-	    foreach $x (@{$s->{_pos}}) {
-		$x->{entr} = $eid; $x->{sens} = $nsens;
-		dbinsert ($dbh, "pos", ['entr','sens','kw'], $x); }
-	    foreach $x (@{$s->{_misc}}) {
-		$x->{entr} = $eid; $x->{sens} = $nsens;
-		dbinsert ($dbh, "misc", ['entr','sens','kw'], $x); }
-	    foreach $x (@{$s->{_fld}}) {
-		$x->{entr} = $eid; $x->{sens} = $nsens;
-		dbinsert ($dbh, "fld", ['entr','sens','kw'], $x); }
-	    foreach $x (@{$s->{_dial}}) {
-		$x->{entr} = $eid; $x->{sens} = $nsens;
-		dbinsert ($dbh, "dial", ['entr','sens','kw'], $x); }
-	    foreach $x (@{$entr->{_lsrc}}) {
-		$x->{entr} = $eid; $x->{sens} = $nsens;
-		dbinsert ($dbh, "lsrc", ['entr','sens','lang','txt','part','wasei'], $x); }
-	    foreach $x (@{$s->{_stagr}}) {
-		$x->{entr} = $eid; $x->{sens} = $nsens;
-		$x->{rdng} = $x->{rdng}{id};
-		dbinsert ($dbh, "stagr", ['entr','sens','rdng'], $x); }
-	    foreach $x (@{$s->{_stagk}}) {
-		$x->{entr} = $eid; $x->{sens} = $nsens;
-		$x->{kanj} = $x->{kanj}{id};
-		dbinsert ($dbh, "stagk", ['entr','sens','kanj'], $x); }
-	    foreach $x (@{$s->{_xref}}) {
-		$x->{entr} = $eid; $x->{sens} = $nsens; 
-		$x->{xref} = $x->{xref}{id};
-		dbinsert ($dbh, "xref", ['entr','sens','xentr','xsens','typ','notes'], $x); } }
+	    foreach $g (@{$s->{_gloss}}) { dbinsert ($dbh, "gloss", ['entr','sens','gloss','lang','ginf','txt'], $g); }
+	    foreach $x (@{$s->{_pos}})   { dbinsert ($dbh, "pos",   ['entr','sens','kw'], $x); }
+	    foreach $x (@{$s->{_misc}})  { dbinsert ($dbh, "misc",  ['entr','sens','kw'], $x); }
+	    foreach $x (@{$s->{_fld}})   { dbinsert ($dbh, "fld",   ['entr','sens','kw'], $x); }
+	    foreach $x (@{$s->{_dial}})  { dbinsert ($dbh, "dial",  ['entr','sens','kw'], $x); }
+	    foreach $x (@{$s->{_lsrc}})  { dbinsert ($dbh, "lsrc",  ['entr','sens','lang','txt','part','wasei'], $x); }
+	    foreach $x (@{$s->{_stagr}}) { dbinsert ($dbh, "stagr", ['entr','sens','rdng'], $x); }
+	    foreach $x (@{$s->{_stagk}}) { dbinsert ($dbh, "stagk", ['entr','sens','kanj'], $x); }
+	    foreach $x (@{$s->{_xref}})  { dbinsert ($dbh, "xref",  ['entr','sens','xentr','xsens','typ','notes'], $x); } }
+	if (!$entr->{seq}) { 
+	    $rs = dbread ($dbh, "SELECT seq FROM entr WHERE id=?", [$eid]);
+	    $entr->{seq} = $rs->[0]{seq}; }
 	return ($eid, $entr->{seq}); }
 
     sub resolv_xref { my ($dbh, $kanj, $rdng, $slist, $typ,
@@ -687,14 +655,6 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 		$eid = $r->{entr}{id};
 	        $r->{sens} = [map ($_->{sens}, grep ($_->{entr}==$eid, @$srecs))]; } }
 	return \@erefs; } 
-
-    sub get_seq { my ($dbh, $seqname) = @_;
-	# Get and return a new entry sequence number.
-	if ($seqname ne "seq") { 
- 	    die "Get_seq() doesn't support sequence '$seqname' yet\n"; }
-	my $sql = "SELECT NEXTVAL('$seqname')";
-	my $a = $dbh->selectrow_arrayref($sql);
-	return $a->[0]; }
 
     sub fmtkr { my ($kanj, $rdng) = @_;
 	# If string $kanji is true return a string consisting

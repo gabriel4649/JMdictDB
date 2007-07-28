@@ -21,6 +21,10 @@
 -- $Revision$ $Date$
 -- JMdict schema for Postgresql
 
+\unset ON_ERROR_STOP 
+CREATE LANGUAGE 'plpgsql';
+\set ON_ERROR_STOP 
+
 -- Note: The commented-out ALTER TABLE and CREATE INDEX statements
 -- (where the comment's "--" starts in the first column and is
 -- followed immediately by text with no intervening space character,

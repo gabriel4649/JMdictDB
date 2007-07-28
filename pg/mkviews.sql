@@ -18,9 +18,8 @@
 --  Copyright (c) 2006,2007 Stuart McGraw 
 ---------------------------------------------------------------------------
 
-\unset ON_ERROR_STOP 
-CREATE LANGUAGE 'plpgsql';
 \set ON_ERROR_STOP 
+BEGIN;
 
 CREATE AGGREGATE accum ( 
     SFUNC = ARRAY_APPEND, 
@@ -284,3 +283,5 @@ CREATE OR REPLACE FUNCTION delentr(entrid int) RETURNS void AS $$
 	UPDATE entr SET stat=5 WHERE entr=entrid;
 	END;
     $$ LANGUAGE plpgsql;
+
+COMMIT;

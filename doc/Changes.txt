@@ -1,4 +1,76 @@
 
+2007-07-28 12:30	smcgrawx@frxii.com
+
+	Tag: T017 - prior to adding ordered xrefs (taskid-82) {146}
+
+	* pg/mktables.sql []
+	Move creation of plpgsql language from mkviews.sql to mktables.sql
+	  because it is needed for triggers in mktable.sql. {147}
+
+	* pg/mkviews.sql []
+	Wrap all actions in a transaction. {148}
+	Move creation of plpgsql language from mkviews.sql to mktables.sql
+	  because it is needed for triggers in mktable.sql. {147}
+
+2007-07-25 23:59	smcgrawx@frxii.com
+
+	* perl/cgi/edform.pl [1.5]
+	Make 'src' selection a drop-down box. {136}
+
+	* perl/cgi/edsubmit.pl [1.9]
+	Set 'seq' to undef rather then 0 to force db to assign from
+	  appropriate sequence. {144}
+
+	* perl/cgi/entr.pl [1.9]
+	Formerly checked that the received q=number was a 7-digit number
+	  since that is true for all jmdict seq numbers.  But not true for
+	  other corpuses so change to accept any number. {140}
+
+	* perl/lib/jmdict.pm [1.27]
+	Removed function get_seq() since addentr() no longer uses it per
+	  chgid-133. {139}
+	In function addentr() call setkeys() to set all the key values rather
+	  than doing it ourself. {138}
+	In function addentr(), don't assign a 'seq' value, leave it NULL and
+	  rely on the new entr table insert trigger to set it. {133}
+
+	* perl/lib/tal/edconf.tal [1.8]
+	Adjust layout of entr data to match current entr.tal {137}
+	Allow editing of entr data seq, srcnote, notes. {135}
+
+	* perl/lib/tal/edform.tal [1.4]
+	Make 'src' selection a drop-down box. {136}
+	Allow editing of entr data seq, srcnote, notes. {135}
+
+	* perl/lib/tal/entr.tal [1.13]
+	Display entr.srcnote and entr.notes fields. {134}
+
+	* perl/lib/tal/srchres.tal [1.5]
+	Give the full src tag for all src's rather than a one letter
+	  abbreviation for src's 1,2, and 3.. {143}
+
+	* pg/data/kwsrc.csv [1.3]
+	Add new column 'seq' to table 'kwsrc' for the name of the seq used to
+	  supply default 'seq' values to new 'entr' table rows. {130}
+
+	* pg/mktables.sql [1.21]
+	Add new column 'seq' to table 'kwsrc' for the name of the seq used to
+	  supply default 'seq' values to new 'entr' table rows. {130}
+	Create insert trigger on table 'entr' to assign src-depndent default
+	  seq values. {132}
+	New sequences 'seq_jmdict', 'seq_jmnedict', and 'seq_examples' to
+	  provide src-dependent default entr.seq values. {131}
+
+	* pg/syncseq.sql [1.9]
+	New sequences 'seq_jmdict', 'seq_jmnedict', and 'seq_examples' to
+	  provide src-dependent default entr.seq values. {131}
+
+2007-07-25 15:19	smcgrawx@frxii.com
+
+	* perl/jmparse.pl []
+	Fix: jmparse was not generating any restr records when a reading was
+	  marked "no_kanji". {142}
+
 2007-07-13 17:07	smcgrawx@frxii.com
 
 	* perl/jmload.pl [1.5]
@@ -9,12 +81,12 @@
 	  requiring the symbolic entr.id values used previously. {126}
 
 	* perl/lib/jmdictpgi.pm [1.7]
-	Make wrentr() write fixed entr.id numbers rather the symbolic form
-	  previously used. {125}
 	In finalize(), add additional parameter that will cause copy commands
 	  in output file to be wrapped in a transaction so that if anything
 	  fails when loading the file, nothing will be changed in the
 	  database. {129}
+	Make wrentr() write fixed entr.id numbers rather the symbolic form
+	  previously used. {125}
 
 	* perl/lib/tal/entr.tal [1.12]
 	Changed to allow display of entry even if there are no glosses in
@@ -287,8 +359,8 @@
 	  nwconf.tal. {69}
 
 	* perl/lib/jmdictxml.pm [1.14]
-	Add language ty (Tahitian) {70}
 	Add dialect 'kyu'. {73}
+	Add language ty (Tahitian) {70}
 
 	* perl/lib/kwstatic.pm [1.5]
 	Rebuild due to prerequisite file changes. {74}
@@ -303,9 +375,9 @@
 2007-05-22 09:19	smcgrawx@frxii.com
 
 	* Makefile [1.15]
-	Fix: Error in mv command of target "examples.txt". {62}
 	Fix: Examples file at Monash ftp site has extension ".utf", not
 	  ".utf8". {59}
+	Fix: Error in mv command of target "examples.txt". {62}
 
 	* perl/exparse.pl [1.5]
 	Fix: Was failing to set ginf column value in gloss table output. {64}
@@ -337,10 +409,10 @@
 	  things the old way. {53}
 
 	* README.txt [1.10]
-	Update the documentation for the schema changes related to jmdict dtd
-	  1.06 and gloss tags. {44}
 	Rewrite the install section based on using Makefile (which I have
 	  verified is useable on both Unix and Windows). {49}
+	Update the documentation for the schema changes related to jmdict dtd
+	  1.06 and gloss tags. {44}
 
 	* doc/Makefile [1.1]
 	* doc/README.txt [1.1]

@@ -73,10 +73,11 @@ CREATE VIEW xrefesum AS (
     -- Fixme: Should have DISTINCT added but doing so makes query 
     -- run 3 orders of magnituse slower, when e1.id is restricted
     -- by JOIN rather than WHERE clause.
-    SELECT e1.id, -- id of source entry
-	   x.typ,
-	   e2.id AS eid,         -- id of target entries 
-				  -- remainder of target entry info...
+    SELECT e1.id, 		-- id of source entry.
+	   x.xref,		-- order numb of xref.
+	   x.typ,		-- type of xref.
+	   e2.id AS eid,        -- id of target entries.
+				-- remainder of target entry info...
 	   e2.seq,e2.src,e2.stat,e2.nsens,e2.rdng,e2.kanj,e2.gloss
 	FROM entr e1
         JOIN xref x ON (x.entr=e1.id OR x.xentr=e1.id)
@@ -246,10 +247,10 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
 	  (SELECT _p0_,kw FROM dial WHERE dial.entr=entrid);
 	INSERT INTO lsrc(entr,sens,lang,txt,part,wasei) 
 	  (SELECT _p0_,kw FROM lsrc WHERE lang.entr=entrid);
-	INSERT INTO xref(entr,sens,xentr,xsens,typ,notes) 
-	  (SELECT _p0_,sens,xentr,xsens,typ,notes FROM xref WHERE entr=entrid);
-	INSERT INTO xref(entr,sens,xentr,xsens,typ,notes) 
-	  (SELECT entr,sens,_p0_,xsens,typ,notes FROM xref WHERE xentr=entrid);
+	INSERT INTO xref(entr,sens,xref,typ,xentr,xsens,notes) 
+	  (SELECT _p0_,sens,xref,typ,xentr,xsens,notes FROM xref WHERE entr=entrid);
+	INSERT INTO xref(entr,sens,xref,typ,xentr,xsens,notes) 
+	  (SELECT entr,sens,xref,typ,_p0_,xsens,notes FROM xref WHERE xentr=entrid);
 
 	INSERT INTO freq(entr,kanj,kw,value) 
 	  (SELECT _p0_,rdng,kanj,kw,value FROM freq WHERE entr=entrid);

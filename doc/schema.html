@@ -6,7 +6,7 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
 	<META NAME="CREATED" CONTENT="20020715;12385300">
 	<META NAME="CHANGEDBY" CONTENT="Stuart McGraw">
-	<META NAME="CHANGED" CONTENT="20070608;13555500">
+	<META NAME="CHANGED" CONTENT="20070728;18481700">
 	<META NAME="SDENDNOTE" CONTENT="ARABIC;;[;]">
 	<STYLE>
 	<!--
@@ -25,10 +25,12 @@
 		P.list-2-start-cjk { margin-left: 0.5in; text-indent: -0.25in; margin-bottom: 0.08in }
 		P.list-2-start-ctl { margin-left: 0.5in; text-indent: -0.25in; margin-bottom: 0.08in; font-family: "Tahoma" }
 		TD P { margin-bottom: 0.08in }
+		P.sdfootnote { margin-left: 0.2in; text-indent: -0.2in; margin-bottom: 0.2in; font-size: 10pt }
 		P.sdendnote { margin-left: 0.2in; text-indent: -0.2in; margin-bottom: 0.2in; background: transparent; font-size: 10pt; page-break-before: auto }
 		A:link { color: #000000 }
 		SAMP.western { font-size: 9pt }
 		SAMP.cjk { font-family: "DejaVu LGC Sans Mono", monospace }
+		A.sdfootnoteanc { font-size: 57% }
 		A.sdendnoteanc { font-size: 57% }
 	-->
 	</STYLE>
@@ -166,7 +168,7 @@ database tables as a hierarchy with parent-child relationships
 denoted by indentation of the table names:</P>
 <P STYLE="margin-bottom: 0.2in"><BR><BR>
 </P>
-<TABLE WIDTH=100% BORDER=1 BORDERCOLOR="#000000" CELLPADDING=4 CELLSPACING=0>
+<TABLE WIDTH=100% BORDER=1 BORDERCOLOR="#000000" CELLPADDING=4 CELLSPACING=0 STYLE="page-break-after: avoid">
 	<COL WIDTH=53*>
 	<COL WIDTH=72*>
 	<COL WIDTH=131*>
@@ -306,13 +308,13 @@ denoted by indentation of the table names:</P>
 	</TR>
 	<TR VALIGN=TOP>
 		<TD WIDTH=21%>
-			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>gloss</B></P>
+			<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>gloss<A CLASS="sdfootnoteanc" NAME="sdfootnote1anc" HREF="#sdfootnote1sym"><SUP>1</SUP></A></B></P>
 		</TD>
 		<TD WIDTH=28%>
 			<P>&lt;gloss&gt;</P>
 		</TD>
 		<TD WIDTH=51%>
-			<P>English and other language glosses</P>
+			<P>English and other language translations</P>
 		</TD>
 	</TR>
 	<TR VALIGN=TOP>
@@ -405,6 +407,8 @@ denoted by indentation of the table names:</P>
 		</TD>
 	</TR>
 </TABLE>
+<P STYLE="margin-top: 0.08in"><FONT SIZE=2><I>Table 1: Entr database
+tables hierarchy</I></FONT></P>
 <P STYLE="margin-bottom: 0.2in"><BR>The <I><U>restr</U></I> table,
 for example, contains information about invalid combinations of
 readings and kanji and therefore needs to reference rows in both of
@@ -564,7 +568,7 @@ JMdict xml occur as equi-valued pairs, that is there might be a
 ke_pri element with the value &quot;nf32&quot; on a particular kani
 element, and a re_pri tag also with the value &quot;nf32&quot; on a
 particular reading element. The equal values imply that the
-frequency-of-use indicator refers to the tagged kanji and readings as
+frequency-of-use indicator refers to the tagged kanji and reading as
 a pair, not to each independently. There are some ke_pri or re_pri
 that are not paired and they apply to the kanji or reading alone. 
 </P>
@@ -596,7 +600,10 @@ other) kinds of cross references are modeled in table <I><U>xref</U></I>.
 As in JMdict XML, cross references occur within senses, which is
 represented in the <I><U>xref</U></I> table using columns <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>
 and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens</SPAN></SPAN></I>
-to indentify the originating sense. Differing from JMdict XML, the
+to identify the originating sense. Since the order of xrefs is
+significant, the column <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">xref</SPAN></SPAN></I>
+orders the xrefs in a sense and the columns <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr</SPAN></SPAN></I>,<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens</SPAN></SPAN></I>,<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">xref</SPAN></SPAN></I>
+constitute the table's primary key.  Differing from JMdict XML, the
 <I><U>xref</U></I> table gives the target of the cross-reference as a
 another entry-sense pair, <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">xentr</SPAN></SPAN></I>
 and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">xsens</SPAN></SPAN></I>
@@ -995,7 +1002,7 @@ WHERE r.txt LIKE '%</FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=
 <BR>    AND k.txt LIKE '%</FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><SPAN LANG="ja-JP">漬</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt">%'<BR>
    AND p.kw != 17;</FONT></FONT></P>
 <P STYLE="margin-bottom: 0.2in">It is noteworthy that the <I><U>sens</U></I>
-table was not needed in the above two queries, even though it is
+table was not needed in the above two queries, even though it is lies
 between <I><U>entr</U></I> and <I><U>pos</U></I> in the table
 hierarchy.</P>
 <OL>
@@ -1020,7 +1027,7 @@ but will be included in a future version of this paper.
 	<LI><H1 CLASS="western"> Annotated Schema</H1>
 </OL>
 <P>The Postgresql DDL statements below will create the tables
-described above.  They are based on revision 1.19 (2007/06/08) of
+described above.  They are based on revision 1.23 (2007/07/28) of
 mktables.sql.  As commonly happens, this documentation may lag behind
 the code and so should not be taken as definitive.<SAMP CLASS="western"><BR></SAMP><BR><BR>
 </P>
@@ -1045,11 +1052,14 @@ space.)</SAMP></P>
 SMALLINT NOT NULL,<BR>      -- References table <I><U>kwstat</U></I>
 and indicates the status of this<BR>      -- entry.  Typical values
 are &quot;active&quot;, &quot;new&quot;, &quot;modified&quot;.<BR>   
-  -- &quot;delete pending&quot;, &quot;deleted&quot;, etc.<BR>   
-notes TEXT<BR>      -- Arbitrary textual information about this
-entry.  Will be<BR>      -- displayed by applications.<BR>    
-);<BR><BR>CREATE SEQUENCE seq <BR>      -- This is a sequence for
-getting new <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.seq</SPAN></SPAN></I>
+  -- &quot;delete pending&quot;, &quot;deleted&quot;, etc.</SAMP></P>
+<P><SAMP CLASS="western">    </SAMP><SAMP CLASS="western">srcnote
+VARCHAR(255),<BR>      -- Additional ad-hoc information about the
+source of this<BR>      -- entry.</SAMP></P>
+<P><SAMP CLASS="western">    </SAMP><SAMP CLASS="western">notes TEXT<BR>
+     -- Arbitrary textual information about this entry.  Will be<BR> 
+    -- displayed by applications.<BR>     );<BR><BR>CREATE SEQUENCE
+seq <BR>      -- This is a sequence for getting new <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.seq</SPAN></SPAN></I>
 values.  It is<BR>      -- not <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.seq</SPAN></SPAN></I>'s
 default value and applications are expected<BR>      -- to get new
 seq values and apply them when needed.<BR>      -- MAXVALUE is
@@ -1105,15 +1115,18 @@ and &lt;ant&gt;.<BR>    entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="tex
  Identifies the entry this cross-reference<BR>      -- belongs to.<BR>
    sens SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.id</SPAN></SPAN></I>.
  Identifies the sense this cross-reference<BR>      -- belongs to.<BR>
-   xentr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+   xref SMALLINT NOT NULL,<BR>      -- D<SAMP CLASS="western">isambiguates
+and orders multiple xrefs in a sense.</SAMP><BR><SAMP CLASS="western">
+   typ SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwxref.id</SPAN></SPAN></I>.
+ Identifies the type of cross reference.<BR></SAMP>    xentr INT NOT
+NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
  Identifies the entry this cross-reference<BR>      -- points to.<BR>
    xsens SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.id</SPAN></SPAN></I>.
  Identifies the sense this cross-reference<BR>      -- points to.<BR>
-   typ SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwxref.id</SPAN></SPAN></I>.
- Identifies the type of cross reference.<BR>    notes TEXT,<BR>     
--- Additional textual information pertaining to this cross-<BR>     
--- reference for display to user when this cross-reference<BR>     
--- is displayed.<BR>    PRIMARY KEY (entr,sens,xentr,xsens,typ));</SAMP></P>
+   notes TEXT,<BR>      -- Additional textual information pertaining
+to this cross-<BR>      -- reference for display to user when this
+cross-reference<BR>      -- is displayed.<BR>    PRIMARY KEY
+(entr,sens,xref));</SAMP></P>
 <P><SAMP CLASS="western"><BR>CREATE TABLE hist (<BR>      -- This
 table maintains a series of history records for each<BR>      --
 entry that documents significant changes to the entry.<BR>      --
@@ -1315,6 +1328,14 @@ VARCHAR(255));<BR><BR>CREATE TABLE kwxref (<BR>    id SMALLINT
 PRIMARY KEY,<BR>    kw VARCHAR(20) NOT NULL UNIQUE,<BR>    descr
 VARCHAR(255));<BR></SAMP><BR><BR>
 </P>
+<DIV ID="sdfootnote1">
+	<P CLASS="sdfootnote"><A CLASS="sdfootnotesym" NAME="sdfootnote1sym" HREF="#sdfootnote1anc">1</A>The
+	name “gloss” for this table is a misnomer but it is too much
+	work to change at this point.  In addition to glosses it contains
+	several types of non-gloss translational entities such as literal
+	translations.  The <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">ginf</SPAN></SPAN></I>
+	column value indicates the type of translational entity in each row.</P>
+</DIV>
 <DIV ID="sdendnote1">
 	<P CLASS="sdendnote" STYLE="margin-left: 0in; text-indent: 0in"><A CLASS="sdendnotesym" NAME="sdendnote1sym" HREF="#sdendnote1anc">[1]</A><A HREF="http://www.jb.something/">
 	http://www.csse.monash.edu.au/~jwb/edict_doc.html</A></P>
@@ -1355,7 +1376,7 @@ VARCHAR(255));<BR></SAMP><BR><BR>
 		<COL WIDTH=85*>
 		<TR VALIGN=TOP>
 			<TD WIDTH=50%>
-				<P><FONT SIZE=1 STYLE="font-size: 8pt">Stuart McGraw, 2007-06-08</FONT></P>
+				<P><FONT SIZE=1 STYLE="font-size: 8pt">Stuart McGraw, 2007-07-28</FONT></P>
 			</TD>
 			<TD WIDTH=17%>
 				<P><BR>

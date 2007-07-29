@@ -1,13 +1,67 @@
 
+2007-07-28 22:20	smcgrawx@frxii.com
+
+	* Makefile [1.22]
+	Fix: The gunzip command in section jmdict.xml started failing with
+	  message that it could not find file.  Problem seems to be related
+	  to space characterr in directory name.  Suspect it started after
+	  gunzip or make was upgraded during a Cygwin upgrade.  Changed
+	  command to "sh gunzip ..." which seems to fix problem. {158}
+
+	* doc/schema.dia [1.7]
+	* doc/schema.html [1.5]
+	* doc/schema.odt [1.7]
+	* doc/schema.pdf [1.3]
+	* doc/schema.png [1.8]
+	Updated for changes to xref table. {149}
+
+	* perl/lib/jmdict.pm [1.28]
+	* perl/lib/jmdictpgi.pm [1.8]
+	Adjust for changes to table xref. {154}
+
+	* perl/lib/jmdictcgi.pm [1.5]
+	Remove functions cgientr(), resolv_xrefs(), and parse_xref().
+	  cgientr() created an entr object from wwwjdic-like entry form and
+	  has been replaced by the jbparser:: stuff.  The xref_resolv() is
+	  replaced by a similar function with same name in jmdict::. {145}
+
+	* perl/lib/jmdictfmt.pm [1.4]
+	Print the xref target sense list in brackets rather than parens to
+	  match the syntax used by the JEL parser. {157}
+	Supress printing xref target sense numbers only if there is one xref
+	  to target entry and target entry has only one sense.  Formerly they
+	  were suppressed when the number of target senses matched the number
+	  of xrefs, but I think we want to know when there is more than one.
+	  {156}
+
+	* pg/drpindex.sql [1.5]
+	* pg/mkindex.sql [1.15]
+	Remade due to changes in prerequisite mktables.sql. {153}
+
+	* pg/mktables.sql [1.23]
+	Add column "xref" to table xref, and change the PK from
+	  (entr,sens,xentr,xsens,typ) to (entr,sens,xref).  What was formerly
+	  the PK is now a unique index. {150}
+	Create an insert trigger on table xref that will automatically assign
+	  value to column "xref". {151}
+
+	* pg/mkviews.sql [1.20]
+	Adjust function adddup() and view xrefsum for change to xref table.
+	  {152}
+
+	* pg/xresolv.sql [1.9]
+	Expand comments significantly. {155}
+	Adjust for changes to table xref. {154}
+
 2007-07-28 12:30	smcgrawx@frxii.com
 
 	Tag: T017 - prior to adding ordered xrefs (taskid-82) {146}
 
-	* pg/mktables.sql []
+	* pg/mktables.sql [1.22]
 	Move creation of plpgsql language from mkviews.sql to mktables.sql
 	  because it is needed for triggers in mktable.sql. {147}
 
-	* pg/mkviews.sql []
+	* pg/mkviews.sql [1.19]
 	Wrap all actions in a transaction. {148}
 	Move creation of plpgsql language from mkviews.sql to mktables.sql
 	  because it is needed for triggers in mktable.sql. {147}
@@ -81,12 +135,12 @@
 	  requiring the symbolic entr.id values used previously. {126}
 
 	* perl/lib/jmdictpgi.pm [1.7]
+	Make wrentr() write fixed entr.id numbers rather the symbolic form
+	  previously used. {125}
 	In finalize(), add additional parameter that will cause copy commands
 	  in output file to be wrapped in a transaction so that if anything
 	  fails when loading the file, nothing will be changed in the
 	  database. {129}
-	Make wrentr() write fixed entr.id numbers rather the symbolic form
-	  previously used. {125}
 
 	* perl/lib/tal/entr.tal [1.12]
 	Changed to allow display of entry even if there are no glosses in
@@ -375,9 +429,9 @@
 2007-05-22 09:19	smcgrawx@frxii.com
 
 	* Makefile [1.15]
+	Fix: Error in mv command of target "examples.txt". {62}
 	Fix: Examples file at Monash ftp site has extension ".utf", not
 	  ".utf8". {59}
-	Fix: Error in mv command of target "examples.txt". {62}
 
 	* perl/exparse.pl [1.5]
 	Fix: Was failing to set ginf column value in gloss table output. {64}
@@ -409,10 +463,10 @@
 	  things the old way. {53}
 
 	* README.txt [1.10]
-	Rewrite the install section based on using Makefile (which I have
-	  verified is useable on both Unix and Windows). {49}
 	Update the documentation for the schema changes related to jmdict dtd
 	  1.06 and gloss tags. {44}
+	Rewrite the install section based on using Makefile (which I have
+	  verified is useable on both Unix and Windows). {49}
 
 	* doc/Makefile [1.1]
 	* doc/README.txt [1.1]

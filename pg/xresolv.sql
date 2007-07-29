@@ -176,13 +176,23 @@ VACUUM ANALYZE _xrsv;
 -- not included in the insert; there is an insert trigger
 -- on the table that will automatically supply incrementing 
 -- values to make the primary key of each row unique.
+--
+-- The select below connects the xref info in table
+-- resolv to the actual target entries in table _xrsv
+-- and expands the results to each sense of the target 
+-- entries.  The GROUP BY is necessary because some 
+-- entries (e.g. 1333970) have two xrefs that resolve
+-- to the same entry (typically a kanji and reading
+-- intended to convey that the intended xref is the
+-- entry with that pair.)
 
 INSERT INTO xref(entr,sens,typ,xentr,xsens,notes)
-    (SELECT DISTINCT x.entr,x.sens,z.typ,x.xentr,s.sens,z.notes
+    (SELECT x.entr,x.sens,z.typ,x.xentr,s.sens as xsens,z.notes
     FROM _xrsv x 
     JOIN xresolv z ON z.entr=x.entr AND z.sens=x.sens AND z.ord=x.ord
     JOIN sens s ON s.entr=x.xentr
     WHERE x.entr != x.xentr
-    ORDER BY x.entr,x.sens,z.typ,x.xentr,s.sens);
+    GROUP BY x.entr,x.sens,z.typ,x.xentr,s.sens,z.notes
+    ORDER BY x.entr,x.sens,z.typ,MIN(x.ord),x.xentr,s.sens)
 
 VACUUM ANALYZE xref;

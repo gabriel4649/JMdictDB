@@ -10,6 +10,7 @@ DROP INDEX kanj_txt;
 DROP INDEX kanj_txt1;
 DROP INDEX gloss_txt; 
 DROP INDEX gloss_txt1;
+DROP INDEX xref_entr_unq;
 DROP INDEX xref_xentr;
 DROP INDEX hist_dt;
 DROP INDEX hist_who;

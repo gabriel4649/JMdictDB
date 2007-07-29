@@ -88,7 +88,7 @@ all:
 jmdict.xml: 
 	rm -f JMdict_e.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/JMdict_e.gz
-	gunzip JMdict_e.gz
+	sh gunzip JMdict_e.gz
 	mv JMdict_e jmdict.xml
 
 jmdict.pgi: jmdict.xml

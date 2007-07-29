@@ -51,8 +51,8 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    lsrc =>  {pk=>["entr","sens","lang","txt"],parent=>"sens", fk=>["entr","sens"], al=>"l"},
 	    stagr => {pk=>["entr","sens","rdng"],  parent=>"sens", fk=>["entr","sens"], al=>"sr"},
 	    stagk => {pk=>["entr","sens","kanj"],  parent=>"sens", fk=>["entr","sens"], al=>"sk"},
-	    xrefe => {pk=>["entr","sens","xentr","xsens"], parent=>"sens", fk=>["entr","sens"], al=>"x"},
-	    xrere => {pk=>["entr","sens","xentr","xsens"], parent=>"sens", fk=>["xentr","xsens"], al=>"xr"},};
+	    xrefe => {pk=>["entr","sens","xref"],  parent=>"sens", fk=>["entr","sens"], al=>"x"},
+	    xrere => {pk=>["entr","sens","xref"],  parent=>"sens", fk=>["xentr","xsens"], al=>"xr"},};
 
 
     sub dbread { my ($dbh, $sql, $args) = @_;
@@ -202,7 +202,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	my $stagr = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN stagr x ON x.entr=t.id;");
 	my $stagk = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN stagk x ON x.entr=t.id;");
 	my $freq  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN freq  x ON x.entr=t.id;");
-	my $xref  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN xref  x ON x.entr=t.id;");
+	my $xref  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN xref  x ON x.entr=t.id ORDER BY x.entr,x.sens,x.xref;");
 	my $xrer  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN xref  x ON x.xentr=t.id;");
 	$::Debug->{'Obj retrieval time'} = time() - $start;
 
@@ -500,7 +500,8 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    if ($s->{_stagr}) { foreach $x (@{$s->{_stagr}}) { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
 	    if ($s->{_xrslv}) { foreach $x (@{$s->{_xrslv}}) { $x->{entr} = $eid;  $x->{sens} = $nsens;  
 								 $x->{ord} = ++$nxr } }
-	    if ($s->{_xref})  { foreach $x (@{$s->{_xref}})  { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
+	    if ($s->{_xref})  { foreach $x (@{$s->{_xref}})  { $x->{entr} = $eid;  $x->{sens} = $nsens;  
+								 $x->{ord} =   $nxr  } }
 	    if ($s->{_xrer})  { foreach $x (@{$s->{_xrer}})  { $x->{xentr}= $eid;  $x->{xsens}= $nsens; } } } }
 	if ($e->{_hist}) { foreach $x (@{$e->{_hist}})       { $x->{entr} = $eid;  $x->{hist} = ++$nhist; } } }
 
@@ -538,7 +539,7 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    foreach $x (@{$s->{_lsrc}})  { dbinsert ($dbh, "lsrc",  ['entr','sens','lang','txt','part','wasei'], $x); }
 	    foreach $x (@{$s->{_stagr}}) { dbinsert ($dbh, "stagr", ['entr','sens','rdng'], $x); }
 	    foreach $x (@{$s->{_stagk}}) { dbinsert ($dbh, "stagk", ['entr','sens','kanj'], $x); }
-	    foreach $x (@{$s->{_xref}})  { dbinsert ($dbh, "xref",  ['entr','sens','xentr','xsens','typ','notes'], $x); } }
+	    foreach $x (@{$s->{_xref}})  { dbinsert ($dbh, "xref",  ['entr','sens','xref','typ','xentr','xsens','notes'], $x); } }
 	if (!$entr->{seq}) { 
 	    $rs = dbread ($dbh, "SELECT seq FROM entr WHERE id=?", [$eid]);
 	    $entr->{seq} = $rs->[0]{seq}; }
@@ -552,11 +553,12 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	# $slist -- Ref to array of sense numbers.  Resolved xrefs
 	#   will be limited to these target senses. 
 	# $typ -- (int) Type of reference per $::KW->{XREF}.
-	# $one_entr_only -- Error of xref resolves two more than one entry.
-	#   Regardless of this value, it is always an error is $slist is 
-	#   given and the xref resolves to more than one entry.
-	# $one_sens_only -- Error if $slist not given and any of the 
-	#   resolved entries have more than one sense. 
+	# $one_entr_only -- Raise error if xref resolves to more than
+	#   one entry.  Regardless of this value, it is always an error
+	#   if $slist is given and the xref resolves to more than one
+	#   entry.
+	# $one_sens_only -- Raise error if $slist not given and any
+	#   of the resolved entries have more than one sense. 
 	# 
 	# resolv_xref() returns a list of erefs.  Each eref item
 	# is a ref to a 3-element hash:

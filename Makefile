@@ -88,7 +88,7 @@ all:
 jmdict.xml: 
 	rm -f JMdict_e.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/JMdict_e.gz
-	sh gunzip JMdict_e.gz
+	gzip -d JMdict_e.gz
 	mv JMdict_e jmdict.xml
 
 jmdict.pgi: jmdict.xml
@@ -111,7 +111,7 @@ loadjm: jmdict.dmp
 jmnedict.xml: 
 	rm -f JMnedict.xml.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/JMnedict.xml.gz
-	gunzip JMnedict.xml.gz
+	gzip -d JMnedict.xml.gz
 	mv JMnedict.xml jmnedict.xml
 
 jmnedict.pgi: jmnedict.xml
@@ -131,7 +131,7 @@ loadne: jmnedict.dmp
 examples.txt: 
 	rm -f examples.utf.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/examples.utf.gz
-	gunzip examples.utf.gz
+	gzip -d examples.utf.gz
 	mv examples.utf examples.txt
 
 examples.pgi: examples.txt 
@@ -156,11 +156,12 @@ loadall: jmdict.dmp jmnedict.pgi examples.pgi
 	cd pg && psql $(PG_HOST) $(PG_USER) -f reload.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmdict.dmp
 
+	cd perl && perl jmload.pl -o ../examples.dmp ../examples.pgi
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../examples.dmp
+
 	cd perl && perl jmload.pl -o ../jmnedict.dmp ../jmnedict.pgi
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmnedict.dmp
 
-	cd perl && perl jmload.pl -o ../examples.dmp ../examples.pgi
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../examples.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f postload.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f xresolv.sql
 

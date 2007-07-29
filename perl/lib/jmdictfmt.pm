@@ -388,18 +388,15 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    else { $txt = $x->{entr}{kanj} || $x->{entr}{rdng}; }
 	    $txt .= (" " . $x->{entr}{gloss});
 
-	      # If the number of senses pointed to by our xrefs is the
-	      # same as the number of senses in the target entry, don't
-	      # mentions the senses at all.  This xref points to entire 
-	      # entry.  Otherwise, give the senses pointed to a list of
-	      # sense numbers.
-	      # N.B. might want to always print the list if number of 
-	      # target senses is greater than 1.   Rational is that such
-	      # mutiple senses are probably in error (residue of JMdict
-	      # xml's sense->entry semantics) and should be reviewed.
+	      # If the number of senses pointed to by our xrefs is 1, and
+	      # the target has only one sense, then don't mention the senses
+	      # at all.  Otherwise list the senses explicitly.
+	      # Rational is that non-"only sense" needs to be mentioned and
+	      # mutiple senses are probably in error (residue of JMdict xml's
+	      # sense->entry semantics) and should be reviewed.
 
-	    if ($x->{entr}{nsens} == scalar (@{$x->{sens}})) { $slist = ""; }
-	    else { $slist = "(" . join (",", @{$x->{sens}}) . ")"; }
+	    if ($x->{entr}{nsens} == 1 and scalar (@{$x->{sens}}) == 1) { $slist = ""; }
+	    else { $slist = "[" . join (",", @{$x->{sens}}) . "]"; }
 
 	      # Print the xref info.
 

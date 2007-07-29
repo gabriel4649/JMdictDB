@@ -184,16 +184,33 @@ CREATE TABLE gloss (
 CREATE TABLE xref (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
+    xref SMALLINT NOT NULL CHECK(xref>0),
+    typ SMALLINT NOT NULL,
     xentr INT NOT NULL CHECK(xentr!=entr),
     xsens SMALLINT NOT NULL,
-    typ SMALLINT NOT NULL,
     notes TEXT,
-    PRIMARY KEY (entr,sens,xentr,xsens,typ));
+    PRIMARY KEY (entr,sens,xref));
+--CREATE UNIQUE INDEX xref_entr_unq ON xref(entr,sens,xentr,xsens,typ);
 --CREATE INDEX xref_xentr ON xref(xentr,xsens);
 --ALTER TABLE xref ADD CONSTRAINT xref_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE xref ADD CONSTRAINT xref_xentr_fkey FOREIGN KEY (xentr,xsens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE xref ADD CONSTRAINT xref_typ_fkey FOREIGN KEY (typ) REFERENCES kwxref(id);
 
+CREATE FUNCTION xref_xrefdef() RETURNS trigger AS $$
+    DECLARE xnum VARCHAR;
+    BEGIN
+        IF NEW.xref IS NOT NULL THEN 
+	    RETURN NEW;
+	    END IF;
+	SELECT 1+COALESCE(MAX(xref),0) INTO xnum FROM xref 
+	  WHERE entr=NEW.entr AND sens=NEW.sens AND typ=NEW.typ;
+        NEW.xref := xnum;
+        RETURN NEW;
+        END;
+    $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER xref_xrefdef BEFORE INSERT ON xref
+    FOR EACH ROW EXECUTE PROCEDURE xref_xrefdef();
 
 CREATE TABLE hist (
     entr INT NOT NULL,

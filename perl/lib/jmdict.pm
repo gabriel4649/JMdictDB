@@ -442,11 +442,12 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 		    # info for a subset of xrefs, so now just ignore xrefs for which
 		    # we can't find summary info.
 		    next; }
-		$h{$k} = {srce=>$x->{$srce}, srcs=>$x->{$srcs}, typ=>$x->{typ},entr=>$e,sens=>[$x->{$targs}]}; } }
+		$h{$k} = {srce=>$x->{$srce}, srcs=>$x->{$srcs}, xref=>$x->{xref}, typ=>$x->{typ}, entr=>$e, sens=>[$x->{$targs}]}; } }
 	foreach $v (values (%h)) { push (@a, $v); }
 	@a = sort {($a->{srce} <=> $b->{srce}) || 
 		   ($a->{srcs} <=> $b->{srcs}) || 
 		   ($a->{typ}  <=> $b->{typ})  || 
+		   ($a->{xref} <=> $b->{xref}) || 
 		   ($a->{entr}{eid} <=> $b->{entr}{eid})} @a;
 	return \@a; }
 

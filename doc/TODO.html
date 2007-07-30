@@ -18,7 +18,7 @@
 <body>
   <h1>JMdictDB To-Do List</h1>
   <span class="gendate">
-    This list was current as of 2007-07-28 22:28
+    This list was current as of 2007-07-29 18:22
     </span>
   <table class="todo">
     
@@ -260,6 +260,66 @@ could add src dropdown near the entr-id/seq box, or just make the form pay atten
       
       
       <tr class="row">
+	<td class="id">1</td>
+	
+	  <td class="title" colspan="2">Approval process flow</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to work out details of approval process in terms of data changes and the web pages needed to support those changes. [Need "edit entry" page first]
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">12</td>
+	
+	  <td class="title" colspan="2">Modperl</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Support Apache/modperl.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">3</td>
+	
+	  <td class="title" colspan="2">Edit entry page</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need page that allows user to submit modifcations of existing entries.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">2</td>
 	
 	  <td class="title" colspan="2">Paged results</td>
@@ -298,69 +358,29 @@ could add src dropdown near the entr-id/seq box, or just make the form pay atten
       </span><span omit-tag="">
       
       
-      
-      <tr class="row">
-	<td class="id">1</td>
-	
-	  <td class="title" colspan="2">Approval process flow</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to work out details of approval process in terms of data changes and the web pages needed to support those changes. [Need "edit entry" page first]
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">3</td>
-	
-	  <td class="title" colspan="2">Edit entry page</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need page that allows user to submit modifcations of existing entries.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">12</td>
-	
-	  <td class="title" colspan="2">Modperl</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Support Apache/modperl.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
       <tr class="priohdr">
         <td colspan="5">Priority 'med' items</td>
 	</tr>
+      <tr class="row">
+	<td class="id">84</td>
+	
+	  <td class="title" colspan="2">Makefile gunzip command fails on Windows</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-07-28 22:49</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Makefile version 1.20 started failing on gunzip command in the jmdict.xml section.  Get message about file not found (not sure what file but message implies problem has to do with space character in path name.)  In Makefile-1.21 I changed the gunzip command to "sh gunzip ..." which fixes problem on Windows but brEAKS ON uNIX.  Problem is Windows Cygwin gunzip is now a shell script that runs as gunzip ok in cygwin shell, but requires explicit sh invocation when run in Windows outside of Cygwin shell.  However on Unix machines "sh gunzip ..." fails because gunzip is an executable, not a shell script.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
       <tr class="row">
 	<td class="id">76</td>
 	
@@ -532,6 +552,26 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
+	<td class="id">25</td>
+	
+	  <td class="title" colspan="2">Untrusted storables</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">newsub.pl -- Is it safe to receive a Storable?
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">4</td>
 	
 	  <td class="title" colspan="2">Editor search page</td>
@@ -680,26 +720,6 @@ Entr objects being created for output need not supply record numbers.  User of o
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">Need an overall Design and Implementation docs
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">25</td>
-	
-	  <td class="title" colspan="2">Untrusted storables</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">newsub.pl -- Is it safe to receive a Storable?
 </td>
 	</tr>
       

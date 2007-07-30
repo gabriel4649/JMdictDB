@@ -1,4 +1,19 @@
 
+2007-07-29 18:20	smcgrawx@frxii.com
+
+	* Makefile [1.23]
+	Fix: Previous change to "sh gunzip ..." command doesn't work on Unix.
+	  Change to "gzip -d" which hopefully will work everywhere.  Also
+	  change all occurances of gunzip. {159}
+
+	* perl/lib/jmdict.pm [1.29]
+	In function bld_erefs() include new xref table field "xref" to that
+	  it will mantain xref order. {161}
+
+	* pg/xresolv.sql [1.10]
+	Fix: The previous changes intended to generate xrefs in jmdict order
+	  did not do so.  Think it is fixed now. {160}
+
 2007-07-28 22:20	smcgrawx@frxii.com
 
 	* Makefile [1.22]

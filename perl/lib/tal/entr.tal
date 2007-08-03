@@ -111,40 +111,40 @@
 		</span>
 	      </span>
 
-	    <table class="xrefs" tal:if="or: true:s/_erefs true:s/_erers">
-	      <tr tal:if="true:s/_erefs">
+	    <table class="xrefs" tal:if="or: true:s/_xref true:s/_xrer">
+	      <tr tal:if="true:s/_xref">
 		<td colspan="2">Cross references:</td>   
 	        </tr>
-	      <tr tal:if="true:s/_erefs" tal:repeat="x s/_erefs">
+	      <tr tal:if="true:s/_xref" tal:repeat="x s/_xref">
 		<td>&nbsp;</td>
 		<td>
 		  <span tal:replace="kwabbr: 'XREF' x/typ">xref-type</span>:
-		  <a tal:attributes="href string:entr.pl?e=${x/entr/eid}" tal:content="x/entr/seq">seq-num</a>
-		  <span tal:if="gt: x/entr/nsens string:1">
-		    (<span tal:replace="join: ',' x/sens">senses</span>)</span>
-		  <span tal:replace="x/entr/kanj">xref-kanj</span>
-		  <span tal:if="and: x/entr/kanj x/entr/rdng" tal:omit-tag="">【</span>
-		  <span tal:replace="x/entr/rdng">xref-rdng</span>
-		  <span tal:if="and: x/entr/kanj x/entr/rdng" tal:omit-tag="">】</span>
-		  <span tal:replace="x/entr/gloss"></span>
+		  <a tal:attributes="href string:entr.pl?e=${x/xentr}" tal:content="x/ssum/seq">seq-num</a
+		  ><span tal:if="gt: x/ssum/nsens string:1"
+		    >(<span tal:replace="x/xsens">sense</span>) </span> 
+		  <span tal:replace="x/ssum/kanj">xref-kanj</span>
+		  <span tal:if="and: x/ssum/kanj x/ssum/rdng" tal:omit-tag="">【</span>
+		  <span tal:replace="x/ssum/rdng">xref-rdng</span>
+		  <span tal:if="and: x/ssum/kanj x/ssum/rdng" tal:omit-tag="">】</span>
+		  <span tal:replace="x/ssum/gloss"></span>
 		  <span tal:if="x/notes" replace="x/notes">xref-note</span>
 		  </td>
 		</tr>
-	      <tr tal:if="true:s/_erers">
+	      <tr tal:if="true:s/_xrer">
 		<td colspan="2">Reverse references:</td>
 		</tr>
-	      <tr tal:if="true:s/_erers" tal:repeat="x s/_erers">
+	      <tr tal:if="true:s/_xrer" tal:repeat="x s/_xrer">
 		<td>&nbsp;</td>
 		<td>
 		  <span tal:replace="kwabbr: 'XREF' x/typ">xref-type</span>:
-		  <a tal:attributes="href string:entr.pl?e=${x/entr/eid}" tal:content="x/entr/seq">seq-num</a>
-		  <span tal:if="gt: x/entr/nsens string:1">
-		    (<span tal:replace="join: ',' x/sens">senses</span>)</span>
-		  <span tal:replace="x/entr/kanj">xref-kanj</span>
-		  <span tal:if="and: x/entr/kanj x/entr/rdng" tal:omit-tag="">【</span>
-		  <span tal:replace="x/entr/rdng">xref-rdng</span>
-		  <span tal:if="and: x/entr/kanj x/entr/rdng" tal:omit-tag="">】</span>
-		  <span tal:replace="x/entr/gloss">gloss</span>
+		  <a tal:attributes="href string:entr.pl?e=${x/xentr}" tal:content="x/ssum/seq">seq-num</a
+		  ><span tal:if="gt: x/ssum/nsens string:1"
+		    >(<span tal:replace="x/sens">sense</span>) </span> 
+		  <span tal:replace="x/ssum/kanj">xref-kanj</span>
+		  <span tal:if="and: x/ssum/kanj x/ssum/rdng" tal:omit-tag="">【</span>
+		  <span tal:replace="x/ssum/rdng">xref-rdng</span>
+		  <span tal:if="and: x/ssum/kanj x/ssum/rdng" tal:omit-tag="">】</span>
+		  <span tal:replace="x/ssum/gloss">gloss</span>
 		  <span tal:if="x/notes" replace="x/notes">xref-note</span>
 		  </td>
 		</tr>

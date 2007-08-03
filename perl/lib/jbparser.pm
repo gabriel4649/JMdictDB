@@ -535,7 +535,6 @@ use utf8; use jmdict;
 use kwstatic;
 # Make "nokanji" a psuedo-keyword...
 $::KW = $kwstatic::Kwds;
-$::KW->{RESTR} = {'nokanji'=>{id=>'nokanji', kw=>'nokanji'}};
 
 use Dumpvalue;		# For debugging.
 $::D = new Dumpvalue;
@@ -924,7 +923,7 @@ sub new {
 	[#Rule 1
 		 'entr', 1,
 sub
-#line 56 "jbparser.yp"
+#line 55 "jbparser.yp"
 { dbgprt (1, "preentr -> entr");
 				  my ($e) = $_[1];
 				    # Set record numbers in child lists because we will
@@ -948,28 +947,28 @@ sub
 	[#Rule 2
 		 'preentr', 2,
 sub
-#line 78 "jbparser.yp"
+#line 77 "jbparser.yp"
 { dbgprt (1, "rdngsect senses -> preentr");
 				  {_rdng=>$_[1], _sens=>$_[2]}; }
 	],
 	[#Rule 3
 		 'preentr', 3,
 sub
-#line 81 "jbparser.yp"
+#line 80 "jbparser.yp"
 { dbgprt (1, "kanjsect rdngsect senses -> preentr");
 				  {_kanj=>$_[1], _rdng=>$_[2], _sens=>$_[3]}; }
 	],
 	[#Rule 4
 		 'kanjsect', 1,
 sub
-#line 86 "jbparser.yp"
+#line 85 "jbparser.yp"
 { dbgprt (1, "kanjitem -> kanjsect"); 
 				  [$_[1]]; }
 	],
 	[#Rule 5
 		 'kanjsect', 3,
 sub
-#line 89 "jbparser.yp"
+#line 88 "jbparser.yp"
 { dbgprt (1, "kanjsect SEMI kanjitem -> kanjsect");
 				  push (@{$_[1]}, $_[3]);
 				  $_[1]; }
@@ -977,14 +976,14 @@ sub
 	[#Rule 6
 		 'kanjitem', 1,
 sub
-#line 95 "jbparser.yp"
+#line 94 "jbparser.yp"
 { dbgprt (1, "KTEXT -> kanjitem"); 
 				  {txt=>$_[1]}; }
 	],
 	[#Rule 7
 		 'kanjitem', 2,
 sub
-#line 98 "jbparser.yp"
+#line 97 "jbparser.yp"
 { dbgprt (1, "KTEXT taglists -> kanjitem"); 
 				  my ($kanj) = {txt=>$_[1]};
 				  if (!bld_kanj ($kanj, $_[2])) { $_[0]->YYError(); }
@@ -993,14 +992,14 @@ sub
 	[#Rule 8
 		 'rdngsect', 1,
 sub
-#line 105 "jbparser.yp"
+#line 104 "jbparser.yp"
 { dbgprt (1, "rdngitem -> rdngsect"); 
 				  [$_[1]]; }
 	],
 	[#Rule 9
 		 'rdngsect', 3,
 sub
-#line 108 "jbparser.yp"
+#line 107 "jbparser.yp"
 { dbgprt (1, "rdngsect SEMI rdngitem -> rdngsect"); 
 				  push (@{$_[1]}, $_[3]);
 				  $_[1]; }
@@ -1008,14 +1007,14 @@ sub
 	[#Rule 10
 		 'rdngitem', 1,
 sub
-#line 114 "jbparser.yp"
+#line 113 "jbparser.yp"
 { dbgprt (1, "RTEXT -> rdngitem"); 
 				  {txt=>$_[1]}; }
 	],
 	[#Rule 11
 		 'rdngitem', 2,
 sub
-#line 117 "jbparser.yp"
+#line 116 "jbparser.yp"
 { dbgprt (1, "RTEXT taglists -> rdngitem");
 				  my ($rdng) = {txt=>$_[1]};
 				  if (!bld_rdng ($rdng, $_[2])) { $_[0]->YYError(); }
@@ -1024,14 +1023,14 @@ sub
 	[#Rule 12
 		 'senses', 1,
 sub
-#line 124 "jbparser.yp"
+#line 123 "jbparser.yp"
 { dbgprt (1, "sense -> senses"); 
 				  [$_[1]]; }
 	],
 	[#Rule 13
 		 'senses', 2,
 sub
-#line 127 "jbparser.yp"
+#line 126 "jbparser.yp"
 { dbgprt (1, "senses sense -> senses"); 
 				  push (@{$_[1]}, $_[2]);
 				  $_[1]; }
@@ -1039,13 +1038,13 @@ sub
 	[#Rule 14
 		 '@1-1', 0,
 sub
-#line 132 "jbparser.yp"
+#line 131 "jbparser.yp"
 {_setlexstate(2)}
 	],
 	[#Rule 15
 		 'sense', 3,
 sub
-#line 133 "jbparser.yp"
+#line 132 "jbparser.yp"
 { dbgprt (1, "SNUM sensitems -> sense");
 				  my ($sens) = {};
 				  if (!bld_sens ($sens, $_[3])) { $_[0]->YYError(); }
@@ -1054,14 +1053,14 @@ sub
 	[#Rule 16
 		 'sensitems', 1,
 sub
-#line 140 "jbparser.yp"
+#line 139 "jbparser.yp"
 { dbgprt (1, "sensitem -> sensitems"); 
 				  $_[1]; }
 	],
 	[#Rule 17
 		 'sensitems', 2,
 sub
-#line 143 "jbparser.yp"
+#line 142 "jbparser.yp"
 { dbgprt (1, "sensitems sensitem -> sensitems"); 
 				  push (@{$_[1]}, @{$_[2]});
 				  $_[1]; }
@@ -1069,28 +1068,28 @@ sub
 	[#Rule 18
 		 'sensitem', 1,
 sub
-#line 149 "jbparser.yp"
+#line 148 "jbparser.yp"
 { dbgprt (1, "glossset -> sensitem");
 				  $_[1]; }
 	],
 	[#Rule 19
 		 'sensitem', 1,
 sub
-#line 152 "jbparser.yp"
+#line 151 "jbparser.yp"
 { dbgprt (1, "taglist -> sensitem");
 				  $_[1]; }
 	],
 	[#Rule 20
 		 'glossset', 1,
 sub
-#line 157 "jbparser.yp"
+#line 156 "jbparser.yp"
 { dbgprt (1, "GTEXT -> glossset"); 
 				  [["gloss", gcleanup ($_[1])]]; }
 	],
 	[#Rule 21
 		 'glossset', 3,
 sub
-#line 160 "jbparser.yp"
+#line 159 "jbparser.yp"
 { dbgprt (1, "glossset SEMI GTEXT -> glossset");
 				  push (@{$_[1]}, ["gloss", gcleanup ($_[3])]);
 				  $_[1]; }
@@ -1098,14 +1097,14 @@ sub
 	[#Rule 22
 		 'taglists', 1,
 sub
-#line 166 "jbparser.yp"
+#line 165 "jbparser.yp"
 { dbgprt (1, "taglist -> taglists");
 				  $_[1]; }
 	],
 	[#Rule 23
 		 'taglists', 2,
 sub
-#line 169 "jbparser.yp"
+#line 168 "jbparser.yp"
 { dbgprt (1, "taglists taglist -> taglists");
 				  push (@{$_[1]}, @{$_[2]}); 
 				  $_[1]; }
@@ -1113,33 +1112,33 @@ sub
 	[#Rule 24
 		 '@2-1', 0,
 sub
-#line 174 "jbparser.yp"
+#line 173 "jbparser.yp"
 {_pushlexstate(1)}
 	],
 	[#Rule 25
 		 '@3-3', 0,
 sub
-#line 174 "jbparser.yp"
+#line 173 "jbparser.yp"
 {_poplexstate()}
 	],
 	[#Rule 26
 		 'taglist', 5,
 sub
-#line 175 "jbparser.yp"
+#line 174 "jbparser.yp"
 { dbgprt (1, "BRKTL tags BRKTR -> taglist");
 				  $_[3]; }
 	],
 	[#Rule 27
 		 'tags', 1,
 sub
-#line 180 "jbparser.yp"
+#line 179 "jbparser.yp"
 { dbgprt (1, "tagitem -> tags"); 
 				  [$_[1]]; }
 	],
 	[#Rule 28
 		 'tags', 3,
 sub
-#line 183 "jbparser.yp"
+#line 182 "jbparser.yp"
 { dbgprt (1, "tags COMMA tagitem -> tags");
 				  push (@{$_[1]}, $_[3]);
 				  $_[1]; }
@@ -1147,7 +1146,7 @@ sub
 	[#Rule 29
 		 'tagitem', 1,
 sub
-#line 189 "jbparser.yp"
+#line 188 "jbparser.yp"
 { dbgprt (1, "TEXT -> tagitem");
 				  my ($x) = lookup_tag ($_[1]);
 				  if ($x == -1) { 
@@ -1161,7 +1160,7 @@ sub
 	[#Rule 30
 		 'tagitem', 3,
 sub
-#line 200 "jbparser.yp"
+#line 199 "jbparser.yp"
 { dbgprt (1, "TEXT EQL TEXT -> tagitem"); 
 				  return [$_[1],$_[3],1] if ($_[1] eq "note" or $_[1] eq "lit" or $_[1] eq "expl");
 				  return [$_[1],$_[3],1] if ($_[1] eq "lsrc");
@@ -1177,7 +1176,7 @@ sub
 	[#Rule 31
 		 'tagitem', 4,
 sub
-#line 213 "jbparser.yp"
+#line 212 "jbparser.yp"
 { dbgprt (1, "TEXT EQL TEXT COLON -> tagitem"); 
 				  if ($_[1] ne "lsrc") {
 				    error ("Keyword must be \"lsrc\"");
@@ -1191,7 +1190,7 @@ sub
 	[#Rule 32
 		 'tagitem', 5,
 sub
-#line 224 "jbparser.yp"
+#line 223 "jbparser.yp"
 { dbgprt (1, "TEXT EQL TEXT COLON TEXT -> tagitem"); 
 				  
 				  if ($_[1] ne "lsrc" and $_[1] ne "lit" and $_[1] ne "expl") {
@@ -1206,7 +1205,7 @@ sub
 	[#Rule 33
 		 'tagitem', 3,
 sub
-#line 236 "jbparser.yp"
+#line 235 "jbparser.yp"
 { dbgprt (1, "TEXT EQL jitems -> tagitem"); 
 				  if ($_[1] ne "restr" and $_[1] ne "see" and $_[1] ne "ant") {
 				    error ("Keyword not \"restr\", \"see\", or \"ant\"");
@@ -1218,14 +1217,14 @@ sub
 	[#Rule 34
 		 'jitems', 1,
 sub
-#line 246 "jbparser.yp"
+#line 245 "jbparser.yp"
 { dbgprt (1, "jitem -> jitems"); 
 				  [$_[1]]; }
 	],
 	[#Rule 35
 		 'jitems', 3,
 sub
-#line 249 "jbparser.yp"
+#line 248 "jbparser.yp"
 { dbgprt (1, "jitems jitem -> jitems");
 				  push (@{$_[1]}, $_[3]);
 				  $_[1]; }
@@ -1233,14 +1232,14 @@ sub
 	[#Rule 36
 		 'jitem', 1,
 sub
-#line 255 "jbparser.yp"
+#line 254 "jbparser.yp"
 { dbgprt (1, "jtext -> jitem");
 				   $_[1]; }
 	],
 	[#Rule 37
 		 'jitem', 2,
 sub
-#line 258 "jbparser.yp"
+#line 257 "jbparser.yp"
 { dbgprt (1, "jtexts -> jitem");
 				  $_[1]->[2] = $_[2];  
 				  $_[1]; }
@@ -1248,35 +1247,35 @@ sub
 	[#Rule 38
 		 'jtext', 1,
 sub
-#line 264 "jbparser.yp"
+#line 263 "jbparser.yp"
 { dbgprt (1, "KTEXT -> jtext"); 
 				  [$_[1],undef,undef]; }
 	],
 	[#Rule 39
 		 'jtext', 1,
 sub
-#line 267 "jbparser.yp"
+#line 266 "jbparser.yp"
 { dbgprt (1, "RTEXT -> jtext"); 
 				  [undef,$_[1],undef]; }
 	],
 	[#Rule 40
 		 'jtext', 3,
 sub
-#line 270 "jbparser.yp"
+#line 269 "jbparser.yp"
 { dbgprt (1, "KTEXT SEMI RTEXT-> jtext"); 
 				  [$_[1],$_[3],undef]; }
 	],
 	[#Rule 41
 		 'slist', 3,
 sub
-#line 275 "jbparser.yp"
+#line 274 "jbparser.yp"
 { dbgprt (1, "BRKTL snums BRKTR -> slist"); 
 				  $_[2]; }
 	],
 	[#Rule 42
 		 'snums', 1,
 sub
-#line 280 "jbparser.yp"
+#line 279 "jbparser.yp"
 { dbgprt (1, "TEXT -> snums"); 
 				  my $x = int ($_[1]);
 				  if ($x<=0 or $x>99) {
@@ -1287,7 +1286,7 @@ sub
 	[#Rule 43
 		 'snums', 3,
 sub
-#line 287 "jbparser.yp"
+#line 286 "jbparser.yp"
 { dbgprt (1, "snums COMMA TEXT -> snums"); 
 				  my $x = int ($_[3]);
 				  if ($x<=0 or $x>99) {
@@ -1301,11 +1300,24 @@ sub
     bless($self,$class);
 }
 
-#line 297 "jbparser.yp"
+#line 296 "jbparser.yp"
 
     sub resolv_xrefs { my ($dbh, $e) = @_;
-	# An xref given by the user is parsed into a 4-item
-	# list:
+	# This is a convenience function that will iterate
+	# through the senses of entr object %$e looking for
+	# any {_XREF} lists (generated by jbparser's processing
+	# of a textual xref specifier) and will resolve each
+	# item on such lists to a database xref record (by
+	# calling jmdict::resolv_xref() on them) and put the
+	# xrefs on list {_xref}.  The {_XREF} lists are deleted.
+	#
+	# If jmdict::resolv_xref() is unable to resolve an
+	# xref (not found, multiple targets, etc), it will
+	# die, so it usually makes sense to call to call this
+	# function inside an eval to catch any errors.
+	#
+	# Each item in the {_XREF} list is a 4-item list:
+	#
 	#    0 -- Xref type per $::KW->{XREF}.
 	#    1 -- Kanji text
 	#    2 -- Reading text
@@ -1320,8 +1332,8 @@ sub
 	    foreach $x (@{$s->{_XREF}}) {
 		$xrefs = resolv_xref ($dbh, $x->[1], $x->[2],
 				      $x->[3], $x->[0], 1, 1);
-		if (!$s->{_erefs}) { $s->{_erefs} = []; }
-		push (@{$s->{_erefs}}, @$xrefs); }
+		if (!$s->{_xref}) { $s->{_xref} = []; }
+		push (@{$s->{_xref}}, @$xrefs); }
 	    delete ($s->{_XREF}); } }
 
     sub lookup_tag { my ($tag, $typ) = @_;
@@ -1340,6 +1352,7 @@ sub
 	my ($t, $x, $fval, $tx);
 	if ($typ) {
 	    $t = uc ($typ);
+	    if ($t eq "RESTR") { return $tag eq "nokanji" ? [$t, 1] : -1; }
 	    return -3 if (!$::KW->{$t});
 	    if ($t eq "FREQ" and ($tag =~ m/^([^0-9]+)(\d+)$/)) {
 		$tag = $1; $fval = $2; }
@@ -1417,9 +1430,9 @@ sub
 		# kanji here and need the set of all kanji in order to get
 		# the disallowed set, and we don't have that now.  So we 
 		# just save the allowed kanji as given, and will convert it
-		# after the full entry is build and we have all the info we
+		# after the full entry is built and we have all the info we
 		# need.
-		if ($t->[0] eq "nokanji") { 
+		if ($t->[0] eq 1) { # 1="nokanj"
 		    $nokanj = 1; 
 		    $r->{_NOKANJI} = 1;
 		    next; }

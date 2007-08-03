@@ -25,9 +25,8 @@ BEGIN {
     use Exporter(); our (@ISA, @EXPORT_OK, @EXPORT); @ISA = qw(Exporter);
     @EXPORT_OK = qw(Tables KANA HIRAGANA KATAKANA KANJ); 
     @EXPORT = qw(dbread dbinsert Kwds kwrecs addids mktmptbl Find EntrList 
-		    matchup filt jstr_classify addentr erefs2xrefs xrefs2erefs
-		    zip fmtkr bld_erefs dbopen xrefdetails setkeys
-		    resolv_xref fmt_jitem); }
+		    matchup filt jstr_classify addentr resolv_xref fmt_jitem
+		    zip fmtkr dbopen setkeys add_xrefsums grp_xrefs); }
 
 our(@VERSION) = (substr('$Revision$',11,-2), \
 	         substr('$Date$',7,-11));
@@ -173,15 +172,12 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 
     sub EntrList { my ($dbh, $tmptbl) = @_;
 	# $dbh -- An open database connection.
-	# $cond -- Either:
-	#   1. Name of a table containing entry id numbers, or,
-	#   2. A where clause (including the word "WHERE") that references
-	#   only fields in table "entr", which will have alias "e".
-	# $args -- If the form of $cond is (2), this argument is a ref to 
-	#   a list of arguments for the where clause given in $cond.  
-	#   If the form of $cond is (1), this argument is ignored.
-	# $eord -- Optional ORDER BY clause (including the words "ORDER BY")
-	#   used to order the returned set of entries.
+	# $tmptbl -- Name of a database table that contains at least 
+	#   the columns "id" and "ord".  Column "id" holds entry id 
+	#   numbers and gives the list of entry objects to be retrieved.
+	#   Column "ord" can host any value and is defines the order
+	#   the entries will be retived in.  Typically $tmptbl is the
+	#   value returned by a call to jmdict::Find().
 
 	  my $start = time();
 	my $entr  = dbread ($dbh, "SELECT e.* FROM $tmptbl t JOIN entr  e ON e.id=t.id ORDER BY t.ord");
@@ -204,7 +200,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	my $freq  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN freq  x ON x.entr=t.id;");
 	my $xref  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN xref  x ON x.entr=t.id ORDER BY x.entr,x.sens,x.xref;");
 	my $xrer  = dbread ($dbh, "SELECT x.* FROM $tmptbl t JOIN xref  x ON x.xentr=t.id;");
-	$::Debug->{'Obj retrieval time'} = time() - $start;
+	$::Debug->{'Obj retrieval time'} = time() - $start;  $start = time();
 
 	matchup ("_rdng",  $entr, ["id"],  $rdng,  ["entr"]);
 	matchup ("_kanj",  $entr, ["id"],  $kanj,  ["entr"]);
@@ -234,6 +230,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	matchup ("_restr", $entr, ["entr"], $restr, ["entr"]);
 	matchup ("_stagr", $entr, ["entr"], $stagr, ["entr"]);
 	matchup ("_stagk", $entr, ["entr"], $stagk, ["entr"]);
+	$::Debug->{'Obj build time'} = time() - $start;
 	return $entr; }
  
     sub matchup { my ($listattr, $parents, $pks, $children, $fks) = @_;
@@ -312,144 +309,184 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	if (!@results) { return (); }
 	return \@results; } 
 
-    sub xrefdetails { my ($dbh, $tmptbl, $entrs) = @_;
-	# Get xref details.  The entry structures returned by EntrList() 
-	# contain only the raw xref records (which have only the target
-	# sens.entr and sens.sens numbers) -- not very useful for display
-	# to users.  Xrefdetails will get summary records for all targets
-	# (both forward and reverse) for all the xrefs in a set on entries.
-	# The set is defined by a table whose name is $tmptbl and should
-	# be the same as was given to EntrList().  $entrs is optional but
-	# if supplied, xrefdetails() will distribute the xref summary 
-	# info to each entry in @$entrs, in the member (_erefs}.
+    sub add_xrefsums { my ($dbh, $tmptbl, $entrs) = @_;
+	# For each xref in (each sens of) each entr in @$entrs, add a new
+	# key, "ssum", the points to a single record containing a summary
+	# of the sense that the xref references.  Specifically the record
+	# contains fields:
+	#    eid: The entry id number of target entry.
+	#    sens: The sens number of the target *sense*.
+	#    seq: The entry seq number of the target entry.
+	#    src: The src id number of the target entry.
+	#    stat: The stat id number of the target entry.
+	#    rdng: The rdng summary of the target entry.
+	#    kanj: The kanj summary of the target entry.
+	#    gloss: The gloss summary of the target *sense*.
 
-	my ($erefs, $sql, $sqf, $x1, $x2);
-	  # The following sql sans the join with $tmptbl was in a view but 
-	  # though it was quite fast when restricted with a "where" clause
-	  # if was 3 orders of magnitude slower when restrict by a join with
-	  # $tmptbl.  Including $tmptbl in the qery itself seems to work
-	  # around the problem.
-	$sqf = "SELECT e1.id,e2.id AS eid,".
-		   "e2.seq,e2.src,e2.stat,e2.nsens,e2.rdng,e2.kanj,e2.gloss ".
-		"FROM entr e1 ".
-		"JOIN %s t on t.id=e1.id ".
-        	"JOIN xref x ON (x.entr=e1.id OR x.xentr=e1.id) ".
-		"JOIN esum e2 ON (x.entr=e2.id OR x.xentr=e2.id) ".
-		"WHERE e2.id!=e1.id %s ".
-		"GROUP BY e1.id,x.typ,e2.id,e2.seq,e2.src,e2.stat,".
-		         "e2.nsens,e2.rdng,e2.kanj,e2.gloss ";
-	  # Get the non-examples xrefs...
-	$sql = sprintf ($sqf, $tmptbl, "AND x.typ!=5");
-	$x1 = dbread ($dbh, $sql);  
-	  # ...but only a random subset of the copius example xrefs.
-	$sql = sprintf ($sqf, $tmptbl, "AND x.typ=5") . " ORDER BY RANDOM() LIMIT 10";
-	$x2 = dbread ($dbh, $sql);  # Get the non-examples xrefs.
+	my ($sql, $sqf, $ssums, $ssums1, $ssums2, $e, $s, $x);
+	  my $start = time();
+	$sqf = "SELECT e.id,e.sens,e.seq,e.src,e.stat,e.rdng,e.kanj,e.gloss,e.nsens ".
+		"FROM %s t ".
+        	"JOIN xref x ON x.%s=t.id ".
+		"JOIN essum e ON (e.id=x.%s AND e.sens=x.%s) ".
+		"WHERE e.id!=t.id %s ".
+		"GROUP BY e.id,e.sens,e.seq,e.src,e.stat,e.rdng,e.kanj,e.gloss,e.nsens ";
+	$sql = sprintf ($sqf, $tmptbl, "entr", "xentr", "xsens", "AND x.typ!=5");
+	$ssums1 = dbread ($dbh, $sql); 
+	$sql = sprintf ($sqf, $tmptbl, "xentr", "entr", "sens", "AND x.typ!=5");
+	$ssums2 = dbread ($dbh, $sql); 
+	$ssums = [(@$ssums1, @$ssums2)];
+	foreach $e (@$entrs) {
+	    foreach $s (@{$e->{_sens}}) {
+		foreach $x (@{$s->{_xref}}) {
+		    $x->{ssum} = lookup ($ssums, ["id","sens"], $x, ["xentr","xsens"], 0); }
+		foreach $x (@{$s->{_xrer}}) {
+		    $x->{ssum} = lookup ($ssums, ["id","sens"], $x, ["entr","sens"], 0); }}}
+	$::Debug->{'Xrefsum retrieval time'} = time() - $start; }
 
-	  # Merge them together.
-	push (@$x1, @$x2); 
-	  # And build an erefs structure from them.
-	if ($entrs) { bld_erefs ($entrs, $x1); }
-	return $erefs; }
-    
-    sub bld_erefs { my ($entries, $esum) = @_;
-	# For each sense in each entry in @$entries, assign to
-	# key "_erefs" a structure containing the sense's xrefs
-	# grouped by entry and with summary info or the entry
-	# that is useful for presentation.  The structure is a
-	# list of 2-tuples. 
-	# The first element of each tuple is a reference to info
-	# about the entry represented as a hash with keys: 
-	#   eid, seq, rdng, kanj, nsens
-	# (The latter is the total number of senses in the 
-	# entry.)
-	# The second element is a list of the senses referred
-	# to in the entry.
+    sub grp_xrefs { my ($xrefs, $rev) = @_;
 
-	foreach my $e (@$entries) {
-	    foreach my $s (@{$e->{_sens}}) {
-		$s->{_erefs} = xrefs2erefs ($s->{_xref}, 0, $esum);
-		$s->{_erers} = xrefs2erefs ($s->{_xrer}, 1, $esum); } } }
-
-    sub erefs2xrefs { my ($erefs) = @_;
-	# Convert a list of eref-style cross references to a list
-	# of xref style cross-references.
-	# See function xref2eref() for a description of the xref
-	# and eref data structures.
-	my (@a, $e, $s);
-	for $e (@$erefs) {
-	    foreach $s (@{$e->{sens}}) {
-		push (@a, {entr=>0, sens=>0, 
-			    xentr=>$e->{entr}{id}, xsens=>$s,
-			    typ=>$e->{typ}, notes=>undef}); } }
-	return \@a; }
-
-    sub xrefs2erefs { my ($xrefs, $dir, $esum) = @_;
-	# Convert a list of xrefs in @$xrefs to eref style.
+	# Group the xrefs in list @$xrefs into groups such that xrefs
+	# in each group have the same {entr}, {sens}, {typ}, {xentr},
+	# and {notes} values and differ only in the values of {sens}.
+	# Order is preserved to each xref will have the same relative
+	# position within its group as it did in @$xrefs.
+	# The grouped xrefs are returned as a (reference to) a list
+	# of lists of xrefs.
 	#
-	# $dir denotes the direction of the xref: if false, these
-	# are forward xrefs and the xref target pointed to by 
-	# {xentr,xsens} members.  If $dir is true, this is a 
-	# reverse xref and the xref target pointed to be the 
-	# (entr,sens} members.
-	# 
-	# $esum is a reference to an array of entry summary 
-	# hashes (described in Eref style" below) that contain
-	# summary information for each xref target.  If and xref
-	# target's information is nor found in @$esum, this function
-	# will raise an exception (i.e. die).
+	# If $rev is true, the xrefs are treated as reverse xrefs
+	# and grouped by {xentr},, {xsens}, {typ}, {entr}.
 	#
-	# Xref style:
-	# This format is used in the jmdict database table "xref"
-	# and is a hashref with the fields: {entr, sens, xentr, xsens,
-	# typ, notes}.  Fields {entr,sens} are a foreign key to table
-	# "sens" that indentifies the sense to which the this xref
-	# belongs.  Fields {xentr,xsens} are a foreign key to table
-	# "sens" that indentifies the sense to which the this xref
-	# points.  {typ} is the type of xref (per table kwxref).
-	# These five fields are all integers.  {notes} is a text 
-	# string.
+	# This function is useful for grouping together all the senses
+	# of each xref target entry when it is desired to to display
+	# information for an xref entry once, even when multiple
+	# target senses exist.
 	# 
-	# Eref style:
-	# This format is more suited to displaying xref information.
-	# A group of xrefs to the same entry are represented as a 
-	# 3-tuple: {typ, entr, sens}.  {typ is the same as in xref.
-	# {entr} is a reference to an entry summary hash that contains:
-	# {eid, seq, rdng, kanj, nsens}.  {eid} is the daabase id number
-	# of the entry, and {seq} the jmdict seq number.  {rdng} and 
-	# {kanj} are a single line aggregation on all the entry's 
-	# reading and kanji text strings.  {nsens} is the total number
-	# of senses in the entry.
-	# The third item in the eref 3-tuple is a reference to an 
-	# array of ints, each one naming a sense in the {eid} entry
-	# which is the target of an xref. 
+	# WARNING -- this function currently assumes that the input
+	# list @$xrefs is already sorted by {entr}, {sens}, {typ}, 
+	# {xentr}.  If that is not true then you may get duplicate
+	# groups in the result list.  However, it is true for xref
+	# lists read by EntrList().
 
-	my ($x, $k, %h, $e, $srce, $targe, $srcs, $targs, $v, @a, %ehash);
-
-	# Index the $esum entries by entr.id to speed later lookup. 
-	for $x (@$esum) { $ehash{$x->{eid}} = $x; }
-
-	# Choose the appropriate fields depending on the direction.
-	if ($dir) { $targe="entr";  $targs="sens";  $srce="xentr"; $srcs="xsens"; }
-	else      { $targe="xentr"; $targs="xsens"; $srce="entr";  $srcs="sens"; }
-
+	my ($x, $prev, @a, $b);
 	foreach $x (@$xrefs) {
-	    $k = "$x->{$srce}/$x->{$srcs}/$x->{typ}/$x->{$targe}";
-	    if ($h{$k}) { push (@{$h{$k}{sens}}, $x->{$targs}); }
-	    else { 
-		if (!($e = $ehash{$x->{$targe}})) {	# "=", not "=="!
-		    #die ("xref2eref(): Entry summary info not found for target eid $ehash{$x->{$targe}}"); }
-		    # Above commented out since we currently only retrieve summary
-		    # info for a subset of xrefs, so now just ignore xrefs for which
-		    # we can't find summary info.
-		    next; }
-		$h{$k} = {srce=>$x->{$srce}, srcs=>$x->{$srcs}, xref=>$x->{xref}, typ=>$x->{typ}, entr=>$e, sens=>[$x->{$targs}]}; } }
-	foreach $v (values (%h)) { push (@a, $v); }
-	@a = sort {($a->{srce} <=> $b->{srce}) || 
-		   ($a->{srcs} <=> $b->{srcs}) || 
-		   ($a->{typ}  <=> $b->{typ})  || 
-		   ($a->{xref} <=> $b->{xref}) || 
-		   ($a->{entr}{eid} <=> $b->{entr}{eid})} @a;
+	    if ((!$rev && (!$prev 
+		  || $prev->{entr}  != $x->{entr} 
+		  || $prev->{sens}  != $x->{sens}
+		  || $prev->{typ}   != $x->{typ} 
+		  || $prev->{xentr} != $x->{xentr} 
+		  || ($prev->{notes}||"") ne ($x->{notes}||""))) 
+	      || ($rev && (!$prev
+		  || $prev->{xentr}  != $x->{xentr} 
+		  || $prev->{xsens}  != $x->{xsens}
+		  || $prev->{typ}   != $x->{typ} 
+		  || $prev->{entr} != $x->{entr} 
+		  || ($prev->{notes}||"") ne ($x->{notes}||""))) ) {
+		$b = [$x];
+		push (@a, $b); } 
+	    else {
+		push (@$b, $x); }
+	    $prev = $x; }
 	return \@a; }
+
+    sub resolv_xref { my ($dbh, $kanj, $rdng, $slist, $typ,
+			   $one_entr_only, $one_sens_only) = @_;
+	# $dbh -- Handle to open database connection.
+	# $kanj -- Cross-ref target(s) must have this kanji text.  May be false.
+	# $rdng -- Cross-ref target(s) must have this reading text.  May be false.
+	# $slist -- Ref to array of sense numbers.  Resolved xrefs
+	#   will be limited to these target senses. 
+	# $typ -- (int) Type of reference per $::KW->{XREF}.
+	# $one_entr_only -- Raise error if xref resolves to more than
+	#   one entry.  Regardless of this value, it is always an error
+	#   if $slist is given and the xref resolves to more than one
+	#   entry.
+	# $one_sens_only -- Raise error if $slist not given and any
+	#   of the resolved entries have more than one sense. 
+	# 
+	# resolv_xref() returns a list of augmented xrefs.  Each xref item
+	# is a ref to a hash matching an xref table row, except it has no
+	# {entr}, {sens}, or {xref} elements, since those will be determined 
+	# by the parent sense to which it is attached.  The items they do 
+	# have are:
+	#
+	#   {typ} -- Integer id (defined in kwxref table.)
+	#   {xentr} -- Id number of target entry.
+	#   {xsens} -- Sens number of target sense.
+	#   {ssum} -- Reference to additional sense information.
+	#
+	# The {ssum} element points to a hash containing additional
+	# summary information about the entry to which this sense 
+	# belongs.  The contents are identical to the {ssum} elements
+	# added to xrefs by jmdict::add_xrefsums().  Specifically:
+	#
+ 	#   {id} -- Entry id number.
+	#   {seq} -- Entry seq. number.
+	#   {src} -- Entry src id number.
+	#   {stat} -- Entry status code (KW{STAT}{*}{id})
+	#   {notes} -- Entry note.
+	#   {srcnote} -- Entry source note.
+	#   {rdng} -- Entry's reading texts coalesced into one string.
+	#   {kanj} -- Entry's kanji texts coalesced into one string.
+	#   {gloss} -- This sense's gloss texts coalesced into one string.
+	#   {nsens} -- Total number of senses in entry.
+	#
+	# Prohibited conditions such as resolving to multiple
+	# entries when the $one_entr_only flag is true, are 
+	# signalled with die().  The caller may want to call 
+	# resolv_xref() within an eval() to catch these conditions.
+	
+	my ($sql, $r, $ssums, @xrefs, $p, $s, $krtxt, @args, @argtxt, 
+	    @nosens, $nentrs);
+
+	$krtxt = fmt_jitem ($kanj, $rdng, $slist);
+	if (!$::KW->{XREF}{$typ}) { die "Bad xref type value: $typ.\n"; }
+	if (0) { }
+	else {
+	    if ($kanj)  { push (@args, $kanj); push (@argtxt, "k.txt=?"); }
+	    if ($rdng)  { push (@args, $rdng); push (@argtxt, "r.txt=?"); }
+	    if ($slist) { push (@argtxt, "sens IN(" . join (",", @$slist) . ")"); }
+	    $sql = "SELECT DISTINCT id,sens,seq,src,stat,s.rdng,s.kanj,gloss,nsens " .
+		  "FROM essum s " .
+		  ($kanj ? "LEFT JOIN kanj k ON k.entr=id " : "") .
+		  ($rdng ? "LEFT JOIN rdng r ON r.entr=id " : "") .
+		  "WHERE " . join (" AND ", @argtxt) . " " .
+		  "ORDER BY id,sens";
+	    $ssums = dbread ($dbh, $sql, \@args); }
+	foreach $r (@$ssums) { 
+	    if (!$p || $p != $r->{id}) { ++$nentrs; } 
+	    $p = $r->{id}; }
+	if (!$nentrs) { die "No entries found for cross-reference '$krtxt'.\n"; }
+	if ($nentrs > 1 and ($one_entr_only or ($slist and @$slist))) {
+	    die "Multiple entries found for cross-reference '$krtxt'.\n"; }
+
+	# For every target entry, get all it's sense numbers.  We need
+	# these for two reasons: 1) If explicit senses were targeted we
+	# need to check them against the actual senses. 2) If no explicit
+	# target senses were given, then we need them to generate erefs 
+	# to all the target senses.
+	# The code currently compares actual sense numbers; if the database
+	# could guarantee that sense numbers are always sequential from
+	# one, this code could be simplified and speeded up.
+
+	if ($slist && @$slist) {
+	    # The submitter gave some specific senses that the xref will
+	    # target, so check that they actually exist in the target entry
+	    foreach $s (@$slist) {
+		if (!grep ($_->{sens}==$s, @$ssums)) { push (@nosens, $s); } }
+	    die "Sense(s) ".join(",",@nosens)." not in target '$krtxt'.\n" if (@nosens); } 
+	else {
+	    # No specific senses given, so this xref(s) should target every
+	    # sense in the target entry(s), unless $one_sens_only is true
+	    # in which case all the xrefs must have only one sense or we 
+	    # raise an error.
+	    if ($one_sens_only && grep ($_->{nsens}>1, @$ssums)) {
+		die "The '$krtxt' target(s) has more than one sense.\n"; } }
+
+	foreach $r (@$ssums) {
+	    push (@xrefs, {typ=>$typ, xentr=>$r->{id}, xsens=>$r->{sens}, ssum=>$r}); }
+	    
+	return \@xrefs; } 
 
 our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 
@@ -471,8 +508,9 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 
     sub setkeys { my ($e, $eid) = @_;
 	# Set the foreign and primary key values in each record.
-	my ($k, $r, $s, $g, $x, $nkanj, $nrdng, $nsens, $ngloss, $nhist, $nxr);
+	my ($k, $r, $s, $g, $x, $nkanj, $nrdng, $nsens, $ngloss, $nhist, $nxref, $nxrsv);
 	if ($eid) { $e->{id} = $eid; }
+	else { $eid = $e->{id}; }
 	die ("No entr.id number found or received") if (!$e->{id});
 	if ($e->{_kanj}) { foreach $k (@{$e->{_kanj}}) {
 	    $k->{entr} = $eid;
@@ -489,7 +527,7 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    if ($r->{_restr}) { foreach $x (@{$r->{_restr}}) { $x->{entr} = $eid;  $x->{rdng} = $nrdng; } }
 	    if ($r->{_stagr}) { foreach $x (@{$r->{_stagr}}) { $x->{entr} = $eid;  $x->{rdng} = $nrdng; } } } }
 	if ($e->{_sens}) { foreach $s (@{$e->{_sens}}) {
-	    $s->{entr} = $eid;  $s->{sens} = ++$nsens; $ngloss = 0;  $nxr = 0;
+	    $s->{entr} = $eid;  $s->{sens} = ++$nsens; $ngloss = $nxref = $nxrsv = 0;
 	    if ($s->{_gloss}) { foreach $g (@{$s->{_gloss}}) { $g->{entr} = $eid;  $g->{sens} = $nsens;
 							         $g->{gloss} = ++$ngloss; } }
 	    if ($s->{_pos})   { foreach $x (@{$s->{_pos}})   { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
@@ -500,9 +538,9 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    if ($s->{_stagk}) { foreach $x (@{$s->{_stagk}}) { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
 	    if ($s->{_stagr}) { foreach $x (@{$s->{_stagr}}) { $x->{entr} = $eid;  $x->{sens} = $nsens; } }
 	    if ($s->{_xrslv}) { foreach $x (@{$s->{_xrslv}}) { $x->{entr} = $eid;  $x->{sens} = $nsens;  
-								 $x->{ord} = ++$nxr } }
+								 $x->{ord} = ++$nxrsv } }
 	    if ($s->{_xref})  { foreach $x (@{$s->{_xref}})  { $x->{entr} = $eid;  $x->{sens} = $nsens;  
-								 $x->{ord} =   $nxr  } }
+								 $x->{xref} = ++$nxref  } }
 	    if ($s->{_xrer})  { foreach $x (@{$s->{_xrer}})  { $x->{xentr}= $eid;  $x->{xsens}= $nsens; } } } }
 	if ($e->{_hist}) { foreach $x (@{$e->{_hist}})       { $x->{entr} = $eid;  $x->{hist} = ++$nhist; } } }
 
@@ -545,119 +583,6 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    $rs = dbread ($dbh, "SELECT seq FROM entr WHERE id=?", [$eid]);
 	    $entr->{seq} = $rs->[0]{seq}; }
 	return ($eid, $entr->{seq}); }
-
-    sub resolv_xref { my ($dbh, $kanj, $rdng, $slist, $typ,
-			   $one_entr_only, $one_sens_only) = @_;
-	# $dbh -- Handle to open database connection.
-	# $kanj -- If true, cross-ref target(s) must have this kanji text.
-	# $rdng -- If true, cross-ref target(s) must have this reading text.
-	# $slist -- Ref to array of sense numbers.  Resolved xrefs
-	#   will be limited to these target senses. 
-	# $typ -- (int) Type of reference per $::KW->{XREF}.
-	# $one_entr_only -- Raise error if xref resolves to more than
-	#   one entry.  Regardless of this value, it is always an error
-	#   if $slist is given and the xref resolves to more than one
-	#   entry.
-	# $one_sens_only -- Raise error if $slist not given and any
-	#   of the resolved entries have more than one sense. 
-	# 
-	# resolv_xref() returns a list of erefs.  Each eref item
-	# is a ref to a 3-element hash:
-	#
-	#   {typ} -- Integer XREF keyword id.
-	#
-	#   {entr} -- Reference to a record retrieved from view
-	#	esum that summerizes one entry.  It is a ref to
-	#       a hash with the following fields:
-	#
-	#	id -- Entry id number.
-	#	seq -- Entry seq. number.
-	#	src -- Entry src id number.
-	#	stat -- Entry status code (KW{STAT}{*}{id})
-	#	notes -- Entry note.
-	#	srcnote -- Entry source note.
-	#	rdng -- Entry's reading texts coalesced into one string.
-	#	kanj -- Entry's kanji texts coalesced into one string.
-	#	gloss -- Entry's gloss texts coalesced into one string.
-	#	nsens -- Total number of senses.
-	#
-	#   {sens} -- A reference to an array of numbers that
-	#	that are the specific xref targets in this entry. 
-	# 
-	# Thus each eref item represents N xrefs where N is 
-	# the number of elements in @{$item->{sens}}.  Coalescing
-	# all the xrefs for a single entry with entry summary
-	# info simplifies life for applications that need to 
-	# display summaries of xrefs.
-	#
-	# Prohibited conditions such as resolving to multiple
-	# entries when the $one_entr_only flag is true, are 
-	# signalled with die().  The caller may want to call 
-	# resolv_xref() within an eval() to catch these conditions.
-	
-	my ($sql, $r, $esums, $qlist, @erefs, $srecs, $eid, $q, $s,
-	    $krtxt, @args, @argtxt, @nosens, @multsens, %shash);
-
-	$krtxt = fmt_jitem ($kanj, $rdng, $slist);
-	if (!$::KW->{XREF}{$typ}) { die "Bad xref type value: $typ.\n"; }
-	if (0) { }
-	else {
-	    if ($kanj) { push (@args, $kanj); push (@argtxt, "k.txt=?"); }
-	    if ($rdng) { push (@args, $rdng); push (@argtxt, "r.txt=?"); }
-	    $sql = "SELECT DISTINCT s.* " .
-		  "FROM esum s " .
-		  "JOIN entr e ON e.id=s.id " .
-		  ($kanj ? "LEFT JOIN kanj k ON k.entr=e.id " : "") .
-		  ($rdng ? "LEFT JOIN rdng r ON r.entr=e.id " : "") .
-		  "WHERE " . join (" AND ", @argtxt);
-	    $esums = dbread ($dbh, $sql, \@args); }
-	if (scalar(@$esums) < 1) { die "No entries found for cross-reference '$krtxt'.\n"; }
-	if (scalar(@$esums) > 1 and ($one_entr_only or ($slist and @$slist))) {
-	    die "Multiple entries found for cross-reference '$krtxt'.\n"; }
-	foreach $r (@$esums) {
-	    push (@erefs, {typ=>$typ, entr=>$r, sens=>[]}); }
-
-	# For every target entry, get all it's sense numbers.  We need
-	# these for two reasons: 1) If explicit senses were targeted we
-	# need to check them against the actual senses. 2) If no explicit
-	# target senses were given, then we need them to generate erefs 
-	# to all the target senses.
-	# The code currently compares actual sense numbers; if the database
-	# could guarantee that sense numbers are always sequential from
-	# one, this code could be simplified and speeded up.
-
-	$qlist = join(",", map ("?", @erefs));
-	$sql = "SELECT entr,sens FROM sens WHERE entr IN ($qlist) ORDER BY entr,sens";
-	$srecs = dbread ($dbh, $sql, [map ($_->{entr}{id}, @erefs)]);
-	%shash = map (("$_->{entr}_$_->{sens}",1), @$srecs);
-
-	if ($slist && @$slist) {
-	    # The submitter gave some specific senses that the xref will
-	    # target, so check that they actually exist in the target entries...
-	    foreach $r (@erefs) {	# For each target entry...
-				        # Because of the muliple entry test above
-					# there will be only one entry in @erefs
-					# here (since there is a @$slist).
-		$eid = $r->{entr}{id};
-		@nosens = grep (!$shash{"${eid}_$_"}, @$slist);
-		die "Sense(s) ".join(",",@nosens)." not in target '$krtxt'.\n" if (@nosens);
-		$r->{sens} =  [@$slist]; } } 
-	else {
-	    # No specific senses given, so this xref(s) should target every
-	    # sense in the target entry(s), unless $one_sens_only is true
-	    # in which case all the xrefs must have only one sense or we 
-	    # raise an error.
-	    if ($one_sens_only) {
-		@multsens = grep ($_->{nsens}>1, @$esums);
-		if (@multsens) {
-		    if (scalar (@$esums) == 1) {
-		        die "The cross-reference target '$krtxt' has more than one sense.\n"; }
-		    else { 
-			die "One or more of the '$krtxt 'targets have more than one sense.\n"; } } }
-	    foreach $r (@erefs) {
-		$eid = $r->{entr}{id};
-	        $r->{sens} = [map ($_->{sens}, grep ($_->{entr}==$eid, @$srecs))]; } }
-	return \@erefs; } 
 
     sub fmtkr { my ($kanj, $rdng) = @_;
 	# If string $kanji is true return a string consisting

@@ -193,6 +193,6 @@ INSERT INTO xref(entr,sens,typ,xentr,xsens,notes)
     JOIN sens s ON s.entr=x.xentr
     WHERE x.entr != x.xentr
     GROUP BY x.entr,x.sens,z.typ,x.xentr,s.sens,z.notes
-    ORDER BY x.entr,x.sens,z.typ,MIN(x.ord),x.xentr,s.sens)
+    ORDER BY x.entr,x.sens,z.typ,MIN(x.ord),x.xentr,s.sens);
 
 VACUUM ANALYZE xref;

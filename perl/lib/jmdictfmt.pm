@@ -36,6 +36,9 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
     sub fmt_entr { my ($e) = @_;
 	# Print an entry.
 	# $e -- Reference to an entry hash.
+	#    We assume that the caller has called jmdict::add_xrefsums()
+	#    on the entry object before calling fmt_entr() (because
+	#    p_sens() uses the info added by add_xrefsums().) 
 
 	my (@x, $x, $s, $n, $stat, $src, $id, $seq, $fmtstr);
 
@@ -46,11 +49,11 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	  # number up in the STAT section of the kw table 
 	  # data structure in $::KW.
 	$stat = $e->{stat} ? ("[" . $::KW->{STAT}{$e->{stat}}{kw} . "]") : "";
-	$src =  $e->{src}  ? ("(" . $::KW->{SRC}{$e->{src}}{kw} . ")") : "";
-	$seq =  $e->{seq}  ? ("{" . $e->{seq} . "}") : "";
-	$id =   $e->{id}   ? $e->{id} : "";
+	$src =  $e->{src}  ? ("(" . $::KW->{SRC}{$e->{src}}{kw} . ")")   : "";
+	$seq =  $e->{seq}  ? (      $e->{seq})                           : "";
+	$id =   $e->{id}   ? ("{" . $e->{id} . "}")                      : "";
 	  # Print basic info about the entry (seq num, status, and id number.)
-	$fmtstr = "\nEntry " . join (" ", ($seq, $stat, $id));
+	$fmtstr = "\nEntry " . join (" ", ($seq, $src, $stat, $id));
 
 	  # Print a list of dialects if there are any.
 	  # The map() call will return a list created from its first 
@@ -75,7 +78,8 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	  # Print entry notes if any.
 
 	$fmtstr .= "\n";
-	$fmtstr .= "  Notes: $e->{_notes}\n" if ($e->{_notes}) ;
+	$fmtstr .= "  Src note: $e->{srcnote}\n" if ($e->{srcnote}) ;
+	$fmtstr .= "  Notes: $e->{notes}\n" if ($e->{notes}) ;
 
 	  # For every kanji record in the entry, call f_kanj() on 
 	  # to foemat it into a string (along with any kinf or freq
@@ -97,6 +101,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	  # Now go through an process each sense in the entry.
 
 	$n = 0;
+
 	foreach $s (@{$e->{_sens}}) {
 
 	      # Format and print the sense's data.  In order to do
@@ -285,34 +290,38 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	  # Do the glosses.
 
 	foreach $g (@{$s->{_gloss}}) {
-	    if (!$g->{gloss}) { $g->{gloss} = ++$gnum; }
+	    $fmtstr .= f_gloss ($g) . "\n"; }
 
-	      # If the language is not english (1) then get
-	      # the language's keyword enclosed in parens.
+	  # Print the cross references.  We assume that the 
+	  # caller has called jmdict::add_xrefsums() to add
+	  # target summary information to each xref.
 
-	    if (!$g->{lang} or $g->{lang} == 1) { $lang = "" }
-	    else { $lang = "(" . $::KW->{LANG}{$g->{lang}}{kw} . ") "; }
+	$fmtstr .= p_xrefc ($s->{_xref}, "Cross references:"); 
+	$fmtstr .= p_xref ($s->{_xrer}, "Reverse references:"); 
+	return $fmtstr; }
 
-	      # If there is a gloss tag other than "equ", then
-	      # get it enclosed in square brackets.
+#-----------------------------------------------------------------------
 
-	    if (!$g->{ginf} or $g->{ginf} == 1) { $ginf = "" }
-	    else { $ginf = "[" . $::KW->{GINF}{$g->{ginf}}{kw} . ".] "; }
+    sub f_gloss { my ($g) = @_;
+	my ($lang, $ginf, $gnum, $fmtstr);
 
-	      # Print the gloss number, language (if any), and gloss text. 
+	if (!$g->{gloss}) { $g->{gloss} = ++$gnum; }
 
-	    $fmtstr .= "  $g->{gloss}. $lang$ginf$g->{txt}\n"; }
+	  # If the language is not english (1) then get
+	  # the language's keyword enclosed in parens.
 
-	  # Print the cross references.  Although each sens record
-	  # has a {_xref} list, it is not very useful because all
-	  # it has is the cross-ref's entry id and sens number.
-	  # Insead, we'll use {_erefs} which also has the target 
-	  # entry's kanji and kana string, seq number, etc which
-	  # allows a much more informative display.  {_erers} is 
-	  # same, but for other xrefs poining to this sense.
+	if (!$g->{lang} or $g->{lang} == 1) { $lang = "" }
+	else { $lang = "(" . $::KW->{LANG}{$g->{lang}}{kw} . ") "; }
 
-	$fmtstr .= p_xref ($s->{_erefs}, "Cross references:"); 
-	$fmtstr .= p_xref ($s->{_erers}, "Reverse references:"); 
+	  # If there is a gloss tag other than "equ", then
+	  # get it enclosed in square brackets.
+
+	if (!$g->{ginf} or $g->{ginf} == 1) { $ginf = "" }
+	else { $ginf = "[" . $::KW->{GINF}{$g->{ginf}}{kw} . ".] "; }
+
+	  # Print the gloss number, language (if any), and gloss text. 
+
+	$fmtstr = "  $g->{gloss}. $lang$ginf$g->{txt}";
 	return $fmtstr; }
 
 #-----------------------------------------------------------------------
@@ -356,7 +365,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 
 #-----------------------------------------------------------------------
 
-    sub p_xref { my ($erefs, $sep) = @_;
+    sub p_xref { my ($xrefs, $sep) = @_;
 	my ($x, $t, $sep_done, $txt, $slist, $fmtstr);
 
 	# We use the {_erefs} list rather then the {_xref} list
@@ -367,10 +376,11 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	# which by its choice of arguments.
 
 	$fmtstr = "";
-	foreach $x (@$erefs) {
+
+	foreach $x (@$xrefs) {
 
 	      # Print a separator line, the first time round the loop.
-	      # The seperator text is passeed by the caller because 
+	      # The seperator text is passed by the caller because 
 	      # it depends on whether we are doing forward or reverse
 	      # cross-refs.
 
@@ -383,24 +393,61 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	      # Get the target entry's text.  If only readings, use as-is.
 	      # If has kanji, use that followed by reading in brackets.
 
-	    if ($x->{entr}{kanj} && $x->{entr}{rdng}) { 
-		$txt = "$x->{entr}{kanj}\x{3010}$x->{entr}{rdng}\x{3011}"; }
-	    else { $txt = $x->{entr}{kanj} || $x->{entr}{rdng}; }
-	    $txt .= (" " . $x->{entr}{gloss});
-
-	      # If the number of senses pointed to by our xrefs is 1, and
-	      # the target has only one sense, then don't mention the senses
-	      # at all.  Otherwise list the senses explicitly.
-	      # Rational is that non-"only sense" needs to be mentioned and
-	      # mutiple senses are probably in error (residue of JMdict xml's
-	      # sense->entry semantics) and should be reviewed.
-
-	    if ($x->{entr}{nsens} == 1 and scalar (@{$x->{sens}}) == 1) { $slist = ""; }
-	    else { $slist = "[" . join (",", @{$x->{sens}}) . "]"; }
+	    if ($x->{ssum}{kanj} && $x->{ssum}{rdng}) { 
+		$txt = "$x->{ssum}{kanj}\x{3010}$x->{ssum}{rdng}\x{3011}"; }
+	    else { $txt = $x->{ssum}{kanj} || $x->{ssum}{rdng}; }
+	    $txt .= " " . $x->{ssum}{gloss};
 
 	      # Print the xref info.
 
-	    $fmtstr .= "    $t: $x->{entr}{seq}$slist " . $txt . "\n"; }
+	    $fmtstr .= "    $t: $x->{ssum}{seq} " . $txt . "\n"; }
+	return $fmtstr; }
+
+
+    sub p_xrefc { my ($xrefs, $sep) = @_;
+	# $xrefs -- A list of xrefs representing the target senses of
+	#    a single target entry.  Such a list may be created  
+	my ($x, $e, $t, $sep_done, $txt, $fmtstr, $cxrefs, $slist, $gtxt);
+
+	# We assume that jmdict::add_xrefsums() and has already been 
+	# called on this xref.
+
+	$fmtstr = "";
+	$cxrefs = grp_xrefs ($xrefs);
+	foreach $e (@$cxrefs) {
+
+	      # Print a separator line, the first time round the loop.
+	      # The seperator text is passed by the caller because 
+	      # it depends on whether we are doing forward or reverse
+	      # cross-refs.
+
+	    if (!$sep_done) { $fmtstr .= "  $sep\n";  $sep_done = 1; }
+
+	    $x = $e->[0];
+
+	      # Get the text for the xref type.
+
+	    $t = ucfirst ($::KW->{XREF}{$x->{typ}}{kw});
+
+	    die "Trouble in river city" if (scalar(@$e) > $x->{ssum}{nsens});
+	    if ($x->{ssum}{nsens} > 1) {
+		$slist = "(" . join (",", map ($_->{ssum}{sens}, @$e)) . ")";
+		$gtxt = join (" / ", map ($_->{ssum}{gloss}, @$e)); }
+	    else {
+		$slist = "";
+		$gtxt = $x->{ssum}{gloss}; }
+
+	      # Get the target entry's text.  If only readings, use as-is.
+	      # If has kanji, use that followed by reading in brackets.
+
+	    if ($x->{ssum}{kanj} && $x->{ssum}{rdng}) { 
+		$txt = "$x->{ssum}{kanj}\x{3010}$x->{ssum}{rdng}\x{3011}"; }
+	    else { $txt = $x->{ssum}{kanj} || $x->{ssum}{rdng}; }
+	    $txt .= " " . $gtxt;
+
+	      # Print the xref info.
+
+	    $fmtstr .= "    $t: $x->{ssum}{seq}$slist " . $txt . "\n"; }
 	return $fmtstr; }
 
 	1;
@@ -445,16 +492,15 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	@freq = map ($::KW->{FREQ}{$_->{kw}}{kw}.$_->{value}, @{$rdng->{_rfreq}});
 	if (@rinf or @freq) { $txt .= "[" . join (",", (@rinf, @freq)) . "]"; }
 	$restrtxts = restrtxts ($rdng->{_restr}, $kanjs, "kanj");
-	if (!ref ($restrtxts)) { 
-	    $txt .= "[restr=$restrtxts]"; }	# $restrtxts is "nokanki".
-	else { 
-	    if (@$restrtxts) { $txt .= "[restr=" . join(";", @$restrtxts) ."]"; } }
+	if (@$restrtxts) { $txt .= "[restr=" . join(";", @$restrtxts) ."]"; } 
 	return $txt; }
 
     sub restrtxts { my ($restrs, $kanjs, $key) = @_;
 	my (@restrtxts);
 	return [] if (!$restrs);
-	if (scalar(@$restrs) == scalar(@$kanjs)) { return ["no$key"]; }
+	if (scalar(@$restrs) == scalar(@$kanjs)) { 
+	    if ($key eq "kanj") { $key = "kanji"; }
+	    return ["no$key"]; }
 	@restrtxts = map ($_->{txt}, @{filt ($kanjs, [$key], $restrs, [$key])}); 
 	return \@restrtxts; }
 
@@ -472,7 +518,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
     sub jel_sens { my ($sens, $kanjs, $rdngs, $nsens) = @_;
 	my (@dial, @misc, @pos, @fld, $stagk, $stagr, @lsrc, $note,
 	    @gloss, @xref, $kwds, $dial, $restr, $lsrc, $g, $ginf,
-	    $t, $qtxt, $lastginf, @lines, $txt, @restr, $ginfkw);
+	    $t, $qtxt, $lastginf, @lines, $txt, @restr, $ginfkw, $cxrefs);
 
 	@dial = map ($::KW->{DIAL}{$_->{kw}}{kw}, @{$sens->{_dial}}); 
 	@misc = map ($::KW->{MISC}{$_->{kw}}{kw}, @{$sens->{_misc}}); 
@@ -481,7 +527,8 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	$stagk = restrtxts ($sens->{_stagk}, $kanjs, "kanj");
 	$stagr = restrtxts ($sens->{_stagr}, $rdngs, "rdng");
 	@lsrc = map (f_lsrc($_), @{$sens->{_lsrc}});
-	@xref = map ("[".jel_xref ($_)."]", @{$sens->{_erefs}});
+	$cxrefs = grp_xrefs ($sens->{_xref});
+	@xref = map ("[".jel_xref ($_)."]", @{$cxrefs});
 
 	$kwds  = @pos   ? "[" . join (",", @pos) .  "]" : "";
 	$kwds .= @misc  ? "[" . join (",", @misc) . "]" : "";
@@ -513,16 +560,15 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	$txt = join ("\n  ", @lines);
 	return $txt; }
 
-    sub jel_xref { my ($eref) = @_;
-	my ($kanj, $rdng, $txt);
-	$kanj = $eref->{entr}{kanj};
-	$kanj =~ s/;.*//;
-	$rdng = $eref->{entr}{rdng};
-	$rdng =~ s/;.*//;
-	$txt = $kanj . (($kanj or $rdng) ? "/" : "") . $rdng;
-	if ($eref->{sens} and @{$eref->{sens}}) {
-	    $txt .= "[" . join(",", @{$eref->{sens}}) . "]"; }
-	$txt = $::KW->{XREF}{$eref->{typ}}{kw} . "=" . $txt;
+    sub jel_xref { my ($cxref) = @_;
+	my ($kanj, $rdng, $txt, $xref);
+	$xref = $cxref->[0];
+	$kanj = $xref->{ssum}{kanj} || "";
+	$rdng = $xref->{ssum}{rdng} || "";
+	$txt = $kanj . (($kanj && $rdng) ? "/" : "") . $rdng;
+	if ($xref->{ssum}{nsens} > 1) {
+	    $txt .= "[" . join(",",map ($_->{xsens}, @$cxref)) . "]"; }
+	$txt = $::KW->{XREF}{$xref->{typ}}{kw} . "=" . $txt;
 	return $txt; }
 
     sub jel_entrhdr { my ($entr) = @_;
@@ -533,9 +579,13 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	return $txt; }
 
     sub jel_entr { my ($entr) = @_;
+	#    We assume that the caller has called jmdict::add_xrefsums()
+	#    on $entr before calling fmt_entr() (because jel_xref() uses
+	#    the info added by add_xrefsums()).
+
 	my ($txt, @sects);
 	push (@sects, jel_entrhdr ($entr));
 	push (@sects, jel_kanjs ($entr->{_kanj})) if ($entr->{_kanj});
 	push (@sects, jel_rdngs ($entr->{_rdng}, $entr->{_kanj}));
 	push (@sects, jel_senss ($entr->{_sens}, $entr->{_kanj}, $entr->{_rdng}));
-	$txt .= join ("\n", @sects); }
+	$txt = join ("\n", @sects) . "\n"; }

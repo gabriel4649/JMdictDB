@@ -32,6 +32,7 @@ use Getopt::Std ('getopts');
 
 BEGIN {push (@INC, "./lib");}
 use jmdict;  use jmdictfmt;
+$::Debug = {};
 
 #-----------------------------------------------------------------------
 
@@ -111,6 +112,10 @@ use jmdict;  use jmdictfmt;
 	    if ($::Opts{j}) { print jel_entr ($e); }
 	    else { print fmt_entr ($e); } }
 
+	print "--\nObj retrieval time: " . $::Debug->{'Obj retrieval time'} . "\n";
+	print "Obj build time: " . $::Debug->{'Obj build time'} . "\n";
+	print "Xrefsum retrieval time: " . $::Debug->{'Xrefsum retrieval time'} . "\n";
+
 	  # Cleanly disconnect from the database (and thus avoid
 	  # a warning message.)
 	$dbh->disconnect(); }
@@ -168,8 +173,8 @@ use jmdict;  use jmdictfmt;
 	  # xref records (entry and sense numbers) which are very useful
 	  # for display.  Call xrefdetails() to get summary info for 
 	  # all those xrefs.  By giving the third arg, we ask xrefdetails()
-	  # to distribute the info into each entry, in key {_erefs}.
-	xrefdetails ($dbh, $tmptbl, $entries);
+	  # to distribute the summary info into each xref, in key {ssum}.
+	add_xrefsums ($dbh, $tmptbl, $entries);
 
 	  # ... which we return to our caller.
 	return $entries; }

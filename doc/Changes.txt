@@ -1,4 +1,92 @@
 
+2007-08-03 16:28	smcgrawx@frxii.com
+
+	Changeset 23.    In addition to bug fixes, main change is API and cgi
+	  change in the way xrefs are represented and displayed.  Formerly
+	  all the xrefs targeting an entry with multiple senses were shown
+	  with one line for the entry, and all xrefs to senses of that entry
+	  listed in parens.  Showentr.pl still does this (but displays the
+	  glosses for only the xref's senses, not all in entry as previously)
+	  but cgi/entr.pl and friends now list every entry/sense xref target
+	  on a separate line. {190}
+
+	* perl/cgi/edconf.pl [1.9]
+	Fix: nokanji tag not being displayed.  Fix by calling fmt_restr() on
+	  entry before display. {186}
+	Fix: Remove extra dbopen() call thet produced a "connection closed"
+	  warning from DBI. {182}
+
+	* perl/cgi/edform.pl [1.6]
+	Use add_xrefsums() rather than now non-existent xrefdetails(). {180}
+
+	* perl/cgi/entr.pl [1.10]
+	Move functions fmt_restr(), fmt_stag(), set_audio_flag from
+	  perl/cgi/entr.pl to perl/lib/jmdictcgi.pm since they are also
+	  needed by cgi/edconf.pl. {185}
+	Use add_xrefsums() rather than now non-existent xrefdetails(). {180}
+
+	* perl/lib/jbparser.pm [1.4]
+	* perl/lib/kwstatic.pm [1.8]
+	Remake due to changes in prerequisite file. {173}
+
+	* perl/lib/jbparser.yp [1.5]
+	Fix: Remove the code that added psuedo-keyword 'restr' to $::KW.  If
+	  caller sets $::KW themselfs change got orverridden. {187}
+	Change jbparser::resolv_xref() to create {_xref} elements rather than
+	  {_erefs} elements since that is now what jmdict::resolv_xref() now
+	  returns. {184}
+	Fix: In lookup_tag(), hardwire detection and processing of restr tag
+	  rather than relying on a psuedo-tag dynamically added to the $::KW
+	  hash. {188}
+
+	* perl/lib/jmdict.pm [1.30]
+	Replace function xrefdetails() with non-equivalent (but bettter :-)
+	  function add_xrefsums(). {169}
+	Fix: setkeys(): was not setting correct xref field "xref" values.
+	  {178}
+	Add timing stats collector around all the matchup() calls in
+	  EntrList(). {171}
+	Correct comments in function EntrList(). {170}
+	jmdict::resolv_xref() now returns list of augmented xrefs rather than
+	  a _erefs object. {174}
+	Replace functions bld_erefs(), erefs2xrefs(), xrefs2erefs() with with
+	  non-equivalent (but bettter :-) function grp_xrefs(). {168}
+	Fix: setkeys(): was not setting entr id's when $eid arg not supplied.
+	  {177}
+
+	* perl/lib/jmdictcgi.pm [1.6]
+	Move functions fmt_restr(), fmt_stag(), set_audio_flag from
+	  perl/cgi/entr.pl to perl/lib/jmdictcgi.pm since they are also
+	  needed by cgi/edconf.pl. {185}
+
+	* perl/lib/jmdictfmt.pm [1.5]
+	Rework the xref display based on new jmdict::add_xrefsums() function.
+	  {165}
+	Fix: Entry notes not being displayed. {163}
+	Display entry srcnote. {164}
+
+	* perl/lib/jmdictxml.pm [1.15]
+	* pg/data/kwpos.csv [1.2]
+	New PoS tag, "v-nu". {175}
+
+	* perl/lib/tal/edconf.tal [1.9]
+	* perl/lib/tal/entr.tal [1.14]
+	Display cross refs from _xref list rather than _erefs list. {179}
+
+	* perl/showentr.pl [1.19]
+	Use add_xrefsums() rather than now non-existent xrefdetails(). {180}
+	Print timing information at botton of output. {181}
+
+	* pg/mkviews.sql [1.21]
+	Delete views eksum, xrefesum. {189}
+	Change view hdwds to return entr.* rather than only entr.id. {167}
+	Add new view essum. {166}
+	Change view esum to get rdng and kanj strings from join on view
+	  hdwds, rather than generating them independently. {162}
+
+	* pg/xresolv.sql [1.11]
+	Fix: Missing semi colon that causes syntax error when exceuted. {176}
+
 2007-07-29 18:20	smcgrawx@frxii.com
 
 	* Makefile [1.23]
@@ -54,11 +142,11 @@
 	Remade due to changes in prerequisite mktables.sql. {153}
 
 	* pg/mktables.sql [1.23]
+	Create an insert trigger on table xref that will automatically assign
+	  value to column "xref". {151}
 	Add column "xref" to table xref, and change the PK from
 	  (entr,sens,xentr,xsens,typ) to (entr,sens,xref).  What was formerly
 	  the PK is now a unique index. {150}
-	Create an insert trigger on table xref that will automatically assign
-	  value to column "xref". {151}
 
 	* pg/mkviews.sql [1.20]
 	Adjust function adddup() and view xrefsum for change to xref table.
@@ -478,10 +566,10 @@
 	  things the old way. {53}
 
 	* README.txt [1.10]
-	Update the documentation for the schema changes related to jmdict dtd
-	  1.06 and gloss tags. {44}
 	Rewrite the install section based on using Makefile (which I have
 	  verified is useable on both Unix and Windows). {49}
+	Update the documentation for the schema changes related to jmdict dtd
+	  1.06 and gloss tags. {44}
 
 	* doc/Makefile [1.1]
 	* doc/README.txt [1.1]

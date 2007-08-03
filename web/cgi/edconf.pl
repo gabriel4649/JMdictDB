@@ -98,8 +98,7 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	      # here since that is the form used to store them in the 
 	      # database.  If any are unresolvable, an approriate error 
 	      # is saved and will reported later.
-	    if (grep ($_->{_XREF}, @{$entr->{_sens}})) {
-		$dbh = dbopen ();  
+	    if (grep ($_->{_XREF}, @{$entr->{_sens}})) { 
 		  # resolv_xrefs() will die on errors so trap them in an eval. 
 	        eval {jbparser::resolv_xrefs ($dbh, $entr);}; 
 		  # An save the errors for later reporting.
@@ -120,6 +119,9 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 
 	if (!@errs) {
 	    $serialized = serialize ($entr);
+	    fmt_restr ($entrs); 
+	    fmt_stag ($entrs); 
+	    set_audio_flag ($entrs);
 	    $tmpl = new Petal (file=>'../lib/tal/edconf.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
 	    print $tmpl->process (entries=>$entrs, 

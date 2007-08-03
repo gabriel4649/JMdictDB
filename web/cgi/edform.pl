@@ -50,7 +50,7 @@ binmode (STDOUT, ":utf8");
 	    $sql = "SELECT e.id FROM entr e WHERE " . join (" OR ", @whr);
 	    $tmptbl = Find ($dbh, $sql, [@qlist, @elist]);
 	    $entries = EntrList ($dbh, $tmptbl);
-	    xrefdetails ($dbh, $tmptbl, $entries);
+	    add_xrefsums ($dbh, $tmptbl, $entries);
 	    $entr = $entries->[0];
 	    $ktxt = jel_kanjs ($entr->{_kanj});
 	    $rtxt = jel_rdngs ($entr->{_rdng}, $entr->{_kanj});

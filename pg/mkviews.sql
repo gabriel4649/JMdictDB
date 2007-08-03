@@ -27,6 +27,23 @@ CREATE AGGREGATE accum (
     STYPE = ANYARRAY, 
     INITCOND = '{}');
 
+-------------------------------------------------------------
+-- The first kanji and reading in an entry are significant
+-- because jmdict xml and some other apps use them as 
+-- entry "headwords" that identify the entry.  (Unfortunately
+-- they are not necessarily unique, especially for reading-
+-- only words.)
+-- This view provide's the first reading and (if there is 
+-- one) first kanji for each entry.
+-------------------------------------------------------------
+CREATE OR REPLACE VIEW hdwds AS (
+    SELECT e.*,r.txt AS rtxt,k.txt AS ktxt
+    FROM entr e
+    LEFT JOIN rdng r ON r.entr=e.id
+    LEFT JOIN kanj k ON k.entr=e.id
+    WHERE (r.rdng=1 OR r.rdng IS NULL)
+      AND (k.kanj=1 OR k.kanj IS NULL));
+
 -----------------------------------------------------------
 -- Summarize each entry (one per row) with readings, kanji, 
 -- and sense/gloss.  Each of those columns values has the
@@ -35,71 +52,58 @@ CREATE AGGREGATE accum (
 -- column, each aggregated gloss string in contatented
 -- with the delimiter " / ".
 ------------------------------------------------------------
-CREATE VIEW esum AS (
-    SELECT e.id,e.seq,e.src,e.stat,e.notes,e.srcnote,
-	(SELECT ARRAY_TO_STRING(ACCUM(sr.txt), '; ') 
-	 FROM (SELECT r.txt FROM rdng r WHERE r.entr=e.id ORDER BY r.rdng) AS sr) AS rdng,
-	(SELECT ARRAY_TO_STRING(ACCUM(sk.txt), '; ')
-	 FROM (SELECT k.txt FROM kanj k WHERE k.entr=e.id ORDER BY k.kanj) AS sk) AS kanj,
+CREATE OR REPLACE VIEW esum AS (
+    SELECT e.id,e.seq,e.src,e.stat,e.notes,e.srcnote,h.rtxt AS rdng,h.ktxt AS kanj,
 	(SELECT ARRAY_TO_STRING(ACCUM( ss.gtxt ), ' / ') 
 	 FROM 
 	    (SELECT 
 		(SELECT ARRAY_TO_STRING(ACCUM(sg.txt), '; ') 
-		FROM (SELECT g.txt FROM gloss g WHERE g.sens=s.sens AND g.entr=s.entr ORDER BY g.gloss) AS sg
+		FROM (
+		    SELECT g.txt 
+		    FROM gloss g 
+		    WHERE g.sens=s.sens AND g.entr=s.entr 
+		    ORDER BY g.gloss) AS sg
 		ORDER BY entr,sens) AS gtxt
 	    FROM sens s WHERE s.entr=e.id ORDER BY s.sens) AS ss) AS gloss,
 	(SELECT COUNT(*) FROM sens WHERE sens.entr=e.id) AS nsens
-    FROM entr e);
-
------------------------------------------------------------
--- Like esum but without sense/gloss.
-------------------------------------------------------------
-CREATE VIEW eksum AS (
-    SELECT e.id,e.seq,e.src,e.stat,e.notes,e.srcnote,
-	(SELECT ARRAY_TO_STRING(ACCUM(sr.txt), '; ') 
-	 FROM (SELECT r.txt FROM rdng r WHERE r.entr=e.id ORDER BY r.rdng) AS sr) AS rdng,
-	(SELECT ARRAY_TO_STRING(ACCUM(sk.txt), '; ')
-	 FROM (SELECT k.txt FROM kanj k WHERE k.entr=e.id ORDER BY k.kanj) AS sk) AS kanj,
-	(SELECT COUNT(*) FROM sens WHERE sens.entr=e.id) AS nsens
-    FROM entr e);
-
--------------------------------------------------------------
--- For each entry, provide entry summaries for all the entry
--- that are referenced by any xref of the entry, or is 
--- referenced by any xref.  This is useful to get a full
--- xref target entry summaries for display.
--------------------------------------------------------------
-CREATE VIEW xrefesum AS (
-    -- Fixme: Should have DISTINCT added but doing so makes query 
-    -- run 3 orders of magnituse slower, when e1.id is restricted
-    -- by JOIN rather than WHERE clause.
-    SELECT e1.id, 		-- id of source entry.
-	   x.xref,		-- order numb of xref.
-	   x.typ,		-- type of xref.
-	   e2.id AS eid,        -- id of target entries.
-				-- remainder of target entry info...
-	   e2.seq,e2.src,e2.stat,e2.nsens,e2.rdng,e2.kanj,e2.gloss
-	FROM entr e1
-        JOIN xref x ON (x.entr=e1.id OR x.xentr=e1.id)
-	JOIN esum e2 ON (x.entr=e2.id OR x.xentr=e2.id)
-	WHERE e2.id != e1.id);
-
+    FROM entr e
+    JOIN hdwds h on h.id=e.id);
+    
 -----------------------------------------------------------
 -- Provide a pseudo-sens table with an additional column
 -- "txt" that contains an aggregation of all the glosses
 -- for that sense concatenated into a single string with
 -- each gloss delimited with the string "; ".
 ------------------------------------------------------------
-CREATE VIEW ssum AS (
+CREATE OR REPLACE VIEW ssum AS (
     SELECT s.entr,s.sens,
        (SELECT ARRAY_TO_STRING(ACCUM(sg.txt), '; ') 
-        FROM (SELECT g.txt 
-	          FROM gloss g 
-	          WHERE g.sens=s.sens AND g.entr=s.entr 
-	          ORDER BY g.gloss) AS sg
-        ORDER BY entr,sens) AS txt,
+        FROM (
+	    SELECT g.txt 
+	    FROM gloss g 
+	    WHERE g.sens=s.sens AND g.entr=s.entr 
+	    ORDER BY g.gloss) AS sg
+        ORDER BY entr,sens) AS gloss,
         s.notes
     FROM sens s);
+
+-----------------------------------------------------------
+-- Provide a pseudo-sens table with additional columns
+-- "txt" (contains an aggregation of all the glosses
+-- for that sense concatenated into a single string with
+-- each gloss delimited with the string "; "), "rdng"
+-- (similarly has concatenated readings of the entry
+-- to which this sense belongs), "kanj" (similarly has
+-- concatenated readings of the entry to which this sense
+-- belongs).
+------------------------------------------------------------
+
+CREATE OR REPLACE VIEW essum AS (
+    SELECT e.id, e.seq, e.src, e.stat, s.sens, h.rtxt as rdng, h.ktxt as kanj, s.gloss,
+	   (SELECT COUNT(*) FROM sens WHERE sens.entr=e.id) AS nsens
+	FROM entr e
+	JOIN hdwds h ON h.id=e.id
+        JOIN ssum s ON s.entr=e.id);
 
 ---------------------------------------------------------
 -- For every entry, give the number of associated reading,
@@ -187,23 +191,6 @@ CREATE VIEW prdng AS (
             -- news1
             OR (f.kw=5 AND f.value<=24))) AS p 
     FROM rdng r);
-
--------------------------------------------------------------
--- The first kanji and reading in an entry are significant
--- because jmdict xml and some other apps use them as 
--- entry "headwords" that identify the entry.  (Unfortunately
--- they are not necessarilt unique, especially if there if
--- it is an entry without kanji.)
--- This view provide's the first reading and (if there is 
--- one) first kanji for each entry.
--------------------------------------------------------------
-CREATE VIEW hdwds AS (
-    SELECT e.id,r.txt AS rtxt,k.txt AS ktxt
-    FROM entr e
-    LEFT JOIN rdng r ON r.entr=e.id
-    LEFT JOIN kanj k ON k.entr=e.id
-    WHERE (r.rdng=1 OR r.rdng IS NULL)
-      AND (k.kanj=1 OR k.kanj IS NULL));
 
 -------------------------------------------------------------
 -- This function will replicate an entry by duplicating it's

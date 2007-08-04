@@ -161,6 +161,23 @@ INSERT INTO _xrsv(entr,sens,ord,xentr)
     WHERE v.rtxt IS NULL AND k.kanj=1 AND e.src=1 AND e2.src=1
     GROUP BY v.entr,v.sens,v.ord
     HAVING COUNT(v.entr)=1
+
+    UNION
+
+    -- subselect #5: ktxt+rtxt xrefs for which only one entry  
+    -- exists with the given kanji as the first kanji or with
+    -- the given reading as the first reading.
+    SELECT 
+        v.entr,v.sens,v.ord,MAX(k.entr) AS xentr
+    FROM xresolv v 
+    JOIN entr e ON e.id=v.entr
+    JOIN rdng r ON r.txt=v.rtxt 
+    JOIN kanj k ON k.txt=v.ktxt 
+    JOIN entr e2 ON e2.id=k.entr AND e2.id=r.entr
+    WHERE (k.kanj=1 OR r.rdng=1 ) AND e.src=1 AND e2.src=1
+    GROUP BY v.entr,v.sens,v.ord
+    HAVING COUNT(v.entr)=1
+
     );
 
 VACUUM ANALYZE _xrsv;
@@ -190,9 +207,10 @@ INSERT INTO xref(entr,sens,typ,xentr,xsens,notes)
     (SELECT x.entr,x.sens,z.typ,x.xentr,s.sens as xsens,z.notes
     FROM _xrsv x 
     JOIN xresolv z ON z.entr=x.entr AND z.sens=x.sens AND z.ord=x.ord
-    JOIN sens s ON s.entr=x.xentr
-    WHERE x.entr != x.xentr
+    JOIN sens s ON s.entr=x.xentr AND (s.sens=z.tsens OR z.tsens IS NULL)
+    WHERE x.entr != x.xentr 
     GROUP BY x.entr,x.sens,z.typ,x.xentr,s.sens,z.notes
     ORDER BY x.entr,x.sens,z.typ,MIN(x.ord),x.xentr,s.sens);
+
 
 VACUUM ANALYZE xref;

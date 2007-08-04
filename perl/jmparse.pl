@@ -236,10 +236,11 @@ sub do_rdng { my ($e, $reles, $kmap, $fmap) = @_;
 	return \%rmap; }
 
 sub do_restrs { my ($arec, $restrele, $attrname, $bmap) = @_;
-	my (@u, $u, $i);
+	my (@u, $u, $i, $txt);
 	foreach $i (@$restrele) {
-	    $u = $bmap->{$i->text};
-	    if (!$u) { die ("Restriction target '$i->{text}' not found\n"); }
+	    $txt = $i->text;
+	    $u = $bmap->{$txt};
+	    if (!$u) { die ("Restriction target '$txt' not found\n"); }
 	    push (@u, $u); }
 	mkrestr ($arec, $bmap, $attrname, \@u); }
 
@@ -379,13 +380,14 @@ sub do_lsrc { my ($s, $lsrc) = @_;
 sub do_xref { my ($s, $xref, $xtypkw) = @_;
 	my ($x, $t, $txt);
 	foreach $x (@$xref) {
+	    $txt = $x->text;
 	    # (entr,sens,lang,txt,notes)
 	    if (!$s->{_xrslv}) { $s->{_xrslv} = []; }
-	    $t = jstr_classify ($x->text);
+	    $t = jstr_classify ($txt);
 	    if ($t & $jmdict::KANJI) {
-	        push (@{$s->{_xrslv}}, {typ=>$xtypkw, ktxt=>$x->text}); }
+	        push (@{$s->{_xrslv}}, {typ=>$xtypkw, ktxt=>$txt}); }
 	    else {
-		push (@{$s->{_xrslv}}, {typ=>$xtypkw, rtxt=>$x->text}); } } }
+		push (@{$s->{_xrslv}}, {typ=>$xtypkw, rtxt=>$txt}); } } }
 
 sub do_hist { my ($e, $hist) = @_;
 	my ($x, $dt, $op, $h);

@@ -378,16 +378,58 @@ sub do_lsrc { my ($s, $lsrc) = @_;
 	    push (@{$s->{_lsrc}}, {lang=>$lang, txt=>$txt, part=>($kw==2?1:0), wasei=>0} ); } }
 
 sub do_xref { my ($s, $xref, $xtypkw) = @_;
-	my ($x, $t, $txt);
+	my ($x, $txt, @frags, $frag, $ktxt, @ktxt, $rtxt, @rtxt, $jtyp, $snum, $kflg);
+
+	  # Create a xresolv record for each <xref> element.  The xref may
+	  # contain a kanji string, kana string, or kanji.\x{30fb}kana.  
+	  # (\x{30fb} is a mid-height dot.)  It may optionally be followed
+	  # by a \x{30fb} and a sense number.
+	  # Since jmdict words may also contain \x{30fb} as part of their
+	  # kanji or reading text we try to handle that by ignoring the 
+	  # \x{30fb} between two kana strings, two kanji strings, or a
+	  # kana\x{30fb}kanji string.  Of course is a jmdict word is 
+	  # kanji\x{30fb}kana then we're out of luck, it's ambiguous.
+
 	foreach $x (@$xref) {
-	    $txt = $x->text;
-	    # (entr,sens,lang,txt,notes)
+	    $txt = $x->text; @ktxt=(); @rtxt=(); $kflg = 0; $snum = undef;
+
+	      # Split the xref text on the separator character.
+
+	    @frags = split ("\x{30fb}", $txt);
+
+	      # Check for a sense number in the rightmost fragment.
+	      # But don't treat it as a sense number if it is the 
+	      # only fragment (which will leave us without any kana
+	      # or kanji text which will fail when loading xresolv.
+ 
+	    if ($#frags > 0 && $frags[$#frags] =~ /^\d+$/) {
+		$snum = pop (@frags); }
+
+	      # Go through all the fragments, from right to left.
+	      # For each, if it has no kanji, push it on the @rtxt 
+	      # list.  If it has kanji, and every fragment thereafter
+	      # regardless of its kana/kanji status, push on the @ktxt
+	      # list.  $kflg is set to true when we see a kanji word
+	      # to make that happen.
+	      # We could do more checking here (that entries going
+	      # into @rtxt are kana for, example) but don't bother 
+	      # since, as long as the data loads into xresolv ok, 
+	      # wierd xrefs will be found later by being unresolvable.
+
+	    while ($frag = pop (@frags)) {
+		if (!$kflg) { $jtyp = jstr_classify ($frag); }
+		if ($kflg || ($jtyp & $jmdict::KANJI)) {
+		    push (@ktxt, $frag);
+		    $kflg = 1; }
+		else { push (@rtxt, $frag); } }
+
+	      # Put the kanji and kana parts back together into
+	      # strings, and write the xresolv resord.
+
+	    $ktxt = join ("\x{30fb}", @ktxt) || undef;
+	    $rtxt = join ("\x{30fb}", @rtxt) || undef;
 	    if (!$s->{_xrslv}) { $s->{_xrslv} = []; }
-	    $t = jstr_classify ($txt);
-	    if ($t & $jmdict::KANJI) {
-	        push (@{$s->{_xrslv}}, {typ=>$xtypkw, ktxt=>$txt}); }
-	    else {
-		push (@{$s->{_xrslv}}, {typ=>$xtypkw, rtxt=>$txt}); } } }
+	    push (@{$s->{_xrslv}}, {typ=>$xtypkw, ktxt=>$ktxt, rtxt=>$rtxt, tsens=>$snum}); } } 
 
 sub do_hist { my ($e, $hist) = @_;
 	my ($x, $dt, $op, $h);

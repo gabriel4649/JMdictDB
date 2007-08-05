@@ -190,27 +190,11 @@ CREATE TABLE xref (
     xsens SMALLINT NOT NULL,
     notes TEXT,
     PRIMARY KEY (entr,sens,xref));
---CREATE UNIQUE INDEX xref_entr_unq ON xref(entr,sens,xentr,xsens,typ);
+--CREATE UNIQUE INDEX xref_entr_unq ON xref(entr,sens,typ,xentr,xsens);
 --CREATE INDEX xref_xentr ON xref(xentr,xsens);
 --ALTER TABLE xref ADD CONSTRAINT xref_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE xref ADD CONSTRAINT xref_xentr_fkey FOREIGN KEY (xentr,xsens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE xref ADD CONSTRAINT xref_typ_fkey FOREIGN KEY (typ) REFERENCES kwxref(id);
-
-CREATE FUNCTION xref_xrefdef() RETURNS trigger AS $$
-    DECLARE xnum VARCHAR;
-    BEGIN
-        IF NEW.xref IS NOT NULL THEN 
-	    RETURN NEW;
-	    END IF;
-	SELECT 1+COALESCE(MAX(xref),0) INTO xnum FROM xref 
-	  WHERE entr=NEW.entr AND sens=NEW.sens AND typ=NEW.typ;
-        NEW.xref := xnum;
-        RETURN NEW;
-        END;
-    $$ LANGUAGE plpgsql;
-
-CREATE TRIGGER xref_xrefdef BEFORE INSERT ON xref
-    FOR EACH ROW EXECUTE PROCEDURE xref_xrefdef();
 
 CREATE TABLE hist (
     entr INT NOT NULL,
@@ -245,24 +229,6 @@ CREATE TABLE editor (
     notes TEXT);
 --CREATE INDEX editor_email ON editor(email);
 --CREATE UNIQUE INDEX editor_name ON editor(name);
-
-CREATE TABLE xresolv (
-    entr INT NOT NULL,
-    sens SMALLINT NOT NULL,
-    ord SMALLINT NOT NULL,
-    typ SMALLINT NOT NULL,
-    rtxt VARCHAR(250),
-    ktxt VARCHAR(250),
-    tsens SMALLINT,
-    notes VARCHAR(250),
-    prio BOOLEAN DEFAULT FALSE,
-    PRIMARY KEY(entr,sens,ord),
-    CHECK (rtxt NOTNULL OR ktxt NOTNULL));
---CREATE INDEX xresolv_rdng ON xresolv(rtxt);
---CREATE INDEX xresolv_kanj ON xresolv(ktxt);
---ALTER TABLE xresolv ADD CONSTRAINT xresolv_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE xresolv ADD CONSTRAINT xresolv_typ_fkey FOREIGN KEY (typ) REFERENCES kwxref(id);
-
 
 
 CREATE TABLE dial (
@@ -361,3 +327,54 @@ CREATE TABLE stagk (
     PRIMARY KEY (entr,sens,kanj));
 --ALTER TABLE stagk ADD CONSTRAINT stagk_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE stagk ADD CONSTRAINT stagk_entr_fkey1 FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
+
+
+-- The following tables are used for resolving textual xrefs to 
+-- actual entries and senses when loading data from external files.
+-- See file pg/xresolv.sql for a description of the process.
+
+CREATE TABLE xresolv (
+    entr INT NOT NULL,
+    sens SMALLINT NOT NULL,
+    ord SMALLINT NOT NULL,
+    typ SMALLINT NOT NULL,
+    rtxt VARCHAR(250),
+    ktxt VARCHAR(250),
+    tsens SMALLINT,
+    notes VARCHAR(250),
+    prio BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY(entr,sens,ord),
+    CHECK (rtxt NOTNULL OR ktxt NOTNULL));
+--CREATE INDEX xresolv_rdng ON xresolv(rtxt);
+--CREATE INDEX xresolv_kanj ON xresolv(ktxt);
+--ALTER TABLE xresolv ADD CONSTRAINT xresolv_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
+--ALTER TABLE xresolv ADD CONSTRAINT xresolv_typ_fkey FOREIGN KEY (typ) REFERENCES kwxref(id);
+
+CREATE TABLE xrefld (
+    entr INT NOT NULL,
+    sens SMALLINT NOT NULL,
+    xref SMALLINT NOT NULL CHECK(xref>0),
+    ord SMALLINT NOT NULL CHECK(ord>0),
+    xentr INT NOT NULL,
+    xsens SMALLINT NOT NULL CHECK(xsens>0),
+    PRIMARY KEY(entr,sens,xref));
+ALTER TABLE xrefld ADD CONSTRAINT xrefld_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE xrefld ADD CONSTRAINT xrefld_xentr_fkey FOREIGN KEY (xentr,xsens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE xrefld ADD CONSTRAINT xrefld_xresolv_fkey FOREIGN KEY (entr,sens,ord) REFERENCES xresolv(entr,sens,ord) ON DELETE CASCADE ON UPDATE CASCADE;
+CREATE INDEX xrefld_xentr ON xrefld(xentr,xsens);
+
+CREATE OR REPLACE FUNCTION xrefld_xrefdef() RETURNS trigger AS $$
+    DECLARE xnum VARCHAR;
+    BEGIN
+        IF NEW.xref IS NOT NULL THEN 
+	    RETURN NEW;
+	    END IF;
+	SELECT 1+COALESCE(MAX(xref),0) INTO xnum FROM xrefld
+	  WHERE entr=NEW.entr AND sens=NEW.sens;
+        NEW.xref := xnum;
+        RETURN NEW;
+        END;
+    $$ LANGUAGE plpgsql;
+
+CREATE TRIGGER xrefld_xrefdef BEFORE INSERT ON xrefld
+    FOR EACH ROW EXECUTE PROCEDURE xrefld_xrefdef();

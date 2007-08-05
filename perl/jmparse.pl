@@ -200,6 +200,9 @@ sub do_kanj { my ($e, $keles, $fmap) = @_;
 	if (!$e->{_kanj}) { $e->{_kanj} = []; }
 	foreach $ek (@$keles) {
 	    $txt = ($ek->get_xpath ("keb"))[0]->text;
+	    if ($kmap{$txt}) { 
+		print $::Flog "Seq $::Seq: duplicate keb element: '$txt'\n";
+		next; }
 	    # (entr,kanj,txt)
 	    $kmap{$txt} = $k = {txt=>$txt};
 	    push (@{$e->{_kanj}}, $k);
@@ -225,7 +228,10 @@ sub do_rdng { my ($e, $reles, $kmap, $fmap) = @_;
 	$e->{_rdng} = []; 
 	foreach $er (@$reles) {
 	    $txt = ($er->get_xpath ("reb"))[0]->text;
-	    $rmap {$txt} = $r = {txt=>$txt};
+	    if ($rmap{$txt}) { 
+		print $::Flog "Seq $::Seq: duplicate reb element: '$txt'\n";
+		next; }
+	    $rmap{$txt} = $r = {txt=>$txt};
 	    # (entr,rdng,txt)
 	    push (@{$e->{_rdng}}, $r);
 	    if (@x = $er->get_xpath ("re_inf")) { do_rinfs ($r, \@x); }
@@ -240,7 +246,9 @@ sub do_restrs { my ($arec, $restrele, $attrname, $bmap) = @_;
 	foreach $i (@$restrele) {
 	    $txt = $i->text;
 	    $u = $bmap->{$txt};
-	    if (!$u) { die ("Restriction target '$txt' not found\n"); }
+	    if (!$u) { 
+		print $::Flog "restriction target '$txt' not found\n";
+		next; }
 	    push (@u, $u); }
 	mkrestr ($arec, $bmap, $attrname, \@u); }
 

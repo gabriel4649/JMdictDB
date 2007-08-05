@@ -283,15 +283,17 @@ binmode (STDOUT, ":utf8");
 	    $jointype = $jt ? "LEFT JOIN" : "JOIN";
 
 	    # Add the table (using the desired alias if any) to the FROM 
-	    # clause in $fclause.  extend_from() will take care of joining
-	    # any needed parent tables.
-	
-	    $fclause = extend_from ($fclause, $tbl, $alias, $jointype, $cnum, 1);
+	    # clause (except if the table is "entr" which is aleady in 
+	    # the FROM clause).
 
-	    # extend_clause() always returns a string with parens around 
-	    # the "entr" table which is invalid sql.  Remove the parens.
- 
-	    $fclause =~ s/\(entr e\)/entr e/;
+	    $alias = $alias || "";
+	    if ($tbl ne "entr") {
+		$fclause .= sprintf (" %s %s %s ON %s.entr=e.id", 
+				     $jointype, $tbl, $alias, ($alias || $tbl)); }
+	    else {
+		# Sanity check...
+		if ($alias && !($alias eq "e")) {
+		    die "table 'entr' in condition list uses alias other than 'e': $alias\n"; } }
 
 	    # Save the cond tuple's where clause and arguments each in 
 	    # their own array.
@@ -312,81 +314,3 @@ binmode (STDOUT, ":utf8");
 	# for execution.
 
 	return ($sql, \@args); }
-
-    sub extend_from { my ($clause, $table, $alias, $jointype, $branch, $depth) = @_;
-
-	# Extend an existing FROM clause, $clause, by joining $table
-	# to it.  $alias is an alias for table and may be "" or undef
-	# in which case no alias will be used.  $jointype is either 
-	# "JOIN" or "LEFT JOIN" and controls how $table will be joined
-	# to $clause.  $branch is an integer used to generate unique
-	# aliases table aliases and should be a different value for 
-	# each (non-recursive) call.  $depth should be 1 and is only
-	# used for checking for accidental non-terminating recursion.
-
-	my ($t, $p, $parent, $joinpairs, $oncls, $palias, $Tables, $aliasdot);
-
-	# $jmdict::Tables describes the relations between the jmdict tables.
-
-	$Tables = $jmdict::Tables;
-
-	# Sanity checks...
-
-	if ($depth > 9) { die "extend_from(): recursion too deep\n"; }
-	if (!($t = $Tables->{$table})) {	# That's "=", not "==".
-	    die ("extend_from(): Unknown table: $table\n")}; 
-
-	$alias = $alias || "";  $aliasdot = ($alias || $table) . ".";  
-	$parent = $t->{parent};		# Name of $tables' parent table.
-
-	# If there is no parent, then this table in "entr" and $clause
-	# already includes it, so we need not make any changes.
-
-	if (!$parent) { return $clause; }
-
-	# Our $table is not "entr" so we will need to join it to it's
-	# parent table.  Get a ref to the parent info ($p) and the 
-	# alias to use ($palias)  $branch is used to make sure that 
-	# the parent alias is unique since its table may occur more
-	# that once in the final query.
-
-	$p = $Tables->{$parent};
-	$palias = $p->{al} . ($parent eq "entr" ? "" : "$branch");
-
-	# The parent table and our table may be joined on a composite 
-	# (i.e. multiple) key, so we pair up each element in the 
-	# parent's primary key with the corresponding elemnent from 
-	# $table's foreign key.  Each table column name needs to be 
-	# qualified by the table alias, which is done by the two map() 
-	# calls.  The zip() functiob (from module jmdict) does the 
-	# pairing.  The result $joinpairs is a ref to an array of 
-	# 2-tuples, where each 2-tuple is a properly qualified (fk,pk) 
-	# pair.
-
-	$joinpairs = zip ([map("$aliasdot$_", @{$t->{fk}})], 
-			  [map("$palias.$_", @{$p->{pk}})]);
-
-	# Take each pair and join into a string with "=" and then join
-	# all of those with "AND" to get a string we can use for the
-	# join's ON clause.
-
-	$oncls = join (" AND ", map (join ("=", @$_), @$joinpairs));
-
-	if ($parent ne "entr") {
-
-	    # When called the first time by build_search_sql(), $clause 
-	    # will contain the table "entr" since this table is always 
-	    # required.  If $table's parent is "entr" than it can be 
-	    # joined directly to the "entr" in $clause.  But otherwise, 
-	    # it's parent table need to be in $clause before we can join
-	    # it to $clause.  We arrange this by calling ourself recursively
-	    # for our parent table, which causes all the needed parent
-	    # tables to be in $clause.
-
-	    $clause = extend_from ($clause, $parent, $palias, "JOIN", $branch, $depth+1); }
-
-	# Here we know all needed parent tables have already been joined
-	# so all be need to do is join our $table.
-
-	return "($clause) $jointype $table $alias ON $oncls"; }
-

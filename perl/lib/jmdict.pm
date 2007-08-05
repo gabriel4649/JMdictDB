@@ -26,7 +26,8 @@ BEGIN {
     @EXPORT_OK = qw(KANA HIRAGANA KATAKANA KANJ); 
     @EXPORT = qw(dbread dbinsert Kwds kwrecs addids mktmptbl Find EntrList 
 		    matchup filt jstr_classify addentr resolv_xref fmt_jitem
-		    zip fmtkr dbopen setkeys add_xrefsums grp_xrefs); }
+		    zip fmtkr dbopen setkeys add_xrefsums grp_xrefs
+		    build_search_sql); }
 
 our(@VERSION) = (substr('$Revision$',11,-2), \
 	         substr('$Date$',7,-11));
@@ -560,6 +561,118 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    $rs = dbread ($dbh, "SELECT seq FROM entr WHERE id=?", [$eid]);
 	    $entr->{seq} = $rs->[0]{seq}; }
 	return ($eid, $entr->{seq}); }
+
+    sub build_search_sql { my ($condlist) = @_;
+
+	# Build a sql statement that will find the id numbers of
+	# all entries matching the conditions given in <condlist>.
+	# Note: This function does not provide for generating
+	# arbitrary SQL statements; it is only intented to support 
+	# limited search capabilities that are typically provided 
+	# on a search form.
+	#
+	# <condlist> is a list of 3-tuples.  Each 3-tuple specifies
+	# one condition:
+	#   0: Name of table that contains the field being searched
+	#     on.  The name may optionally be followed by a space and
+	#     an alias name for the table.  It may also optionally be
+	#     preceeded (no space) by an astrisk character to indicate
+	#     the table should be joined with a LEFT JOIN rather than
+	#     the default INNER JOIN. 
+	#     Caution: if the table is "entr" it *must* have "e" as an
+	#     alias, since that alias is expected by the final generated
+	#     sql.
+	#   1: Sql snippit that will be AND'd into the WHERE clause.
+	#     Field names must be qualified by table.  When looking 
+	#     for a value in a field.  A "?" may (and should) be used 
+	#     where possible to denote an exectime parameter.  The value
+	#     to be used when the sql is executed is is provided in
+	#     the 3rd member of the tuple (see #2 next).
+	#   2: A sequence of argument values for any exec-time parameters
+	#     ("?") used in the second value of the tuple (see #1 above).
+	#
+	# Example:
+	#     [("entr e","e.typ=1", ()),
+	#      ("gloss", "gloss.text LIKE ?", ("'%'+but+'%'",)),
+	#      ("pos","pos.kw IN (?,?,?)",(8,18,47))]
+	#
+	#   This will generate the SQL statement and arguments:
+	#     "SELECT e.id FROM (((entr e INNER JOIN sens ON sens.entr=entr.id) 
+	# 	INNER JOIN gloss ON gloss.sens=sens.id) 
+	# 	INNER JOIN pos ON pos.sens=sens.id) 
+	# 	WHERE e.typ=1 AND (gloss.text=?) AND (pos IN (?,?,?))"
+	#     ('but',8,18,47)
+	#   which will find all entries that have a gloss containing the
+	#   substring "but" and a sense with a pos (part-of-speech) tagged
+	#   as a conjunction (pos.kw=8), a particle (18), or an irregular
+	#   verb (47).
+	# 
+	#   
+
+	my ($fclause, $cnum,  @wclauses, @args, $jt, $alias,
+	    $cond, $arg, $tbl, $where, $sql, $itm, $jointype);
+
+	# $fclause will become the FROM clause of the generated sql.  Since
+	# all queries will rquire "entr" to be included, we start of with 
+	# that table in the clause.
+
+	$fclause = "entr e";  $cnum = 0;
+
+	# Go through the condition list.  For each 3-tuple we will add the
+	# table name to the FROM clause, and the where and arguments items 
+	# to there own arrays.
+
+	foreach $itm (@$condlist) {
+
+	    # extend_from() requires a number that it uses to generate 
+	    # unique table aliases.  We will use $cnum for this.
+
+	    $cnum += 1;
+
+	    # unpack a @$condist 3-tuple.
+
+	    ($tbl, $cond, $arg) = @$itm;
+
+	    # The table name may be preceeded by a "*" to indicate that
+	    # it is to be joinged with a LEFT JOIN rather than the usual
+	    # INNER JOIN".  It may also be followed by a space and an 
+	    # alias name.  Unpack these things.
+ 
+	    ($jt, $tbl, undef, $alias) = ($tbl =~ m/^([*])?(\w+)(\s+(\w+))?$/);
+	    $jointype = $jt ? "LEFT JOIN" : "JOIN";
+
+	    # Add the table (using the desired alias if any) to the FROM 
+	    # clause (except if the table is "entr" which is aleady in 
+	    # the FROM clause).
+
+	    $alias = $alias || "";
+	    if ($tbl ne "entr") {
+		$fclause .= sprintf (" %s %s %s ON %s.entr=e.id", 
+				     $jointype, $tbl, $alias, ($alias || $tbl)); }
+	    else {
+		# Sanity check...
+		if ($alias && !($alias eq "e")) {
+		    die "table 'entr' in condition list uses alias other than 'e': $alias\n"; } }
+
+	    # Save the cond tuple's where clause and arguments each in 
+	    # their own array.
+
+	    push (@wclauses, $cond);
+	    push (@args, @$arg); }
+
+	# AND all the where clauses together.
+
+	$where = join (" AND ", grep ($_, @wclauses));
+
+	# Create the sql we need to find the entr.id numbers from 
+	# the tables and where conditions given in the @$condlist.
+
+	$sql = sprintf ("SELECT DISTINCT e.id FROM %s WHERE %s", $fclause, $where);
+
+	# Return the sql and the arguments which are now suitable
+	# for execution.
+
+	return ($sql, \@args); }
 
     sub fmtkr { my ($kanj, $rdng) = @_;
 	# If string $kanji is true return a string consisting

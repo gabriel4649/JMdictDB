@@ -11,13 +11,20 @@
 -- identified by text strings) into xref records (where
 -- xref targets are identified by entr and sens number). 
 --
--- The process is done in two steps:
--- 1) Based on the xref text in xresolv, find the entry 
---    or entries that are the xref targets.  (This is
---    the most complex step.)
--- 2) Create the xref records to the target entry senses.
---    There may be multiple records created for a single
---    target entry if that entry has multiple senses. 
+-- The process is done in three steps:
+-- 1) Based on the xml xref text in xresolv, find the 
+--    entry or entries that are the xref targets.  (This
+--    is the most complex step.)  The results go into
+--    temp table _xrsv whict relates xml xrefs to target
+--    entries.
+-- 2) Create intemediate data in table xrefld that expands
+--    the target entries to target senses.  This table also
+--    also allows linking any database xref back to the xml
+--    xref in xresolv it was generated from.  After the 
+--    data has been created in xrefld, the _xrsv table can
+--    be deleted,
+-- 3) From the information in xresolv and xrefld, create
+--    the actual db xref rows. 
 -- 
 -- This process excludes any xrefs except those where
 -- both the source and target have an entr.src value of
@@ -186,13 +193,13 @@ VACUUM ANALYZE _xrsv;
 -- Since targets are identified only by kanji or 
 -- kana strings (that in turn identify entire entries,
 -- possibly multiple) and the database xrefs points 
--- to senses, we have little choice but to create
--- an xref to every sense in the target entries.
+-- to senses, we will create an xref to every sense
+-- in the target entries.
 -- The following insert does that using the target 
--- entries in _xrsv.  The xref table column "xref" is
--- not included in the insert; there is an insert trigger
--- on the table that will automatically supply incrementing 
--- values to make the primary key of each row unique.
+-- entries in _xrsv.  We create a row for each xref
+-- in table xrefld.  Each xref is numbered using field
+-- "xref".  Table xrefld has an insert trigger that
+-- will assign the right value if the field in null.
 --
 -- The select below connects the xref info in table
 -- resolv to the actual target entries in table _xrsv
@@ -202,15 +209,30 @@ VACUUM ANALYZE _xrsv;
 -- to the same entry (typically a kanji and reading
 -- intended to convey that the intended xref is the
 -- entry with that pair.)
+--
+-- We don't limit the xrefs in _xrsv to src=1 since 
+-- we assume that table always starts empty and the 
+-- rows added above are all limited to src=1.
 
-INSERT INTO xref(entr,sens,typ,xentr,xsens,notes)
-    (SELECT x.entr,x.sens,z.typ,x.xentr,s.sens as xsens,z.notes
+INSERT INTO xrefld(entr,sens,ord,xentr,xsens)
+   (SELECT x.entr,x.sens,MIN(x.ord),x.xentr,s.sens as xsens
     FROM _xrsv x 
     JOIN xresolv z ON z.entr=x.entr AND z.sens=x.sens AND z.ord=x.ord
     JOIN sens s ON s.entr=x.xentr AND (s.sens=z.tsens OR z.tsens IS NULL)
     WHERE x.entr != x.xentr 
-    GROUP BY x.entr,x.sens,z.typ,x.xentr,s.sens,z.notes
-    ORDER BY x.entr,x.sens,z.typ,MIN(x.ord),x.xentr,s.sens);
+    GROUP BY x.entr,x.sens,x.xentr,s.sens
+    ORDER BY x.entr,x.sens,MIN(x.ord),x.xentr,s.sens);
 
+VACUUM ANALYZE xrefld;
+
+-- Using the xrefld and xresolv tables, create the actual
+-- rows in the xref table.  Limited to jmdict xrefs.
+
+INSERT INTO xref(entr,sens,xref,typ,xentr,xsens,notes)
+   (SELECT x.entr,x.sens,x.xref,v.typ,x.xentr,x.xsens,v.notes
+    FROM xrefld x 
+    JOIN xresolv v ON v.entr=x.entr AND v.sens=x.sens AND v.ord=x.ord
+    JOIN entr e ON e.id=v.entr
+    WHERE e.src=1);
 
 VACUUM ANALYZE xref;

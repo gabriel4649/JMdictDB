@@ -23,36 +23,13 @@ use Time::HiRes ('time');
 
 BEGIN {
     use Exporter(); our (@ISA, @EXPORT_OK, @EXPORT); @ISA = qw(Exporter);
-    @EXPORT_OK = qw(Tables KANA HIRAGANA KATAKANA KANJ); 
+    @EXPORT_OK = qw(KANA HIRAGANA KATAKANA KANJ); 
     @EXPORT = qw(dbread dbinsert Kwds kwrecs addids mktmptbl Find EntrList 
 		    matchup filt jstr_classify addentr resolv_xref fmt_jitem
 		    zip fmtkr dbopen setkeys add_xrefsums grp_xrefs); }
 
 our(@VERSION) = (substr('$Revision$',11,-2), \
 	         substr('$Date$',7,-11));
-
-    our($Tables) = { 
-	    entr =>  {pk=>["id"],                  parent=>"",     fk=>["entr"], al=>"e"},
-	    hist =>  {pk=>["entr","hist"],         parent=>"entr", fk=>["entr"], al=>"h"},
-	    rdng =>  {pk=>["entr","rdng"],         parent=>"entr", fk=>["entr"], al=>"r"},
-	    rinf =>  {pk=>["entr","rdng","kw"],    parent=>"rdng", fk=>["entr","rdng"], al=>"ri"},
-	    audio => {pk=>["entr","rdng"],         parent=>"rdng", fk=>["entr","rdng"], al=>"a"},
-	    restr => {pk=>["entr","rdng","kanj"],  parent=>"rdng", fk=>["entr","rdng"], al=>"rk"},
-	    kanj =>  {pk=>["entr","kanj"],         parent=>"entr", fk=>["entr"], al=>"k"},
-	    kinf =>  {pk=>["entr","kanj","kw"],    parent=>"kanj", fk=>["entr","kanj"], al=>"ki"},
-	    freq =>  {pk=>["entr","rdng","kanj","kw"],parent=>"entr", fk=>["entr"], al=>"q"},
-	    sens =>  {pk=>["entr","sens"],         parent=>"entr", fk=>["entr"], al=>"s"},
-	    gloss => {pk=>["entr","sens","gloss"], parent=>"sens", fk=>["entr","sens"], al=>"g"},
-	    pos =>   {pk=>["entr","sens","kw"],    parent=>"sens", fk=>["entr","sens"], al=>"p"},
-	    misc =>  {pk=>["entr","sens","kw"],    parent=>"sens", fk=>["entr","sens"], al=>"m"},
-	    fld =>   {pk=>["entr","sens","kw"],    parent=>"sens", fk=>["entr","sens"], al=>"f"},
-	    dial =>  {pk=>["entr","sens","kw"],    parent=>"sens", fk=>["entr","sens"], al=>"d"},
-	    lsrc =>  {pk=>["entr","sens","lang","txt"],parent=>"sens", fk=>["entr","sens"], al=>"l"},
-	    stagr => {pk=>["entr","sens","rdng"],  parent=>"sens", fk=>["entr","sens"], al=>"sr"},
-	    stagk => {pk=>["entr","sens","kanj"],  parent=>"sens", fk=>["entr","sens"], al=>"sk"},
-	    xrefe => {pk=>["entr","sens","xref"],  parent=>"sens", fk=>["entr","sens"], al=>"x"},
-	    xrere => {pk=>["entr","sens","xref"],  parent=>"sens", fk=>["xentr","xsens"], al=>"xr"},};
-
 
     sub dbread { my ($dbh, $sql, $args) = @_;
 	# Read the database result set produced by executing the

@@ -560,7 +560,7 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	if (!$entr->{seq}) { 
 	    $rs = dbread ($dbh, "SELECT seq FROM entr WHERE id=?", [$eid]);
 	    $entr->{seq} = $rs->[0]{seq}; }
-	return ($eid, $entr->{seq}); }
+	return ($eid, $entr->{seq}, $entr->{src}); }
 
     sub build_search_sql { my ($condlist) = @_;
 

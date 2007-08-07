@@ -34,7 +34,7 @@ binmode (STDOUT, ":utf8");
 eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 
     main: {
-	my ($dbh, $cgi, $tmpl, $entr, $entrs, $x, $eid, $seq, @added);
+	my ($dbh, $cgi, $tmpl, $entr, $entrs, $x, $eid, $seq, $src, @added);
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
 	$dbh = dbopen ();  $::KW = Kwds ($dbh);
@@ -65,9 +65,9 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 		  # Reset seq, src, and history from original entr.
 		resethist ($dbh, $entr); }
 	        
-	    ($eid,$seq) = addentr ($dbh, $entr); 
+	    ($eid,$seq,$src) = addentr ($dbh, $entr); 
 	    $dbh->commit ();
-	    push (@added, [$eid,$seq]); }
+	    push (@added, [$eid,$seq,$src]); }
 	results_page (\@added);
 	$dbh->disconnect; }
 
@@ -91,7 +91,7 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	unshift (@$recs, $submitter_hist); }
 
     sub results_page { my ($added) = @_;
-	my @m = map ("\n      <a href=\"entr.pl?q=$_->[1]\">$_->[1]</a>", @$added);
+	my @m = map ("\n      <a href=\"entr.pl?q=$_->[1].$_->[2]\">$_->[1]</a>", @$added);
 	my $seqlnks = join ("    , " , @m);
 	print <<EOT;
 <html>

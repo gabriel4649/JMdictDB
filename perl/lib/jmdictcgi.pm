@@ -17,6 +17,7 @@
 #   51 Franklin Street, Fifth Floor, Boston, MA  02110#1301, USA
 #######################################################################
 
+package jmdictcgi;
 
 use strict; use warnings;
 use Encode 'decode_utf8'; 
@@ -24,8 +25,14 @@ use Storable qw(freeze thaw); use MIME::Base64;
 use HTML::Entities;
 use POSIX qw(strftime);
 
-BEGIN {push (@INC, "../lib");}
 use jmdict;
+
+BEGIN {
+    use Exporter(); our (@ISA, @EXPORT_OK, @EXPORT); @ISA = qw(Exporter);
+    @EXPORT = qw(serialize unserialize fmt_restr fmt_stag set_audio_flag); }
+
+our(@VERSION) = (substr('$Revision$',11,-2), \
+	         substr('$Date$',7,-11));
 
 *esc = \&CGI::escapeHTML;
 

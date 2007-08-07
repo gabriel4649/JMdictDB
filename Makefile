@@ -49,6 +49,7 @@ CGI_FILES = perl/cgi/entr.pl \
 	perl/cgi/jbparser.pl
 
 LIB_FILES = perl/lib/jmdict.pm \
+	perl/lib/jmdictcgi.pm \
 	perl/lib/jmdicttal.pm \
 	perl/lib/jbparser.pm \
 	perl/lib/jmdictfmt.pm \

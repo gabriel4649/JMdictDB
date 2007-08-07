@@ -150,6 +150,7 @@ CREATE TABLE rdng (
     PRIMARY KEY(entr,rdng));
 --CREATE INDEX rdng_txt ON rdng(txt);
 --CREATE UNIQUE INDEX rdng_txt1 ON rdng(entr,txt);
+--CREATE INDEX rdng_txt2 ON rdng(txt varchar_pattern_ops); # For fast LIKE 'xxx%'
 --ALTER TABLE rdng ADD CONSTRAINT rdng_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE kanj (
@@ -159,6 +160,7 @@ CREATE TABLE kanj (
     PRIMARY KEY(entr,kanj));
 --CREATE INDEX kanj_txt ON kanj(txt);
 --CREATE UNIQUE INDEX kanj_txt1 ON kanj(entr,txt);
+--CREATE INDEX kanj_txt2 ON kanj(txt varchar_pattern_ops); # For fast LIKE 'xxx%'
 --ALTER TABLE kanj ADD CONSTRAINT kanj_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE sens (
@@ -178,6 +180,8 @@ CREATE TABLE gloss (
     PRIMARY KEY(entr,sens,gloss));
 --CREATE INDEX gloss_txt ON gloss(txt); 
 --CREATE UNIQUE INDEX gloss_txt1 ON gloss(entr,sens,lang,txt);
+--CREATE INDEX gloss_txt2 ON gloss(lower(txt) varchar_pattern_ops); # For case-insensitive LIKE 'xxx%'
+--CREATE INDEX gloss_txt3 ON gloss(lower(txt)); 		    # For case-insensitive '='
 --ALTER TABLE gloss ADD CONSTRAINT gloss_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE gloss ADD CONSTRAINT gloss_lang_fkey FOREIGN KEY (lang) REFERENCES kwlang(id);
 

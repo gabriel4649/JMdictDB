@@ -18,7 +18,7 @@
 <body>
   <h1>JMdictDB To-Do List</h1>
   <span class="gendate">
-    This list was current as of 2007-08-03 17:13
+    This list was current as of 2007-08-07 13:49
     </span>
   <table class="todo">
     
@@ -33,6 +33,26 @@
       <tr class="priohdr">
         <td colspan="5">Priority 'high' items</td>
 	</tr>
+      <tr class="row">
+	<td class="id">88</td>
+	
+	  <td class="title" colspan="2">memory leak in master2.pl script</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-08-04 13:45</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">When running the master2.pl script from Jim, noticed that memory usage grew continuously during execution.  The code was written to process entries in blocks of 100 to avoid this problem.  Need to find the source of this, particularly if it is due to EntrList() objects not getting garbage-collected.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
       <tr class="row">
 	<td class="id">83</td>
 	
@@ -102,30 +122,11 @@ Problem seems to be the brackets which are classified as kanji characters and th
 + perl/showentr.pl<br/>
 + perl/cgi/srchform.pl<br/>
 could add src dropdown near the entr-id/seq box, or just make the form pay attention to the Src checkbox selections when seq# given.<br/>
-+ per/cgi/edsubmit.pl<br/>
+(done) + per/cgi/edsubmit.pl<br/>
+(done) + perl/cgi/entr.pl<br/>
 + Anything else then uses seq in link to entr.pl page.
 </td>
 	</tr>
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">37</td>
-	
-	  <td class="title" colspan="2">Simplify search subs</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-26</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">srchres.pl -- Simplify build_search_table() and mk_from_clause().  Because of the 2007-02-11 pk/fk change, we don't need join all the parent tables of the table we're looking at -- the search target table can be joined directly and soley to "entr" which should greatly simplify the code.
-</td>
-	</tr>
-      
       
       </span><span omit-tag="">
       
@@ -143,26 +144,6 @@ could add src dropdown near the entr-id/seq box, or just make the form pay atten
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">If a reading (or kanji) has a the same FoU tag paired with two (or more) kanji (or readings), the tag will be shown twice (or more) on the reading  (or kanji).  Example: seq 1579780 (主人).
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">35</td>
-	
-	  <td class="title" colspan="2">Case insensitive search</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-24</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">srchres.pl -- Search on gloss is case-sensitive, probably should not be.
 </td>
 	</tr>
       
@@ -278,46 +259,50 @@ could add src dropdown near the entr-id/seq box, or just make the form pay atten
         <td colspan="5">Priority 'med' items</td>
 	</tr>
       <tr class="row">
-	<td class="id">86</td>
+	<td class="id">92</td>
 	
-	  <td class="title" colspan="2">Add src column to xresolv</td>
+	  <td class="title" colspan="2">Speed up LIKE searches</td>
 	  
 	
 	<td class="compld"></td>
-	<td class="entered">2007-08-01 21:30</td>
+	<td class="entered">2007-08-07 13:27</td>
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">table xresolv is used to hold the raw xrefs from files jmdict and examples (and others in future) as the xrefs are read, since they cannot be resolved immediately.  The table should be able to, and currently does, hold xrefs from various files simultaneously.  But the only thing that distinguishes xrefs from different fies currently is the 'typ' field (2 or 3 from jmdict, 5 for Examples).<br/>
-<br/>
-Need to add new column 'src' to xresolv, and modify jmparse.pl, exparse.pl, and their modules to provide value for it.
+	<td class="descr" colspan="4">The search sql generated in srchres.pl for "starts", "contains" and "ends" searches use the sql LIKE operator.  The latter two always require a full sequential index scan (slow) when executed, but the first can use an index (fast).  Although the proper indexes have been set up (see task-35), postgresql refuses to use them because the generated sql uses a parameter mark and supplies the argument at execute time.  When the query is prepared, the planner does not know that the argument value is 'xxx%' (which can use index) and not '%xxx' which can't.
 </td>
 	</tr>
-      
+      <tr class="descr">
+        <td> </td>
+	<td class="notes" colspan="4">One way to fix is to embedd the argument in the query text.  Testing shows this will use index and runs ~10x faster.  But two problems:<br/>
+- The argument value will need to be carefuly escaped since it comes from an untrusted source.<br/>
+- Will lose the benefit of running a pre-prepared query.
+</td>
+	</tr>
       
       </span><span omit-tag="">
       
       
       
       <tr class="row">
-	<td class="id">76</td>
+	<td class="id">91</td>
 	
-	  <td class="title" colspan="2">Natural key for entries</td>
+	  <td class="title" colspan="2">speed up "starts" searches.</td>
 	  
 	
 	<td class="compld"></td>
-	<td class="entered">2007-07-13 15:50</td>
+	<td class="entered">2007-08-05 17:14</td>
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Entr rows currently use a surrogate primary key (auto-number int id column) but has not other way of uniquely identifying entries.  This is a problem when exporting/importing entries, or moving them between databases since there is no way to identify the target of inter-entry reference (xrefs for example) sinve the entry id may change on being reloaded.
+	<td class="descr" colspan="4">Doing a "starts" text search (srchform.pl, search code in srchres.pl) is very slow (typ 25s on my development machine) because postgresql does sequential scan and does not use index.  Need to see if we can convince it to use index.<br/>
+<br/>
+See also taskid-35.
 </td>
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="notes" colspan="4">We can't use (src,seq) as a pk because multiple copies of the same entry can exist with different or the same stat values (e.g. there can be several "updated, approval pending" versins of the same entry).<br/>
-<br/>
-Option: add a version number (small int) field to entr, say 'entr', to distinguish between otherwise indistinguishable entries, and make unique key (src,seq,entr).  Don't really want it to be the PK becaue it will make children table PK's too long.
+	<td class="notes" colspan="4">Chg-207 adds varchar_pattern_ops indexes to kanj, rdng tables. Not sure if it actually helps.
 </td>
 	</tr>
       
@@ -359,26 +344,6 @@ Option: add a version number (small int) field to entr, say 'entr', to distingui
 	<td class="descr" colspan="4">Support PerlEx.  The author does a lot of the project development on a Windows machine and would like faster response both during devopment and for his own use of the project.  It would also be in keeping with the free-software nature of the project to make the software useful to the widest possible audience.<br/>
 <br/>
 PerlEx comes with Activestate's Perl and provides fast execution of cgi scripts under Microsoft's IIS web server in (I think) a similar way to modperl's Modperl::Request.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">40</td>
-	
-	  <td class="title" colspan="2">Srchform reset button</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-27</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Add reset button to search results form.
 </td>
 	</tr>
       
@@ -454,6 +419,46 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
+	<td class="id">29</td>
+	
+	  <td class="title" colspan="2">XML parse kw checks</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">4</td>
+	
+	  <td class="title" colspan="2">Editor search page</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Search by various history criteria: status / submitter / submitted date / text in comments / etc.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">6</td>
 	
 	  <td class="title" colspan="2">Editor authenication</td>
@@ -498,46 +503,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">30</td>
-	
-	  <td class="title" colspan="2">XML parse other checks</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Do other error checking (or could do these after data loaded into db): all senses have gloss?  All entries have sens and reading? ... (But remember that deleted entries have no sences or readings).
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">4</td>
-	
-	  <td class="title" colspan="2">Editor search page</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Search by various history criteria: status / submitter / submitted date / text in comments / etc.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">25</td>
 	
 	  <td class="title" colspan="2">Untrusted storables</td>
@@ -549,26 +514,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">newsub.pl -- Is it safe to receive a Storable?
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">29</td>
-	
-	  <td class="title" colspan="2">XML parse kw checks</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
 </td>
 	</tr>
       
@@ -593,9 +538,30 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="notes" colspan="4">See also task-83: "brackets in reading cause parse error".
+	<td class="notes" colspan="4">See also task-83: "brackets in reading cause parse error".<br/>
+Note: "々" (entry 1000060) is in kanj table (because from ke_ele in xml), but jstr_classify() classifies as kana, thus search for it fails.
 </td>
 	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">30</td>
+	
+	  <td class="title" colspan="2">XML parse other checks</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">load_jmdict.pl -- Do other error checking (or could do these after data loaded into db): all senses have gloss?  All entries have sens and reading? ... (But remember that deleted entries have no sences or readings).
+</td>
+	</tr>
+      
       
       </span><span omit-tag="">
       
@@ -636,6 +602,32 @@ Entr objects being created for output need not supply record numbers.  User of o
       <tr class="priohdr">
         <td colspan="5">Priority 'low' items</td>
 	</tr>
+      <tr class="row">
+	<td class="id">86</td>
+	
+	  <td class="title" colspan="2">Add src column to xresolv</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-08-01 21:30</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">table xresolv is used to hold the raw xrefs from files jmdict and examples (and others in future) as the xrefs are read, since they cannot be resolved immediately.  The table should be able to, and currently does, hold xrefs from various files simultaneously.  But the only thing that distinguishes xrefs from different files currently is the 'typ' field (2 or 3 from jmdict, 5 for Examples).  [preceding statement not true, see note.]<br/>
+<br/>
+Need to add new column 'src' to xresolv, and modify jmparse.pl, exparse.pl, and their modules to provide value for it.
+</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="notes" colspan="4">Having second thoughts about this.  The table does have column 'entr' that allows joining to table entr to get the src.  While a minor pain, it is better than breaking normaiization(?)  OTOH, this table is not part of the core schema, and contents are intended to be temporary, so perhaps it doesn't matter if we break normalization?  Lowered prio to low.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
       <tr class="row">
 	<td class="id">79</td>
 	
@@ -708,6 +700,32 @@ kwpos -- Uses 3xx value keywords for extra PoS types used by experimental verb i
       
       
       <tr class="row">
+	<td class="id">76</td>
+	
+	  <td class="title" colspan="2">Natural key for entries</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-07-13 15:50</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Entr rows currently use a surrogate primary key (auto-number int id column) but has not other way of uniquely identifying entries.  This is a problem when exporting/importing entries, or moving them between databases since there is no way to identify the target of inter-entry reference (xrefs for example) sinve the entry id may change on being reloaded.
+</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="notes" colspan="4">We can't use (src,seq) as a pk because multiple copies of the same entry can exist with different or the same stat values (e.g. there can be several "updated, approval pending" versins of the same entry).<br/>
+<br/>
+Option: add a version number (small int) field to entr, say 'entr', to distinguish between otherwise indistinguishable entries, and make unique key (src,seq,entr).  Don't really want it to be the PK becaue it will make children table PK's too long.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">73</td>
 	
 	  <td class="title" colspan="2">lit glosses w nested parens parsed wrong</td>
@@ -762,9 +780,9 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">7</td>
+	<td class="id">16</td>
 	
-	  <td class="title" colspan="2">Unit tests</td>
+	  <td class="title" colspan="2">Connection pooling</td>
 	  
 	
 	<td class="compld"></td>
@@ -772,7 +790,27 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Need to write unit tests for library code
+	<td class="descr" colspan="4">Will this help performance? Informal timings done on cgi show that connect time is pretty quick but may be more significant when object retrieval times are improved. (ref Apache::DBI)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">9</td>
+	
+	  <td class="title" colspan="2">Test environment</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to setup a test infrastructure.
 </td>
 	</tr>
       
@@ -822,26 +860,6 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">9</td>
-	
-	  <td class="title" colspan="2">Test environment</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to setup a test infrastructure.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">14</td>
 	
 	  <td class="title" colspan="2">Query time variation</td>
@@ -862,9 +880,9 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">16</td>
+	<td class="id">27</td>
 	
-	  <td class="title" colspan="2">Connection pooling</td>
+	  <td class="title" colspan="2">Database versioning</td>
 	  
 	
 	<td class="compld"></td>
@@ -872,7 +890,7 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Will this help performance? Informal timings done on cgi show that connect time is pretty quick but may be more significant when object retrieval times are improved. (ref Apache::DBI)
+	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
 </td>
 	</tr>
       
@@ -942,6 +960,26 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
+	<td class="id">7</td>
+	
+	  <td class="title" colspan="2">Unit tests</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to write unit tests for library code
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">21</td>
 	
 	  <td class="title" colspan="2">CGI html escaping</td>
@@ -953,26 +991,6 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">28</td>
-	
-	  <td class="title" colspan="2">Circular lists</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">jmdict.pm -- The xrefs stuff might be circularly linked.  How does that affect garbage collection in long-running process (e.g. modperl)?
 </td>
 	</tr>
       
@@ -1002,9 +1020,9 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">27</td>
+	<td class="id">28</td>
 	
-	  <td class="title" colspan="2">Database versioning</td>
+	  <td class="title" colspan="2">Circular lists</td>
 	  
 	
 	<td class="compld"></td>
@@ -1012,7 +1030,7 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
+	<td class="descr" colspan="4">jmdict.pm -- The xrefs stuff might be circularly linked.  How does that affect garbage collection in long-running process (e.g. modperl)?
 </td>
 	</tr>
       
@@ -1064,6 +1082,26 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
+	<td class="id">32</td>
+	
+	  <td class="title" colspan="2">Email addr obsfucation</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Need to obsure email addresses for general display (unobsured on conf form ok if none other than submitter/authenticated editors can see.)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">41</td>
 	
 	  <td class="title" colspan="2">CVS access</td>
@@ -1081,29 +1119,132 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">32</td>
-	
-	  <td class="title" colspan="2">Email addr obsfucation</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
+      <tr class="header">
+        <td colspan="5"><br>The following items have been completed...<br><br></td>
 	</tr>
-      <tr class="descr">
+      
+      
+      <tr class="row done">
+	<td class="id">35</td>
+	
+	
+	  <td class="title">Case insensitive search</td>
+	  <td class="prio">high</td>
+	  
+	<td class="compld">2007-08-09 13:27</td>
+	<td class="entered">2007-02-24</td>
+	</tr>
+      <tr class="descr done">
         <td> </td>
-	<td class="descr" colspan="4">cgi -- Need to obsure email addresses for general display (unobsured on conf form ok if none other than submitter/authenticated editors can see.)
+	<td class="descr" colspan="4">srchres.pl -- Search on gloss is case-sensitive, probably should not be.
+</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="notes" colspan="4">Create a functional index on table gloss using "lower(txt)".<br/>
+In srchres.pl, create gloss WHERE clause like "lower(txt)=..." for gloss "is" search.<br/>
+Create a functional index on table gloss using "lower(txt varchar_pattern_ops)". (This index will be used in "LIKE "xxx%" searches.)<br/>
+In srchres.pl, create gloss WHERE clause like "lower(txt) LIKE ...".<br/>
+<br/>
+Note: "LIKE 'xxx%'" search still don't use index because of issue described in task-92.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">40</td>
+	
+	
+	  <td class="title">Srchres reset button</td>
+	  <td class="prio">med</td>
+	  
+	<td class="compld">2007-08-05 13:40</td>
+	<td class="entered">2007-02-27</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">Add reset button to search results form.
 </td>
 	</tr>
       
       
       </span><span omit-tag="">
-      <tr class="header">
-        <td colspan="5"><br>The following items have been completed...<br><br></td>
+      
+      
+      
+      <tr class="row done">
+	<td class="id">37</td>
+	
+	
+	  <td class="title">Simplify search subs</td>
+	  <td class="prio">high</td>
+	  
+	<td class="compld">2007-08-05 13:22</td>
+	<td class="entered">2007-02-26</td>
 	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">srchres.pl -- Simplify build_search_table() and mk_from_clause().  Because of the 2007-02-11 pk/fk change, we don't need join all the parent tables of the table we're looking at -- the search target table can be joined directly and soley to "entr" which should greatly simplify the code.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">89</td>
+	
+	
+	  <td class="title">xref to xresolv linkage</td>
+	  <td class="prio">high</td>
+	  
+	<td class="compld">2007-08-05 07:36</td>
+	<td class="entered">2007-08-04 22:36</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">The way we currently generate xrefs from the xresolv data makes it impossible to definatively identify the xresolv row from which an xref row was generated.  The reason is that xref are numbered (in column "xref") dynamically as they are order, xresolv rows are ordered sequentially but because the one xresolv row can result in several xref rows (if the target entry has multiple senses) there is not a one-one corespondence between the numbers.
+</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="notes" colspan="4">Create new table xrefld.  Xrefs generation now goes: xresolv -&gt; _xrsv<br/>
+ -&gt; xrefld -&gt; xref.  xrefld has columns entr,sens,xref,ord.  entr,sens,xref form a fk to the xref table.  entr,sens,ord form a fk to the xresolv table.  Thus xrefld serves to link the two tables. Another benefit is the the trigger that assigns "xref" column values is now on table xrefld, rather than table xref.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">87</td>
+	
+	
+	  <td class="title">parse kanji/reading xref pairs</td>
+	  <td class="prio">high</td>
+	  
+	<td class="compld">2007-08-04 18:00</td>
+	<td class="entered">2007-08-03 18:43</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">jmdict.xml (as of a week or so ago?), started denoting some xref targets with the syntax KK.RRR.ss in the xref elements, where KK is a kanji string, RRR a kana string, and ss a (optional) number indicating a specific sense.  The ".s are actually a u\30fb. KK or RRR may be missing (but not both of course.)<br/>
+<br/>
+Note that some jmdict entries have embedded \u30fb characters in their kanji and/or reading text, and will need to be taken account of.  Currently they are of the forms KKK.KKK, RRR.RRR, RRR.KKK, and no KKK.RRR so at present there in no ambiguity.<br/>
+<br/>
+Will also need to redo xresolv.sql (creates xrefs from the parsed xml data) which currently assumes kanji or reading but not both, and no sense info.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
       
       
       <tr class="row done">

@@ -14,6 +14,7 @@
         <span tal:replace="len:results"/> matching entries found...
 	</span>
       <input tal:if="gt:len:results 10" name="show" value="Display selected entries" type="submit" tal:condition="true:results"/> 
+      <input tal:if="gt:len:results 10" type="reset" value="Reset" tal:condition="true:results"/> 
       <table class="reslist" tal:condition="true:results">
 	<tr class="heading">
 	  <th> </th>
@@ -34,6 +35,7 @@
 	  </tr>
 	</table>
       <input name="show" value="Display selected entries" type="submit" tal:condition="true:results"/> 
+      <input name="show" value="Reset" type="reset" tal:condition="true:results"/> 
       </form>
     </div>
   <div class="debug" tal:if="true:dbg">

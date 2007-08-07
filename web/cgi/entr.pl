@@ -33,47 +33,55 @@ $|=1;
 *ee = \&encode_entities;
 
     main: {
-	my ($dbh, $cgi, $tmptbl, $tmpl, $sql, $entries,
-	    $e, @qlist, @errs, @elist, @whr, $s);
+	my ($dbh, $cgi, @qlist, @elist);
 	binmode (STDOUT, ":encoding(utf-8)");
 	$::Debug = {};
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
 
-	@qlist = $cgi->param ('q'); validateq (\@qlist, \@errs);
-	@elist = $cgi->param ('e'); validaten (\@elist, \@errs);
-	if (@errs) { errors_page (\@errs);  exit; } 
-
 	$dbh = dbopen ();  $::KW = Kwds ($dbh);
+	@qlist = $cgi->param ('q');
+	@elist = $cgi->param ('e'); 
+	gen_page ($dbh, \@elist, \@qlist);
+	$dbh->disconnect; }
 
-	if (@qlist) { push (@whr, "e.seq IN (" . join(",",map('?',(@qlist))) . ")"); }
-	if (@elist) { push (@whr, "e.id  IN (" . join(",",map('?',(@elist))) . ")"); }
+    sub gen_page { my ($dbh, $elist, $qlist) = @_;
+	my ($tmptbl, $tmpl, $sql, $seq, $src, $entries, @whr, $x, @errs, @e, @args); 
+	foreach $x (@$elist) {
+	    if (!($x =~ m/^\s*\d+\s*$/)) {
+		push (@errs, "<br>Bad url parameter received: ".ee($x)); next; }
+	    push (@e, "?"); push (@args, $x); }
+	if (@e) { push (@whr, "id IN (" . join (",", @e) . ")"); }
+
+	foreach $x (@$qlist) {
+	    ($seq,$src) = split ('\.', $x, 2);
+	    if (!($seq =~ m/^\d+$/)) { 
+		push (@errs, "<br>Bad url parameter received: ".ee($x)); next; }
+	    if (!$src) { $src = "jmdict"; }
+	    $src = $::KW->{SRC}{$src}{id};
+	    if (!$src) {
+		push (@errs, "<br>Bad url parameter received: ".ee($x)); next; }
+	    push (@whr, "(seq=? AND src=?)"); push (@args, ($seq, $src)); }
+
+	if (!@whr) { push (@errs, "No valid entry or seq numbers given."); }
+	if (@errs) { errors_page (\@errs);  return; } 
+
 	$sql = "SELECT e.id FROM entr e WHERE " . join (" OR ", @whr);
-	$tmptbl = Find ($dbh, $sql, [@qlist, @elist]);
+	$tmptbl = Find ($dbh, $sql, \@args);
 	$entries = EntrList ($dbh, $tmptbl);
-	add_xrefsums ($dbh, $tmptbl, $entries);
+	if (!@$entries) { errors_page (["None of the requested entries were found."]); return; }
 
+	add_xrefsums ($dbh, $tmptbl, $entries);
 	fmt_restr ($entries); 
 	fmt_stag ($entries); 
 	set_audio_flag ($entries);
 
 	$tmpl = new Petal (file=>'../lib/tal/entr.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
-	print $tmpl->process (entries=>$entries, dbg=>$::Debug);
-	$dbh->disconnect; }
-
-    sub validaten { my ($list, $errs) = @_;
-	foreach my $p (@$list) {
-	    if (!($p =~ m/^\s*\d+\s*$/)) {
-		push (@$errs, "<br>Bad url parameter received: ".ee($p)); } } }
-
-    sub validateq { my ($list, $errs) = @_;
-	foreach my $p (@$list) {
-	    if (!($p =~ m/^\s*\d+\s*$/)) {
-		push (@$errs, "<br>Bad url parameter received: ".ee($p)); } } }
+	print $tmpl->process (entries=>$entries, dbg=>$::Debug); }
 
     sub errors_page { my ($errs) = @_;
-	my $err_details = join ("\n    ", @$errs);
+	my $err_details = join ("<br>\n    ", @$errs);
 	print <<EOT;
 <html>
 <head>
@@ -85,12 +93,13 @@ $|=1;
   <hr>
   Parameter format:<br/>
   <table border="0">
-    <tr><td>q=dddddd</td> 
-      <td>Display the entry having the sequence number &lt;n&gt;.</td></tr>
+    <tr><td>q=n.c</td> 
+      <td>Display the entry having the sequence number &lt;n&gt; in corpus &lt;c&gt;
+	  which may be given as the corpus id number or name.</td></tr>
+    <tr><td>q=n</td> 
+      <td>Display the entry having the sequence number &lt;n&gt; in the "jmdict" corpus.</td></tr>
     <tr><td>e=n</td> 
       <td>Display the entry having database id number &lt;n&gt;.</td></tr>
-    <tr><td>s=n</td> 
-      <td>Display the entry that contains the sense having database id number &lt;n&gt;.</td></tr>
     </table>
   Parameter types may be freely intermixed and any number of parameters 
   may be given in a single url.

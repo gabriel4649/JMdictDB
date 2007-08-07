@@ -87,22 +87,54 @@ binmode (STDOUT, ":utf8");
 	$dbh->disconnect; }
 
     sub str_match_clause { my ($srchin, $srchtyp, $srchtxt, $idx) = @_; 
-	my ($x, $table, $alias, $whr, @args);
+	my ($x, $table, $alias, $whr, @args, $column);
 	if ($srchin eq "auto") {
 	    $x = jstr_classify ($srchtxt);
 	    if ($x & $jmdict::KANJI) { $table = "kanj";  }
 	    elsif ($x & $jmdict::KANA) { $table = "rdng"; }
 	    else { $table = "gloss"; } }
 	else { $table = $srchin; }
-	$alias = " " . {kanj=>"j", rdng=>"r", gloss=>"g"}->{$table} . "$idx";
-	$srchtyp = lc ($srchtyp);
-	if ($srchtyp eq "is")		{ $whr = sprintf ("%s.txt=?", $alias); }
-	else				{ $whr = sprintf ("%s.txt LIKE(?)", $alias); }
-	if ($srchtyp eq "is")		{ @args = ($srchtxt); }
+	$alias = " " . {kanj=>"j", rdng=>"r", gloss=>"g"}->{$table} . "$idx"; 
+	$srchtyp = lc($srchtyp);
+
+	  # The following generates implements case insensitive search
+	  # for gloss searches, and non-"is" searches using the sql LIKE
+	  # operator.  The case-insensitive part is a work-around for
+	  # Postgresql's lack of support for standard SQL's COLLATION
+	  # feature.  We can't use ILIKE for case-insensitive searches
+	  # because it won't use an index and thus is very slow (~25s
+	  # vs ~.2s with index on developer's machine.  So instead, we
+	  # created two functional indexes on gloss.txt: "lower(txt)"
+	  # and "lower(txt) varchar-pattern-ops".  The former will be
+	  # used for "lower(xx)=..." searches and the latter for
+	  # "lower(xx) LIKE ..." searches.  So when do a gloss search,
+	  # we need to lowercase the search text, and generate a search
+	  # clause in one of the above forms.  
+	  #
+	  # To-do: LIKE 'xxx%' dosn't use index unless the argument value 
+	  # is embedded in the sql (which we don't currently do).  When
+	  # the 'xxx%' is supplied as a separate argument, the query
+	  # planner (runs when the sql is parsed) can't use index because
+	  # it doesn't have access to the argument (which is only available
+	  # when the query is executed) and doesn't know that it is not
+	  # something like '%xxx'.
+
+	if ($table eq "gloss") {
+	    $srchtxt = lc ($srchtxt); 
+	    $column = "lower($alias.txt)"; }
+	else { $column = "$alias.txt"; }
+	if ($srchtyp eq "is") { $whr = "$column=?"; }
+	else { $whr = "$column LIKE(?)"; }
+
+	  # Now generate the argument list appropriate for the
+	  # search clause.
+
+	if ($srchtyp eq "is") 		{ @args = ($srchtxt); } 
 	elsif ($srchtyp eq "starts")	{ @args = ($srchtxt."%",); }
 	elsif ($srchtyp eq "contains")	{ @args = ("%".$srchtxt."%"); }
 	elsif ($srchtyp eq "ends")	{ @args = ("%".$srchtxt); }
-	else { die ("srchtyp = " . $srchtyp); }
+	else { die "Unknown srchtyp value encountered in str_match_clause(): $srchtyp\n"; }
+
 	return ["$table$alias",$whr,\@args]; }
 
     sub getsel { my ($fqcol, $itms) = @_;

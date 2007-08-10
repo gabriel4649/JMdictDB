@@ -38,7 +38,7 @@ $::Debug = {};
 
     main: {
 	my ($dbh, $entries, $e, @qlist, @elist, $enc, $host,
-	    $dbname, $user, $pw);
+	    $dbname, $user, $pw, $typ, $corp, $numb);
 
 	  # Read and parse command line options.
 	if (!getopts ("hvd:u:p:r:e:j", \%::Opts) or $::Opts{h}) { usage (0); }
@@ -87,21 +87,35 @@ $::Debug = {};
 
 	  # Parse the command line arguments.
 	foreach (@ARGV) {
+
 	      # Build two lists from the command line arguments.
 	      # @qlist will hold seq. numbers, @elist will hold
 	      # entry id numbers.
 
-	      # If it is just a number, it is a seq number.
-	    if (m/^[0-9]/)  { push (@qlist, int ($_)); }
+	      # Check the command line argument format with a regex.
+	    if (!(m/^([qe])?([0-9]+)(\.(\S+))?$/))  { 
 
-	      # If is is prefixed with a "q" is is a seq number.
-	    elsif (m/^q/i) { push (@qlist, int (substr ($_, 1))); }
+		  # If no match, it has a bad format.
+		print STDERR "Bad entry specifier in: $_\n";  next; }
 
-	      # If it is prefixed with a "e", it is a entry id number.
-	    elsif (m/^e/i) { push (@elist, int (substr ($_, 1))); }
+	      # Get the three individual pieces of the argument format,
+	      # providing default values for missing pieces. 
+	    ($typ, $numb, $corp) = ($1 || 'q', $2, $4 || "jmdict");
 
-	      # Otherwise it is bogus.
-	    else { print STDERR "Invalid argument skipped: $_" } }
+	      # If it is an entry id specifier, push the value on to
+	      # the @elist.
+
+	    if ($typ eq 'e') { push (@elist, $numb); }
+
+	      # Else (we know it is 'q' or otherwise the regex would
+	      # have rejected it), check the the corpus values is 
+	      # legit.  Note that one can lookup both keyword id numbers
+	      # or the kw text in the $::KW structure.  Save the 'q'
+	      # value and corpus id number on the @qlist. 
+	    else {
+		if (!($corp = $::KW->{SRC}{$corp}{id})) {
+		    print STDERR "Invalid corpus value in: $_\n"; next; } 
+		push (@qlist, [$numb, $corp]); } }
 
 	  # Call get_entries() to read the desired entries from the
 	  # database and construct runtime objects for them.
@@ -127,54 +141,41 @@ $::Debug = {};
 	# @$elist -- List of entry id numbers of entries to get.
 	# @$qlist -- List of seq. numbers of entries to get.
 
-	my (@whr, $sql, $tmptbl, $entries);
+	my (@whr, $sql, $entries);
 
 	  # To retrieve the objects, we need a sql statement that 
 	  # will return their id numbers.  The WHERE clause of that
 	  # statement will be like
-	  #   "WHERE e.seq IN (q1,q2,q3,...) OR e.id IN (e1,e2,e3,...)"
-	  # (where s1,etc are the seq numbers and e1,etc are the entry 
-	  # id numbers of the entries we want.)  *Except* that we will
-	  # we will use "?" paramater markers in the actual sql statement,
-	  # and the q1,...e1,... values will be passed as an argument
-	  # list.  This is to avoid creating a sql injection security
-	  # vunerability.  
-	  # We already have the q1,...,e1,... numbers is lists so all
-	  # we need to do is create the WHERE clause with a corresponding
-	  # number of "?" paramarer markers in the "IN(...)" part. 
-	  # We may have no e numbers or no q numbers so we create each
-	  # part of the clause seperately in list @whr.  The map() calls
-	  # below will generate a list with the same number of "?" elements
-	  # as there are numbers in @qlist or @elist, and the join() will
-	  # convert that array into a comma delimited string.
+	  #   "WHERE e.id IN (e1,e2,e3,...) 
+	  #        OR (src=c1 AND seq=q1)
+	  #        OR (src=c2 AND seq=q2)
+	  #        OR ..."
+	  # (where e1,etc are the entry id numbers and q1,c1,etc are 
+	  # the entry seq and corpus numbers of the entries we want.)
 
-	if (@$qlist) { push (@whr, "e.seq IN (" . join(",",map('?',@$qlist)) . ")"); }
-	if (@$elist) { push (@whr, "e.id  IN (" . join(",",map('?',@$elist)) . ")"); }
+	if (@$qlist) { push (@whr, join(" OR ",
+			map("(src=$_->[1] AND seq=$_->[0])",@$qlist))); }
+	if (@$elist) { push (@whr, "e.id IN (" . join(",",map($_,@$elist)) . ")"); }
 
 	  # Now we can create the sql statement, including creating 
 	  # the WHERE clause by joining the twp pieces together with 
 	  # a " OR ".  The join will not include the "or" if there 
-	  # is only one peice (because there were onle "q" numbers or 
-	  # only "e" numbers.
+	  # is only one piece (because there were only "q" numbers or 
+	  # only "e" numbers).
 	$sql = "SELECT e.id FROM entr e WHERE " . join (" OR ", @whr);
 
-	  # Now we can give the sql statement to Find() which will
-	  # create a temp table containing the entry id numbers of
-	  # all the reqursted entries.  It returns the name of the 
-	  # temp table.
-	$tmptbl = Find ($dbh, $sql, [@$qlist, @$elist]);
-
-	  # Give the name of the temp table to EntrList() which will 
-	  # use it to read the data for all the entries, contruct 
-	  # objects for tham, and return the list to us...
-	$entries = EntrList ($dbh, $tmptbl);
+	  # Now we can give the sql statement to  EntrList() which  
+	  # will use it to read the data for all the entries, contruct 
+	  # objects for them, and return the list of objects to us...
+	$entries = EntrList ($dbh, $sql);
 
 	  # The entries returned by EntrList() contain only the raw
-	  # xref records (entry and sense numbers) which are very useful
-	  # for display.  Call xrefdetails() to get summary info for 
-	  # all those xrefs.  By giving the third arg, we ask xrefdetails()
-	  # to distribute the summary info into each xref, in key {ssum}.
-	add_xrefsums ($dbh, $tmptbl, $entries);
+	  # xref records (entry and sense numbers) which are not very 
+	  # useful for display.  Call add_xrefsums() to get summary
+	  # info for all those xrefs.  By giving the third arg, we ask
+	  # add_xrefsums to distribute the summary info into each xref,
+	  # in key {ssum}.
+	add_xrefsums ($dbh, $entries);
 
 	  # ... which we return to our caller.
 	return $entries; }
@@ -184,16 +185,20 @@ $::Debug = {};
 sub usage { my ($exitstat) = @_;
 	print <<EOT;
 
-Usage: showentr.pl [options] [['q']entry_seq] ['e'entry_id]
+Usage: showentr.pl [options] ['e'entry_id] [['q']entry_seq[.[n|corpus]]] ...
 
-Arguments:
-	A list of entries to display:
-	  - A number or number prefixed with the letter 'q' is 
-	    interpreted as an entry sequence number.
-	  - A number prefixed with the letter 'e' is interpreted 
-	    as an entry id number.
+    Arguments:
+	A list of entries to display where each entry is specified
+	in one of the following formats:
+	  * nnnn -- Entry sequence number <nnnn>.
+	  * ennnn -- Entry id number <nnnn>.
+	  * qnnnn -- Entry sequence number <nnnn> in corpus "jmdict".
+	  * qnnnn.mm -- Entry sequence number <nnnn> in corpus
+	      number <mm>.
+	  * qnnnn.aaaaa -- Entry sequence number in corpus named 
+	      <aaaaa>, for example, "q14359.jmnedict".
 
-Options:
+    Options:
 	-d dbname -- Name of database to use.  Default is "jmdict".
 	-r host	-- Name of machine hosting the database.  Default
 		is "localhost".

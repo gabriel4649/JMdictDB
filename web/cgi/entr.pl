@@ -46,7 +46,7 @@ $|=1;
 	$dbh->disconnect; }
 
     sub gen_page { my ($dbh, $elist, $qlist) = @_;
-	my ($tmptbl, $tmpl, $sql, $seq, $src, $entries, @whr, $x, @errs, @e, @args); 
+	my ($tmpl, $sql, $seq, $src, $entries, @whr, $x, @errs, @e, @args); 
 	foreach $x (@$elist) {
 	    if (!($x =~ m/^\s*\d+\s*$/)) {
 		push (@errs, "<br>Bad url parameter received: ".ee($x)); next; }
@@ -67,11 +67,10 @@ $|=1;
 	if (@errs) { errors_page (\@errs);  return; } 
 
 	$sql = "SELECT e.id FROM entr e WHERE " . join (" OR ", @whr);
-	$tmptbl = Find ($dbh, $sql, \@args);
-	$entries = EntrList ($dbh, $tmptbl);
+	$entries = EntrList ($dbh, $sql, \@args);
 	if (!@$entries) { errors_page (["None of the requested entries were found."]); return; }
 
-	add_xrefsums ($dbh, $tmptbl, $entries);
+	add_xrefsums ($dbh, $entries);
 	fmt_restr ($entries); 
 	fmt_stag ($entries); 
 	set_audio_flag ($entries);

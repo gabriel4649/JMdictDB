@@ -1,4 +1,55 @@
 
+2007-08-09 20:31	smcgrawx@frxii.com
+
+	* perl/cgi/edform.pl [1.7]
+	* perl/cgi/entr.pl [1.12]
+	Change call of jmdict::add_xrefsums() since it no longer accepts the
+	  $tmptbl argument. {223}
+
+	* perl/lib/jmdict.pm [1.34]
+	New functions entr_data() and entr_bld() replace former EntrList().
+	  EntrList() now just a wrapper that calls the two new functions.
+	  {218}
+	Fix: Memory leak in dbread() due to calling DBI method
+	  prepare_cached().  Changed to use prepare() and memory use now
+	  flat. {217}
+	Replace function mktemptbl() and the code in Find() that actualy
+	  created temp table, with new class Tmptbl which has a destructor
+	  that will delete the table when the object goes out of scope or is
+	  otherwise no longer used. {220}
+	In add_xrefsums() remove the $tmptbl argument and require $entrs to
+	  be given.  Get the entr.id numbers that xref summary info are need
+	  for by pulling them out of @$entrs.  Use an IN() clause in the sql
+	  that retrieves the summary unfo, rather than a join with $tmptbl
+	  temp table. {222}
+	Adjust code that uses value returned from jmdict:Find() to use a
+	  Tmptbl object rather than a string naming the table. {221}
+	EntrList() (via entr_data()) now supports using a sql statement, or a
+	  list of entr id's, in addition to a temptable created by Find(), to
+	  select the entry object it returns. {219}
+
+	* perl/lib/tal/edconf.tal [1.10]
+	Fix: Link to xref entry was wrongly to current entry. {226}
+
+	* perl/lib/tal/entr.tal [1.15]
+	Fix: Link to reverse xref entry was wrongly to current entry. {227}
+
+	* perl/showentr.pl [1.20]
+	Rework command line processing to allow a ".corpus" suffix on 'q...'
+	  arguments. {225}
+	Delete jmdict::Find() call since EntrList() can now use selection SQL
+	  directly. {224}
+	Change call of jmdict::add_xrefsums() since it no longer accepts the
+	  $tmptbl argument. {223}
+
+2007-08-07 15:25	smcgrawx@frxii.com
+
+	* Makefile [1.24]
+	Fix: jmdictcgi.pm wasn't in LIB_FILES list. {216}
+
+	* perl/lib/jmdictcgi.pm [1.7]
+	Fix: Modularize (put in package, export functions, etc.) {215}
+
 2007-08-07 13:48	smcgrawx@frxii.com
 
 	* perl/cgi/edsubmit.pl [1.10]
@@ -120,7 +171,7 @@
 
 	* perl/lib/jbparser.yp [1.5]
 	Fix: Remove the code that added psuedo-keyword 'restr' to $::KW.  If
-	  caller sets $::KW themselfs change got orverridden. {187}
+	  caller sets $::KW themself change got overridden. {187}
 	Change jbparser::resolv_xref() to create {_xref} elements rather than
 	  {_erefs} elements since that is now what jmdict::resolv_xref() now
 	  returns. {184}
@@ -129,13 +180,13 @@
 	  hash. {188}
 
 	* perl/lib/jmdict.pm [1.30]
-	Replace function xrefdetails() with non-equivalent (but bettter :-)
-	  function add_xrefsums(). {169}
 	Fix: setkeys(): was not setting correct xref field "xref" values.
 	  {178}
 	Add timing stats collector around all the matchup() calls in
 	  EntrList(). {171}
 	Correct comments in function EntrList(). {170}
+	Replace function xrefdetails() with non-equivalent (but better :-)
+	  function add_xrefsums(). {169}
 	jmdict::resolv_xref() now returns list of augmented xrefs rather than
 	  a _erefs object. {174}
 	Replace functions bld_erefs(), erefs2xrefs(), xrefs2erefs() with with
@@ -169,9 +220,9 @@
 	* pg/mkviews.sql [1.21]
 	Delete views eksum, xrefesum. {189}
 	Change view hdwds to return entr.* rather than only entr.id. {167}
+	Add new view essum. {166}
 	Change view esum to get rdng and kanj strings from join on view
 	  hdwds, rather than generating them independently. {162}
-	Add new view essum. {166}
 
 	* pg/xresolv.sql [1.11]
 	Fix: Missing semi colon that causes syntax error when exceuted. {176}
@@ -231,11 +282,11 @@
 	Remade due to changes in prerequisite mktables.sql. {153}
 
 	* pg/mktables.sql [1.23]
-	Create an insert trigger on table xref that will automatically assign
-	  value to column "xref". {151}
 	Add column "xref" to table xref, and change the PK from
 	  (entr,sens,xentr,xsens,typ) to (entr,sens,xref).  What was formerly
 	  the PK is now a unique index. {150}
+	Create an insert trigger on table xref that will automatically assign
+	  value to column "xref". {151}
 
 	* pg/mkviews.sql [1.20]
 	Adjust function adddup() and view xrefsum for change to xref table.
@@ -275,10 +326,10 @@
 	* perl/lib/jmdict.pm [1.27]
 	Removed function get_seq() since addentr() no longer uses it per
 	  chgid-133. {139}
-	In function addentr() call setkeys() to set all the key values rather
-	  than doing it ourself. {138}
 	In function addentr(), don't assign a 'seq' value, leave it NULL and
 	  rely on the new entr table insert trigger to set it. {133}
+	In function addentr() call setkeys() to set all the key values rather
+	  than doing it ourself. {138}
 
 	* perl/lib/tal/edconf.tal [1.8]
 	Adjust layout of entr data to match current entr.tal {137}
@@ -327,12 +378,12 @@
 	  requiring the symbolic entr.id values used previously. {126}
 
 	* perl/lib/jmdictpgi.pm [1.7]
-	Make wrentr() write fixed entr.id numbers rather the symbolic form
-	  previously used. {125}
 	In finalize(), add additional parameter that will cause copy commands
 	  in output file to be wrapped in a transaction so that if anything
 	  fails when loading the file, nothing will be changed in the
 	  database. {129}
+	Make wrentr() write fixed entr.id numbers rather the symbolic form
+	  previously used. {125}
 
 	* perl/lib/tal/entr.tal [1.12]
 	Changed to allow display of entry even if there are no glosses in
@@ -605,8 +656,8 @@
 	  nwconf.tal. {69}
 
 	* perl/lib/jmdictxml.pm [1.14]
-	Add language ty (Tahitian) {70}
 	Add dialect 'kyu'. {73}
+	Add language ty (Tahitian) {70}
 
 	* perl/lib/kwstatic.pm [1.5]
 	Rebuild due to prerequisite file changes. {74}

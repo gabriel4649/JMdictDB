@@ -18,7 +18,7 @@
 <body>
   <h1>JMdictDB To-Do List</h1>
   <span class="gendate">
-    This list was current as of 2007-08-07 13:49
+    This list was current as of 2007-08-09 20:39
     </span>
   <table class="todo">
     
@@ -33,26 +33,6 @@
       <tr class="priohdr">
         <td colspan="5">Priority 'high' items</td>
 	</tr>
-      <tr class="row">
-	<td class="id">88</td>
-	
-	  <td class="title" colspan="2">memory leak in master2.pl script</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-08-04 13:45</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">When running the master2.pl script from Jim, noticed that memory usage grew continuously during execution.  The code was written to process entries in blocks of 100 to avoid this problem.  Need to find the source of this, particularly if it is due to EntrList() objects not getting garbage-collected.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
       <tr class="row">
 	<td class="id">83</td>
 	
@@ -153,6 +133,26 @@ could add src dropdown near the entr-id/seq box, or just make the form pay atten
       
       
       <tr class="row">
+	<td class="id">1</td>
+	
+	  <td class="title" colspan="2">Approval process flow</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to work out details of approval process in terms of data changes and the web pages needed to support those changes. [Need "edit entry" page first]
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">2</td>
 	
 	  <td class="title" colspan="2">Paged results</td>
@@ -235,29 +235,35 @@ could add src dropdown near the entr-id/seq box, or just make the form pay atten
       </span><span omit-tag="">
       
       
-      
+      <tr class="priohdr">
+        <td colspan="5">Priority 'med' items</td>
+	</tr>
       <tr class="row">
-	<td class="id">1</td>
+	<td class="id">93</td>
 	
-	  <td class="title" colspan="2">Approval process flow</td>
+	  <td class="title" colspan="2">fix O(n^2) behavior in jmdict::matchup()</td>
 	  
 	
 	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
+	<td class="entered">2007-08-07 16:20</td>
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Need to work out details of approval process in terms of data changes and the web pages needed to support those changes. [Need "edit entry" page first]
+	<td class="descr" colspan="4">The matchup function in jmdict.pm uses nested "for" loops to match child table rows to their parent rows which is fine for the usual case where less than a dozen or two entries are read at once but when one starts reading a few thousand entries the O(n^2) behavior is a killer.
 </td>
 	</tr>
-      
+      <tr class="descr">
+        <td> </td>
+	<td class="notes" colspan="4">Options: <br/>
+- Use a hash matching approach when number of entries exceeds threshold.<br/>
+- If row data has a reliable ordering, perhaps we could make next loop iteration start where last left off, resulting in needed record usually being found instantly.
+</td>
+	</tr>
       
       </span><span omit-tag="">
       
       
-      <tr class="priohdr">
-        <td colspan="5">Priority 'med' items</td>
-	</tr>
+      
       <tr class="row">
 	<td class="id">92</td>
 	
@@ -419,66 +425,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">29</td>
-	
-	  <td class="title" colspan="2">XML parse kw checks</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">4</td>
-	
-	  <td class="title" colspan="2">Editor search page</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Search by various history criteria: status / submitter / submitted date / text in comments / etc.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">6</td>
-	
-	  <td class="title" colspan="2">Editor authenication</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Authentication for editors.  (work out process flow details first?)
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">15</td>
 	
 	  <td class="title" colspan="2">Query time</td>
@@ -523,6 +469,26 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
+	<td class="id">6</td>
+	
+	  <td class="title" colspan="2">Editor authenication</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Authentication for editors.  (work out process flow details first?)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">26</td>
 	
 	  <td class="title" colspan="2">Kana-kanji determination</td>
@@ -542,26 +508,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 Note: "々" (entry 1000060) is in kanj table (because from ke_ele in xml), but jstr_classify() classifies as kana, thus search for it fails.
 </td>
 	</tr>
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">30</td>
-	
-	  <td class="title" colspan="2">XML parse other checks</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Do other error checking (or could do these after data loaded into db): all senses have gloss?  All entries have sens and reading? ... (But remember that deleted entries have no sences or readings).
-</td>
-	</tr>
-      
       
       </span><span omit-tag="">
       
@@ -595,6 +541,66 @@ Dual parented records (freq, restr, stagr, stagk, xref) will be linked to both o
 Entr objects being created for output need not supply record numbers.  User of object responsible for checking index number presence/absense if it needs them.
 </td>
 	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">4</td>
+	
+	  <td class="title" colspan="2">Editor search page</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Search by various history criteria: status / submitter / submitted date / text in comments / etc.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">30</td>
+	
+	  <td class="title" colspan="2">XML parse other checks</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">load_jmdict.pl -- Do other error checking (or could do these after data loaded into db): all senses have gloss?  All entries have sens and reading? ... (But remember that deleted entries have no sences or readings).
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">29</td>
+	
+	  <td class="title" colspan="2">XML parse kw checks</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
+</td>
+	</tr>
+      
       
       </span><span omit-tag="">
       
@@ -780,46 +786,6 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">16</td>
-	
-	  <td class="title" colspan="2">Connection pooling</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Will this help performance? Informal timings done on cgi show that connect time is pretty quick but may be more significant when object retrieval times are improved. (ref Apache::DBI)
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">9</td>
-	
-	  <td class="title" colspan="2">Test environment</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to setup a test infrastructure.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">8</td>
 	
 	  <td class="title" colspan="2">Functional tests</td>
@@ -840,9 +806,9 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">23</td>
+	<td class="id">7</td>
 	
-	  <td class="title" colspan="2">CGI security audit</td>
+	  <td class="title" colspan="2">Unit tests</td>
 	  
 	
 	<td class="compld"></td>
@@ -850,7 +816,27 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
+	<td class="descr" colspan="4">Need to write unit tests for library code
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">27</td>
+	
+	  <td class="title" colspan="2">Database versioning</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
 </td>
 	</tr>
       
@@ -880,9 +866,9 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">27</td>
+	<td class="id">9</td>
 	
-	  <td class="title" colspan="2">Database versioning</td>
+	  <td class="title" colspan="2">Test environment</td>
 	  
 	
 	<td class="compld"></td>
@@ -890,7 +876,7 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
+	<td class="descr" colspan="4">Need to setup a test infrastructure.
 </td>
 	</tr>
       
@@ -940,46 +926,6 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">22</td>
-	
-	  <td class="title" colspan="2">UTC datetimes</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Check the everything storing a datetime value stores it in UTC or localtime with timezone.  Check that everything displaying a datetime does the same.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">7</td>
-	
-	  <td class="title" colspan="2">Unit tests</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to write unit tests for library code
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">21</td>
 	
 	  <td class="title" colspan="2">CGI html escaping</td>
@@ -1000,9 +946,9 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">33</td>
+	<td class="id">23</td>
 	
-	  <td class="title" colspan="2">DB maintenance</td>
+	  <td class="title" colspan="2">CGI security audit</td>
 	  
 	
 	<td class="compld"></td>
@@ -1010,7 +956,7 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">database -- write maintenance scripts to check for things that are hard to write contraints for: do all senses have at least one gloss?  do all (jmdict) entries have at least one sense and reading?, Are rdng,kanj,sens,gloss ord numbers consecutive?
+	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
 </td>
 	</tr>
       
@@ -1031,6 +977,66 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">jmdict.pm -- The xrefs stuff might be circularly linked.  How does that affect garbage collection in long-running process (e.g. modperl)?
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">16</td>
+	
+	  <td class="title" colspan="2">Connection pooling</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Will this help performance? Informal timings done on cgi show that connect time is pretty quick but may be more significant when object retrieval times are improved. (ref Apache::DBI)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">22</td>
+	
+	  <td class="title" colspan="2">UTC datetimes</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Check the everything storing a datetime value stores it in UTC or localtime with timezone.  Check that everything displaying a datetime does the same.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">33</td>
+	
+	  <td class="title" colspan="2">DB maintenance</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">database -- write maintenance scripts to check for things that are hard to write contraints for: do all senses have at least one gloss?  do all (jmdict) entries have at least one sense and reading?, Are rdng,kanj,sens,gloss ord numbers consecutive?
 </td>
 	</tr>
       
@@ -1125,6 +1131,35 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row done">
+	<td class="id">94</td>
+	
+	
+	  <td class="title">Make EntrList() more flexible</td>
+	  <td class="prio">med</td>
+	  
+	<td class="compld">2007-08-09 20:12</td>
+	<td class="entered">2007-08-09 19:27</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">jmdict::EntrList() is the primary (and only) API function that will extract all the information relevant to a set entries from the database, and from it build runtime objects representing those entries.  The only way to tell it what entries to operate on is to give it the name of a previously contructed table containing the entr.id values.  Constructing a table and loading it seems like excessive overhead in common simple cases when one want just a few entries that are easily specified in sql.  <br/>
+<br/>
+EntrList() needs to allow alternate arguments such as an arbitrary sql statement or list of entry id's.
+</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="notes" colspan="4">Extracted the data retrieval part of EntrList() into entr_data() and the object building part into entr_bld().  EntrList() now just a wrapper that calls these two functions.<br/>
+<br/>
+Rewrote entr_data() so that it accepts a sql statement, a list of id numbers or a Tmptbl object (as before).  If also can use the input arg either in a IN() clause or in a JOIN.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
 	<td class="id">35</td>
 	
 	
@@ -1147,6 +1182,31 @@ Create a functional index on table gloss using "lower(txt varchar_pattern_ops)".
 In srchres.pl, create gloss WHERE clause like "lower(txt) LIKE ...".<br/>
 <br/>
 Note: "LIKE 'xxx%'" search still don't use index because of issue described in task-92.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">88</td>
+	
+	
+	  <td class="title">memory leak in master2.pl script</td>
+	  <td class="prio">high</td>
+	  
+	<td class="compld">2007-08-08 23:31</td>
+	<td class="entered">2007-08-04 13:45</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">When running the master2.pl script from Jim, noticed that memory usage grew continuously during execution.  The code was written to process entries in blocks of 100 to avoid this problem.  Need to find the source of this, particularly if it is due to EntrList() objects not getting garbage-collected.
+</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="notes" colspan="4">Problem traced to the use of DBI method prepare_cached() in jmdict::dbread().  Apparently DBI does not limit the cache size.  Changed method call to prepare() and memory use is flat.
 </td>
 	</tr>
       
@@ -1321,7 +1381,7 @@ Actually 粛白 is a reverse reference.  Both the forward xrefs are missing.
         <td> </td>
 	<td class="notes" colspan="4">Will wait until the completion of taskid-80 ("Ordered xrefs") since the changes made for that could fix or expose the cause of this problem.<br/>
 <br/>
-After taskid-80, the missing xrefs now appear in showentr.pl and entr.pl web page output.  Don't know why they were missing before.  Note that the process that resolves the xrefs is hueristic and may not resolve everything correctly.  <br/>
+After taskid-82, the missing xrefs now appear in showentr.pl and entr.pl web page output.  Don't know why they were missing before.  Note that the process that resolves the xrefs is hueristic and may not resolve everything correctly.  <br/>
 <br/>
 There are still 6 known entries with unresolved xrefs because the resolver could not identify a unique target.  Documented in 2007/07/29 email to Jim Breen.
 </td>

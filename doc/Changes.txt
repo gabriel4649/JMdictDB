@@ -1,4 +1,8 @@
 
+2007-08-09 20:59	smcgrawx@frxii.com
+
+	Tag T018, snapshot release. {228}
+
 2007-08-09 20:31	smcgrawx@frxii.com
 
 	* perl/cgi/edform.pl [1.7]
@@ -37,10 +41,10 @@
 	* perl/showentr.pl [1.20]
 	Rework command line processing to allow a ".corpus" suffix on 'q...'
 	  arguments. {225}
-	Delete jmdict::Find() call since EntrList() can now use selection SQL
-	  directly. {224}
 	Change call of jmdict::add_xrefsums() since it no longer accepts the
 	  $tmptbl argument. {223}
+	Delete jmdict::Find() call since EntrList() can now use selection SQL
+	  directly. {224}
 
 2007-08-07 15:25	smcgrawx@frxii.com
 

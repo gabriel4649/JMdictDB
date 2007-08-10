@@ -140,7 +140,7 @@
 	      <span class="gloss" tal:replace="g/txt">gloss</span><br/>
 	      </span>
 
-	    <table class="xrefs" tal:if="or: true:s/_xref true:s/_xrer">
+	    <table class="xrefs" tal:if="true:s/_xref">
 	      <tr tal:if="true:s/_xref">
 		<td colspan="2">Cross references:</td>   
 	        </tr>
@@ -148,7 +148,7 @@
 		<td>&nbsp;</td>
 		<td>
 		  <span tal:replace="kwabbr: 'XREF' x/typ">xref-type</span>:
-		  <a tal:attributes="href string:entr.pl?e=${x/entr}" tal:content="x/ssum/seq">seq-num</a
+		  <a tal:attributes="href string:entr.pl?e=${x/xentr}" tal:content="x/ssum/seq">seq-num</a
 		  ><span tal:if="gt: x/ssum/nsens string:1"
 		    >(<span tal:replace="x/xsens">sense</span>) </span> 
 		  <span tal:replace="x/ssum/kanj">xref-kanj</span>

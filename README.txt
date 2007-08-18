@@ -40,6 +40,8 @@ listing of all the files
 
 See doc/Changes.txt for the detailed CVS change log.
 
+See TODO.html for list of outstanding and resolved bugs
+and to-do items.
 
 ======
 STATUS
@@ -75,12 +77,16 @@ API Documentation:
 	tut0 -- Database connections.
 	tut1 -- Using the Kwds() "virtual keyword tables".
 	tut2 -- Finding and retrieving entries.
-	tut4 -- Structure and use of entry objects.	
+	tut4 -- Structure and use of entry objects.
+
+	They may be somewhat out-of-date with respect to the
+	actual software.
 
   perl/showentr.pl -- This is a command line tool for 
 	displaying JMdict entries from the database.  It
 	is well documented making it useful for understanding
 	the use of the API in a real (if tiny) application.
+	This program is kept up-to-date.
 
 ============
 INSTALLATION
@@ -92,7 +98,7 @@ receiving additions and corrections to the JMdict data.
 
 However, you may wish to install a local copy of this software:
 - To contribute development work to the JMdict project.
-- To use or adapt the code here to a project of your own.
+- To use or adapt the code to a project of your own.
 
 Requirements
 ------------
@@ -130,7 +136,9 @@ lines) are relative to the package top level directory.
 A Makefile is provided that automates the loading and
 updating of JMdictDB database.  It is presumed that 
 there is a functioning Postgresql instance, and that 
-you have access to the database "postgres" account.
+you have access to the database "postgres" account or
+some account with enough privledges to create and drop
+databases.
 
 The Makefile is usable on both *nix and Windows systems
 but the latter requires a working Gnu 'make' program.
@@ -139,6 +147,14 @@ full unix environment under Windows, including 'make'.
 Alternatively, stand-alone native versions of Gnu 'make'
 are available (see http://unxutils.sourceforge.net/ or
 http://www.mingw.org/ for example.)
+
+By default, the currently active database is named 
+"jmdict".  The makefile targets that load data do so 
+into a database named "jmnew" so as to not destroy
+any working database in the event of a problem.  A
+make target, "activate" is provided to move the newly
+loaded database to "jmdict".
+
 
 1. In the top level directory, run "make" which won't
    do anything other than list the available targets 
@@ -161,28 +177,51 @@ http://www.mingw.org/ for example.)
 
    loadjm:
 	Do target jmdict.dmp if neccessary, then delete
-	any existing jmdict database, create a new empty 
-	jmdict database, load the .dmp file and do all
-	the post load tasks like creating indexes, 
+	any existing jmnew database, create a new empty 
+	jmnew database, load the .dmp file and do all
+	the post-load tasks like creating indexes, 
 	resolving xref's etc. After this, the database 
-	should be fully loaded and functional.
+	should be fully loaded and functional, but is
+	still name "jmnew" to avoid clobbering any
+	existing and in-use "jmdict" database.
+
+   activate:
+	Renames the "jmnew" database produced above to 
+	"jmdict", making it accessible to all the tools
+	and cgi scripts.
 
    There are similar sets of targets for loading JMnedict
-   and the Examples file.
+   and the Examples file.  Note that these targets expect 
+   to load their data into the "jmnew" database and thus
+   should be executed before doing a "make activate".  Or
+   alternatively, you can have them load directly into the
+   active database (with the risk of corrupting it) by 
+   doing, for example, "make DB=jmdict loadex" 
 
-   There is target, "loadall", that will load all three files 
-   (JMdict, JMnedict, and Examples)
+   There is a target, "loadall", that will load all three
+   files (JMdict, JMnedict, and Examples).
 
    Note that currently, the Examples file cross references 
    are not resolved to jmdict xrefs as part of the Makefile
-   directed install.
+   directed install, because the api display and query 
+   functions are not able to handle the large number of
+   xrefs produced (1M+ total with some entries such as the
+   particle "ha" having over 100K referring to it.)
 
    There is a target, "web" to install the web CGI files.  
    You will probably want to adjust the variables defining
    the install directories (near the top of the Makefile)
    before running this.
 
-2. In the ./perl/lib directory, create a file lib/jmdict.cfg
+2. The makefile will load all the file data into a database
+   named "jmnew".  If everything was loaded sucessfully, 
+   run "make activate" which will rename any existing "jmdict"
+   database to "jmold", and rename the "jmnew" database to
+   "jmdict", thus making it the active database.  There must
+   be no active users in any of these database or the commands
+   will fail.
+
+3. In the ./perl/lib directory, create a file lib/jmdict.cfg
    containing one line containing three space separated words
    which are repectively, the name of the jmdict database, the
    postgres username to use, and the password for that username.

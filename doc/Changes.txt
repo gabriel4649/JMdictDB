@@ -1,56 +1,20 @@
 
-****/**/** **:**	smcgrawx@frxii.com
+2007-08-19 08:25	smcgrawx@frxii.com
 
-	This changeset implements two main changes.    (1) The addition of
-	  ktxt and rtxt columns to the xref table.  This allows db users to
-	  display different reading and kanji text for xref targets than the
-	  api would normaly generate.  This is intended as a temporary
-	  feature until the api generation of xref text can be made more
-	  reliable.    (2) Resolution of textual (kanji/kana) xref targets
-	  provided by input files (e.g. the JMdict xml file) to database xref
-	  records that identify target entries by id number is now done by a
-	  Perl script rather than with sql.  The former, though slower, can
-	  provide more complex logic than the latter. {232}
+	* perl/jmparse.pl [1.35]
+	Fix: "restriction target not found" message did not include seq
+	  number. {242}
+	Add check for duplicate glosses (same lang and txt). {243}
+	Fix: When duplicate keywords found, skip duplicate.  Formerly
+	  generated warnng message but created duplicate anyway. {244}
 
-	* Makefile []
-	* perl/lib/jbparser.yp []
-	* perl/lib/jmdictfmt.pm []
-	* perl/lib/jmdictpgi.pm []
-	* perl/lib/tal/edconf.tal []
-	* perl/lib/tal/entr.tal []
-	* pg/mktables.sql []
-	* pg/mkviews.sql []
-	 {None}
+	* perl/lib/jmdictxml.pm [1.16]
+	Add all the ISO-639 language codes that are in pg/data/kwlang.cvs.
+	  Got tired of adding languages in bits and pieces when they showed
+	  up in jmdict.xml and generated an error message. {245}
 
-	* doc/schema.dia []
-	* doc/schema.odt []
-	Update for addition of columns rdng and kanj to table xref. {231}
-
-	* doc/schema.html []
-	* doc/schema.pdf []
-	* doc/schema.png []
-	* pg/mkindex.sql []
-	Tag T018, snapshot release. {228}
-
-	* perl/lib/jmdict.pm []
-	Fix: EntrList(): was calling entr_data() with junk when the selection
-	  query returned 0 records. {234}
-	add_xrefsums(), grp_xrefs(), resolv_xref(): adjust for new xref
-	  columns kanj and rdng. {236}
-	Fix: fmt_jitem(): avoind an unitialized string warning if $slist
-	  param is undef. {235}
-
-	* perl/lib/jmdicted.pm [1.1]
-	Removed. {229}
-
-	* perl/xresolv.pl []
-	New: Replaces pg/xresolv.sql {237}
-
-	* pg/drpindex.sql []
-	Remake due to change in prerequisite file(s). {230}
-
-	* pg/xresolv.sql [1.13]
-	Removed. {233}
+	* perl/lib/kwstatic.pm [1.9]
+	Remake due to change in prerequisite file. {246}
 
 2007-08-18 23:10	smcgrawx@frxii.com
 
@@ -150,10 +114,10 @@
 	* pg/mktables.sql [1.25]
 	Add a functional index using lower() on gloss.txt to provide fast
 	  case-insensitive "=" search. {204}
-	Add varchar_pattern_ops indexes on gloss.txt to provide fast case-
-	  insensitive LIKE search. {208}
 	Add varchar_pattern_ops indexes on kanj.txt, rdng.txt to provide fast
 	  LIKE search. {207}
+	Add varchar_pattern_ops indexes on gloss.txt to provide fast case-
+	  insensitive LIKE search. {208}
 
 2007-08-05 13:22	smcgrawx@frxii.com
 
@@ -293,10 +257,10 @@
 
 	* pg/mkviews.sql [1.21]
 	Delete views eksum, xrefesum. {189}
+	Add new view essum. {166}
 	Change view hdwds to return entr.* rather than only entr.id. {167}
 	Change view esum to get rdng and kanj strings from join on view
 	  hdwds, rather than generating them independently. {162}
-	Add new view essum. {166}
 
 	* pg/xresolv.sql [1.11]
 	Fix: Missing semi colon that causes syntax error when exceuted. {176}
@@ -406,8 +370,8 @@
 	  rely on the new entr table insert trigger to set it. {133}
 
 	* perl/lib/tal/edconf.tal [1.8]
-	Adjust layout of entr data to match current entr.tal {137}
 	Allow editing of entr data seq, srcnote, notes. {135}
+	Adjust layout of entr data to match current entr.tal {137}
 
 	* perl/lib/tal/edform.tal [1.4]
 	Make 'src' selection a drop-down box. {136}
@@ -517,13 +481,13 @@
 	  similar for trans). {115}
 
 	* perl/lib/jbparser.yp [1.4]
+	Add new function qcleanup() like gcleanup but for quoted strings.
+	  {114}
+	In function gcleanup() reduce multiple WS characters to a single one.
+	  {113}
 	When creating lsrc and gloss records, make sure all fields are
 	  created even if they have default values (e.g. lang and ginf in
 	  gloss, and lang, part, and wasei in lsrc.) {112}
-	In function gcleanup() reduce multiple WS characters to a single one.
-	  {113}
-	Add new function qcleanup() like gcleanup but for quoted strings.
-	  {114}
 
 	* perl/lib/jmdict.pm [1.26]
 	Minor clarification to comments in filt(). {110}
@@ -730,8 +694,8 @@
 	  nwconf.tal. {69}
 
 	* perl/lib/jmdictxml.pm [1.14]
-	Add dialect 'kyu'. {73}
 	Add language ty (Tahitian) {70}
+	Add dialect 'kyu'. {73}
 
 	* perl/lib/kwstatic.pm [1.5]
 	Rebuild due to prerequisite file changes. {74}

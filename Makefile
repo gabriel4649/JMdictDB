@@ -10,6 +10,15 @@
 #
 # The following items should be adjusted based on your needs...
 
+# Name of database to load file data into.
+DB = jmnew
+
+# Name of active jmdict database.
+JMDICTDB = jmdict
+
+# Postgresql user under which to run postgresql commands.
+USER = postgres
+
 # Directory where the cgi perl scripts will go.
 CGI_DIR = $(HOME)/public_html/cgi-bin
 
@@ -29,13 +38,19 @@ LIB_DIR = $(HOME)/public_html/lib
 
 ##############################################################################
 
-PG_USER = -U postgres
-PG_HOST =
+PG_USER = -U $(USER)
+PG_HOST = 
 
-### WARNING...
-### If you change the database name below, you must also
-### change it in reload.sql.
-PG_DB = jmdict
+# Name of the pre-production database (used while 
+# building / installing)...
+PG_DB = $(DB)
+
+# Name of the production database...
+PG_DBACT = $(JMDICTDB)
+
+# Name of previous production database (saved when newly
+# created database is moved to production status...
+PG_DBOLD = jmold
 
 
 CSS_FILES = perl/cgi/entr.css
@@ -81,8 +96,17 @@ all:
 	@echo
 	@echo '  loadall -- Initialize database and load jmdict, jmnedict, and examples.'
 	@echo
+	@echo '  activate -- Move installed database to production status.
 	@echo '  web -- Install cgi and other web files to the appropriate places.'
 	@echo '  dist -- Make development snapshot distribution file.'
+
+#------ Move installation database to active ----------------------------
+
+activate:
+	psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -c 'SELECT 1' >/dev/null # Check existance.
+	psql $(PG_HOST) $(PG_USER) -c 'drop database if exists $(PG_DBOLD)'
+	psql $(PG_HOST) $(PG_USER) -c 'alter database $(PG_DBACT) rename to $(PG_DBOLD)'
+	psql $(PG_HOST) $(PG_USER) -c 'alter database $(PG_DB) rename to $(PG_DBACT)'
 
 #------ Load JMdict -----------------------------------------------------
 
@@ -96,11 +120,13 @@ jmdict.pgi: jmdict.xml
 	cd perl && perl jmparse.pl -y -l ../jmdict.log -o ../jmdict.pgi ../jmdict.xml
 
 jmdict.dmp: jmdict.pgi
-	cd perl && perl jmload.pl -i 1 -o ../jmdict.dmp ../jmdict.pgi
+	cd perl && perl jmload.pl -d $(PG_DB) -i 1 -o ../jmdict.dmp ../jmdict.pgi
 
 
 loadjm: jmdict.dmp
-	cd pg && psql $(PG_HOST) $(PG_USER) -f reload.sql
+	psql $(PG_HOST) $(PG_USER) -c 'drop database if exists $(PG_DB)'
+	psql $(PG_HOST) $(PG_USER) -c "create database $(PG_DB) encoding 'utf8'"
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f reload.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmdict.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f postload.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f xresolv.sql
@@ -119,7 +145,7 @@ jmnedict.pgi: jmnedict.xml
 	cd perl && perl jmparse.pl -l ../jmnedict.log -o ../jmnedict.pgi ../jmnedict.xml
 
 jmnedict.dmp: jmnedict.pgi
-	cd perl && perl jmload.pl -o ../jmnedict.dmp ../jmnedict.pgi
+	cd perl && perl jmload.pl -d $(PG_DB) -o ../jmnedict.dmp ../jmnedict.pgi
 
 loadne: jmnedict.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f drpindex.sql
@@ -139,7 +165,7 @@ examples.pgi: examples.txt
 	cd perl && perl exparse.pl -o ../examples.pgi ../examples.txt >../examples.log
 
 examples.dmp: examples.pgi 
-	cd perl && perl jmload.pl -o ../examples.dmp ../examples.pgi
+	cd perl && perl jmload.pl -d $(PG_DB) -o ../examples.dmp ../examples.pgi
 
 loadex: examples.dmp 
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f drpindex.sql
@@ -154,13 +180,15 @@ loadex: examples.dmp
 # set, invalidating the starting id numbers in the other .dmp files.
 
 loadall: jmdict.dmp jmnedict.pgi examples.pgi 
-	cd pg && psql $(PG_HOST) $(PG_USER) -f reload.sql
+	psql $(PG_HOST) $(PG_USER) -c 'drop database if exists $(PG_DB)'
+	psql $(PG_HOST) $(PG_USER) -c "create database $(PG_DB) encoding 'utf8'"
+	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f reload.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmdict.dmp
 
-	cd perl && perl jmload.pl -o ../examples.dmp ../examples.pgi
+	cd perl && perl jmload.pl -d $(PG_DB) -o ../examples.dmp ../examples.pgi
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../examples.dmp
 
-	cd perl && perl jmload.pl -o ../jmnedict.dmp ../jmnedict.pgi
+	cd perl && perl jmload.pl -d $(PG_DB) -o ../jmnedict.dmp ../jmnedict.pgi
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmnedict.dmp
 
 	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f postload.sql
@@ -183,9 +211,7 @@ clean:
 dist: 
 	# This should be run in a freshly checked out
 	# directory to avoid including spurious files.
-	tar -cz -f jmdict.tgz \
-	  --exclude 'CVS' --exclude '*.log' --exclude '*~' --exclude '*.tmp' \
-	  --exclude '\#*' --exclude '\.*' .
+	tar -cz -f jmdict.tgz --exclude 'CVS' --exclude './jmdict.tgz' .
 
 web:	webcgi weblib webtal webcss
 webcss:	$(CSS_FILES:perl/cgi/%=$(CSS_DIR)/%)

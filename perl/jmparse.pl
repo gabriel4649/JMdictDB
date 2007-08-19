@@ -218,7 +218,9 @@ sub do_kinfs { my ($k, $kinfs) = @_;
 	    ($kw = $::JM2ID{KINF}{$txt}) or \
 		die ("Unknown ke_inf text: '$txt'\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated kinf string '$txt'\n"; }
-	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: dupicate kinf string '$txt'\n"; }
+	    if ($dupchk{$kw}) { 
+		print $::Flog "Seq $::Seq: duplicate kinf string '$txt'\n"; 
+		next; }
 	    else {
 		$dupchk{$kw} = 1;
 	        push (@{$k->{_kinf}}, {kw=>$kw}); } } }
@@ -247,7 +249,7 @@ sub do_restrs { my ($arec, $restrele, $attrname, $bmap) = @_;
 	    $txt = $i->text;
 	    $u = $bmap->{$txt};
 	    if (!$u) { 
-		print $::Flog "restriction target '$txt' not found\n";
+		print $::Flog "Seq $::Seq: restriction target '$txt' not found\n";
 		next; }
 	    push (@u, $u); }
 	mkrestr ($arec, $bmap, $attrname, \@u); }
@@ -260,7 +262,9 @@ sub do_rinfs { my ($r, $rinfs) = @_;
 	    ($kw = $::JM2ID{RINF}{$txt}) or \
 		die ("Unknown re_inf text: '$txt'\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated rinf string '$txt'\n"; }
-	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: dupicate rinf string '$txt'\n"; }
+	    if ($dupchk{$kw}) { 
+		print $::Flog "Seq $::Seq: dupicate rinf string '$txt'\n"; 
+		next; }
 	    else {
 		$dupchk{$kw} = 1;
 	        push (@{$r->{_rinf}}, {kw=>$kw}); } } }
@@ -296,16 +300,22 @@ sub do_sens { my ($e, $sens, $kmap, $rmap) = @_;
 		    print $::Flog "Seq $::Seq: No glosses found in sense\n"; } } } }
 
 sub do_gloss { my ($s, $gloss) = @_;
-	my ($g, $lang, $lng, $txt, $lit, $trans, @lit);
+	my ($g, $lang, $lng, $txt, $lit, $trans, @lit, %dupchk);
 	$s->{_gloss} = [];
 	foreach $g (@$gloss) {
 	    $lng = $g->att("xml:lang");
 	    $lang = $lng ? $::JM2ID{LANG}{$lng} : $KWLANG_en;
-	    if (!$lang && $lng) { print $::Flog "Seq $::Seq: invalid lang attribute '$lng'\n"; }
+	    if (!$lang && $lng) { 
+		print $::Flog "Seq $::Seq: invalid lang attribute '$lng'\n"; 
+		next;}
 	    ($txt = $g->text) =~ s/\\/\\\\/go;
 	    $lit = $trans = "";
 	    if ($::Opts{y} and $txt =~ m/(lit:)|(trans:)/) { 
 		($txt,$lit,$trans) = extract_lit ($txt); }
+	    if ($dupchk{"${lang}_$txt"}) { 
+		print $::Flog "Seq $::Seq: duplicate lang/text in gloss '$lang/$txt'\n";
+		next; }
+	    else { $dupchk{"${lang}_$txt"} = 1; }
 	    # (entr,sens,gloss,lang,txt)
 	    if ((!$::Opts{g} or $::Opts{g}=$lang) and $txt) {
 	        push (@{$s->{_gloss}}, {lang=>$lang, ginf=>$KWGINF_equ, txt=>$txt}); }
@@ -324,7 +334,9 @@ sub do_pos { my ($s, $pos) = @_;
 	    ($kw = $::JM2ID{POS}{$txt}) or \
 		die ("Unknown \'pos\' text: '$txt'\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated pos string '$txt'\n"; }
-	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate pos string '$txt'\n"; }
+	    if ($dupchk{$kw}) { 
+		print $::Flog "Seq $::Seq: duplicate pos string '$txt'\n";
+		next; }
 	    else {
 		$dupchk{$kw} = 1;
 	        push (@{$s->{_pos}}, {kw=>$kw}); } } }
@@ -337,7 +349,9 @@ sub do_misc { my ($s, $misc) = @_;
 	    ($kw = $::JM2ID{MISC}{$txt}) or \
 		die ("Unknown \'misc\' text: '$txt'\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated misc string '$txt'\n"; }
-	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate misc string '$txt'\n"; }
+	    if ($dupchk{$kw}) { 
+		print $::Flog "Seq $::Seq: duplicate misc string '$txt'\n";
+		next; }
 	    else {
 		$dupchk{$kw} = 1;
 	        push (@{$s->{_misc}}, {kw=>$kw}); } } }
@@ -350,7 +364,9 @@ sub do_fld { my ($s, $fld) = @_;
 	    ($kw = $::JM2ID{FLD}{$txt}) or \
 		die ("Unknown \'fld\' text: '$txt'\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated fld string '$txt'\n"; }
-	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate fld string '$txt'\n"; }
+	    if ($dupchk{$kw}) { 
+		print $::Flog "Seq $::Seq: duplicate fld string '$txt'\n";
+		next; }
 	    else {
 		$dupchk{$kw} = 1;
 	        push (@{$s->{_fld}}, {kw=>$kw}); } } }
@@ -365,7 +381,9 @@ sub do_dial { my ($s, $dial) = @_;
 	    ($kw = $::JM2ID{DIAL}{$txt}) or \
 		die ("Unknown \'dial\' text: '$txt'\n");
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated dial string '$txt'\n"; }
-	    if ($dupchk{$kw}) { print $::Flog "Seq $::Seq: duplicate dial string '$txt'\n"; }
+	    if ($dupchk{$kw}) { 
+		print $::Flog "Seq $::Seq: duplicate dial string '$txt'\n";
+		next; }
 	    else {
 		$dupchk{$kw} = 1;
 	        push (@{$s->{_dial}}, {kw=>$kw}); } } }
@@ -382,7 +400,8 @@ sub do_lsrc { my ($s, $lsrc) = @_;
 	    if (!$kw) { die "Invalid lsource type attribute '$lskw'\n"; }
 	    if ($kw >= 200) { print $::Flog "Seq $::Seq: deprecated lsource type '$lskw'\n"; }
 	    if ($kw != 1 and !$txt ) { 
-		print $::Flog "Seq $::Seq: non-default lsource type '$lskw' and no text\n"; }
+		print $::Flog "Seq $::Seq: non-default lsource type '$lskw' and no text\n";
+		next; }
 	    push (@{$s->{_lsrc}}, {lang=>$lang, txt=>$txt, part=>($kw==2?1:0), wasei=>0} ); } }
 
 sub do_xref { my ($s, $xref, $xtypkw) = @_;

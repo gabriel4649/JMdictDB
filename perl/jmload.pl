@@ -51,7 +51,7 @@ main: {
 
 	$user   = $::Opts{u}    || "postgres";
 	$pw     = $::Opts{p}    || "";
-	$dbname = $::Opts{d}    || "jmdict";
+	$dbname = $::Opts{d}    || "jmnew";
 	$host   = $::Opts{r}    || "";
 
 	$eid    = int($::Opts{i}) || 0;

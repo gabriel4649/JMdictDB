@@ -150,7 +150,7 @@ CREATE TABLE rdng (
     PRIMARY KEY(entr,rdng));
 --CREATE INDEX rdng_txt ON rdng(txt);
 --CREATE UNIQUE INDEX rdng_txt1 ON rdng(entr,txt);
---CREATE INDEX rdng_txt2 ON rdng(txt varchar_pattern_ops); # For fast LIKE 'xxx%'
+--CREATE INDEX rdng_txt2 ON rdng(txt varchar_pattern_ops); --For fast LIKE 'xxx%'
 --ALTER TABLE rdng ADD CONSTRAINT rdng_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE kanj (
@@ -160,7 +160,7 @@ CREATE TABLE kanj (
     PRIMARY KEY(entr,kanj));
 --CREATE INDEX kanj_txt ON kanj(txt);
 --CREATE UNIQUE INDEX kanj_txt1 ON kanj(entr,txt);
---CREATE INDEX kanj_txt2 ON kanj(txt varchar_pattern_ops); # For fast LIKE 'xxx%'
+--CREATE INDEX kanj_txt2 ON kanj(txt varchar_pattern_ops); --For fast LIKE 'xxx%'
 --ALTER TABLE kanj ADD CONSTRAINT kanj_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE sens (
@@ -180,8 +180,8 @@ CREATE TABLE gloss (
     PRIMARY KEY(entr,sens,gloss));
 --CREATE INDEX gloss_txt ON gloss(txt); 
 --CREATE UNIQUE INDEX gloss_txt1 ON gloss(entr,sens,lang,txt);
---CREATE INDEX gloss_txt2 ON gloss(lower(txt) varchar_pattern_ops); # For case-insensitive LIKE 'xxx%'
---CREATE INDEX gloss_txt3 ON gloss(lower(txt)); 		    # For case-insensitive '='
+--CREATE INDEX gloss_txt2 ON gloss(lower(txt) varchar_pattern_ops); --For case-insensitive LIKE 'xxx%'
+--CREATE INDEX gloss_txt3 ON gloss(lower(txt)); 		    --For case-insensitive '='
 --ALTER TABLE gloss ADD CONSTRAINT gloss_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE gloss ADD CONSTRAINT gloss_lang_fkey FOREIGN KEY (lang) REFERENCES kwlang(id);
 
@@ -192,13 +192,18 @@ CREATE TABLE xref (
     typ SMALLINT NOT NULL,
     xentr INT NOT NULL CHECK(xentr!=entr),
     xsens SMALLINT NOT NULL,
+    rdng SMALLINT,
+    kanj SMALLINT CHECK(kanj IS NOT NULL OR rdng IS NOT NULL),
     notes TEXT,
     PRIMARY KEY (entr,sens,xref));
---CREATE UNIQUE INDEX xref_entr_unq ON xref(entr,sens,typ,xentr,xsens);
+    --## The following index disabled because it is violated by Examples file xrefs.
+    --CREATE UNIQUE INDEX xref_entr_unq ON xref(entr,sens,typ,xentr,xsens);
 --CREATE INDEX xref_xentr ON xref(xentr,xsens);
 --ALTER TABLE xref ADD CONSTRAINT xref_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE xref ADD CONSTRAINT xref_xentr_fkey FOREIGN KEY (xentr,xsens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE xref ADD CONSTRAINT xref_typ_fkey FOREIGN KEY (typ) REFERENCES kwxref(id);
+--ALTER TABLE xref ADD CONSTRAINT xref_rdng_fkey FOREIGN KEY (xentr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE;
+--ALTER TABLE xref ADD CONSTRAINT xref_kanj_fkey FOREIGN KEY (xentr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE hist (
     entr INT NOT NULL,
@@ -258,7 +263,8 @@ CREATE TABLE freq (
     kw SMALLINT NOT NULL,
     value INT,
     UNIQUE (entr,rdng,kanj,kw),
-    CHECK (rdng NOTNULL OR kanj NOTNULL));
+    CHECK (rdng NOTNULL OR kanj NOTNULL)) 
+      WITH OIDS;
 --CREATE UNIQUE INDEX freq_idx1 ON freq(entr,(coalesce(rdng,999)),(coalesce(kanj,999)),kw); 
 --ALTER TABLE freq ADD CONSTRAINT freq_entr_fkey FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE freq ADD CONSTRAINT freq_entr_fkey1 FOREIGN KEY (entr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -354,31 +360,3 @@ CREATE TABLE xresolv (
 --ALTER TABLE xresolv ADD CONSTRAINT xresolv_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE xresolv ADD CONSTRAINT xresolv_typ_fkey FOREIGN KEY (typ) REFERENCES kwxref(id);
 
-CREATE TABLE xrefld (
-    entr INT NOT NULL,
-    sens SMALLINT NOT NULL,
-    xref SMALLINT NOT NULL CHECK(xref>0),
-    ord SMALLINT NOT NULL CHECK(ord>0),
-    xentr INT NOT NULL,
-    xsens SMALLINT NOT NULL CHECK(xsens>0),
-    PRIMARY KEY(entr,sens,xref));
-ALTER TABLE xrefld ADD CONSTRAINT xrefld_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE xrefld ADD CONSTRAINT xrefld_xentr_fkey FOREIGN KEY (xentr,xsens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE xrefld ADD CONSTRAINT xrefld_xresolv_fkey FOREIGN KEY (entr,sens,ord) REFERENCES xresolv(entr,sens,ord) ON DELETE CASCADE ON UPDATE CASCADE;
-CREATE INDEX xrefld_xentr ON xrefld(xentr,xsens);
-
-CREATE OR REPLACE FUNCTION xrefld_xrefdef() RETURNS trigger AS $$
-    DECLARE xnum VARCHAR;
-    BEGIN
-        IF NEW.xref IS NOT NULL THEN 
-	    RETURN NEW;
-	    END IF;
-	SELECT 1+COALESCE(MAX(xref),0) INTO xnum FROM xrefld
-	  WHERE entr=NEW.entr AND sens=NEW.sens;
-        NEW.xref := xnum;
-        RETURN NEW;
-        END;
-    $$ LANGUAGE plpgsql;
-
-CREATE TRIGGER xrefld_xrefdef BEFORE INSERT ON xrefld
-    FOR EACH ROW EXECUTE PROCEDURE xrefld_xrefdef();

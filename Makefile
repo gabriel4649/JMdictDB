@@ -13,11 +13,23 @@
 # Name of database to load file data into.
 DB = jmnew
 
-# Name of active jmdict database.
-JMDICTDB = jmdict
+# Name of the production database...
+DBACT = jmdict
+
+# Name of previous production database (saved when newly
+# created database is moved to production status...
+DBOLD = jmold
 
 # Postgresql user under which to run postgresql commands.
+# If blank, user name will be determined by the usual 
+# Postgresql libpq means (see subsection "Connecting To A 
+# Database" in the the Postgresql docs (Reference / PostgreSQL 
+# Client Applications / psql).
 USER = postgres
+
+# Name of the machine hosting the Postgresql database server.
+# If blank, localhost will be used.
+HOST =
 
 # Directory where the cgi perl scripts will go.
 CGI_DIR = $(HOME)/public_html/cgi-bin
@@ -33,25 +45,29 @@ CSS_URL = ../entr.css
 # Directory where the perl library modules used by the cgi scripts will go.
 # ***NOTE***: Currently this directory *must* be a sibling directory of
 # the CGI_DIR directory and *must* be named "lib", so this is not really
-# very configurable yet.  atode.
+# very configurable yet.  sumimasen,atode.
 LIB_DIR = $(HOME)/public_html/lib
 
 ##############################################################################
 
+PG_DB = -d $(DB)
+JM_DB = -d $(DB)
+
+ifeq ($(USER),)
+PG_USER =
+JM_USER =
+else
 PG_USER = -U $(USER)
-PG_HOST = 
+JM_USER = -u $(USER)
+endif
 
-# Name of the pre-production database (used while 
-# building / installing)...
-PG_DB = $(DB)
-
-# Name of the production database...
-PG_DBACT = $(JMDICTDB)
-
-# Name of previous production database (saved when newly
-# created database is moved to production status...
-PG_DBOLD = jmold
-
+ifeq ($(HOST),)
+PG_HOST =
+JM_HOST =
+else
+PG_HOST = -h $(HOST)
+JM_HOST = -r $(HOST)
+endif
 
 CSS_FILES = perl/cgi/entr.css
 
@@ -103,10 +119,10 @@ all:
 #------ Move installation database to active ----------------------------
 
 activate:
-	psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -c 'SELECT 1' >/dev/null # Check existance.
-	psql $(PG_HOST) $(PG_USER) -c 'drop database if exists $(PG_DBOLD)'
-	psql $(PG_HOST) $(PG_USER) -c 'alter database $(PG_DBACT) rename to $(PG_DBOLD)'
-	psql $(PG_HOST) $(PG_USER) -c 'alter database $(PG_DB) rename to $(PG_DBACT)'
+	psql $(PG_HOST) $(PG_USER) $(PG_DB) -c 'SELECT 1' >/dev/null # Check existance.
+	psql $(PG_HOST) $(PG_USER) -d postgres -c 'drop database if exists $(DBOLD)'
+	psql $(PG_HOST) $(PG_USER) -d postgres -c 'alter database $(DBACT) rename to $(DBOLD)'
+	psql $(PG_HOST) $(PG_USER) -d postgres -c 'alter database $(DB) rename to $(DBACT)'
 
 #------ Load JMdict -----------------------------------------------------
 
@@ -120,16 +136,19 @@ jmdict.pgi: jmdict.xml
 	cd perl && perl jmparse.pl -y -l ../jmdict.log -o ../jmdict.pgi ../jmdict.xml
 
 jmdict.dmp: jmdict.pgi
-	cd perl && perl jmload.pl -d $(PG_DB) -i 1 -o ../jmdict.dmp ../jmdict.pgi
+	cd perl && perl jmload.pl $(JM_HOST) $(JM_USER) $(JM_DB) -i 1 -o ../jmdict.dmp ../jmdict.pgi
 
 
 loadjm: jmdict.dmp
-	psql $(PG_HOST) $(PG_USER) -c 'drop database if exists $(PG_DB)'
-	psql $(PG_HOST) $(PG_USER) -c "create database $(PG_DB) encoding 'utf8'"
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f reload.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmdict.dmp
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f postload.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f xresolv.sql
+	psql $(PG_HOST) $(PG_USER) -d postgres -c 'drop database if exists $(DB)'
+	psql $(PG_HOST) $(PG_USER) -d postgres -c "create database $(DB) encoding 'utf8'"
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f reload.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../jmdict.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
+	cd perl && perl xresolv.pl -q $(JM_HOST) $(JM_USER) $(JM_DB) >../jmdict_xresolv.log
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -c "vacuum analyze xref"
+	@echo 'Remember to check the log files for warning messages.'
+
 
 #------ Load JMnedict ----------------------------------------------------
 
@@ -145,14 +164,14 @@ jmnedict.pgi: jmnedict.xml
 	cd perl && perl jmparse.pl -l ../jmnedict.log -o ../jmnedict.pgi ../jmnedict.xml
 
 jmnedict.dmp: jmnedict.pgi
-	cd perl && perl jmload.pl -d $(PG_DB) -o ../jmnedict.dmp ../jmnedict.pgi
+	cd perl && perl jmload.pl $(JM_HOST) $(JM_USER) $(JM_DB) -o ../jmnedict.dmp ../jmnedict.pgi
 
 loadne: jmnedict.dmp
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f drpindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmnedict.dmp
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f mkindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f syncseq.sql
-	
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../jmnedict.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f mkindex.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f syncseq.sql
+
 #------ Load examples ---------------------------------------------------
 
 examples.txt: 
@@ -165,13 +184,17 @@ examples.pgi: examples.txt
 	cd perl && perl exparse.pl -o ../examples.pgi ../examples.txt >../examples.log
 
 examples.dmp: examples.pgi 
-	cd perl && perl jmload.pl -d $(PG_DB) -o ../examples.dmp ../examples.pgi
+	cd perl && perl jmload.pl $(JM_HOST) $(JM_USER) $(JM_DB) -o ../examples.dmp ../examples.pgi
 
 loadex: examples.dmp 
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f drpindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../examples.dmp
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f mkindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f syncseq.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../examples.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f mkindex.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f syncseq.sql
+	# The following command is commented out because of the long time
+	# it can take to run.  It may be run manually after 'make' finishes.
+	#cd perl && perl xresolv.pl -q $(JM_HOST) $(JM_USER) $(JM_DB) -s3 -t1 >examples_xresolv.log
+	#cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -c 'vacuum analyze xref;'
 
 #------ Load all three -------------------------------------------------
 
@@ -180,19 +203,22 @@ loadex: examples.dmp
 # set, invalidating the starting id numbers in the other .dmp files.
 
 loadall: jmdict.dmp jmnedict.pgi examples.pgi 
-	psql $(PG_HOST) $(PG_USER) -c 'drop database if exists $(PG_DB)'
-	psql $(PG_HOST) $(PG_USER) -c "create database $(PG_DB) encoding 'utf8'"
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f reload.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmdict.dmp
+	psql $(PG_HOST) $(PG_USER) -d postgres -c 'drop database if exists $(DB)'
+	psql $(PG_HOST) $(PG_USER) -d postgres -c "create database $(DB) encoding 'utf8'"
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f reload.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../jmdict.dmp
 
-	cd perl && perl jmload.pl -d $(PG_DB) -o ../examples.dmp ../examples.pgi
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../examples.dmp
+	cd perl && perl jmload.pl $(JM_HOST) $(JM_USER) $(JM_DB) -o ../examples.dmp ../examples.pgi
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../examples.dmp
 
-	cd perl && perl jmload.pl -d $(PG_DB) -o ../jmnedict.dmp ../jmnedict.pgi
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) <../jmnedict.dmp
+	cd perl && perl jmload.pl $(JM_HOST) $(JM_USER) $(JM_DB) -o ../jmnedict.dmp ../jmnedict.pgi
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../jmnedict.dmp
 
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f postload.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) -d $(PG_DB) -f xresolv.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
+	cd perl && perl xresolv.pl -q $(JM_HOST) $(JM_USER) $(JM_DB) >../jmdict_xresolv.log
+	#cd perl && perl xresolv.pl -q $(JM_HOST) $(JM_USER) $(JM_DB) -s3 >../examples_xresolv.log
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -c "vacuum analyze xref"
+	@echo 'Remember to check the log files for warning messages.'
 
 #------ Other ----------------------------------------------------------
 

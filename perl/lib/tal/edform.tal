@@ -17,7 +17,7 @@
           <tbody>
 
 	    <tr>
-	      <td>Entry:</td>
+	      <td>Entry: <br/><a class="helplink" href="edhelp.pl">help</a></td>
 	      <td>
 
 		<!-- Entry block -->
@@ -31,7 +31,7 @@
 		    <td tal:contents="kwabbr: 'STAT' e/stat"></td>
 		    </tr>
 		  <tr>
-		    <td>Src:</td>
+		    <td>Corpus: <a class="helplink" href="edhelp.pl#corpus">help</a></td>
 		    <td>
 		      <select name="src">
 			<span tal:repeat="s srcs" tal:omit-tag="">
@@ -43,7 +43,7 @@
 			  </span>
 			</select>
 		      </td>
-		    <td>Seq:</td>
+		    <td>Seq: <a class="helplink" href="edhelp.pl#seq">help</a></td>
 		    <td tal:if="false:e"><input type="text" name="seq" size="8" tal:attributes="value 'default'"/></td>
 		    <td tal:if="true:e"><input type="text" name="seq" size="8" tal:attributes="value e/seq"/></td>
 		    </tr>
@@ -64,59 +64,58 @@
 		</td>
 	      </tr>
 	    <tr>
-	      <td>Kanji:</td>
+	      <td>Kanji: <br/><a class="helplink" href="edhelp.pl#kanji">help</a></td>
 	      <td><textarea tal:content="ktxt" name="kanj" wrap="physical" cols="60" rows="3"></textarea></td>
 	      <td>
-		<a href="kwhelp?tag=kinf">kinf</a> Kanji info<br/>
-		<a href="kwhelp?tag=freq">freq</a> Freq-of-use 
+		<a class="helplink" href="edhelp.pl#kw_kinf">kinf</a><br/>
+		<a class="helplink" href="edhelp.pl#kw_freq">freq</a> 
 		</td></tr>
 	    <tr>
-	      <td>Readings:</td>
+	      <td>Readings: <br/><a class="helplink" href="edhelp.pl#readings">help</a></td>
 	      <td><textarea tal:content="rtxt" name="rdng" wrap="physical" cols="60" rows="3"></textarea></td>
 	      <td>
-		<a href="kwhelp?tag=rinf">rinf</a> Reading info<br/>
-		<a href="kwhelp?tag=freq">freq</a> Freq-of-use<br/>
-		<a href="kwhelp?tag=restr">restr</a> Restrictions
+		<a class="helplink" href="edhelp.pl#kw_rinf">rinf</a><br/>
+		<a class="helplink" href="edhelp.pl#kw_freq">freq</a><br/>
+		<a class="helplink" href="edhelp.pl#syn_restr">restr</a>
 		</td></tr>
 	    <tr>
-	      <td>Senses:</td>
+	      <td>Senses: <br/><a class="helplink" href="edhelp.pl#senses">help</a></td>
 	      <td><textarea tal:content="stxt" name="sens" wrap="physical" cols="60" rows="8"></textarea></td>
 	      <td>
-		<a href="kwhelp?tag=ginf">ginf</a> Translation types<br/>
-		<a href="kwhelp?tag=pos">pos</a> Part-of-speech tags<br/>
-		<a href="kwhelp?tag=misc">misc</a> Usage tags<br/>
-		<a href="kwhelp?tag=fld">fld</a> Application domain<br/>
-		<a href="kwhelp?tag=dial">dial</a> Dialect<br/>
-		<a href="kwhelp?tag=freq">lsrc</a> Source language/word<br/>
-		<a href="kwhelp?tag=restr">restr</a> Restrictions<br/>
-		<a href="kwhelp?tag=xref">xref</a> Cross references<br/>
+		<a class="helplink" href="edhelp.pl#kw_pos">pos</a><br/>
+		<a class="helplink" href="edhelp.pl#kw_misc">misc</a><br/>
+		<a class="helplink" href="edhelp.pl#kw_fld">fld</a><br/>
+		<a class="helplink" href="edhelp.pl#kw_dial">dial</a><br/>
+		<a class="helplink" href="edhelp.pl#syn_lsrc">lsrc</a><br/>
+		<a class="helplink" href="edhelp.pl#syn_lit">lit</a><br/>
+		<a class="helplink" href="edhelp.pl#syn_expl">expl</a><br/>
+		<a class="helplink" href="edhelp.pl#syn_restr">restr</a><br/>
+		<a class="helplink" href="edhelp.pl#syn_xref">xref</a><br/>
 		</td></tr>
 	    <tr>
-	      <td>References:</td>
+	      <td>References: <br/><a class="helplink" href="edhelp.pl#references">help</a></td>
 	      <td><textarea name="reference" wrap="physical" cols="60" rows="3"></textarea></td>
 	      <td></td>
 	      </tr>
 	    <tr>
-	      <td>Comments:</td>
+	      <td>Comments: <br/><a class="helplink" href="edhelp.pl#comments">help</a></td>
 	      <td><textarea name="comment" wrap="physical" cols="60" rows="3"></textarea></td>
 	      <td></td>
 	      </tr>
 	    <tr>
-	      <td>Name:</td>
+	      <td>Name: <a class="helplink" href="edhelp.pl#name">help</a></td>
 	      <td><input type="text" name="name" size="30"/></td>
 	      <td></td>
 	      </tr>
 	    <tr>
-	      <td>Email:</td>
+	      <td>Email: <a class="helplink" href="edhelp.pl#email">help</a></td>
 	      <td><input type="text" name="email" size="30"/></td>
 	      <td></td>
 	      </tr>
 	    <tr>
 	      <td></td>
 	      <td>
-		<input type="submit" value="Submit"/>
-		<label for="approved"> Approved:</label>
-		<input type="checkbox" name="approved" id="approved"/>
+		<input type="submit" value="Submit"/> &nbsp;
 
 		<input type="hidden" name="id"  tal:if="e" tal:attributes="value e/id"/>
 		<input type="hidden" name="seq" tal:if="e" tal:attributes="value e/seq"/>

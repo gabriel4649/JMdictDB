@@ -51,7 +51,7 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	  # New status is M for edit entry, N for new entry.
 	$stat = $eid ? $::KW->{STAT}{M}{id} : $::KW->{STAT}{N}{id};
 
-	  # These will only have values when editig an entry. 
+	  # These will only have values when editing an entry. 
 	$seq = $cgi->param ('seq');
 	$src = $cgi->param ('src');
 	$notes = $cgi->param ('notes');
@@ -90,11 +90,11 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	      # as cautions at the top of the confirmation form in
 	      # hopes of reducing submissions of words already in 
 	      # the database.
-	    if (!$eid and 0) {
+	    if (!$eid) {
 		$chklist = find_similar ($dbh, $entr->{_kanj}, $entr->{_rdng}); }
 	    else { $chklist = []; }
 
-	      # If ant xrefs were given, resolve them to actual entries
+	      # If any xrefs were given, resolve them to actual entries
 	      # here since that is the form used to store them in the 
 	      # database.  If any are unresolvable, an approriate error 
 	      # is saved and will reported later.

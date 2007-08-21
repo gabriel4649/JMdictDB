@@ -21,9 +21,11 @@ perl/exparse.pl...............Generates intermediate, rebasable  file from Examp
 perl/jmload.pl................Generates Postegresql load file from intermediate file.
 perl/jmparse.pl...............Generates intermediate, rebasable  file from JMdict XML file.
 perl/showentr.pl..............Command line tool to show database entries.
+perl/xresolv.pl...............Convert jmdict tetual xrefs to database pk/fk xrefs
 perl/cgi/.....................CGI scripts
 perl/cgi/edconf.pl............Confirm new/edit entry page.
 perl/cgi/edform.pl............New/edit entry form.
+perl/cgi/edhelp.pl............Edit help page.
 perl/cgi/edsubmit.pl..........New/edit entry action.
 perl/cgi/entr.css.............CSS style sheet for all cgi pages.
 perl/cgi/entr.pl..............Show entry details page.
@@ -36,7 +38,6 @@ perl/lib/jbparser.pm..........[*] Input language parser module
 perl/lib/jbparser.yp..........Input language parser
 perl/lib/jmdict.pm............General use functions.
 perl/lib/jmdictcgi.pm.........CGI-specfic functions.
-perl/lib/jmdicted.pm..........Edict parsing/formatting functions.
 perl/lib/jmdictfmt.pm.........Entry print formatting functions
 perl/lib/jmdictpgi.pm.........JMdict .pgi file functions.
 perl/lib/jmdicttal.pm.........PETAL modifiers.
@@ -45,6 +46,7 @@ perl/lib/kwstatic.pm..........[*] Static kw data (file created by perl/mkkwmod.p
 perl/lib/tal/.................PETAL templates
 perl/lib/tal/edconf.tal.......PETAL template for edconf.pl.
 perl/lib/tal/edform.tal.......PETAL template for edform.pl.
+perl/lib/tal/edhelp.tal.......PETAL template for edit help page.
 perl/lib/tal/entr.tal.........PETAL template for entr.pl.
 perl/lib/tal/srchform.tal.....PETAL template for srchfom.pl.
 perl/lib/tal/srchres.tal......PETAL template for srchres.pl.
@@ -59,7 +61,6 @@ pg/mkviews.sql................Create views and functions.
 pg/postload.sql...............Execute scripts after schema creation and jmdict data load.
 pg/reload.sql.................Execute scripts to initialze database and create schema.
 pg/syncseq.sql................Set seqence numbers after jmdict load.
-pg/xresolv.sql................Create xrefs after jmdict load.
 pg/data/......................Keyword data
 pg/data/README.txt............General information.
 pg/data/kwdial.csv............Dialect keywords.
@@ -68,7 +69,6 @@ pg/data/kwfreq.csv............Frequency-of-use (prio) keywords.
 pg/data/kwginf.csv............Gloss info keywords.
 pg/data/kwkinf.csv............Kanji info keywords.
 pg/data/kwlang.csv............Language keywords.
-pg/data/kwlsrc.csv............Lsource keywords.
 pg/data/kwmisc.csv............Sense misc keywords.
 pg/data/kwpos.csv.............Sense part-of-speech keywords.
 pg/data/kwrinf.csv............Reading info keywords.

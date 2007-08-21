@@ -18,7 +18,7 @@
 <body>
   <h1>JMdictDB To-Do List</h1>
   <span class="gendate">
-    This list was current as of 2007-08-18 23:06
+    This list was current as of 2007-08-21 17:54
     </span>
   <table class="todo">
     
@@ -31,39 +31,36 @@
 	<td>Entered date</td>
 	</tr>
       <tr class="priohdr">
-        <td colspan="5">Priority 'high' items</td>
+        <td colspan="5">Priority 'crit' items</td>
 	</tr>
       <tr class="row">
-	<td class="id">95</td>
+	<td class="id">97</td>
 	
-	  <td class="title" colspan="2">Xrefs need rdng, kanj text for display</td>
+	  <td class="title" colspan="2">Edit conf page dying with restrs</td>
 	  
 	
 	<td class="compld"></td>
-	<td class="entered">2007-08-11 09:52</td>
+	<td class="entered">2007-08-21 14:17</td>
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Currently, when xref is displayed, the target entry is shown using it's reading and kanji headwords (i.e. its first reading and/or kanji).  Jim Breen points out (email, 2007-08-10) when displaying xrefs, there is sometimes a need to display other than the headword.  Example he gives is an xref to 1348350/小人[しょうにん](2)/dwarf/, which one would want to display as 小人[こびと].
+	<td class="descr" colspan="4">When an entry having restr restrictions is edited and submitted, the edconf page dies when it tries to display restr txt not present in the entry object.  Example is seq# 1250500.  Got to edit page and sumbit without making any changes.  Petal rendering fails complaining it can't access z/txt.<br/>
+<br/>
+Also noted that in edconf.pl, that restr lists are linked only to rdng items, not to kanj items.
 </td>
 	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="notes" colspan="4">Need to include the display reading/kanji in each xref row. Two options:<br/>
-1. Store the rdng/kanj text in each xref.<br/>
-2. Store the rdng number / kanj number in each xref.<br/>
-Think (2) is better because it provides higher data integrity (prevents storing completely unrelated/erroneous xref text).
-</td>
-	</tr>
+      
       
       </span><span omit-tag="">
       
       
-      
+      <tr class="priohdr">
+        <td colspan="5">Priority 'high' items</td>
+	</tr>
       <tr class="row">
 	<td class="id">83</td>
 	
-	  <td class="title" colspan="2">brackets in reading cause parse error</td>
+	  <td class="title" colspan="2">Brackets in reading cause parse error</td>
 	  
 	
 	<td class="compld"></td>
@@ -98,42 +95,12 @@ Problem seems to be the brackets which are classified as kanji characters and th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">In the JEL language parsed by jbparser, tags can be used in brackets without spectifying their type if they are not ambiguous.  Currently no check is made (parser uses first one found).  Need to fix this.<br/>
-- When parser is looking for a sense tag, it should not consider same tag in, say, KINF, to be ambiguous.  I.e. lookup_tag() function needs to take an argument limiting scope.<br/>
+- When parser is looking for a sense tag, it should not consider same tag in, say, KINF, to be ambiguous.  <br/>
 - Parser should exclude obsolete tags (id&gt;200) when considering ambiguity.<br/>
 - After taking above considerations into account, should return a "is ambiguous" code when tag is ambiguous.
 </td>
 	</tr>
       
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">69</td>
-	
-	  <td class="title" colspan="2">seq/src in urls</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-06-17 13:04</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi scripts and other scripts (eg showentr.pl) use seq numbers to identify entries but seq numbers are ambiguous without the corpus id.  Need to adopt a syntax that allows both seq number and corpus id (qqqqqqq.ss), and change current uses of seq number to support it.
-</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="notes" colspan="4">Changes needed in:<br/>
-+ perl/cgi/srchform.pl<br/>
-could add src dropdown near the entr-id/seq box, or just make the form pay attention to the Src checkbox selections when seq# given.<br/>
-+ Anything else that uses seq in link to entr.pl page.<br/>
-(done) per/cgi/edsubmit.pl<br/>
-(done) erl/cgi/entr.pl<br/>
-(done) perl/showentr.pl
-</td>
-	</tr>
       
       </span><span omit-tag="">
       
@@ -171,6 +138,26 @@ could add src dropdown near the entr-id/seq box, or just make the form pay atten
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">Need to work out details of approval process in terms of data changes and the web pages needed to support those changes. [Need "edit entry" page first]
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">12</td>
+	
+	  <td class="title" colspan="2">Modperl</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Support Apache/modperl.
 </td>
 	</tr>
       
@@ -242,26 +229,6 @@ could add src dropdown near the entr-id/seq box, or just make the form pay atten
       </span><span omit-tag="">
       
       
-      
-      <tr class="row">
-	<td class="id">12</td>
-	
-	  <td class="title" colspan="2">Modperl</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Support Apache/modperl.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
       <tr class="priohdr">
         <td colspan="5">Priority 'med' items</td>
 	</tr>
@@ -295,7 +262,7 @@ could add src dropdown near the entr-id/seq box, or just make the form pay atten
       <tr class="row">
 	<td class="id">93</td>
 	
-	  <td class="title" colspan="2">fix O(n^2) behavior in jmdict::matchup()</td>
+	  <td class="title" colspan="2">Fix O(n^2) behavior in jmdict::matchup()</td>
 	  
 	
 	<td class="compld"></td>
@@ -347,7 +314,7 @@ could add src dropdown near the entr-id/seq box, or just make the form pay atten
       <tr class="row">
 	<td class="id">91</td>
 	
-	  <td class="title" colspan="2">speed up "starts" searches.</td>
+	  <td class="title" colspan="2">Speed up "starts" searches.</td>
 	  
 	
 	<td class="compld"></td>
@@ -450,26 +417,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">entr.pl -- If there is cross-ref and a reverse-ref to the same target in a sense, mark the cross-ref (with an astrisk or something) to indicate the existance of the reverse reference, rather that displaying the full reverese refernce which duplicates the text in the cross-ref and looks confusing.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">34</td>
-	
-	  <td class="title" colspan="2">Dbopen remote host</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-24</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">jmdict.pm::dbopen() -- when reading jmdict.cfg, look for and use a remote host name.
 </td>
 	</tr>
       
@@ -596,9 +543,9 @@ Entr objects being created for output need not supply record numbers.  User of o
       
       
       <tr class="row">
-	<td class="id">29</td>
+	<td class="id">26</td>
 	
-	  <td class="title" colspan="2">XML parse kw checks</td>
+	  <td class="title" colspan="2">Kana-kanji determination</td>
 	  
 	
 	<td class="compld"></td>
@@ -606,10 +553,15 @@ Entr objects being created for output need not supply record numbers.  User of o
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
+	<td class="descr" colspan="4">jmdict.pm -- The database expects text strings in table "rdng" to contain no kanji chars and in table "kanj" to contain at least one.  Function jstr_classify used to determine kana/kanji-ness.  However there are some jmdict items that have kanji text that jmdict::jstr_classify considers to be kana only.  Change jstr_classify?  Or do something else?
 </td>
 	</tr>
-      
+      <tr class="descr">
+        <td> </td>
+	<td class="notes" colspan="4">See also task-83: "brackets in reading cause parse error".<br/>
+Note: "々" (entry 1000060) is in kanj table (because from ke_ele in xml), but jstr_classify() classifies as kana, thus search for it fails.
+</td>
+	</tr>
       
       </span><span omit-tag="">
       
@@ -636,9 +588,9 @@ Entr objects being created for output need not supply record numbers.  User of o
       
       
       <tr class="row">
-	<td class="id">26</td>
+	<td class="id">29</td>
 	
-	  <td class="title" colspan="2">Kana-kanji determination</td>
+	  <td class="title" colspan="2">XML parse kw checks</td>
 	  
 	
 	<td class="compld"></td>
@@ -646,15 +598,10 @@ Entr objects being created for output need not supply record numbers.  User of o
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">jmdict.pm -- The database expects text strings in table "rdng" to contain no kanji chars and in table "kanj" to contain at least one.  Function jstr_classify used to determine kana/kanji-ness.  However there are some jmdict items that have kanji text that jmdict::jstr_classify considers to be kana only.  Change jstr_classify?  Or do something else?
+	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
 </td>
 	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="notes" colspan="4">See also task-83: "brackets in reading cause parse error".<br/>
-Note: "々" (entry 1000060) is in kanj table (because from ke_ele in xml), but jstr_classify() classifies as kana, thus search for it fails.
-</td>
-	</tr>
+      
       
       </span><span omit-tag="">
       
@@ -662,6 +609,46 @@ Note: "々" (entry 1000060) is in kanj table (because from ke_ele in xml), but j
       <tr class="priohdr">
         <td colspan="5">Priority 'low' items</td>
 	</tr>
+      <tr class="row">
+	<td class="id">99</td>
+	
+	  <td class="title" colspan="2">Update the tutorial docs</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-08-21 17:50</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">At least the xref section needs updating (e.g. bld_erefs no longer in api).
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">98</td>
+	
+	  <td class="title" colspan="2">multiple databases in jmdict.cfg</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-08-21 17:27</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">jmdict::Dbopen() reads a config file to find out the database and db credentials to use.  To change database (to use development version rather than production version for example) requires changing the file.  Intead we could have the config file have multiple lines representing different databases and give dbopen() a parameter that selects one.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
       <tr class="row">
 	<td class="id">86</td>
 	
@@ -819,9 +806,9 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">18</td>
+	<td class="id">33</td>
 	
-	  <td class="title" colspan="2">CSS cleanup</td>
+	  <td class="title" colspan="2">DB maintenance</td>
 	  
 	
 	<td class="compld"></td>
@@ -829,167 +816,7 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">*.tal,entr.css -- The .css file is a mess.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">14</td>
-	
-	  <td class="title" colspan="2">Query time variation</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Retrieving one or a set of jmdict entries involves executing ~20 sql select stements.  This takes anwhere from .8 to 30s on my (slow) development machine.  I don't understand this almost order-of-magnitutde variation.  Need to determine what's going on and find remedy.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">9</td>
-	
-	  <td class="title" colspan="2">Test environment</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to setup a test infrastructure.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">8</td>
-	
-	  <td class="title" colspan="2">Functional tests</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">For cgi pages, command scripts, etc.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">27</td>
-	
-	  <td class="title" colspan="2">Database versioning</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">16</td>
-	
-	  <td class="title" colspan="2">Connection pooling</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Will this help performance? Informal timings done on cgi show that connect time is pretty quick but may be more significant when object retrieval times are improved. (ref Apache::DBI)
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">21</td>
-	
-	  <td class="title" colspan="2">CGI html escaping</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">23</td>
-	
-	  <td class="title" colspan="2">CGI security audit</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">7</td>
-	
-	  <td class="title" colspan="2">Unit tests</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to write unit tests for library code
+	<td class="descr" colspan="4">database -- write maintenance scripts to check for things that are hard to write contraints for: do all senses have at least one gloss?  do all (jmdict) entries have at least one sense and reading?, Are rdng,kanj,sens,gloss ord numbers consecutive?
 </td>
 	</tr>
       
@@ -1019,6 +846,66 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
+	<td class="id">7</td>
+	
+	  <td class="title" colspan="2">Unit tests</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to write unit tests for library code
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">27</td>
+	
+	  <td class="title" colspan="2">Database versioning</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">18</td>
+	
+	  <td class="title" colspan="2">CSS cleanup</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">*.tal,entr.css -- The .css file is a mess.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">19</td>
 	
 	  <td class="title" colspan="2">CGI error handling</td>
@@ -1039,6 +926,126 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
+	<td class="id">8</td>
+	
+	  <td class="title" colspan="2">Functional tests</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">For cgi pages, command scripts, etc.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">9</td>
+	
+	  <td class="title" colspan="2">Test environment</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to setup a test infrastructure.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">14</td>
+	
+	  <td class="title" colspan="2">Query time variation</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Retrieving one or a set of jmdict entries involves executing ~20 sql select stements.  This takes anwhere from .8 to 30s on my (slow) development machine.  I don't understand this almost order-of-magnitutde variation.  Need to determine what's going on and find remedy.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">21</td>
+	
+	  <td class="title" colspan="2">CGI html escaping</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">16</td>
+	
+	  <td class="title" colspan="2">Connection pooling</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Will this help performance? Informal timings done on cgi show that connect time is pretty quick but may be more significant when object retrieval times are improved. (ref Apache::DBI)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">23</td>
+	
+	  <td class="title" colspan="2">CGI security audit</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">22</td>
 	
 	  <td class="title" colspan="2">UTC datetimes</td>
@@ -1050,26 +1057,6 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">Check the everything storing a datetime value stores it in UTC or localtime with timezone.  Check that everything displaying a datetime does the same.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">33</td>
-	
-	  <td class="title" colspan="2">DB maintenance</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">database -- write maintenance scripts to check for things that are hard to write contraints for: do all senses have at least one gloss?  do all (jmdict) entries have at least one sense and reading?, Are rdng,kanj,sens,gloss ord numbers consecutive?
 </td>
 	</tr>
       
@@ -1161,6 +1148,88 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       <tr class="header">
         <td colspan="5"><br>The following items have been completed...<br><br></td>
 	</tr>
+      
+      
+      <tr class="row done">
+	<td class="id">95</td>
+	
+	
+	  <td class="title">Xrefs need rdng, kanj text for display</td>
+	  <td class="prio">high</td>
+	  
+	<td class="compld">2007-08-21 17:22</td>
+	<td class="entered">2007-08-11 09:52</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">Currently, when xref is displayed, the target entry is shown using it's reading and kanji headwords (i.e. its first reading and/or kanji).  Jim Breen points out (email, 2007-08-10) when displaying xrefs, there is sometimes a need to display other than the headword.  Example he gives is an xref to 1348350/小人[しょうにん](2)/dwarf/, which one would want to display as 小人[こびと].
+</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="notes" colspan="4">Need to include the display reading/kanji in each xref row. Two options:<br/>
+1. Store the rdng/kanj text in each xref.<br/>
+2. Store the rdng number / kanj number in each xref.<br/>
+Think (2) is better because it provides higher data integrity (prevents storing completely unrelated/erroneous xref text).
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">69</td>
+	
+	
+	  <td class="title">Seq/src in urls</td>
+	  <td class="prio">high</td>
+	  
+	<td class="compld">2007-08-21 17:22</td>
+	<td class="entered">2007-06-17 13:04</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">cgi scripts and other scripts (eg showentr.pl) use seq numbers to identify entries but seq numbers are ambiguous without the corpus id.  Need to adopt a syntax that allows both seq number and corpus id (qqqqqqq.ss), and change current uses of seq number to support it.
+</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="notes" colspan="4">Changes make in:<br/>
+perl/cgi/srchform.pl (make the form pay attention to the Src checkbox selections when seq# given.)<br/>
+perl/cgi/edsubmit.pl<br/>
+perl/cgi/entr.pl<br/>
+perl/showentr.pl
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">34</td>
+	
+	
+	  <td class="title">Dbopen remote host</td>
+	  <td class="prio">med</td>
+	  
+	<td class="compld">2007-08-21 17:22</td>
+	<td class="entered">2007-02-24</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">jmdict.pm::dbopen() -- when reading jmdict.cfg, look for and use a remote host name.
+</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="notes" colspan="4">Patch provided by Jason Shepherd.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
       
       
       <tr class="row done">

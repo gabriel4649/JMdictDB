@@ -6,11 +6,14 @@ DROP INDEX entr_seq;
 DROP INDEX entr_stat;
 DROP INDEX rdng_txt;
 DROP INDEX rdng_txt1;
+DROP INDEX rdng_txt2; --For fast LIKE 'xxx%'
 DROP INDEX kanj_txt;
 DROP INDEX kanj_txt1;
+DROP INDEX kanj_txt2; --For fast LIKE 'xxx%'
 DROP INDEX gloss_txt; 
 DROP INDEX gloss_txt1;
-DROP INDEX xref_entr_unq;
+DROP INDEX gloss_txt2; --For case-insensitive LIKE 'xxx%'
+DROP INDEX gloss_txt3; 		    --For case-insensitive '='
 DROP INDEX xref_xentr;
 DROP INDEX hist_dt;
 DROP INDEX hist_who;
@@ -30,6 +33,8 @@ ALTER TABLE gloss DROP CONSTRAINT gloss_lang_fkey;
 ALTER TABLE xref DROP CONSTRAINT xref_entr_fkey;
 ALTER TABLE xref DROP CONSTRAINT xref_xentr_fkey;
 ALTER TABLE xref DROP CONSTRAINT xref_typ_fkey;
+ALTER TABLE xref DROP CONSTRAINT xref_rdng_fkey;
+ALTER TABLE xref DROP CONSTRAINT xref_kanj_fkey;
 ALTER TABLE hist DROP CONSTRAINT hist_entr_fkey;
 ALTER TABLE hist DROP CONSTRAINT hist_stat_fkey;
 ALTER TABLE audio DROP CONSTRAINT audio_entr_fkey;

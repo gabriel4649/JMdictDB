@@ -6,7 +6,7 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
 	<META NAME="CREATED" CONTENT="20020715;12385300">
 	<META NAME="CHANGEDBY" CONTENT="Stuart McGraw">
-	<META NAME="CHANGED" CONTENT="20070728;18481700">
+	<META NAME="CHANGED" CONTENT="20070820;6545800">
 	<META NAME="SDENDNOTE" CONTENT="ARABIC;;[;]">
 	<STYLE>
 	<!--
@@ -614,6 +614,12 @@ wanted, multiple rows in the xref table are used.  Table <I><U>xref</U></I>
 also has a column <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">typ</SPAN></SPAN></I>
 that gives the type of cross-ref, and whose values are defined in
 table <I><U>kwxref</U></I>.</P>
+<P STYLE="margin-bottom: 0.2in">It is often desirable to display a
+cross-reference using a reading and kanji other than the entry's
+first reading and kanji.  The columns <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng</SPAN></SPAN></I>
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kanj</SPAN></SPAN></I>
+point to the most appropriate values for display. 
+</P>
 <P STYLE="margin-bottom: 0.2in">The cross reference table is colored
 purple in the schema diagram.</P>
 <OL>
@@ -636,16 +642,16 @@ and JMdict XML recreated from the database:</P>
 	number order and can be regenerated in that order.  Where that order
 	to change though, it would not be preserved in the regenerated XML. 
 	The order of all other elements is not preserved.</P>
-	<LI><P STYLE="margin-bottom: 0.2in">The text strings used to refer
-	to cross-references may be different because the original values may
-	be a subset of the target's headwords, and are recreated from the
-	target without knowledge of the exact subset.</P>
+	<LI><P STYLE="margin-bottom: 0.2in">The <I><U>xref</U></I>.<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng</SPAN></SPAN></I>
+	and <I><U>xref</U></I>.<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kanj</SPAN></SPAN></I>
+	values that specify a cross-reference's display text may not
+	uniquely identify a target entry.  When written as XML and
+	reimported, they may not be resolvable. 
+	</P>
 	<LI><P STYLE="margin-bottom: 0.2in">The database can represent
 	information that currently has no means of representation in the
 	JMdict XML. Specifically:</P>
-	<LI><P CLASS="list-2-start-western">Cross-references can refer to
-	specific target senses.</P>
-	<LI><P CLASS="list-2-start-western">Cross-references can refer to a
+	<LI><P CLASS="list-2-start-western">Cross-references refer to a
 	specific entry even when there multiple references with the same
 	reading or kanji text.</P>
 	<LI><P CLASS="list-2-start-western">Cross-references may have more
@@ -1027,7 +1033,7 @@ but will be included in a future version of this paper.
 	<LI><H1 CLASS="western"> Annotated Schema</H1>
 </OL>
 <P>The Postgresql DDL statements below will create the tables
-described above.  They are based on revision 1.23 (2007/07/28) of
+described above.  They are based on revision 1.26 (2007/08/20) of
 mktables.sql.  As commonly happens, this documentation may lag behind
 the code and so should not be taken as definitive.<SAMP CLASS="western"><BR></SAMP><BR><BR>
 </P>
@@ -1122,11 +1128,15 @@ and orders multiple xrefs in a sense.</SAMP><BR><SAMP CLASS="western">
 NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
  Identifies the entry this cross-reference<BR>      -- points to.<BR>
    xsens SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">sens.id</SPAN></SPAN></I>.
- Identifies the sense this cross-reference<BR>      -- points to.<BR>
-   notes TEXT,<BR>      -- Additional textual information pertaining
-to this cross-<BR>      -- reference for display to user when this
-cross-reference<BR>      -- is displayed.<BR>    PRIMARY KEY
-(entr,sens,xref));</SAMP></P>
+ Identifies the sense this cross-reference<BR>      -- points to.<BR><SAMP CLASS="western">
+   rdng SMALLINT,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng.rdng</SPAN></SPAN></I>.
+ Identifies the reading to use when displaying<BR>         this
+cross-reference.<BR><SAMP CLASS="western">    kanj SMALLINT NOT
+NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kanj.kanj</SPAN></SPAN></I>.
+ Identifies the kanji to use when displaying<BR>         this
+cross-reference.<BR></SAMP></SAMP>    notes TEXT,<BR>      --
+Additional textual information pertaining to this cross-<BR>      --
+reference for display to user.<BR>    PRIMARY KEY (entr,sens,xref));</SAMP></P>
 <P><SAMP CLASS="western"><BR>CREATE TABLE hist (<BR>      -- This
 table maintains a series of history records for each<BR>      --
 entry that documents significant changes to the entry.<BR>      --
@@ -1376,7 +1386,7 @@ VARCHAR(255));<BR></SAMP><BR><BR>
 		<COL WIDTH=85*>
 		<TR VALIGN=TOP>
 			<TD WIDTH=50%>
-				<P><FONT SIZE=1 STYLE="font-size: 8pt">Stuart McGraw, 2007-07-28</FONT></P>
+				<P><FONT SIZE=1 STYLE="font-size: 8pt">Stuart McGraw, 2007-08-20</FONT></P>
 			</TD>
 			<TD WIDTH=17%>
 				<P><BR>

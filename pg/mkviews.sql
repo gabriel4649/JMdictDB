@@ -148,18 +148,40 @@ CREATE VIEW re_nokanji AS (
 -- kanji as determined by restr if applicable, and taking 
 -- the jmdict's re_nokanji information into account. 
 -------------------------------------------------------------
-CREATE VIEW rk_valid AS (
-  SELECT e.id, e.seq, r.rdng, r.txt AS rtxt, sub.kanj, sub.ktxt
-    FROM entr e
-      JOIN rdng r ON r.entr=e.id
-      LEFT JOIN (
-        SELECT e.id AS eid, r.rdng, k.kanj, k.txt AS ktxt
-          FROM entr e
-          JOIN rdng r ON r.entr=e.id
-            LEFT JOIN kanj k ON k.entr=r.entr
-            LEFT JOIN restr z ON z.entr=e.id AND z.rdng=r.rdng AND z.kanj=k.kanj
-          WHERE z.rdng IS NULL
-        ) AS sub ON sub.rdng=r.rdng AND sub.eid=e.id);
+CREATE OR REPLACE VIEW rk_valid AS (
+    SELECT r.entr,r.rdng,r.txt as rtxt,k.kanj,k.txt as ktxt
+    FROM rdng r
+    JOIN kanj k ON k.entr=r.entr
+    WHERE NOT EXISTS (
+	SELECT * FROM restr z 
+	WHERE z.entr=r.entr AND z.kanj=k.kanj AND z.rdng=r.rdng));
+	
+CREATE OR REPLACE VIEW sr_valid AS (
+    SELECT s.entr,s.sens,r.rdng,r.txt as rtxt
+    FROM sens s
+    JOIN rdng r ON r.entr=s.entr
+    WHERE NOT EXISTS (
+	SELECT * FROM stagr z 
+	WHERE z.entr=s.entr AND z.sens=s.sens AND z.rdng=r.rdng)); 
+	
+CREATE OR REPLACE VIEW sk_valid AS (
+    SELECT s.entr,s.sens,k.kanj,k.txt as ktxt
+    FROM sens s
+    JOIN kanj k ON k.entr=s.entr
+    WHERE NOT EXISTS (
+	SELECT * FROM stagk z 
+	WHERE z.entr=s.entr AND z.sens=s.sens AND z.kanj=k.kanj)); 
+
+CREATE OR REPLACE VIEW xrefhw AS (
+    SELECT r.entr,rm.sens,r.txt as rtxt,k.kanj,k.txt as ktxt
+    FROM (
+	SELECT entr,sens,MIN(rdng) as rdng FROM sr_valid GROUP BY entr,sens)
+	AS rm 
+    JOIN rdng r ON r.entr=rm.entr AND r.rdng=rm.rdng 
+    LEFT JOIN (
+	SELECT entr,sens,MIN(kanj) as kanj FROM sk_valid GROUP BY entr,sens)
+	AS km ON km.entr=r.entr AND km.sens=rm.sens
+    LEFT JOIN kanj k ON k.entr=km.entr AND k.kanj=km.kanj);
 
 -------------------------------------------------------------
 -- Provide a view of table "kanj" with additional column

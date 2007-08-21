@@ -126,9 +126,9 @@ $::Debug = {};
 	    if ($::Opts{j}) { print jel_entr ($e); }
 	    else { print fmt_entr ($e); } }
 
-	print "--\nObj retrieval time: " . $::Debug->{'Obj retrieval time'} . "\n";
-	print "Obj build time: " . $::Debug->{'Obj build time'} . "\n";
-	print "Xrefsum retrieval time: " . $::Debug->{'Xrefsum retrieval time'} . "\n";
+	print "--\nObj retrieval time: " . ($::Debug->{'Obj retrieval time'}||""). "\n";
+	print "Obj build time: " . ($::Debug->{'Obj build time'}||"") . "\n";
+	print "Xrefsum retrieval time: " . ($::Debug->{'Xrefsum retrieval time'}||"") . "\n";
 
 	  # Cleanly disconnect from the database (and thus avoid
 	  # a warning message.)

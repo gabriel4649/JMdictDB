@@ -52,8 +52,10 @@ binmode (STDOUT, ":utf8");
 	if ($idval) {	# Search for id number...
 	    if ($idtbl ne "seqnum") { $col = "id"; }
 	    else { $idtbl = "entr e";  $col = "seq"; }
-	    ($sql, $sql_args) = build_search_sql (
-		[[$idtbl, sprintf ("e.%s=?", $col), [$idval]]]); }
+	    push (@condlist, [$idtbl, sprintf ("e.%s=?", $col), [$idval]]);
+	    if ($col eq "seq" and @src)  { 
+		push (@condlist, ["entr e",getsel("e.src", \@src), []]); }
+	    ($sql, $sql_args) = build_search_sql (\@condlist); }
 	else {
 	    for $i (0..2) {
 		if ($t[$i]) { 

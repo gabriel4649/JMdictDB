@@ -169,6 +169,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    $t = entr_data ($dbh, "in", join(",", @$crit), $args, $ord); }
 	else {
 	    $rs = dbread ($dbh, $crit, $args);
+	    if (0 == scalar (@$rs)) { return []; }
 	    $m = join (",", map ($_->{id}, @$rs));
 	    $t = entr_data ($dbh, "in", $m, [], $ord); }
 	$e = entr_bld ($t);
@@ -221,14 +222,14 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	#    If using the Tmptbl returned by Find(), $ord will
 	#    usually be: "t.ord".
 
-	my ($tmplj, $tmpli, $tbl, $key, $ordby, $sql, %t, $tblx);
+	my ($tmplj, $tmpli, $tbl, $key, $ordby, $sql, %t, $tblx, $limit);
 
 	  my $start = time();
 	$type = uc(substr($type,0,1));
 	if ($type ne "J" and $type ne "I") {
 	    die "entr_data(): Bad 'type' argument: $type\n"; }
-	$tmplj = "SELECT x.* FROM %s x JOIN %s t ON t.id=x.%s %s"; 
-	$tmpli = "SELECT x.* FROM %s x WHERE x.%s IN (%s) %s";
+	$tmplj = "SELECT x.* FROM %s x JOIN %s t ON t.id=x.%s %s %s"; 
+	$tmpli = "SELECT x.* FROM %s x WHERE x.%s IN (%s) %s %s";
 
 	foreach $tbl (qw(entr hist rdng rinf audio kanj kinf sens gloss
 		      misc pos fld dial lsrc restr stagr stagk freq xref xrer)) {
@@ -240,10 +241,11 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 
 	    if ($tbl eq "xrer") { $tblx = "xref"; $key = "xentr"; }
 	    else { $tblx = $tbl; }
+	    $limit = ($tblx eq "xref") ? "LIMIT 20" : "";
 
 	    $sql = ($type eq "J") 
-	        ? sprintf ($tmplj, $tblx, $crit, $key, $ordby) 
-	        : sprintf ($tmpli, $tblx, $key, $crit, $ordby);
+	        ? sprintf ($tmplj, $tblx, $crit, $key, $ordby, $limit) 
+	        : sprintf ($tmpli, $tblx, $key, $crit, $ordby, $limit);
 	    ## print "$sql  (" . join(",", @$args) . ")\n";
 	    $t{$tbl} = dbread ($dbh, $sql, $args); }
 	$::Debug->{'Obj retrieval time'} = time() - $start;
@@ -365,10 +367,19 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	return \@results; } 
 
     sub add_xrefsums { my ($dbh, $entrs) = @_;
-	# For each xref in (each sens of) each entr in @$entrs, add a new
-	# key, "ssum", the points to a single record containing a summary
-	# of the sense that the xref references.  Specifically the record
-	# contains fields:
+	# For each xref in (each sens of) each entr in @$entrs, make
+	# the xref an "augmented" xref.  An augmented xref is the same
+	# as a ordinarary xref except is has has additional information
+	# available in it, accessed though the following keys:
+	#
+	# rtxt: The target reading text identified by xref field {rdng}.
+	#
+	# ktxt: The target kanji text identified by xref field {kanj}.
+	#
+	# ssum: points to a single record containing a summary
+	#    of the sense that the xref references.  Specifically
+	#    the record contains fields:
+	#
 	#    eid: The entry id number of target entry.
 	#    sens: The sens number of the target *sense*.
 	#    seq: The entry seq number of the target entry.
@@ -378,29 +389,37 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	#    kanj: The kanj summary of the target entry.
 	#    gloss: The gloss summary of the target *sense*.
 
-	my ($sql, $sqf, $ssums, $ssums1, $ssums2, $e, $s, $x, $eids);
+	my ($sql, $sqf, $ssums, $ssums1, $ssums2, $e, $s, $x, $eids, $a);
 	  my $start = time();
 
+	return if (!$entrs or !@$entrs);
 	$eids = join (",", map ($_->{id}, @$entrs));
 
-	$sqf = "SELECT e.id,e.sens,e.seq,e.src,e.stat,e.rdng,e.kanj,e.gloss,e.nsens ".
+	$sqf = "SELECT e.id,e.sens,e.seq,e.src,e.stat,e.gloss,e.nsens,".
+		      "r.txt AS rtxt,k.txt AS ktxt ".
 		"FROM xref x ".
 		"JOIN essum e ON (e.id=x.%s AND e.sens=x.%s) ".
-		"WHERE %s IN(%s) AND %s ".
-		"GROUP BY e.id,e.sens,e.seq,e.src,e.stat,e.rdng,e.kanj,e.gloss,e.nsens ";
+		"LEFT JOIN rdng r ON r.entr=x.%s AND r.rdng=x.rdng ".
+		"LEFT JOIN kanj k ON k.entr=x.%s AND k.kanj=x.kanj ".
+		"WHERE x.%s IN(%s) AND %s ".
+		"GROUP BY e.id,e.sens,e.seq,e.src,e.stat,".
+		  "r.rdng,k.kanj,e.gloss,e.nsens,r.txt,k.txt ";
 
-	$sql = sprintf ($sqf, "xentr", "xsens", "entr", $eids, "x.typ!=5");
+	$sql = sprintf ($sqf, "xentr", "xsens", "xentr", "xentr", "entr",  $eids, "typ<5");
 	$ssums1 = dbread ($dbh, $sql); 
-	$sql = sprintf ($sqf, "entr", "sens", "xentr", $eids, "x.typ!=5");
+	$sql = sprintf ($sqf, "entr",  "sens",  "entr",  "entr",  "xentr", $eids, "typ<5");
 	$ssums2 = dbread ($dbh, $sql); 
 	$ssums = [(@$ssums1, @$ssums2)];
 
 	foreach $e (@$entrs) {
 	    foreach $s (@{$e->{_sens}}) {
 		foreach $x (@{$s->{_xref}}) {
-		    $x->{ssum} = lookup ($ssums, ["id","sens"], $x, ["xentr","xsens"], 0); }
+		    $a = lookup ($ssums, ["id","sens"], $x, ["xentr","xsens"], 0);
+		    $x->{ssum} = $a;  $x->{rtxt} = $a->{rtxt};  $x->{ktxt} = $a->{ktxt}; }
 		foreach $x (@{$s->{_xrer}}) {
-		    $x->{ssum} = lookup ($ssums, ["id","sens"], $x, ["entr","sens"], 0); }}}
+
+		    $a = lookup ($ssums, ["id","sens"], $x, ["entr","sens"], 0); 
+		    $x->{ssum} = $a;  $x->{rtxt} = $a->{rtxt};  $x->{ktxt} = $a->{ktxt}; }}}
 	$::Debug->{'Xrefsum retrieval time'} = time() - $start; }
 
     sub grp_xrefs { my ($xrefs, $rev) = @_;
@@ -423,73 +442,70 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	# 
 	# WARNING -- this function currently assumes that the input
 	# list @$xrefs is already sorted by {entr}, {sens}, {typ}, 
-	# {xentr}.  If that is not true then you may get duplicate
+	# {xentr} (or {xentr}, {xsens}, {typ}, {entr} if $rev is
+	# true).  If that is not true then you may get duplicate
 	# groups in the result list.  However, it is true for xref
-	# lists read by EntrList().
+	# lists in the entry structure returned by EntrList().
 
 	my ($x, $prev, @a, $b);
 	foreach $x (@$xrefs) {
-	    if ((!$rev && (!$prev 
-		  || $prev->{entr}  != $x->{entr} 
+	    {no warnings qw(uninitialized); 
+	    if ((!$rev && (!$prev
+		  || $prev->{entr}  != $x->{entr}
 		  || $prev->{sens}  != $x->{sens}
-		  || $prev->{typ}   != $x->{typ} 
-		  || $prev->{xentr} != $x->{xentr} 
-		  || ($prev->{notes}||"") ne ($x->{notes}||""))) 
+		  || $prev->{typ}   != $x->{typ}
+		  || $prev->{xentr} != $x->{xentr}
+		  || $prev->{rdng}  != $x->{rdng}
+		  || $prev->{kanj}  != $x->{kanj}
+		  || ($prev->{notes}||"") ne ($x->{notes}||"")))
 	      || ($rev && (!$prev
-		  || $prev->{xentr}  != $x->{xentr} 
-		  || $prev->{xsens}  != $x->{xsens}
-		  || $prev->{typ}   != $x->{typ} 
-		  || $prev->{entr} != $x->{entr} 
+		  || $prev->{xentr} != $x->{xentr}
+		  || $prev->{xsens} != $x->{xsens}
+		  || $prev->{typ}   != $x->{typ}
+		  || $prev->{entr}  != $x->{entr}
+		  || $prev->{rdng}  != $x->{rdng}
+		  || $prev->{kanj}  != $x->{kanj}
 		  || ($prev->{notes}||"") ne ($x->{notes}||""))) ) {
 		$b = [$x];
-		push (@a, $b); } 
+		push (@a, $b); }
 	    else {
 		push (@$b, $x); }
-	    $prev = $x; }
+	    $prev = $x; } }
 	return \@a; }
 
-    sub resolv_xref { my ($dbh, $kanj, $rdng, $slist, $typ,
-			   $one_entr_only, $one_sens_only) = @_;
+    sub resolv_xref { my ($dbh, $rtxt, $ktxt, $slist, $typ, $one_entr_only,
+			  $one_sens_only, $whr, $wargs) = @_;
+
+	# Find entries and their senses that match $ktxt and $rtxt
+	# and create list of augmented xref records that points to
+	# them.
+	#
 	# $dbh -- Handle to open database connection.
-	# $kanj -- Cross-ref target(s) must have this kanji text.  May be false.
-	# $rdng -- Cross-ref target(s) must have this reading text.  May be false.
-	# $slist -- Ref to array of sense numbers.  Resolved xrefs
+	# $rtxt -- Cross-ref target(s) must have this reading text.
+	#   May be false.
+	# $ktxt -- Cross-ref target(s) must have this kanji text.
+	#   May be false.
+	# @$slist -- Ref to array of sense numbers.  Resolved xrefs
 	#   will be limited to these target senses. 
 	# $typ -- (int) Type of reference per $::KW->{XREF}.
 	# $one_entr_only -- Raise error if xref resolves to more than
 	#   one entry.  Regardless of this value, it is always an error
 	#   if $slist is given and the xref resolves to more than one
-	#   entry.
+	#   entry.  
 	# $one_sens_only -- Raise error if $slist not given and any
 	#   of the resolved entries have more than one sense. 
+	# $whr -- A text string that will be AND'd into the WHERE
+	#   clause used for the xref retieval query.  May be used
+	#   to limit the the xrefs, for example, to those in entries
+	#   with a particular src.id value.
+	# @$wargs -- List of argument values for any "?" parameter
+	#   markers in $whr.  May be undef or an empty list.
 	# 
-	# resolv_xref() returns a list of augmented xrefs.  Each xref item
-	# is a ref to a hash matching an xref table row, except it has no
-	# {entr}, {sens}, or {xref} elements, since those will be determined 
-	# by the parent sense to which it is attached.  The items they do 
-	# have are:
-	#
-	#   {typ} -- Integer id (defined in kwxref table.)
-	#   {xentr} -- Id number of target entry.
-	#   {xsens} -- Sens number of target sense.
-	#   {ssum} -- Reference to additional sense information.
-	#
-	# The {ssum} element points to a hash containing additional
-	# summary information about the entry to which this sense 
-	# belongs.  The contents are identical to the {ssum} elements
-	# added to xrefs by jmdict::add_xrefsums().  Specifically:
-	#
- 	#   {id} -- Entry id number.
-	#   {seq} -- Entry seq. number.
-	#   {src} -- Entry src id number.
-	#   {stat} -- Entry status code (KW{STAT}{*}{id})
-	#   {notes} -- Entry note.
-	#   {srcnote} -- Entry source note.
-	#   {rdng} -- Entry's reading texts coalesced into one string.
-	#   {kanj} -- Entry's kanji texts coalesced into one string.
-	#   {gloss} -- This sense's gloss texts coalesced into one string.
-	#   {nsens} -- Total number of senses in entry.
-	#
+	# resolv_xref() returns a list of augmented xrefs (see function 
+	# add_xrefsums() for description) except each xref has no {entr},
+	# {sens}, or {xref} elements, since those will be determined by
+	# the parent sense to which the xref is attached.
+	# 
 	# Prohibited conditions such as resolving to multiple
 	# entries when the $one_entr_only flag is true, are 
 	# signalled with die().  The caller may want to call 
@@ -498,25 +514,31 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	my ($sql, $r, $ssums, @xrefs, $p, $s, $krtxt, @args, @argtxt, 
 	    @nosens, $nentrs);
 
-	$krtxt = fmt_jitem ($kanj, $rdng, $slist);
-	if (!$::KW->{XREF}{$typ}) { die "Bad xref type value: $typ.\n"; }
-	if (0) { }
-	else {
-	    if ($kanj)  { push (@args, $kanj); push (@argtxt, "k.txt=?"); }
-	    if ($rdng)  { push (@args, $rdng); push (@argtxt, "r.txt=?"); }
-	    if ($slist) { push (@argtxt, "sens IN(" . join (",", @$slist) . ")"); }
-	    $sql = "SELECT DISTINCT id,sens,seq,src,stat,s.rdng,s.kanj,gloss,nsens " .
-		  "FROM essum s " .
-		  ($kanj ? "LEFT JOIN kanj k ON k.entr=id " : "") .
-		  ($rdng ? "LEFT JOIN rdng r ON r.entr=id " : "") .
-		  "WHERE " . join (" AND ", @argtxt) . " " .
-		  "ORDER BY id,sens";
-	    $ssums = dbread ($dbh, $sql, \@args); }
+	die "No \$rtxt or \$ktxt value, need ay least one.\n" if (!$rtxt && !$ktxt);
+	die "Bad xref type value: $typ.\n" if (!$::KW->{XREF}{$typ});
+	$krtxt = fmt_jitem ($ktxt, $rtxt, $slist);
+
+	if ($whr) { 
+	    if ($wargs && @$wargs) { push (@args, @$wargs); }
+	    push (@argtxt, $whr); }
+	if ($ktxt) { push (@args, $ktxt); push (@argtxt, "k.txt=?"); }
+	if ($rtxt) { push (@args, $rtxt); push (@argtxt, "r.txt=?"); }
+	### if ($sens) { push (@argtxt, "sens=$sens"); }
+	$sql = "SELECT DISTINCT s.id,s.sens,s.seq,s.src,s.stat,s.rdng,s.kanj,s.gloss,s.nsens" .
+		($rtxt ? ",r.rdng AS xrdng" : "") .
+		($ktxt ? ",k.kanj AS xkanj" : "") .
+		" FROM essum s " .
+		($ktxt ? "LEFT JOIN kanj k ON k.entr=id " : "") .
+		($rtxt ? "LEFT JOIN rdng r ON r.entr=id " : "") .
+		"WHERE " . join (" AND ", @argtxt) . " " .
+		"ORDER BY id,sens";
+	$ssums = dbread ($dbh, $sql, \@args); 
+
 	foreach $r (@$ssums) { 
 	    if (!$p || $p != $r->{id}) { ++$nentrs; } 
 	    $p = $r->{id}; }
 	if (!$nentrs) { die "No entries found for cross-reference '$krtxt'.\n"; }
-	if ($nentrs > 1 and ($one_entr_only or ($slist and @$slist))) {
+	if ($nentrs > 1 and ($one_entr_only or ($slist && @$slist))) {
 	    die "Multiple entries found for cross-reference '$krtxt'.\n"; }
 
 	# For every target entry, get all it's sense numbers.  We need
@@ -533,7 +555,8 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    # target, so check that they actually exist in the target entry
 	    foreach $s (@$slist) {
 		if (!grep ($_->{sens}==$s, @$ssums)) { push (@nosens, $s); } }
-	    die "Sense(s) ".join(",",@nosens)." not in target '$krtxt'.\n" if (@nosens); } 
+	    die "Sense(s) ".join(",",@nosens)." not in target '$krtxt'.\n"
+		if (@nosens); } 
 	else {
 	    # No specific senses given, so this xref(s) should target every
 	    # sense in the target entry(s), unless $one_sens_only is true
@@ -543,8 +566,10 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 		die "The '$krtxt' target(s) has more than one sense.\n"; } }
 
 	foreach $r (@$ssums) {
-	    push (@xrefs, {typ=>$typ, xentr=>$r->{id}, xsens=>$r->{sens}, ssum=>$r}); }
-	    
+	    if (!$slist or !@$slist or grep ($_=$r->{sens},  @$slist)) {
+	        push (@xrefs, {typ=>$typ, xentr=>$r->{id}, xsens=>$r->{sens},
+			       rdng=>$r->{xrdng}, kanj=>$r->{xkanj},
+			       rtxt=>$rtxt, ktxt=>$ktxt, ssum=>$r}); } }
 	return \@xrefs; } 
 
 our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
@@ -637,7 +662,7 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    foreach $x (@{$s->{_lsrc}})  { dbinsert ($dbh, "lsrc",  ['entr','sens','lang','txt','part','wasei'], $x); }
 	    foreach $x (@{$s->{_stagr}}) { dbinsert ($dbh, "stagr", ['entr','sens','rdng'], $x); }
 	    foreach $x (@{$s->{_stagk}}) { dbinsert ($dbh, "stagk", ['entr','sens','kanj'], $x); }
-	    foreach $x (@{$s->{_xref}})  { dbinsert ($dbh, "xref",  ['entr','sens','xref','typ','xentr','xsens','notes'], $x); } }
+	    foreach $x (@{$s->{_xref}})  { dbinsert ($dbh, "xref",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], $x); } }
 	if (!$entr->{seq}) { 
 	    $rs = dbread ($dbh, "SELECT seq FROM entr WHERE id=?", [$eid]);
 	    $entr->{seq} = $rs->[0]{seq}; }
@@ -770,7 +795,8 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	# in an error message.)
 
 	my $krtext = ($kanj || "") . (($kanj && $rdng) ? "/" : "") . ($rdng || ""); 
-	if ($slist) { $krtext .= "[" . join (",", @$slist) . "]"; }
+	if ($slist && @$slist) { 
+	    $krtext .= "[" . join (",", @$slist) . "]"; }
 	return $krtext; }
 
     sub zip {
@@ -803,8 +829,9 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	if (!$cfgfile) { $cfgfile = "../lib/jmdict.cfg"; }
 	open (F, $cfgfile) or die ("Can't open database config file\n");
 	$ln = <F>;  close (F);  chomp($ln);
-	($dbname, $username, $pw) = split (/ /, $ln); 
-	$dbh = DBI->connect("dbi:Pg:dbname=$dbname", $username, $pw, 
+	($dbname, $username, $pw, $host) = split (/ /, $ln); 
+	$host = $host ? ";host=$host" : "";
+	$dbh = DBI->connect("dbi:Pg:dbname=$dbname$host", $username, $pw, 
 			{ PrintWarn=>0, RaiseError=>1, AutoCommit=>0 } );
 	$dbh->{pg_enable_utf8} = 1;
 	return $dbh; }
@@ -823,6 +850,6 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
     sub DESTROY { my ($self) = @_;
 	#print STDERR "Dropping table $self->{name}\n";
 	my $sql = "DROP TABLE $self->{name}";
-	$self->{dbh}->do ($sql); }
+	eval { $self->{dbh}->do ($sql); }; }
 
     1;

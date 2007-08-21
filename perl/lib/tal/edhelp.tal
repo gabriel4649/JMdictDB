@@ -1,0 +1,389 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns:tal="http://purl.org/petal/1.0/">
+<!--? Copyright (c) 2007 Stuart McGraw -->
+<!--? $Revision$ $Date$ -->
+
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
+  <link rel="stylesheet" type="text/css" href="entr.css"/>
+  <title>Edit help</title>
+  </head>
+<body>
+
+  <h2>Contents</h2>
+  <a href="#inboxes">Edit Form Input Boxes</a><br/>
+  <a href="#insyntax">Tag Syntax</a><br/>
+  <a href="#kwabbr">Keyword Abbreviations</a><br/>
+  <p/>
+
+<div class="entry">
+  <h2>Overview</h2>
+  ...TBS...
+  </div>
+
+<div class="entry">
+  <h2><a name="inboxes"/>Edit Form Input Boxes</h2>
+
+  <dl>
+    <dt><a name="Corpus"></a>Corpus</dt>
+    <dd>The corpus in which the entry exists or (for new entries) should
+      be entered.  (<a href="#kw_src">abbrs</a>)
+      </dd>
+
+    <dt><a name="Seq"></a>Seq</dt>
+    <dd>The sequence number assigned to the entry or (for new entries)
+      the sequence number to assign to it.
+      Normally should not be changed.  If left blank for a new entry,
+      the system will automatically assign an appropriate value.
+      Only registered editors may set or change this.
+      </dd>
+
+    <dt><a name="Kanji"></a>Kanji</dt>
+    <dd>
+      Enter the kanji used for this word, separated by semicolons (either
+      western on Japanese semicolons are ok).
+      Kinf (<a href="#syn_kinf">syntax</a>, <a href="#kw_kinf">abbrs</a>) and
+      freq (<a href="#syn_freq">syntax</a>, <a href="#kw_freq">abbrs</a>) tags,
+      enclosed in square brackets ([]) may optionally follow any kanji.
+      Multiple tags may occur in within a single pair of brackets, separated by commas.
+      <ul><li>Every kanji listed must contain at least one kanji character.
+      </li><li>If the word being entered is written only in kana, leave this
+      field blank and enter the kana in the Reading box.
+      </li><li>Kanji should be listed in order of "commonness": the most commonly used
+      kanji first, the most rarely used last.
+      </li><li>Within brackets, tags may be given in any order.
+      </li><li>Conflicting tags (e.g. nf14 and nf19) may not be applied to the same
+      kanji.
+      </li><li>Freq tags are only processed when submitted by registered editors.
+      If you are not registered, you should should note in the Comments section 
+      any freq tags you believe should be applied. 	
+      </li></ul>
+      Examples:
+      </dd>
+
+    <dt><a name="Readings"></a>Readings</dt>
+    <dd>Enter the readings used for this word, separated by semicolons
+      (either western on Japanese semicolons are ok.
+      Rinf tags (<a href="#syn_rinf">syntax</a>, <a href="#kw_rinf">abbrs</a>),
+      freq tags (<a href="#syn_freq">syntax</a>, <a href="#kw_freq">abbrs</a>), or 
+      restrictions (<a href="#syn_restr">syntax</a>)
+      enclosed in square brackets ([]) may optionally follow any reading.
+      Multiple tags may occur in within a single pair of brackets, separated by commas.
+      <ul><li>Readings may not contain any kanji characters.
+      </li><li>Readings should be listed in order of "commonness": the
+      most commonly used reading first, the most rarely used last.
+      </li><li>Use a restr tag to indicate when a reading is only used
+      with a subset of the kanji listed in the Kanji box.
+
+      </li><li>Within brackets, tags may be given in any order.
+      </li><li>Conflicting tags (e.g. nf14 and nf19) may not be applied to the same
+      reading.
+      </li><li>Freq tags are only processed when submitted by registered editors.  
+      If you are not registered, you should should note in the Comments section 
+      any freq tags you believe should be applied. 
+      </li></ul>
+      Examples:
+      </dd>
+
+    <dt><a name="Senses"></a>Senses</dt>
+    <dd>Enter senses, glosses, and their associated tags in the Sense box.
+      <ul><li>Each sense start with a sense number in brackets, e.g., "[1]".
+      </li><li>Following the sense number are any number of glosses and
+      sense tags, which may be freely intermixed.
+      </li><li>All glosses but the last must be followed by a semicolon.
+      Glosses do not need to be enclosed in quotes. even when they contain
+      space characters.  
+      </li><li>If a gloss contains left bracket ([) or semicolon (;) characters,
+      they must be escaped by preceeding them with a backlslash (\).
+      </li><li>Sense tags are enclosed in square brackets.  Multiple tags may
+      occur in within a single pair of brackets, separated by commas.
+      </li><li>Tags that can be used in the Sense box are:
+	<ul><li>ant -- An antonym cross-reference (<a href="#syn_xref">syntax</a>)
+	</li><li>dial -- Dialect (<a href="#syn_dial">syntax</a>, <a href="#kw_dial">abbrs</a>)
+	</li><li>expl -- Explanatory translation ()
+	</li><li>fld -- Domain (<a href="#syn_fld">syntax</a>, <a href="#kw_fld">abbrs</a>)
+	</li><li>lit -- Literal translation (<a href="#syn_lit">syntax</a>)
+	</li><li>lsrc -- Source word and language (<a href="#syn_lsrc">syntax</a>, <a href="#kw_lang">abbrs</a>)
+	</li><li>misc -- Misc sense tags (<a href="#syn_misc">syntax</a>, <a href="#kw_misc">abbrs</a>)
+	</li><li>note -- Sense notes (<a href="#syn_note">syntax</a>)
+	</li><li>pos -- Grammatical part-of-speech (<a href="#syn_pos">syntax</a>, <a href="#kw_pos">abbrs</a>)
+	</li><li>restr -- Reading and kanji restrictions (<a href="#syn_restr">syntax</a>)
+	</li><li>see -- A "see also" cross reference (<a href="#syn_xref">syntax</a>)
+	</li></ul>
+      </li><li>Line breaks are not significant -- senses do not
+      have to start on new lines, and glosses and tags may extend over
+      several lines.
+      </li><li>Sense tag values are not propagated to following senses.  If
+      sense [2] is a noun, you must explicity say so, even though sense [1]
+      was a noun.
+      </li><li>Sense numbers not significant other than to signify the start
+      of a new sense.  When the entry is added to the database, senses
+      will be numbered from 1 in the order they occured in the Sense text box.
+      </li></ul>
+      Examples:
+      </dd>
+
+    <dt><a name="References"></a>References</dt>
+    <dd>Enter sources that validate the entry or entry
+      changes being made.  This is a free form text field.
+      <br/>Examples:
+      </dd>
+
+    <dt><a name="Comments"></a>Comments:</dt>
+    <dd>Enter any comments you want the editors to read when
+      reviewing this entry.  These comments will be added to the
+      historical record of this entry.  This is a free form text
+      field.</dd>
+
+    <dt><a name="Name"></a>Name</dt>
+    <dd>You full name (optional).</dd>
+
+    <dt><a name="Email"></a>Email</dt>
+    <dd>Your email address (required).</dd>
+
+    <dt><a name="Approved"></a>Approved</dt>
+    <dd>Check this to approve the entry (available only to
+      registered editors.)</dd>
+
+    </dl>
+  </div>
+
+<div class="entry">
+  <h2><a name="insyntax"/>Tag Syntax</h2>
+
+  <table style="text-align: left;" border="1" cellpadding="2" cellspacing="2">
+    <tbody>
+      <tr>
+	<td>Tag</td>
+	<td>Where used</td>
+	<td>Description</td>
+	<td>Format</td>
+	<td>Examples</td>
+	</tr>
+
+      <tr>
+        <td><a name="syn_dial"/>dial</td>
+        <td>Sense</td>
+        <td>Dialect</td>
+        <td>
+	  [dial=<span style="font-style: italic;"><a href="#kw_dial">kw</a></span>]
+	  or just [<span style="font-style: italic;"><a href="#kw_dial">kw</a></span>]</td>
+        <td>[ksb]</td>
+        </tr>
+
+      <tr>
+        <td><a name="syn_expl"/>expl</td>
+        <td>Sense</td>
+        <td>Explanatory translation</td>
+        <td>
+	  [expl="<span style="font-style: italic;">the
+	  explanatory text</span>..."]<br/>
+	  (1) The text must be enclosed in quotes (") if it contains
+	  spaces or commas.  Otherwise quotes are not needed.
+	  </td>
+        <td>&nbsp;</td>
+	</tr>
+
+      <tr>
+        <td><a name="syn_fld"/>fld</td>
+        <td>Sense</td>
+        <td>Domain, aka field-of-application tags</td>
+        <td>
+	  [fld=<span style="font-style: italic;"><a href="#kw_fld">kw</a></span>]
+	  or just [<span style="font-style: italic;"><a href="#kw_fld">kw</a></span>]</td>
+        <td>&nbsp;</td>
+	</tr>
+
+      <tr>
+        <td><a name="syn_freq"></a>freq</td>
+        <td>Kanji, Reading</td>
+        <td>Frequency-of-use codes</td>
+        <td>
+	  [freq=<span style="font-style: italic;"><a href="#kw_freq">kw</a></span>]
+	  or just [<span style="font-style: italic;"><a href="#kw_freq">kw</a></span>]</td>
+        <td>&nbsp;</td>
+      </tr>
+
+      <tr>
+        <td><a name="syn_gloss"></a>gloss</td>
+        <td>Sense</td>
+        <td>Gloss text</td>
+        <td>
+	  <span style="font-style: italic;">gloss</span><br/>
+          <span style="font-style: italic;">gloss</span>;<span style="font-style: italic;"> gloss</span><br/>
+	  ~~~~<br/>
+	  (1) In the first example, the "[1]" signals the start of a new
+	  sense, three glosses follow it.<br/>
+	  (2) Any text in a sense not enclosd in square brackets is a gloss. <br/>
+	  (3) Glosses are separated by semicolons, and quotes (") are
+	  not needed even if the gloss contains spaces.<br/>
+	  (4) Left square bracket or semicolons occuring within a gloss must be
+	  escaped with a backslash character (\).<br/>
+	  (5) Glosses and sense tags may be freely intermixed in a sense.
+	  Sense tags always apply to the whole sense, no matter where
+	  they occur.</td>
+        <td>[1] house; a dwelling; one's home</td>
+        </tr>
+
+      <tr>
+        <td><a name="syn_kinf"></a>kinf</td>
+        <td>Kanji</td>
+        <td>Kanji information</td>
+        <td>
+	  [kinf=<span style="font-style: italic;"><a href="#kw_kinf">kw</a></span>]
+	  or just [<span style="font-style: italic;"><a href="#kw_kinf">kw</a></span>]</td>
+        <td>&nbsp;</td>
+	</tr>
+
+      <tr>
+        <td><a name="syn_lit"></a>lit</td>
+        <td>Sense</td>
+        <td>Literal translation </td>
+        <td>
+	  [lit="<span style="font-style: italic;">the
+	  literal text..."</span>]<br/>
+	  (1) The text must be enclosed in quotes (") if it contains
+	  spaces or commas.  Otherwise quotes are not needed.
+	  </td>
+        <td>&nbsp;</td>
+	</tr>
+
+      <tr>
+        <td><a name="syn_lsrc"></a>lsrc</td>
+        <td>Sense</td>
+        <td>Source language and word.</td>
+        <td>
+	  [lsrc=<span style="font-style: italic;"><a href="#kw_lang">lang</a></span>:]<br/>
+	  [lsrc=<span style="font-style: italic;">text</span>]<br/>
+	  lsrc=<span style="font-style: italic;"><a href="#kw_lang">lang</a></span><span style="font-style: italic;"></span>:<span style="font-style: italic;">text</span>]<br/>
+	  (1) The text must be enclosed in quotes (") if it contains
+	  spaces or commas.  Otherwise quotes are not needed.
+	  </td>
+        <td>&nbsp;</td>
+	</tr>
+
+      <tr>
+        <td><a name="syn_misc"></a>misc</td>
+        <td>Sense</td>
+        <td>Miscellaneous sense information</td>
+        <td>
+	  [misc=<span style="font-style: italic;"><a href="#kw_misc">kw</a></span>]
+	  or just [<span style="font-style: italic;"><a href="#kw_misc">kw</a></span>]</td>
+        <td>&nbsp;</td>
+	</tr>
+
+      <tr>
+        <td><a name="syn_note"></a>note</td>
+        <td>Sense</td>
+        <td>Ad-hoc sense information.</td>
+        <td>
+	  [note="<span style="font-style: italic;">the
+	  note text...</span>"]<br/>
+	  (1) The text must be enclosed in quotes (") if it contains
+	  spaces or commas.  Otherwise quotes are not needed.
+	  </td>
+        <td>&nbsp;</td>
+	</tr>
+
+      <tr>
+        <td><a name="syn_pos"></a>pos</td>
+        <td>Sense</td>
+        <td>Part-of-speech information</td>
+        <td>
+	  [pos=<span style="font-style: italic;"><a href="#kw_pos">kw</a></span>]
+	  or just [<span style="font-style: italic;"><a href="#kw_kinf">kw</a></span>]</td>
+        <td>&nbsp;</td>
+	</tr>
+
+      <tr>
+        <td><a name="syn_rinf"></a>rinf</td>
+        <td>Reading</td>
+        <td>Reading information</td>
+        <td>
+	  [rinf=<span style="font-style: italic;"><a href="#kw_rinf">kw</a></span>]
+	  or just [<span style="font-style: italic;"><a href="#kw_rinf">kw</a></span>]</td>
+        <td>&nbsp;</td>
+	</tr>
+
+      <tr>
+        <td><a name="syn_restr"></a>restr</td>
+        <td>Kanji, Reading, Sense</td>
+        <td>Reading and sense restrictions.</td>
+        <td>
+	  [restr=<span style="font-style: italic;">XX</span>;<span style="font-style: italic;">XX</span>;...]<br/>
+	  [restr=nokanji]<br/>
+	  [nokanji]<br/>
+	  ~~~~<br/>
+	  (1) If the tag is in the Reading section, the XX's must be kanji
+	  strings occuring in the Kanji section. &nbsp;<br/>
+	  (2) If the tag is in the Reading section, XX may be "nokanji", or may
+	  be the shorter form without the "restr="&nbsp; &nbsp;When
+	  "nokanji" is used in either form, no other XX's may be used on the
+	  reading the tag applies to. &nbsp;<br/>
+	  (3) If the tag is in a Sense, the XX's may be either kana strings that
+	  occur in the Reading section, or kanji strings that occur in the Kanji
+	  section.</td>
+        <td>&nbsp;</td>
+	</tr>
+
+      <tr>
+        <td><a name="syn_xref"/>
+	  <a name="syn_see"/>
+	  <a name="syn_ant"/>
+	  see<br/>ant</td>
+        <td>Sense</td>
+        <td>Cross-reference</td>
+        <td>
+	  [see=<span style="font-style: italic;">KK/RR</span>[<span style="font-style: italic;">sense-num</span>]]<br/>
+	  [ant=<span style="font-style: italic;">KK/RR</span>[<span style="font-style: italic;">sense-num</span>]]<br/>
+	  ~~~~<br/>
+	  (1) There are two kinds of cross-reference:
+	    <ul><li>See also (a general cross reference)
+	    </li><li>Antonym</li></ul>
+	  (2) KK is the kanji of the target of the cross reference, RR is
+	    its reading.  sense-num is the specific sence in the target 
+	    being referenced.  The KK/RR pair must uniquely identify a
+	    single JMdict entry. <br/>
+	  (3) KK/ or /RR (but not both) may be left out if the
+	  remaining text still uniquely identifies the target word.<br/>
+	  (4) sense-num is optional if the target word has only one sense.
+	  Otherwise, it must be given.  Multiple sense numbers can be 
+	  given, separated by commas.<br/>
+	  (5) If there are spaces or other special characters in the
+	  KK/RR[sense-num] text, enclose the entire string in quotes (").</td>
+
+        <td>[see=涼しい／すずしい[1]]<br/>[ant=暑い／あつい[1]]</td>
+	</tr>
+
+      </tbody>
+    </table>
+  </div>
+
+<div class="entry">
+  <h2><a name="kwabbr"/>Keyword abbreviations</h2>
+
+    <table class="entr">
+      <span tal:repeat="kwtab kwlist" omit-tag="">
+	<tr>
+	  <td colspan="3"><br/></td>
+	  </tr>
+        <tr>
+	  <td colspan="3">
+	    <a tal:content="kwtab/0" tal:attributes="name string:kw_${kwtab/0}">kw type</a>
+	    </td>
+	  </tr>
+	<tr>
+	  <td colspan="3"><hr/></td>
+	  </tr>
+	<tr tal:repeat="kwrec kwtab/1">
+	  <td tal:content="kwrec/kw">kw</td>
+	  <td tal:content="kwrec/descr">descr</td>
+	  <td tal:content="kwrec/id">id</td>
+	  </tr>
+        </span>
+      </table>
+
+  </div>
+
+</body>
+</html>

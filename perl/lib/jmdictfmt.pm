@@ -393,9 +393,9 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	      # Get the target entry's text.  If only readings, use as-is.
 	      # If has kanji, use that followed by reading in brackets.
 
-	    if ($x->{ssum}{kanj} && $x->{ssum}{rdng}) { 
-		$txt = "$x->{ssum}{kanj}\x{3010}$x->{ssum}{rdng}\x{3011}"; }
-	    else { $txt = $x->{ssum}{kanj} || $x->{ssum}{rdng}; }
+	    if ($x->{ktxt} && $x->{rtxt}) { 
+		$txt = "$x->{ktxt}\x{3010}$x->{rtxt}\x{3011}"; }
+	    else { $txt = $x->{ktxt} || $x->{rtxt}; }
 	    $txt .= " " . $x->{ssum}{gloss};
 
 	      # Print the xref info.
@@ -440,9 +440,9 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	      # Get the target entry's text.  If only readings, use as-is.
 	      # If has kanji, use that followed by reading in brackets.
 
-	    if ($x->{ssum}{kanj} && $x->{ssum}{rdng}) { 
-		$txt = "$x->{ssum}{kanj}\x{3010}$x->{ssum}{rdng}\x{3011}"; }
-	    else { $txt = $x->{ssum}{kanj} || $x->{ssum}{rdng}; }
+	    if ($x->{ktxt} && $x->{rdng}) { 
+		$txt = "$x->{ktxt}\x{3010}$x->{rdng}\x{3011}"; }
+	    else { $txt = $x->{ktxt} || $x->{rtxt}; }
 	    $txt .= " " . $gtxt;
 
 	      # Print the xref info.
@@ -563,8 +563,8 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
     sub jel_xref { my ($cxref) = @_;
 	my ($kanj, $rdng, $txt, $xref);
 	$xref = $cxref->[0];
-	$kanj = $xref->{ssum}{kanj} || "";
-	$rdng = $xref->{ssum}{rdng} || "";
+	$kanj = $xref->{ktxt} || "";
+	$rdng = $xref->{rtxt} || "";
 	$txt = $kanj . (($kanj && $rdng) ? "/" : "") . $rdng;
 	if ($xref->{ssum}{nsens} > 1) {
 	    $txt .= "[" . join(",",map ($_->{xsens}, @$cxref)) . "]"; }

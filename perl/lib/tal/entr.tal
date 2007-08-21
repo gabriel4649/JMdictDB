@@ -122,10 +122,10 @@
 		  <a tal:attributes="href string:entr.pl?e=${x/xentr}" tal:content="x/ssum/seq">seq-num</a
 		  ><span tal:if="gt: x/ssum/nsens string:1"
 		    >(<span tal:replace="x/xsens">sense</span>) </span> 
-		  <span tal:replace="x/ssum/kanj">xref-kanj</span>
-		  <span tal:if="and: x/ssum/kanj x/ssum/rdng" tal:omit-tag="">【</span>
-		  <span tal:replace="x/ssum/rdng">xref-rdng</span>
-		  <span tal:if="and: x/ssum/kanj x/ssum/rdng" tal:omit-tag="">】</span>
+		  <span tal:replace="x/ktxt">xref-kanj</span>
+		  <span tal:if="and: x/ktxt x/rtxt" tal:omit-tag="">【</span>
+		  <span tal:replace="x/rtxt">xref-rdng</span>
+		  <span tal:if="and: x/ktxt x/rtxt" tal:omit-tag="">】</span>
 		  <span tal:replace="x/ssum/gloss"></span>
 		  <span tal:if="x/notes" replace="x/notes">xref-note</span>
 		  </td>
@@ -140,10 +140,10 @@
 		  <a tal:attributes="href string:entr.pl?e=${x/entr}" tal:content="x/ssum/seq">seq-num</a
 		  ><span tal:if="gt: x/ssum/nsens string:1"
 		    >(<span tal:replace="x/sens">sense</span>) </span> 
-		  <span tal:replace="x/ssum/kanj">xref-kanj</span>
-		  <span tal:if="and: x/ssum/kanj x/ssum/rdng" tal:omit-tag="">【</span>
-		  <span tal:replace="x/ssum/rdng">xref-rdng</span>
-		  <span tal:if="and: x/ssum/kanj x/ssum/rdng" tal:omit-tag="">】</span>
+		  <span tal:replace="x/ktxt">xref-kanj</span>
+		  <span tal:if="and: x/ktxt x/rtxt" tal:omit-tag="">【</span>
+		  <span tal:replace="x/rtxt">xref-rdng</span>
+		  <span tal:if="and: x/ktxt x/rtxt" tal:omit-tag="">】</span>
 		  <span tal:replace="x/ssum/gloss">gloss</span>
 		  <span tal:if="x/notes" replace="x/notes">xref-note</span>
 		  </td>

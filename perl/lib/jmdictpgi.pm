@@ -52,7 +52,7 @@ sub initialize { my ($logfn, $tmpdir) = @_;
 	  [\$::Fmisc,  "${td}load10.tmp", "COPY misc(entr,sens,kw) FROM stdin;"],
 	  [\$::Ffld,   "${td}load11.tmp", "COPY fld(entr,sens,kw) FROM stdin;"],
 	  [\$::Fxrsv,  "${td}load12.tmp", "COPY xresolv(entr,sens,ord,typ,rtxt,ktxt,tsens,notes,prio) FROM stdin;"],
-	  [\$::Fxref,  "${td}load13.tmp", "COPY xref(entr,sens,xref.typ,xentr,xsens,notes) FROM stdin;"],
+	  [\$::Fxref,  "${td}load13.tmp", "COPY xref(entr,sens,xref.typ,xentr,xsens,rdng,kanj,notes) FROM stdin;"],
 	  [\$::Fgloss, "${td}load14.tmp", "COPY gloss(entr,sens,gloss,lang,ginf,txt) FROM stdin;"],
 	  [\$::Fdial,  "${td}load15.tmp", "COPY dial(entr,sens,kw) FROM stdin;"],
 	  [\$::Flsrc,  "${td}load16.tmp", "COPY lsrc(entr,sens,lang,txt,part,wasei) FROM stdin;"],
@@ -141,9 +141,11 @@ sub wrentr { my ($e) = @_;
 		pout ($::Fxrsv, $etag, $x->{sens}, $x->{ord}, $x->{typ}, $x->{rtxt}, $x->{ktxt},
 				 $x->{tsens}, $x->{notes}, $x->{prio}); } 
 	    foreach $x (@{$s->{_xref}}) {
-		pout ($::Fxref, $etag, $x->{sens}, $x->{xref}, $x->{typ}, $x->{xentr}, $x->{xsens}, $x->{notes}); } 
+		pout ($::Fxref, $etag, $x->{sens}, $x->{xref}, $x->{typ}, $x->{xentr}, $x->{xsens}, 
+				$x->{rdng}, $x->{kanj}, $x->{notes}); } 
 	    foreach $x (@{$s->{_xrer}}) {
-		pout ($::Fxref, $x->{entr}, $x->{sens}, $x->{xref}, $x->{typ}, $etag, $x->{xsens}, $x->{notes}); } }
+		pout ($::Fxref, $x->{entr}, $x->{sens}, $x->{xref}, $x->{typ}, $etag, $x->{xsens},
+				$x->{rdng}, $x->{kanj},  $x->{notes}); } }
 	foreach $x (@{$e->{_hist}}) {
 	    pout ($::Fhist, $etag, $x->{hist}, $x->{stat}, $x->{dt}, 
 			                $x->{who}, $x->{diff}, $x->{notes}); }} }

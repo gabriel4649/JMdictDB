@@ -84,11 +84,11 @@
                 </tbody>
               </table>
               </td>
-              <td>Search by Id number:
+              <td>Search by Id or Seq number:
               <table class="idsrch">
                 <tbody>
                   <tr>
-                    <td>Id Number:</td>
+                    <td>Type:</td>
                     <td>
                     <select name="idtyp">
                     <option value="seqnum">Entry Seq</option>
@@ -101,7 +101,7 @@
                     <td><input name="idval" size="7"/></td>
                   </tr>
 		  <tr>
-		    <td class="notice" colspan="2">Search by Id number superceeds all other criteria.</td>
+		    <td class="notice" colspan="2">Search by Id or Seq number superceeds all other criteria (except Corpus for Seq number).</td>
 		  </tr>
 		  <tr>
 		    <td><input name="search" value="Search" type="submit"/></td>
@@ -114,12 +114,12 @@
 
 	    <tr><td colspan="2"> </td></tr>
             <tr>
-              <td colspan="2"><span class="descriptor">Status:</span>
+              <td colspan="2"><span class="descriptor">Corpus:</span>
               <table class="optgroup">
                 <tbody>
-                  <tr tal:repeat="r stat">
-                    <td tal:repeat="c r"> 
-                      <input name="stat" tal:condition="c" tal:attributes="value c/id" tal:content="c/descr" type="checkbox"/> 
+                  <tr tal:repeat="r src">
+		    <td tal:repeat="c r">
+                      <input name="src" tal:condition="c" tal:attributes="value c/id; checked decode:c/id 1 1" tal:content="c/kw" type="checkbox"/> 
 		    </td>
                   </tr>
                 </tbody>
@@ -129,12 +129,12 @@
 
 	    <tr><td colspan="2"><hr width="100%"/></td></tr>
             <tr>
-              <td colspan="2"><span class="descriptor">Dictionary:</span>
+              <td colspan="2"><span class="descriptor">Status:</span>
               <table class="optgroup">
                 <tbody>
-                  <tr tal:repeat="r src">
-		    <td tal:repeat="c r">
-                      <input name="src" tal:condition="c" tal:attributes="value c/id; checked decode:c/id 1 1" tal:content="c/kw" type="checkbox"/> 
+                  <tr tal:repeat="r stat">
+                    <td tal:repeat="c r"> 
+                      <input name="stat" tal:condition="c" tal:attributes="value c/id" tal:content="c/descr" type="checkbox"/> 
 		    </td>
                   </tr>
                 </tbody>

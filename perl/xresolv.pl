@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env perl
+#!/usr/bin/env perl
 #######################################################################
 #   This file is part of JMdictDB. 
 #   Copyright (c) 2007 Stuart McGraw 
@@ -68,7 +68,7 @@ memoize ('get_entries');
 	    $xref_src, $targ_src, $start, $blksz, $krmap, $ncnt);
 
 	  # Read and parse command line options.
-	if (!getopts ("hd:u:p:r:e:s:t:nqv", \%::Opts) or $::Opts{h}) { usage (0); }
+	if (!getopts ("hd:u:p:r:e:s:t:D:nqv", \%::Opts) or $::Opts{h}) { usage (0); }
 
 	  # Set some local variables based on the command line 
 	  # options given or defaults where options not given.
@@ -77,7 +77,12 @@ memoize ('get_entries');
 	$pw =     $::Opts{p} || "";
 	$dbname = $::Opts{d} || "jmdict";
 	$host =   $::Opts{r} || "";
-	##if ($::Opts{v}) { $::Debug{prtsql} = 1; }
+	if (!$::Opts{D}) { $::Opts{D} = 0; }
+	  # Debugging flags:
+	  #  1 -- Print generated xref records.
+	  #  2 -- Print executed sql.
+
+	if ($::Opts{D} & 0x02) { $::Debug{prtsql} = 1; }
 
 	  # Set the default encoding of stdout and stderr.
 	binmode(STDOUT, ":encoding($enc)");
@@ -146,10 +151,18 @@ memoize ('get_entries');
 
 		  # Choose_target() will examine the entries and determine if
 		  # if it can narrows the target down to a single entry, which
-		  # it will return.  Otherwise it dies with an error message
-	 	  # which we trap with eval. 
+		  # it will return as a 7-element array (see get_entries() for
+		  # description).  If it can't find a unique entry, it takes
+		  # care of generating an error message and returns a false value. 
 
 	        next if (!($e = choose_target ($v, $entries))); } # That's "=", not "==".
+
+	      # Check that the chosen target entry isn't the same as the
+	      # referring entry.
+
+	    if ($e->[0] == $v->{entr}) {
+		msg (fs($v), "self-referential", kr($v));
+		next; }
 
 	      # Now that we know the target entry, we can create the actual
 	      # db xref records.  There may be more than one of the target 
@@ -164,8 +177,10 @@ memoize ('get_entries');
 	      # Write each xref record to the database...
 	    foreach $x (@$xrefs) {
 		if (!$::Opts{n}) {
-	 	    ## print "($x->{entr},$x->{sens},$x->{xref},$x->{typ},$x->{xentr},".
-		    ##        "$x->{xsens},".($x->{rgfdng}||"").",".($x->{kanj}||"").")\n";
+		    if ($::Opts{D} & 0x01) {
+	 		print STDERR "($x->{entr},$x->{sens},$x->{xref},$x->{typ},$x->{xentr},"
+				    .  "$x->{xsens}," . ($x->{rdng}||"") . "," . ($x->{kanj}||"")
+				    . ",$x->{notes})\n"; }
 		    dbinsert ($dbh, "xref", 
 			      ["entr","sens","xref","typ","xentr","xsens","rdng","kanj","notes"],
 			      $x); } } }
@@ -280,12 +295,14 @@ memoize ('get_entries');
 
 	$cntr = 1 + ($::prev ? $::prev->{xref} : 0);
 	for ($s=1; $s<=$e->[6]; $s++) {
+
 	      # If there was a sense number given in the xresolv 
 	      # record (field "tsens") then step through the
 	      # senses until we get to that one and generate
 	      # an xref only for it.  If there is no tsens, 
 	      # generate an xref for every sense.
 	    next if ($v->{tsens} && $v->{tsens} != $s);
+
 	      # The db xref records use column "xref" as a order
 	      # number and to distinguish between multiple xrefs
 	      # in the same entr/sens.  We use $cntr to maintain
@@ -377,6 +394,8 @@ Usage: xresolv.pl [options]
 		<n>.  Default = 1 (jmdict).
 	-v -- Print a message for every successfully resolved xref.
 	-q -- Do not print a warning for each unresolvable xref.
+	-D n -- Print debugging output to stderr.  The number 'n'
+		controls what is printed.  See source code. 
 	-d dbname -- Name of database to use.  Default is "jmdict".
 	-r host	-- Name of machine hosting the database.  Default
 		is "localhost".

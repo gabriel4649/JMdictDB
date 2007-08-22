@@ -55,12 +55,3 @@
 188	person	full name of a particular person
 189	given	given name or forename, gender not specified
 190	station	railway station
-201	adv-n	adverbial noun
-202	comp	computer terminology
-203	neg	negative (in a negative sentence, or with negative verb)
-204	neg-v	negative verb (when used with)
-205	io	irregular okurigana usage
-206	iv	irregular verb
-207	mg	masculine gender
-208	fg	feminine gender
-209	ng	neuter gender

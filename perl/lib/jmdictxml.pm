@@ -77,13 +77,7 @@ our %JM2ID = (
 		'gikun (meaning) reading' => 1,
 		'out-dated or obsolete kana usage' => 2,
 		'word containing irregular kana usage' => 3,
-		'word usually written using kanji alone ' => 4,
-
-		# Deprecated...
-		'rare' => 201,
-		'word usually written using kana alone ' => 202,
-		'ateji (phonetic) reading' => 203,
- },
+		'word usually written using kanji alone ' => 4, },
 	
 	FLD => {		# kwfld
 		'Buddhist term' => 1,
@@ -118,13 +112,7 @@ our %JM2ID = (
 		'slang' => 21,
 		'word usually written using kana alone ' => 22,
 		'vulgar expression or word ' => 24,
-		'sensitive' => 25,
-
-		# Deprecated...
-		'male slang' => 201, 
-		'ateji (phonetic) reading' => 202,
-		'word usually written using kanji alone ' => 203,
-		'gikun (meaning) reading' => 204, },
+		'sensitive' => 25, },
 	
 	POS => {		# kwpos
 		'adjective (keiyoushi)' => 1,
@@ -185,18 +173,7 @@ our %JM2ID = (
 		'female given name or forename' => 187,
 		'full name of a particular person' => 188,
 		'given name or forename, gender not specified' => 189,
-		'railway station' => 190,
-
-		# Deprecated...
-		'adverbial noun' => 201,
-		'computer terminology' => 202,
-		'irregular okurigana usage' => 203,
-		'irregular verb' => 204,
-		'negative (in a negative sentence, or with negative verb)' => 205,
-		'negative verb (when used with)' => 206,
-		'masculine gender' => 207,
-		'feminine gender' => 208,
-		'neuter gender' => 209, },
+		'railway station' => 190, },
 	
 	DIAL => {		# kwdial
 		'std' => 1,

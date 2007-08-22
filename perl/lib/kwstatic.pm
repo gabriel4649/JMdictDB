@@ -11,7 +11,7 @@ BEGIN {
     use Exporter();
     our ($VERSION, @ISA, @EXPORT);
     @ISA = qw(Exporter);
-    @EXPORT   = qw($Kdws $KWGINF_equ $KWGINF_expl $KWGINF_id $KWGINF_lit $KWMISC_X $KWMISC_abbr $KWMISC_aphorism $KWMISC_arch $KWMISC_ateji $KWMISC_chn $KWMISC_col $KWMISC_derog $KWMISC_eK $KWMISC_ek $KWMISC_fam $KWMISC_fem $KWMISC_gikun $KWMISC_hon $KWMISC_hum $KWMISC_id $KWMISC_m_sl $KWMISC_male $KWMISC_male_sl $KWMISC_obs $KWMISC_obsc $KWMISC_pol $KWMISC_proverb $KWMISC_quote $KWMISC_rare $KWMISC_sens $KWMISC_sl $KWMISC_uK $KWMISC_uk $KWMISC_vulg $KWFREQ_gA $KWFREQ_gai $KWFREQ_ichi $KWFREQ_news $KWFREQ_nf $KWFREQ_spec $KWXREF_ant $KWXREF_cf $KWXREF_ex $KWXREF_pref $KWXREF_see $KWXREF_syn $KWXREF_uses $KWSRC_examples $KWSRC_jmdict $KWSRC_jmnedict $KWSTAT_A $KWSTAT_D $KWSTAT_M $KWSTAT_N $KWSTAT_O $KWSTAT_R $KWSTAT_X $KWRINF_ateji $KWRINF_gikun $KWRINF_ik $KWRINF_ok $KWRINF_rare $KWRINF_uK $KWRINF_uk $KWKINF_ateji $KWKINF_iK $KWKINF_ik $KWKINF_io $KWKINF_oK $KWFLD_Buddh $KWFLD_MA $KWFLD_comp $KWFLD_food $KWFLD_geom $KWFLD_ling $KWFLD_math $KWFLD_mil $KWFLD_physics $KWLANG_aa $KWLANG_ab $KWLANG_ae $KWLANG_af $KWLANG_ai $KWLANG_ak $KWLANG_am $KWLANG_an $KWLANG_ar $KWLANG_as $KWLANG_av $KWLANG_ay $KWLANG_az $KWLANG_ba $KWLANG_be $KWLANG_bg $KWLANG_bi $KWLANG_bm $KWLANG_bn $KWLANG_bo $KWLANG_br $KWLANG_bs $KWLANG_ca $KWLANG_ce $KWLANG_ch $KWLANG_co $KWLANG_cr $KWLANG_cs $KWLANG_cu $KWLANG_cv $KWLANG_cy $KWLANG_da $KWLANG_de $KWLANG_dv $KWLANG_dz $KWLANG_ee $KWLANG_el $KWLANG_en $KWLANG_eo $KWLANG_es $KWLANG_et $KWLANG_eu $KWLANG_fa $KWLANG_ff $KWLANG_fi $KWLANG_fj $KWLANG_fo $KWLANG_fr $KWLANG_fy $KWLANG_ga $KWLANG_gd $KWLANG_gl $KWLANG_gn $KWLANG_gu $KWLANG_gv $KWLANG_ha $KWLANG_he $KWLANG_hi $KWLANG_ho $KWLANG_hr $KWLANG_ht $KWLANG_hu $KWLANG_hy $KWLANG_hz $KWLANG_ia $KWLANG_id $KWLANG_ie $KWLANG_ig $KWLANG_ii $KWLANG_ik $KWLANG_io $KWLANG_is $KWLANG_it $KWLANG_iu $KWLANG_ja $KWLANG_jv $KWLANG_ka $KWLANG_kg $KWLANG_ki $KWLANG_kj $KWLANG_kk $KWLANG_kl $KWLANG_km $KWLANG_kn $KWLANG_ko $KWLANG_kr $KWLANG_ks $KWLANG_ku $KWLANG_kv $KWLANG_kw $KWLANG_ky $KWLANG_la $KWLANG_lb $KWLANG_lg $KWLANG_li $KWLANG_ln $KWLANG_lo $KWLANG_lt $KWLANG_lu $KWLANG_lv $KWLANG_mg $KWLANG_mh $KWLANG_mi $KWLANG_mk $KWLANG_ml $KWLANG_mn $KWLANG_mo $KWLANG_mr $KWLANG_ms $KWLANG_mt $KWLANG_my $KWLANG_na $KWLANG_nb $KWLANG_nd $KWLANG_ne $KWLANG_ng $KWLANG_nl $KWLANG_nn $KWLANG_no $KWLANG_nr $KWLANG_nv $KWLANG_ny $KWLANG_oc $KWLANG_oj $KWLANG_om $KWLANG_or $KWLANG_os $KWLANG_pa $KWLANG_pi $KWLANG_pl $KWLANG_ps $KWLANG_pt $KWLANG_qu $KWLANG_rm $KWLANG_rn $KWLANG_ro $KWLANG_ru $KWLANG_rw $KWLANG_sa $KWLANG_sc $KWLANG_sd $KWLANG_se $KWLANG_sg $KWLANG_sh $KWLANG_si $KWLANG_sk $KWLANG_sl $KWLANG_sm $KWLANG_sn $KWLANG_so $KWLANG_sq $KWLANG_sr $KWLANG_ss $KWLANG_st $KWLANG_su $KWLANG_sv $KWLANG_sw $KWLANG_ta $KWLANG_te $KWLANG_tg $KWLANG_th $KWLANG_ti $KWLANG_tk $KWLANG_tl $KWLANG_tn $KWLANG_to $KWLANG_tr $KWLANG_ts $KWLANG_tt $KWLANG_tw $KWLANG_ty $KWLANG_ug $KWLANG_uk $KWLANG_ur $KWLANG_uz $KWLANG_ve $KWLANG_vi $KWLANG_vo $KWLANG_wa $KWLANG_wo $KWLANG_xh $KWLANG_yi $KWLANG_yo $KWLANG_za $KWLANG_zh $KWLANG_zu $KWDIAL_ksb $KWDIAL_ktb $KWDIAL_kyb $KWDIAL_kyu $KWDIAL_osb $KWDIAL_std $KWDIAL_thb $KWDIAL_tsb $KWDIAL_tsug $KWPOS_adj $KWPOS_adj_na $KWPOS_adj_no $KWPOS_adj_pn $KWPOS_adj_t $KWPOS_adv $KWPOS_adv_n $KWPOS_adv_to $KWPOS_aux $KWPOS_aux_adj $KWPOS_aux_v $KWPOS_comp $KWPOS_company $KWPOS_conj $KWPOS_ctr $KWPOS_exp $KWPOS_fem $KWPOS_fg $KWPOS_given $KWPOS_int $KWPOS_io $KWPOS_iv $KWPOS_masc $KWPOS_mg $KWPOS_n $KWPOS_n_adv $KWPOS_n_pref $KWPOS_n_suf $KWPOS_n_t $KWPOS_neg $KWPOS_neg_v $KWPOS_ng $KWPOS_num $KWPOS_person $KWPOS_place $KWPOS_pref $KWPOS_product $KWPOS_prt $KWPOS_station $KWPOS_suf $KWPOS_surname $KWPOS_unclass $KWPOS_v1 $KWPOS_v5 $KWPOS_v5aru $KWPOS_v5b $KWPOS_v5g $KWPOS_v5k $KWPOS_v5k_s $KWPOS_v5m $KWPOS_v5n $KWPOS_v5r $KWPOS_v5r_i $KWPOS_v5s $KWPOS_v5t $KWPOS_v5u $KWPOS_v5u_s $KWPOS_v5uru $KWPOS_vi $KWPOS_vk $KWPOS_vn $KWPOS_vs $KWPOS_vs_i $KWPOS_vs_s $KWPOS_vt $KWPOS_vz); }
+    @EXPORT   = qw($Kdws $KWGINF_equ $KWGINF_expl $KWGINF_id $KWGINF_lit $KWMISC_X $KWMISC_abbr $KWMISC_aphorism $KWMISC_arch $KWMISC_chn $KWMISC_col $KWMISC_derog $KWMISC_eK $KWMISC_fam $KWMISC_fem $KWMISC_hon $KWMISC_hum $KWMISC_id $KWMISC_m_sl $KWMISC_male $KWMISC_obs $KWMISC_obsc $KWMISC_pol $KWMISC_proverb $KWMISC_quote $KWMISC_rare $KWMISC_sens $KWMISC_sl $KWMISC_uk $KWMISC_vulg $KWFREQ_gA $KWFREQ_gai $KWFREQ_ichi $KWFREQ_news $KWFREQ_nf $KWFREQ_spec $KWXREF_ant $KWXREF_cf $KWXREF_ex $KWXREF_pref $KWXREF_see $KWXREF_syn $KWXREF_uses $KWSRC_examples $KWSRC_jmdict $KWSRC_jmnedict $KWSTAT_A $KWSTAT_D $KWSTAT_M $KWSTAT_N $KWSTAT_O $KWSTAT_R $KWSTAT_X $KWRINF_gikun $KWRINF_ik $KWRINF_ok $KWRINF_uK $KWKINF_ateji $KWKINF_iK $KWKINF_ik $KWKINF_io $KWKINF_oK $KWFLD_Buddh $KWFLD_MA $KWFLD_comp $KWFLD_food $KWFLD_geom $KWFLD_ling $KWFLD_math $KWFLD_mil $KWFLD_physics $KWLANG_aa $KWLANG_ab $KWLANG_ae $KWLANG_af $KWLANG_ai $KWLANG_ak $KWLANG_am $KWLANG_an $KWLANG_ar $KWLANG_as $KWLANG_av $KWLANG_ay $KWLANG_az $KWLANG_ba $KWLANG_be $KWLANG_bg $KWLANG_bi $KWLANG_bm $KWLANG_bn $KWLANG_bo $KWLANG_br $KWLANG_bs $KWLANG_ca $KWLANG_ce $KWLANG_ch $KWLANG_co $KWLANG_cr $KWLANG_cs $KWLANG_cu $KWLANG_cv $KWLANG_cy $KWLANG_da $KWLANG_de $KWLANG_dv $KWLANG_dz $KWLANG_ee $KWLANG_el $KWLANG_en $KWLANG_eo $KWLANG_es $KWLANG_et $KWLANG_eu $KWLANG_fa $KWLANG_ff $KWLANG_fi $KWLANG_fj $KWLANG_fo $KWLANG_fr $KWLANG_fy $KWLANG_ga $KWLANG_gd $KWLANG_gl $KWLANG_gn $KWLANG_gu $KWLANG_gv $KWLANG_ha $KWLANG_he $KWLANG_hi $KWLANG_ho $KWLANG_hr $KWLANG_ht $KWLANG_hu $KWLANG_hy $KWLANG_hz $KWLANG_ia $KWLANG_id $KWLANG_ie $KWLANG_ig $KWLANG_ii $KWLANG_ik $KWLANG_io $KWLANG_is $KWLANG_it $KWLANG_iu $KWLANG_ja $KWLANG_jv $KWLANG_ka $KWLANG_kg $KWLANG_ki $KWLANG_kj $KWLANG_kk $KWLANG_kl $KWLANG_km $KWLANG_kn $KWLANG_ko $KWLANG_kr $KWLANG_ks $KWLANG_ku $KWLANG_kv $KWLANG_kw $KWLANG_ky $KWLANG_la $KWLANG_lb $KWLANG_lg $KWLANG_li $KWLANG_ln $KWLANG_lo $KWLANG_lt $KWLANG_lu $KWLANG_lv $KWLANG_mg $KWLANG_mh $KWLANG_mi $KWLANG_mk $KWLANG_ml $KWLANG_mn $KWLANG_mo $KWLANG_mr $KWLANG_ms $KWLANG_mt $KWLANG_my $KWLANG_na $KWLANG_nb $KWLANG_nd $KWLANG_ne $KWLANG_ng $KWLANG_nl $KWLANG_nn $KWLANG_no $KWLANG_nr $KWLANG_nv $KWLANG_ny $KWLANG_oc $KWLANG_oj $KWLANG_om $KWLANG_or $KWLANG_os $KWLANG_pa $KWLANG_pi $KWLANG_pl $KWLANG_ps $KWLANG_pt $KWLANG_qu $KWLANG_rm $KWLANG_rn $KWLANG_ro $KWLANG_ru $KWLANG_rw $KWLANG_sa $KWLANG_sc $KWLANG_sd $KWLANG_se $KWLANG_sg $KWLANG_sh $KWLANG_si $KWLANG_sk $KWLANG_sl $KWLANG_sm $KWLANG_sn $KWLANG_so $KWLANG_sq $KWLANG_sr $KWLANG_ss $KWLANG_st $KWLANG_su $KWLANG_sv $KWLANG_sw $KWLANG_ta $KWLANG_te $KWLANG_tg $KWLANG_th $KWLANG_ti $KWLANG_tk $KWLANG_tl $KWLANG_tn $KWLANG_to $KWLANG_tr $KWLANG_ts $KWLANG_tt $KWLANG_tw $KWLANG_ty $KWLANG_ug $KWLANG_uk $KWLANG_ur $KWLANG_uz $KWLANG_ve $KWLANG_vi $KWLANG_vo $KWLANG_wa $KWLANG_wo $KWLANG_xh $KWLANG_yi $KWLANG_yo $KWLANG_za $KWLANG_zh $KWLANG_zu $KWDIAL_ksb $KWDIAL_ktb $KWDIAL_kyb $KWDIAL_kyu $KWDIAL_osb $KWDIAL_std $KWDIAL_thb $KWDIAL_tsb $KWDIAL_tsug $KWPOS_adj $KWPOS_adj_na $KWPOS_adj_no $KWPOS_adj_pn $KWPOS_adj_t $KWPOS_adv $KWPOS_adv_to $KWPOS_aux $KWPOS_aux_adj $KWPOS_aux_v $KWPOS_company $KWPOS_conj $KWPOS_ctr $KWPOS_exp $KWPOS_fem $KWPOS_given $KWPOS_int $KWPOS_masc $KWPOS_n $KWPOS_n_adv $KWPOS_n_pref $KWPOS_n_suf $KWPOS_n_t $KWPOS_num $KWPOS_person $KWPOS_place $KWPOS_pref $KWPOS_product $KWPOS_prt $KWPOS_station $KWPOS_suf $KWPOS_surname $KWPOS_unclass $KWPOS_v1 $KWPOS_v5 $KWPOS_v5aru $KWPOS_v5b $KWPOS_v5g $KWPOS_v5k $KWPOS_v5k_s $KWPOS_v5m $KWPOS_v5n $KWPOS_v5r $KWPOS_v5r_i $KWPOS_v5s $KWPOS_v5t $KWPOS_v5u $KWPOS_v5u_s $KWPOS_v5uru $KWPOS_vi $KWPOS_vk $KWPOS_vn $KWPOS_vs $KWPOS_vs_i $KWPOS_vs_s $KWPOS_vt $KWPOS_vz); }
 
 our (@EXPORT);
 
@@ -23,21 +23,17 @@ our($KWMISC_X) = 1;
 our($KWMISC_abbr) = 2;
 our($KWMISC_aphorism) = 82;
 our($KWMISC_arch) = 3;
-our($KWMISC_ateji) = 202;
 our($KWMISC_chn) = 4;
 our($KWMISC_col) = 5;
 our($KWMISC_derog) = 6;
 our($KWMISC_eK) = 7;
-our($KWMISC_ek) = 205;
 our($KWMISC_fam) = 8;
 our($KWMISC_fem) = 9;
-our($KWMISC_gikun) = 204;
 our($KWMISC_hon) = 11;
 our($KWMISC_hum) = 12;
 our($KWMISC_id) = 13;
 our($KWMISC_m_sl) = 14;
 our($KWMISC_male) = 15;
-our($KWMISC_male_sl) = 201;
 our($KWMISC_obs) = 17;
 our($KWMISC_obsc) = 18;
 our($KWMISC_pol) = 19;
@@ -46,7 +42,6 @@ our($KWMISC_quote) = 83;
 our($KWMISC_rare) = 20;
 our($KWMISC_sens) = 25;
 our($KWMISC_sl) = 21;
-our($KWMISC_uK) = 203;
 our($KWMISC_uk) = 22;
 our($KWMISC_vulg) = 24;
 our($KWFREQ_gA) = 6;
@@ -72,13 +67,10 @@ our($KWSTAT_N) = 1;
 our($KWSTAT_O) = 6;
 our($KWSTAT_R) = 8;
 our($KWSTAT_X) = 5;
-our($KWRINF_ateji) = 203;
 our($KWRINF_gikun) = 1;
 our($KWRINF_ik) = 3;
 our($KWRINF_ok) = 2;
-our($KWRINF_rare) = 201;
 our($KWRINF_uK) = 4;
-our($KWRINF_uk) = 202;
 our($KWKINF_ateji) = 5;
 our($KWKINF_iK) = 1;
 our($KWKINF_ik) = 4;
@@ -294,32 +286,23 @@ our($KWPOS_adj_no) = 3;
 our($KWPOS_adj_pn) = 4;
 our($KWPOS_adj_t) = 5;
 our($KWPOS_adv) = 6;
-our($KWPOS_adv_n) = 201;
 our($KWPOS_adv_to) = 8;
 our($KWPOS_aux) = 9;
 our($KWPOS_aux_adj) = 54;
 our($KWPOS_aux_v) = 10;
-our($KWPOS_comp) = 202;
 our($KWPOS_company) = 184;
 our($KWPOS_conj) = 12;
 our($KWPOS_ctr) = 51;
 our($KWPOS_exp) = 13;
 our($KWPOS_fem) = 187;
-our($KWPOS_fg) = 208;
 our($KWPOS_given) = 189;
 our($KWPOS_int) = 14;
-our($KWPOS_io) = 205;
-our($KWPOS_iv) = 206;
 our($KWPOS_masc) = 186;
-our($KWPOS_mg) = 207;
 our($KWPOS_n) = 17;
 our($KWPOS_n_adv) = 18;
 our($KWPOS_n_pref) = 20;
 our($KWPOS_n_suf) = 19;
 our($KWPOS_n_t) = 21;
-our($KWPOS_neg) = 203;
-our($KWPOS_neg_v) = 204;
-our($KWPOS_ng) = 209;
 our($KWPOS_num) = 24;
 our($KWPOS_person) = 188;
 our($KWPOS_place) = 182;
@@ -817,82 +800,68 @@ our ($Kwds)   = do {
               zu   => 'fix',
             },
     MISC => {
-              1         => {
-                             descr => "rude or X-rated term (not displayed in educational software)\n",
-                             id => 1,
-                             kw => "X",
-                           },
-              11        => {
-                             descr => "honorific or respectful (sonkeigo) language\n",
-                             id => 11,
-                             kw => "hon",
-                           },
-              12        => { descr => "humble (kenjougo) language\n", id => 12, kw => "hum" },
-              13        => { descr => "idiomatic expression\n", id => 13, kw => "id" },
-              14        => { descr => "manga slang\n", id => 14, kw => "m-sl" },
-              15        => { descr => "male term or language\n", id => 15, kw => "male" },
-              17        => { descr => "obsolete term\n", id => 17, kw => "obs" },
-              18        => { descr => "obscure term\n", id => 18, kw => "obsc" },
-              19        => { descr => "polite (teineigo) language\n", id => 19, kw => "pol" },
-              2         => { descr => "abbreviation\n", id => 2, kw => "abbr" },
-              20        => { descr => "rare\n", id => 20, kw => "rare" },
-              201       => { descr => "male slang\n", id => 201, kw => "male-sl" },
-              202       => { descr => "ateji (phonetic) reading\n", id => 202, kw => "ateji" },
-              203       => {
-                             descr => "word usually written using kanji alone\n",
-                             id => 203,
-                             kw => "uK",
-                           },
-              204       => { descr => "gikun (meaning) reading\n", id => 204, kw => "gikun" },
-              205       => { descr => "exclusively kanji\n", id => 205, kw => "ek" },
-              21        => { descr => "slang\n", id => 21, kw => "sl" },
-              22        => {
-                             descr => "word usually written using kana alone\n",
-                             id => 22,
-                             kw => "uk",
-                           },
-              24        => { descr => "vulgar expression or word\n", id => 24, kw => "vulg" },
-              25        => { descr => "sensitive\n", id => 25, kw => "sens" },
-              3         => { descr => "archaism\n", id => 3, kw => "arch" },
-              4         => { descr => "children's language\n", id => 4, kw => "chn" },
-              5         => { descr => "colloquialism\n", id => 5, kw => "col" },
-              6         => { descr => "derogatory\n", id => 6, kw => "derog" },
-              7         => { descr => "exclusively kanji\n", id => 7, kw => "eK" },
-              8         => { descr => "familiar language\n", id => 8, kw => "fam" },
-              81        => { descr => "proverb\n", id => 81, kw => "proverb" },
-              82        => { descr => "aphorism (pithy saying)\n", id => 82, kw => "aphorism" },
-              83        => { descr => "quotation\n", id => 83, kw => "quote" },
-              9         => { descr => "female term or language\n", id => 9, kw => "fem" },
-              X         => 'fix',
-              abbr      => 'fix',
-              aphorism  => 'fix',
-              arch      => 'fix',
-              ateji     => 'fix',
-              chn       => 'fix',
-              col       => 'fix',
-              derog     => 'fix',
-              eK        => 'fix',
-              ek        => 'fix',
-              fam       => 'fix',
-              fem       => 'fix',
-              gikun     => 'fix',
-              hon       => 'fix',
-              hum       => 'fix',
-              id        => 'fix',
-              "m-sl"    => 'fix',
-              male      => 'fix',
-              "male-sl" => 'fix',
-              obs       => 'fix',
-              obsc      => 'fix',
-              pol       => 'fix',
-              proverb   => 'fix',
-              quote     => 'fix',
-              rare      => 'fix',
-              sens      => 'fix',
-              sl        => 'fix',
-              uK        => 'fix',
-              uk        => 'fix',
-              vulg      => 'fix',
+              1        => {
+                            descr => "rude or X-rated term (not displayed in educational software)\n",
+                            id => 1,
+                            kw => "X",
+                          },
+              11       => {
+                            descr => "honorific or respectful (sonkeigo) language\n",
+                            id => 11,
+                            kw => "hon",
+                          },
+              12       => { descr => "humble (kenjougo) language\n", id => 12, kw => "hum" },
+              13       => { descr => "idiomatic expression\n", id => 13, kw => "id" },
+              14       => { descr => "manga slang\n", id => 14, kw => "m-sl" },
+              15       => { descr => "male term or language\n", id => 15, kw => "male" },
+              17       => { descr => "obsolete term\n", id => 17, kw => "obs" },
+              18       => { descr => "obscure term\n", id => 18, kw => "obsc" },
+              19       => { descr => "polite (teineigo) language\n", id => 19, kw => "pol" },
+              2        => { descr => "abbreviation\n", id => 2, kw => "abbr" },
+              20       => { descr => "rare\n", id => 20, kw => "rare" },
+              21       => { descr => "slang\n", id => 21, kw => "sl" },
+              22       => {
+                            descr => "word usually written using kana alone\n",
+                            id => 22,
+                            kw => "uk",
+                          },
+              24       => { descr => "vulgar expression or word\n", id => 24, kw => "vulg" },
+              25       => { descr => "sensitive\n", id => 25, kw => "sens" },
+              3        => { descr => "archaism\n", id => 3, kw => "arch" },
+              4        => { descr => "children's language\n", id => 4, kw => "chn" },
+              5        => { descr => "colloquialism\n", id => 5, kw => "col" },
+              6        => { descr => "derogatory\n", id => 6, kw => "derog" },
+              7        => { descr => "exclusively kanji\n", id => 7, kw => "eK" },
+              8        => { descr => "familiar language\n", id => 8, kw => "fam" },
+              81       => { descr => "proverb\n", id => 81, kw => "proverb" },
+              82       => { descr => "aphorism (pithy saying)\n", id => 82, kw => "aphorism" },
+              83       => { descr => "quotation\n", id => 83, kw => "quote" },
+              9        => { descr => "female term or language\n", id => 9, kw => "fem" },
+              X        => 'fix',
+              abbr     => 'fix',
+              aphorism => 'fix',
+              arch     => 'fix',
+              chn      => 'fix',
+              col      => 'fix',
+              derog    => 'fix',
+              eK       => 'fix',
+              fam      => 'fix',
+              fem      => 'fix',
+              hon      => 'fix',
+              hum      => 'fix',
+              id       => 'fix',
+              "m-sl"   => 'fix',
+              male     => 'fix',
+              obs      => 'fix',
+              obsc     => 'fix',
+              pol      => 'fix',
+              proverb  => 'fix',
+              quote    => 'fix',
+              rare     => 'fix',
+              sens     => 'fix',
+              sl       => 'fix',
+              uk       => 'fix',
+              vulg     => 'fix',
             },
     POS  => {
               1         => { descr => "adjective (keiyoushi)\n", id => 1, kw => "adj" },
@@ -935,19 +904,6 @@ our ($Kwds)   = do {
                              kw => "adj-na",
                            },
               20        => { descr => "noun, used as a prefix\n", id => 20, kw => "n-pref" },
-              201       => { descr => "adverbial noun\n", id => 201, kw => "adv-n" },
-              202       => { descr => "computer terminology\n", id => 202, kw => "comp" },
-              203       => {
-                             descr => "negative (in a negative sentence, or with negative verb)\n",
-                             id => 203,
-                             kw => "neg",
-                           },
-              204       => { descr => "negative verb (when used with)\n", id => 204, kw => "neg-v" },
-              205       => { descr => "irregular okurigana usage\n", id => 205, kw => "io" },
-              206       => { descr => "irregular verb\n", id => 206, kw => "iv" },
-              207       => { descr => "masculine gender\n", id => 207, kw => "mg" },
-              208       => { descr => "feminine gender\n", id => 208, kw => "fg" },
-              209       => { descr => "neuter gender\n", id => 209, kw => "ng" },
               21        => { descr => "noun (temporal) (jisoumeishi)\n", id => 21, kw => "n-t" },
               24        => { descr => "numeric\n", id => 24, kw => "num" },
               25        => { descr => "prefix\n", id => 25, kw => "pref" },
@@ -1023,32 +979,23 @@ our ($Kwds)   = do {
               "adj-pn"  => 'fix',
               "adj-t"   => 'fix',
               adv       => 'fix',
-              "adv-n"   => 'fix',
               "adv-to"  => 'fix',
               aux       => 'fix',
               "aux-adj" => 'fix',
               "aux-v"   => 'fix',
-              comp      => 'fix',
               company   => 'fix',
               conj      => 'fix',
               ctr       => 'fix',
               "exp"     => 'fix',
               fem       => 'fix',
-              fg        => 'fix',
               given     => 'fix',
               "int"     => 'fix',
-              io        => 'fix',
-              iv        => 'fix',
               masc      => 'fix',
-              mg        => 'fix',
               n         => 'fix',
               "n-adv"   => 'fix',
               "n-pref"  => 'fix',
               "n-suf"   => 'fix',
               "n-t"     => 'fix',
-              neg       => 'fix',
-              "neg-v"   => 'fix',
-              ng        => 'fix',
               num       => 'fix',
               person    => 'fix',
               place     => 'fix',
@@ -1087,26 +1034,16 @@ our ($Kwds)   = do {
     RINF => {
               1 => { descr => "gikun (meaning) reading\n", id => 1, kw => "gikun" },
               2 => { descr => "out-dated or obsolete kana usage\n", id => 2, kw => "ok" },
-              201 => { descr => "rare\n", id => 201, kw => "rare" },
-              202 => {
-                    descr => "word usually written using kana alone\n",
-                    id => 202,
-                    kw => "uk",
-                  },
-              203 => { descr => "ateji (phonetic) reading\n", id => 203, kw => "ateji" },
               3 => { descr => "word containing irregular kana usage\n", id => 3, kw => "ik" },
               4 => {
                     descr => "word usually written using kanji alone\n",
                     id => 4,
                     kw => "uK",
                   },
-              ateji => 'fix',
               gikun => 'fix',
               ik => 'fix',
               ok => 'fix',
-              rare => 'fix',
               uK => 'fix',
-              uk => 'fix',
             },
     SRC  => {
               1 => { descr => "Entry from the JMdict file", id => 1, kw => "jmdict" },
@@ -1376,21 +1313,17 @@ our ($Kwds)   = do {
   $a->{MISC}{abbr} = $a->{MISC}{2};
   $a->{MISC}{aphorism} = $a->{MISC}{82};
   $a->{MISC}{arch} = $a->{MISC}{3};
-  $a->{MISC}{ateji} = $a->{MISC}{202};
   $a->{MISC}{chn} = $a->{MISC}{4};
   $a->{MISC}{col} = $a->{MISC}{5};
   $a->{MISC}{derog} = $a->{MISC}{6};
   $a->{MISC}{eK} = $a->{MISC}{7};
-  $a->{MISC}{ek} = $a->{MISC}{205};
   $a->{MISC}{fam} = $a->{MISC}{8};
   $a->{MISC}{fem} = $a->{MISC}{9};
-  $a->{MISC}{gikun} = $a->{MISC}{204};
   $a->{MISC}{hon} = $a->{MISC}{11};
   $a->{MISC}{hum} = $a->{MISC}{12};
   $a->{MISC}{id} = $a->{MISC}{13};
   $a->{MISC}{"m-sl"} = $a->{MISC}{14};
   $a->{MISC}{male} = $a->{MISC}{15};
-  $a->{MISC}{"male-sl"} = $a->{MISC}{201};
   $a->{MISC}{obs} = $a->{MISC}{17};
   $a->{MISC}{obsc} = $a->{MISC}{18};
   $a->{MISC}{pol} = $a->{MISC}{19};
@@ -1399,7 +1332,6 @@ our ($Kwds)   = do {
   $a->{MISC}{rare} = $a->{MISC}{20};
   $a->{MISC}{sens} = $a->{MISC}{25};
   $a->{MISC}{sl} = $a->{MISC}{21};
-  $a->{MISC}{uK} = $a->{MISC}{203};
   $a->{MISC}{uk} = $a->{MISC}{22};
   $a->{MISC}{vulg} = $a->{MISC}{24};
   $a->{POS}{adj} = $a->{POS}{1};
@@ -1408,32 +1340,23 @@ our ($Kwds)   = do {
   $a->{POS}{"adj-pn"} = $a->{POS}{4};
   $a->{POS}{"adj-t"} = $a->{POS}{5};
   $a->{POS}{adv} = $a->{POS}{6};
-  $a->{POS}{"adv-n"} = $a->{POS}{201};
   $a->{POS}{"adv-to"} = $a->{POS}{8};
   $a->{POS}{aux} = $a->{POS}{9};
   $a->{POS}{"aux-adj"} = $a->{POS}{54};
   $a->{POS}{"aux-v"} = $a->{POS}{10};
-  $a->{POS}{comp} = $a->{POS}{202};
   $a->{POS}{company} = $a->{POS}{184};
   $a->{POS}{conj} = $a->{POS}{12};
   $a->{POS}{ctr} = $a->{POS}{51};
   $a->{POS}{"exp"} = $a->{POS}{13};
   $a->{POS}{fem} = $a->{POS}{187};
-  $a->{POS}{fg} = $a->{POS}{208};
   $a->{POS}{given} = $a->{POS}{189};
   $a->{POS}{"int"} = $a->{POS}{14};
-  $a->{POS}{io} = $a->{POS}{205};
-  $a->{POS}{iv} = $a->{POS}{206};
   $a->{POS}{masc} = $a->{POS}{186};
-  $a->{POS}{mg} = $a->{POS}{207};
   $a->{POS}{n} = $a->{POS}{17};
   $a->{POS}{"n-adv"} = $a->{POS}{18};
   $a->{POS}{"n-pref"} = $a->{POS}{20};
   $a->{POS}{"n-suf"} = $a->{POS}{19};
   $a->{POS}{"n-t"} = $a->{POS}{21};
-  $a->{POS}{neg} = $a->{POS}{203};
-  $a->{POS}{"neg-v"} = $a->{POS}{204};
-  $a->{POS}{ng} = $a->{POS}{209};
   $a->{POS}{num} = $a->{POS}{24};
   $a->{POS}{person} = $a->{POS}{188};
   $a->{POS}{place} = $a->{POS}{182};
@@ -1468,13 +1391,10 @@ our ($Kwds)   = do {
   $a->{POS}{"vs-s"} = $a->{POS}{47};
   $a->{POS}{vt} = $a->{POS}{50};
   $a->{POS}{vz} = $a->{POS}{49};
-  $a->{RINF}{ateji} = $a->{RINF}{203};
   $a->{RINF}{gikun} = $a->{RINF}{1};
   $a->{RINF}{ik} = $a->{RINF}{3};
   $a->{RINF}{ok} = $a->{RINF}{2};
-  $a->{RINF}{rare} = $a->{RINF}{201};
   $a->{RINF}{uK} = $a->{RINF}{4};
-  $a->{RINF}{uk} = $a->{RINF}{202};
   $a->{SRC}{examples} = $a->{SRC}{3};
   $a->{SRC}{jmdict} = $a->{SRC}{1};
   $a->{SRC}{jmnedict} = $a->{SRC}{2};

@@ -39,21 +39,21 @@ binmode (STDOUT, ":utf8");
 	print "Content-type: text/html\n\n";
 	$dbh = dbopen ();  $::KW = Kwds ($dbh);
 
-	@x = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<200, kwrecs ($::KW, 'POS')));
+	@x = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'POS'));
 	$pos = reshape (\@x, 10);
 
-	@x = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<200, kwrecs ($::KW, 'MISC')));
+	@x = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'MISC'));
 	$misc = reshape (\@x, 10);
 
-	@x  = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<200, kwrecs ($::KW, 'SRC')));
+	@x  = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'SRC'));
 	$src = reshape (\@x, 8);
 
 	@x = sort ({$a->{descr} cmp $b->{descr}} kwrecs ($::KW, 'STAT'));
 	$stat = reshape (\@x, 3);
 
-	@fld  = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<200, kwrecs ($::KW, 'FLD')));
-	@kinf = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<200, kwrecs ($::KW, 'KINF')));
-	@rinf = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<200, kwrecs ($::KW, 'RINF')));
+	@fld  = sort ({$a->{kw} cmp $b->{kw}} gkwrecs ($::KW, 'FLD'));
+	@kinf = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'KINF'));
+	@rinf = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'RINF'));
 
 	for $i (sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'FREQ'))) {
 	    $kw = $i->{kw};

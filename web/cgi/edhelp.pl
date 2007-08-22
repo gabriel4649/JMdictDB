@@ -41,8 +41,7 @@ binmode (STDOUT, ":utf8");
 	for $t qw(RINF KINF FREQ MISC POS FLD DIAL LANG GINF SRC STAT XREF) {
 	    @kw = kwrecs ($::KW, $t);
 	    push (@kwlist, [ucfirst(lc($t)), 
-		  [sort {lc($a->{kw}) cmp lc($b->{kw})} 
-			grep ($_->{id}<200 || $_->{id}>299,  @kw)]]); }
+		  [sort {lc($a->{kw}) cmp lc($b->{kw})} @kw]]); }
 
 	$tmpl = new Petal (file=>'../lib/tal/edhelp.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );

@@ -74,6 +74,7 @@ CSS_FILES = perl/cgi/entr.css
 CGI_FILES = perl/cgi/entr.pl \
 	perl/cgi/edconf.pl \
 	perl/cgi/edform.pl \
+	perl/cgi/edhelp.pl \
 	perl/cgi/edsubmit.pl \
 	perl/cgi/srchform.pl \
 	perl/cgi/srchres.pl \
@@ -90,6 +91,7 @@ LIB_FILES = perl/lib/jmdict.pm \
 TAL_FILES = perl/lib/tal/entr.tal \
 	perl/lib/tal/edconf.tal \
 	perl/lib/tal/edform.tal \
+	perl/lib/tal/edhelp.tal \
 	perl/lib/tal/srchform.tal \
 	perl/lib/tal/srchres.tal
 
@@ -254,6 +256,8 @@ $(CGI_DIR)/edconf.pl: perl/cgi/edconf.pl
 	cp -p $? $@
 $(CGI_DIR)/edform.pl: perl/cgi/edform.pl
 	cp -p $? $@
+$(CGI_DIR)/edhelp.pl: perl/cgi/edhelp.pl
+	cp -p $? $@
 $(CGI_DIR)/edsubmit.pl: perl/cgi/edsubmit.pl
 	cp -p $? $@
 $(CGI_DIR)/srchform.pl: perl/cgi/srchform.pl
@@ -269,9 +273,9 @@ $(LIB_DIR)/jmdictcgi.pm: perl/lib/jmdictcgi.pm
 	cp -p $? $@
 $(LIB_DIR)/jmdicttal.pm: perl/lib/jmdicttal.pm
 	cp -p $? $@
-# Needed for jbparser...
 $(LIB_DIR)/jbparser.pm: perl/lib/jbparser.pm
 	cp -p $? $@
+# Needed for cgi/jbparser.pl...
 $(LIB_DIR)/jbparser.yp: perl/lib/jbparser.yp
 	cp -p $? $@
 $(LIB_DIR)/jmdictfmt.pm: perl/lib/jmdictfmt.pm
@@ -286,6 +290,9 @@ $(LIB_DIR)/tal/edconf.tal: perl/lib/tal/edconf.tal
 	cp -p $? $@
 	perl -pi -e 's%href="entr.css"%href="$(CSS_URL)"%' $@
 $(LIB_DIR)/tal/edform.tal: perl/lib/tal/edform.tal
+	cp -p $? $@
+	perl -pi -e 's%href="entr.css"%href="$(CSS_URL)"%' $@
+$(LIB_DIR)/tal/edhelp.tal: perl/lib/tal/edhelp.tal
 	cp -p $? $@
 	perl -pi -e 's%href="entr.css"%href="$(CSS_URL)"%' $@
 $(LIB_DIR)/tal/srchform.tal: perl/lib/tal/srchform.tal

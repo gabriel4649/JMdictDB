@@ -26,7 +26,7 @@ use Cwd; use CGI; use Encode; use utf8; use DBI;
 use Petal; use Petal::Utils; 
 
 BEGIN {push (@INC, "../lib");}
-use jmdict; use jmdicttal;
+use jmdict; use jmdicttal; use jmdictcgi;
 
 $|=1;
 binmode (STDOUT, ":utf8");
@@ -51,7 +51,7 @@ binmode (STDOUT, ":utf8");
 	@x = sort ({$a->{descr} cmp $b->{descr}} kwrecs ($::KW, 'STAT'));
 	$stat = reshape (\@x, 3);
 
-	@fld  = sort ({$a->{kw} cmp $b->{kw}} gkwrecs ($::KW, 'FLD'));
+	@fld  = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'FLD'));
 	@kinf = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'KINF'));
 	@rinf = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'RINF'));
 

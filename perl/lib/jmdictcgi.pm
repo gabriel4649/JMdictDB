@@ -112,23 +112,39 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    $e->{HAS_AUDIO} = $found; } }
 
     use DBI;
-    sub dbopen { my ($cfgfile) = @_;
-	# This function will open a database connection based on the contents
-	# of a configuration file.  It is intended for the use of cgi scripts
-	# where we do not want to embed the connection information (username,
-	# password, etc) in the script itself, for both security and maintenance
-	# reasons.
+    sub dbopen { my ($svcname, $svcdir) = @_;
+	# This function will open a database connection.  It is
+	# intended for the use of cgi scripts where we do not want
+	# to embed the connection information (username, password,
+	# etc) in the script itself, for both security and
+	# maintenance reasons. 
+	# It uses a Postgresql "service" file.  For more info
+	# on the syntax and use of this file, see:
+	#
+	#   [Both the following are in Postgresql Docs, libpq api.]
+	#   29.1. Database Connection Control Functions
+	#   29.14. The Connection Service File
+	#
+	#   DBD-Pg / DBI Class Methods / connect() method
+	#   The JMdictDB README.txt file, installation section.
+	#
+	# $svcname -- name of a postgresql service listed 
+	#	in the pg_service.conf file.  If not supplied,
+	#	"jmdict" will be used.
+	# $svcdir -- Name of directory containing the pg_service.conf
+	#	file.  If undefined, "../lib/" will be used.  If 
+	#	an empty string (or other defined but false value)
+	# 	is given, Postresql's default location will be
+	#	used.
 
-	my ($dbname, $username, $pw, $host, $dbh, $ln);
-	if (!$cfgfile) { $cfgfile = "../lib/jmdict.cfg"; }
-	open (F, $cfgfile) or die ("Can't open database config file\n");
-	$ln = <F>;  close (F);  chomp($ln);
-	($dbname, $username, $pw, $host) = split (/ /, $ln); 
-	$host = $host ? ";host=$host" : "";
-	$dbh = DBI->connect("dbi:Pg:dbname=$dbname$host", $username, $pw, 
+	if (!defined ($svcdir)) { $svcdir = "../lib"; }
+	if (!$svcname) { $svcname = "jmdict"; }
+
+	if ($svcdir) { $ENV{PGSYSCONFDIR} = $svcdir; }
+	
+	my $dbh = DBI->connect("dbi:Pg:service=$svcname", "", "",
 			{ PrintWarn=>0, RaiseError=>1, AutoCommit=>0 } );
 	$dbh->{pg_enable_utf8} = 1;
 	return $dbh; }
-
 
 1;

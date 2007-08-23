@@ -195,7 +195,7 @@ loadex: examples.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f syncseq.sql
 	# The following command is commented out because of the long time
 	# it can take to run.  It may be run manually after 'make' finishes.
-	#cd perl && perl xresolv.pl -q $(JM_HOST) $(JM_USER) $(JM_DB) -s3 -t1 >examples_xresolv.log
+	#cd perl && perl xresolv.pl -q $(JM_HOST) $(JM_USER) $(JM_DB) -s3 -t1 >../examples_xresolv.log
 	#cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -c 'vacuum analyze xref;'
 
 #------ Load all three -------------------------------------------------

@@ -155,8 +155,16 @@ any working database in the event of a problem.  A
 make target, "activate" is provided to move the newly
 loaded database to "jmdict".
 
+1. Check the settings in the Makefile.  There are some
+   configuration settings in the Makefile that you may
+   want to change.  Read the comments therein.  In 
+   particular, the cgi directory is assumed to be
+   ~/public_html/cgi-bin/.  You may wish to change that
+   if you will be using the cgi file.  There are also
+   some options for the Postgresql database server 
+   commections.
 
-1. In the top level directory, run "make" which won't
+2. In the top level directory, run "make" which won't
    do anything other than list the available targets 
    that will do something.  For JMdict the targets are:
 
@@ -208,36 +216,48 @@ loaded database to "jmdict".
    xrefs produced (1M+ total with some entries such as the
    particle "ha" having over 100K referring to it.)
 
-   There is a target, "web" to install the web CGI files.  
-   You will probably want to adjust the variables defining
-   the install directories (near the top of the Makefile)
-   before running this.
-
-2. The makefile will load all the file data into a database
+3. The makefile will load all the file data into a database
    named "jmnew".  If everything was loaded sucessfully, 
-   run "make activate" which will rename any existing "jmdict"
-   database to "jmold", and rename the "jmnew" database to
-   "jmdict", thus making it the active database.  There must
-   be no active users in any of these database or the commands
-   will fail.
+   run 
 
-3. In the ./perl/lib directory, create a file lib/jmdict.cfg
-   containing one line containing three space separated words
-   which are repectively, the name of the jmdict database, the
-   postgres username to use, and the password for that username.
-   For example:
+	make activate
+
+   which will rename any existing "jmdict" database to "jmold", 
+   and rename the "jmnew" database to "jmdict", thus making
+   it the active database.  There must be no active users in
+   any of these database or the commands will fail.
+
+4. If you plan on using the cgi files with a web server, 
+   double check the settings in the Makefile (see step #1) 
+   and then run:
+
+	make web
    
-       jmdict postgres thepassword
+   to install the web CGI files.  
 
-   Copy this file to any lib directories used by the active
-   cgi files.   This file must be readable by the user that
-   the web server runs as.
+5. When the cgi files are executed by the web server, they
+   read the file perl/lib/pg_service.conf (or its copy as
+   installed in the web server cgi directory) to determine
+   the database name and login credentials to use when
+   connecting to the database.
+ 
+   In the ./perl/lib directory, copy the file, pg_service.sample,
+   to pg_service.conf.  Edit the latter file and set the user
+   and password values appropriately for your database. 
+   You can also delete these lines and Postgresql will use
+   environment values.  See the Postgresql docs for more info
+   on the many ways that it offers to set the connection
+   credentials.
+
+   Copy this file webserver's cgi lib directory (the Makefile 
+   does not copy this file for you).  The file must be readable
+   by the user that the web server runs as.  
 
    You should now be able to go to the url corresponding to 
    srchform.pl and do searches for jmdict entries.  The url
-   corresponding to nwform.pl will let you add new entries.
+   corresponding to edform.pl will let you add new entries.
 
-3. (Optional)
+6. (Optional)
    Import Kale Stutzman's Google page count data into database.
    [...to be supplied...]
 

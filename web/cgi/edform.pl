@@ -67,7 +67,7 @@ binmode (STDOUT, ":utf8");
 	$tmpl = new Petal (file=>'../lib/tal/edform.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
 	print $tmpl->process ({e=>$entr, ktxt=>$ktxt, rtxt=>$rtxt, stxt=>$stxt,
-			       srcs=>$srcs, svc=$svc}); }
+			       srcs=>$srcs, svc=>$svc}); }
 
     sub validaten { my ($list, $errs) = @_;
 	foreach my $p (@$list) {

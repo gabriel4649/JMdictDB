@@ -1,0 +1,14 @@
+[jmdict]
+user=postgres
+dbname=jmdict
+
+[jmnew]
+user=postgres
+dbname=jmnew
+
+[jmdevelop]
+user=mr_developer
+password=sugoi
+dbname=jmdevel
+host=mymachine
+

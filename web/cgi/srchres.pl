@@ -26,7 +26,7 @@ use Cwd; use CGI; use Encode 'decode_utf8'; use DBI;
 use Petal; use Petal::Utils; use Time::HiRes('time');
 
 BEGIN {push (@INC, "../lib");}
-use jmdict; use jmdicttal;
+use jmdict; use jmdicttal; use jmdictcgi;
 
 $|=1;
 binmode (STDOUT, ":utf8");

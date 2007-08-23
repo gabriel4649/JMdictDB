@@ -26,7 +26,7 @@ use CGI; use DBI;
 use Petal; use Petal::Utils; 
 
 BEGIN {push (@INC, "../lib");}
-use jmdict; use jmdicttal;
+use jmdict; use jmdicttal; use jmdictcgi;
 
 $|=1;
 binmode (STDOUT, ":utf8");

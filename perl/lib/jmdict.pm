@@ -25,9 +25,8 @@ BEGIN {
     use Exporter(); our (@ISA, @EXPORT_OK, @EXPORT); @ISA = qw(Exporter);
     @EXPORT_OK = qw(KANA HIRAGANA KATAKANA KANJ); 
     @EXPORT = qw(dbread dbinsert Kwds kwrecs addids mktmptbl Find EntrList 
-		    matchup filt jstr_classify addentr resolv_xref fmt_jitem
-		    zip fmtkr dbopen setkeys add_xrefsums grp_xrefs
-		    build_search_sql); }
+		 matchup filt jstr_classify addentr resolv_xref fmt_jitem
+		 zip fmtkr setkeys add_xrefsums grp_xrefs build_search_sql); }
 
 our(@VERSION) = (substr('$Revision$',11,-2), \
 	         substr('$Date$',7,-11));
@@ -816,25 +815,6 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    for ($i=0; $i<$n; $i++) { push (@$x, $_[$i]->[$j]); }
 	    push (@a, $x); }
 	return \@a; }
-
-    use DBI;
-    sub dbopen { my ($cfgfile) = @_;
-	# This function will open a database connection based on the contents
-	# of a configuration file.  It is intended for the use of cgi scripts
-	# where we do not want to embed the connection information (username,
-	# password, etc) in the script itself, for both security and maintenance
-	# reasons.
-
-	my ($dbname, $username, $pw, $host, $dbh, $ln);
-	if (!$cfgfile) { $cfgfile = "../lib/jmdict.cfg"; }
-	open (F, $cfgfile) or die ("Can't open database config file\n");
-	$ln = <F>;  close (F);  chomp($ln);
-	($dbname, $username, $pw, $host) = split (/ /, $ln); 
-	$host = $host ? ";host=$host" : "";
-	$dbh = DBI->connect("dbi:Pg:dbname=$dbname$host", $username, $pw, 
-			{ PrintWarn=>0, RaiseError=>1, AutoCommit=>0 } );
-	$dbh->{pg_enable_utf8} = 1;
-	return $dbh; }
 
     package Tmptbl;
     sub new { my ($class, $dbh, $tbldef) = @_;

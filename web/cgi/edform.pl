@@ -34,16 +34,17 @@ binmode (STDOUT, ":utf8");
 
     main: {
 	my ($dbh, $cgi, $tmpl, $tmptbl, @qlist, @elist, @errs, $sql, 
-	    @whr, $entries, $entr, $ktxt, $rtxt, $stxt, $srcs);
+	    @whr, $entries, $entr, $ktxt, $rtxt, $stxt, $srcs, $svc);
 	binmode (STDOUT, ":encoding(utf-8)");
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
 
+	$svc = $cgi->param ("svc");
 	@qlist = $cgi->param ('q'); validateq (\@qlist, \@errs);
 	@elist = $cgi->param ('e'); validaten (\@elist, \@errs);
 	if (@errs) { errors_page (\@errs);  exit; } 
 
-	$dbh = dbopen ();  $::KW = Kwds ($dbh);
+	$dbh = dbopen ($svc);  $::KW = Kwds ($dbh);
 	if (@qlist) { push (@whr, "e.seq IN (" . join(",",map('?',(@qlist))) . ")"); }
 	if (@elist) { push (@whr, "e.id  IN (" . join(",",map('?',(@elist))) . ")"); }
 	if (@whr) {
@@ -65,7 +66,8 @@ binmode (STDOUT, ":utf8");
 
 	$tmpl = new Petal (file=>'../lib/tal/edform.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
-	print $tmpl->process ({e=>$entr, ktxt=>$ktxt, rtxt=>$rtxt, stxt=>$stxt, srcs=>$srcs}); }
+	print $tmpl->process ({e=>$entr, ktxt=>$ktxt, rtxt=>$rtxt, stxt=>$stxt,
+			       srcs=>$srcs, svc=$svc}); }
 
     sub validaten { my ($list, $errs) = @_;
 	foreach my $p (@$list) {

@@ -34,10 +34,11 @@ binmode (STDOUT, ":utf8");
 eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 
     main: {
-	my ($dbh, $cgi, $tmpl, $entr, $entrs, $x, $eid, $seq, $src, @added);
+	my ($dbh, $cgi, $tmpl, $entr, $entrs, $x, $eid, $seq, $src, @added, $svc);
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
-	$dbh = dbopen ();  $::KW = Kwds ($dbh);
+	$svc = $cgi->param ("svc");
+	$dbh = dbopen ($svc);  $::KW = Kwds ($dbh);
 
 	# We do little error checking here because the url parameters came 
 	# from one of our pages and should be ok.  If someone synthesizes 

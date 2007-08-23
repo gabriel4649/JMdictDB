@@ -32,10 +32,11 @@ $|=1;
 binmode (STDOUT, ":utf8");
 
     main: {
-	my ($dbh, $cgi, $tmpl, @kw, @kwlist, $t );
+	my ($dbh, $cgi, $tmpl, @kw, @kwlist, $t, $svc);
 	#$cgi = new CGI;
 	print "Content-type: text/html\n\n";
-	$dbh = dbopen ();  $::KW = Kwds ($dbh);
+	$svc = $cgi->param ("svc");
+	$dbh = dbopen ($svc);  $::KW = Kwds ($dbh);
 	$dbh->disconnect; 
 
 	for $t qw(RINF KINF FREQ MISC POS FLD DIAL LANG GINF SRC STAT XREF) {
@@ -45,5 +46,5 @@ binmode (STDOUT, ":utf8");
 
 	$tmpl = new Petal (file=>'../lib/tal/edhelp.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
-	print $tmpl->process (kwlist=>\@kwlist); }
+	print $tmpl->process (kwlist=>\@kwlist, svc=>$svc); }
 

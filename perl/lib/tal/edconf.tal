@@ -192,7 +192,7 @@
 	<input type="Submit" value="Submit"/> &nbsp;&nbsp;
 	<label for="approved">Approved:</label>
 	<input type="checkbox" name="approved" id="approved"/>
-
+	<input type="hidden" name="svc" tal:attributes="value svc"/>
 	</form>
 
       </div>

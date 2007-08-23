@@ -36,13 +36,14 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 
     main: {
 	my ($dbh, $cgi, $tmpl, $entr, $entrs, @errs, $serialized, $perrs,
-	    $kanj, $rdng, $sens, $intxt, $chklist, $nochk, $eid, 
+	    $kanj, $rdng, $sens, $intxt, $chklist, $nochk, $eid, $svc,
 	    $comment, $refs, $name, $email, $seq, $src, $stat, $notes,
 	    $srcnote);
 
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
-	$dbh = dbopen ();  $::KW = Kwds ($dbh);
+	$svc = $cgi->param ("svc");
+	$dbh = dbopen ($svc);  $::KW = Kwds ($dbh);
 
 	  # $eid will be an integer if we are editing an existing 
 	  # entry, or undefined if thisis a new entry.
@@ -126,7 +127,7 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 			   decode_charset=>'utf-8', output=>'HTML' );
 	    print $tmpl->process (entries=>$entrs, 
 				chklist=>$chklist,
-				serialized=>$serialized); }
+				serialized=>$serialized, svc=>$svc); }
 	else { errors_page (\@errs); }
 	$dbh->disconnect if ($dbh); } 
 

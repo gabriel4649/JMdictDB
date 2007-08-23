@@ -33,19 +33,20 @@ $|=1;
 *ee = \&encode_entities;
 
     main: {
-	my ($dbh, $cgi, @qlist, @elist);
+	my ($dbh, $cgi, @qlist, @elist, $svc);
 	binmode (STDOUT, ":encoding(utf-8)");
 	$::Debug = {};
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
+	$svc = $cgi->param ("svc");
+	$dbh = dbopen ($svc);  $::KW = Kwds ($dbh);
 
-	$dbh = dbopen ();  $::KW = Kwds ($dbh);
 	@qlist = $cgi->param ('q');
 	@elist = $cgi->param ('e'); 
-	gen_page ($dbh, \@elist, \@qlist);
+	gen_page ($dbh, $svc, \@elist, \@qlist);
 	$dbh->disconnect; }
 
-    sub gen_page { my ($dbh, $elist, $qlist) = @_;
+    sub gen_page { my ($dbh, $svc, $elist, $qlist) = @_;
 	my ($tmpl, $sql, $seq, $src, $entries, @whr, $x, @errs, @e, @args); 
 	foreach $x (@$elist) {
 	    if (!($x =~ m/^\s*\d+\s*$/)) {
@@ -77,7 +78,7 @@ $|=1;
 
 	$tmpl = new Petal (file=>'../lib/tal/entr.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
-	print $tmpl->process (entries=>$entries, dbg=>$::Debug); }
+	print $tmpl->process (entries=>$entries, svc=>$svc, dbg=>$::Debug); }
 
     sub errors_page { my ($errs) = @_;
 	my $err_details = join ("<br>\n    ", @$errs);

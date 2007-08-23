@@ -36,6 +36,7 @@
 	</table>
       <input name="show" value="Display selected entries" type="submit" tal:condition="true:results"/> 
       <input name="show" value="Reset" type="reset" tal:condition="true:results"/> 
+      <input type="hidden" name="svc" tal:attributes="value svc"/>
       </form>
     </div>
   <div class="debug" tal:if="true:dbg">

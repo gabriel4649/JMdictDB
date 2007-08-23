@@ -33,11 +33,12 @@ binmode (STDOUT, ":utf8");
 
     main: {
 	my ($dbh, $cgi, $tmptbl, $tmpl, @kinf, @rinf, @fld,
-	    $pos, $misc, @freq, $src, $stat, $i, @x, $kw);
+	    $pos, $misc, @freq, $src, $stat, $i, @x, $kw, $svc);
 	binmode (STDOUT, ":encoding(utf-8)");
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
-	$dbh = dbopen ();  $::KW = Kwds ($dbh);
+	$svc = $cgi->param ("svc");
+	$dbh = dbopen ($svc);  $::KW = Kwds ($dbh);
 
 	@x = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'POS'));
 	$pos = reshape (\@x, 10);
@@ -64,7 +65,8 @@ binmode (STDOUT, ":utf8");
 	$tmpl = new Petal (file=>'../lib/tal/srchform.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
 	print $tmpl->process ({pos=>$pos, misc=>$misc, stat=>$stat, freq=>\@freq,
-				rinf=>\@rinf, kinf=>\@kinf, fld=>\@fld, src=>$src});
+				rinf=>\@rinf, kinf=>\@kinf, fld=>\@fld, src=>$src,
+				svc=>$svc});
 	$dbh->disconnect; }
 
     sub reshape { my ($array, $ncols, $default) = @_;

@@ -179,6 +179,7 @@
       <form action="edform.pl" method="get">
 	<input type="submit" value="Edit"/>
 	<input type="hidden" name="e" tal:attributes="value e/id"/>
+	<input type="hidden" name="svc" tal:attributes="value svc"/>
 	</form>
 
       </div>

@@ -32,13 +32,14 @@ $|=1;
 binmode (STDOUT, ":utf8");
 
     main: {
-	my ($dbh, $cgi, $tmpl, @s, @y, @t, $col, @kinf, @rinf, @fld,
+	my ($dbh, $cgi, $tmpl, @s, @y, @t, $col, @kinf, @rinf, @fld, $svc, $svcstr,
 	    @pos, @misc, @src, @stat, @freq, $nfval, $nfcmp, $gaval, $gacmp, 
 	    $idval, $idtbl, $sql, $sql_args, $sql2, $rs, $i, $freq, @condlist);
 	binmode (STDOUT, ":encoding(utf-8)");
 	$cgi = new CGI;
-	$dbh = dbopen ();  $::KW = Kwds ($dbh);
-	
+	$svc=$cgi->param ("svc");
+	$dbh = dbopen ($svc);  $::KW = Kwds ($dbh);
+
 	$s[0]=$cgi->param("s1"); $y[0]=$cgi->param("y1"); $t[0]=decode_utf8($cgi->param("t1"));
 	$s[1]=$cgi->param("s2"); $y[1]=$cgi->param("y2"); $t[1]=decode_utf8($cgi->param("t2"));
 	$s[2]=$cgi->param("s3"); $y[2]=$cgi->param("y3"); $t[2]=decode_utf8($cgi->param("t3"));
@@ -80,12 +81,13 @@ binmode (STDOUT, ":utf8");
 	    print "<pre> $@ </pre>\n<pre>$sql2</pre>\n<pre>".join(", ", @$sql_args)."</pre></body></html>\n";
 	    exit (1); }
 	if (scalar (@$rs) == 1) {
-	    printf ("Location: entr.pl?e=%d\n\n", $rs->[0]{id}); }
+	    $svcstr = $svc ? "svc=$svc&" : "";
+	    printf ("Location: entr.pl?${svcstr}e=%d\n\n", $rs->[0]{id}); }
 	else {
 	    print "Content-type: text/html\n\n";
 	    $tmpl = new Petal (file=>'../lib/tal/srchres.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
-	    print $tmpl->process (results=>$rs, dbg=>$::Debug); }
+	    print $tmpl->process (results=>$rs, svc=>$svc, dbg=>$::Debug); }
 	$dbh->disconnect; }
 
     sub str_match_clause { my ($srchin, $srchtyp, $srchtxt, $idx) = @_; 

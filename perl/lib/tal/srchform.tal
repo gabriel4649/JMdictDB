@@ -104,7 +104,10 @@
 		    <td class="notice" colspan="2">Search by Id or Seq number superceeds all other criteria (except Corpus for Seq number).</td>
 		  </tr>
 		  <tr>
-		    <td><input name="search" value="Search" type="submit"/></td>
+		    <td>
+		      <input name="search" value="Search" type="submit"/>
+		      <input type="hidden" name="svc" tal:attributes="value svc"/>
+		      </td>
 		    <td><input type="reset" value="Reset"/></td>
 		  </tr>
                 </tbody>

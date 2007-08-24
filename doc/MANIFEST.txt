@@ -43,6 +43,7 @@ perl/lib/jmdictpgi.pm.........JMdict .pgi file functions.
 perl/lib/jmdicttal.pm.........PETAL modifiers.
 perl/lib/jmdictxml.pm.........JMdict XML parsing/generating functions.
 perl/lib/kwstatic.pm..........[*] Static kw data (file created by perl/mkkwmod.pl)
+perl/lib/pg_service.sample....Sample Postgresql service file.
 perl/lib/tal/.................PETAL templates
 perl/lib/tal/edconf.tal.......PETAL template for edconf.pl.
 perl/lib/tal/edform.tal.......PETAL template for edform.pl.

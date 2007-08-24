@@ -1,4 +1,82 @@
 
+2007-08-23 20:40	smcgrawx@frxii.com
+
+	* perl/cgi/edform.pl [1.10]
+	Fix: syntax error. {282}
+
+2007-08-23 00:21	smcgrawx@frxii.com
+
+	* README.txt [1.13]
+	Update install instructions for using Postgresql service file. {281}
+
+	* perl/cgi/edconf.pl [1.11]
+	* perl/cgi/edform.pl [1.9]
+	* perl/cgi/edhelp.pl [1.4]
+	* perl/cgi/edsubmit.pl [1.11]
+	* perl/cgi/entr.pl [1.13]
+	* perl/cgi/srchform.pl [1.12]
+	* perl/cgi/srchres.pl [1.15]
+	* perl/lib/tal/edconf.tal [1.12]
+	* perl/lib/tal/edform.tal [1.6]
+	* perl/lib/tal/entr.tal [1.17]
+	* perl/lib/tal/srchform.tal [1.11]
+	* perl/lib/tal/srchres.tal [1.7]
+	Read and propagate db service "svc" url parameter. {280}
+
+	* perl/lib/jmdictcgi.pm [1.9]
+	Function dbopen() changed to read Postgresql "service" file rather
+	  the jmdict.cfg for db connection credentials. {278}
+
+	* perl/lib/pg_service.sample [1.1]
+	New: Example postgresql service file. {279}
+
+2007-08-22 19:13	smcgrawx@frxii.com
+
+	* Makefile []
+	Fix: xresolv.pl logfile name in target loadex. {277}
+
+	* perl/cgi/edform.pl [1.8]
+	* perl/cgi/edhelp.pl [1.3]
+	* perl/cgi/srchres.pl [1.14]
+	* perl/lib/jmdict.pm [1.36]
+	* perl/lib/jmdictcgi.pm [1.8]
+	Move function dbopen() from jmdict.pm to jmdictcgi.pm {276}
+
+	* perl/cgi/srchform.pl [1.11]
+	Move function dbopen() from jmdict.pm to jmdictcgi.pm {276}
+	Fix: Fix "gkwrecs" typo that crept in during last edit. {275}
+
+2007-08-22 14:52	smcgrawx@frxii.com
+
+	* perl/cgi/edhelp.pl [1.2]
+	* perl/cgi/srchform.pl [1.10]
+	* perl/lib/jmdictxml.pm [1.17]
+	* perl/lib/kwstatic.pm [1.10]
+	* pg/data/kwmisc.csv [1.3]
+	* pg/data/kwpos.csv [1.3]
+	* pg/data/kwrinf.csv [1.3]
+	Remove code and data that use kw values >200 to signal deprecated
+	  values. {273}
+
+	* perl/jmparse.pl [1.36]
+	When possible, if a bad data item such as a keyword is encountered,
+	  print warning, skip it, and continue.  Previously, would call die()
+	  which skipped the entire entry. {274}
+	Remove code and data that use kw values >200 to signal deprecated
+	  values. {273}
+
+2007-08-21 22:38	smcgrawx@frxii.com
+
+	* Makefile [1.27]
+	Fix: Add cgi/edhelp.pl and lib/tal/edhelp.tal to cgi files list.
+	  {271}
+
+	* perl/xresolv.pl [1.2]
+	Add check for self-referential xrefs. {270}
+	Fix: Typo in debugging print statement {268}
+	Add -D (debugging) option. {269}
+	Get rid of #@$!^*%*! Microsoft utf8 BOM. {272}
+
 2007-08-21 17:22	smcgrawx@frxii.com
 
 	This changeset implements three main changes.    (1) The addition of
@@ -59,14 +137,14 @@
 	  query returned 0 records. {234}
 	add_xrefsums(), grp_xrefs(), resolv_xref(): adjust for new xref
 	  columns kanj and rdng. {236}
+	Fix: fmt_jitem(): avoind an unitialized string warning if $slist
+	  param is undef. {235}
 	In class Tmptbl, method DESTROY(), wrap the sql execution in an eval
 	  in order to ignore errors.  Sometimes during normal program
 	  termination, the dbi handle goes away before the Tmptbl destructor
 	  is called resulting in a warning messge (safe to ignore because
 	  purpose of destructor is to delete the temp table, but it will be
 	  deleted automatically when the db connection is closed). {248}
-	Fix: fmt_jitem(): avoind an unitialized string warning if $slist
-	  param is undef. {235}
 
 	* perl/lib/jmdicted.pm [1.1]
 	Removed, no longer used anywhere. {229}
@@ -336,10 +414,10 @@
 	  function add_xrefsums(). {169}
 	jmdict::resolv_xref() now returns list of augmented xrefs rather than
 	  a _erefs object. {174}
-	Fix: setkeys(): was not setting entr id's when $eid arg not supplied.
-	  {177}
 	Replace functions bld_erefs(), erefs2xrefs(), xrefs2erefs() with with
 	  non-equivalent (but bettter :-) function grp_xrefs(). {168}
+	Fix: setkeys(): was not setting entr id's when $eid arg not supplied.
+	  {177}
 
 	* perl/lib/jmdictcgi.pm [1.6]
 	Move functions fmt_restr(), fmt_stag(), set_audio_flag from
@@ -473,14 +551,14 @@
 	* perl/lib/jmdict.pm [1.27]
 	Removed function get_seq() since addentr() no longer uses it per
 	  chgid-133. {139}
-	In function addentr() call setkeys() to set all the key values rather
-	  than doing it ourself. {138}
 	In function addentr(), don't assign a 'seq' value, leave it NULL and
 	  rely on the new entr table insert trigger to set it. {133}
+	In function addentr() call setkeys() to set all the key values rather
+	  than doing it ourself. {138}
 
 	* perl/lib/tal/edconf.tal [1.8]
-	Adjust layout of entr data to match current entr.tal {137}
 	Allow editing of entr data seq, srcnote, notes. {135}
+	Adjust layout of entr data to match current entr.tal {137}
 
 	* perl/lib/tal/edform.tal [1.4]
 	Make 'src' selection a drop-down box. {136}
@@ -590,13 +668,13 @@
 	  similar for trans). {115}
 
 	* perl/lib/jbparser.yp [1.4]
+	Add new function qcleanup() like gcleanup but for quoted strings.
+	  {114}
+	In function gcleanup() reduce multiple WS characters to a single one.
+	  {113}
 	When creating lsrc and gloss records, make sure all fields are
 	  created even if they have default values (e.g. lang and ginf in
 	  gloss, and lang, part, and wasei in lsrc.) {112}
-	In function gcleanup() reduce multiple WS characters to a single one.
-	  {113}
-	Add new function qcleanup() like gcleanup but for quoted strings.
-	  {114}
 
 	* perl/lib/jmdict.pm [1.26]
 	Minor clarification to comments in filt(). {110}
@@ -853,10 +931,10 @@
 	  things the old way. {53}
 
 	* README.txt [1.10]
-	Update the documentation for the schema changes related to jmdict dtd
-	  1.06 and gloss tags. {44}
 	Rewrite the install section based on using Makefile (which I have
 	  verified is useable on both Unix and Windows). {49}
+	Update the documentation for the schema changes related to jmdict dtd
+	  1.06 and gloss tags. {44}
 
 	* doc/Makefile [1.1]
 	* doc/README.txt [1.1]

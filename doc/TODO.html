@@ -18,7 +18,7 @@
 <body>
   <h1>JMdictDB To-Do List</h1>
   <span class="gendate">
-    This list was current as of 2007-08-21 17:54
+    This list was current as of 2007-08-23 20:46
     </span>
   <table class="todo">
     
@@ -57,6 +57,26 @@ Also noted that in edconf.pl, that restr lists are linked only to rdng items, no
       <tr class="priohdr">
         <td colspan="5">Priority 'high' items</td>
 	</tr>
+      <tr class="row">
+	<td class="id">101</td>
+	
+	  <td class="title" colspan="2">JEL parser: allow seq# in xref</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-08-22 14:56</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Since kanji.reading pair is not sufficient to uniquely indentify a target entry, need to be able to give an entry seq#(/src#?).  Currently the jel parser ha no syntax to support this.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
       <tr class="row">
 	<td class="id">83</td>
 	
@@ -553,13 +573,17 @@ Entr objects being created for output need not supply record numbers.  User of o
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">jmdict.pm -- The database expects text strings in table "rdng" to contain no kanji chars and in table "kanj" to contain at least one.  Function jstr_classify used to determine kana/kanji-ness.  However there are some jmdict items that have kanji text that jmdict::jstr_classify considers to be kana only.  Change jstr_classify?  Or do something else?
+	<td class="descr" colspan="4">jmdict.pm -- The database expects text strings in table "rdng" to contain no kanji chars and in table "kanj" to contain at least one.  Function jstr_classify used to determine kana/kanji-ness.  However there are some jmdict items that have kanji text that are not considered kanji by jmdict::jstr_classify:<br/>
+1000060: 々<br/>
+1000090: ◎<br/>
+1000090: ×<br/>
+1085560: トライ＆エラー (is reading but search thinks it's kanji)<br/>
+Change jstr_classify?  Or do something else?
 </td>
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="notes" colspan="4">See also task-83: "brackets in reading cause parse error".<br/>
-Note: "々" (entry 1000060) is in kanj table (because from ke_ele in xml), but jstr_classify() classifies as kana, thus search for it fails.
+	<td class="notes" colspan="4">See also task-83: "brackets in reading cause parse error".
 </td>
 	</tr>
       
@@ -630,55 +654,9 @@ Note: "々" (entry 1000060) is in kanj table (because from ke_ele in xml), but j
       
       
       <tr class="row">
-	<td class="id">98</td>
-	
-	  <td class="title" colspan="2">multiple databases in jmdict.cfg</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-08-21 17:27</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">jmdict::Dbopen() reads a config file to find out the database and db credentials to use.  To change database (to use development version rather than production version for example) requires changing the file.  Intead we could have the config file have multiple lines representing different databases and give dbopen() a parameter that selects one.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">86</td>
-	
-	  <td class="title" colspan="2">Add src column to xresolv</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-08-01 21:30</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">table xresolv is used to hold the raw xrefs from files jmdict and examples (and others in future) as the xrefs are read, since they cannot be resolved immediately.  The table should be able to, and currently does, hold xrefs from various files simultaneously.  But the only thing that distinguishes xrefs from different files currently is the 'typ' field (2 or 3 from jmdict, 5 for Examples).  [preceding statement not true, see note.]<br/>
-<br/>
-Need to add new column 'src' to xresolv, and modify jmparse.pl, exparse.pl, and their modules to provide value for it.
-</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="notes" colspan="4">Having second thoughts about this.  The table does have column 'entr' that allows joining to table entr to get the src.  While a minor pain, it is better than breaking normaiization(?)  OTOH, this table is not part of the core schema, and contents are intended to be temporary, so perhaps it doesn't matter if we break normalization?  Lowered prio to low.
-</td>
-	</tr>
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">78</td>
 	
-	  <td class="title" colspan="2">Change "Src" to "Corp"</td>
+	  <td class="title" colspan="2">Change "Src" to "Corpus"</td>
 	  
 	
 	<td class="compld"></td>
@@ -846,6 +824,46 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
+	<td class="id">23</td>
+	
+	  <td class="title" colspan="2">CGI security audit</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">16</td>
+	
+	  <td class="title" colspan="2">Connection pooling</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Will this help performance? Informal timings done on cgi show that connect time is pretty quick but may be more significant when object retrieval times are improved. (ref Apache::DBI)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">7</td>
 	
 	  <td class="title" colspan="2">Unit tests</td>
@@ -857,66 +875,6 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">Need to write unit tests for library code
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">27</td>
-	
-	  <td class="title" colspan="2">Database versioning</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">18</td>
-	
-	  <td class="title" colspan="2">CSS cleanup</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">*.tal,entr.css -- The .css file is a mess.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">19</td>
-	
-	  <td class="title" colspan="2">CGI error handling</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- Better error handling for db and other errors.
 </td>
 	</tr>
       
@@ -966,6 +924,26 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
+	<td class="id">19</td>
+	
+	  <td class="title" colspan="2">CGI error handling</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Better error handling for db and other errors.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">14</td>
 	
 	  <td class="title" colspan="2">Query time variation</td>
@@ -986,6 +964,46 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
+	<td class="id">27</td>
+	
+	  <td class="title" colspan="2">Database versioning</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">18</td>
+	
+	  <td class="title" colspan="2">CSS cleanup</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">*.tal,entr.css -- The .css file is a mess.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">21</td>
 	
 	  <td class="title" colspan="2">CGI html escaping</td>
@@ -997,46 +1015,6 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">16</td>
-	
-	  <td class="title" colspan="2">Connection pooling</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Will this help performance? Informal timings done on cgi show that connect time is pretty quick but may be more significant when object retrieval times are improved. (ref Apache::DBI)
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">23</td>
-	
-	  <td class="title" colspan="2">CGI security audit</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
 </td>
 	</tr>
       
@@ -1148,6 +1126,117 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       <tr class="header">
         <td colspan="5"><br>The following items have been completed...<br><br></td>
 	</tr>
+      
+      
+      <tr class="row done">
+	<td class="id">102</td>
+	
+	
+	  <td class="title">cgi page db connections failing</td>
+	  <td class="prio">crit</td>
+	  
+	<td class="compld">2007-08-23 10:11</td>
+	<td class="entered">2007-08-23 07:16</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">After the postgres "service" login change (2007/08/23 0:21, changeset 42) cgi pages are failing on my Fedora linux machine.  Message in httpd error log include text:<br/>
+&gt; DBI connect('service=jmdict','',...) failed: FATAL:  <br/>
+&gt;   password authentication failed for user "postgres"...<br/>
+Double checked username, password, etc, all are correct.
+</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="notes" colspan="4">Problem was the pg_service.conf file was in dos format (had "\r\n" line endings).  Converting it to unix ("\n" line endings) with the semi-standard "dos2unix" tool fixed problem.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">98</td>
+	
+	
+	  <td class="title">multiple databases in jmdict.cfg</td>
+	  <td class="prio">low</td>
+	  
+	<td class="compld">2007-08-23 00:21</td>
+	<td class="entered">2007-08-21 17:27</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">jmdict::Dbopen() reads a config file to find out the database and db credentials to use.  To change database (to use development version rather than production version for example) requires changing the file.  Intead we could have the config file have multiple lines representing different databases and give dbopen() a parameter that selects one.
+</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="notes" colspan="4">Planned to modify jmdict.cfg syntax for multiple lines representing different databases.  But Postgresql's "services" already support this.  See:<br/>
+[Both the following are in Postgresql Docs, libpq api...]<br/>
+ + 29.1. Database Connection Control Functions<br/>
+ + 29.14. The Connection Service File<br/>
+[In the Perl modules doc...]<br/>
+ + DBD-Pg / DBI Class Methods / connect() method<br/>
+No point inventing a new file format that does the same thing as Postgresql already does.  Instead, modified dbopen() to use a Postgresql services ile. Modified all the cgi scripts and tal templates to accept and propagate the service name.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">86</td>
+	
+	
+	  <td class="title">Add src column to xresolv</td>
+	  <td class="prio">low</td>
+	  
+	<td class="compld">2007-08-23 00:18</td>
+	<td class="entered">2007-08-01 21:30</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">table xresolv is used to hold the raw xrefs from files jmdict and examples (and others in future) as the xrefs are read, since they cannot be resolved immediately.  The table should be able to, and currently does, hold xrefs from various files simultaneously.  But the only thing that distinguishes xrefs from different files currently is the 'typ' field (2 or 3 from jmdict, 5 for Examples).  [preceding statement not true, see note.]<br/>
+<br/>
+Need to add new column 'src' to xresolv, and modify jmparse.pl, exparse.pl, and their modules to provide value for it.
+</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="notes" colspan="4">Having second thoughts about this.  The table does have column 'entr' that allows joining to table entr to get the src.  While a minor pain, it is better than breaking normaiization(?)  OTOH, this table is not part of the core schema, and contents are intended to be temporary, so perhaps it doesn't matter if we break normalization?  Lowered prio to low.<br/>
+<br/>
+Decided not to do.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">100</td>
+	
+	
+	  <td class="title">Remove deprecated kw tags?</td>
+	  <td class="prio">med</td>
+	  
+	<td class="compld">2007-08-22 14:52</td>
+	<td class="entered">2007-08-22 07:55</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">When a tag that was used in JMdict.xml in the past is no longer used, I change it's id number to &gt;200 which will generate a warning when encountered when parsing jmdict.<br/>
+<br/>
+Originally this was so that the parse wouldn't die when the tag was encountered (when parsing an old file, or when it reappears in a new file as sometimes happens).  But these days jmparse doesn't die on unrecognised tags so why not just delete them?
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
       
       
       <tr class="row done">
@@ -2277,6 +2366,27 @@ Added a -l option to specify logfile location.  In Makefile, dist target exclude
       
       
       <tr class="row done">
+	<td class="id">56</td>
+	
+	
+	  <td class="title">GPL code</td>
+	  <td class="prio">high</td>
+	  
+	<td class="compld">2007-02-12</td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">Put everything under gpl.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
 	<td class="id">60</td>
 	
 	
@@ -2291,27 +2401,6 @@ Added a -l option to specify logfile location.  In Makefile, dist target exclude
 	<td class="descr" colspan="4">perl -- Move lib to under cgi?  (This dir needs to be accessible to the cgi scripts when installed in a cgi directory, but should not be accessible via a web server url.  Putting under the cgi dir wouldaccomplish this (at least for Apache, not sure about IIS.))<br/>
 <br/>
 Don't do. Files in lib/ are used by perl/*.pl scripts as well as the cgi scripts, so moving it under cgi would be inappropriate.  Better way is to use standard Apache/IIS config options to deny access.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row done">
-	<td class="id">56</td>
-	
-	
-	  <td class="title">GPL code</td>
-	  <td class="prio">high</td>
-	  
-	<td class="compld">2007-02-12</td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr done">
-        <td> </td>
-	<td class="descr" colspan="4">Put everything under gpl.
 </td>
 	</tr>
       

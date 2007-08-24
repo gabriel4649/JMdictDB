@@ -33,7 +33,7 @@ binmode (STDOUT, ":utf8");
 
     main: {
 	my ($dbh, $cgi, $tmpl, @kw, @kwlist, $t, $svc);
-	#$cgi = new CGI;
+	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
 	$svc = $cgi->param ("svc");
 	$dbh = dbopen ($svc);  $::KW = Kwds ($dbh);

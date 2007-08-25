@@ -26,7 +26,7 @@ use Encode;
 
 BEGIN {
     use Exporter(); our (@ISA, @EXPORT_OK, @EXPORT); @ISA = qw(Exporter);
-    @EXPORT_OK = qw(initialize finalize wrentr); 
+    @EXPORT_OK = qw(initialize finalize wrentr wrcorp pgesc); 
     @EXPORT    = qw(); }
 
 our(@VERSION) = (substr('$Revision$',11,-2), \
@@ -40,26 +40,27 @@ sub initialize { my ($logfn, $tmpdir) = @_;
 	if (!$tmpdir) { $td = ""; }
 	else { ($td = $tmpdir) =~ s/[\/\\]$//; }
 	my @tmpfiles = (
-	  [\$::Fentr,  "${td}load01.tmp", "COPY entr(id,src,seq,stat,srcnote,notes) FROM stdin;"],
-	  [\$::Fkanj,  "${td}load02.tmp", "COPY kanj(entr,kanj,txt) FROM stdin;"],
-	  [\$::Fkinf,  "${td}load03.tmp", "COPY kinf(entr,kanj,kw) FROM stdin;"],
-	  [\$::Frdng,  "${td}load04.tmp", "COPY rdng(entr,rdng,txt) FROM stdin;"],
-	  [\$::Frinf,  "${td}load05.tmp", "COPY rinf(entr,rdng,kw) FROM stdin;"],
-	  [\$::Faudio, "${td}load06.tmp", "COPY audio(entr,rdng,fname,strt,leng,notes) FROM stdin;"],
-	  [\$::Ffreq,  "${td}load07.tmp", "COPY freq(entr,rdng,kanj,kw,value) FROM stdin;"],
-	  [\$::Fsens,  "${td}load08.tmp", "COPY sens(entr,sens,notes) FROM stdin;"],
-	  [\$::Fpos,   "${td}load09.tmp", "COPY pos(entr,sens,kw) FROM stdin;"],
-	  [\$::Fmisc,  "${td}load10.tmp", "COPY misc(entr,sens,kw) FROM stdin;"],
-	  [\$::Ffld,   "${td}load11.tmp", "COPY fld(entr,sens,kw) FROM stdin;"],
-	  [\$::Fxrsv,  "${td}load12.tmp", "COPY xresolv(entr,sens,ord,typ,rtxt,ktxt,tsens,notes,prio) FROM stdin;"],
-	  [\$::Fxref,  "${td}load13.tmp", "COPY xref(entr,sens,xref.typ,xentr,xsens,rdng,kanj,notes) FROM stdin;"],
-	  [\$::Fgloss, "${td}load14.tmp", "COPY gloss(entr,sens,gloss,lang,ginf,txt) FROM stdin;"],
-	  [\$::Fdial,  "${td}load15.tmp", "COPY dial(entr,sens,kw) FROM stdin;"],
-	  [\$::Flsrc,  "${td}load16.tmp", "COPY lsrc(entr,sens,lang,txt,part,wasei) FROM stdin;"],
-	  [\$::Frestr, "${td}load17.tmp", "COPY restr(entr,rdng,kanj) FROM stdin;"],
-	  [\$::Fstagr, "${td}load18.tmp", "COPY stagr(entr,sens,rdng) FROM stdin;"],
-	  [\$::Fstagk, "${td}load19.tmp", "COPY stagk(entr,sens,kanj) FROM stdin;"],
-	  [\$::Fhist,  "${td}load20.tmp", "COPY hist(entr,hist,stat,dt,who,diff,notes) FROM stdin;"] );
+	  [\$::Fcorp,  "${td}load01.tmp", "COPY kwsrc(id,kw,descr,dt,notes,seq) FROM stdin;"],
+	  [\$::Fentr,  "${td}load02.tmp", "COPY entr(id,src,seq,stat,srcnote,notes) FROM stdin;"],
+	  [\$::Fkanj,  "${td}load03.tmp", "COPY kanj(entr,kanj,txt) FROM stdin;"],
+	  [\$::Fkinf,  "${td}load04.tmp", "COPY kinf(entr,kanj,kw) FROM stdin;"],
+	  [\$::Frdng,  "${td}load05.tmp", "COPY rdng(entr,rdng,txt) FROM stdin;"],
+	  [\$::Frinf,  "${td}load06.tmp", "COPY rinf(entr,rdng,kw) FROM stdin;"],
+	  [\$::Faudio, "${td}load07.tmp", "COPY audio(entr,rdng,fname,strt,leng,notes) FROM stdin;"],
+	  [\$::Ffreq,  "${td}load08.tmp", "COPY freq(entr,rdng,kanj,kw,value) FROM stdin;"],
+	  [\$::Fsens,  "${td}load09.tmp", "COPY sens(entr,sens,notes) FROM stdin;"],
+	  [\$::Fpos,   "${td}load10.tmp", "COPY pos(entr,sens,kw) FROM stdin;"],
+	  [\$::Fmisc,  "${td}load11.tmp", "COPY misc(entr,sens,kw) FROM stdin;"],
+	  [\$::Ffld,   "${td}load12.tmp", "COPY fld(entr,sens,kw) FROM stdin;"],
+	  [\$::Fxrsv,  "${td}load13.tmp", "COPY xresolv(entr,sens,ord,typ,rtxt,ktxt,tsens,notes,prio) FROM stdin;"],
+	  [\$::Fxref,  "${td}load14.tmp", "COPY xref(entr,sens,xref.typ,xentr,xsens,rdng,kanj,notes) FROM stdin;"],
+	  [\$::Fgloss, "${td}load15.tmp", "COPY gloss(entr,sens,gloss,lang,ginf,txt) FROM stdin;"],
+	  [\$::Fdial,  "${td}load16.tmp", "COPY dial(entr,sens,kw) FROM stdin;"],
+	  [\$::Flsrc,  "${td}load17.tmp", "COPY lsrc(entr,sens,lang,txt,part,wasei) FROM stdin;"],
+	  [\$::Frestr, "${td}load18.tmp", "COPY restr(entr,rdng,kanj) FROM stdin;"],
+	  [\$::Fstagr, "${td}load19.tmp", "COPY stagr(entr,sens,rdng) FROM stdin;"],
+	  [\$::Fstagk, "${td}load20.tmp", "COPY stagk(entr,sens,kanj) FROM stdin;"],
+	  [\$::Fhist,  "${td}load21.tmp", "COPY hist(entr,hist,stat,dt,who,diff,notes) FROM stdin;"], );
 
 	$::eid = 0; 
 	foreach $t (@tmpfiles) {
@@ -150,18 +151,28 @@ sub wrentr { my ($e) = @_;
 	    pout ($::Fhist, $etag, $x->{hist}, $x->{stat}, $x->{dt}, 
 			                $x->{who}, $x->{diff}, $x->{notes}); }} }
 
+sub wrcorp { my ($x) = @_;
+	pout ($::Fcorp, $x->{id}, $x->{kw}, $x->{descr}, $x->{dt}, $x->{notes}, $x->{seq}); }
+
+sub pgesc { my ($str) = @_; 
+	  # Escape characters that are special to the Postgresql COPY
+	  # command.  Backslash characters are replaced by two backslash
+	  # characters.   Newlines are replaced by the two characters
+	  # backslash and "n".  Similarly for tab and return characters.
+	return $str if (!$str);
+	$str =~ s/\\/\\\\/go;
+	$str =~ s/\n/\\n/go;
+	$str =~ s/\r//go;	# Delete \r's.
+	$str =~ s/\t/\\t/go;
+	return $str; }
+
 sub pout {
 	my ($file, @args, $a);
 	$file = shift (@_);
 	while (scalar (@_) > 0) {
 	    $a = shift;
 	    if (!defined ($a)) { push (@args, "\\N"); }
-	    else {
-		$a =~ s/\\/\\\\/go;
-		$a =~ s/\n/\\n/go;
-		$a =~ s/\r//go;		# Delete \r's.
-		$a =~ s/\t/\\t/go;
-		push (@args, $a); } }
+	    else { push (@args, pgesc ($a)); } }
 	print $file join ("\t", @args) . "\n"; }
 
 	1;

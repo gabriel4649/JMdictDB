@@ -82,6 +82,7 @@ CREATE TABLE kwsrc (
     id SMALLINT PRIMARY KEY,
     kw VARCHAR(20) NOT NULL UNIQUE,
     descr VARCHAR(255),
+    dt DATE,
     notes VARCHAR(255),
     seq VARCHAR(20));
 

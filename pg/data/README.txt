@@ -16,5 +16,12 @@ that are maintained in the file
 Those are used when parsing the jmdict xml files.
 When a kw id number is changed/added/deleted here.
 a corresponding change should be made in perl/lib/-
-jmdictxml.pm.
+jmdictxml.pm, if the line represents an entity or
+text string that is used in the jmdict or jmnedict
+xml files.
 
+The keywords and description text in these file do 
+not need to match what is used in the jmdict xml file, 
+although by convention, they do.  However the id number 
+in this file must be the same as the id number used in 
+the corresponding line in jmdictxml.pm.

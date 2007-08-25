@@ -112,7 +112,8 @@ our %JM2ID = (
 		'slang' => 21,
 		'word usually written using kana alone ' => 22,
 		'vulgar expression or word ' => 24,
-		'sensitive' => 25, },
+		'sensitive' => 25, 
+		'poetical term' => 26, },
 	
 	POS => {		# kwpos
 		'adjective (keiyoushi)' => 1,

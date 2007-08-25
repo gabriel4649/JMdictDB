@@ -82,7 +82,7 @@ main: {
 	$corpus = {id=>$corpid, kw=>$corpkw};
 	if (!$corpus->{id}) { 
 	    @dt = (localtime ((stat($infn))[9]))[5,4,3];
-	    $dt = sprintf ("%d-%0.2d-%0.2d", $dt[0]+1900, $dt[1], $dt[2]);
+	    $dt = sprintf ("%d-%0.2d-%0.2d", $dt[0]+1900, 1+$dt[1], $dt[2]);
 	    $corpus = {id=>3, kw=>"examples", descr=>"Tanaka Corpus", dt=>$dt}; }
 	
 	open (FIN, "<:utf8", $infn) || die ("Can't open $infn: $!\n");

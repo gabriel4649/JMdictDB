@@ -128,6 +128,33 @@ On Windows you will also need a copy of the GNU "make"
 program if you want to use the Makefiles to automate some
 of the install procedures, see below.
 
+Authentication
+--------------
+Any program that accesses the database needs a username 
+and possibly a pasword to do so.  In a standard Postgresql 
+install, local connections made with user "postgres" do 
+not need a password, the the default configuration of 
+the Makefile and CGI files assumes this.  
+
+In the Makefile, the Postgresql username is defined in 
+variable $(USER).  psql and the jmdictdb perl tools do
+not accept passwords on the command line so those will
+need to be supplied via any of the standard methods
+described in 29.1, "Database Connection Control Functions"
+of the Postgreqsl docs.  See the "Connecting To A Database" 
+section of the psql docs.  Each of the jmdictdb perl
+tools has a -h (help) option that will describe the 
+login options for the tool.
+A .pgpass file will probably be most convenient.
+See 29.13, "The Password File".
+
+CGI scripts are run as the web server user and database
+login credentials are stored in the postgresql service
+file lib/pg_service.conf.  See the Postgresql docs
+29.1, "Database Connection Control Functions", and
+29.14, "The Connection Service File" for more information.
+The is an example file in lib/pg_service.sample.
+
 Procedure
 ---------
 Note: relative file paths below (except in command 
@@ -160,7 +187,7 @@ loaded database to "jmdict".
    want to change.  Read the comments therein.  In 
    particular, the cgi directory is assumed to be
    ~/public_html/cgi-bin/.  You may wish to change that
-   if you will be using the cgi file.  There are also
+   if you will be using the cgi files.  There are also
    some options for the Postgresql database server 
    commections.
 
@@ -245,8 +272,10 @@ loaded database to "jmdict".
    to pg_service.conf.  Edit the latter file and set the user
    and password values appropriately for your database. 
    You can also delete these lines and Postgresql will use
-   environment values.  See the Postgresql docs for more info
-   on the many ways that it offers to set the connection
+   environment values.  If the file is on a *nix system, make
+   sure it is saved with *nix line ending ("\n") and not Windows
+   line endings ("\r\n").  See the Postgresql docs for more 
+   info on the many ways that it offers to set the connection
    credentials.
 
    Copy this file webserver's cgi lib directory (the Makefile 

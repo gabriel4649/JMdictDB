@@ -23,7 +23,6 @@ KWDATA = \
 	$(KWDATADIR)kwmisc.csv \
 	$(KWDATADIR)kwpos.csv  \
 	$(KWDATADIR)kwrinf.csv \
-	$(KWDATADIR)kwsrc.csv  \
 	$(KWDATADIR)kwstat.csv \
 	$(KWDATADIR)kwxref.csv
 

@@ -8,6 +8,5 @@
 \copy kwmisc from '../pg/data/kwmisc.csv' CSV delimiter E'\t'
 \copy kwpos  from '../pg/data/kwpos.csv'  CSV delimiter E'\t'
 \copy kwrinf from '../pg/data/kwrinf.csv' CSV delimiter E'\t'
-\copy kwsrc  from '../pg/data/kwsrc.csv'  CSV delimiter E'\t'
 \copy kwstat from '../pg/data/kwstat.csv' CSV delimiter E'\t'
 \copy kwxref from '../pg/data/kwxref.csv' CSV delimiter E'\t'

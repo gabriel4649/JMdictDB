@@ -18,7 +18,7 @@
 <body>
   <h1>JMdictDB To-Do List</h1>
   <span class="gendate">
-    This list was current as of 2007-08-23 20:46
+    This list was current as of 2007-08-25 12:36
     </span>
   <table class="todo">
     
@@ -57,6 +57,26 @@ Also noted that in edconf.pl, that restr lists are linked only to rdng items, no
       <tr class="priohdr">
         <td colspan="5">Priority 'high' items</td>
 	</tr>
+      <tr class="row">
+	<td class="id">104</td>
+	
+	  <td class="title" colspan="2">Add new misc tag, "poet"</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-08-24 20:53</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">I first noticed in the 2007-08-24 jmdict.xml file.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
       <tr class="row">
 	<td class="id">101</td>
 	
@@ -167,26 +187,6 @@ Problem seems to be the brackets which are classified as kanji characters and th
       
       
       <tr class="row">
-	<td class="id">12</td>
-	
-	  <td class="title" colspan="2">Modperl</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Support Apache/modperl.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">2</td>
 	
 	  <td class="title" colspan="2">Paged results</td>
@@ -198,6 +198,26 @@ Problem seems to be the brackets which are classified as kanji characters and th
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">Need to limit number entries shown on "search results" page to some reasonable number to prevent trying to display huge results sets.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">12</td>
+	
+	  <td class="title" colspan="2">Modperl</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Support Apache/modperl.
 </td>
 	</tr>
       
@@ -446,9 +466,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">31</td>
+	<td class="id">29</td>
 	
-	  <td class="title" colspan="2">Order index convention</td>
+	  <td class="title" colspan="2">XML parse kw checks</td>
 	  
 	
 	<td class="compld"></td>
@@ -456,23 +476,10 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">jmdict, *.pl -- Decide on policy re ord numbers and list indexes:  In EntrList struct, many things (eg rdng records) have both a "rdng" key and a index in list.  Some places we (eg showentr.pl filt() calls) we take the key number as definitive, other places (jmdict::addentr()) we take the index position as definitive.  Currently no problem because the two numbering methods are consistent but may be future operations that make them inconsistent which will  introduce bugs.  Should adopt some standard rules to control this?
+	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
 </td>
 	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="notes" colspan="4">Current (2007/07/25) policy:<br/>
-When writing entry structure, all ord numbers are regenerated based on list position.  Existing number in records are overwritten.  (Done by jmdict::setkeys()).<br/>
-<br/>
-When read in, jmdict::EntrList() will make sure (by appropriate use of ORDER clause in SQL) that list positions and numbers agree.  <br/>
-<br/>
-Modifiers of entr objects are resposible for maintaining consistency or documenting when not maintained.<br/>
-<br/>
-Dual parented records (freq, restr, stagr, stagk, xref) will be linked to both of their parent records.<br/>
-<br/>
-Entr objects being created for output need not supply record numbers.  User of object responsible for checking index number presence/absense if it needs them.
-</td>
-	</tr>
+      
       
       </span><span omit-tag="">
       
@@ -592,6 +599,39 @@ Change jstr_classify?  Or do something else?
       
       
       <tr class="row">
+	<td class="id">31</td>
+	
+	  <td class="title" colspan="2">Order index convention</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">jmdict, *.pl -- Decide on policy re ord numbers and list indexes:  In EntrList struct, many things (eg rdng records) have both a "rdng" key and a index in list.  Some places we (eg showentr.pl filt() calls) we take the key number as definitive, other places (jmdict::addentr()) we take the index position as definitive.  Currently no problem because the two numbering methods are consistent but may be future operations that make them inconsistent which will  introduce bugs.  Should adopt some standard rules to control this?
+</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="notes" colspan="4">Current (2007/07/25) policy:<br/>
+When writing entry structure, all ord numbers are regenerated based on list position.  Existing number in records are overwritten.  (Done by jmdict::setkeys()).<br/>
+<br/>
+When read in, jmdict::EntrList() will make sure (by appropriate use of ORDER clause in SQL) that list positions and numbers agree.  <br/>
+<br/>
+Modifiers of entr objects are resposible for maintaining consistency or documenting when not maintained.<br/>
+<br/>
+Dual parented records (freq, restr, stagr, stagk, xref) will be linked to both of their parent records.<br/>
+<br/>
+Entr objects being created for output need not supply record numbers.  User of object responsible for checking index number presence/absense if it needs them.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">30</td>
 	
 	  <td class="title" colspan="2">XML parse other checks</td>
@@ -603,26 +643,6 @@ Change jstr_classify?  Or do something else?
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">load_jmdict.pl -- Do other error checking (or could do these after data loaded into db): all senses have gloss?  All entries have sens and reading? ... (But remember that deleted entries have no sences or readings).
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">29</td>
-	
-	  <td class="title" colspan="2">XML parse kw checks</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
 </td>
 	</tr>
       
@@ -666,7 +686,11 @@ Change jstr_classify?  Or do something else?
         <td> </td>
 	<td class="descr" colspan="4">In all the UI's and doc, change references to "src" (from "entry source") to "corp" (for "corpus").  Reason is that when adding a new entry to an existing "src" like JMdict, it seems odd to think of the new entry's "source" as jmdict -- since it is new it is not in the jmdict entries yet so how can jmdict be its "source"?  Calling it a corpus seems more accurate.<br/>
 <br/>
-May also want to change code variable names and database identifiers (columns, tables, etc.)
+May also want to change code variable names and database identifiers (columns, tables, etc.)<br/>
+<br/>
+Also, the table kwsrc is not really a "kw*" table any more: columns<br/>
+are different and data is no longer static.  Should rename it to "corpus"<br/>
+or something.
 </td>
 	</tr>
       
@@ -1126,6 +1150,37 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       <tr class="header">
         <td colspan="5"><br>The following items have been completed...<br><br></td>
 	</tr>
+      
+      
+      <tr class="row done">
+	<td class="id">103</td>
+	
+	
+	  <td class="title">Load kwsrc table dynamically</td>
+	  <td class="prio">med</td>
+	  
+	<td class="compld">2007-08-25 12:32</td>
+	<td class="entered">2007-08-24 16:03</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">kwsrc is not really a kw* table -- it has different columns that the other kw* tables and more importantly, does not really contain static data.  OTOH, it is like a kw table in that apps frequently need to use its information based on a kwsrc.id value.<br/>
+I propose the following changes should be made:<br/>
+2. Do not load static data into it when loadkw.sql is run.<br/>
+3. Modify code that loads data (jmparse.pl, exparse.pl) to accept arguments that define the corpus info, and create corpus record as part of generating the other data.<br/>
+4. Continue to have jmdict::Kwds include a {SRC} sub-hash.
+</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="notes" colspan="4">- Removed kwsrc from kwstatic.pm.<br/>
+- Can't removed from code that builds or uses $::KW -- many display functions need to be able to lookup corpus abbr by id. <br/>
+- Added command line syntax to jmparse.pl, exparse.pl for user to give corpus record info but: id,kw only.  No descr.  seq value hardwired in code dependent on kw.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
       
       
       <tr class="row done">

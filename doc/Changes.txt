@@ -1,4 +1,50 @@
 
+2007-08-25 12:32	smcgrawx@frxii.com
+
+	* Makefile [1.29]
+	Don't exit if error occurs running drpindex.sql.  It's possible not
+	  all constraints were successfully created earlier and trying to
+	  drop them will cause error.  Just plough on and hope for the best.
+	  {295}
+
+	* README.txt [1.14]
+	Added "authentification" section. revised install procedure. {296}
+
+	* perl/exparse.pl [1.8]
+	Change -s option to accept corpus id.kw as well as id. {293}
+
+	* perl/jmparse.pl [1.37]
+	Change -s option to accept corpus id.kw as well as id. {290}
+	Look for a "... created: ..." comment and extract corpus kw and date
+	  from it. {291}
+
+	* perl/lib/Makefile [1.5]
+	* pg/data/kwsrc.csv [1.None]
+	* pg/loadkw.sql [1.7]
+	* tools/mkkwmod.pl [1.5]
+	Deleted pg/data/kwsrc, table kwsrc no longer has any static data.
+	  {284}
+
+	* perl/lib/jmdictpgi.pm [1.10]
+	Make function pout() use function pgesc(). {289}
+	Add function wrcorp(). {287}
+	Move function pgesc() from jmparse.pl to jmdictpgi.pm. {288}
+
+	* perl/lib/kwstatic.pm [1.11]
+	Remake due to changes in prerequisite files. {286}
+
+	* pg/mktables.sql [1.27]
+	Table kwsrc: add column dt. {285}
+
+	* tools/mkindex.pl [1.4]
+	Add "IF EXISTS" phrase to generated DROP INDEX statements. {294}
+
+2007-08-23 22:35	smcgrawx@frxii.com
+
+	* perl/cgi/edhelp.pl [1.5]
+	Fix: Tried to call cgi method but line that instantiated cgi was
+	  commented out. {283}
+
 2007-08-23 20:40	smcgrawx@frxii.com
 
 	* perl/cgi/edform.pl [1.10]
@@ -73,9 +119,9 @@
 
 	* perl/xresolv.pl [1.2]
 	Add check for self-referential xrefs. {270}
-	Fix: Typo in debugging print statement {268}
 	Add -D (debugging) option. {269}
 	Get rid of #@$!^*%*! Microsoft utf8 BOM. {272}
+	Fix: Typo in debugging print statement {268}
 
 2007-08-21 17:22	smcgrawx@frxii.com
 
@@ -137,14 +183,14 @@
 	  query returned 0 records. {234}
 	add_xrefsums(), grp_xrefs(), resolv_xref(): adjust for new xref
 	  columns kanj and rdng. {236}
-	Fix: fmt_jitem(): avoind an unitialized string warning if $slist
-	  param is undef. {235}
 	In class Tmptbl, method DESTROY(), wrap the sql execution in an eval
 	  in order to ignore errors.  Sometimes during normal program
 	  termination, the dbi handle goes away before the Tmptbl destructor
 	  is called resulting in a warning messge (safe to ignore because
 	  purpose of destructor is to delete the temp table, but it will be
 	  deleted automatically when the db connection is closed). {248}
+	Fix: fmt_jitem(): avoind an unitialized string warning if $slist
+	  param is undef. {235}
 
 	* perl/lib/jmdicted.pm [1.1]
 	Removed, no longer used anywhere. {229}
@@ -172,10 +218,10 @@
 
 	* pg/mktables.sql [1.26]
 	Adjust for addition of reading/kanji to xrefs. {249}
-	Add oids to table freq to that it will be editable in PgAdmin. {257}
 	Disable the unique index on xref(entr,sens,typ,xentr,xsens) because
 	  the Examples file generates such xrefs (as does jmdict when there a
 	  sense has two xrefs to the same target.) {255}
+	Add oids to table freq to that it will be editable in PgAdmin. {257}
 	Remove table xrefld and its trigger function. {256}
 	Fix: Correct erroneous comment characters. {254}
 
@@ -444,8 +490,8 @@
 
 	* pg/mkviews.sql [1.21]
 	Delete views eksum, xrefesum. {189}
-	Change view hdwds to return entr.* rather than only entr.id. {167}
 	Add new view essum. {166}
+	Change view hdwds to return entr.* rather than only entr.id. {167}
 	Change view esum to get rdng and kanj strings from join on view
 	  hdwds, rather than generating them independently. {162}
 
@@ -551,14 +597,14 @@
 	* perl/lib/jmdict.pm [1.27]
 	Removed function get_seq() since addentr() no longer uses it per
 	  chgid-133. {139}
-	In function addentr(), don't assign a 'seq' value, leave it NULL and
-	  rely on the new entr table insert trigger to set it. {133}
 	In function addentr() call setkeys() to set all the key values rather
 	  than doing it ourself. {138}
+	In function addentr(), don't assign a 'seq' value, leave it NULL and
+	  rely on the new entr table insert trigger to set it. {133}
 
 	* perl/lib/tal/edconf.tal [1.8]
-	Allow editing of entr data seq, srcnote, notes. {135}
 	Adjust layout of entr data to match current entr.tal {137}
+	Allow editing of entr data seq, srcnote, notes. {135}
 
 	* perl/lib/tal/edform.tal [1.4]
 	Make 'src' selection a drop-down box. {136}
@@ -668,13 +714,13 @@
 	  similar for trans). {115}
 
 	* perl/lib/jbparser.yp [1.4]
-	Add new function qcleanup() like gcleanup but for quoted strings.
-	  {114}
-	In function gcleanup() reduce multiple WS characters to a single one.
-	  {113}
 	When creating lsrc and gloss records, make sure all fields are
 	  created even if they have default values (e.g. lang and ginf in
 	  gloss, and lang, part, and wasei in lsrc.) {112}
+	In function gcleanup() reduce multiple WS characters to a single one.
+	  {113}
+	Add new function qcleanup() like gcleanup but for quoted strings.
+	  {114}
 
 	* perl/lib/jmdict.pm [1.26]
 	Minor clarification to comments in filt(). {110}

@@ -45,6 +45,7 @@
 use strict;  use warnings;
 use Encode; 
 use Getopt::Std ('getopts');
+use POSIX qw(strftime);
 
 BEGIN {push (@INC, "./lib");}
 use jmdict;  use jmdictxml ('%EX2ID'); use jmdictpgi; use kwstatic;
@@ -53,7 +54,8 @@ use jmdict;  use jmdictxml ('%EX2ID'); use jmdictpgi; use kwstatic;
 $::Debug{prtsql} = 1;
 
 main: {
-	my ($infn, $outfn, $enc, $begin, $count, $tmp);
+	my ($infn, $outfn, $enc, $begin, $count, $tmp, $tmpfiles,
+	    $corpus, $corpid, $corpkw, $dt, @dt);
 
 	if (!getopts ("o:b:c:e:knvh", \%::Opts)) { usage (1); }
 	if ($::Opts{h}) { usage (0); }
@@ -75,22 +77,35 @@ main: {
 
 	($infn = shift (@ARGV)) || die ("No input filename given\n");
 
-	process ($infn, $outfn, $begin, $count);
+	{no warnings qw(uninitialized);
+	    ($corpid, $corpkw) = split (/\./, $::Opts{s}); }
+	$corpus = {id=>$corpid, kw=>$corpkw};
+	if (!$corpus->{id}) { 
+	    @dt = (localtime ((stat($infn))[9]))[5,4,3];
+	    $dt = sprintf ("%d-%0.2d-%0.2d", $dt[0]+1900, $dt[1], $dt[2]);
+	    $corpus = {id=>3, kw=>"examples", descr=>"Tanaka Corpus", dt=>$dt}; }
+	
+	open (FIN, "<:utf8", $infn) || die ("Can't open $infn: $!\n");
+	if (!$::Opts{n}) { $tmpfiles = initialize (); }
+	process ($begin, $count, $corpus->{id});
+	if ($corpus->{kw}) { 
+	    if ($corpus->{kw} eq "examples") { 
+		$corpus->{seq} = "seq_examples"; }
+	    else { 
+		$corpus->{seq} = "seq"; }
+	    wrcorp ($corpus); }
+	if (!$::Opts{n}) { finalize ($outfn, $tmpfiles, !$::Opts{k}); }
 	msg_summary (\%::Msgs); }
 
-sub process { my ($infn, $outfn, $begin, $count) = @_;
+    sub process { my ($begin, $count, $corpid) = @_;
 
 	# Process the Examples file.  
-	# $infn -- Name of ther input Examples file.
-	# $outfn -- Name of the output .pgi file.
 	# $begin -- Line number at which to begin processing.  Everythig
 	#    before that is sskipped.
 	# Number of example pairs to process.  Program will terminate
 	#    after this many have been done.
 
-	my ($ln, $aln, $bln, $jtxt, $etxt, $kwds, $cntr, $idxlist, $entr, $tmpfiles, $eid); 
-	open (FIN, "<:utf8", $infn) || die ("Can't open $infn: $!\n");
-	if (!$::Opts{n}) { $tmpfiles = initialize (); }
+	my ($ln, $aln, $bln, $jtxt, $etxt, $kwds, $cntr, $idxlist, $entr, $eid); 
 	while ($aln = <FIN>) {
 	    next if ($. < $begin);
 	    if ($. == 1 and (substr ($aln, 0, 1) eq "\x{FEFF}")) {
@@ -102,17 +117,16 @@ sub process { my ($infn, $outfn, $begin, $count) = @_;
 	    if ($@) { chomp ($@); msg ($@); next; }
 	    $idxlist = eval { parseb ($bln, $jtxt); };
 	    if ($@) { chomp ($@); msg ($@); next; }
-	    $entr = mkentr ($jtxt, $etxt, $kwds, $::Lnnum);
+	    $entr = mkentr ($jtxt, $etxt, $kwds, $corpid, $::Lnnum);
 	    $entr->{_sens}[0]{_xrslv} = mkxrslv ($idxlist);
 	    if (!$::Opts{w}) {	# w--parse only option
 		setkeys ($entr, ++$eid); 
 		wrentr ($entr); } 
 	    if (0 == $cntr % 2000) { print STDERR "."; }
 	    last if ($cntr >= $count); }
-	if ($cntr >= 2000) { print STDERR "\n"; }
-	if (!$::Opts{n}) { finalize ($outfn, $tmpfiles, !$::Opts{k}); } }
+	if ($cntr >= 2000) { print STDERR "\n"; } }
 
-sub parsea { my ($aln) = @_;
+    sub parsea { my ($aln) = @_;
 	my ($j, $e, $ntxt, @ntxts, $nt, $kw, @kw);
 	if (substr ($aln, 0, 1) eq "\x{feff}") { $aln = substr ($aln, 1); }  # Nuke MS BOM.
 	die ("\"A\" line parse error\n") if (!($aln =~ m/^A:\s*(.+)\t(.+?)\s*(\[.+\]\s*)*$/)) ;
@@ -125,7 +139,7 @@ sub parsea { my ($aln) = @_;
 		push (@kw, $kw); } }
 	return $j,$e,\@kw; }
 
-sub parseb { my ($bln, $jtxt) = @_;
+    sub parseb { my ($bln, $jtxt) = @_;
 	my (@parts, $x, $n, @res);
 	@parts = split (/[ ]+/, $bln);
 	die ("Expected \"B\" line, got '$bln'\n") if (shift(@parts) ne "B:");
@@ -134,7 +148,7 @@ sub parseb { my ($bln, $jtxt) = @_;
 	    push (@res, parsebitem ($x, ++$n, $jtxt)); } 
 	return \@res; }
 
-sub parsebitem { my ($s, $n, $jtxt) = @_;
+    sub parsebitem { my ($s, $n, $jtxt) = @_;
 	my ($ktxt, $rtxt, $sens, $atxt, @sens, $prio);
 	die ("\"B\" line parse error in item $n: '$s'\n")
 	    if (!($s =~ m/^([^([{]+)(\((\S+)\))?(\[\d+\])*(\{(\S+)\})?(~)?\s*$/));
@@ -147,15 +161,15 @@ sub parsebitem { my ($s, $n, $jtxt) = @_;
 	die ("\{$atxt\} not in A line in item $n\n") if ($atxt && index ($jtxt, $atxt) < 0);
 	return [$ktxt,$rtxt,\@sens,$atxt,$prio?1:0]; }
 
-sub hw { my ($ktxt, $rtxt) = @_;
+    sub hw { my ($ktxt, $rtxt) = @_;
 	if ($ktxt && $rtxt) { return "$ktxt($rtxt)"; }
 	return $ktxt || $rtxt; }
 
-sub mkentr { my ($jtxt, $etxt, $kwds, $lnnum) = @_;
+    sub mkentr { my ($jtxt, $etxt, $kwds, $corpid, $lnnum) = @_;
 	# Create an entry object to represent the "A" line text of the 
 	# example sentence.
 	my ($e, @kws, $snote);
-	$e = {src=>$KWSRC_examples, stat=>$KWSTAT_A, seq=>$lnnum};
+	$e = {src=>$corpid, stat=>$KWSTAT_A, seq=>$lnnum};
 	if (@$kwds) {
 	    # Each @$kwds item is a 2-array consisting of the kw
 	    # id number and optionally a note string.
@@ -168,7 +182,7 @@ sub mkentr { my ($jtxt, $etxt, $kwds, $lnnum) = @_;
 			notes=>$snote,},];
 	return $e; }
 
-sub mkxrslv { my ($idxlist) = @_;
+    sub mkxrslv { my ($idxlist) = @_;
 	# Convert the $@indexlist that was created by bparse() into a 
 	# list of database xrslv table records.  The fk fields "entr"
 	# and "sens" are not set in the xrslv records; they are set
@@ -192,16 +206,16 @@ sub mkxrslv { my ($idxlist) = @_;
 			    typ=>$KWXREF_uses, notes=>$note, prio=>$prio}); } }
 	return \@r; }
 
-sub kana_only { my ($txt) = @_; 
+    sub kana_only { my ($txt) = @_; 
 	my $v = jstr_classify ($txt);
 	return ($v & $jmdict::KANA) && !($v & $jmdict::KANJI); }
 
-sub msg { my ($msg) = @_;
+    sub msg { my ($msg) = @_;
 	if ($::Opts{v}) { print STDERR "$::Lnnum: $msg\n"; }
 	if (!($::Msgs{$msg})) { $::Msgs{$msg} = [$::Lnnum]; }
 	else { push (@{$::Msgs{$msg}}, $::Lnnum); } }
 
-sub msg_summary { my ($msgs) = @_;
+    sub msg_summary { my ($msgs) = @_;
 	my ($k, $n, $s);
 	foreach $k (sort (keys (%$msgs))) {
 	    $n = scalar (@{$msgs->{$k}});
@@ -209,7 +223,7 @@ sub msg_summary { my ($msgs) = @_;
 	    print "\n$k\n$s\n"; } }
 
 
-sub usage { my ($exitstat) = @_;
+    sub usage { my ($exitstat) = @_;
 	print <<EOT;
 
 Usage: exload.pl [options] filename
@@ -224,6 +238,18 @@ Options:
 	    Processing will start at the first "A" line at of
 	    after this.
 	-c number -- Maximum number of example pairs to process.
+	-s id[.kw] -- 'id' is a corpus id number (between 1 and 32767), 
+	    'kw' a short text string giving a corpus abbreviaion.
+	    If only 'id' is given, a kwsrc record with that id will
+	    be assumed to exist, and entry records generated by this
+	    program will use that id.
+	    If both 'id' and 'kw' are given. a new kwsrc record will
+	    be generated and entry records generated by this program 
+	    will use the new record.
+	    If -s is not given, exparse.pl will use "3.examples"
+	    and in addition, set the 'descr' field to "Tanaka Corpus"
+	    and the 'dt' field to the input file's last-modified 
+	    date. 
 	-n -- Parse only, no database access used: do not resolve
 	    index words from it.
 	-v -- Verbose.  Print messages to stderr as irregularies 

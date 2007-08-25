@@ -34,9 +34,9 @@ BEGIN {push (@INC, "./lib");}
 use jmdictxml ('%JM2ID'); # Maps xml expanded entities to kw* table id's.
 use jmdict; use jmdictpgi; use kwstatic;
 
-main: {
+    main: {
 	my ($twig, $infn, $outfn, $tmpfiles, $tmp, $enc, $logfn,
-	    $user, $pw, $dbname, $host);
+	    $user, $pw, $dbname, $host, $corpid, $corpkw);
 
 	getopts ("o:c:s:b:e:l:t:g:kyh", \%::Opts) || usage (1);
 	if ($::Opts{h}) { usage (0); }
@@ -49,6 +49,9 @@ main: {
 	$infn = shift (@ARGV) || "JMdict";
 	$outfn =  $::Opts{o} || "JMdict.pgi";
 	$logfn =  $::Opts{l} || "jmparse.log";
+
+	($corpid, $corpkw) = split (/\./, $::Opts{s});
+	$::Corpus = {id=>$corpid, kw=>$corpkw};
 	$::eid = 0;
 
 	  # Make STDERR unbuffered so we print "."s, one at 
@@ -80,6 +83,11 @@ main: {
 	print STDERR "Parsing xml file $infn\n";
 	eval { $twig->parsefile( $infn ); };
 	die if ($@ and $@ ne "done\n"); 
+	if ($::Corpus->{kw}) { 
+	    if    ($::Corpus->{kw} eq "jmdict")   { $::Corpus->{seq} = "seq_jmdict"; }
+	    elsif ($::Corpus->{kw} eq "jmnedict") { $::Corpus->{seq} = "seq_jmnedict"; }
+	    else  { $::Corpus->{seq} = "seq"; }
+	    wrcorp ($::Corpus); }
 	print STDERR "\n";
 
 	  # Now merge all the temp table files into one big 
@@ -88,14 +96,14 @@ main: {
 	finalize ($outfn, $tmpfiles, !$::Opts{k}); 
 	print STDERR ("Done\n"); }
 
-sub set_linenum { my ($t, $entry ) = @_;
+    sub set_linenum { my ($t, $entry ) = @_;
 	  # This function is set as a XML-Twig start-handler for <entry>
 	  # tag, and remembers the line number at the start of an entry
 	  # for use in error message or as a ent_seq number substitute 
 	  # for JMnedict entries.
 	$::Ln = $t->current_line(); }
 
-sub entry_handler { my ($t, $entry ) = @_;
+    sub entry_handler { my ($t, $entry ) = @_;
 	  # This function is set as a XML-Twig handler for <entry> elements.
 	  # We are called after a complete entry has been parsed including
 	  # everthing inside it.  We do the entry-related bookkeeping stuff
@@ -103,6 +111,8 @@ sub entry_handler { my ($t, $entry ) = @_;
 	  # in the entry.
 
 	my ($seq, @x, $kmap, $rmap);
+
+        die "No corpus id available, rerun with -s option.\n" if (!$::Corpus->{id});
 
 	  # $cntr counts the number of entries parsed.  The 1400 below was 
 	  # picked to procude about 80 dots in the "progress bar" for a full
@@ -128,7 +138,7 @@ sub entry_handler { my ($t, $entry ) = @_;
 	return if (! $::processing);
 	if ($::Opts{c} and ($::cntr - $::started_at >= int($::Opts{c}))) {
 	     die ("done\n"); }
-	eval { do_entry ($seq, $entry, $::Opts{s}); };
+	eval { do_entry ($seq, $entry, $::Corpus->{id}); };	
 	if ($@) {
 	    print STDERR  "Seq $::Seq: $@";
 	    print $::Flog "Seq $::Seq: $@"; }
@@ -136,16 +146,25 @@ sub entry_handler { my ($t, $entry ) = @_;
 	  # Free memory and other resorces used by the extry just processed.
 	$t->purge; 0;}
 
-sub comment_handler { my ($t, $entry ) = @_;
+    sub comment_handler { my ($t, $entry ) = @_;
 	  # Process each comment.  We get called when a comment is seen
 	  # because  we were listed ('#COMMENT') in the twig_handlers option
 	  # of the Twig->new() call in main().  We look for comments that
 	  # described entry deletions and create synthetic 'D' status entries
 	  # for them.
 
-	my ($c, $seq, $notes, $dt, $ln, $srcid, $e); 
-	return if (! $::processing);
+	my ($c, $seq, $notes, $dt, $ln, $srcid, $e, $srcid, $srckw, $srcdt); 
 	$c = $entry->{comment};
+	if (!$::processing) {
+	    if ($c =~ m/(\S+) created:\s*(\d+-\d+-\d+)/i) {
+		if (!$::Corpus->{kw}) { 
+		    $::Corpus->{kw} = lc($1); 
+		    if (!$::Corpus->{dt}) { $::Corpus->{dt} = $2; } }
+		if (!$::Corpus->{id}) {
+		    if ($::Corpus->{kw} eq "jmdict") { $::Corpus->{id} = 1; }
+		    if ($::Corpus->{kw} eq "jmnedict") { $::Corpus->{id} = 2; } } }
+	    return; }
+
 	if ($c =~ m/^\s*Deleted:\s*(\d{7}) with (\d{7})\s*(.*)/) {
 	    $seq = $1; $notes = "Merged into $2";
 	    if ($3) { $notes .= "\n" . $3; } }
@@ -156,28 +175,29 @@ sub comment_handler { my ($t, $entry ) = @_;
 	    print $::Flog "Line $ln: unparsable comment: $c\n"; return; }
 
 	$dt = "1990-01-01 00:00:00-00";
-	$srcid = $KWSRC_jmdict;  # JMdict is only src with "deleted" comments.
 	# (id,src,seq,stat,note)
-	$e = {src=>$srcid, seq=>$seq, stat=>$KWSTAT_D};
+	die "No corpus id available, rerun with -s option.\n" if (!$::Corpus->{id});
+	$e = {src=>$::Corpus->{id}, seq=>$seq, stat=>$KWSTAT_D};
 
 	  # Should we create a synthetic N record before creating the D record?
-	$notes = pgesc ($notes);
+	if ($notes) { $notes = pgesc ($notes); }
+	
 	# (entr,hist,stat,dt,who,diff,notes)
 	$e->{_hist} = [{stat=>$KWSTAT_D, dt=>$dt, who=>"imported from JMdict.xml", notes=>$notes}];
 
 	  # Write out the entry to the temp files.
 	setkeys ($e, ++$::eid);
 	wrentr ($e);
+
 	  # Free memory and other resorces used by the extry just processed.
 	$t->purge; 0; }
 
-sub do_entry { my ($seq, $entry, $srcid) = @_;
+    sub do_entry { my ($seq, $entry, $srcid) = @_;
 	my (@x, $kmap, $rmap, @t, %fmap, $e);
 
 	  # If this entry has a "trans" element then this is a JMnedict source.
 	  # Otherwise assume it is JMdict.
 	@t = $entry->get_xpath("trans");
-	if (!$srcid) { $srcid = @t ? $KWSRC_jmnedict : $KWSRC_jmdict; }
 
 	  # Create an entry record (a hash with the proper field names).
 	  # We don't need to provide the id field since that will be
@@ -195,7 +215,7 @@ sub do_entry { my ($seq, $entry, $srcid) = @_;
 	setkeys ($e, ++$::eid);
 	wrentr ($e); }
 
-sub do_kanj { my ($e, $keles, $fmap) = @_;
+    sub do_kanj { my ($e, $keles, $fmap) = @_;
 	my ($txt, $k, @x, %kmap, @flist, $ek);
 	if (!$e->{_kanj}) { $e->{_kanj} = []; }
 	foreach $ek (@$keles) {
@@ -210,7 +230,7 @@ sub do_kanj { my ($e, $keles, $fmap) = @_;
 	    if (@x = $ek->get_xpath ("ke_pri")) { do_freqs (0, $k, \@x, $fmap); } }
 	return \%kmap; }
 
-sub do_kinfs { my ($k, $kinfs) = @_;
+    sub do_kinfs { my ($k, $kinfs) = @_;
 	my ($i, $kw, $txt, %dupchk);
 	if ($k->{_kinf}) { $k->{_kinf} = []; }
 	foreach $i (@$kinfs) {
@@ -225,7 +245,7 @@ sub do_kinfs { my ($k, $kinfs) = @_;
 		$dupchk{$kw} = 1;
 	        push (@{$k->{_kinf}}, {kw=>$kw}); } } }
 
-sub do_rdng { my ($e, $reles, $kmap, $fmap) = @_;
+    sub do_rdng { my ($e, $reles, $kmap, $fmap) = @_;
 	my ($txt, $r, $z, @x, %rmap, $er, $u);
 	$e->{_rdng} = []; 
 	foreach $er (@$reles) {
@@ -243,7 +263,7 @@ sub do_rdng { my ($e, $reles, $kmap, $fmap) = @_;
 	    elsif (@x = $er->get_xpath ("re_restr")) { do_restrs ($r, \@x, "_restr", $kmap); } }
 	return \%rmap; }
 
-sub do_restrs { my ($arec, $restrele, $attrname, $bmap) = @_;
+    sub do_restrs { my ($arec, $restrele, $attrname, $bmap) = @_;
 	my (@u, $u, $i, $txt);
 	foreach $i (@$restrele) {
 	    $txt = $i->text;
@@ -254,7 +274,7 @@ sub do_restrs { my ($arec, $restrele, $attrname, $bmap) = @_;
 	    push (@u, $u); }
 	mkrestr ($arec, $bmap, $attrname, \@u); }
 
-sub do_rinfs { my ($r, $rinfs) = @_;
+    sub do_rinfs { my ($r, $rinfs) = @_;
 	my ($i, $kw, $txt, %dupchk);
 	if ($r->{_rinf}) { $r->{_rinf} = []; }
 	foreach $i (@$rinfs) {
@@ -269,7 +289,7 @@ sub do_rinfs { my ($r, $rinfs) = @_;
 		$dupchk{$kw} = 1;
 	        push (@{$r->{_rinf}}, {kw=>$kw}); } } }
 
-sub do_sens { my ($e, $sens, $kmap, $rmap) = @_;
+    sub do_sens { my ($e, $sens, $kmap, $rmap) = @_;
 	my ($txt, $s, @x, @p, @pp, $z, %smap, %stagr, %stagk, $es);
 	@pp=(); %smap=(); %stagr=(); %stagk=(); $e->{_sens} = [];
 	foreach $es (@$sens) {
@@ -299,7 +319,7 @@ sub do_sens { my ($e, $sens, $kmap, $rmap) = @_;
 		if (!$::Opts{g}) {
 		    print $::Flog "Seq $::Seq: No glosses found in sense\n"; } } } }
 
-sub do_gloss { my ($s, $gloss) = @_;
+    sub do_gloss { my ($s, $gloss) = @_;
 	my ($g, $lang, $lng, $txt, $lit, $trans, @lit, %dupchk);
 	$s->{_gloss} = [];
 	foreach $g (@$gloss) {
@@ -326,7 +346,7 @@ sub do_gloss { my ($s, $gloss) = @_;
 	foreach $lit (@lit) {
 	    push (@{$s->{_gloss}}, {lang=>$lit->[0], ginf=>$KWGINF_lit, txt=>$lit->[1]}); } }
 
-sub do_pos { my ($s, $pos) = @_;
+    sub do_pos { my ($s, $pos) = @_;
 	my ($i, $kw, $txt, %dupchk);
 	$s->{_pos} = [];
 	foreach $i (@$pos) {
@@ -341,7 +361,7 @@ sub do_pos { my ($s, $pos) = @_;
 		$dupchk{$kw} = 1;
 	        push (@{$s->{_pos}}, {kw=>$kw}); } } }
 
-sub do_misc { my ($s, $misc) = @_;
+    sub do_misc { my ($s, $misc) = @_;
 	my ($i, $kw, $txt, %dupchk);
 	$s->{_misc} = [];
 	foreach $i (@$misc) {
@@ -356,7 +376,7 @@ sub do_misc { my ($s, $misc) = @_;
 		$dupchk{$kw} = 1;
 	        push (@{$s->{_misc}}, {kw=>$kw}); } } }
 
-sub do_fld { my ($s, $fld) = @_;
+    sub do_fld { my ($s, $fld) = @_;
 	my ($i, $kw, $txt, %dupchk);
 	$s->{_fld} = [];
 	foreach $i (@$fld) {
@@ -371,7 +391,7 @@ sub do_fld { my ($s, $fld) = @_;
 		$dupchk{$kw} = 1;
 	        push (@{$s->{_fld}}, {kw=>$kw}); } } }
 
-sub do_dial { my ($s, $dial) = @_;
+    sub do_dial { my ($s, $dial) = @_;
 	my ($i, $kw, $txt, %dupchk);
 	$s->{_dial} = [];
 	foreach $i (@$dial) {
@@ -388,7 +408,7 @@ sub do_dial { my ($s, $dial) = @_;
 		$dupchk{$kw} = 1;
 	        push (@{$s->{_dial}}, {kw=>$kw}); } } }
 
-sub do_lsrc { my ($s, $lsrc) = @_;
+    sub do_lsrc { my ($s, $lsrc) = @_;
 	my ($i, $kw, $txt, $lang, $lng, $lskw, $kw, %dupchk);
 	$s->{_lsrc} = [];
 	foreach $i (@$lsrc) {
@@ -406,7 +426,7 @@ sub do_lsrc { my ($s, $lsrc) = @_;
 		next; }
 	    push (@{$s->{_lsrc}}, {lang=>$lang, txt=>$txt, part=>($kw==2?1:0), wasei=>0} ); } }
 
-sub do_xref { my ($s, $xref, $xtypkw) = @_;
+    sub do_xref { my ($s, $xref, $xtypkw) = @_;
 	my ($x, $txt, @frags, $frag, $ktxt, @ktxt, $rtxt, @rtxt, $jtyp, $snum, $kflg);
 
 	  # Create a xresolv record for each <xref> element.  The xref may
@@ -460,7 +480,7 @@ sub do_xref { my ($s, $xref, $xtypkw) = @_;
 	    if (!$s->{_xrslv}) { $s->{_xrslv} = []; }
 	    push (@{$s->{_xrslv}}, {typ=>$xtypkw, ktxt=>$ktxt, rtxt=>$rtxt, tsens=>$snum}); } } 
 
-sub do_hist { my ($e, $hist) = @_;
+    sub do_hist { my ($e, $hist) = @_;
 	my ($x, $dt, $op, $h);
 	foreach $x (@$hist) {
 	    $dt = ($x->get_xpath ("upd_date"))[0]->text; # Assume just one.
@@ -473,7 +493,7 @@ sub do_hist { my ($e, $hist) = @_;
 	    else { 
 		print $::Flog "Seq $::Seq: Unexpected <upd_detl> contents: $op"; } } }
 
-sub do_freqs { my ($rdng, $kanj, $feles, $fmap) = @_;
+    sub do_freqs { my ($rdng, $kanj, $feles, $fmap) = @_;
 	# Process a list of [kr]e_pri elements, by parsing each into a kwfreq
 	# tag id number (scale), a scale value.  These two items and the reading
 	# or kanji order number are added to list @$flist as a ref to 3-element
@@ -486,7 +506,7 @@ sub do_freqs { my ($rdng, $kanj, $feles, $fmap) = @_;
 	    if ($rdng) { push (@{$fmap->{$kwstr}[0]}, $rdng); }
 	    if ($kanj) { push (@{$fmap->{$kwstr}[1]}, $kanj); } } }
 
-sub parse_freq { my ($fstr, $ptype) = @_;
+    sub parse_freq { my ($fstr, $ptype) = @_;
 	# Convert a re_pri or ke_pri element string (e.g "nf30") into
 	# numeric (id,value) pair (like 4,30) (4 is the id number of 
 	# keyword "nf" in the database table "kwfreq", and we get it 
@@ -501,7 +521,7 @@ sub parse_freq { my ($fstr, $ptype) = @_;
 	($kw = $::JM2ID{FREQ}{$kwstr}) or die ("Unrecognized $ptype string: '$fstr'\n");
 	return ($kw, $val, $fstr); }
 
-sub mkfreqs { my ($fhash) = @_;
+    sub mkfreqs { my ($fhash) = @_;
 	my ($r, $k, $v, $kw, $val, $kwstr, @rdngs, @kanjs, 
 	    $frec, @flist, %dup_elim, $x, $t, $key);
 
@@ -561,7 +581,7 @@ sub mkfreqs { my ($fhash) = @_;
 		if (!$k->{_freq}) { $k->{_freq} = []; } 
 		push (@{$k->{_freq}}, $frec); } } } 
 
-sub mkrestr { my ($a, $bmap, $attrname, $pos) = @_;
+    sub mkrestr { my ($a, $bmap, $attrname, $pos) = @_;
 	# Create restriction records for %$bmap items that are not
 	# found in @$pos.
 	#
@@ -625,7 +645,7 @@ sub mkrestr { my ($a, $bmap, $attrname, $pos) = @_;
 		push (@{$a->{$attrname}}, $restr_rec);
 		push (@{$b->{$attrname}}, $restr_rec); } } } 
 
-sub extract_lit { my ($txt) = @_;
+    sub extract_lit { my ($txt) = @_;
 	my ($lit, $trans) = ("", "");
 	if ($txt =~ s/\s*\(lit:\s*([^)]*)\)\s*/ /) { $lit = $1; }
 	elsif ($txt =~ s/\s*\(trans:\s*([^)]*)\)\s*/ /) { $trans = $1; }
@@ -634,18 +654,8 @@ sub extract_lit { my ($txt) = @_;
 	$txt =~ s/^\s+//; $txt =~ s/\s+$//;
 	return ($txt, $lit, $trans); }
 
-sub pgesc { my ($str) = @_; 
-	# Escape characters that are special to the Postgresql COPY
-	# command.  Backslash characters are replaced by two backslash
-	# characters.   Newlines are replaced by the two characters
-	# backslash and "n".  Similarly for tab and return characters.
-	$str =~ s/\\/\\\\/go;
-	$str =~ s/\n/\\n/go;
-	$str =~ s/\r/\\r/go;
-	$str =~ s/\t/\\t/go;
-	return $str; }
 
-sub usage { my ($exitstat) = @_;
+    sub usage { my ($exitstat) = @_;
 	print <<EOT;
 jmparse.pl reads a jmdict xml file such as JMdict or JMnedict and
 creates a file that can be subsequently processed by jmload.pl them
@@ -664,12 +674,23 @@ Options:
 	-h -- (help) print this text and exit.
 	-o output-filename -- Name of output postgresql dump file. 
 	    Default is "JMdict.dmp"
-	-s srcid -- Number that will be for entries' src id, 1 for
-	`   JMdict entries, 2 for JMnedict entries.  If not given,
-	    jmparse will attempt to determine automatically on
-	    an entry-by-entry basis by looking for a <trans> element.
-	-c entry-count -- Number of entries to process.
 	-b begin-seq-num -- Sequence number of first entry to process.
+	-c entry-count -- Number of entries to process.
+	-s id[.kw] -- 'id' is a corpus id number (between 1 and 32767), 
+	    'kw' a short text string giving a corpus abbreviaion.
+	    If only 'id' is given, a kwsrc record with that id will
+	    be assumed to exist, and entry records generated by this
+	    program will use that id.
+	    If both 'id' and 'kw' are given. a new kwsrc record will
+	    be generated and entry records generated by this program 
+	    will use the new record.
+	    If -s is not given, jmparse.pl will attempt to determine
+	    if the input file is a JMdict or JMnedict file and will 
+	    use "1.jmdict" and "2.jmnedict" accordingly.
+	    If the form "id.kw" is used, or -s is not given, and
+	    jmparse,pl is able to find a "...created" comment in the
+	    input file, the date from that comment will be used in 
+	    the kwsrc record. 
 	-g lang -- Include only gloss tag with language code 'lang'.
 	    If not given default is to include all glosses regardless
 	    of language.

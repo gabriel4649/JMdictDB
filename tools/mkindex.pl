@@ -13,7 +13,7 @@ $::hdr = "-- This file is recreated during the database build process.\n" .
 		if (s/^--ALTER TABLE/ALTER TABLE/) { push (@fk, $_); } }
 	    else { # $typ eq 'd'
 		if (m/^--CREATE\s+(UNIQUE\s+)?INDEX/) {
-		    s/^--CREATE\s+(UNIQUE\s+)?INDEX/DROP INDEX/;
+		    s/^--CREATE\s+(UNIQUE\s+)?INDEX/DROP INDEX IF EXISTS/;
 		    s/ ON [^;]*//;
 		    push (@i, $_); }
 		if (m/^--ALTER TABLE/) {

@@ -210,8 +210,8 @@ use jmdict; use jmdictpgi; use kwstatic;
 	if (@t) 			     { do_sens ($e, \@t, $kmap, $rmap); }
 	if (@x = $entry->get_xpath("info/audit")) { do_hist ($e, \@x); }
 	mkfreqs (\%fmap);
-	die ("Has no senses") if (scalar (@{$e->{_sens}}) < 1);
-	die ("Has no readings") if (scalar (@{$e->{_rdng}}) < 1);
+	die ("Has no senses") if (scalar (!$e->{_sens} or !@{$e->{_sens}}));
+	die ("Has no readings") if (scalar (!$e->{_rdng} or !@{$e->{_rdng}}));
 	setkeys ($e, ++$::eid);
 	wrentr ($e); }
 
@@ -290,10 +290,10 @@ use jmdict; use jmdictpgi; use kwstatic;
 	        push (@{$r->{_rinf}}, {kw=>$kw}); } } }
 
     sub do_sens { my ($e, $sens, $kmap, $rmap) = @_;
-	my ($txt, $s, @x, @p, @pp, $z, %smap, %stagr, %stagk, $es);
+	my ($txt, $s, @x, @p, @pp, $z, %smap, %stagr, %stagk, $es, $cntr);
 	@pp=(); %smap=(); %stagr=(); %stagk=(); $e->{_sens} = [];
 	foreach $es (@$sens) {
-	    $txt = undef;
+	    $txt = undef;  ++$cntr;
 	    if (@x = $es->get_xpath ("s_inf")) { $txt = $x[0]->text; }
 	    $s = {notes=>$txt};
 	    @p = $es->get_xpath ("pos");
@@ -311,13 +311,13 @@ use jmdict; use jmdictpgi; use kwstatic;
 	    if (@x = $es->get_xpath ("dial"))      { do_dial   ($s, \@x); }
 	    if (@x = $es->get_xpath ("lsource"))   { do_lsrc   ($s, \@x); }
 	    # (entr,sens,notes)
-	    if (scalar (\@{$s->{_gloss}}) > 0) { push (@{$e->{_sens}}, $s); }
+	    if ($s->{_gloss} && scalar (@{$s->{_gloss}}) > 0) { push (@{$e->{_sens}}, $s); }
 	    else {
 		# This sense has no glosses,
 		# If running with -g, this is normal so don't log 
 		# them.  Otherwise something is amiss.
 		if (!$::Opts{g}) {
-		    print $::Flog "Seq $::Seq: No glosses found in sense\n"; } } } }
+		    print $::Flog "Seq $::Seq: No glosses found in sense $cntr\n"; } } } }
 
     sub do_gloss { my ($s, $gloss) = @_;
 	my ($g, $lang, $lng, $txt, $lit, $trans, @lit, %dupchk);

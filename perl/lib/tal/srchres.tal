@@ -3,7 +3,7 @@
 <!--? $Revision$ $Date$ -->
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <link rel="stylesheet" type="text/css" href="entr.css"/>
+  <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
   <title>JMdict search results</title>
 </head>
 <body class="srchres">

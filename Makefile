@@ -31,22 +31,14 @@ USER = postgres
 # If blank, localhost will be used.
 HOST =
 
-# Directory where the cgi perl scripts will go.
+# The following specify where the cgi scripts, the perl modules they
+# use, and the .css file, respectively, go.  The location and names
+# can be changed, but (currently) their relative positions must remain
+# the same: the cgi and lib dirs must be siglings and the css file goes
+# in their common parent directory.
 CGI_DIR = $(HOME)/public_html/cgi-bin
-
-# Directory where the css file used by all the cgi scripts will go. 
-CSS_DIR = $(HOME)/public_html
-
-# A URL that will be used in the cgi generated html to refer to
-# the .css file.  It is relative to the CGI_DIR directory.  Don't
-# change the "entr.css" part.
-CSS_URL = ../entr.css
-
-# Directory where the perl library modules used by the cgi scripts will go.
-# ***NOTE***: Currently this directory *must* be a sibling directory of
-# the CGI_DIR directory and *must* be named "lib", so this is not really
-# very configurable yet.  sumimasen,atode.
 LIB_DIR = $(HOME)/public_html/lib
+CSS_DIR = $(HOME)/public_html
 
 ##############################################################################
 
@@ -69,16 +61,16 @@ PG_HOST = -h $(HOST)
 JM_HOST = -r $(HOST)
 endif
 
-CSS_FILES = perl/cgi/entr.css
+CSS_FILES = web/jmdict.css
 
-CGI_FILES = perl/cgi/entr.pl \
-	perl/cgi/edconf.pl \
-	perl/cgi/edform.pl \
-	perl/cgi/edhelp.pl \
-	perl/cgi/edsubmit.pl \
-	perl/cgi/srchform.pl \
-	perl/cgi/srchres.pl \
-	perl/cgi/jbparser.pl
+CGI_FILES = web/cgi/entr.pl \
+	web/cgi/edconf.pl \
+	web/cgi/edform.pl \
+	web/cgi/edhelp.pl \
+	web/cgi/edsubmit.pl \
+	web/cgi/srchform.pl \
+	web/cgi/srchres.pl \
+	web/cgi/jbparser.pl
 
 LIB_FILES = perl/lib/jmdict.pm \
 	perl/lib/jmdictcgi.pm \
@@ -242,29 +234,29 @@ dist:
 	tar -cz -f jmdict.tgz --exclude 'CVS' --exclude './jmdict.tgz' .
 
 web:	webcgi weblib webtal webcss
-webcss:	$(CSS_FILES:perl/cgi/%=$(CSS_DIR)/%)
-webcgi:	$(CGI_FILES:perl/cgi/%=$(CGI_DIR)/%)
+webcss:	$(CSS_FILES:web/%=$(CSS_DIR)/%)
+webcgi:	$(CGI_FILES:web/cgi/%=$(CGI_DIR)/%)
 weblib:	$(LIB_FILES:perl/lib/%=$(LIB_DIR)/%)
 webtal:	$(TAL_FILES:perl/lib/tal/%=$(LIB_DIR)/tal/%)
 
-$(CSS_DIR)/entr.css: perl/cgi/entr.css
+$(CSS_DIR)/jmdict.css: web/jmdict.css
 	cp -p $? $@
 
-$(CGI_DIR)/entr.pl: perl/cgi/entr.pl
+$(CGI_DIR)/entr.pl: web/cgi/entr.pl
 	cp -p $? $@
-$(CGI_DIR)/edconf.pl: perl/cgi/edconf.pl
+$(CGI_DIR)/edconf.pl: web/cgi/edconf.pl
 	cp -p $? $@
-$(CGI_DIR)/edform.pl: perl/cgi/edform.pl
+$(CGI_DIR)/edform.pl: web/cgi/edform.pl
 	cp -p $? $@
-$(CGI_DIR)/edhelp.pl: perl/cgi/edhelp.pl
+$(CGI_DIR)/edhelp.pl: web/cgi/edhelp.pl
 	cp -p $? $@
-$(CGI_DIR)/edsubmit.pl: perl/cgi/edsubmit.pl
+$(CGI_DIR)/edsubmit.pl: web/cgi/edsubmit.pl
 	cp -p $? $@
-$(CGI_DIR)/srchform.pl: perl/cgi/srchform.pl
+$(CGI_DIR)/srchform.pl: web/cgi/srchform.pl
 	cp -p $? $@
-$(CGI_DIR)/srchres.pl: perl/cgi/srchres.pl
+$(CGI_DIR)/srchres.pl: web/cgi/srchres.pl
 	cp -p $? $@
-$(CGI_DIR)/jbparser.pl: perl/cgi/jbparser.pl
+$(CGI_DIR)/jbparser.pl: web/cgi/jbparser.pl
 	cp -p $? $@
 
 $(LIB_DIR)/jmdict.pm: perl/lib/jmdict.pm
@@ -285,19 +277,13 @@ $(LIB_DIR)/kwstatic.pm: perl/lib/kwstatic.pm
 
 $(LIB_DIR)/tal/entr.tal: perl/lib/tal/entr.tal
 	cp -p $? $@
-	perl -pi -e 's%href="entr.css"%href="$(CSS_URL)"%' $@
 $(LIB_DIR)/tal/edconf.tal: perl/lib/tal/edconf.tal
 	cp -p $? $@
-	perl -pi -e 's%href="entr.css"%href="$(CSS_URL)"%' $@
 $(LIB_DIR)/tal/edform.tal: perl/lib/tal/edform.tal
 	cp -p $? $@
-	perl -pi -e 's%href="entr.css"%href="$(CSS_URL)"%' $@
 $(LIB_DIR)/tal/edhelp.tal: perl/lib/tal/edhelp.tal
 	cp -p $? $@
-	perl -pi -e 's%href="entr.css"%href="$(CSS_URL)"%' $@
 $(LIB_DIR)/tal/srchform.tal: perl/lib/tal/srchform.tal
 	cp -p $? $@
-	perl -pi -e 's%href="entr.css"%href="$(CSS_URL)"%' $@
 $(LIB_DIR)/tal/srchres.tal: perl/lib/tal/srchres.tal
 	cp -p $? $@
-	perl -pi -e 's%href="entr.css"%href="$(CSS_URL)"%' $@

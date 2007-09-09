@@ -53,7 +53,7 @@ CREATE OR REPLACE VIEW hdwds AS (
 -- with the delimiter " / ".
 ------------------------------------------------------------
 CREATE OR REPLACE VIEW esum AS (
-    SELECT e.id,e.seq,e.src,e.stat,e.notes,e.srcnote,h.rtxt AS rdng,h.ktxt AS kanj,
+    SELECT e.id,e.seq,e.stat,e.src,e.dfrm,e.unap,e.notes,e.srcnote,h.rtxt AS rdng,h.ktxt AS kanj,
 	(SELECT ARRAY_TO_STRING(ACCUM( ss.gtxt ), ' / ') 
 	 FROM 
 	    (SELECT 
@@ -223,12 +223,13 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
     DECLARE
 	_p0_ INT;
     BEGIN
-	INSERT INTO entr(src,seq,stat,notes) 
+	INSERT INTO entr(src,stat,seq,dfrm,unap,srcnotes,notes)
 	  (SELECT src,seq,3,notes FROM entr WHERE id=entrid);
 	SELECT lastval() INTO _p0_;
 
-	INSERT INTO hist(entr,hist,stat,dt,who,diff,notes) 
-	  (SELECT _p0_,hist,stat,dt,who,diff,notes FROM hist WHERE hist.entr=entrid);
+	INSERT INTO hist(entr,hist,stat,edid,dt,name,email,diff,refs,notes) 
+	  (SELECT _p0_,hist,stat,edid,dt,name,email,diff,refs,notes 
+	   FROM hist WHERE hist.entr=entrid);
 
 	INSERT INTO kanj(entr,kanj,txt) 
 	  (SELECT _p0_,kanj,txt FROM kanj WHERE entr=entrid);
@@ -293,5 +294,99 @@ CREATE OR REPLACE FUNCTION delentr(entrid int) RETURNS void AS $$
 	UPDATE entr SET stat=5 WHERE entr=entrid;
 	END;
     $$ LANGUAGE plpgsql;
+
+-------------------------------------------------------------
+-- Following two functions deal with finding the edit set
+-- (i.e. entries linked to an entry through entr.dfrm, either
+-- directly or indirectly)
+-------------------------------------------------------------
+CREATE OR REPLACE FUNCTION children (tblname TEXT) RETURNS VOID AS $$
+    DECLARE
+	level INT := 0; rowcount INT;
+    BEGIN
+	LOOP
+	    EXECUTE 'INSERT INTO '||tblname||'(id,root,lvl) (
+	        SELECT e.id,t.root,t.lvl+1 FROM entr e JOIN '||tblname||' t ON e.dfrm=t.id WHERE t.lvl='||level||')';
+	    GET DIAGNOSTICS rowcount = ROW_COUNT;
+	    --raise notice 'rowcount=%, level=%', rowcount, level;
+	    EXIT WHEN rowcount = 0;
+	    IF level>=99 THEN RAISE EXCEPTION 'Iteration limit exceeded'; END IF;
+	    level := level + 1;
+	    END LOOP;
+	RETURN;
+    END; $$ LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION childrentbl (eid INT,tblname TEXT) RETURNS TEXT AS $$
+    DECLARE
+	tbl TEXT;
+    BEGIN
+	IF tblname IS NULL THEN tbl:='_tmpchld'; ELSE tbl:=tblname; END IF;
+	EXECUTE 'DROP TABLE IF EXISTS '||tbl;
+	EXECUTE 'CREATE TEMPORARY TABLE '||tbl||'(id INT, root INT, lvl INT)';
+	EXECUTE 'INSERT INTO '||tbl||'(id,root,lvl) '||
+		 '(SELECT id,id,0 FROM entr WHERE id='||eid||')';
+	PERFORM children (tbl);
+	RETURN tbl;
+    END; $$ LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION find_edit_leaves (eid INT) RETURNS SETOF entr AS $$
+    -- Starting at entry 'eid', find and return the set of entries
+    -- linked (recursively) to entry 'eid' though foreign key 'dfrm'
+    -- that have no other entries referencing them.  That is, Viewing
+    -- the set of entr rows linked by 'dfrm' as a tree rooted at 'eid',
+    -- thr entr rows returned by this function are the "leaf" nodes
+    -- of the tree.
+
+    DECLARE r RECORD; tmptbl TEXT := '_tmpchld';
+    BEGIN
+	PERFORM childrentbl (eid, tmptbl);
+	FOR r IN EXECUTE 
+		'SELECT e.* FROM entr e JOIN '||tmptbl||' x ON x.id=e.id '|| 
+		'WHERE NOT EXISTS (SELECT * FROM entr e2 WHERE e2.dfrm=x.id)' LOOP
+	    RETURN NEXT r;
+	    END LOOP;
+	EXECUTE 'DROP TABLE '||tmptbl;
+	RETURN;
+    END; $$ LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION find_edit_root (eid INT) RETURNS entr AS $$
+    -- Starting at entry 'eid', follow the chain of 'dfrm' foreign
+    -- keys until a entr row is found that has a NULL 'dfrm' value,
+    -- and return that row.  If now such row exists, a NULL row (one
+    -- with every attribute set to NULL) is returned. 
+
+    DECLARE r entr%ROWTYPE; dfrm INT := eid;
+    BEGIN
+        LOOP
+            SELECT INTO r e.* FROM entr e WHERE e.id=dfrm;
+            EXIT WHEN NOT FOUND OR r.dfrm IS NULL;
+	    dfrm := r.dfrm;
+            END LOOP;
+        RETURN r;
+    END; $$ LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION find_chain_head (eid INT) RETURNS entr AS $$
+    -- Starting at entry 'eid', follow the chain of 'dfrm' foreign
+    -- keys until either:
+    --   1. -- An entry is found with a NULL dfrm key.
+    --   2. -- An entry is found that has more than one 'dfrm' entry
+    --         referencing it.
+    -- Returns the entr row of the entry immediately preceeding the
+    -- found entry above.  If there is no such preceeding row, we
+    -- return a row with every attribute set to NULL.
+
+    DECLARE r entr%ROWTYPE; p entr%ROWTYPE;
+    BEGIN
+        r.id := -1;
+        r.dfrm := eid;
+        LOOP
+            SELECT INTO r e.* FROM entr e 
+              WHERE e.id=r.dfrm AND NOT EXISTS 
+                (SELECT * FROM entr e2 WHERE e2.dfrm=e.id AND e2.id!=r.id);
+            EXIT WHEN NOT FOUND OR r.dfrm IS NULL;
+	    p := r;
+            END LOOP;
+        RETURN p;
+    END; $$ LANGUAGE 'plpgsql';
 
 COMMIT;

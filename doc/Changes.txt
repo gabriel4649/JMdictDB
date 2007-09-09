@@ -1,4 +1,193 @@
 
+2007-09-09 11:45	smcgrawx@frxii.com
+
+	This set of changes implements submission approval and rejection
+	  (including entry deletion) with support for concurrent submissions
+	  (taskid 1)    A schema change to table entr was required, and long
+	  pending change to hist table (taskid 71) made at same time.
+	  Significant changes were made to the edhelp form. {337}
+
+	* doc/schema.dia [1.9]
+	* doc/schema.odt [1.9]
+	* perl/exparse.pl [1.10]
+	* perl/jmparse.pl [1.39]
+	* perl/lib/jmdict.pm [1.37]
+	* perl/lib/jmdictfmt.pm [1.7]
+	* perl/lib/jmdictpgi.pm [1.11]
+	Adjust for the changes to tables entr and hist in pg/mktables.sql.
+	  {306}
+
+	* doc/schema.html [1.7]
+	* doc/schema.pdf [1.5]
+	* doc/schema.png [1.11]
+	* perl/lib/kwstatic.pm [1.12]
+	* pg/drpindex.sql [1.9]
+	* pg/mkindex.sql [1.18]
+	Rebuilt due to changes in prerequisite files. {308}
+
+	* perl/lib/jmdictcgi.pm [1.10]
+	* web/cgi/entr.pl [1.14]
+	Fix: Make svc param safe before using it. {312}
+	Create and use a "editable" flag on entries to simplify displaying of
+	  Edit button in entr.tal. {317}
+
+	* perl/lib/jmdicttal.pm [1.7]
+	Add new function rev().  But doesn't work yet. {333}
+
+	* perl/lib/tal/edconf.tal [1.14]
+	Pass svc parameter along in href links. {321}
+	Display history items in table rather than ordered list. {322}
+	Move the Appove/Reject selector from edconf page back to edform page.
+	  {323}
+	Adjust for the changes to tables entr and hist in pg/mktables.sql.
+	  {306}
+
+	* perl/lib/tal/edform.tal [1.8]
+	Move the Appove/Reject selector from edconf page back to edform page.
+	  {323}
+	Added some missing help links. {324}
+	Open help links in different target page. {325}
+	Add a "delete entry" checkbox. {326}
+	Adjust for the changes to tables entr and hist in pg/mktables.sql.
+	  {306}
+	Pass "isdelete" parameter to TAL file to simplify setting the "delete
+	  entry" checkbox default. {314}
+
+	* perl/lib/tal/edhelp.tal [1.3]
+	Added srcnote, entrnote help. {328}
+	TAL template now uses a kw hash rather than list and explicity
+	  formats exach kw section so it can add additional text content.
+	  {315}
+	Added examples in the Tag Syntax section. {329}
+	Fix: Internal link anchor chnged to lowercase consistently.  Case
+	  differences were breaking some links. {327}
+
+	* perl/lib/tal/entr.tal [1.19]
+	Pass svc parameter along in href links. {321}
+	Create and use a "editable" flag on entries to simplify displaying of
+	  Edit button in entr.tal. {317}
+	Display history items in table rather than ordered list. {322}
+	Adjust for the changes to tables entr and hist in pg/mktables.sql.
+	  {306}
+
+	* perl/lib/tal/srchform.tal [1.13]
+	Fix: Make indenting more consistent with my standard style. {330}
+	Put Kinf and Rinf in same section separated horizontally. {331}
+	Add "Approval" criteria selection to form. {318}
+	Adjust for the changes to tables entr and hist in pg/mktables.sql.
+	  {306}
+
+	* perl/lib/tal/srchres.tal [1.9]
+	Add "stat" field to entry summaries. {332}
+
+	* pg/data/kwfreq.csv [1.2]
+	Add description data. {309}
+
+	* pg/data/kwstat.csv [1.3]
+	Removed "obsolete" keyword {334}
+	Remove the "approval pending" statuses.  Pending status now
+	  maintained as a boolean column in entr table. {310}
+	"reject" keyword value changed from 8 to 6. {335}
+
+	* pg/mktables.sql [1.28]
+	Table entr: added new columns dfrm, unap. {304}
+	Table hist: added new columns edid, split column notes into notes and
+	  refs, split column who into name and email. {305}
+
+	* pg/mkviews.sql [1.23]
+	Add new functions children(), xhildrentbl(), find_edit_root(),
+	  find_edit_leaves(), find_chain_head(), to support new editing
+	  capabilities. {307}
+	Adjust for the changes to tables entr and hist in pg/mktables.sql.
+	  {306}
+
+	* web/cgi/edconf.pl [1.12]
+	Fix: Make svc param safe before using it. {312}
+	Fix: Get rid of "used only once" warnings about $DB::OUT. {311}
+	Use changes in tables entr and hist to implement new better
+	  submission handling. {313}
+
+	* web/cgi/edform.pl [1.11]
+	Fix: Make svc param safe before using it. {312}
+	Pass "isdelete" parameter to TAL file to simplify setting the "delete
+	  entry" checkbox default. {314}
+
+	* web/cgi/edhelp.pl [1.6]
+	Fix: Make svc param safe before using it. {312}
+	TAL template now uses a kw hash rather than list and explicity
+	  formats exach kw section so it can add additional text content.
+	  {315}
+
+	* web/cgi/edsubmit.pl [1.12]
+	Fix: Make svc param safe before using it. {312}
+	Fix: Get rid of "used only once" warnings about $DB::OUT. {311}
+	Rewritten to use new entr table columns to support concurrent edits,
+	  approve, and reject. {316}
+
+	* web/cgi/srchform.pl [1.13]
+	Fix: Make svc param safe before using it. {312}
+
+	* web/cgi/srchres.pl [1.16]
+	Accept text search url params of the form "\udddd" which is what
+	  copy/paste from VNC window into MSIE results in.  This is for
+	  developer's convenience since he uses VNC alot. {320}
+	Fix: Make svc param safe before using it. {312}
+	Add new url param "srchres" to force display of srchres page even if
+	  only one entry in resultset (which would normally result in display
+	  of entr.pl page).  Purpose is so that we can see search query stats
+	  which aren't shown on entr page. {319}
+	Add "Approval" criteria selection to form. {318}
+
+	* web/jmdict.css [1.7]
+	Remove color from .status, add .pend. {336}
+
+2007-08-29 20:42	smcgrawx@frxii.com
+
+	Rearranged directory organization.  Moved perl/cgi/* to web/cgi/*,
+	  and moved/renamed perl/cgi/entr.css to web/jmdict.css.  These
+	  changes made in the cvs repo so are retroactive.    The purpose is
+	  to allow the same relative directory structure in the development
+	  directory that is used (by default) in the cgi install directory.
+	  This permits the httpd server to serve the development directory
+	  which in turn facilitates development without affecting the
+	  stability of the installed cgi files.  This partnered with the
+	  newly added ability to specify the database used via url
+	  parameters, completely decouples development and production and
+	  allows development to occur on the same machine that is running a
+	  production server. {301}
+
+	* Makefile [1.30]
+	Adjust for path changes and .css file location and name change.  This
+	  also affects the ~/public_html/ targets.  Because the relative
+	  location of the .css file is now the same as in the ~/public_html
+	  tree as in the source tree, we no longer need to change the tal
+	  files when copying. {302}
+
+	* perl/lib/tal/edconf.tal [1.13]
+	* perl/lib/tal/edform.tal [1.7]
+	* perl/lib/tal/edhelp.tal [1.2]
+	* perl/lib/tal/entr.tal [1.18]
+	* perl/lib/tal/srchform.tal [1.12]
+	* perl/lib/tal/srchres.tal [1.8]
+	Change stylesheet from entr.css to ../jmdict.css. {303}
+
+2007-08-25 20:36	smcgrawx@frxii.com
+
+	* perl/jmparse.pl [1.38]
+	Fix: Was failing to log warning when sense had no glosses. {300}
+
+2007-08-25 17:16	smcgrawx@frxii.com
+
+	* perl/exparse.pl [1.18]
+	Fix: Month of date generated for kwsrc record was wrong. {298}
+
+	* perl/lib/jmdictxml.pm [1.9]
+	* pg/data/kwmisc.csv [1.4]
+	Add new misc tag 'poet'. {297}
+
+	* pg/data/README.txt [1.2]
+	Clarify and expand. {299}
+
 2007-08-25 12:32	smcgrawx@frxii.com
 
 	* Makefile [1.29]
@@ -41,33 +230,19 @@
 
 2007-08-23 22:35	smcgrawx@frxii.com
 
-	* perl/cgi/edhelp.pl [1.5]
+	* web/cgi/edhelp.pl [1.5]
 	Fix: Tried to call cgi method but line that instantiated cgi was
 	  commented out. {283}
 
 2007-08-23 20:40	smcgrawx@frxii.com
 
-	* perl/cgi/edform.pl [1.10]
+	* web/cgi/edform.pl [1.10]
 	Fix: syntax error. {282}
 
 2007-08-23 00:21	smcgrawx@frxii.com
 
 	* README.txt [1.13]
 	Update install instructions for using Postgresql service file. {281}
-
-	* perl/cgi/edconf.pl [1.11]
-	* perl/cgi/edform.pl [1.9]
-	* perl/cgi/edhelp.pl [1.4]
-	* perl/cgi/edsubmit.pl [1.11]
-	* perl/cgi/entr.pl [1.13]
-	* perl/cgi/srchform.pl [1.12]
-	* perl/cgi/srchres.pl [1.15]
-	* perl/lib/tal/edconf.tal [1.12]
-	* perl/lib/tal/edform.tal [1.6]
-	* perl/lib/tal/entr.tal [1.17]
-	* perl/lib/tal/srchform.tal [1.11]
-	* perl/lib/tal/srchres.tal [1.7]
-	Read and propagate db service "svc" url parameter. {280}
 
 	* perl/lib/jmdictcgi.pm [1.9]
 	Function dbopen() changed to read Postgresql "service" file rather
@@ -76,38 +251,52 @@
 	* perl/lib/pg_service.sample [1.1]
 	New: Example postgresql service file. {279}
 
+	* perl/lib/tal/edconf.tal [1.12]
+	* perl/lib/tal/edform.tal [1.6]
+	* perl/lib/tal/entr.tal [1.17]
+	* perl/lib/tal/srchform.tal [1.11]
+	* perl/lib/tal/srchres.tal [1.7]
+	* web/cgi/edconf.pl [1.11]
+	* web/cgi/edform.pl [1.9]
+	* web/cgi/edhelp.pl [1.4]
+	* web/cgi/edsubmit.pl [1.11]
+	* web/cgi/entr.pl [1.13]
+	* web/cgi/srchform.pl [1.12]
+	* web/cgi/srchres.pl [1.15]
+	Read and propagate db service "svc" url parameter. {280}
+
 2007-08-22 19:13	smcgrawx@frxii.com
 
 	* Makefile []
 	Fix: xresolv.pl logfile name in target loadex. {277}
 
-	* perl/cgi/edform.pl [1.8]
-	* perl/cgi/edhelp.pl [1.3]
-	* perl/cgi/srchres.pl [1.14]
 	* perl/lib/jmdict.pm [1.36]
 	* perl/lib/jmdictcgi.pm [1.8]
+	* web/cgi/edform.pl [1.8]
+	* web/cgi/edhelp.pl [1.3]
+	* web/cgi/srchres.pl [1.14]
 	Move function dbopen() from jmdict.pm to jmdictcgi.pm {276}
 
-	* perl/cgi/srchform.pl [1.11]
+	* web/cgi/srchform.pl [1.11]
 	Move function dbopen() from jmdict.pm to jmdictcgi.pm {276}
 	Fix: Fix "gkwrecs" typo that crept in during last edit. {275}
 
 2007-08-22 14:52	smcgrawx@frxii.com
 
-	* perl/cgi/edhelp.pl [1.2]
-	* perl/cgi/srchform.pl [1.10]
+	* perl/jmparse.pl [1.36]
+	When possible, if a bad data item such as a keyword is encountered,
+	  print warning, skip it, and continue.  Previously, would call die()
+	  which skipped the entire entry. {274}
+	Remove code and data that use kw values >200 to signal deprecated
+	  values. {273}
+
 	* perl/lib/jmdictxml.pm [1.17]
 	* perl/lib/kwstatic.pm [1.10]
 	* pg/data/kwmisc.csv [1.3]
 	* pg/data/kwpos.csv [1.3]
 	* pg/data/kwrinf.csv [1.3]
-	Remove code and data that use kw values >200 to signal deprecated
-	  values. {273}
-
-	* perl/jmparse.pl [1.36]
-	When possible, if a bad data item such as a keyword is encountered,
-	  print warning, skip it, and continue.  Previously, would call die()
-	  which skipped the entire entry. {274}
+	* web/cgi/edhelp.pl [1.2]
+	* web/cgi/srchform.pl [1.10]
 	Remove code and data that use kw values >200 to signal deprecated
 	  values. {273}
 
@@ -139,11 +328,11 @@
 	  {232}
 
 	* Makefile [1.26]
-	Use xresolv.pl rather than xresolv.sql to resolve xrefs. {251}
-	Improve parameterization. {252}
 	Fix: Previous version did not use same parameters when running perl
 	  commands as it used for psql commands when non-default values were
 	  used. {253}
+	Improve parameterization. {252}
+	Use xresolv.pl rather than xresolv.sql to resolve xrefs. {251}
 
 	* doc/schema.dia [1.8]
 	* doc/schema.odt [1.8]
@@ -156,19 +345,6 @@
 	* pg/drpindex.sql [1.6]
 	* pg/mkindex.sql [1.16]
 	Remake due to change in prerequisite file(s). {230}
-
-	* perl/cgi/edconf.pl [1.10]
-	Reenable check for possible duplicate entries. {260}
-
-	* perl/cgi/edhelp.pl [1.1]
-	* perl/cgi/entr.css [1.6]
-	* perl/lib/tal/edhelp.tal [1.1]
-	Add edhelp.pl/tal page that provides entry editing help and refer to
-	  it from entry edit form. {247}
-
-	* perl/cgi/srchres.pl [1.13]
-	When searching by seq#. pay attention to selected corpus (aka src).
-	  {265}
 
 	* perl/lib/jbparser.yp [1.6]
 	Fix: In function resolv_xrefs() was calling jmdict::resolv_xrefs()
@@ -207,6 +383,12 @@
 	* perl/lib/tal/edform.tal [1.5]
 	Moved "Approved" checkbox from edform.tal to edconf.tal. {250}
 
+	* perl/lib/tal/edhelp.tal [1.1]
+	* web/cgi/edhelp.pl [1.1]
+	* web/jmdict.css [1.6]
+	Add edhelp.pl/tal page that provides entry editing help and refer to
+	  it from entry edit form. {247}
+
 	* perl/lib/tal/srchform.tal [1.10]
 	Retitle "dictionary" section to "corpus". {266}
 
@@ -218,10 +400,10 @@
 
 	* pg/mktables.sql [1.26]
 	Adjust for addition of reading/kanji to xrefs. {249}
+	Add oids to table freq to that it will be editable in PgAdmin. {257}
 	Disable the unique index on xref(entr,sens,typ,xentr,xsens) because
 	  the Examples file generates such xrefs (as does jmdict when there a
 	  sense has two xrefs to the same target.) {255}
-	Add oids to table freq to that it will be editable in PgAdmin. {257}
 	Remove table xrefld and its trigger function. {256}
 	Fix: Correct erroneous comment characters. {254}
 
@@ -231,6 +413,13 @@
 
 	* pg/xresolv.sql [1.13]
 	Removed, replaced by perl/xresolv.pl {233}
+
+	* web/cgi/edconf.pl [1.10]
+	Reenable check for possible duplicate entries. {260}
+
+	* web/cgi/srchres.pl [1.13]
+	When searching by seq#. pay attention to selected corpus (aka src).
+	  {265}
 
 2007-08-19 08:25	smcgrawx@frxii.com
 
@@ -272,11 +461,6 @@
 
 2007-08-09 20:31	smcgrawx@frxii.com
 
-	* perl/cgi/edform.pl [1.7]
-	* perl/cgi/entr.pl [1.12]
-	Change call of jmdict::add_xrefsums() since it no longer accepts the
-	  $tmptbl argument. {223}
-
 	* perl/lib/jmdict.pm [1.34]
 	New functions entr_data() and entr_bld() replace former EntrList().
 	  EntrList() now just a wrapper that calls the two new functions.
@@ -313,6 +497,11 @@
 	Change call of jmdict::add_xrefsums() since it no longer accepts the
 	  $tmptbl argument. {223}
 
+	* web/cgi/edform.pl [1.7]
+	* web/cgi/entr.pl [1.12]
+	Change call of jmdict::add_xrefsums() since it no longer accepts the
+	  $tmptbl argument. {223}
+
 2007-08-07 15:25	smcgrawx@frxii.com
 
 	* Makefile [1.24]
@@ -322,20 +511,6 @@
 	Fix: Modularize (put in package, export functions, etc.) {215}
 
 2007-08-07 13:48	smcgrawx@frxii.com
-
-	* perl/cgi/edsubmit.pl [1.10]
-	Generate url to added entry with a corpus spec. {214}
-
-	* perl/cgi/entr.pl [1.11]
-	Permit specifying corpus by allow q=n.c url parameters. {211}
-	Push the main body of processing down into a sub. {212}
-	Fix: Detect and provide message on error page when there are no
-	  entries. {213}
-
-	* perl/cgi/srchres.pl [1.12]
-	Change the sql generation for text matching.  For gloss always use
-	  lowercase which gives case-nsensitive searching since indexes built
-	  same way.  For {209}
 
 	* perl/lib/jmdict.pm [1.33]
 	addentr() now returns new entry's src in addition to id and seq.
@@ -347,28 +522,42 @@
 	* pg/mktables.sql [1.25]
 	Add a functional index using lower() on gloss.txt to provide fast
 	  case-insensitive "=" search. {204}
-	Add varchar_pattern_ops indexes on kanj.txt, rdng.txt to provide fast
-	  LIKE search. {207}
 	Add varchar_pattern_ops indexes on gloss.txt to provide fast case-
 	  insensitive LIKE search. {208}
+	Add varchar_pattern_ops indexes on kanj.txt, rdng.txt to provide fast
+	  LIKE search. {207}
+
+	* web/cgi/edsubmit.pl [1.10]
+	Generate url to added entry with a corpus spec. {214}
+
+	* web/cgi/entr.pl [1.11]
+	Permit specifying corpus by allow q=n.c url parameters. {211}
+	Push the main body of processing down into a sub. {212}
+	Fix: Detect and provide message on error page when there are no
+	  entries. {213}
+
+	* web/cgi/srchres.pl [1.12]
+	Change the sql generation for text matching.  For gloss always use
+	  lowercase which gives case-nsensitive searching since indexes built
+	  same way.  For {209}
 
 2007-08-05 13:22	smcgrawx@frxii.com
 
-	* perl/cgi/srchres.pl [1.11]
 	* perl/lib/jmdict.pm [1.32]
+	* web/cgi/srchres.pl [1.11]
 	Move function build_search_sql() from perl/cgi/srchres.pl to
 	  perl/lib/jmdict.pm. {202}
 
 2007-08-05 12:05	smcgrawx@frxii.com
 
-	* perl/cgi/srchres.pl [1.10]
-	Greatly simplify build_search_sql() and remove extend_from_clause().
-	  This simplification made possible by the big pk/fk change made on
-	  2007-02-11. {200}
-
 	* perl/lib/jmdict.pm [1.31]
 	Remove exported variable Tables which was used by perl/cgi/srchres.pl
 	  (extend_from_clause()) but is no longer needed. {201}
+
+	* web/cgi/srchres.pl [1.10]
+	Greatly simplify build_search_sql() and remove extend_from_clause().
+	  This simplification made possible by the big pk/fk change made on
+	  2007-02-11. {200}
 
 2007-08-05 10:01	smcgrawx@frxii.com
 
@@ -420,21 +609,6 @@
 	  glosses for only the xref's senses, not all in entry as previously)
 	  but cgi/entr.pl and friends now list every entry/sense xref target
 	  on a separate line. {190}
-
-	* perl/cgi/edconf.pl [1.9]
-	Fix: nokanji tag not being displayed.  Fix by calling fmt_restr() on
-	  entry before display. {186}
-	Fix: Remove extra dbopen() call thet produced a "connection closed"
-	  warning from DBI. {182}
-
-	* perl/cgi/edform.pl [1.6]
-	Use add_xrefsums() rather than now non-existent xrefdetails(). {180}
-
-	* perl/cgi/entr.pl [1.10]
-	Move functions fmt_restr(), fmt_stag(), set_audio_flag from
-	  perl/cgi/entr.pl to perl/lib/jmdictcgi.pm since they are also
-	  needed by cgi/edconf.pl. {185}
-	Use add_xrefsums() rather than now non-existent xrefdetails(). {180}
 
 	* perl/lib/jbparser.pm [1.4]
 	* perl/lib/kwstatic.pm [1.8]
@@ -490,13 +664,28 @@
 
 	* pg/mkviews.sql [1.21]
 	Delete views eksum, xrefesum. {189}
-	Add new view essum. {166}
 	Change view hdwds to return entr.* rather than only entr.id. {167}
 	Change view esum to get rdng and kanj strings from join on view
 	  hdwds, rather than generating them independently. {162}
+	Add new view essum. {166}
 
 	* pg/xresolv.sql [1.11]
 	Fix: Missing semi colon that causes syntax error when exceuted. {176}
+
+	* web/cgi/edconf.pl [1.9]
+	Fix: nokanji tag not being displayed.  Fix by calling fmt_restr() on
+	  entry before display. {186}
+	Fix: Remove extra dbopen() call thet produced a "connection closed"
+	  warning from DBI. {182}
+
+	* web/cgi/edform.pl [1.6]
+	Use add_xrefsums() rather than now non-existent xrefdetails(). {180}
+
+	* web/cgi/entr.pl [1.10]
+	Move functions fmt_restr(), fmt_stag(), set_audio_flag from
+	  perl/cgi/entr.pl to perl/lib/jmdictcgi.pm since they are also
+	  needed by cgi/edconf.pl. {185}
+	Use add_xrefsums() rather than now non-existent xrefdetails(). {180}
 
 2007-07-29 18:20	smcgrawx@frxii.com
 
@@ -553,11 +742,11 @@
 	Remade due to changes in prerequisite mktables.sql. {153}
 
 	* pg/mktables.sql [1.23]
-	Create an insert trigger on table xref that will automatically assign
-	  value to column "xref". {151}
 	Add column "xref" to table xref, and change the PK from
 	  (entr,sens,xentr,xsens,typ) to (entr,sens,xref).  What was formerly
 	  the PK is now a unique index. {150}
+	Create an insert trigger on table xref that will automatically assign
+	  value to column "xref". {151}
 
 	* pg/mkviews.sql [1.20]
 	Adjust function adddup() and view xrefsum for change to xref table.
@@ -582,25 +771,13 @@
 
 2007-07-25 23:59	smcgrawx@frxii.com
 
-	* perl/cgi/edform.pl [1.5]
-	Make 'src' selection a drop-down box. {136}
-
-	* perl/cgi/edsubmit.pl [1.9]
-	Set 'seq' to undef rather then 0 to force db to assign from
-	  appropriate sequence. {144}
-
-	* perl/cgi/entr.pl [1.9]
-	Formerly checked that the received q=number was a 7-digit number
-	  since that is true for all jmdict seq numbers.  But not true for
-	  other corpuses so change to accept any number. {140}
-
 	* perl/lib/jmdict.pm [1.27]
 	Removed function get_seq() since addentr() no longer uses it per
 	  chgid-133. {139}
-	In function addentr() call setkeys() to set all the key values rather
-	  than doing it ourself. {138}
 	In function addentr(), don't assign a 'seq' value, leave it NULL and
 	  rely on the new entr table insert trigger to set it. {133}
+	In function addentr() call setkeys() to set all the key values rather
+	  than doing it ourself. {138}
 
 	* perl/lib/tal/edconf.tal [1.8]
 	Adjust layout of entr data to match current entr.tal {137}
@@ -632,6 +809,18 @@
 	* pg/syncseq.sql [1.9]
 	New sequences 'seq_jmdict', 'seq_jmnedict', and 'seq_examples' to
 	  provide src-dependent default entr.seq values. {131}
+
+	* web/cgi/edform.pl [1.5]
+	Make 'src' selection a drop-down box. {136}
+
+	* web/cgi/edsubmit.pl [1.9]
+	Set 'seq' to undef rather then 0 to force db to assign from
+	  appropriate sequence. {144}
+
+	* web/cgi/entr.pl [1.9]
+	Formerly checked that the received q=number was a 7-digit number
+	  since that is true for all jmdict seq numbers.  But not true for
+	  other corpuses so change to accept any number. {140}
 
 2007-07-25 15:19	smcgrawx@frxii.com
 
@@ -674,13 +863,13 @@
 
 2007-07-12 13:13	smcgrawx@frxii.com
 
-	* perl/cgi/jbparser.pl [1.4]
-	Fix: Add missing semicolon left out in the previous DB::OUT warning
-	  message fix. {121}
-
 	* perl/jmload.pl [1.4]
 	Fix: Remove lingering obsolete references to hist.id in the comments
 	  and builtin help text. {122}
+
+	* web/cgi/jbparser.pl [1.4]
+	Fix: Add missing semicolon left out in the previous DB::OUT warning
+	  message fix. {121}
 
 2007-06-17 21:44	smcgrawx@frxii.com
 
@@ -695,32 +884,23 @@
 	  is a misnomer and the table holds several types of translational
 	  enties. {111}
 
-	* perl/cgi/edconf.pl [1.8]
-	* perl/cgi/edform.pl [1.4]
-	* perl/cgi/edsubmit.pl [1.8]
-	* perl/lib/tal/edconf.tal [1.7]
-	* perl/lib/tal/edform.tal [1.3]
-	Rewritten to support both new entries and edit of existing entries.
-	  {118}
-	Renamed the nw*.* cgi and tal files to ed*.* {117}
-
-	* perl/cgi/jbparser.pl [1.3]
-	* perl/lib/jbparser.pm [1.4]
-	Fix: Get rid of "DB::OUT" used only once" warning message that
-	  appears when running on *nix machines but nor MS Windows. {107}
-
 	* perl/jmparse.pl [1.30]
 	Function extract_lit() was missing literals matching "^lit:" (and
 	  similar for trans). {115}
 
+	* perl/lib/jbparser.pm [1.4]
+	* web/cgi/jbparser.pl [1.3]
+	Fix: Get rid of "DB::OUT" used only once" warning message that
+	  appears when running on *nix machines but nor MS Windows. {107}
+
 	* perl/lib/jbparser.yp [1.4]
+	Add new function qcleanup() like gcleanup but for quoted strings.
+	  {114}
+	In function gcleanup() reduce multiple WS characters to a single one.
+	  {113}
 	When creating lsrc and gloss records, make sure all fields are
 	  created even if they have default values (e.g. lang and ginf in
 	  gloss, and lang, part, and wasei in lsrc.) {112}
-	In function gcleanup() reduce multiple WS characters to a single one.
-	  {113}
-	Add new function qcleanup() like gcleanup but for quoted strings.
-	  {114}
 
 	* perl/lib/jmdict.pm [1.26]
 	Minor clarification to comments in filt(). {110}
@@ -736,6 +916,15 @@
 	  "stat" value of "D"  which was 5.  But they should be created as 4
 	  "Deleted".  Rather that change jmparse.pl, changed kwstat.csv.
 	  {108}
+
+	* perl/lib/tal/edconf.tal [1.7]
+	* perl/lib/tal/edform.tal [1.3]
+	* web/cgi/edconf.pl [1.8]
+	* web/cgi/edform.pl [1.4]
+	* web/cgi/edsubmit.pl [1.8]
+	Rewritten to support both new entries and edit of existing entries.
+	  {118}
+	Renamed the nw*.* cgi and tal files to ed*.* {117}
 
 	* perl/lib/tal/entr.tal [1.11]
 	Add "edit" button. {119}
@@ -759,10 +948,6 @@
 	Fix: Update "web" target: need additional files in lib dir for
 	  jbparser to work: jbparser.yp, kwstatic.pm {102}
 
-	* perl/cgi/jbparser.pl [1.2]
-	Fix: Remove Microsoft BOM which Apache web server doesn't like. {100}
-	Fix: Make permissions 755, also for Apache. {101}
-
 	* perl/lib/jbparser.pm [1.2]
 	Rebuild due to change in prerequisite file perl/lib/jbparser.yp {104}
 
@@ -770,13 +955,17 @@
 	Unescape backslashes in gloss text in function gcleanup(), which was
 	  renamed from trim(). {103}
 
+	* web/cgi/jbparser.pl [1.2]
+	Fix: Remove Microsoft BOM which Apache web server doesn't like. {100}
+	Fix: Make permissions 755, also for Apache. {101}
+
 2007-06-14 14:09	smcgrawx@frxii.com
 
 	* Makefile [1.19]
-	* perl/cgi/jbparser.pl [1.1]
 	* perl/lib/Makefile [1.4]
 	* perl/lib/jbparser.pm [1.1]
 	* perl/lib/jbparser.yp [1.1]
+	* web/cgi/jbparser.pl [1.1]
 	Input language parser (preliminary) {95}
 
 	* doc/schema.dia [1.6]
@@ -905,10 +1094,6 @@
 	  directories were out-of-date and it was not included in the T016
 	  snapshot {67}
 
-	* perl/cgi/edconf.pl [1.7]
-	Move subs cgientr() and resolv_xrefs() from perl/cgi/nwconf.pl to
-	  perl/lib/jmdictcgi.pm {68}
-
 	* perl/exparse.pl [1.6]
 	* perl/lib/jmdictpgi.pm [1.5]
 	* pg/mktables.sql [1.18]
@@ -936,6 +1121,10 @@
 	* pg/data/kwdial.csv [1.2]
 	Add dialect 'kyu'. {73}
 
+	* web/cgi/edconf.pl [1.7]
+	Move subs cgientr() and resolv_xrefs() from perl/cgi/nwconf.pl to
+	  perl/lib/jmdictcgi.pm {68}
+
 2007-05-22 14:48	smcgrawx@frxii.com
 
 	Tag: T016 {65}
@@ -943,9 +1132,9 @@
 2007-05-22 09:19	smcgrawx@frxii.com
 
 	* Makefile [1.15]
+	Fix: Error in mv command of target "examples.txt". {62}
 	Fix: Examples file at Monash ftp site has extension ".utf", not
 	  ".utf8". {59}
-	Fix: Error in mv command of target "examples.txt". {62}
 
 	* perl/exparse.pl [1.5]
 	Fix: Was failing to set ginf column value in gloss table output. {64}
@@ -977,10 +1166,10 @@
 	  things the old way. {53}
 
 	* README.txt [1.10]
-	Rewrite the install section based on using Makefile (which I have
-	  verified is useable on both Unix and Windows). {49}
 	Update the documentation for the schema changes related to jmdict dtd
 	  1.06 and gloss tags. {44}
+	Rewrite the install section based on using Makefile (which I have
+	  verified is useable on both Unix and Windows). {49}
 
 	* doc/Makefile [1.1]
 	* doc/README.txt [1.1]

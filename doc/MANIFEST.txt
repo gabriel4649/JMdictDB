@@ -22,16 +22,6 @@ perl/jmload.pl................Generates Postegresql load file from intermediate 
 perl/jmparse.pl...............Generates intermediate, rebasable  file from JMdict XML file.
 perl/showentr.pl..............Command line tool to show database entries.
 perl/xresolv.pl...............Convert jmdict tetual xrefs to database pk/fk xrefs
-perl/cgi/.....................CGI scripts
-perl/cgi/edconf.pl............Confirm new/edit entry page.
-perl/cgi/edform.pl............New/edit entry form.
-perl/cgi/edhelp.pl............Edit help page.
-perl/cgi/edsubmit.pl..........New/edit entry action.
-perl/cgi/entr.css.............CSS style sheet for all cgi pages.
-perl/cgi/entr.pl..............Show entry details page.
-perl/cgi/jbparser.pl..........Page for interactively testing parser
-perl/cgi/srchform.pl..........JMdictDB general entry search form.
-perl/cgi/srchres.pl...........Search results list.
 perl/lib/.....................Perl library modules
 perl/lib/Makefile.............Make kwstatic.pm file from pg/data/* files.
 perl/lib/jbparser.pm..........[*] Input language parser module
@@ -79,5 +69,15 @@ pg/data/kwxref.csv............Xref keywords.
 tools/........................Utility and build tools (used by makefiles, etc)
 tools/mkindex.pl..............Creates ./pg/mkindex.sql and ./pg/drpindex.sql.
 tools/mkkwmod.pl..............Creates ./perl/lib/kwstatic.pm file.
+web/jmdict.css................CSS style sheet for all cgi pages.
+web/cgi/......................CGI scripts
+web/cgi/edconf.pl.............Confirm new/edit entry page.
+web/cgi/edform.pl.............New/edit entry form.
+web/cgi/edhelp.pl.............Edit help page.
+web/cgi/edsubmit.pl...........New/edit entry action.
+web/cgi/entr.pl...............Show entry details page.
+web/cgi/jbparser.pl...........Page for interactively testing parser
+web/cgi/srchform.pl...........JMdictDB general entry search form.
+web/cgi/srchres.pl............Search results list.
 
 [*] -- Denotes file that is automatically generated.

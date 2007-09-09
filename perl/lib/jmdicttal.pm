@@ -115,4 +115,8 @@ $Petal::Hash::MODIFIERS->{'join:'} = sub { my ($hash, $args) = @_;
 	$b = $hash->jmdicttal::fetch_arg ($e2);
 	return join($a, @$b); };
 
+$Petal::Hash::MODIFIERS->{'rev:'} = sub { my ($hash, $args) = @_;
+	my $a = $hash->jmdicttal::fetch_arg ($args);
+	return reverse (@$a); };
+
 1;

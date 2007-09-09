@@ -32,25 +32,33 @@ use jmdict; use jmdictcgi; use jmdicttal; use jbparser;
 
 $|=1;
 binmode (STDOUT, ":utf8");
-eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
+{no warnings 'once';
+    eval { binmode($DB::OUT, ":encoding(shift_jis)"); }; }
 
     main: {
 	my ($dbh, $cgi, $tmpl, $entr, $entrs, @errs, $serialized, $perrs,
 	    $kanj, $rdng, $sens, $intxt, $chklist, $nochk, $eid, $svc,
 	    $comment, $refs, $name, $email, $seq, $src, $stat, $notes,
-	    $srcnote);
+	    $srcnote, $delete, $disp);
 
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
-	$svc = $cgi->param ("svc");
+	$svc = clean ($cgi->param ("svc"));
 	$dbh = dbopen ($svc);  $::KW = Kwds ($dbh);
 
 	  # $eid will be an integer if we are editing an existing 
-	  # entry, or undefined if thisis a new entry.
+	  # entry, or undefined if this is a new entry.
 	$eid = $cgi->param ('id');
 
-	  # New status is M for edit entry, N for new entry.
-	$stat = $eid ? $::KW->{STAT}{M}{id} : $::KW->{STAT}{N}{id};
+	  # Desired disposition: 'a':approve, 'r':reject, undef:submit.
+	$disp = $cgi->param ('disp');
+
+	  # New status is A for edit of existing entry, N for new 
+	  # entry, D for deletion of existing entry.
+	$delete = $cgi->param ('delete');
+	$stat = $eid ? ($delete ? $::KW->{STAT}{D}{id}
+			        : $::KW->{STAT}{A}{id})
+		     : $::KW->{STAT}{N}{id};
 
 	  # These will only have values when editing an entry. 
 	$seq = $cgi->param ('seq');
@@ -77,13 +85,17 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	    push (@errs, "Invalid email address: $email"); }
 
 	  # Parse the entry data.  Problems will be reported
-	  # by messages in @$perrs.
+	  # by messages in @$perrs.  We do the parse even if 
+	  # the request is to delete the entry (is this right
+	  # thing to do???) since on the edconf page we want
+	  # to display what the entry was.  The edsubmit page
+	  # will do the actual deletion. 
 	($entr,$perrs) = jbparser->parse_text ($intxt, 7);
 	push (@errs, @$perrs);
 
-	  # The code in the "if" assumes we have a valid entr
-	  # object from jbparser.  If there were parse errors
-	  # that's not true.
+	  # The code in the "if" below assumes we have a valid entr
+	  # object from jbparser.  If there were parse errors that's
+	  # not true so we don't go there.
 	if (!@$perrs) {
 
 	      # If this is a new entry, look for other entries that
@@ -91,7 +103,7 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	      # as cautions at the top of the confirmation form in
 	      # hopes of reducing submissions of words already in 
 	      # the database.
-	    if (!$eid) {
+	    if (!$eid && !$delete) {
 		$chklist = find_similar ($dbh, $entr->{_kanj}, $entr->{_rdng}); }
 	    else { $chklist = []; }
 
@@ -108,8 +120,9 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	      # Migrate the entr details to the new entr object
 	      # which to this point had only the kanj/rdng/sens
 	      # info provided by jbparser.  
-	    $entr->{id} = $eid; $entr->{seq} = $seq; $entr->{stat} = $stat;
-	    $entr->{src} = $src, $entr->{notes} = $notes, $entr->{srcnote} = $srcnote; 
+	    $entr->{dfrm} = $eid; $entr->{seq} = $seq;  $entr->{stat} = $stat; 
+	    $entr->{src} = $src; $entr->{notes} = $notes; $entr->{srcnote} = $srcnote; 
+	    $entr->{unap} = 1;
 
 	      # Append a new hist record details this edit.
 	    if (!$entr->{_hist}) { $entr->{_hist} = []; }
@@ -125,36 +138,20 @@ eval { binmode($DB::OUT, ":encoding(shift_jis)"); };
 	    set_audio_flag ($entrs);
 	    $tmpl = new Petal (file=>'../lib/tal/edconf.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
-	    print $tmpl->process (entries=>$entrs, 
-				chklist=>$chklist,
-				serialized=>$serialized, svc=>$svc); }
+	    print $tmpl->process (entries=>$entrs, chklist=>$chklist, 
+				is_editor=>1, svc=>$svc, disp=>$disp,
+				serialized=>$serialized); }
 	else { errors_page (\@errs); }
 	$dbh->disconnect if ($dbh); } 
 
     sub newhist { my ($entr, $stat, $comment, $refs, $name, $email, $errs) = @_;
-	my ($who, $hist, $now);
-
-	  # Name and email addy are combined into a single
-	  # field in the database.
-
-	$who = $name . "<" . $email . ">";
-
-	  # The comment and references info are also combined into
-	  # a single database field.  We preserve line structure.
-
-	if ($comment) { $comment = "Comment:\n$comment"; }
-	if ($refs) {
-	    if ($comment) { $comment .= "\n\n"; }
-	    $comment .= "References:\n$refs"; }
-
+	my ($hist, $now);
 	  # Create a history record for display.  A real record 
 	  # will be recreated when the entry is actually committed
 	  # to the database.
-
 	$now = strftime "%Y-%m-%d %H:%M:%S", localtime;
-	$hist = {entr=>0, hist=>0, dt=>$now, stat=>$stat,
-		  who=>$who, diff=>'', notes=>$comment };
-
+	$hist = {entr=>0, hist=>0, dt=>$now, stat=>$stat, name=>$name, 
+		 email=>$email, diff=>'', refs=>$refs, notes=>$comment};
 	return $hist; }
 
     sub find_similar { my ($dbh, $kanj, $rdng, $src) = @_;

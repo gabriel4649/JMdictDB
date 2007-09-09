@@ -176,7 +176,8 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 
     %jmdict::OrderBy = 
 	(rdng=>"x.entr,x.rdng", kanj=>"x.entr,x.kanj", sens=>"x.entr,x.sens", 
-	gloss=>"x.entr,x.sens,x.gloss", xref=>"x.entr,x.sens,x.xref");
+	gloss=>"x.entr,x.sens,x.gloss", xref=>"x.entr,x.sens,x.xref", 
+	hist=>"x.entr,x.hist");
 
     sub entr_data { my ($dbh, $type, $crit, $args, $ord) = @_;
 	#
@@ -637,10 +638,10 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 
 	my ($eid, $r, $k, $s, $g, $x, $h, $rs);
 	if (!$entr->{seq}) { $entr->{seq} = undef; }
-	$eid = dbinsert ($dbh, "entr", ['src','seq','stat','srcnote','notes'], $entr);
+	$eid = dbinsert ($dbh, "entr", ['src','stat','seq','dfrm','unap','srcnote','notes'], $entr);
 	setkeys ($entr, $eid);
 	foreach $h (@{$entr->{_hist}})   {
-	    dbinsert ($dbh, "hist", ['entr','hist','stat','dt','who','diff','notes'], $h); }
+	    dbinsert ($dbh, "hist", ['entr','hist','stat','edid','dt','name','email','diff','refs','notes'], $h); }
 	foreach $k (@{$entr->{_kanj}})   {
 	    dbinsert ($dbh, "kanj", ['entr','kanj','txt'], $k);
 	    foreach $x (@{$k->{_kinf}})  { dbinsert ($dbh, "kinf",  ['entr','kanj','kw'], $x); } }

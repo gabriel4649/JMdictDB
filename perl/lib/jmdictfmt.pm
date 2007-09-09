@@ -40,7 +40,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	#    on the entry object before calling fmt_entr() (because
 	#    p_sens() uses the info added by add_xrefsums().) 
 
-	my (@x, $x, $s, $n, $stat, $src, $id, $seq, $fmtstr);
+	my (@x, $x, $s, $n, $stat, $src, $id, $seq, $fmtstr, $pend, $dfrm);
 
 	  # $e->{stat} is the value of the "stat" column 
 	  # for this entry.  It is a number that corresponds
@@ -48,10 +48,12 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	  # To convert it to a keyword string, we look the 
 	  # number up in the STAT section of the kw table 
 	  # data structure in $::KW.
-	$stat = $e->{stat} ? ("[" . $::KW->{STAT}{$e->{stat}}{kw} . "]") : "";
-	$src =  $e->{src}  ? ("(" . $::KW->{SRC}{$e->{src}}{kw} . ")")   : "";
-	$seq =  $e->{seq}  ? (      $e->{seq})                           : "";
-	$id =   $e->{id}   ? ("{" . $e->{id} . "}")                      : "";
+	$pend = $e->{unap} ? "*" : "";
+	$stat = $e->{stat} ? ("[" . $::KW->{STAT}{$e->{stat}}{kw} . $pend . "]") : "";
+	$src = $e->{src} ? ("(" . $::KW->{SRC}{$e->{src}}{kw} . ")") : "";
+	$seq = $e->{seq} ? $e->{seq} : "";
+	$dfrm = $e->{dfrm} ? "/$e->{dfrm}" : "";
+	$id = $e->{id} ? ("{" . $e->{id} . $dfrm . "}") : "";
 	  # Print basic info about the entry (seq num, status, and id number.)
 	$fmtstr = "\nEntry " . join (" ", ($seq, $src, $stat, $id));
 
@@ -357,10 +359,13 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	$fmtstr = "History:\n";
 	foreach $h (@$hists) {
 	    $kw = $::KW->{STAT}{$h->{stat}}{kw};
-	    $fmtstr .= "  $h->{hist}. $kw $h->{dt} $h->{who}\n";
+	    $fmtstr .= "  $h->{hist}. $kw $h->{dt} $h->{name}<$h->{email}>\n";
 	    if ($n = $h->{notes}) { # That's an '=', not '=='.
 		$n =~ s/(\n.)/    $1/;
-		print "    $n\n"; } }
+		$fmtstr .= "    Comment: $n\n"; } 
+	    if ($n = $h->{refs}) { # That's an '=', not '=='.
+		$n =~ s/(\n.)/    $1/;
+		$fmtstr .= "    Refs: $n\n"; } }
 	return $fmtstr; }
 
 #-----------------------------------------------------------------------

@@ -169,7 +169,7 @@ main: {
 	# Create an entry object to represent the "A" line text of the 
 	# example sentence.
 	my ($e, @kws, $snote);
-	$e = {src=>$corpid, stat=>$KWSTAT_A, seq=>$lnnum};
+	$e = {src=>$corpid, stat=>$KWSTAT_A, seq=>$lnnum, unap=>0};
 	if (@$kwds) {
 	    # Each @$kwds item is a 2-array consisting of the kw
 	    # id number and optionally a note string.

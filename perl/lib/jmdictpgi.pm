@@ -41,7 +41,7 @@ sub initialize { my ($logfn, $tmpdir) = @_;
 	else { ($td = $tmpdir) =~ s/[\/\\]$//; }
 	my @tmpfiles = (
 	  [\$::Fcorp,  "${td}load01.tmp", "COPY kwsrc(id,kw,descr,dt,notes,seq) FROM stdin;"],
-	  [\$::Fentr,  "${td}load02.tmp", "COPY entr(id,src,seq,stat,srcnote,notes) FROM stdin;"],
+	  [\$::Fentr,  "${td}load02.tmp", "COPY entr(id,src,stat,seq,dfrm,unap,srcnote,notes) FROM stdin;"],
 	  [\$::Fkanj,  "${td}load03.tmp", "COPY kanj(entr,kanj,txt) FROM stdin;"],
 	  [\$::Fkinf,  "${td}load04.tmp", "COPY kinf(entr,kanj,kw) FROM stdin;"],
 	  [\$::Frdng,  "${td}load05.tmp", "COPY rdng(entr,rdng,txt) FROM stdin;"],
@@ -60,7 +60,7 @@ sub initialize { my ($logfn, $tmpdir) = @_;
 	  [\$::Frestr, "${td}load18.tmp", "COPY restr(entr,rdng,kanj) FROM stdin;"],
 	  [\$::Fstagr, "${td}load19.tmp", "COPY stagr(entr,sens,rdng) FROM stdin;"],
 	  [\$::Fstagk, "${td}load20.tmp", "COPY stagk(entr,sens,kanj) FROM stdin;"],
-	  [\$::Fhist,  "${td}load21.tmp", "COPY hist(entr,hist,stat,dt,who,diff,notes) FROM stdin;"], );
+	  [\$::Fhist,  "${td}load21.tmp", "COPY hist(entr,hist,stat,edid,dt,name,email,diff,refs,notes) FROM stdin;"], );
 
 	$::eid = 0; 
 	foreach $t (@tmpfiles) {
@@ -100,7 +100,7 @@ sub wrentr { my ($e) = @_;
 	$etag = "$e->{id}";
 
        {no warnings qw(uninitialized); 
-	pout ($::Fentr, $etag, $e->{src}, $e->{seq}, $e->{stat}, $e->{srcnote}, $e->{notes});
+	pout ($::Fentr, $etag, $e->{src}, $e->{stat}, $e->{seq}, $e->{dfrm}, $e->{unap}, $e->{srcnote}, $e->{notes});
 	foreach $k (@{$e->{_kanj}}) {
 	    pout ($::Fkanj, $etag, $k->{kanj}, $k->{txt}); 
 	    foreach $x (@{$k->{_kinf}}) {
@@ -148,8 +148,8 @@ sub wrentr { my ($e) = @_;
 		pout ($::Fxref, $x->{entr}, $x->{sens}, $x->{xref}, $x->{typ}, $etag, $x->{xsens},
 				$x->{rdng}, $x->{kanj},  $x->{notes}); } }
 	foreach $x (@{$e->{_hist}}) {
-	    pout ($::Fhist, $etag, $x->{hist}, $x->{stat}, $x->{dt}, 
-			                $x->{who}, $x->{diff}, $x->{notes}); }} }
+	    pout ($::Fhist, $etag, $x->{hist}, $x->{stat}, $x->{edid}, $x->{dt}, $x->{name}, 
+			    $x->{email}, $x->{diff}, $x->{refs}, $x->{notes}); }} }
 
 sub wrcorp { my ($x) = @_;
 	pout ($::Fcorp, $x->{id}, $x->{kw}, $x->{descr}, $x->{dt}, $x->{notes}, $x->{seq}); }

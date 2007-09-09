@@ -1,4 +1,4 @@
-﻿<html xmlns:tal="http://purl.org/petal/1.0/">
+<html xmlns:tal="http://purl.org/petal/1.0/">
 <!--? Copyright (c) 2007 Stuart McGraw -->
 <!--? $Revision$ $Date$ -->
 <head>
@@ -25,7 +25,7 @@
 	should not be an amendment to, one of these entries.
 	<ol>
 	  <li tal:repeat="c chklist">
-	    <a tal:attributes="href string:entr.pl?q=${c/seq}" tal:content="c/seq">seq</span>
+	    <a tal:attributes="href string:entr.pl?svc=${svc}&q=${c/seq}" tal:content="c/seq">seq</span>
 	    <span tal:if="c/kanj" tal:content="c/kanj" tal:omit-tag="">kanji</span>
 	    <span tal:if="c/kanj">【</span>
 	    <span tal:content="c/rdng" tal:omit-tag="">reading</span>
@@ -42,9 +42,15 @@
 	</span>
       <span tal:if="true:e/id" tal:omit-tag="">
         Seq: <span tal:replace="e/seq">seqnum</span>
-	  (<span tal:replace="kwabbr: 'SRC' e/src">src</span>)
-        <span class="status" tal:if="not:eq: string:2 e/stat">
-          [<span tal:replace="kwfull: 'STAT' e/stat">[status]</span>]
+	(<span tal:replace="kwabbr: 'SRC' e/src">src</span>)
+	<span class="status">
+	  <span tal:if="true:e/unap" class="pend">
+	    <span tal:contents="kwfull: 'STAT' e/stat">status</span> pending
+	    </span>
+	  <span tal:if="false:e/unap" tal:contents="kwfull: 'STAT' e/stat">status</span>
+	  <span tal:if="true:e/dfrm" tal:omit-tag="">
+	    <a tal:attributes="href string:entr.pl?svc=${svc}&e=${e/dfrm}" tal:contents="e/dfrm"/>
+	    </span>
 	  </span>
         <span class="pkid">{id:<span tal:replace="e/id"/>}</span>
         </span>
@@ -106,7 +112,7 @@
 	      </span>
 	    <span class="fld" tal:if="s/_fld">
 	      {<span tal:replace="kwfulls: 'FLD' ',' s/_fld">fields</span>}
-	      </span><br/>
+	      </span>
 
 	    <span class="dial" tal:condition="s/_dial">, 
 	      Dialect: <span tal:replace="kwabbrs: 'DIAL' ',' s/_dial">dial</span>
@@ -125,6 +131,7 @@
 		</span>
 	      </span>
 
+	    <br/>
 	    <span class="note" tal:if="s/notes">
 	      《<span tal:replace="s/notes">sense-notes</span>》<br/>
 	      </span>
@@ -148,7 +155,7 @@
 		<td>&nbsp;</td>
 		<td>
 		  <span tal:replace="kwabbr: 'XREF' x/typ">xref-type</span>:
-		  <a tal:attributes="href string:entr.pl?e=${x/xentr}" tal:content="x/ssum/seq">seq-num</a
+		  <a tal:attributes="href string:entr.pl?svc=${svc}&e=${x/xentr}" tal:content="x/ssum/seq">seq-num</a
 		  ><span tal:if="gt: x/ssum/nsens string:1"
 		    >(<span tal:replace="x/xsens">sense</span>) </span> 
 		  <span tal:replace="x/ktxt">xref-kanj</span>
@@ -179,20 +186,37 @@
 	</span>
 
       <span tal:if="e/_hist" tal:omit-tag="">History:
-	<ol>
-	  <li tal:repeat="h e/_hist">
-	      <span class="hhdr" tal:replace="string: ${kwabbr:'STAT' h/stat} ${h/dt} ${h/who}">hist-header</span>
-	      <pre class="hnotes" tal:if="h/notes" tal:content="h/notes">hist-notes</pre>
-	    </li>
-	  </ol>
-	</span>
+        <table>
+          <span tal:repeat="h e/_hist">
+            <tr>
+              <td>1.</td>
+              <td class="hhdr" colspan="2" tal:content="string: ${kwabbr:'STAT' h/stat} ${h/dt} ${h/name}&lt;${h/email}&gt;">hist-header</td>
+              </tr>
+            <tr tal:if="h/notes">
+              <td>&nbsp;</td>
+              <td valign="top">Comments:</td>
+              <td tal:content="h/notes">notes</td>
+              </tr>
+            <tr tal:if="h/refs">
+              <td>&nbsp;</td>
+              <td valign="top">Refs:</td>
+              <td tal:content="h/refs">refs</td>
+             </tr>
+            </span>
+          </table>
+        </span>
 
-      <form action="edsubmit.pl" method="post">
+      <hr/>
+      <form action="edsubmit.pl" method="get">
+	<input type="hidden" name="svc" tal:if="true:svc" tal:attributes="value svc"/>
 	<input type="hidden" name="entr" value="${serialized}"/>
-	<input type="Submit" value="Submit"/> &nbsp;&nbsp;
-	<label for="approved">Approved:</label>
-	<input type="checkbox" name="approved" id="approved"/>
-	<input type="hidden" name="svc" tal:attributes="value svc"/>
+	<input type="Submit" value="Submit"/> 
+	<span class="caution" tal:if="true:disp">
+	  &nbsp;&nbsp;
+	  <span tal:if="eq: disp string:a" tal:omit-tag="">Approve</span>
+	  <span tal:if="eq: disp string:r" tal:omit-tag="">Reject</span>
+	  <input type="hidden" name="disp" tal:attributes="value disp"/>
+	  </span>
 	</form>
 
       </div>

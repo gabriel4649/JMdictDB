@@ -32,19 +32,20 @@ $|=1;
 binmode (STDOUT, ":utf8");
 
     main: {
-	my ($dbh, $cgi, $tmpl, @kw, @kwlist, $t, $svc);
+	my ($dbh, $cgi, $tmpl, @kw, @kwlist, $t, $svc, $kwhash, $kwset);
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
-	$svc = $cgi->param ("svc");
+	$svc = clean ($cgi->param ("svc"));
 	$dbh = dbopen ($svc);  $::KW = Kwds ($dbh);
 	$dbh->disconnect; 
 
 	for $t qw(RINF KINF FREQ MISC POS FLD DIAL LANG GINF SRC STAT XREF) {
 	    @kw = kwrecs ($::KW, $t);
-	    push (@kwlist, [ucfirst(lc($t)), 
-		  [sort {lc($a->{kw}) cmp lc($b->{kw})} @kw]]); }
+	    $kwset = [ucfirst(lc($t)), [sort {lc($a->{kw}) cmp lc($b->{kw})} @kw]];
+	    push (@kwlist, $kwset);
+	    $kwhash->{$t} = $kwset->[1]; }
 
 	$tmpl = new Petal (file=>'../lib/tal/edhelp.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
-	print $tmpl->process (kwlist=>\@kwlist, svc=>$svc); }
+	print $tmpl->process (kwlist=>\@kwlist, kwhash=>$kwhash, svc=>$svc); }
 

@@ -11,7 +11,7 @@ BEGIN {
     use Exporter();
     our ($VERSION, @ISA, @EXPORT);
     @ISA = qw(Exporter);
-    @EXPORT   = qw($Kdws $KWGINF_equ $KWGINF_expl $KWGINF_id $KWGINF_lit $KWMISC_X $KWMISC_abbr $KWMISC_aphorism $KWMISC_arch $KWMISC_chn $KWMISC_col $KWMISC_derog $KWMISC_eK $KWMISC_fam $KWMISC_fem $KWMISC_hon $KWMISC_hum $KWMISC_id $KWMISC_m_sl $KWMISC_male $KWMISC_obs $KWMISC_obsc $KWMISC_pol $KWMISC_proverb $KWMISC_quote $KWMISC_rare $KWMISC_sens $KWMISC_sl $KWMISC_uk $KWMISC_vulg $KWFREQ_gA $KWFREQ_gai $KWFREQ_ichi $KWFREQ_news $KWFREQ_nf $KWFREQ_spec $KWXREF_ant $KWXREF_cf $KWXREF_ex $KWXREF_pref $KWXREF_see $KWXREF_syn $KWXREF_uses $KWSTAT_A $KWSTAT_D $KWSTAT_M $KWSTAT_N $KWSTAT_O $KWSTAT_R $KWSTAT_X $KWRINF_gikun $KWRINF_ik $KWRINF_ok $KWRINF_uK $KWKINF_ateji $KWKINF_iK $KWKINF_ik $KWKINF_io $KWKINF_oK $KWFLD_Buddh $KWFLD_MA $KWFLD_comp $KWFLD_food $KWFLD_geom $KWFLD_ling $KWFLD_math $KWFLD_mil $KWFLD_physics $KWLANG_aa $KWLANG_ab $KWLANG_ae $KWLANG_af $KWLANG_ai $KWLANG_ak $KWLANG_am $KWLANG_an $KWLANG_ar $KWLANG_as $KWLANG_av $KWLANG_ay $KWLANG_az $KWLANG_ba $KWLANG_be $KWLANG_bg $KWLANG_bi $KWLANG_bm $KWLANG_bn $KWLANG_bo $KWLANG_br $KWLANG_bs $KWLANG_ca $KWLANG_ce $KWLANG_ch $KWLANG_co $KWLANG_cr $KWLANG_cs $KWLANG_cu $KWLANG_cv $KWLANG_cy $KWLANG_da $KWLANG_de $KWLANG_dv $KWLANG_dz $KWLANG_ee $KWLANG_el $KWLANG_en $KWLANG_eo $KWLANG_es $KWLANG_et $KWLANG_eu $KWLANG_fa $KWLANG_ff $KWLANG_fi $KWLANG_fj $KWLANG_fo $KWLANG_fr $KWLANG_fy $KWLANG_ga $KWLANG_gd $KWLANG_gl $KWLANG_gn $KWLANG_gu $KWLANG_gv $KWLANG_ha $KWLANG_he $KWLANG_hi $KWLANG_ho $KWLANG_hr $KWLANG_ht $KWLANG_hu $KWLANG_hy $KWLANG_hz $KWLANG_ia $KWLANG_id $KWLANG_ie $KWLANG_ig $KWLANG_ii $KWLANG_ik $KWLANG_io $KWLANG_is $KWLANG_it $KWLANG_iu $KWLANG_ja $KWLANG_jv $KWLANG_ka $KWLANG_kg $KWLANG_ki $KWLANG_kj $KWLANG_kk $KWLANG_kl $KWLANG_km $KWLANG_kn $KWLANG_ko $KWLANG_kr $KWLANG_ks $KWLANG_ku $KWLANG_kv $KWLANG_kw $KWLANG_ky $KWLANG_la $KWLANG_lb $KWLANG_lg $KWLANG_li $KWLANG_ln $KWLANG_lo $KWLANG_lt $KWLANG_lu $KWLANG_lv $KWLANG_mg $KWLANG_mh $KWLANG_mi $KWLANG_mk $KWLANG_ml $KWLANG_mn $KWLANG_mo $KWLANG_mr $KWLANG_ms $KWLANG_mt $KWLANG_my $KWLANG_na $KWLANG_nb $KWLANG_nd $KWLANG_ne $KWLANG_ng $KWLANG_nl $KWLANG_nn $KWLANG_no $KWLANG_nr $KWLANG_nv $KWLANG_ny $KWLANG_oc $KWLANG_oj $KWLANG_om $KWLANG_or $KWLANG_os $KWLANG_pa $KWLANG_pi $KWLANG_pl $KWLANG_ps $KWLANG_pt $KWLANG_qu $KWLANG_rm $KWLANG_rn $KWLANG_ro $KWLANG_ru $KWLANG_rw $KWLANG_sa $KWLANG_sc $KWLANG_sd $KWLANG_se $KWLANG_sg $KWLANG_sh $KWLANG_si $KWLANG_sk $KWLANG_sl $KWLANG_sm $KWLANG_sn $KWLANG_so $KWLANG_sq $KWLANG_sr $KWLANG_ss $KWLANG_st $KWLANG_su $KWLANG_sv $KWLANG_sw $KWLANG_ta $KWLANG_te $KWLANG_tg $KWLANG_th $KWLANG_ti $KWLANG_tk $KWLANG_tl $KWLANG_tn $KWLANG_to $KWLANG_tr $KWLANG_ts $KWLANG_tt $KWLANG_tw $KWLANG_ty $KWLANG_ug $KWLANG_uk $KWLANG_ur $KWLANG_uz $KWLANG_ve $KWLANG_vi $KWLANG_vo $KWLANG_wa $KWLANG_wo $KWLANG_xh $KWLANG_yi $KWLANG_yo $KWLANG_za $KWLANG_zh $KWLANG_zu $KWDIAL_ksb $KWDIAL_ktb $KWDIAL_kyb $KWDIAL_kyu $KWDIAL_osb $KWDIAL_std $KWDIAL_thb $KWDIAL_tsb $KWDIAL_tsug $KWPOS_adj $KWPOS_adj_na $KWPOS_adj_no $KWPOS_adj_pn $KWPOS_adj_t $KWPOS_adv $KWPOS_adv_to $KWPOS_aux $KWPOS_aux_adj $KWPOS_aux_v $KWPOS_company $KWPOS_conj $KWPOS_ctr $KWPOS_exp $KWPOS_fem $KWPOS_given $KWPOS_int $KWPOS_masc $KWPOS_n $KWPOS_n_adv $KWPOS_n_pref $KWPOS_n_suf $KWPOS_n_t $KWPOS_num $KWPOS_person $KWPOS_place $KWPOS_pref $KWPOS_product $KWPOS_prt $KWPOS_station $KWPOS_suf $KWPOS_surname $KWPOS_unclass $KWPOS_v1 $KWPOS_v5 $KWPOS_v5aru $KWPOS_v5b $KWPOS_v5g $KWPOS_v5k $KWPOS_v5k_s $KWPOS_v5m $KWPOS_v5n $KWPOS_v5r $KWPOS_v5r_i $KWPOS_v5s $KWPOS_v5t $KWPOS_v5u $KWPOS_v5u_s $KWPOS_v5uru $KWPOS_vi $KWPOS_vk $KWPOS_vn $KWPOS_vs $KWPOS_vs_i $KWPOS_vs_s $KWPOS_vt $KWPOS_vz); }
+    @EXPORT   = qw($Kdws $KWGINF_equ $KWGINF_expl $KWGINF_id $KWGINF_lit $KWMISC_X $KWMISC_abbr $KWMISC_aphorism $KWMISC_arch $KWMISC_chn $KWMISC_col $KWMISC_derog $KWMISC_eK $KWMISC_fam $KWMISC_fem $KWMISC_hon $KWMISC_hum $KWMISC_id $KWMISC_m_sl $KWMISC_male $KWMISC_obs $KWMISC_obsc $KWMISC_poet $KWMISC_pol $KWMISC_proverb $KWMISC_quote $KWMISC_rare $KWMISC_sens $KWMISC_sl $KWMISC_uk $KWMISC_vulg $KWFREQ_gA $KWFREQ_gai $KWFREQ_ichi $KWFREQ_news $KWFREQ_nf $KWFREQ_spec $KWXREF_ant $KWXREF_cf $KWXREF_ex $KWXREF_pref $KWXREF_see $KWXREF_syn $KWXREF_uses $KWSTAT_A $KWSTAT_D $KWSTAT_N $KWSTAT_O $KWSTAT_R $KWRINF_gikun $KWRINF_ik $KWRINF_ok $KWRINF_uK $KWKINF_ateji $KWKINF_iK $KWKINF_ik $KWKINF_io $KWKINF_oK $KWFLD_Buddh $KWFLD_MA $KWFLD_comp $KWFLD_food $KWFLD_geom $KWFLD_ling $KWFLD_math $KWFLD_mil $KWFLD_physics $KWLANG_aa $KWLANG_ab $KWLANG_ae $KWLANG_af $KWLANG_ai $KWLANG_ak $KWLANG_am $KWLANG_an $KWLANG_ar $KWLANG_as $KWLANG_av $KWLANG_ay $KWLANG_az $KWLANG_ba $KWLANG_be $KWLANG_bg $KWLANG_bi $KWLANG_bm $KWLANG_bn $KWLANG_bo $KWLANG_br $KWLANG_bs $KWLANG_ca $KWLANG_ce $KWLANG_ch $KWLANG_co $KWLANG_cr $KWLANG_cs $KWLANG_cu $KWLANG_cv $KWLANG_cy $KWLANG_da $KWLANG_de $KWLANG_dv $KWLANG_dz $KWLANG_ee $KWLANG_el $KWLANG_en $KWLANG_eo $KWLANG_es $KWLANG_et $KWLANG_eu $KWLANG_fa $KWLANG_ff $KWLANG_fi $KWLANG_fj $KWLANG_fo $KWLANG_fr $KWLANG_fy $KWLANG_ga $KWLANG_gd $KWLANG_gl $KWLANG_gn $KWLANG_gu $KWLANG_gv $KWLANG_ha $KWLANG_he $KWLANG_hi $KWLANG_ho $KWLANG_hr $KWLANG_ht $KWLANG_hu $KWLANG_hy $KWLANG_hz $KWLANG_ia $KWLANG_id $KWLANG_ie $KWLANG_ig $KWLANG_ii $KWLANG_ik $KWLANG_io $KWLANG_is $KWLANG_it $KWLANG_iu $KWLANG_ja $KWLANG_jv $KWLANG_ka $KWLANG_kg $KWLANG_ki $KWLANG_kj $KWLANG_kk $KWLANG_kl $KWLANG_km $KWLANG_kn $KWLANG_ko $KWLANG_kr $KWLANG_ks $KWLANG_ku $KWLANG_kv $KWLANG_kw $KWLANG_ky $KWLANG_la $KWLANG_lb $KWLANG_lg $KWLANG_li $KWLANG_ln $KWLANG_lo $KWLANG_lt $KWLANG_lu $KWLANG_lv $KWLANG_mg $KWLANG_mh $KWLANG_mi $KWLANG_mk $KWLANG_ml $KWLANG_mn $KWLANG_mo $KWLANG_mr $KWLANG_ms $KWLANG_mt $KWLANG_my $KWLANG_na $KWLANG_nb $KWLANG_nd $KWLANG_ne $KWLANG_ng $KWLANG_nl $KWLANG_nn $KWLANG_no $KWLANG_nr $KWLANG_nv $KWLANG_ny $KWLANG_oc $KWLANG_oj $KWLANG_om $KWLANG_or $KWLANG_os $KWLANG_pa $KWLANG_pi $KWLANG_pl $KWLANG_ps $KWLANG_pt $KWLANG_qu $KWLANG_rm $KWLANG_rn $KWLANG_ro $KWLANG_ru $KWLANG_rw $KWLANG_sa $KWLANG_sc $KWLANG_sd $KWLANG_se $KWLANG_sg $KWLANG_sh $KWLANG_si $KWLANG_sk $KWLANG_sl $KWLANG_sm $KWLANG_sn $KWLANG_so $KWLANG_sq $KWLANG_sr $KWLANG_ss $KWLANG_st $KWLANG_su $KWLANG_sv $KWLANG_sw $KWLANG_ta $KWLANG_te $KWLANG_tg $KWLANG_th $KWLANG_ti $KWLANG_tk $KWLANG_tl $KWLANG_tn $KWLANG_to $KWLANG_tr $KWLANG_ts $KWLANG_tt $KWLANG_tw $KWLANG_ty $KWLANG_ug $KWLANG_uk $KWLANG_ur $KWLANG_uz $KWLANG_ve $KWLANG_vi $KWLANG_vo $KWLANG_wa $KWLANG_wo $KWLANG_xh $KWLANG_yi $KWLANG_yo $KWLANG_za $KWLANG_zh $KWLANG_zu $KWDIAL_ksb $KWDIAL_ktb $KWDIAL_kyb $KWDIAL_kyu $KWDIAL_osb $KWDIAL_std $KWDIAL_thb $KWDIAL_tsb $KWDIAL_tsug $KWPOS_adj $KWPOS_adj_na $KWPOS_adj_no $KWPOS_adj_pn $KWPOS_adj_t $KWPOS_adv $KWPOS_adv_to $KWPOS_aux $KWPOS_aux_adj $KWPOS_aux_v $KWPOS_company $KWPOS_conj $KWPOS_ctr $KWPOS_exp $KWPOS_fem $KWPOS_given $KWPOS_int $KWPOS_masc $KWPOS_n $KWPOS_n_adv $KWPOS_n_pref $KWPOS_n_suf $KWPOS_n_t $KWPOS_num $KWPOS_person $KWPOS_place $KWPOS_pref $KWPOS_product $KWPOS_prt $KWPOS_station $KWPOS_suf $KWPOS_surname $KWPOS_unclass $KWPOS_v1 $KWPOS_v5 $KWPOS_v5aru $KWPOS_v5b $KWPOS_v5g $KWPOS_v5k $KWPOS_v5k_s $KWPOS_v5m $KWPOS_v5n $KWPOS_v5r $KWPOS_v5r_i $KWPOS_v5s $KWPOS_v5t $KWPOS_v5u $KWPOS_v5u_s $KWPOS_v5uru $KWPOS_vi $KWPOS_vk $KWPOS_vn $KWPOS_vs $KWPOS_vs_i $KWPOS_vs_s $KWPOS_vt $KWPOS_vz); }
 
 our (@EXPORT);
 
@@ -36,6 +36,7 @@ our($KWMISC_m_sl) = 14;
 our($KWMISC_male) = 15;
 our($KWMISC_obs) = 17;
 our($KWMISC_obsc) = 18;
+our($KWMISC_poet) = 26;
 our($KWMISC_pol) = 19;
 our($KWMISC_proverb) = 81;
 our($KWMISC_quote) = 83;
@@ -59,11 +60,9 @@ our($KWXREF_syn) = 1;
 our($KWXREF_uses) = 6;
 our($KWSTAT_A) = 2;
 our($KWSTAT_D) = 4;
-our($KWSTAT_M) = 3;
 our($KWSTAT_N) = 1;
 our($KWSTAT_O) = 6;
 our($KWSTAT_R) = 8;
-our($KWSTAT_X) = 5;
 our($KWRINF_gikun) = 1;
 our($KWRINF_ik) = 3;
 our($KWRINF_ok) = 2;
@@ -379,16 +378,28 @@ our ($Kwds)   = do {
               physics => 'fix',
             },
     FREQ => {
-              1 => { descr => "\n", id => 1, kw => "ichi" },
-              2 => { descr => "\n", id => 2, kw => "gai" },
-              4 => { descr => "\n", id => 4, kw => "spec" },
-              5 => { descr => "\n", id => 5, kw => "nf" },
+              1 => {
+                    descr => "Ranking from \"Ichimango goi bunruishuu\", 1-2.\n",
+                    id => 1,
+                    kw => "ichi",
+                  },
+              2 => {
+                    descr => "Common loanwords based on wordfreq file, 1-2\n",
+                    id => 2,
+                    kw => "gai",
+                  },
+              4 => {
+                    descr => "Ranking assigned by JMdict editors, 1-2 \n",
+                    id => 4,
+                    kw => "spec",
+                  },
+              5 => { descr => "Ranking in wordfreq file, 1-48\n", id => 5, kw => "nf" },
               6 => {
-                    descr => "2007-01-14 Google counts (Kale Stutzman)\n",
+                    descr => "Google counts (by Kale Stutzman, 2007-01-14)\n",
                     id => 6,
                     kw => "gA",
                   },
-              7 => { descr => "\n", id => 7, kw => "news" },
+              7 => { descr => "Ranking in wordfreq file, 1-2\n", id => 7, kw => "news" },
               gA => 'fix',
               gai => 'fix',
               ichi => 'fix',
@@ -824,6 +835,7 @@ our ($Kwds)   = do {
                           },
               24       => { descr => "vulgar expression or word\n", id => 24, kw => "vulg" },
               25       => { descr => "sensitive\n", id => 25, kw => "sens" },
+              26       => { descr => "poetical term\n", id => 26, kw => "poet" },
               3        => { descr => "archaism\n", id => 3, kw => "arch" },
               4        => { descr => "children's language\n", id => 4, kw => "chn" },
               5        => { descr => "colloquialism\n", id => 5, kw => "col" },
@@ -851,6 +863,7 @@ our ($Kwds)   = do {
               male     => 'fix',
               obs      => 'fix',
               obsc     => 'fix',
+              poet     => 'fix',
               pol      => 'fix',
               proverb  => 'fix',
               quote    => 'fix',
@@ -1043,20 +1056,16 @@ our ($Kwds)   = do {
               uK => 'fix',
             },
     STAT => {
-              1 => { descr => "New, approval pending\n", id => 1, kw => "N" },
+              1 => { descr => "New\n", id => 1, kw => "N" },
               2 => { descr => "Active\n", id => 2, kw => "A" },
-              3 => { descr => "Modified, approval pending\n", id => 3, kw => "M" },
               4 => { descr => "Deleted\n", id => 4, kw => "D" },
-              5 => { descr => "Deleted, approval pending\n", id => 5, kw => "X" },
-              6 => { descr => "Obsoleted\n", id => 6, kw => "O" },
+              6 => { descr => "Obsolete\n", id => 6, kw => "O" },
               8 => { descr => "Rejected\n", id => 8, kw => "R" },
               A => 'fix',
               D => 'fix',
-              M => 'fix',
               N => 'fix',
               O => 'fix',
               R => 'fix',
-              X => 'fix',
             },
     XREF => {
               1 => { descr => "Synonym\n", id => 1, kw => "syn" },
@@ -1311,6 +1320,7 @@ our ($Kwds)   = do {
   $a->{MISC}{male} = $a->{MISC}{15};
   $a->{MISC}{obs} = $a->{MISC}{17};
   $a->{MISC}{obsc} = $a->{MISC}{18};
+  $a->{MISC}{poet} = $a->{MISC}{26};
   $a->{MISC}{pol} = $a->{MISC}{19};
   $a->{MISC}{proverb} = $a->{MISC}{81};
   $a->{MISC}{quote} = $a->{MISC}{83};
@@ -1382,11 +1392,9 @@ our ($Kwds)   = do {
   $a->{RINF}{uK} = $a->{RINF}{4};
   $a->{STAT}{A} = $a->{STAT}{2};
   $a->{STAT}{D} = $a->{STAT}{4};
-  $a->{STAT}{M} = $a->{STAT}{3};
   $a->{STAT}{N} = $a->{STAT}{1};
   $a->{STAT}{O} = $a->{STAT}{6};
   $a->{STAT}{R} = $a->{STAT}{8};
-  $a->{STAT}{X} = $a->{STAT}{5};
   $a->{XREF}{ant} = $a->{XREF}{2};
   $a->{XREF}{cf} = $a->{XREF}{4};
   $a->{XREF}{ex} = $a->{XREF}{5};

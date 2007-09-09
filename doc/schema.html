@@ -6,7 +6,7 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
 	<META NAME="CREATED" CONTENT="20020715;12385300">
 	<META NAME="CHANGEDBY" CONTENT="Stuart McGraw">
-	<META NAME="CHANGED" CONTENT="20070820;6545800">
+	<META NAME="CHANGED" CONTENT="20070909;564100">
 	<META NAME="SDENDNOTE" CONTENT="ARABIC;;[;]">
 	<STYLE>
 	<!--
@@ -689,11 +689,13 @@ JMdictDB database:</P>
 <P STYLE="margin-bottom: 0.2in; background: #e6e6ff; border: 1px solid #000000; padding: 0.02in; page-break-inside: avoid; widows: 0; orphans: 0; page-break-before: auto; page-break-after: avoid">
 <FONT FACE="Courier New, monospace"><FONT SIZE=2 STYLE="font-size: 9pt"><KBD>select
 * from entr where seq=1211370;<BR>id<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|<KBD>
-</KBD>src<KBD> </KBD>|<KBD> </KBD>seq<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|<KBD>
-</KBD>stat<KBD> </KBD>|<KBD>
-</KBD>notes<BR>------+-----+---------+------+-------<BR>20894<KBD> </KBD>|<KBD>
-</KBD>1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD>|<KBD>
-</KBD>1211370<KBD> </KBD>|<KBD> </KBD>2<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD>|</KBD></FONT></FONT></P>
+</KBD>src<KBD> </KBD>|<KBD> stat | </KBD>seq<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|<KBD>
+dfrm </KBD>|<KBD> unap |
+</KBD>notes<BR>------+-----+------+---------+------+------+-------<BR>20894<KBD>
+</KBD>|<KBD> </KBD>1<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD>|<KBD>
+2<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;|</KBD></KBD></KBD></KBD>2</KBD>1211370<KBD>
+</KBD>|<KBD> &nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;</KBD></KBD></KBD></KBD></KBD>|
+F<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;<KBD>&nbsp;|</KBD></KBD></KBD></KBD></KBD></FONT></FONT></P>
 <P STYLE="margin-bottom: 0.2in"><I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
 is an arbitrary number as assigned when the entry was created.  Its
 purpose is to provide an anchor that related rows in other tables can
@@ -708,15 +710,17 @@ table <I><U>kwsrc</U></I>.<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="ba
 in that table says this entry is part of JMdict. Currently all
 entries are JMdict entries but in the future the database might also
 contain other kinds of entries such as the JMnedict names.</P>
-<P STYLE="margin-bottom: 0.2in"><I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">seq</SPAN></SPAN></I>
-is the same as the &lt;ent_seq&gt; element in JMdict XML file and
-identifies each JMdict entry across time and space.</P>
 <P STYLE="margin-bottom: 0.2in"><I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">stat</SPAN></SPAN></I>
 gives that status of this entry. It refers to table <I><U>kwstat</U></I>
 and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id=</SPAN></SPAN></I>2
 in that table is &quot;active&quot;. There are other <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">stat</SPAN></SPAN></I>
-values for new or modified entries awaiting approval, deleted
-entries, rejected entries, etc.</P>
+values for new, deleted, and rejected entries.</P>
+<P STYLE="margin-bottom: 0.2in"><I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">seq</SPAN></SPAN></I>
+is the same as the &lt;ent_seq&gt; element in JMdict XML file and
+identifies each JMdict entry across time and space.</P>
+<P STYLE="margin-bottom: 0.2in"><I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">dfrm</SPAN></SPAN></I>
+and <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">unap</SPAN></SPAN></I>
+are used for managing edits and new submissions.</P>
 <P STYLE="margin-bottom: 0.2in"><I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">notes</SPAN></SPAN></I>
 is a text field that can contain arbitrary information pertaining to
 an entry that is intended to be displayed to users.</P>
@@ -1033,7 +1037,7 @@ but will be included in a future version of this paper.
 	<LI><H1 CLASS="western"> Annotated Schema</H1>
 </OL>
 <P>The Postgresql DDL statements below will create the tables
-described above.  They are based on revision 1.26 (2007/08/20) of
+described above.  They are based on revision 1.29 (2007/09/09) of
 mktables.sql.  As commonly happens, this documentation may lag behind
 the code and so should not be taken as definitive.<SAMP CLASS="western"><BR></SAMP><BR><BR>
 </P>
@@ -1047,25 +1051,23 @@ those source may not<BR>      -- have seq numbers.<BR>      -- All
 rows in other tables related to an entry will have a <BR>      --
 foreign key pointing to the entry's <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
 value.<BR>    src SMALLINT NOT NULL,<BR>      -- Indicates where this
-entry came from (1=jmdict).  <BR>      -- References <I><U>kwsrc</U></I>.<BR>
-   seq INT NOT NULL,<BR>      -- Sequence number.  This number maps
-to the &lt;ent_seq&gt;<BR>      -- element of the JMdict XML file,
-and is intended<BR>      -- to be a stable identifier of a particular
-word.  (The <BR>      -- <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
-column is *not* suitable for uses spanning either<BR>      -- time or
-space.)</SAMP></P>
-<P><SAMP CLASS="western">    </SAMP><SAMP CLASS="western">stat
-SMALLINT NOT NULL,<BR>      -- References table <I><U>kwstat</U></I>
+entry came from (1=jmdict).  <BR>      -- References <I><U>kwsrc</U></I>.<BR><SAMP CLASS="western">
+   stat SMALLINT NOT NULL,<BR>      -- References table <I><U>kwstat</U></I>
 and indicates the status of this<BR>      -- entry.  Typical values
-are &quot;active&quot;, &quot;new&quot;, &quot;modified&quot;.<BR>   
-  -- &quot;delete pending&quot;, &quot;deleted&quot;, etc.</SAMP></P>
-<P><SAMP CLASS="western">    </SAMP><SAMP CLASS="western">srcnote
-VARCHAR(255),<BR>      -- Additional ad-hoc information about the
-source of this<BR>      -- entry.</SAMP></P>
-<P><SAMP CLASS="western">    </SAMP><SAMP CLASS="western">notes TEXT<BR>
-     -- Arbitrary textual information about this entry.  Will be<BR> 
-    -- displayed by applications.<BR>     );<BR><BR>CREATE SEQUENCE
-seq <BR>      -- This is a sequence for getting new <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.seq</SPAN></SPAN></I>
+are &quot;new”, “active”, “deleted”, <BR>      --
+&quot;rejected”, etc.<BR></SAMP>    seq INT NOT NULL,<BR>      --
+Sequence number.  This number maps to the &lt;ent_seq&gt;<BR>      --
+element of the JMdict XML file, and is intended<BR>      -- to be a
+stable identifier of a particular word.  (The <BR>      -- <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">id</SPAN></SPAN></I>
+column is *not* suitable for uses spanning either<BR>      -- time or
+space.)<BR>    dfrm INT,<BR>      -- References another entry that
+was the edit source for <BR>      -- this entry.<BR>    unap BOOLEAN
+NOT NULL,<BR>      -- If TRUE, this entry has not been approved by an
+editor.<BR>    srcnote VARCHAR(255),<BR>      -- Additional ad-hoc
+information about the source of this<BR>      -- entry.<BR>    notes
+TEXT<BR>      -- Arbitrary textual information about this entry. 
+Will be<BR>      -- displayed by applications.<BR>     );<BR><BR>CREATE
+SEQUENCE seq <BR>      -- This is a sequence for getting new <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.seq</SPAN></SPAN></I>
 values.  It is<BR>      -- not <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.seq</SPAN></SPAN></I>'s
 default value and applications are expected<BR>      -- to get new
 seq values and apply them when needed.<BR>      -- MAXVALUE is
@@ -1147,15 +1149,20 @@ NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="back
 Disambiguates and orders multiple hist records with an entry.</SAMP><BR>
    stat SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">kwstat.id</SPAN></SPAN></I>.
  Status of entry before the change this<BR>      -- record documents
-was made.<BR>    dt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),<BR>
-     -- Date and time changes were made.<BR>    who VARCHAR(250),<BR>
-     -- Text string describing the user who made the changes.<BR>   
-diff TEXT,<BR>      -- Text string that documents the difference
-between the original<BR>      -- and changed entries.<BR>    notes
-TEXT<BR>      -- Additional textual information pertaining to this
-change.<BR>      );<BR><BR>CREATE TABLE audio (<BR>      --
-Represents a sound clip that is an audio version of a reading.<BR>   
-entr INT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
+was made.<BR>    edid INT4,<BR>      -- If user making change was a
+logged in editor, this is that <BR>      -- editor's id number.<BR>  
+ dt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),<BR>      -- Date
+and time changes were made.<BR><SAMP CLASS="western">    name
+VARCHAR(250),<BR>      -- Name of user who made the changes.<BR><SAMP CLASS="western">
+   email VARCHAR(250),<BR>      -- Email address of user who made the
+changes.<BR></SAMP></SAMP>    diff TEXT,<BR>      -- Text string that
+documents the difference between the original<BR>      -- and changed
+entries.<BR>    Refs TEXT,<BR>      -- Verifiable public references
+supporting this change.<BR>    notes TEXT<BR>      -- Additional
+textual information pertaining to this change.<BR>      );<BR><BR>CREATE
+TABLE audio (<BR>      -- Represents a sound clip that is an audio
+version of a reading.<BR>    entr INT NOT NULL,<BR>      -- FK to
+<I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">entr.id</SPAN></SPAN></I>.
  Identifies the entry this audio record<BR>      -- belongs to.<BR>  
  rdng SMALLINT NOT NULL,<BR>      -- FK to <I><SPAN STYLE="text-decoration: none"><SPAN STYLE="background: transparent">rdng.rdng</SPAN></SPAN></I>.
  Identifies the reading this audio record<BR>      -- belongs to.<BR>
@@ -1386,7 +1393,7 @@ VARCHAR(255));<BR></SAMP><BR><BR>
 		<COL WIDTH=85*>
 		<TR VALIGN=TOP>
 			<TD WIDTH=50%>
-				<P><FONT SIZE=1 STYLE="font-size: 8pt">Stuart McGraw, 2007-08-20</FONT></P>
+				<P><FONT SIZE=1 STYLE="font-size: 8pt">Stuart McGraw, 2007-09-09</FONT></P>
 			</TD>
 			<TD WIDTH=17%>
 				<P><BR>

@@ -4,6 +4,8 @@
 \set ON_ERROR_STOP 1
 CREATE INDEX entr_seq ON entr(seq);
 CREATE INDEX entr_stat ON entr(stat) WHERE stat!=2;
+CREATE INDEX entr_dfrm ON entr(dfrm) WHERE dfrm IS NOT NULL;
+CREATE INDEX entr_unap ON entr(unap) WHERE unap;
 CREATE INDEX rdng_txt ON rdng(txt);
 CREATE UNIQUE INDEX rdng_txt1 ON rdng(entr,txt);
 CREATE INDEX rdng_txt2 ON rdng(txt varchar_pattern_ops); --For fast LIKE 'xxx%'
@@ -16,7 +18,8 @@ CREATE INDEX gloss_txt2 ON gloss(lower(txt) varchar_pattern_ops); --For case-ins
 CREATE INDEX gloss_txt3 ON gloss(lower(txt)); 		    --For case-insensitive '='
 CREATE INDEX xref_xentr ON xref(xentr,xsens);
 CREATE INDEX hist_dt ON hist(dt);
-CREATE INDEX hist_who ON hist(who);
+CREATE INDEX hist_email ON hist(email);
+CREATE INDEX hist_edid ON hist(edid);
 CREATE INDEX audio_fname ON audio(fname);
 CREATE INDEX editor_email ON editor(email);
 CREATE UNIQUE INDEX editor_name ON editor(name);
@@ -25,6 +28,7 @@ CREATE INDEX xresolv_rdng ON xresolv(rtxt);
 CREATE INDEX xresolv_kanj ON xresolv(ktxt);
 ALTER TABLE entr ADD CONSTRAINT entr_src_fkey FOREIGN KEY (src) REFERENCES kwsrc(id);
 ALTER TABLE entr ADD CONSTRAINT entr_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
+ALTER TABLE entr ADD CONSTRAINT entr_dfrm_fkey FOREIGN KEY (dfrm) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;;
 ALTER TABLE rdng ADD CONSTRAINT rdng_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE kanj ADD CONSTRAINT kanj_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE sens ADD CONSTRAINT sens_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -37,6 +41,7 @@ ALTER TABLE xref ADD CONSTRAINT xref_rdng_fkey FOREIGN KEY (xentr,rdng) REFERENC
 ALTER TABLE xref ADD CONSTRAINT xref_kanj_fkey FOREIGN KEY (xentr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE hist ADD CONSTRAINT hist_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE hist ADD CONSTRAINT hist_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
+ALTER TABLE hist ADD CONSTRAINT hist_edid_fkey FOREIGN KEY (edid) REFERENCES editor(id);
 ALTER TABLE audio ADD CONSTRAINT audio_entr_fkey FOREIGN KEY (entr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE dial ADD CONSTRAINT dial_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE dial ADD CONSTRAINT dial_kw_fkey FOREIGN KEY (kw) REFERENCES kwdial(id);

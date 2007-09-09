@@ -1,4 +1,4 @@
-﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html xmlns:tal="http://purl.org/petal/1.0/">
 <!--? Copyright (c) 2007 Stuart McGraw -->
 <!--? $Revision$ $Date$ -->
@@ -25,12 +25,12 @@
   <h2><a name="inboxes"/>Edit Form Input Boxes</h2>
 
   <dl>
-    <dt><a name="Corpus"></a>Corpus</dt>
+    <dt><a name="corpus"></a>Corpus</dt>
     <dd>The corpus in which the entry exists or (for new entries) should
       be entered.  (<a href="#kw_src">abbrs</a>)
       </dd>
 
-    <dt><a name="Seq"></a>Seq</dt>
+    <dt><a name="seq"></a>Seq</dt>
     <dd>The sequence number assigned to the entry or (for new entries)
       the sequence number to assign to it.
       Normally should not be changed.  If left blank for a new entry,
@@ -38,7 +38,18 @@
       Only registered editors may set or change this.
       </dd>
 
-    <dt><a name="Kanji"></a>Kanji</dt>
+    <dt><a name="srcnote"></a>Src note</dt>
+    <dd>Information about the source of this entry.  Required
+      format depends on the specific source.
+      </dd>
+
+    <dt><a name="entrnote"></a>Entr note</dt>
+    <dd>Information about this entry as a whole.  Information 
+      pertaining to any of the meanings of this entry should go 
+      in sense notes in the appropriate sense(s).
+      </dd>
+
+    <dt><a name="kanji"></a>Kanji</dt>
     <dd>
       Enter the kanji used for this word, separated by semicolons (either
       western on Japanese semicolons are ok).
@@ -61,7 +72,7 @@
       Examples:
       </dd>
 
-    <dt><a name="Readings"></a>Readings</dt>
+    <dt><a name="readings"></a>Readings</dt>
     <dd>Enter the readings used for this word, separated by semicolons
       (either western on Japanese semicolons are ok.
       Rinf tags (<a href="#syn_rinf">syntax</a>, <a href="#kw_rinf">abbrs</a>),
@@ -85,7 +96,7 @@
       Examples:
       </dd>
 
-    <dt><a name="Senses"></a>Senses</dt>
+    <dt><a name="senses"></a>Senses</dt>
     <dd>Enter senses, glosses, and their associated tags in the Sense box.
       <ul><li>Each sense start with a sense number in brackets, e.g., "[1]".
       </li><li>Following the sense number are any number of glosses and
@@ -123,25 +134,25 @@
       Examples:
       </dd>
 
-    <dt><a name="References"></a>References</dt>
+    <dt><a name="references"></a>References</dt>
     <dd>Enter sources that validate the entry or entry
       changes being made.  This is a free form text field.
       <br/>Examples:
       </dd>
 
-    <dt><a name="Comments"></a>Comments:</dt>
+    <dt><a name="comments"></a>Comments:</dt>
     <dd>Enter any comments you want the editors to read when
       reviewing this entry.  These comments will be added to the
       historical record of this entry.  This is a free form text
       field.</dd>
 
-    <dt><a name="Name"></a>Name</dt>
+    <dt><a name="name"></a>Name</dt>
     <dd>You full name (optional).</dd>
 
-    <dt><a name="Email"></a>Email</dt>
+    <dt><a name="email"></a>Email</dt>
     <dd>Your email address (required).</dd>
 
-    <dt><a name="Approved"></a>Approved</dt>
+    <dt><a name="approved"></a>Approved</dt>
     <dd>Check this to approve the entry (available only to
       registered editors.)</dd>
 
@@ -155,26 +166,26 @@
     <tbody>
       <tr>
 	<td>Tag</td>
-	<td>Where used</td>
 	<td>Description</td>
+	<td>Where used</td>
 	<td>Format</td>
 	<td>Examples</td>
 	</tr>
 
       <tr>
         <td><a name="syn_dial"/>dial</td>
-        <td>Sense</td>
         <td>Dialect</td>
+        <td>Sense</td>
         <td>
 	  [dial=<span style="font-style: italic;"><a href="#kw_dial">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_dial">kw</a></span>]</td>
-        <td>[ksb]</td>
+        <td>[ksb] [dial=ksb]</td>
         </tr>
 
       <tr>
         <td><a name="syn_expl"/>expl</td>
-        <td>Sense</td>
         <td>Explanatory translation</td>
+        <td>Sense</td>
         <td>
 	  [expl="<span style="font-style: italic;">the
 	  explanatory text</span>..."]<br/>
@@ -186,28 +197,28 @@
 
       <tr>
         <td><a name="syn_fld"/>fld</td>
-        <td>Sense</td>
         <td>Domain, aka field-of-application tags</td>
+        <td>Sense</td>
         <td>
 	  [fld=<span style="font-style: italic;"><a href="#kw_fld">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_fld">kw</a></span>]</td>
-        <td>&nbsp;</td>
+        <td>[food] [fld=mil]</td>
 	</tr>
 
       <tr>
         <td><a name="syn_freq"></a>freq</td>
-        <td>Kanji, Reading</td>
         <td>Frequency-of-use codes</td>
+        <td>Kanji, Reading</td>
         <td>
 	  [freq=<span style="font-style: italic;"><a href="#kw_freq">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_freq">kw</a></span>]</td>
-        <td>&nbsp;</td>
+        <td>[ichi1] [freq=ichi1] [news1,nf8]</td>
       </tr>
 
       <tr>
         <td><a name="syn_gloss"></a>gloss</td>
-        <td>Sense</td>
         <td>Gloss text</td>
+        <td>Sense</td>
         <td>
 	  <span style="font-style: italic;">gloss</span><br/>
           <span style="font-style: italic;">gloss</span>;<span style="font-style: italic;"> gloss</span><br/>
@@ -222,36 +233,37 @@
 	  (5) Glosses and sense tags may be freely intermixed in a sense.
 	  Sense tags always apply to the whole sense, no matter where
 	  they occur.</td>
-        <td>[1] house; a dwelling; one's home</td>
+        <td>[1] house (one's own); one's household; one's family<br/>
+          [1] Okinawan traditional three-stringed instrument\; precursor to the shamisen</td>
         </tr>
 
       <tr>
         <td><a name="syn_kinf"></a>kinf</td>
-        <td>Kanji</td>
         <td>Kanji information</td>
+        <td>Kanji</td>
         <td>
 	  [kinf=<span style="font-style: italic;"><a href="#kw_kinf">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_kinf">kw</a></span>]</td>
-        <td>&nbsp;</td>
+        <td>[ateji] [kinf=ik]</td>
 	</tr>
 
       <tr>
         <td><a name="syn_lit"></a>lit</td>
-        <td>Sense</td>
         <td>Literal translation </td>
+        <td>Sense</td>
         <td>
 	  [lit="<span style="font-style: italic;">the
 	  literal text..."</span>]<br/>
 	  (1) The text must be enclosed in quotes (") if it contains
 	  spaces or commas.  Otherwise quotes are not needed.
 	  </td>
-        <td>&nbsp;</td>
+        <td>[lit="even monkeys fall from trees"]</td>
 	</tr>
 
       <tr>
         <td><a name="syn_lsrc"></a>lsrc</td>
-        <td>Sense</td>
         <td>Source language and word.</td>
+        <td>Sense</td>
         <td>
 	  [lsrc=<span style="font-style: italic;"><a href="#kw_lang">lang</a></span>:]<br/>
 	  [lsrc=<span style="font-style: italic;">text</span>]<br/>
@@ -259,56 +271,56 @@
 	  (1) The text must be enclosed in quotes (") if it contains
 	  spaces or commas.  Otherwise quotes are not needed.
 	  </td>
-        <td>&nbsp;</td>
+        <td>[lsrc=pt:]<br/>[lsrc=de:Arbeit]<br/>[lsrc=en:"eye mate"]</td>
 	</tr>
 
       <tr>
         <td><a name="syn_misc"></a>misc</td>
-        <td>Sense</td>
         <td>Miscellaneous sense information</td>
+        <td>Sense</td>
         <td>
 	  [misc=<span style="font-style: italic;"><a href="#kw_misc">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_misc">kw</a></span>]</td>
-        <td>&nbsp;</td>
+        <td>[sl,derog] [misc=uk]</td>
 	</tr>
 
       <tr>
         <td><a name="syn_note"></a>note</td>
-        <td>Sense</td>
         <td>Ad-hoc sense information.</td>
+        <td>Sense</td>
         <td>
 	  [note="<span style="font-style: italic;">the
 	  note text...</span>"]<br/>
 	  (1) The text must be enclosed in quotes (") if it contains
 	  spaces or commas.  Otherwise quotes are not needed.
 	  </td>
-        <td>&nbsp;</td>
+        <td>[note="misspelling of こんにちは"]</td>
 	</tr>
 
       <tr>
         <td><a name="syn_pos"></a>pos</td>
-        <td>Sense</td>
         <td>Part-of-speech information</td>
+        <td>Sense</td>
         <td>
 	  [pos=<span style="font-style: italic;"><a href="#kw_pos">kw</a></span>]
-	  or just [<span style="font-style: italic;"><a href="#kw_kinf">kw</a></span>]</td>
-        <td>&nbsp;</td>
+	  or just [<span style="font-style: italic;"><a href="#kw_pos">kw</a></span>]</td>
+        <td>[n,vs] [pos=n,pos=adj-na]</td>
 	</tr>
 
       <tr>
         <td><a name="syn_rinf"></a>rinf</td>
-        <td>Reading</td>
         <td>Reading information</td>
+        <td>Reading</td>
         <td>
 	  [rinf=<span style="font-style: italic;"><a href="#kw_rinf">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_rinf">kw</a></span>]</td>
-        <td>&nbsp;</td>
+        <td>[ok] [rinf=ik]</td>
 	</tr>
 
       <tr>
         <td><a name="syn_restr"></a>restr</td>
-        <td>Kanji, Reading, Sense</td>
         <td>Reading and sense restrictions.</td>
+        <td>Kanji, Reading, Sense</td>
         <td>
 	  [restr=<span style="font-style: italic;">XX</span>;<span style="font-style: italic;">XX</span>;...]<br/>
 	  [restr=nokanji]<br/>
@@ -323,7 +335,7 @@
 	  (3) If the tag is in a Sense, the XX's may be either kana strings that
 	  occur in the Reading section, or kanji strings that occur in the Kanji
 	  section.</td>
-        <td>&nbsp;</td>
+        <td>[restr=惚け；呆け]<br/>[nokanji]</td>
 	</tr>
 
       <tr>
@@ -331,8 +343,8 @@
 	  <a name="syn_see"/>
 	  <a name="syn_ant"/>
 	  see<br/>ant</td>
-        <td>Sense</td>
         <td>Cross-reference</td>
+        <td>Sense</td>
         <td>
 	  [see=<span style="font-style: italic;">KK/RR</span>[<span style="font-style: italic;">sense-num</span>]]<br/>
 	  [ant=<span style="font-style: italic;">KK/RR</span>[<span style="font-style: italic;">sense-num</span>]]<br/>
@@ -359,30 +371,130 @@
     </table>
   </div>
 
+<!-- RINF KINF FREQ MISC POS FLD DIAL LANG GINF SRC STAT XREF -->
 <div class="entry">
   <h2><a name="kwabbr"/>Keyword abbreviations</h2>
 
     <table class="entr">
-      <span tal:repeat="kwtab kwlist" omit-tag="">
-	<tr>
-	  <td colspan="3"><br/></td>
-	  </tr>
-        <tr>
-	  <td colspan="3">
-	    <a tal:content="kwtab/0" tal:attributes="name string:kw_${kwtab/0}">kw type</a>
-	    </td>
-	  </tr>
-	<tr>
-	  <td colspan="3"><hr/></td>
-	  </tr>
-	<tr tal:repeat="kwrec kwtab/1">
+	<tr><td colspan="3"><br/></td></tr>
+        <tr><td colspan="3"><a name="kw_rinf">Rinf -- reading info</a></td></tr>
+	<tr><td colspan="3"><hr/></td></tr>
+	<tr tal:repeat="kwrec kwhash/RINF">
 	  <td tal:content="kwrec/kw">kw</td>
 	  <td tal:content="kwrec/descr">descr</td>
 	  <td tal:content="kwrec/id">id</td>
 	  </tr>
-        </span>
-      </table>
 
+	<tr><td colspan="3"><br/></td></tr>
+        <tr><td colspan="3"><a name="kw_kinf">Kinf -- kanji info</a></td></tr>
+	<tr><td colspan="3"><hr/></td></tr>
+	<tr tal:repeat="kwrec kwhash/KINF">
+	  <td tal:content="kwrec/kw">kw</td>
+	  <td tal:content="kwrec/descr">descr</td>
+	  <td tal:content="kwrec/id">id</td>
+	  </tr>
+
+	<tr><td colspan="3"><br/></td></tr>
+        <tr><td colspan="3"><a name="kw_freq">Freq -- frequency-of-use metrics</a>
+	  <br/><span class="status">The Freq keywords below denote the frequency-of-use scale.
+	  They are always followed by a number that gives a value on 
+	  that scale.  The valid numbers for gai, ichi, news, and spec
+	  is 1 or 2.  For nf it is 1 through 48.  For gA it is any number
+	  greater than 1.  Thus, you can use "ich1" or "ichi2" but not 
+	  "ichi3", or "nf27" but not "nf49".</span> 
+	  </td></tr>
+	<tr><td colspan="3"><hr/></td></tr>
+	<tr tal:repeat="kwrec kwhash/FREQ">
+	  <td tal:content="kwrec/kw">kw</td>
+	  <td tal:content="kwrec/descr">descr</td>
+	  <td tal:content="kwrec/id">id</td>
+	  </tr>
+
+	<tr><td colspan="3"><br/></td></tr>
+        <tr><td colspan="3"><a name="kw_misc">Misc -- miscellaneous sense info</a></td></tr>
+	<tr><td colspan="3"><hr/></td></tr>
+	<tr tal:repeat="kwrec kwhash/MISC">
+	  <td tal:content="kwrec/kw">kw</td>
+	  <td tal:content="kwrec/descr">descr</td>
+	  <td tal:content="kwrec/id">id</td>
+	  </tr>
+
+	<tr><td colspan="3"><br/></td></tr>
+        <tr><td colspan="3"><a name="kw_pos">Pos -- part-of-speech info</a></td></tr>
+	<tr><td colspan="3"><hr/></td></tr>
+	<tr tal:repeat="kwrec kwhash/POS">
+	  <td tal:content="kwrec/kw">kw</td>
+	  <td tal:content="kwrec/descr">descr</td>
+	  <td tal:content="kwrec/id">id</td>
+	  </tr>
+
+	<tr><td colspan="3"><br/></td></tr>
+        <tr><td colspan="3"><a name="kw_fld">Fld -- usage domain</a></td></tr>
+	<tr><td colspan="3"><hr/></td></tr>
+	<tr tal:repeat="kwrec kwhash/FLD">
+	  <td tal:content="kwrec/kw">kw</td>
+	  <td tal:content="kwrec/descr">descr</td>
+	  <td tal:content="kwrec/id">id</td>
+	  </tr>
+
+	<tr><td colspan="3"><br/></td></tr>
+        <tr><td colspan="3"><a name="kw_dial">Dial -- dialect</a></td></tr>
+	<tr><td colspan="3"><hr/></td></tr>
+	<tr tal:repeat="kwrec kwhash/DIAL">
+	  <td tal:content="kwrec/kw">kw</td>
+	  <td tal:content="kwrec/descr">descr</td>
+	  <td tal:content="kwrec/id">id</td>
+	  </tr>
+
+	<tr><td colspan="3"><br/></td></tr>
+        <tr><td colspan="3"><a name="kw_lang">Lang -- language
+	  <br/><span class="status">With the exception of "ai:Ainu" these two-letter codes are the
+	  same as those defined in ISO-639-2.</span>
+	  </a></td></tr>
+	<tr><td colspan="3"><hr/></td></tr>
+	<tr tal:repeat="kwrec kwhash/LANG">
+	  <td tal:content="kwrec/kw">kw</td>
+	  <td tal:content="kwrec/descr">descr</td>
+	  <td tal:content="kwrec/id">id</td>
+	  </tr>
+
+	<tr><td colspan="3"><br/></td></tr>
+        <tr><td colspan="3"><a name="kw_ginf">Ginf -- gloss info</a></td></tr>
+	<tr><td colspan="3"><hr/></td></tr>
+	<tr tal:repeat="kwrec kwhash/GINF">
+	  <td tal:content="kwrec/kw">kw</td>
+	  <td tal:content="kwrec/descr">descr</td>
+	  <td tal:content="kwrec/id">id</td>
+	  </tr>
+
+	<tr><td colspan="3"><br/></td></tr>
+        <tr><td colspan="3"><a name="kw_src">Src -- corpus info</a></td></tr>
+	<tr><td colspan="3"><hr/></td></tr>
+	<tr tal:repeat="kwrec kwhash/SRC">
+	  <td tal:content="kwrec/kw">kw</td>
+	  <td tal:content="kwrec/descr">descr</td>
+	  <td tal:content="kwrec/id">id</td>
+	  </tr>
+
+	<tr><td colspan="3"><br/></td></tr>
+        <tr><td colspan="3"><a name="kw_stat">Stat -- entry status</a></td></tr>
+	<tr><td colspan="3"><hr/></td></tr>
+	<tr tal:repeat="kwrec kwhash/STAT">
+	  <td tal:content="kwrec/kw">kw</td>
+	  <td tal:content="kwrec/descr">descr</td>
+	  <td tal:content="kwrec/id">id</td>
+	  </tr>
+
+	<tr><td colspan="3"><br/></td></tr>
+        <tr><td colspan="3"><a name="kw_xref">Xref -- cross-reference types</a></td></tr>
+	<tr><td colspan="3"><hr/></td></tr>
+	<tr tal:repeat="kwrec kwhash/XREF">
+	  <td tal:content="kwrec/kw">kw</td>
+	  <td tal:content="kwrec/descr">descr</td>
+	  <td tal:content="kwrec/id">id</td>
+	  </tr>
+
+      </table>
   </div>
 
 </body>

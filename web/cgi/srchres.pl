@@ -33,11 +33,12 @@ binmode (STDOUT, ":utf8");
 
     main: {
 	my ($dbh, $cgi, $tmpl, @s, @y, @t, $col, @kinf, @rinf, @fld, $svc, $svcstr,
-	    @pos, @misc, @src, @stat, @freq, $nfval, $nfcmp, $gaval, $gacmp, 
-	    $idval, $idtbl, $sql, $sql_args, $sql2, $rs, $i, $freq, @condlist);
+	    @pos, @misc, @src, @stat, @freq, $nfval, $nfcmp, $gaval, $gacmp, @appr, 
+	    $idval, $idtbl, $sql, $sql_args, $sql2, $rs, $i, $freq, @condlist,
+	    $force_srchres);
 	binmode (STDOUT, ":encoding(utf-8)");
 	$cgi = new CGI;
-	$svc=$cgi->param ("svc");
+	$svc = clean ($cgi->param ("svc"));
 	$dbh = dbopen ($svc);  $::KW = Kwds ($dbh);
 
 	$s[0]=$cgi->param("s1"); $y[0]=$cgi->param("y1"); $t[0]=decode_utf8($cgi->param("t1"));
@@ -45,10 +46,19 @@ binmode (STDOUT, ":utf8");
 	$s[2]=$cgi->param("s3"); $y[2]=$cgi->param("y3"); $t[2]=decode_utf8($cgi->param("t3"));
 	@pos=$cgi->param("pos");   @misc=$cgi->param("misc"); @fld=$cgi->param("fld");
 	@rinf=$cgi->param("rinf"); @kinf=$cgi->param("kinf"); @freq=$cgi->param("freq");
-	@src=$cgi->param("src");   @stat=$cgi->param("stat"); 
+	@src=$cgi->param("src");   @stat=$cgi->param("stat"); @appr=$cgi->param('appr'); 
 	$nfval=$cgi->param("nfval"); $nfcmp=$cgi->param("nfcmp");
 	$gaval=$cgi->param("gaval"); $gacmp=$cgi->param("gacmp");
 	$idval=$cgi->param("idval"); $idtbl=$cgi->param("idtyp");
+	$force_srchres = $cgi->param ("srchres"); # Force display of srchres page even if only one result.
+
+	# The followng will convert substrings like '\u6a8e' into
+	# a unicode character.  Sequences like this often occur
+	# when pasting text between remote unix VNC sessions, and
+	# a MS Windows application.
+	1 while $t[0] =~ s/(\\u([0-9a-f]{4}))/chr(hex($2))/ei;	
+	1 while $t[1] =~ s/(\\u([0-9a-f]{4}))/chr(hex($2))/ei;	
+	1 while $t[2] =~ s/(\\u([0-9a-f]{4}))/chr(hex($2))/ei;	
 
 	if ($idval) {	# Search for id number...
 	    if ($idtbl ne "seqnum") { $col = "id"; }
@@ -68,6 +78,7 @@ binmode (STDOUT, ":utf8");
 	    if (@rinf) { push (@condlist, ["rinf",  getsel("rinf.kw", \@rinf),[]]); }
 	    if (@src)  { push (@condlist, ["entr e",getsel("e.src",   \@src), []]); }
 	    if (@stat) { push (@condlist, ["entr e",getsel("e.stat",  \@stat),[]]); }
+	    if (@appr) { push (@condlist, ["entr e",getbool("e.unap",  \@appr),[]]); }
 	    if (@freq) { push (@condlist, freq_srch_clause (\@freq, $nfval, $nfcmp, $gaval, $gacmp)); }
 	    ($sql, $sql_args) = build_search_sql (\@condlist); }
 
@@ -80,7 +91,7 @@ binmode (STDOUT, ":utf8");
 	    print "Content-type: text/html\n\n<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body>";
 	    print "<pre> $@ </pre>\n<pre>$sql2</pre>\n<pre>".join(", ", @$sql_args)."</pre></body></html>\n";
 	    exit (1); }
-	if (scalar (@$rs) == 1) {
+	if (scalar (@$rs) == 1 && !$force_srchres) {
 	    $svcstr = $svc ? "svc=$svc&" : "";
 	    printf ("Location: entr.pl?${svcstr}e=%d\n\n", $rs->[0]{id}); }
 	else {
@@ -142,8 +153,12 @@ binmode (STDOUT, ":utf8");
 	return ["$table$alias",$whr,\@args]; }
 
     sub getsel { my ($fqcol, $itms) = @_;
-	my $s = sprintf ("%s IN (%s)", $fqcol, join(",", @$itms));
+	my $s = sprintf ("%s IN (%s)", $fqcol, join(",", map (int($_), @$itms)));
 	return $s; }
+
+    sub getbool { my ($fqcol, $itms) = @_;
+	my $s = join (" OR ", map (int($_) ? $fqcol : "NOT $fqcol ", @$itms));
+	return "($s)"; }
 
     sub freq_srch_clause { my ($freq, $nfval, $nfcmp, $gaval, $gacmp) = @_;
 	# Create a pair of 3-tuples (build_search_sql() "conditions")

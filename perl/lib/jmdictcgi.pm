@@ -24,18 +24,23 @@ use Encode 'decode_utf8';
 use Storable qw(freeze thaw); use MIME::Base64;
 use HTML::Entities;
 use POSIX qw(strftime);
+use CGI::Carp;
 
 use jmdict;
 
 BEGIN {
     use Exporter(); our (@ISA, @EXPORT_OK, @EXPORT); @ISA = qw(Exporter);
     @EXPORT = qw(serialize unserialize fmt_restr fmt_stag set_audio_flag
-		 dbopen); }
+		 set_editable_flag dbopen clean); }
 
 our(@VERSION) = (substr('$Revision$',11,-2), \
 	         substr('$Date$',7,-11));
 
 *esc = \&CGI::escapeHTML;
+
+    sub clean { my ($s) = @_;
+	croak ("Bad string received") if (!($s =~ m/^[0-9A-Za-z_]*$/));
+	return $s; }
 
     sub serialize { my ($struct) = @_;
 	my $s = freeze ($struct);
@@ -110,6 +115,18 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	    foreach $r (@{$e->{_rdng}}) {
 		if ($r->{_audio}) { $found = 1; last; } }
 	    $e->{HAS_AUDIO} = $found; } }
+
+    sub set_editable_flag { my ($entrs) = @_; 
+
+	# This is a conveniene function to avoid embedding this logic 
+	# in the TAL templates.  This sets a EDITABLE flag on entries
+	# that should have an "Edit" button is entr.tal. 
+ 
+	my ($e, $r, $found);
+	foreach $e (@$entrs) {
+	    $e->{EDITABLE} = ($e->{unap}  
+		or ($e->{stat} == $::KW->{STAT}{N}{id})
+		or ($e->{stat} == $::KW->{STAT}{A}{id})); } }
 
     use DBI;
     sub dbopen { my ($svcname, $svcdir) = @_;

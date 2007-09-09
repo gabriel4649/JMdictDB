@@ -38,7 +38,7 @@ $|=1;
 	$::Debug = {};
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
-	$svc = $cgi->param ("svc");
+	$svc = clean ($cgi->param ("svc"));
 	$dbh = dbopen ($svc);  $::KW = Kwds ($dbh);
 
 	@qlist = $cgi->param ('q');
@@ -75,6 +75,7 @@ $|=1;
 	fmt_restr ($entries); 
 	fmt_stag ($entries); 
 	set_audio_flag ($entries);
+	set_editable_flag ($entries);
 
 	$tmpl = new Petal (file=>'../lib/tal/entr.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );

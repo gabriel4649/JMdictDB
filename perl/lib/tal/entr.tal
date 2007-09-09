@@ -144,7 +144,7 @@
 		<td>&nbsp;</td>
 		<td>
 		  <span tal:replace="kwabbr: 'XREF' x/typ">xref-type</span>:
-		  <a tal:attributes="href string:entr.pl?svc=${svc}e=${x/entr}" tal:content="x/ssum/seq">seq-num</a
+		  <a tal:attributes="href string:entr.pl?svc=${svc}&e=${x/entr}" tal:content="x/ssum/seq">seq-num</a
 		  ><span tal:if="gt: x/ssum/nsens string:1"
 		    >(<span tal:replace="x/sens">sense</span>) </span> 
 		  <span tal:replace="x/ktxt">xref-kanj</span>

@@ -101,14 +101,19 @@ CREATE TABLE kwxref (
 CREATE TABLE entr (
     id SERIAL NOT NULL PRIMARY KEY,
     src SMALLINT NOT NULL,
-    seq INT NOT NULL CHECK(seq>0),
     stat SMALLINT NOT NULL,
+    seq INT NOT NULL CHECK(seq>0),
+    dfrm INT,
+    unap BOOLEAN NOT NULL,
     srcnote VARCHAR(255) NULL,
     notes TEXT);
 --CREATE INDEX entr_seq ON entr(seq);
 --CREATE INDEX entr_stat ON entr(stat) WHERE stat!=2;
+--CREATE INDEX entr_dfrm ON entr(dfrm) WHERE dfrm IS NOT NULL;
+--CREATE INDEX entr_unap ON entr(unap) WHERE unap;
 --ALTER TABLE entr ADD CONSTRAINT entr_src_fkey FOREIGN KEY (src) REFERENCES kwsrc(id);
 --ALTER TABLE entr ADD CONSTRAINT entr_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
+--ALTER TABLE entr ADD CONSTRAINT entr_dfrm_fkey FOREIGN KEY (dfrm) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;;
 
 CREATE SEQUENCE seq_jmdict	-- JMdict seq numbers.
    INCREMENT 10 MINVALUE 1000000 MAXVALUE 8999999 
@@ -210,15 +215,20 @@ CREATE TABLE hist (
     entr INT NOT NULL,
     hist SMALLINT NOT NULL CHECK(hist>0),
     stat SMALLINT NOT NULL,
+    edid INT,
     dt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    who VARCHAR(250),
+    name VARCHAR(250),
+    email VARCHAR(250),
     diff TEXT,
+    refs TEXT,
     notes TEXT,
     PRIMARY KEY(entr,hist));
 --CREATE INDEX hist_dt ON hist(dt);
---CREATE INDEX hist_who ON hist(who);
+--CREATE INDEX hist_email ON hist(email);
+--CREATE INDEX hist_edid ON hist(edid);
 --ALTER TABLE hist ADD CONSTRAINT hist_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE hist ADD CONSTRAINT hist_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
+--ALTER TABLE hist ADD CONSTRAINT hist_edid_fkey FOREIGN KEY (edid) REFERENCES editor(id);
 
 CREATE TABLE audio (
     entr INT NOT NULL,

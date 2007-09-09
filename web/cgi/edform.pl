@@ -33,13 +33,13 @@ binmode (STDOUT, ":utf8");
 *ee = \&encode_entities;
 
     main: {
-	my ($dbh, $cgi, $tmpl, $tmptbl, @qlist, @elist, @errs, $sql, 
+	my ($dbh, $cgi, $tmpl, $tmptbl, @qlist, @elist, @errs, $sql,  
 	    @whr, $entries, $entr, $ktxt, $rtxt, $stxt, $srcs, $svc);
 	binmode (STDOUT, ":encoding(utf-8)");
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
 
-	$svc = $cgi->param ("svc");
+	$svc = clean ($cgi->param ("svc"));
 	@qlist = $cgi->param ('q'); validateq (\@qlist, \@errs);
 	@elist = $cgi->param ('e'); validaten (\@elist, \@errs);
 	if (@errs) { errors_page (\@errs);  exit; } 
@@ -67,7 +67,8 @@ binmode (STDOUT, ":utf8");
 	$tmpl = new Petal (file=>'../lib/tal/edform.tal', 
 			   decode_charset=>'utf-8', output=>'HTML' );
 	print $tmpl->process ({e=>$entr, ktxt=>$ktxt, rtxt=>$rtxt, stxt=>$stxt,
-			       srcs=>$srcs, svc=>$svc}); }
+			       srcs=>$srcs, svc=>$svc, is_editor=>1,
+			       isdelete=>($entr->{stat}==$::KW->{STAT}{D}{id}?1:undef)}); }
 
     sub validaten { my ($list, $errs) = @_;
 	foreach my $p (@$list) {

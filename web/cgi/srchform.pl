@@ -37,7 +37,7 @@ binmode (STDOUT, ":utf8");
 	binmode (STDOUT, ":encoding(utf-8)");
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
-	$svc = $cgi->param ("svc");
+	$svc = clean ($cgi->param ("svc"));
 	$dbh = dbopen ($svc);  $::KW = Kwds ($dbh);
 
 	@x = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'POS'));

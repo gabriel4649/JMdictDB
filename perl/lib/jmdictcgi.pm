@@ -39,6 +39,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 *esc = \&CGI::escapeHTML;
 
     sub clean { my ($s) = @_;
+	return $s if (!defined ($s));
 	croak ("Bad string received") if (!($s =~ m/^[0-9A-Za-z_]*$/));
 	return $s; }
 

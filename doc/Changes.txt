@@ -1,4 +1,22 @@
 
+2007-09-10 09:20	smcgrawx@frxii.com
+
+	* perl/lib/jmdictcgi.pm [1.10]
+	Fix: Explicitly check for undefined argument to avoid warning
+	  messages. {339}
+
+	* perl/lib/tal/entr.tal [1.20]
+	Fix: Typo caused bad reverse xref links. {338}
+
+	* web/cgi/edconf.pl [1.13]
+	Fix: Make values that go into database text fields have undef value
+	  rather than "".  The former will produce a NULL in database
+	  consistent with other apps.  Mixing NULL and ""s makes searching
+	  difficult. {341}
+	Fix: When processing a new entry, make sure $eid is undef rather than
+	  "".  The latter causes database entr row inserts to fail because it
+	  is used to set attribute dfrm but is not numeric. {340}
+
 2007-09-09 11:45	smcgrawx@frxii.com
 
 	This set of changes implements submission approval and rejection
@@ -215,8 +233,8 @@
 	  {284}
 
 	* perl/lib/jmdictpgi.pm [1.10]
-	Make function pout() use function pgesc(). {289}
 	Add function wrcorp(). {287}
+	Make function pout() use function pgesc(). {289}
 	Move function pgesc() from jmparse.pl to jmdictpgi.pm. {288}
 
 	* perl/lib/kwstatic.pm [1.11]
@@ -278,8 +296,8 @@
 	Move function dbopen() from jmdict.pm to jmdictcgi.pm {276}
 
 	* web/cgi/srchform.pl [1.11]
-	Move function dbopen() from jmdict.pm to jmdictcgi.pm {276}
 	Fix: Fix "gkwrecs" typo that crept in during last edit. {275}
+	Move function dbopen() from jmdict.pm to jmdictcgi.pm {276}
 
 2007-08-22 14:52	smcgrawx@frxii.com
 
@@ -307,10 +325,10 @@
 	  {271}
 
 	* perl/xresolv.pl [1.2]
-	Add check for self-referential xrefs. {270}
 	Add -D (debugging) option. {269}
-	Get rid of #@$!^*%*! Microsoft utf8 BOM. {272}
 	Fix: Typo in debugging print statement {268}
+	Add check for self-referential xrefs. {270}
+	Get rid of #@$!^*%*! Microsoft utf8 BOM. {272}
 
 2007-08-21 17:22	smcgrawx@frxii.com
 
@@ -328,11 +346,11 @@
 	  {232}
 
 	* Makefile [1.26]
+	Use xresolv.pl rather than xresolv.sql to resolve xrefs. {251}
+	Improve parameterization. {252}
 	Fix: Previous version did not use same parameters when running perl
 	  commands as it used for psql commands when non-default values were
 	  used. {253}
-	Improve parameterization. {252}
-	Use xresolv.pl rather than xresolv.sql to resolve xrefs. {251}
 
 	* doc/schema.dia [1.8]
 	* doc/schema.odt [1.8]
@@ -522,10 +540,10 @@
 	* pg/mktables.sql [1.25]
 	Add a functional index using lower() on gloss.txt to provide fast
 	  case-insensitive "=" search. {204}
-	Add varchar_pattern_ops indexes on gloss.txt to provide fast case-
-	  insensitive LIKE search. {208}
 	Add varchar_pattern_ops indexes on kanj.txt, rdng.txt to provide fast
 	  LIKE search. {207}
+	Add varchar_pattern_ops indexes on gloss.txt to provide fast case-
+	  insensitive LIKE search. {208}
 
 	* web/cgi/edsubmit.pl [1.10]
 	Generate url to added entry with a corpus spec. {214}
@@ -774,10 +792,10 @@
 	* perl/lib/jmdict.pm [1.27]
 	Removed function get_seq() since addentr() no longer uses it per
 	  chgid-133. {139}
-	In function addentr(), don't assign a 'seq' value, leave it NULL and
-	  rely on the new entr table insert trigger to set it. {133}
 	In function addentr() call setkeys() to set all the key values rather
 	  than doing it ourself. {138}
+	In function addentr(), don't assign a 'seq' value, leave it NULL and
+	  rely on the new entr table insert trigger to set it. {133}
 
 	* perl/lib/tal/edconf.tal [1.8]
 	Adjust layout of entr data to match current entr.tal {137}
@@ -1112,8 +1130,8 @@
 	  nwconf.tal. {69}
 
 	* perl/lib/jmdictxml.pm [1.14]
-	Add dialect 'kyu'. {73}
 	Add language ty (Tahitian) {70}
+	Add dialect 'kyu'. {73}
 
 	* perl/lib/kwstatic.pm [1.5]
 	Rebuild due to prerequisite file changes. {74}

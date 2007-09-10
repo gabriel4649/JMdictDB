@@ -48,7 +48,7 @@ binmode (STDOUT, ":utf8");
 
 	  # $eid will be an integer if we are editing an existing 
 	  # entry, or undefined if this is a new entry.
-	$eid = $cgi->param ('id');
+	$eid = $cgi->param ('id') || undef;
 
 	  # Desired disposition: 'a':approve, 'r':reject, undef:submit.
 	$disp = $cgi->param ('disp');
@@ -61,10 +61,10 @@ binmode (STDOUT, ":utf8");
 		     : $::KW->{STAT}{N}{id};
 
 	  # These will only have values when editing an entry. 
-	$seq = $cgi->param ('seq');
-	$src = $cgi->param ('src');
-	$notes = $cgi->param ('notes');
-	$srcnote = $cgi->param ('srcnote');
+	$seq = $cgi->param ('seq') || undef;
+	$src = $cgi->param ('src') || undef;
+	$notes = $cgi->param ('notes')||undef;
+	$srcnote = $cgi->param ('srcnote') || undef;
 
 	  # These are the JEL (JMdict Edit Language) texts which
 	  # we will concatenate into a string that is fed to the
@@ -76,10 +76,10 @@ binmode (STDOUT, ":utf8");
 
 	  # Get the meta-edit info which will go into the history
 	  # record for this change.
-	$comment = decode ('utf8', $cgi->param ('comment')) || "";
-	$refs = decode ('utf8', $cgi->param ('reference')) || "";
-	$name = decode ('utf8', $cgi->param ('name')) || "";
-	$email = decode ('utf8', $cgi->param ('email')) || "";
+	$comment = decode ('utf8', $cgi->param ('comment')) || undef;
+	$refs = decode ('utf8', $cgi->param ('reference')) || undef;
+	$name = decode ('utf8', $cgi->param ('name')) || undef;
+	$email = decode ('utf8', $cgi->param ('email')) || undef;
 	if (!$email) { push (@errs, "Missing email address"); }
 	elsif (!($email =~ m/^[A-Z0-9._%-]+@(?:[A-Z0-9-]+\.)+[A-Z]{2,4}$/io)) {
 	    push (@errs, "Invalid email address: $email"); }

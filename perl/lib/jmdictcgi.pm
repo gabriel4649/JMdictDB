@@ -31,7 +31,7 @@ use jmdict;
 BEGIN {
     use Exporter(); our (@ISA, @EXPORT_OK, @EXPORT); @ISA = qw(Exporter);
     @EXPORT = qw(serialize unserialize fmt_restr fmt_stag set_audio_flag
-		 set_editable_flag dbopen clean); }
+		 set_editable_flag dbopen clean find_in_inc); }
 
 our(@VERSION) = (substr('$Revision$',11,-2), \
 	         substr('$Date$',7,-11));
@@ -129,6 +129,15 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 		or ($e->{stat} == $::KW->{STAT}{N}{id})
 		or ($e->{stat} == $::KW->{STAT}{A}{id})); } }
 
+    sub find_in_inc { my ($fname) = @_;
+	# Search the directories in @INC for the first occurance
+	# of a readable file or directory named $fname, and return 
+	# the @INC directory in which it was found.
+	my ($d);
+	foreach $d (@INC) { 
+	    return $d if (-r "$d/$fname"); }
+	return undef; }
+
     use DBI;
     sub dbopen { my ($svcname, $svcdir) = @_;
 	# This function will open a database connection.  It is
@@ -155,7 +164,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	# 	is given, Postresql's default location will be
 	#	used.
 
-	if (!defined ($svcdir)) { $svcdir = "../lib"; }
+	if (!defined ($svcdir)) { $svcdir = find_in_inc("pg_service.conf"); }
 	if (!$svcname) { $svcname = "jmdict"; }
 
 	if ($svcdir) { $ENV{PGSYSCONFDIR} = $svcdir; }

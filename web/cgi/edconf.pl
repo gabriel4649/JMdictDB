@@ -26,8 +26,7 @@ use CGI; use Encode; use DBI;
 use Petal; use Petal::Utils; 
 use POSIX qw(strftime);
 
-
-BEGIN {push (@INC, "../lib");}
+use lib ("../lib", "./lib", "../perl/lib");
 use jmdict; use jmdictcgi; use jmdicttal; use jbparser;
 
 $|=1;
@@ -136,7 +135,7 @@ binmode (STDOUT, ":utf8");
 	    fmt_restr ($entrs); 
 	    fmt_stag ($entrs); 
 	    set_audio_flag ($entrs);
-	    $tmpl = new Petal (file=>'../lib/tal/edconf.tal', 
+	    $tmpl = new Petal (file=>find_in_inc("tal")."/tal/edconf.tal", 
 			   decode_charset=>'utf-8', output=>'HTML' );
 	    print $tmpl->process (entries=>$entrs, chklist=>$chklist, 
 				is_editor=>1, svc=>$svc, disp=>$disp,

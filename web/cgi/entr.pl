@@ -26,7 +26,7 @@ use Cwd; use CGI; use HTML::Entities;
 use Encode; use utf8; use DBI; 
 use Petal; use Petal::Utils (':all'); 
 
-BEGIN {push (@INC, "../lib");}
+use lib ("../lib", "./lib", "../perl/lib");
 use jmdict; use jmdicttal; use jmdictcgi;
 
 $|=1;
@@ -77,7 +77,7 @@ $|=1;
 	set_audio_flag ($entries);
 	set_editable_flag ($entries);
 
-	$tmpl = new Petal (file=>'../lib/tal/entr.tal', 
+	$tmpl = new Petal (file=>find_in_inc("tal")."/tal/entr.tal", 
 			   decode_charset=>'utf-8', output=>'HTML' );
 	print $tmpl->process (entries=>$entries, svc=>$svc, dbg=>$::Debug); }
 

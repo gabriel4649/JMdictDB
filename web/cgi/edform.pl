@@ -25,7 +25,7 @@ use strict; use warnings;
 use Cwd; use CGI; use Encode; use utf8; use DBI; 
 use Petal; use Petal::Utils; 
 
-BEGIN {push (@INC, "../lib");}
+use lib ("../lib", "./lib", "../perl/lib");
 use jmdict; use jmdicttal; use jmdictfmt; use jmdictcgi;
 
 $|=1;
@@ -64,7 +64,7 @@ binmode (STDOUT, ":utf8");
 	$srcs = [sort {lc($a->{kw}) cmp lc($b->{kw})} kwrecs ($::KW, "SRC")];
 	unshift (@$srcs,{id=>0,kw=>"",descr=>""});
 
-	$tmpl = new Petal (file=>'../lib/tal/edform.tal', 
+	$tmpl = new Petal (file=>find_in_inc("tal")."/tal/edform.tal", 
 			   decode_charset=>'utf-8', output=>'HTML' );
 	print $tmpl->process ({e=>$entr, ktxt=>$ktxt, rtxt=>$rtxt, stxt=>$stxt,
 			       srcs=>$srcs, svc=>$svc, is_editor=>1,

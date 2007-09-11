@@ -25,7 +25,7 @@ use strict; use warnings;
 use Cwd; use CGI; use Encode 'decode_utf8'; use DBI; 
 use Petal; use Petal::Utils; use Time::HiRes('time');
 
-BEGIN {push (@INC, "../lib");}
+use lib ("../lib", "./lib", "../perl/lib");
 use jmdict; use jmdicttal; use jmdictcgi;
 
 $|=1;
@@ -96,7 +96,7 @@ binmode (STDOUT, ":utf8");
 	    printf ("Location: entr.pl?${svcstr}e=%d\n\n", $rs->[0]{id}); }
 	else {
 	    print "Content-type: text/html\n\n";
-	    $tmpl = new Petal (file=>'../lib/tal/srchres.tal', 
+	    $tmpl = new Petal (file=>find_in_inc("tal")."/tal/srchres.tal", 
 			   decode_charset=>'utf-8', output=>'HTML' );
 	    print $tmpl->process (results=>$rs, svc=>$svc, dbg=>$::Debug); }
 	$dbh->disconnect; }

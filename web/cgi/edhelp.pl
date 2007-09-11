@@ -25,7 +25,7 @@ use strict; use warnings;
 use CGI; use DBI; 
 use Petal; use Petal::Utils; 
 
-BEGIN {push (@INC, "../lib");}
+use lib ("../lib", "./lib", "../perl/lib");
 use jmdict; use jmdicttal; use jmdictcgi;
 
 $|=1;
@@ -45,7 +45,7 @@ binmode (STDOUT, ":utf8");
 	    push (@kwlist, $kwset);
 	    $kwhash->{$t} = $kwset->[1]; }
 
-	$tmpl = new Petal (file=>'../lib/tal/edhelp.tal', 
+	$tmpl = new Petal (file=>find_in_inc("tal")."/tal/edhelp.tal", 
 			   decode_charset=>'utf-8', output=>'HTML' );
 	print $tmpl->process (kwlist=>\@kwlist, kwhash=>$kwhash, svc=>$svc); }
 

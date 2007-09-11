@@ -1,4 +1,36 @@
 
+2007-09-10 21:59	smcgrawx@frxii.com
+
+	* perl/lib/jmdictcgi.pm [1.12]
+	New function, find_iin_inc(), that identifies a directory in @INC
+	  that contains a specified file. {342}
+	In dbopen() use find_in_inc() to find the directory containing the pg
+	  service file. {343}
+
+	* web/cgi/edconf.pl [1.14]
+	* web/cgi/edform.pl [1.12]
+	* web/cgi/edhelp.pl [1.7]
+	* web/cgi/entr.pl [1.15]
+	* web/cgi/srchform.pl [1.14]
+	* web/cgi/srchres.pl [1.17]
+	Use jmdictcgi::find_in_inc to find the relative path to the lib/tal/
+	  directory, rather than a harwired path that didn't work in some
+	  environments. {346}
+	The relative path to the lib dir varies depending on the web server
+	  and the directory layout, so push all possibilties onto @INC.  This
+	  lets script run without changes under both IIS and Apache, and from
+	  dev directory or an installed directory. {345}
+	Use perl pragma "lib" to modify @INC rather than doing it manually.
+	  {344}
+
+	* web/cgi/edsubmit.pl [1.13]
+	The relative path to the lib dir varies depending on the web server
+	  and the directory layout, so push all possibilties onto @INC.  This
+	  lets script run without changes under both IIS and Apache, and from
+	  dev directory or an installed directory. {345}
+	Use perl pragma "lib" to modify @INC rather than doing it manually.
+	  {344}
+
 2007-09-10 09:20	smcgrawx@frxii.com
 
 	* perl/lib/jmdictcgi.pm [1.10]
@@ -63,11 +95,11 @@
 	* perl/lib/tal/edform.tal [1.8]
 	Move the Appove/Reject selector from edconf page back to edform page.
 	  {323}
-	Added some missing help links. {324}
-	Open help links in different target page. {325}
 	Add a "delete entry" checkbox. {326}
 	Adjust for the changes to tables entr and hist in pg/mktables.sql.
 	  {306}
+	Added some missing help links. {324}
+	Open help links in different target page. {325}
 	Pass "isdelete" parameter to TAL file to simplify setting the "delete
 	  entry" checkbox default. {314}
 
@@ -82,11 +114,11 @@
 
 	* perl/lib/tal/entr.tal [1.19]
 	Pass svc parameter along in href links. {321}
-	Create and use a "editable" flag on entries to simplify displaying of
-	  Edit button in entr.tal. {317}
-	Display history items in table rather than ordered list. {322}
 	Adjust for the changes to tables entr and hist in pg/mktables.sql.
 	  {306}
+	Display history items in table rather than ordered list. {322}
+	Create and use a "editable" flag on entries to simplify displaying of
+	  Edit button in entr.tal. {317}
 
 	* perl/lib/tal/srchform.tal [1.13]
 	Fix: Make indenting more consistent with my standard style. {330}
@@ -103,9 +135,9 @@
 
 	* pg/data/kwstat.csv [1.3]
 	Removed "obsolete" keyword {334}
+	"reject" keyword value changed from 8 to 6. {335}
 	Remove the "approval pending" statuses.  Pending status now
 	  maintained as a boolean column in entr table. {310}
-	"reject" keyword value changed from 8 to 6. {335}
 
 	* pg/mktables.sql [1.28]
 	Table entr: added new columns dfrm, unap. {304}
@@ -296,8 +328,8 @@
 	Move function dbopen() from jmdict.pm to jmdictcgi.pm {276}
 
 	* web/cgi/srchform.pl [1.11]
-	Fix: Fix "gkwrecs" typo that crept in during last edit. {275}
 	Move function dbopen() from jmdict.pm to jmdictcgi.pm {276}
+	Fix: Fix "gkwrecs" typo that crept in during last edit. {275}
 
 2007-08-22 14:52	smcgrawx@frxii.com
 
@@ -325,10 +357,10 @@
 	  {271}
 
 	* perl/xresolv.pl [1.2]
-	Add -D (debugging) option. {269}
-	Fix: Typo in debugging print statement {268}
 	Add check for self-referential xrefs. {270}
+	Add -D (debugging) option. {269}
 	Get rid of #@$!^*%*! Microsoft utf8 BOM. {272}
+	Fix: Typo in debugging print statement {268}
 
 2007-08-21 17:22	smcgrawx@frxii.com
 
@@ -377,14 +409,14 @@
 	  query returned 0 records. {234}
 	add_xrefsums(), grp_xrefs(), resolv_xref(): adjust for new xref
 	  columns kanj and rdng. {236}
+	Fix: fmt_jitem(): avoind an unitialized string warning if $slist
+	  param is undef. {235}
 	In class Tmptbl, method DESTROY(), wrap the sql execution in an eval
 	  in order to ignore errors.  Sometimes during normal program
 	  termination, the dbi handle goes away before the Tmptbl destructor
 	  is called resulting in a warning messge (safe to ignore because
 	  purpose of destructor is to delete the temp table, but it will be
 	  deleted automatically when the db connection is closed). {248}
-	Fix: fmt_jitem(): avoind an unitialized string warning if $slist
-	  param is undef. {235}
 
 	* perl/lib/jmdicted.pm [1.1]
 	Removed, no longer used anywhere. {229}
@@ -792,10 +824,10 @@
 	* perl/lib/jmdict.pm [1.27]
 	Removed function get_seq() since addentr() no longer uses it per
 	  chgid-133. {139}
-	In function addentr() call setkeys() to set all the key values rather
-	  than doing it ourself. {138}
 	In function addentr(), don't assign a 'seq' value, leave it NULL and
 	  rely on the new entr table insert trigger to set it. {133}
+	In function addentr() call setkeys() to set all the key values rather
+	  than doing it ourself. {138}
 
 	* perl/lib/tal/edconf.tal [1.8]
 	Adjust layout of entr data to match current entr.tal {137}
@@ -1130,8 +1162,8 @@
 	  nwconf.tal. {69}
 
 	* perl/lib/jmdictxml.pm [1.14]
-	Add language ty (Tahitian) {70}
 	Add dialect 'kyu'. {73}
+	Add language ty (Tahitian) {70}
 
 	* perl/lib/kwstatic.pm [1.5]
 	Rebuild due to prerequisite file changes. {74}

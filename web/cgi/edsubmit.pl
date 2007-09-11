@@ -128,7 +128,7 @@ use CGI; use Encode 'decode_utf8'; use DBI;
 use Petal; use Petal::Utils; 
 use POSIX ('strftime');
 
-BEGIN {push (@INC, "../lib");}
+use lib ("../lib", "./lib", "../perl/lib");
 use jmdict; use jmdictcgi; use jmdicttal;
 
 $|=1;

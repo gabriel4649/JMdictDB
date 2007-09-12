@@ -25,7 +25,7 @@
 	should not be an amendment to, one of these entries.
 	<ol>
 	  <li tal:repeat="c chklist">
-	    <a tal:attributes="href string:entr.pl?svc=${svc}&q=${c/seq}" tal:content="c/seq">seq</span>
+	    <a tal:attributes="href string:entr.pl?svc=${svc}&q=${c/seq}.${c/src}" tal:content="c/seq">seq</span>
 	    <span tal:if="c/kanj" tal:content="c/kanj" tal:omit-tag="">kanji</span>
 	    <span tal:if="c/kanj">【</span>
 	    <span tal:content="c/rdng" tal:omit-tag="">reading</span>

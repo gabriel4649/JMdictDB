@@ -130,7 +130,7 @@
 		<table class="optgroup">
 		  <tr tal:repeat="r stat">
 		    <td tal:repeat="c r"> 
-		      <input name="stat" tal:condition="c" tal:attributes="value c/id" tal:content="c/descr" type="checkbox"/> 
+		      <input name="stat" tal:condition="c" tal:attributes="value c/id; checked decode:c/kw string:A 1 string:N 1" tal:content="c/descr" type="checkbox"/> 
 		      </td>
 		    </tr>
 		  </table>

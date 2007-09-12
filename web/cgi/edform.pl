@@ -30,29 +30,27 @@ use jmdict; use jmdicttal; use jmdictfmt; use jmdictcgi;
 
 $|=1;
 binmode (STDOUT, ":utf8");
-*ee = \&encode_entities;
 
     main: {
-	my ($dbh, $cgi, $tmpl, $tmptbl, @qlist, @elist, @errs, $sql,  
-	    @whr, $entries, $entr, $ktxt, $rtxt, $stxt, $srcs, $svc);
+	my ($dbh, $cgi, $tmpl, @qlist, @elist, @errs, $entrs, $entr, 
+	    $ktxt, $rtxt, $stxt, $srcs, $svc);
 	binmode (STDOUT, ":encoding(utf-8)");
 	$cgi = new CGI;
 	print "Content-type: text/html\n\n";
 
 	$svc = clean ($cgi->param ("svc"));
-	@qlist = $cgi->param ('q'); validateq (\@qlist, \@errs);
-	@elist = $cgi->param ('e'); validaten (\@elist, \@errs);
-	if (@errs) { errors_page (\@errs);  exit; } 
-
 	$dbh = dbopen ($svc);  $::KW = Kwds ($dbh);
-	if (@qlist) { push (@whr, "e.seq IN (" . join(",",map('?',(@qlist))) . ")"); }
-	if (@elist) { push (@whr, "e.id  IN (" . join(",",map('?',(@elist))) . ")"); }
-	if (@whr) {
-	    $sql = "SELECT e.id FROM entr e WHERE " . join (" OR ", @whr);
-	    $tmptbl = Find ($dbh, $sql, [@qlist, @elist]);
-	    $entries = EntrList ($dbh, $tmptbl);
-	    add_xrefsums ($dbh, $entries);
-	    $entr = $entries->[0];
+	@qlist = $cgi->param ('q'); 
+	@elist = $cgi->param ('e'); 
+	if (scalar (@elist) + scalar(@qlist) > 1) {
+	    push (@errs, "Bad url parameters: more than one entry was specified."); }
+	if (@elist or @qlist) {
+	    $entrs = get_entrs ($dbh, \@elist, \@qlist, \@errs, 
+		"stat=$::KW->{STAT}{A}{id} AND NOT unap");
+	    if ($entrs && !@$entrs) { push (@errs, "Entry not found"); }
+	    if (scalar (@$entrs) > 1) { push (@errs, "Multiple entries found.  (This should not happen!)"); }
+	    if (@errs) { errors_page (\@errs);  exit; } 
+	    $entr = $entrs->[0];
 	    $ktxt = jel_kanjs ($entr->{_kanj});
 	    $rtxt = jel_rdngs ($entr->{_rdng}, $entr->{_kanj});
 	    $stxt = jel_senss ($entr->{_sens}, $entr->{_kanj}, $entr->{_rdng}); }
@@ -69,16 +67,6 @@ binmode (STDOUT, ":utf8");
 	print $tmpl->process ({e=>$entr, ktxt=>$ktxt, rtxt=>$rtxt, stxt=>$stxt,
 			       srcs=>$srcs, svc=>$svc, is_editor=>1,
 			       isdelete=>($entr->{stat}==$::KW->{STAT}{D}{id}?1:undef)}); }
-
-    sub validaten { my ($list, $errs) = @_;
-	foreach my $p (@$list) {
-	    if (!($p =~ m/^\s*\d+\s*$/)) {
-		push (@$errs, "<br>Bad url parameter received: ".ee($p)); } } }
-
-    sub validateq { my ($list, $errs) = @_;
-	foreach my $p (@$list) {
-	    if (!($p =~ m/^\s*\d{7}\s*$/)) {
-		push (@$errs, "<br>Bad url parameter received: ".ee($p)); } } }
 
     sub errors_page { my ($errs) = @_;
 	my $err_details = join ("\n    ", @$errs);

@@ -1,4 +1,35 @@
 
+2007-09-11 23:40	smcgrawx@frxii.com
+
+	* perl/lib/jmdictcgi.pm [1.13]
+	In dbopen(), add "ShoWErrorStatement" flag to the DBI connect call.
+	  {348}
+	Factored the code the vaidates the 'e' and 'q' url parameters, out of
+	  edform.pl and entr.pl and into perl/lib/jmdictcgi.pm. {347}
+
+	* perl/lib/tal/edconf.tal [1.15]
+	Generate the "caution, similar entry" links with a corpus qualifier.
+	  {351}
+
+	* perl/lib/tal/srchform.tal [1.14]
+	Intialize the Status checkboxes with only Active and New checked.
+	  {353}
+
+	* web/cgi/edconf.pl [1.15]
+	Speed up the db query that finds entries simliar to the submitter's
+	  entry. {350}
+	Add function chkentr() to do some sanity checking of the entry before
+	  sending it on to the submit page. {352}
+
+	* web/cgi/edform.pl [1.13]
+	Edform.pl now accepts 'q' url param with a corpus qualifier. {349}
+	Factored the code the vaidates the 'e' and 'q' url parameters, out of
+	  edform.pl and entr.pl and into perl/lib/jmdictcgi.pm. {347}
+
+	* web/cgi/entr.pl [1.16]
+	Factored the code the vaidates the 'e' and 'q' url parameters, out of
+	  edform.pl and entr.pl and into perl/lib/jmdictcgi.pm. {347}
+
 2007-09-10 21:59	smcgrawx@frxii.com
 
 	* perl/lib/jmdictcgi.pm [1.12]
@@ -114,11 +145,11 @@
 
 	* perl/lib/tal/entr.tal [1.19]
 	Pass svc parameter along in href links. {321}
-	Adjust for the changes to tables entr and hist in pg/mktables.sql.
-	  {306}
 	Display history items in table rather than ordered list. {322}
 	Create and use a "editable" flag on entries to simplify displaying of
 	  Edit button in entr.tal. {317}
+	Adjust for the changes to tables entr and hist in pg/mktables.sql.
+	  {306}
 
 	* perl/lib/tal/srchform.tal [1.13]
 	Fix: Make indenting more consistent with my standard style. {330}
@@ -135,9 +166,9 @@
 
 	* pg/data/kwstat.csv [1.3]
 	Removed "obsolete" keyword {334}
-	"reject" keyword value changed from 8 to 6. {335}
 	Remove the "approval pending" statuses.  Pending status now
 	  maintained as a boolean column in entr table. {310}
+	"reject" keyword value changed from 8 to 6. {335}
 
 	* pg/mktables.sql [1.28]
 	Table entr: added new columns dfrm, unap. {304}
@@ -378,8 +409,8 @@
 	  {232}
 
 	* Makefile [1.26]
-	Use xresolv.pl rather than xresolv.sql to resolve xrefs. {251}
 	Improve parameterization. {252}
+	Use xresolv.pl rather than xresolv.sql to resolve xrefs. {251}
 	Fix: Previous version did not use same parameters when running perl
 	  commands as it used for psql commands when non-default values were
 	  used. {253}
@@ -409,14 +440,14 @@
 	  query returned 0 records. {234}
 	add_xrefsums(), grp_xrefs(), resolv_xref(): adjust for new xref
 	  columns kanj and rdng. {236}
-	Fix: fmt_jitem(): avoind an unitialized string warning if $slist
-	  param is undef. {235}
 	In class Tmptbl, method DESTROY(), wrap the sql execution in an eval
 	  in order to ignore errors.  Sometimes during normal program
 	  termination, the dbi handle goes away before the Tmptbl destructor
 	  is called resulting in a warning messge (safe to ignore because
 	  purpose of destructor is to delete the temp table, but it will be
 	  deleted automatically when the db connection is closed). {248}
+	Fix: fmt_jitem(): avoind an unitialized string warning if $slist
+	  param is undef. {235}
 
 	* perl/lib/jmdicted.pm [1.1]
 	Removed, no longer used anywhere. {229}
@@ -450,11 +481,11 @@
 
 	* pg/mktables.sql [1.26]
 	Adjust for addition of reading/kanji to xrefs. {249}
+	Remove table xrefld and its trigger function. {256}
 	Add oids to table freq to that it will be editable in PgAdmin. {257}
 	Disable the unique index on xref(entr,sens,typ,xentr,xsens) because
 	  the Examples file generates such xrefs (as does jmdict when there a
 	  sense has two xrefs to the same target.) {255}
-	Remove table xrefld and its trigger function. {256}
 	Fix: Correct erroneous comment characters. {254}
 
 	* pg/mkviews.sql [1.22]
@@ -572,10 +603,10 @@
 	* pg/mktables.sql [1.25]
 	Add a functional index using lower() on gloss.txt to provide fast
 	  case-insensitive "=" search. {204}
-	Add varchar_pattern_ops indexes on kanj.txt, rdng.txt to provide fast
-	  LIKE search. {207}
 	Add varchar_pattern_ops indexes on gloss.txt to provide fast case-
 	  insensitive LIKE search. {208}
+	Add varchar_pattern_ops indexes on kanj.txt, rdng.txt to provide fast
+	  LIKE search. {207}
 
 	* web/cgi/edsubmit.pl [1.10]
 	Generate url to added entry with a corpus spec. {214}
@@ -792,11 +823,11 @@
 	Remade due to changes in prerequisite mktables.sql. {153}
 
 	* pg/mktables.sql [1.23]
+	Create an insert trigger on table xref that will automatically assign
+	  value to column "xref". {151}
 	Add column "xref" to table xref, and change the PK from
 	  (entr,sens,xentr,xsens,typ) to (entr,sens,xref).  What was formerly
 	  the PK is now a unique index. {150}
-	Create an insert trigger on table xref that will automatically assign
-	  value to column "xref". {151}
 
 	* pg/mkviews.sql [1.20]
 	Adjust function adddup() and view xrefsum for change to xref table.
@@ -824,14 +855,14 @@
 	* perl/lib/jmdict.pm [1.27]
 	Removed function get_seq() since addentr() no longer uses it per
 	  chgid-133. {139}
-	In function addentr(), don't assign a 'seq' value, leave it NULL and
-	  rely on the new entr table insert trigger to set it. {133}
 	In function addentr() call setkeys() to set all the key values rather
 	  than doing it ourself. {138}
+	In function addentr(), don't assign a 'seq' value, leave it NULL and
+	  rely on the new entr table insert trigger to set it. {133}
 
 	* perl/lib/tal/edconf.tal [1.8]
-	Adjust layout of entr data to match current entr.tal {137}
 	Allow editing of entr data seq, srcnote, notes. {135}
+	Adjust layout of entr data to match current entr.tal {137}
 
 	* perl/lib/tal/edform.tal [1.4]
 	Make 'src' selection a drop-down box. {136}
@@ -1182,9 +1213,9 @@
 2007-05-22 09:19	smcgrawx@frxii.com
 
 	* Makefile [1.15]
-	Fix: Error in mv command of target "examples.txt". {62}
 	Fix: Examples file at Monash ftp site has extension ".utf", not
 	  ".utf8". {59}
+	Fix: Error in mv command of target "examples.txt". {62}
 
 	* perl/exparse.pl [1.5]
 	Fix: Was failing to set ginf column value in gloss table output. {64}
@@ -1216,10 +1247,10 @@
 	  things the old way. {53}
 
 	* README.txt [1.10]
-	Update the documentation for the schema changes related to jmdict dtd
-	  1.06 and gloss tags. {44}
 	Rewrite the install section based on using Makefile (which I have
 	  verified is useable on both Unix and Windows). {49}
+	Update the documentation for the schema changes related to jmdict dtd
+	  1.06 and gloss tags. {44}
 
 	* doc/Makefile [1.1]
 	* doc/README.txt [1.1]

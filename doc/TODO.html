@@ -18,7 +18,7 @@
 <body>
   <h1>JMdictDB To-Do List</h1>
   <span class="gendate">
-    This list was current as of 2007-09-10 09:28
+    This list was current as of 2007-09-11 23:41
     </span>
   <table class="todo">
     
@@ -259,6 +259,27 @@ Still to do: testing, editor login, diffs between old and new entries, security 
         <td colspan="5">Priority 'med' items</td>
 	</tr>
       <tr class="row">
+	<td class="id">106</td>
+	
+	  <td class="title" colspan="2">Document required Petal patch</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-09-11 23:32</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Need to document in the README file (or a file referenced from there)<br/>
+the patch that needs to be made to the decode function on Petal.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">93</td>
 	
 	  <td class="title" colspan="2">Fix O(n^2) behavior in jmdict::matchup()</td>
@@ -405,9 +426,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">26</td>
+	<td class="id">4</td>
 	
-	  <td class="title" colspan="2">Kana-kanji determination</td>
+	  <td class="title" colspan="2">Editor search page</td>
 	  
 	
 	<td class="compld"></td>
@@ -415,28 +436,19 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">jmdict.pm -- The database expects text strings in table "rdng" to contain no kanji chars and in table "kanj" to contain at least one.  Function jstr_classify used to determine kana/kanji-ness.  However there are some jmdict items that have kanji text that are not considered kanji by jmdict::jstr_classify:<br/>
-1000060: 々<br/>
-1000090: ◎<br/>
-1000090: ×<br/>
-1085560: トライ＆エラー (is reading but search thinks it's kanji)<br/>
-Change jstr_classify?  Or do something else?
+	<td class="descr" colspan="4">Search by various history criteria: status / submitter / submitted date / text in comments / etc.
 </td>
 	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="notes" colspan="4">See also task-83: "brackets in reading cause parse error".
-</td>
-	</tr>
+      
       
       </span><span omit-tag="">
       
       
       
       <tr class="row">
-	<td class="id">25</td>
+	<td class="id">6</td>
 	
-	  <td class="title" colspan="2">Untrusted storables</td>
+	  <td class="title" colspan="2">Editor authenication</td>
 	  
 	
 	<td class="compld"></td>
@@ -444,7 +456,7 @@ Change jstr_classify?  Or do something else?
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">newsub.pl -- Is it safe to receive a Storable?
+	<td class="descr" colspan="4">Authentication for editors.  (work out process flow details first?)
 </td>
 	</tr>
       
@@ -478,9 +490,9 @@ Change jstr_classify?  Or do something else?
       
       
       <tr class="row">
-	<td class="id">6</td>
+	<td class="id">25</td>
 	
-	  <td class="title" colspan="2">Editor authenication</td>
+	  <td class="title" colspan="2">Untrusted storables</td>
 	  
 	
 	<td class="compld"></td>
@@ -488,10 +500,39 @@ Change jstr_classify?  Or do something else?
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Authentication for editors.  (work out process flow details first?)
+	<td class="descr" colspan="4">newsub.pl -- Is it safe to receive a Storable?
 </td>
 	</tr>
       
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">26</td>
+	
+	  <td class="title" colspan="2">Kana-kanji determination</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">jmdict.pm -- The database expects text strings in table "rdng" to contain no kanji chars and in table "kanj" to contain at least one.  Function jstr_classify used to determine kana/kanji-ness.  However there are some jmdict items that have kanji text that are not considered kanji by jmdict::jstr_classify:<br/>
+1000060: 々<br/>
+1000090: ◎<br/>
+1000090: ×<br/>
+1085560: トライ＆エラー (is reading but search thinks it's kanji)<br/>
+Change jstr_classify?  Or do something else?
+</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="notes" colspan="4">See also task-83: "brackets in reading cause parse error".
+</td>
+	</tr>
       
       </span><span omit-tag="">
       
@@ -509,6 +550,26 @@ Change jstr_classify?  Or do something else?
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">30</td>
+	
+	  <td class="title" colspan="2">XML parse other checks</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">load_jmdict.pl -- Do other error checking (or could do these after data loaded into db): all senses have gloss?  All entries have sens and reading? ... (But remember that deleted entries have no sences or readings).
 </td>
 	</tr>
       
@@ -545,46 +606,6 @@ Dual parented records (freq, restr, stagr, stagk, xref) will be linked to both o
 Entr objects being created for output need not supply record numbers.  User of object responsible for checking index number presence/absense if it needs them.
 </td>
 	</tr>
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">4</td>
-	
-	  <td class="title" colspan="2">Editor search page</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Search by various history criteria: status / submitter / submitted date / text in comments / etc.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">30</td>
-	
-	  <td class="title" colspan="2">XML parse other checks</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Do other error checking (or could do these after data loaded into db): all senses have gloss?  All entries have sens and reading? ... (But remember that deleted entries have no sences or readings).
-</td>
-	</tr>
-      
       
       </span><span omit-tag="">
       
@@ -816,9 +837,9 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">28</td>
+	<td class="id">7</td>
 	
-	  <td class="title" colspan="2">Circular lists</td>
+	  <td class="title" colspan="2">Unit tests</td>
 	  
 	
 	<td class="compld"></td>
@@ -826,127 +847,7 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">jmdict.pm -- The xrefs stuff might be circularly linked.  How does that affect garbage collection in long-running process (e.g. modperl)?
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">19</td>
-	
-	  <td class="title" colspan="2">CGI error handling</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- Better error handling for db and other errors.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">8</td>
-	
-	  <td class="title" colspan="2">Functional tests</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">For cgi pages, command scripts, etc.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">9</td>
-	
-	  <td class="title" colspan="2">Test environment</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to setup a test infrastructure.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">23</td>
-	
-	  <td class="title" colspan="2">CGI security audit</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">14</td>
-	
-	  <td class="title" colspan="2">Query time variation</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Retrieving one or a set of jmdict entries involves executing ~20 sql select stements.  This takes anwhere from .8 to 30s on my (slow) development machine.  I don't understand this almost order-of-magnitutde variation.  Need to determine what's going on and find remedy.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">16</td>
-	
-	  <td class="title" colspan="2">Connection pooling</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Will this help performance? Informal timings done on cgi show that connect time is pretty quick but may be more significant when object retrieval times are improved. (ref Apache::DBI)
+	<td class="descr" colspan="4">Need to write unit tests for library code
 </td>
 	</tr>
       
@@ -976,9 +877,9 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">18</td>
+	<td class="id">9</td>
 	
-	  <td class="title" colspan="2">CSS cleanup</td>
+	  <td class="title" colspan="2">Test environment</td>
 	  
 	
 	<td class="compld"></td>
@@ -986,7 +887,27 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">*.tal,entr.css -- The .css file is a mess.
+	<td class="descr" colspan="4">Need to setup a test infrastructure.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">14</td>
+	
+	  <td class="title" colspan="2">Query time variation</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Retrieving one or a set of jmdict entries involves executing ~20 sql select stements.  This takes anwhere from .8 to 30s on my (slow) development machine.  I don't understand this almost order-of-magnitutde variation.  Need to determine what's going on and find remedy.
 </td>
 	</tr>
       
@@ -1024,9 +945,9 @@ All are subject to inaccuracy due to changes made after db created/loaded.
       
       
       <tr class="row">
-	<td class="id">7</td>
+	<td class="id">16</td>
 	
-	  <td class="title" colspan="2">Unit tests</td>
+	  <td class="title" colspan="2">Connection pooling</td>
 	  
 	
 	<td class="compld"></td>
@@ -1034,7 +955,27 @@ All are subject to inaccuracy due to changes made after db created/loaded.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Need to write unit tests for library code
+	<td class="descr" colspan="4">Will this help performance? Informal timings done on cgi show that connect time is pretty quick but may be more significant when object retrieval times are improved. (ref Apache::DBI)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">18</td>
+	
+	  <td class="title" colspan="2">CSS cleanup</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">*.tal,entr.css -- The .css file is a mess.
 </td>
 	</tr>
       
@@ -1062,49 +1003,89 @@ All are subject to inaccuracy due to changes made after db created/loaded.
       </span><span omit-tag="">
       
       
+      
+      <tr class="row">
+	<td class="id">19</td>
+	
+	  <td class="title" colspan="2">CGI error handling</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Better error handling for db and other errors.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">28</td>
+	
+	  <td class="title" colspan="2">Circular lists</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">jmdict.pm -- The xrefs stuff might be circularly linked.  How does that affect garbage collection in long-running process (e.g. modperl)?
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">8</td>
+	
+	  <td class="title" colspan="2">Functional tests</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">For cgi pages, command scripts, etc.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">23</td>
+	
+	  <td class="title" colspan="2">CGI security audit</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
       <tr class="priohdr">
         <td colspan="5">Priority 'info' items</td>
 	</tr>
-      <tr class="row">
-	<td class="id">24</td>
-	
-	  <td class="title" colspan="2">Segregate sql code</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">perl -- Isolate all sql in library routines?
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">20</td>
-	
-	  <td class="title" colspan="2">CGI form post</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- At some point change GET form methods to POST.  (GET useful for debugging.)
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
       <tr class="row">
 	<td class="id">41</td>
 	
@@ -1138,6 +1119,46 @@ All are subject to inaccuracy due to changes made after db created/loaded.
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">cgi -- Need to obsure email addresses for general display (unobsured on conf form ok if none other than submitter/authenticated editors can see.)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">24</td>
+	
+	  <td class="title" colspan="2">Segregate sql code</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">perl -- Isolate all sql in library routines?
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">20</td>
+	
+	  <td class="title" colspan="2">CGI form post</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- At some point change GET form methods to POST.  (GET useful for debugging.)
 </td>
 	</tr>
       

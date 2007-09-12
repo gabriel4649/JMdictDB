@@ -22,15 +22,13 @@
 	    substr('$Date$',7,-11));
 
 use strict; use warnings;
-use Cwd; use CGI; use HTML::Entities;
-use Encode; use utf8; use DBI; 
+use Cwd; use CGI; use Encode; use utf8; use DBI; 
 use Petal; use Petal::Utils (':all'); 
 
 use lib ("../lib", "./lib", "../perl/lib");
 use jmdict; use jmdicttal; use jmdictcgi;
 
 $|=1;
-*ee = \&encode_entities;
 
     main: {
 	my ($dbh, $cgi, @qlist, @elist, $svc);
@@ -48,30 +46,7 @@ $|=1;
 
     sub gen_page { my ($dbh, $svc, $elist, $qlist) = @_;
 	my ($tmpl, $sql, $seq, $src, $entries, @whr, $x, @errs, @e, @args); 
-	foreach $x (@$elist) {
-	    if (!($x =~ m/^\s*\d+\s*$/)) {
-		push (@errs, "<br>Bad url parameter received: ".ee($x)); next; }
-	    push (@e, "?"); push (@args, $x); }
-	if (@e) { push (@whr, "id IN (" . join (",", @e) . ")"); }
-
-	foreach $x (@$qlist) {
-	    ($seq,$src) = split ('\.', $x, 2);
-	    if (!($seq =~ m/^\d+$/)) { 
-		push (@errs, "<br>Bad url parameter received: ".ee($x)); next; }
-	    if (!$src) { $src = "jmdict"; }
-	    $src = $::KW->{SRC}{$src}{id};
-	    if (!$src) {
-		push (@errs, "<br>Bad url parameter received: ".ee($x)); next; }
-	    push (@whr, "(seq=? AND src=?)"); push (@args, ($seq, $src)); }
-
-	if (!@whr) { push (@errs, "No valid entry or seq numbers given."); }
-	if (@errs) { errors_page (\@errs);  return; } 
-
-	$sql = "SELECT e.id FROM entr e WHERE " . join (" OR ", @whr);
-	$entries = EntrList ($dbh, $sql, \@args);
-	if (!@$entries) { errors_page (["None of the requested entries were found."]); return; }
-
-	add_xrefsums ($dbh, $entries);
+	$entries = get_entrs ($dbh, $elist, $qlist, \@errs);
 	fmt_restr ($entries); 
 	fmt_stag ($entries); 
 	set_audio_flag ($entries);

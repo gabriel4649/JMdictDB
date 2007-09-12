@@ -31,7 +31,7 @@ use jmdict;
 BEGIN {
     use Exporter(); our (@ISA, @EXPORT_OK, @EXPORT); @ISA = qw(Exporter);
     @EXPORT = qw(serialize unserialize fmt_restr fmt_stag set_audio_flag
-		 set_editable_flag dbopen clean find_in_inc); }
+		 set_editable_flag dbopen clean find_in_inc get_entrs); }
 
 our(@VERSION) = (substr('$Revision$',11,-2), \
 	         substr('$Date$',7,-11));
@@ -54,6 +54,33 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	$s = decode_base64 ($s);
 	$s = thaw ($s);
 	$s; }
+
+    sub get_entrs { my ($dbh, $elist, $qlist, $errs, $seq_whr) = @_;
+        my ($sql, $seq, $src, $entries, @whr, $x, @e, @args); 
+        foreach $x (@$elist) {
+            if (!($x =~ m/^\s*\d+\s*$/)) {
+                push (@$errs, "Bad url parameter received: ".esc($x)); next; }
+            push (@e, "?"); push (@args, $x); }
+        if (@e) { push (@whr, "id IN (" . join (",", @e) . ")"); }
+
+        foreach $x (@$qlist) {
+            ($seq,$src) = split ('\.', $x, 2);
+            if (!($seq =~ m/^\d+$/)) { 
+                push (@$errs, "Bad url parameter received: ".esc($x)); next; }
+            if (!$src) { $src = "jmdict"; }
+            $src = $::KW->{SRC}{$src}{id};
+            if (!$src) {
+                push (@$errs, "Bad url parameter received: ".esc($x)); next; }
+            push (@whr, "(seq=? AND src=?)" . ($seq_whr ? " AND $seq_whr" : "")); 
+	    push (@args, ($seq, $src)); }
+
+        if (!@whr) { push (@$errs, "No valid entry or seq numbers given."); }
+        if (@$errs) { return undef; } 
+
+        $sql = "SELECT e.id FROM entr e WHERE " . join (" OR ", @whr);
+        $entries = EntrList ($dbh, $sql, \@args);
+        if (@$entries) { add_xrefsums ($dbh, $entries); }
+ 	return $entries; }
 
     sub fmt_restr { my ($entrs) = @_;
 
@@ -170,7 +197,8 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	if ($svcdir) { $ENV{PGSYSCONFDIR} = $svcdir; }
 	
 	my $dbh = DBI->connect("dbi:Pg:service=$svcname", "", "",
-			{ PrintWarn=>0, RaiseError=>1, AutoCommit=>0 } );
+			{ PrintWarn=>0, RaiseError=>1, AutoCommit=>0,
+			  ShowErrorStatement=>1 } );
 	$dbh->{pg_enable_utf8} = 1;
 	return $dbh; }
 

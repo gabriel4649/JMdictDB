@@ -97,15 +97,6 @@ binmode (STDOUT, ":utf8");
 	  # not true so we don't go there.
 	if (!@$perrs) {
 
-	      # If this is a new entry, look for other entries that
-	      # have the same kanji or reading.  These will be shown
-	      # as cautions at the top of the confirmation form in
-	      # hopes of reducing submissions of words already in 
-	      # the database.
-	    if (!$eid && !$delete) {
-		$chklist = find_similar ($dbh, $entr->{_kanj}, $entr->{_rdng}); }
-	    else { $chklist = []; }
-
 	      # If any xrefs were given, resolve them to actual entries
 	      # here since that is the form used to store them in the 
 	      # database.  If any are unresolvable, an approriate error 
@@ -127,7 +118,16 @@ binmode (STDOUT, ":utf8");
 	    if (!$entr->{_hist}) { $entr->{_hist} = []; }
 	    push (@{$entr->{_hist}}, newhist ($entr, $stat, $comment, $refs,
 					      $name, $email, \@errs)); 
-#######     chk_entr ($entr, \@errs);
+	    chkentr ($entr, \@errs);
+
+	      # If this is a new entry, look for other entries that
+	      # have the same kanji or reading.  These will be shown
+	      # as cautions at the top of the confirmation form in
+	      # hopes of reducing submissions of words already in 
+	      # the database.
+	    if (!$eid && !$delete) {
+		$chklist = find_similar ($dbh, $entr->{_kanj}, $entr->{_rdng}, $entr->{src}); }
+	    else { $chklist = []; }
 	    $entrs = [$entr]; }
 
 	if (!@errs) {
@@ -160,19 +160,40 @@ binmode (STDOUT, ":utf8");
 	# $rdng, but not both, may be undefined or empty.
 	# If $src is given, search will be limited to entries
 	# with that entr.src id number.
-	#
-	# FIXME: the query is currently way too slow.
 	
-	my ($whr, @args, $sql, $rs);
-	$whr = join (" OR ", (map ("r.txt=?", @$rdng), map ("k.txt=?", @$kanj)));
-	if ($src) { $whr = "($whr) AND e.src=$src"; }
-	@args = map ("$_->{txt}", (@$rdng,@$kanj));
-	$sql = "SELECT DISTINCT e.* FROM esum e " .
-		 "LEFT JOIN rdng r ON r.entr=e.id " .
-		 "LEFT JOIN kanj k ON k.entr=e.id " .
-		 "WHERE " . $whr;
+	my ($rwhr, $kwhr, @args, $sql, $rs);
+	$rwhr = join (" OR ", map ("txt=?", @$rdng));
+	$kwhr = join (" OR ", map ("txt=?", @$kanj));
+	push (@args, $src);
+	push (@args, map ("$_->{txt}", (@$rdng,@$kanj)));
+
+	$sql = "SELECT DISTINCT e.* " . 
+		"FROM esum e " .
+		"WHERE e.src=? AND e.stat<4 AND e.id IN (" .
+  		($rwhr ? "SELECT entr FROM rdng WHERE $rwhr " : "") .
+		($rwhr && $kwhr ? "UNION " : "") .
+		($kwhr ? "SELECT entr FROM kanj WHERE $kwhr " : "") .
+		")";
 	$rs = dbread ($dbh, $sql, \@args);
 	return $rs; }
+
+    sub chkentr { my ($e, $errs) = @_;
+	# Do some validation of the entry.  This is nowhere near complete 
+	# Yhe database integrity rules will in principle catch all serious
+	# problems but deciphering db errors and presenting a reasonable
+	# user-oriented message is difficult so we try to catch the obvious
+	# stuff here. 
+	my ($s, $scntr);
+	if (!$e->{src}) { 
+	    push (@$errs, "No Corpus specified.  Please select the corpus that this entry will be added to."); }
+	if ((!$e->{_rdng} || !@{$e->{_rdng}}) && (!$e->{_kanj} || !@{$e->{_kanj}})) { 
+	    push (@$errs, "Both the Kanji and Reading boxes are empty.  You must provide at least one of them."); }
+	if (!$e->{_sens} || !@{$e->{_sens}}) {
+	    push (@$errs, "No senses given.  You must provide at least one sense."); }
+	foreach $s (@{$e->{_sens}}) {
+	    ++$scntr;
+	    if (!$s->{_gloss} || !@{$s->{_gloss}}) {
+		push (@$errs, "Sense $scntr has no glosses.  Every sense must have at least one regular gloss, or a [lit=...] or [expl=...] tag."); } } }
 
     sub errors_page { my ($errs) = @_;
 	my $err_details = join ("\n    <br/>", @$errs);

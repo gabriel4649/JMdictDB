@@ -122,12 +122,14 @@ use jmdict; use jmdictpgi; use kwstatic;
 
 	  # Get the entry's seq number.  jmnedict won't have a <ent_seq> element
 	  # so executed inside an eval to trap the error.
-	eval { $seq = ($entry->get_xpath("ent_seq"))[0]->text; };
+	eval { $seq = int(($entry->get_xpath("ent_seq"))[0]->text); };
 
 	  # If there is no seq. number, use the entry's line number.  Save in
 	  # a global variable so sub's can use in error messages.
 
 	if (!$seq) { $seq = $::Ln; }
+	if ($::Seq && $seq<=$::Seq) {
+	    print $::Flog "Seq $seq: Entry out of order, preceeding entry was $::Seq\n"; }
 	$::Seq = $seq;	# For log messages.
 
 	  # Check if we are past the -b seq number given by user.  If

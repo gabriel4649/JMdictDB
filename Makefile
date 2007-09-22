@@ -152,7 +152,8 @@ jmnedict.xml:
 	rm -f JMnedict.xml.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/JMnedict.xml.gz
 	gzip -d JMnedict.xml.gz
-	mv JMnedict.xml jmnedict.xml
+	mv JMnedict.xml jmnedict.tmp
+	mv jmnedict.tmp jmnedict.xml
 
 jmnedict.pgi: jmnedict.xml
 	cd perl && perl jmparse.pl -l ../jmnedict.log -o ../jmnedict.pgi ../jmnedict.xml

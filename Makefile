@@ -232,6 +232,8 @@ clean:
 dist: 
 	# This should be run in a freshly checked out
 	# directory to avoid including spurious files.
+	rm jmdict.tgz
+	touch jmdict.tgz
 	tar -cz -f jmdict.tgz --exclude 'CVS' --exclude './jmdict.tgz' .
 
 web:	webcgi weblib webtal webcss

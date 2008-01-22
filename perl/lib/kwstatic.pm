@@ -11,7 +11,7 @@ BEGIN {
     use Exporter();
     our ($VERSION, @ISA, @EXPORT);
     @ISA = qw(Exporter);
-    @EXPORT   = qw($Kdws $KWGINF_equ $KWGINF_expl $KWGINF_id $KWGINF_lit $KWMISC_X $KWMISC_abbr $KWMISC_aphorism $KWMISC_arch $KWMISC_chn $KWMISC_col $KWMISC_derog $KWMISC_eK $KWMISC_fam $KWMISC_fem $KWMISC_hon $KWMISC_hum $KWMISC_id $KWMISC_m_sl $KWMISC_male $KWMISC_obs $KWMISC_obsc $KWMISC_poet $KWMISC_pol $KWMISC_proverb $KWMISC_quote $KWMISC_rare $KWMISC_sens $KWMISC_sl $KWMISC_uk $KWMISC_vulg $KWFREQ_gA $KWFREQ_gai $KWFREQ_ichi $KWFREQ_news $KWFREQ_nf $KWFREQ_spec $KWXREF_ant $KWXREF_cf $KWXREF_ex $KWXREF_pref $KWXREF_see $KWXREF_syn $KWXREF_uses $KWSTAT_A $KWSTAT_D $KWSTAT_N $KWSTAT_O $KWSTAT_R $KWRINF_gikun $KWRINF_ik $KWRINF_ok $KWRINF_uK $KWKINF_ateji $KWKINF_iK $KWKINF_ik $KWKINF_io $KWKINF_oK $KWFLD_Buddh $KWFLD_MA $KWFLD_comp $KWFLD_food $KWFLD_geom $KWFLD_ling $KWFLD_math $KWFLD_mil $KWFLD_physics $KWLANG_aa $KWLANG_ab $KWLANG_ae $KWLANG_af $KWLANG_ai $KWLANG_ak $KWLANG_am $KWLANG_an $KWLANG_ar $KWLANG_as $KWLANG_av $KWLANG_ay $KWLANG_az $KWLANG_ba $KWLANG_be $KWLANG_bg $KWLANG_bi $KWLANG_bm $KWLANG_bn $KWLANG_bo $KWLANG_br $KWLANG_bs $KWLANG_ca $KWLANG_ce $KWLANG_ch $KWLANG_co $KWLANG_cr $KWLANG_cs $KWLANG_cu $KWLANG_cv $KWLANG_cy $KWLANG_da $KWLANG_de $KWLANG_dv $KWLANG_dz $KWLANG_ee $KWLANG_el $KWLANG_en $KWLANG_eo $KWLANG_es $KWLANG_et $KWLANG_eu $KWLANG_fa $KWLANG_ff $KWLANG_fi $KWLANG_fj $KWLANG_fo $KWLANG_fr $KWLANG_fy $KWLANG_ga $KWLANG_gd $KWLANG_gl $KWLANG_gn $KWLANG_gu $KWLANG_gv $KWLANG_ha $KWLANG_he $KWLANG_hi $KWLANG_ho $KWLANG_hr $KWLANG_ht $KWLANG_hu $KWLANG_hy $KWLANG_hz $KWLANG_ia $KWLANG_id $KWLANG_ie $KWLANG_ig $KWLANG_ii $KWLANG_ik $KWLANG_io $KWLANG_is $KWLANG_it $KWLANG_iu $KWLANG_ja $KWLANG_jv $KWLANG_ka $KWLANG_kg $KWLANG_ki $KWLANG_kj $KWLANG_kk $KWLANG_kl $KWLANG_km $KWLANG_kn $KWLANG_ko $KWLANG_kr $KWLANG_ks $KWLANG_ku $KWLANG_kv $KWLANG_kw $KWLANG_ky $KWLANG_la $KWLANG_lb $KWLANG_lg $KWLANG_li $KWLANG_ln $KWLANG_lo $KWLANG_lt $KWLANG_lu $KWLANG_lv $KWLANG_mg $KWLANG_mh $KWLANG_mi $KWLANG_mk $KWLANG_ml $KWLANG_mn $KWLANG_mo $KWLANG_mr $KWLANG_ms $KWLANG_mt $KWLANG_my $KWLANG_na $KWLANG_nb $KWLANG_nd $KWLANG_ne $KWLANG_ng $KWLANG_nl $KWLANG_nn $KWLANG_no $KWLANG_nr $KWLANG_nv $KWLANG_ny $KWLANG_oc $KWLANG_oj $KWLANG_om $KWLANG_or $KWLANG_os $KWLANG_pa $KWLANG_pi $KWLANG_pl $KWLANG_ps $KWLANG_pt $KWLANG_qu $KWLANG_rm $KWLANG_rn $KWLANG_ro $KWLANG_ru $KWLANG_rw $KWLANG_sa $KWLANG_sc $KWLANG_sd $KWLANG_se $KWLANG_sg $KWLANG_sh $KWLANG_si $KWLANG_sk $KWLANG_sl $KWLANG_sm $KWLANG_sn $KWLANG_so $KWLANG_sq $KWLANG_sr $KWLANG_ss $KWLANG_st $KWLANG_su $KWLANG_sv $KWLANG_sw $KWLANG_ta $KWLANG_te $KWLANG_tg $KWLANG_th $KWLANG_ti $KWLANG_tk $KWLANG_tl $KWLANG_tn $KWLANG_to $KWLANG_tr $KWLANG_ts $KWLANG_tt $KWLANG_tw $KWLANG_ty $KWLANG_ug $KWLANG_uk $KWLANG_ur $KWLANG_uz $KWLANG_ve $KWLANG_vi $KWLANG_vo $KWLANG_wa $KWLANG_wo $KWLANG_xh $KWLANG_yi $KWLANG_yo $KWLANG_za $KWLANG_zh $KWLANG_zu $KWDIAL_ksb $KWDIAL_ktb $KWDIAL_kyb $KWDIAL_kyu $KWDIAL_osb $KWDIAL_std $KWDIAL_thb $KWDIAL_tsb $KWDIAL_tsug $KWPOS_adj $KWPOS_adj_na $KWPOS_adj_no $KWPOS_adj_pn $KWPOS_adj_t $KWPOS_adv $KWPOS_adv_to $KWPOS_aux $KWPOS_aux_adj $KWPOS_aux_v $KWPOS_company $KWPOS_conj $KWPOS_ctr $KWPOS_exp $KWPOS_fem $KWPOS_given $KWPOS_int $KWPOS_masc $KWPOS_n $KWPOS_n_adv $KWPOS_n_pref $KWPOS_n_suf $KWPOS_n_t $KWPOS_num $KWPOS_person $KWPOS_place $KWPOS_pref $KWPOS_product $KWPOS_prt $KWPOS_station $KWPOS_suf $KWPOS_surname $KWPOS_unclass $KWPOS_v1 $KWPOS_v5 $KWPOS_v5aru $KWPOS_v5b $KWPOS_v5g $KWPOS_v5k $KWPOS_v5k_s $KWPOS_v5m $KWPOS_v5n $KWPOS_v5r $KWPOS_v5r_i $KWPOS_v5s $KWPOS_v5t $KWPOS_v5u $KWPOS_v5u_s $KWPOS_v5uru $KWPOS_vi $KWPOS_vk $KWPOS_vn $KWPOS_vs $KWPOS_vs_i $KWPOS_vs_s $KWPOS_vt $KWPOS_vz); }
+    @EXPORT   = qw($Kdws $KWGINF_equ $KWGINF_expl $KWGINF_id $KWGINF_lit $KWMISC_X $KWMISC_abbr $KWMISC_aphorism $KWMISC_arch $KWMISC_chn $KWMISC_col $KWMISC_derog $KWMISC_eK $KWMISC_fam $KWMISC_fem $KWMISC_hon $KWMISC_hum $KWMISC_id $KWMISC_m_sl $KWMISC_male $KWMISC_obs $KWMISC_obsc $KWMISC_poet $KWMISC_pol $KWMISC_proverb $KWMISC_quote $KWMISC_rare $KWMISC_sens $KWMISC_sl $KWMISC_uk $KWMISC_vulg $KWFREQ_gA $KWFREQ_gai $KWFREQ_ichi $KWFREQ_news $KWFREQ_nf $KWFREQ_spec $KWXREF_ant $KWXREF_cf $KWXREF_ex $KWXREF_kvar $KWXREF_pref $KWXREF_see $KWXREF_syn $KWXREF_uses $KWSTAT_A $KWSTAT_D $KWSTAT_N $KWSTAT_R $KWRINF_gikun $KWRINF_go $KWRINF_ik $KWRINF_jouyou $KWRINF_kan $KWRINF_kanyou $KWRINF_kun $KWRINF_name $KWRINF_ok $KWRINF_on $KWRINF_rad $KWRINF_tou $KWRINF_uK $KWKINF_ateji $KWKINF_iK $KWKINF_ik $KWKINF_io $KWKINF_oK $KWCINF_busy_people $KWCINF_crowley $KWCINF_deroo $KWCINF_four_corner $KWCINF_gakken $KWCINF_halpern_kkld $KWCINF_halpern_njecd $KWCINF_heisig $KWCINF_henshall $KWCINF_henshall3 $KWCINF_jf_cards $KWCINF_jis208 $KWCINF_jis212 $KWCINF_jis213 $KWCINF_kanji_in_ctx $KWCINF_kodansha_comp $KWCINF_korean_h $KWCINF_korean_r $KWCINF_misclass $KWCINF_moro $KWCINF_nelson_c $KWCINF_nelson_n $KWCINF_nelson_rad $KWCINF_oneill_kk $KWCINF_oneill_names $KWCINF_pinyin $KWCINF_s_h $KWCINF_sakade $KWCINF_sh_desc $KWCINF_sh_kk $KWCINF_skip $KWCINF_skip_mis $KWCINF_strokes $KWCINF_tutt_cards $KWFLD_Buddh $KWFLD_MA $KWFLD_comp $KWFLD_food $KWFLD_geom $KWFLD_ling $KWFLD_math $KWFLD_mil $KWFLD_physics $KWLANG_aa $KWLANG_ab $KWLANG_ae $KWLANG_af $KWLANG_ai $KWLANG_ak $KWLANG_am $KWLANG_an $KWLANG_ar $KWLANG_as $KWLANG_av $KWLANG_ay $KWLANG_az $KWLANG_ba $KWLANG_be $KWLANG_bg $KWLANG_bi $KWLANG_bm $KWLANG_bn $KWLANG_bo $KWLANG_br $KWLANG_bs $KWLANG_ca $KWLANG_ce $KWLANG_ch $KWLANG_co $KWLANG_cr $KWLANG_cs $KWLANG_cu $KWLANG_cv $KWLANG_cy $KWLANG_da $KWLANG_de $KWLANG_dv $KWLANG_dz $KWLANG_ee $KWLANG_el $KWLANG_en $KWLANG_eo $KWLANG_es $KWLANG_et $KWLANG_eu $KWLANG_fa $KWLANG_ff $KWLANG_fi $KWLANG_fj $KWLANG_fo $KWLANG_fr $KWLANG_fy $KWLANG_ga $KWLANG_gd $KWLANG_gl $KWLANG_gn $KWLANG_gu $KWLANG_gv $KWLANG_ha $KWLANG_he $KWLANG_hi $KWLANG_ho $KWLANG_hr $KWLANG_ht $KWLANG_hu $KWLANG_hy $KWLANG_hz $KWLANG_ia $KWLANG_id $KWLANG_ie $KWLANG_ig $KWLANG_ii $KWLANG_ik $KWLANG_io $KWLANG_is $KWLANG_it $KWLANG_iu $KWLANG_ja $KWLANG_jv $KWLANG_ka $KWLANG_kg $KWLANG_ki $KWLANG_kj $KWLANG_kk $KWLANG_kl $KWLANG_km $KWLANG_kn $KWLANG_ko $KWLANG_kr $KWLANG_ks $KWLANG_ku $KWLANG_kv $KWLANG_kw $KWLANG_ky $KWLANG_la $KWLANG_lb $KWLANG_lg $KWLANG_li $KWLANG_ln $KWLANG_lo $KWLANG_lt $KWLANG_lu $KWLANG_lv $KWLANG_mg $KWLANG_mh $KWLANG_mi $KWLANG_mk $KWLANG_ml $KWLANG_mn $KWLANG_mo $KWLANG_mr $KWLANG_ms $KWLANG_mt $KWLANG_my $KWLANG_na $KWLANG_nb $KWLANG_nd $KWLANG_ne $KWLANG_ng $KWLANG_nl $KWLANG_nn $KWLANG_no $KWLANG_nr $KWLANG_nv $KWLANG_ny $KWLANG_oc $KWLANG_oj $KWLANG_om $KWLANG_or $KWLANG_os $KWLANG_pa $KWLANG_pi $KWLANG_pl $KWLANG_ps $KWLANG_pt $KWLANG_qu $KWLANG_rm $KWLANG_rn $KWLANG_ro $KWLANG_ru $KWLANG_rw $KWLANG_sa $KWLANG_sc $KWLANG_sd $KWLANG_se $KWLANG_sg $KWLANG_sh $KWLANG_si $KWLANG_sk $KWLANG_sl $KWLANG_sm $KWLANG_sn $KWLANG_so $KWLANG_sq $KWLANG_sr $KWLANG_ss $KWLANG_st $KWLANG_su $KWLANG_sv $KWLANG_sw $KWLANG_ta $KWLANG_te $KWLANG_tg $KWLANG_th $KWLANG_ti $KWLANG_tk $KWLANG_tl $KWLANG_tn $KWLANG_to $KWLANG_tr $KWLANG_ts $KWLANG_tt $KWLANG_tw $KWLANG_ty $KWLANG_ug $KWLANG_uk $KWLANG_ur $KWLANG_uz $KWLANG_ve $KWLANG_vi $KWLANG_vo $KWLANG_wa $KWLANG_wo $KWLANG_xh $KWLANG_yi $KWLANG_yo $KWLANG_za $KWLANG_zh $KWLANG_zu $KWDIAL_ksb $KWDIAL_ktb $KWDIAL_kyb $KWDIAL_kyu $KWDIAL_osb $KWDIAL_std $KWDIAL_thb $KWDIAL_tsb $KWDIAL_tsug $KWPOS_adj $KWPOS_adj_na $KWPOS_adj_no $KWPOS_adj_pn $KWPOS_adj_t $KWPOS_adv $KWPOS_adv_to $KWPOS_aux $KWPOS_aux_adj $KWPOS_aux_v $KWPOS_company $KWPOS_conj $KWPOS_ctr $KWPOS_exp $KWPOS_fem $KWPOS_given $KWPOS_int $KWPOS_masc $KWPOS_n $KWPOS_n_adv $KWPOS_n_pref $KWPOS_n_suf $KWPOS_n_t $KWPOS_num $KWPOS_person $KWPOS_place $KWPOS_pref $KWPOS_product $KWPOS_prt $KWPOS_station $KWPOS_suf $KWPOS_surname $KWPOS_unclass $KWPOS_v1 $KWPOS_v5 $KWPOS_v5aru $KWPOS_v5b $KWPOS_v5g $KWPOS_v5k $KWPOS_v5k_s $KWPOS_v5m $KWPOS_v5n $KWPOS_v5r $KWPOS_v5r_i $KWPOS_v5s $KWPOS_v5t $KWPOS_v5u $KWPOS_v5u_s $KWPOS_v5uru $KWPOS_vi $KWPOS_vk $KWPOS_vn $KWPOS_vs $KWPOS_vs_i $KWPOS_vs_s $KWPOS_vt $KWPOS_vz); }
 
 our (@EXPORT);
 
@@ -54,6 +54,7 @@ our($KWFREQ_spec) = 4;
 our($KWXREF_ant) = 2;
 our($KWXREF_cf) = 4;
 our($KWXREF_ex) = 5;
+our($KWXREF_kvar) = 8;
 our($KWXREF_pref) = 7;
 our($KWXREF_see) = 3;
 our($KWXREF_syn) = 1;
@@ -61,17 +62,59 @@ our($KWXREF_uses) = 6;
 our($KWSTAT_A) = 2;
 our($KWSTAT_D) = 4;
 our($KWSTAT_N) = 1;
-our($KWSTAT_O) = 6;
-our($KWSTAT_R) = 8;
+our($KWSTAT_R) = 6;
 our($KWRINF_gikun) = 1;
+our($KWRINF_go) = 130;
 our($KWRINF_ik) = 3;
+our($KWRINF_jouyou) = 105;
+our($KWRINF_kan) = 129;
+our($KWRINF_kanyou) = 132;
+our($KWRINF_kun) = 106;
+our($KWRINF_name) = 103;
 our($KWRINF_ok) = 2;
+our($KWRINF_on) = 128;
+our($KWRINF_rad) = 104;
+our($KWRINF_tou) = 131;
 our($KWRINF_uK) = 4;
 our($KWKINF_ateji) = 5;
 our($KWKINF_iK) = 1;
 our($KWKINF_ik) = 4;
 our($KWKINF_io) = 2;
 our($KWKINF_oK) = 3;
+our($KWCINF_busy_people) = 16;
+our($KWCINF_crowley) = 14;
+our($KWCINF_deroo) = 21;
+our($KWCINF_four_corner) = 20;
+our($KWCINF_gakken) = 6;
+our($KWCINF_halpern_kkld) = 4;
+our($KWCINF_halpern_njecd) = 3;
+our($KWCINF_heisig) = 5;
+our($KWCINF_henshall) = 10;
+our($KWCINF_henshall3) = 28;
+our($KWCINF_jf_cards) = 31;
+our($KWCINF_jis208) = 25;
+our($KWCINF_jis212) = 26;
+our($KWCINF_jis213) = 27;
+our($KWCINF_kanji_in_ctx) = 15;
+our($KWCINF_kodansha_comp) = 17;
+our($KWCINF_korean_h) = 29;
+our($KWCINF_korean_r) = 30;
+our($KWCINF_misclass) = 22;
+our($KWCINF_moro) = 9;
+our($KWCINF_nelson_c) = 1;
+our($KWCINF_nelson_n) = 2;
+our($KWCINF_nelson_rad) = 32;
+our($KWCINF_oneill_kk) = 8;
+our($KWCINF_oneill_names) = 7;
+our($KWCINF_pinyin) = 23;
+our($KWCINF_s_h) = 34;
+our($KWCINF_sakade) = 12;
+our($KWCINF_sh_desc) = 19;
+our($KWCINF_sh_kk) = 11;
+our($KWCINF_skip) = 18;
+our($KWCINF_skip_mis) = 33;
+our($KWCINF_strokes) = 24;
+our($KWCINF_tutt_cards) = 13;
 our($KWFLD_Buddh) = 1;
 our($KWFLD_MA) = 6;
 our($KWFLD_comp) = 2;
@@ -337,6 +380,204 @@ our($KWPOS_vz) = 49;
 
 our ($Kwds)   = do {
   my $a = {
+    CINF => {
+              1 => {
+                    descr => "\"\"\"Modern Reader's Japanese-English Character Dictionary\"\", edited by Andrew Nelson (now published as the \"\"Classic\"\" Nelson).\"\n",
+                    id => 1,
+                    kw => "nelson_c",
+                  },
+              10 => {
+                    descr => "\"\"\"A Guide To Remembering Japanese Characters\"\" by Kenneth G.  Henshall.\"\n",
+                    id => 10,
+                    kw => "henshall",
+                  },
+              11 => {
+                    descr => "\"\"\"Kanji and Kana\"\" by Spahn and Hadamitzky.\"\n",
+                    id => 11,
+                    kw => "sh_kk",
+                  },
+              12 => {
+                    descr => "\"\"\"A Guide To Reading and Writing Japanese\"\" edited by Florence Sakade.\"\n",
+                    id => 12,
+                    kw => "sakade",
+                  },
+              13 => {
+                    descr => "Tuttle Kanji Cards, compiled by Alexander Kask.\n",
+                    id => 13,
+                    kw => "tutt_cards",
+                  },
+              14 => {
+                    descr => "\"\"\"The Kanji Way to Japanese Language Power\"\" by Dale Crowley.\"\n",
+                    id => 14,
+                    kw => "crowley",
+                  },
+              15 => {
+                    descr => "\"\"\"Kanji in Context\"\" by Nishiguchi and Kono.\"\n",
+                    id => 15,
+                    kw => "kanji_in_ctx",
+                  },
+              16 => {
+                    descr => "\"\"\"Japanese For Busy People\"\" vols I-III, published by the AJLT. The codes are the volume.chapter.\"\n",
+                    id => 16,
+                    kw => "busy_people",
+                  },
+              17 => {
+                    descr => "\"The \"\"Kodansha Compact Kanji Guide\"\".\"\n",
+                    id => 17,
+                    kw => "kodansha_comp",
+                  },
+              18 => {
+                    descr => "Halpern's SKIP (System  of  Kanji  Indexing  by  Patterns) code.\n",
+                    id => 18,
+                    kw => "skip",
+                  },
+              19 => {
+                    descr => "Descriptor codes for The Kanji Dictionary (Tuttle 1996) by Spahn and Hadamitzky.\n",
+                    id => 19,
+                    kw => "sh_desc",
+                  },
+              2 => {
+                    descr => "\"\"\"The New Nelson Japanese-English Character Dictionary\"\", edited by John Haig.\"\n",
+                    id => 2,
+                    kw => "nelson_n",
+                  },
+              20 => {
+                    descr => "\"\"\"Four Corner\"\" code for the kanji invented by Wang Chen in 1928.\"\n",
+                    id => 20,
+                    kw => "four_corner",
+                  },
+              21 => {
+                    descr => "\"Codes developed by the late Father Joseph De Roo, and published in  his book \"\"2001 Kanji\"\" (Bojinsha).\"\n",
+                    id => 21,
+                    kw => "deroo",
+                  },
+              22 => {
+                    descr => "A possible misclassification of the kanji according to one of the code types.\n",
+                    id => 22,
+                    kw => "misclass",
+                  },
+              23 => {
+                    descr => "Modern PinYin romanization of the Chinese reading.\n",
+                    id => 23,
+                    kw => "pinyin",
+                  },
+              24 => {
+                    descr => "Stroke miscount or alternate count.\n",
+                    id => 24,
+                    kw => "strokes",
+                  },
+              25 => {
+                    descr => "JIS X 0208-1997 - kuten coding (nn-nn).\n",
+                    id => 25,
+                    kw => "jis208",
+                  },
+              26 => {
+                    descr => "JIS X 0212-1990 - kuten coding (nn-nn).\n",
+                    id => 26,
+                    kw => "jis212",
+                  },
+              27 => {
+                    descr => "JIS X 0213-2000 - kuten coding (p-nn-nn).\n",
+                    id => 27,
+                    kw => "jis213",
+                  },
+              28 => {
+                    descr => "\"\"\"A Guide To Reading and Writing Japanese\"\" 3rd edition, edited by Henshall, Seeley and De Groot.\"\n",
+                    id => 28,
+                    kw => "henshall3",
+                  },
+              29 => {
+                    descr => "Korean reading of the kanji in hangul.\n",
+                    id => 29,
+                    kw => "korean_h",
+                  },
+              3 => {
+                    descr => "\"\"\"New Japanese-English Character Dictionary\"\", edited by Jack Halpern.\"\n",
+                    id => 3,
+                    kw => "halpern_njecd",
+                  },
+              30 => {
+                    descr => "Romanized form of the Korean reading of the kanji.\n",
+                    id => 30,
+                    kw => "korean_r",
+                  },
+              31 => {
+                    descr => "Japanese Kanji Flashcards, by Max Hodges and Tomoko Okazaki.\n",
+                    id => 31,
+                    kw => "jf_cards",
+                  },
+              32 => {
+                    descr => "Radical number given in nelson_c.\n",
+                    id => 32,
+                    kw => "nelson_rad",
+                  },
+              33 => { descr => "SKIP code misclasification.\n", id => 33, kw => "skip_mis" },
+              34 => { descr => "", id => 34, kw => "s_h" },
+              4 => {
+                    descr => "\"\"\"Kanji Learners Dictionary\"\" (Kodansha) edited by Jack Halpern.\"\n",
+                    id => 4,
+                    kw => "halpern_kkld",
+                  },
+              5 => {
+                    descr => "\"\"\"Remembering The  Kanji\"\"  by  James Heisig.\"\n",
+                    id => 5,
+                    kw => "heisig",
+                  },
+              6 => {
+                    descr => "\"\"\"A  New Dictionary of Kanji Usage\"\" (Gakken).\"\n",
+                    id => 6,
+                    kw => "gakken",
+                  },
+              7 => {
+                    descr => "\"\"\"Japanese Names\"\", by P.G. O'Neill.\"\n",
+                    id => 7,
+                    kw => "oneill_names",
+                  },
+              8 => {
+                    descr => "\"\"\"Essential Kanji\"\" by P.G. O'Neill.\"\n",
+                    id => 8,
+                    kw => "oneill_kk",
+                  },
+              9 => {
+                    descr => "\"\"\"Daikanwajiten\"\" compiled by Morohashi.\"\n",
+                    id => 9,
+                    kw => "moro",
+                  },
+              busy_people => 'fix',
+              crowley => 'fix',
+              deroo => 'fix',
+              four_corner => 'fix',
+              gakken => 'fix',
+              halpern_kkld => 'fix',
+              halpern_njecd => 'fix',
+              heisig => 'fix',
+              henshall => 'fix',
+              henshall3 => 'fix',
+              jf_cards => 'fix',
+              jis208 => 'fix',
+              jis212 => 'fix',
+              jis213 => 'fix',
+              kanji_in_ctx => 'fix',
+              kodansha_comp => 'fix',
+              korean_h => 'fix',
+              korean_r => 'fix',
+              misclass => 'fix',
+              moro => 'fix',
+              nelson_c => 'fix',
+              nelson_n => 'fix',
+              nelson_rad => 'fix',
+              oneill_kk => 'fix',
+              oneill_names => 'fix',
+              pinyin => 'fix',
+              s_h => 'fix',
+              sakade => 'fix',
+              sh_desc => 'fix',
+              sh_kk => 'fix',
+              skip => 'fix',
+              skip_mis => 'fix',
+              strokes => 'fix',
+              tutt_cards => 'fix',
+            },
     DIAL => {
               1 => { descr => "Tokyo-ben (std)\n", id => 1, kw => "std" },
               2 => { descr => "Kansai-ben\n", id => 2, kw => "ksb" },
@@ -1042,48 +1283,108 @@ our ($Kwds)   = do {
               vz        => 'fix',
             },
     RINF => {
-              1 => { descr => "gikun (meaning) reading\n", id => 1, kw => "gikun" },
-              2 => { descr => "out-dated or obsolete kana usage\n", id => 2, kw => "ok" },
-              3 => { descr => "word containing irregular kana usage\n", id => 3, kw => "ik" },
-              4 => {
-                    descr => "word usually written using kanji alone\n",
-                    id => 4,
-                    kw => "uK",
-                  },
-              gikun => 'fix',
-              ik => 'fix',
-              ok => 'fix',
-              uK => 'fix',
+              1      => { descr => "gikun (meaning) reading\n", id => 1, kw => "gikun" },
+              103    => {
+                          descr => "reading used only in names (nanori)\n",
+                          id => 103,
+                          kw => "name",
+                        },
+              104    => { descr => "reading used as name of radical\n", id => 104, kw => "rad" },
+              105    => {
+                          descr => "approved reading for jouyou kanji\n",
+                          id => 105,
+                          kw => "jouyou",
+                        },
+              106    => { descr => "kun-yomi\n", id => 106, kw => "kun" },
+              128    => { descr => "on-yomi\n", id => 128, kw => "on" },
+              129    => { descr => "on-yomi, kan\n", id => 129, kw => "kan" },
+              130    => { descr => "on-yomi, go\n", id => 130, kw => "go" },
+              131    => { descr => "on-yomi, tou\n", id => 131, kw => "tou" },
+              132    => { descr => "on-yomi, kan'you\n", id => 132, kw => "kanyou" },
+              2      => { descr => "out-dated or obsolete kana usage\n", id => 2, kw => "ok" },
+              3      => { descr => "word containing irregular kana usage\n", id => 3, kw => "ik" },
+              4      => {
+                          descr => "word usually written using kanji alone\n",
+                          id => 4,
+                          kw => "uK",
+                        },
+              gikun  => 'fix',
+              go     => 'fix',
+              ik     => 'fix',
+              jouyou => 'fix',
+              kan    => 'fix',
+              kanyou => 'fix',
+              kun    => 'fix',
+              name   => 'fix',
+              ok     => 'fix',
+              on     => 'fix',
+              rad    => 'fix',
+              tou    => 'fix',
+              uK     => 'fix',
             },
     STAT => {
               1 => { descr => "New\n", id => 1, kw => "N" },
               2 => { descr => "Active\n", id => 2, kw => "A" },
               4 => { descr => "Deleted\n", id => 4, kw => "D" },
-              6 => { descr => "Obsolete\n", id => 6, kw => "O" },
-              8 => { descr => "Rejected\n", id => 8, kw => "R" },
+              6 => { descr => "Rejected\n", id => 6, kw => "R" },
               A => 'fix',
               D => 'fix',
               N => 'fix',
-              O => 'fix',
               R => 'fix',
             },
     XREF => {
               1 => { descr => "Synonym\n", id => 1, kw => "syn" },
               2 => { descr => "Antonym\n", id => 2, kw => "ant" },
               3 => { descr => "See also\n", id => 3, kw => "see" },
-              4 => { descr => "c.f.\n", id => 4, kw => "cf" },
+              4 => { descr => "C.f.\n", id => 4, kw => "cf" },
               5 => { descr => "Usage example\n", id => 5, kw => "ex" },
               6 => { descr => "Uses\n", id => 6, kw => "uses" },
               7 => { descr => "Preferred\n", id => 7, kw => "pref" },
+              8 => { descr => "Kanji variant", id => 8, kw => "kvar" },
               ant => 'fix',
               cf => 'fix',
               ex => 'fix',
+              kvar => 'fix',
               pref => 'fix',
               see => 'fix',
               syn => 'fix',
               uses => 'fix',
             },
   };
+  $a->{CINF}{busy_people} = $a->{CINF}{16};
+  $a->{CINF}{crowley} = $a->{CINF}{14};
+  $a->{CINF}{deroo} = $a->{CINF}{21};
+  $a->{CINF}{four_corner} = $a->{CINF}{20};
+  $a->{CINF}{gakken} = $a->{CINF}{6};
+  $a->{CINF}{halpern_kkld} = $a->{CINF}{4};
+  $a->{CINF}{halpern_njecd} = $a->{CINF}{3};
+  $a->{CINF}{heisig} = $a->{CINF}{5};
+  $a->{CINF}{henshall} = $a->{CINF}{10};
+  $a->{CINF}{henshall3} = $a->{CINF}{28};
+  $a->{CINF}{jf_cards} = $a->{CINF}{31};
+  $a->{CINF}{jis208} = $a->{CINF}{25};
+  $a->{CINF}{jis212} = $a->{CINF}{26};
+  $a->{CINF}{jis213} = $a->{CINF}{27};
+  $a->{CINF}{kanji_in_ctx} = $a->{CINF}{15};
+  $a->{CINF}{kodansha_comp} = $a->{CINF}{17};
+  $a->{CINF}{korean_h} = $a->{CINF}{29};
+  $a->{CINF}{korean_r} = $a->{CINF}{30};
+  $a->{CINF}{misclass} = $a->{CINF}{22};
+  $a->{CINF}{moro} = $a->{CINF}{9};
+  $a->{CINF}{nelson_c} = $a->{CINF}{1};
+  $a->{CINF}{nelson_n} = $a->{CINF}{2};
+  $a->{CINF}{nelson_rad} = $a->{CINF}{32};
+  $a->{CINF}{oneill_kk} = $a->{CINF}{8};
+  $a->{CINF}{oneill_names} = $a->{CINF}{7};
+  $a->{CINF}{pinyin} = $a->{CINF}{23};
+  $a->{CINF}{s_h} = $a->{CINF}{34};
+  $a->{CINF}{sakade} = $a->{CINF}{12};
+  $a->{CINF}{sh_desc} = $a->{CINF}{19};
+  $a->{CINF}{sh_kk} = $a->{CINF}{11};
+  $a->{CINF}{skip} = $a->{CINF}{18};
+  $a->{CINF}{skip_mis} = $a->{CINF}{33};
+  $a->{CINF}{strokes} = $a->{CINF}{24};
+  $a->{CINF}{tutt_cards} = $a->{CINF}{13};
   $a->{DIAL}{ksb} = $a->{DIAL}{2};
   $a->{DIAL}{ktb} = $a->{DIAL}{3};
   $a->{DIAL}{kyb} = $a->{DIAL}{4};
@@ -1387,17 +1688,26 @@ our ($Kwds)   = do {
   $a->{POS}{vt} = $a->{POS}{50};
   $a->{POS}{vz} = $a->{POS}{49};
   $a->{RINF}{gikun} = $a->{RINF}{1};
+  $a->{RINF}{go} = $a->{RINF}{130};
   $a->{RINF}{ik} = $a->{RINF}{3};
+  $a->{RINF}{jouyou} = $a->{RINF}{105};
+  $a->{RINF}{kan} = $a->{RINF}{129};
+  $a->{RINF}{kanyou} = $a->{RINF}{132};
+  $a->{RINF}{kun} = $a->{RINF}{106};
+  $a->{RINF}{name} = $a->{RINF}{103};
   $a->{RINF}{ok} = $a->{RINF}{2};
+  $a->{RINF}{on} = $a->{RINF}{128};
+  $a->{RINF}{rad} = $a->{RINF}{104};
+  $a->{RINF}{tou} = $a->{RINF}{131};
   $a->{RINF}{uK} = $a->{RINF}{4};
   $a->{STAT}{A} = $a->{STAT}{2};
   $a->{STAT}{D} = $a->{STAT}{4};
   $a->{STAT}{N} = $a->{STAT}{1};
-  $a->{STAT}{O} = $a->{STAT}{6};
-  $a->{STAT}{R} = $a->{STAT}{8};
+  $a->{STAT}{R} = $a->{STAT}{6};
   $a->{XREF}{ant} = $a->{XREF}{2};
   $a->{XREF}{cf} = $a->{XREF}{4};
   $a->{XREF}{ex} = $a->{XREF}{5};
+  $a->{XREF}{kvar} = $a->{XREF}{8};
   $a->{XREF}{pref} = $a->{XREF}{7};
   $a->{XREF}{see} = $a->{XREF}{3};
   $a->{XREF}{syn} = $a->{XREF}{1};

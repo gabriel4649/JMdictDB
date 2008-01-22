@@ -1,4 +1,31 @@
 
+2008-01-22 15:18	smcgrawx@frxii.com
+
+	* Makefile [1.33]
+	* perl/jmload.pl [1.7]
+	* perl/lib/jmdict.pm [1.38]
+	* pg/data/kwxref.csv [1.2]
+	* pg/loadkw.sql [1.8]
+	* pg/mkperms.sql [1.10]
+	* pg/mktables.sql [1.29]
+	* tools/mkkwmod.pl [1.6]
+	Add support for kanjidic2 (incomplete). {360}
+
+	* pg/data/kwrinf.csv [1.4]
+	Add support for kanjidic2 (incomplete). {360}
+	Fix capitalization of "C.f." {361}
+
+	* pg/syncseq.sql [1.10]
+	Add support for kanjidic2 (incomplete). {360}
+	Get kwsrc id numbers by joining with kwsrc rather than hardwiring
+	  them as before. {362}
+
+2007-10-05 00:58	smcgrawx@frxii.com
+
+	* Makefile [1.32]
+	Fix: In target 'dist', create empty tar file to prevent a "directory
+	  changed" message from tar. {359}
+
 2007-09-22 11:14	smcgrawx@frxii.com
 
 	Tag: T019 {357}
@@ -159,11 +186,11 @@
 
 	* perl/lib/tal/entr.tal [1.19]
 	Pass svc parameter along in href links. {321}
-	Adjust for the changes to tables entr and hist in pg/mktables.sql.
-	  {306}
+	Display history items in table rather than ordered list. {322}
 	Create and use a "editable" flag on entries to simplify displaying of
 	  Edit button in entr.tal. {317}
-	Display history items in table rather than ordered list. {322}
+	Adjust for the changes to tables entr and hist in pg/mktables.sql.
+	  {306}
 
 	* perl/lib/tal/srchform.tal [1.13]
 	Fix: Make indenting more consistent with my standard style. {330}
@@ -496,10 +523,10 @@
 	* pg/mktables.sql [1.26]
 	Adjust for addition of reading/kanji to xrefs. {249}
 	Remove table xrefld and its trigger function. {256}
-	Add oids to table freq to that it will be editable in PgAdmin. {257}
 	Disable the unique index on xref(entr,sens,typ,xentr,xsens) because
 	  the Examples file generates such xrefs (as does jmdict when there a
 	  sense has two xrefs to the same target.) {255}
+	Add oids to table freq to that it will be editable in PgAdmin. {257}
 	Fix: Correct erroneous comment characters. {254}
 
 	* pg/mkviews.sql [1.22]
@@ -729,10 +756,10 @@
 	  function add_xrefsums(). {169}
 	jmdict::resolv_xref() now returns list of augmented xrefs rather than
 	  a _erefs object. {174}
-	Fix: setkeys(): was not setting entr id's when $eid arg not supplied.
-	  {177}
 	Replace functions bld_erefs(), erefs2xrefs(), xrefs2erefs() with with
 	  non-equivalent (but bettter :-) function grp_xrefs(). {168}
+	Fix: setkeys(): was not setting entr id's when $eid arg not supplied.
+	  {177}
 
 	* perl/lib/jmdictcgi.pm [1.6]
 	Move functions fmt_restr(), fmt_stag(), set_audio_flag from
@@ -759,10 +786,10 @@
 
 	* pg/mkviews.sql [1.21]
 	Delete views eksum, xrefesum. {189}
-	Add new view essum. {166}
-	Change view hdwds to return entr.* rather than only entr.id. {167}
 	Change view esum to get rdng and kanj strings from join on view
 	  hdwds, rather than generating them independently. {162}
+	Change view hdwds to return entr.* rather than only entr.id. {167}
+	Add new view essum. {166}
 
 	* pg/xresolv.sql [1.11]
 	Fix: Missing semi colon that causes syntax error when exceuted. {176}
@@ -837,11 +864,11 @@
 	Remade due to changes in prerequisite mktables.sql. {153}
 
 	* pg/mktables.sql [1.23]
-	Create an insert trigger on table xref that will automatically assign
-	  value to column "xref". {151}
 	Add column "xref" to table xref, and change the PK from
 	  (entr,sens,xentr,xsens,typ) to (entr,sens,xref).  What was formerly
 	  the PK is now a unique index. {150}
+	Create an insert trigger on table xref that will automatically assign
+	  value to column "xref". {151}
 
 	* pg/mkviews.sql [1.20]
 	Adjust function adddup() and view xrefsum for change to xref table.
@@ -869,14 +896,14 @@
 	* perl/lib/jmdict.pm [1.27]
 	Removed function get_seq() since addentr() no longer uses it per
 	  chgid-133. {139}
-	In function addentr(), don't assign a 'seq' value, leave it NULL and
-	  rely on the new entr table insert trigger to set it. {133}
 	In function addentr() call setkeys() to set all the key values rather
 	  than doing it ourself. {138}
+	In function addentr(), don't assign a 'seq' value, leave it NULL and
+	  rely on the new entr table insert trigger to set it. {133}
 
 	* perl/lib/tal/edconf.tal [1.8]
-	Allow editing of entr data seq, srcnote, notes. {135}
 	Adjust layout of entr data to match current entr.tal {137}
+	Allow editing of entr data seq, srcnote, notes. {135}
 
 	* perl/lib/tal/edform.tal [1.4]
 	Make 'src' selection a drop-down box. {136}
@@ -1227,9 +1254,9 @@
 2007-05-22 09:19	smcgrawx@frxii.com
 
 	* Makefile [1.15]
+	Fix: Error in mv command of target "examples.txt". {62}
 	Fix: Examples file at Monash ftp site has extension ".utf", not
 	  ".utf8". {59}
-	Fix: Error in mv command of target "examples.txt". {62}
 
 	* perl/exparse.pl [1.5]
 	Fix: Was failing to set ginf column value in gloss table output. {64}

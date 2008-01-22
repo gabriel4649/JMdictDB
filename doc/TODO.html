@@ -18,7 +18,7 @@
 <body>
   <h1>JMdictDB To-Do List</h1>
   <span class="gendate">
-    This list was current as of 2007-09-11 23:41
+    This list was current as of 2008-01-22 15:24
     </span>
   <table class="todo">
     
@@ -147,32 +147,6 @@ Problem seems to be the brackets which are classified as kanji characters and th
       
       
       <tr class="row">
-	<td class="id">1</td>
-	
-	  <td class="title" colspan="2">Approval process flow</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Need to work out details of approval process in terms of data changes and the web pages needed to support those changes. [Need "edit entry" page first]
-</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="notes" colspan="4">Changeset 49 includes editor approval and rejection capability including entry deletion and (untested) concurrency handling.<br/>
-<br/>
-Still to do: testing, editor login, diffs between old and new entries, security review.
-</td>
-	</tr>
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">2</td>
 	
 	  <td class="title" colspan="2">Paged results</td>
@@ -193,9 +167,9 @@ Still to do: testing, editor login, diffs between old and new entries, security 
       
       
       <tr class="row">
-	<td class="id">3</td>
+	<td class="id">1</td>
 	
-	  <td class="title" colspan="2">Edit entry page</td>
+	  <td class="title" colspan="2">Approval process flow</td>
 	  
 	
 	<td class="compld"></td>
@@ -203,10 +177,16 @@ Still to do: testing, editor login, diffs between old and new entries, security 
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Need page that allows user to submit modifcations of existing entries.
+	<td class="descr" colspan="4">Need to work out details of approval process in terms of data changes and the web pages needed to support those changes. [Need "edit entry" page first]
 </td>
 	</tr>
-      
+      <tr class="descr">
+        <td> </td>
+	<td class="notes" colspan="4">Changeset 49 includes editor approval and rejection capability including entry deletion and (untested) concurrency handling.<br/>
+<br/>
+Still to do: testing, editor login, diffs between old and new entries, security review.
+</td>
+	</tr>
       
       </span><span omit-tag="">
       
@@ -237,9 +217,9 @@ Still to do: testing, editor login, diffs between old and new entries, security 
       
       
       <tr class="row">
-	<td class="id">12</td>
+	<td class="id">3</td>
 	
-	  <td class="title" colspan="2">Modperl</td>
+	  <td class="title" colspan="2">Edit entry page</td>
 	  
 	
 	<td class="compld"></td>
@@ -247,7 +227,7 @@ Still to do: testing, editor login, diffs between old and new entries, security 
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Support Apache/modperl.
+	<td class="descr" colspan="4">Need page that allows user to submit modifcations of existing entries.
 </td>
 	</tr>
       
@@ -426,9 +406,9 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
       
       
       <tr class="row">
-	<td class="id">4</td>
+	<td class="id">25</td>
 	
-	  <td class="title" colspan="2">Editor search page</td>
+	  <td class="title" colspan="2">Untrusted storables</td>
 	  
 	
 	<td class="compld"></td>
@@ -436,27 +416,7 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">Search by various history criteria: status / submitter / submitted date / text in comments / etc.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">6</td>
-	
-	  <td class="title" colspan="2">Editor authenication</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Authentication for editors.  (work out process flow details first?)
+	<td class="descr" colspan="4">newsub.pl -- Is it safe to receive a Storable?
 </td>
 	</tr>
       
@@ -484,26 +444,6 @@ Maybe this could be done by generating a master file and letting Jim Breen do th
 	<td class="notes" colspan="4">Not sure when it happened (possibly as result of elimination of surrogate PKs in child tables) but object load times reported on the entr.pl page are now typically less the .3s on my development machine.
 </td>
 	</tr>
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">25</td>
-	
-	  <td class="title" colspan="2">Untrusted storables</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">newsub.pl -- Is it safe to receive a Storable?
-</td>
-	</tr>
-      
       
       </span><span omit-tag="">
       
@@ -539,6 +479,46 @@ Change jstr_classify?  Or do something else?
       
       
       <tr class="row">
+	<td class="id">12</td>
+	
+	  <td class="title" colspan="2">Modperl</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Support Apache/modperl.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">6</td>
+	
+	  <td class="title" colspan="2">Editor authenication</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Authentication for editors.  (work out process flow details first?)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
 	<td class="id">29</td>
 	
 	  <td class="title" colspan="2">XML parse kw checks</td>
@@ -550,26 +530,6 @@ Change jstr_classify?  Or do something else?
       <tr class="descr">
         <td> </td>
 	<td class="descr" colspan="4">load_jmdict.pl -- Check result of kw lookups, complain when not found (may need to build entry struct, and only write to files when complete which will allow skipping entries with problems.)
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">30</td>
-	
-	  <td class="title" colspan="2">XML parse other checks</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">load_jmdict.pl -- Do other error checking (or could do these after data loaded into db): all senses have gloss?  All entries have sens and reading? ... (But remember that deleted entries have no sences or readings).
 </td>
 	</tr>
       
@@ -610,9 +570,71 @@ Entr objects being created for output need not supply record numbers.  User of o
       </span><span omit-tag="">
       
       
+      
+      <tr class="row">
+	<td class="id">4</td>
+	
+	  <td class="title" colspan="2">Editor search page</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Search by various history criteria: status / submitter / submitted date / text in comments / etc.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">30</td>
+	
+	  <td class="title" colspan="2">XML parse other checks</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">load_jmdict.pl -- Do other error checking (or could do these after data loaded into db): all senses have gloss?  All entries have sens and reading? ... (But remember that deleted entries have no sences or readings).
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
       <tr class="priohdr">
         <td colspan="5">Priority 'low' items</td>
 	</tr>
+      <tr class="row">
+	<td class="id">107</td>
+	
+	  <td class="title" colspan="2">Allow submitter to retract a sumission</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-09-22 16:51</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">Would be nice if the submitter of an entry or change could retract it.<br/>
+This requires some way of verifying that the requester of the retraction<br/>
+is the same as the original submitter.  (Suggested by Paul Blay.)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
       <tr class="row">
 	<td class="id">105</td>
 	
@@ -817,26 +839,6 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">33</td>
-	
-	  <td class="title" colspan="2">DB maintenance</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">database -- write maintenance scripts to check for things that are hard to write contraints for: do all senses have at least one gloss?  do all (jmdict) entries have at least one sense and reading?, Are rdng,kanj,sens,gloss ord numbers consecutive?
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">7</td>
 	
 	  <td class="title" colspan="2">Unit tests</td>
@@ -857,9 +859,9 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">21</td>
+	<td class="id">22</td>
 	
-	  <td class="title" colspan="2">CGI html escaping</td>
+	  <td class="title" colspan="2">UTC datetimes</td>
 	  
 	
 	<td class="compld"></td>
@@ -867,7 +869,7 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.
+	<td class="descr" colspan="4">Check the everything storing a datetime value stores it in UTC or localtime with timezone.  Check that everything displaying a datetime does the same.
 </td>
 	</tr>
       
@@ -917,9 +919,9 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
       
       
       <tr class="row">
-	<td class="id">27</td>
+	<td class="id">28</td>
 	
-	  <td class="title" colspan="2">Database versioning</td>
+	  <td class="title" colspan="2">Circular lists</td>
 	  
 	
 	<td class="compld"></td>
@@ -927,18 +929,10 @@ See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
+	<td class="descr" colspan="4">jmdict.pm -- The xrefs stuff might be circularly linked.  How does that affect garbage collection in long-running process (e.g. modperl)?
 </td>
 	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="notes" colspan="4">This is really three issues:<br/>
-1. What version of static data is loaded?<br/>
-2. What version of entry data is loaded?  (Addressed by dt field in kwsrc?)<br/>
-3. What version of the schema is in use?<br/>
-All are subject to inaccuracy due to changes made after db created/loaded.
-</td>
-	</tr>
+      
       
       </span><span omit-tag="">
       
@@ -985,26 +979,6 @@ All are subject to inaccuracy due to changes made after db created/loaded.
       
       
       <tr class="row">
-	<td class="id">22</td>
-	
-	  <td class="title" colspan="2">UTC datetimes</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">Check the everything storing a datetime value stores it in UTC or localtime with timezone.  Check that everything displaying a datetime does the same.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
 	<td class="id">19</td>
 	
 	  <td class="title" colspan="2">CGI error handling</td>
@@ -1025,9 +999,9 @@ All are subject to inaccuracy due to changes made after db created/loaded.
       
       
       <tr class="row">
-	<td class="id">28</td>
+	<td class="id">23</td>
 	
-	  <td class="title" colspan="2">Circular lists</td>
+	  <td class="title" colspan="2">CGI security audit</td>
 	  
 	
 	<td class="compld"></td>
@@ -1035,7 +1009,47 @@ All are subject to inaccuracy due to changes made after db created/loaded.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">jmdict.pm -- The xrefs stuff might be circularly linked.  How does that affect garbage collection in long-running process (e.g. modperl)?
+	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">21</td>
+	
+	  <td class="title" colspan="2">CGI html escaping</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- Need a coherent approach to escaping html entities.  When/what/where to escape html entities?  currently some stuff gets double escaped or not escaped at all.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row">
+	<td class="id">33</td>
+	
+	  <td class="title" colspan="2">DB maintenance</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">database -- write maintenance scripts to check for things that are hard to write contraints for: do all senses have at least one gloss?  do all (jmdict) entries have at least one sense and reading?, Are rdng,kanj,sens,gloss ord numbers consecutive?
 </td>
 	</tr>
       
@@ -1065,9 +1079,9 @@ All are subject to inaccuracy due to changes made after db created/loaded.
       
       
       <tr class="row">
-	<td class="id">23</td>
+	<td class="id">27</td>
 	
-	  <td class="title" colspan="2">CGI security audit</td>
+	  <td class="title" colspan="2">Database versioning</td>
 	  
 	
 	<td class="compld"></td>
@@ -1075,10 +1089,18 @@ All are subject to inaccuracy due to changes made after db created/loaded.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">cgi -- Do security audit of all pages.
+	<td class="descr" colspan="4">kwstatic.pm -- Provide way for caller to check name/version of database used.
 </td>
 	</tr>
-      
+      <tr class="descr">
+        <td> </td>
+	<td class="notes" colspan="4">This is really three issues:<br/>
+1. What version of static data is loaded?<br/>
+2. What version of entry data is loaded?  (Addressed by dt field in kwsrc?)<br/>
+3. What version of the schema is in use?<br/>
+All are subject to inaccuracy due to changes made after db created/loaded.
+</td>
+	</tr>
       
       </span><span omit-tag="">
       
@@ -1086,6 +1108,26 @@ All are subject to inaccuracy due to changes made after db created/loaded.
       <tr class="priohdr">
         <td colspan="5">Priority 'info' items</td>
 	</tr>
+      <tr class="row">
+	<td class="id">20</td>
+	
+	  <td class="title" colspan="2">CGI form post</td>
+	  
+	
+	<td class="compld"></td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr">
+        <td> </td>
+	<td class="descr" colspan="4">cgi -- At some point change GET form methods to POST.  (GET useful for debugging.)
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
       <tr class="row">
 	<td class="id">41</td>
 	
@@ -1099,26 +1141,6 @@ All are subject to inaccuracy due to changes made after db created/loaded.
         <td> </td>
 	<td class="descr" colspan="4">Allow anyone anonymous read-only access to cvs repo via cvsweb, viewcvs, or similar.<br/>
 [CVS dir structure needs to settle down first.  Need reliable host since that repo will become primary repository.]
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row">
-	<td class="id">32</td>
-	
-	  <td class="title" colspan="2">Email addr obsfucation</td>
-	  
-	
-	<td class="compld"></td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr">
-        <td> </td>
-	<td class="descr" colspan="4">cgi -- Need to obsure email addresses for general display (unobsured on conf form ok if none other than submitter/authenticated editors can see.)
 </td>
 	</tr>
       
@@ -1148,9 +1170,9 @@ All are subject to inaccuracy due to changes made after db created/loaded.
       
       
       <tr class="row">
-	<td class="id">20</td>
+	<td class="id">32</td>
 	
-	  <td class="title" colspan="2">CGI form post</td>
+	  <td class="title" colspan="2">Email addr obsfucation</td>
 	  
 	
 	<td class="compld"></td>
@@ -1158,7 +1180,7 @@ All are subject to inaccuracy due to changes made after db created/loaded.
 	</tr>
       <tr class="descr">
         <td> </td>
-	<td class="descr" colspan="4">cgi -- At some point change GET form methods to POST.  (GET useful for debugging.)
+	<td class="descr" colspan="4">cgi -- Need to obsure email addresses for general display (unobsured on conf form ok if none other than submitter/authenticated editors can see.)
 </td>
 	</tr>
       
@@ -1812,31 +1834,6 @@ Difficulty in assigning column "xref" values during load from xml data.  The dat
       
       
       <tr class="row done">
-	<td class="id">17</td>
-	
-	
-	  <td class="title">Newsub.pl warnings</td>
-	  <td class="prio">med</td>
-	  
-	<td class="compld">2007-07-29 19:45</td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr done">
-        <td> </td>
-	<td class="descr" colspan="4">nwsub.pl -- generating warnings that DB::OUT is not used.  Creates noise in web server log files.
-</td>
-	</tr>
-      <tr class="descr done">
-        <td> </td>
-	<td class="notes" colspan="4">nwsub.pl was renamed to edsubmit.pl
-</td>
-	</tr>
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row done">
 	<td class="id">11</td>
 	
 	
@@ -1854,6 +1851,31 @@ Difficulty in assigning column "xref" values during load from xml data.  The dat
       <tr class="descr done">
         <td> </td>
 	<td class="notes" colspan="4">I think the schema.odt and .dia files, code comments, the tutorial files, and the Task/Changelog lists, satisfy this task, at least for now.
+</td>
+	</tr>
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">17</td>
+	
+	
+	  <td class="title">Newsub.pl warnings</td>
+	  <td class="prio">med</td>
+	  
+	<td class="compld">2007-07-29 19:45</td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">nwsub.pl -- generating warnings that DB::OUT is not used.  Creates noise in web server log files.
+</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="notes" colspan="4">nwsub.pl was renamed to edsubmit.pl
 </td>
 	</tr>
       
@@ -2480,27 +2502,6 @@ Added a -l option to specify logfile location.  In Makefile, dist target exclude
       
       
       <tr class="row done">
-	<td class="id">56</td>
-	
-	
-	  <td class="title">GPL code</td>
-	  <td class="prio">high</td>
-	  
-	<td class="compld">2007-02-12</td>
-	<td class="entered">2007-02-01</td>
-	</tr>
-      <tr class="descr done">
-        <td> </td>
-	<td class="descr" colspan="4">Put everything under gpl.
-</td>
-	</tr>
-      
-      
-      </span><span omit-tag="">
-      
-      
-      
-      <tr class="row done">
 	<td class="id">60</td>
 	
 	
@@ -2515,6 +2516,27 @@ Added a -l option to specify logfile location.  In Makefile, dist target exclude
 	<td class="descr" colspan="4">perl -- Move lib to under cgi?  (This dir needs to be accessible to the cgi scripts when installed in a cgi directory, but should not be accessible via a web server url.  Putting under the cgi dir wouldaccomplish this (at least for Apache, not sure about IIS.))<br/>
 <br/>
 Don't do. Files in lib/ are used by perl/*.pl scripts as well as the cgi scripts, so moving it under cgi would be inappropriate.  Better way is to use standard Apache/IIS config options to deny access.
+</td>
+	</tr>
+      
+      
+      </span><span omit-tag="">
+      
+      
+      
+      <tr class="row done">
+	<td class="id">56</td>
+	
+	
+	  <td class="title">GPL code</td>
+	  <td class="prio">high</td>
+	  
+	<td class="compld">2007-02-12</td>
+	<td class="entered">2007-02-01</td>
+	</tr>
+      <tr class="descr done">
+        <td> </td>
+	<td class="descr" colspan="4">Put everything under gpl.
 </td>
 	</tr>
       

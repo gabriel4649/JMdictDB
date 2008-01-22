@@ -1,4 +1,5 @@
 \set ON_ERROR_STOP 1
+\copy kwcinf from '../pg/data/kwcinf.csv' CSV delimiter E'\t'
 \copy kwdial from '../pg/data/kwdial.csv' CSV delimiter E'\t'
 \copy kwfreq from '../pg/data/kwfreq.csv' CSV delimiter E'\t'
 \copy kwfld  from '../pg/data/kwfld.csv'  CSV delimiter E'\t'

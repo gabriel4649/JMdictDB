@@ -191,7 +191,26 @@ loadex: examples.dmp
 	#cd perl && perl xresolv.pl -q $(JM_HOST) $(JM_USER) $(JM_DB) -s3 -t1 >../examples_xresolv.log
 	#cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -c 'vacuum analyze xref;'
 
-#------ Load all three -------------------------------------------------
+#------ Load kanjidic2,xml ---------------------------------------------------
+
+kanjidic2.xml: 
+	rm -f kanjidic2.xml.gz
+	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/kanjidic2.xml.gz
+	gzip -d kanjidic2.xml.gz
+
+kanjidic2.pgi: kanjidic2.xml 
+	cd python && python kdparse.py -o ../kanjidic2.pgi -l ../kanjidic2.log ../kanjidic2.xml 
+
+kanjidic2.dmp: kanjidic2.pgi 
+	cd perl && perl jmload.pl $(JM_HOST) $(JM_USER) $(JM_DB) -o ../kanjidic2.dmp ../kanjidic2.pgi
+
+loadkd: kanjidic2.dmp 
+	#-cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../kanjidic2.dmp
+	#cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f mkindex.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f syncseq.sql
+
+#------ Load jmdict, jmnedict, examples -------------------------------------
 
 # Note that we cannot reuse jmnedict.dmp or examples.dmp since the
 # the number of entries may be different in the freshly loaded jmdict

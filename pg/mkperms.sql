@@ -18,6 +18,7 @@
 --  Copyright (c) 2006,2007 Stuart McGraw 
 ---------------------------------------------------------------------------
 
+GRANT ALL ON kwcinf TO PUBLIC;
 GRANT ALL ON kwdial TO PUBLIC;
 GRANT ALL ON kwfreq TO PUBLIC;
 GRANT ALL ON kwfld TO PUBLIC;
@@ -30,6 +31,7 @@ GRANT ALL ON kwrinf TO PUBLIC;
 GRANT ALL ON kwsrc TO PUBLIC;
 GRANT ALL ON kwstat TO PUBLIC;
 GRANT ALL ON kwxref TO PUBLIC;
+GRANT ALL ON chr TO PUBLIC;
 GRANT ALL ON entr TO PUBLIC;
 GRANT ALL ON rdng TO PUBLIC;
 GRANT ALL ON kanj TO PUBLIC;
@@ -40,6 +42,7 @@ GRANT ALL ON hist TO PUBLIC;
 GRANT ALL ON audio TO PUBLIC;
 GRANT ALL ON xresolv TO PUBLIC;
 GRANT ALL ON freq TO PUBLIC;
+GRANT ALL ON cinf TO PUBLIC;
 GRANT ALL ON dial TO PUBLIC;
 GRANT ALL ON fld TO PUBLIC;
 GRANT ALL ON kinf TO PUBLIC;

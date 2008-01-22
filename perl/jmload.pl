@@ -97,7 +97,10 @@ main: {
 	    xref    => [0,2], 
 	    xresolv => [0],
 	    tcard   => [2], 
-	    tsndasn => [1], };
+	    tsndasn => [1],
+	    chr     => [0],
+	    cinf    => [0],
+	    kresolv => [0], };
 
 	$delt = 0;
 	while (<FIN>) {

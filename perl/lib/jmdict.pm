@@ -70,6 +70,7 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 
     sub Kwds { my ($dbh) = @_;
 	my (%kw);
+	$kw{CINF} = $dbh->selectall_hashref("SELECT * FROM kwcinf", "kw"); addids ($kw{CINF});
 	$kw{DIAL} = $dbh->selectall_hashref("SELECT * FROM kwdial", "kw"); addids ($kw{DIAL});
 	$kw{FLD}  = $dbh->selectall_hashref("SELECT * FROM kwfld",  "kw"); addids ($kw{FLD});
 	$kw{FREQ} = $dbh->selectall_hashref("SELECT * FROM kwfreq", "kw"); addids ($kw{FREQ});
@@ -232,7 +233,8 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	$tmpli = "SELECT x.* FROM %s x WHERE x.%s IN (%s) %s %s";
 
 	foreach $tbl (qw(entr hist rdng rinf audio kanj kinf sens gloss
-		      misc pos fld dial lsrc restr stagr stagk freq xref xrer)) {
+		      misc pos fld dial lsrc restr stagr stagk freq xref xrer
+		      chr cinf)) {
 	    $key = $tbl eq "entr" ? "id" : "entr";
 
 	    if ($tbl eq "entr") { $ordby = $ord; }
@@ -256,9 +258,10 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	# parent rows, thus building the object structure that
 	# application programs wil work with.
 
-	my ($entr,$rdng,$kanj,$sens);
+	my ($entr,$rdng,$kanj,$sens,$chr);
 	  my $start = time();
-	$entr=$t->{entr}; $rdng=$t->{rdng}; $kanj=$t->{kanj}; $sens=$t->{sens};
+	$entr=$t->{entr}; $rdng=$t->{rdng}; $kanj=$t->{kanj};
+	$sens=$t->{sens}; $chr=$t->{chr};
 	matchup ("_rdng",  $entr, ["id"],          $rdng,       ["entr"]);
 	matchup ("_kanj",  $entr, ["id"],          $kanj,       ["entr"]);
 	matchup ("_sens",  $entr, ["id"],          $sens,       ["entr"]);
@@ -287,6 +290,9 @@ our(@VERSION) = (substr('$Revision$',11,-2), \
 	matchup ("_restr", $entr, ["entr"],        $t->{restr}, ["entr"]);
 	matchup ("_stagr", $entr, ["entr"],        $t->{stagr}, ["entr"]);
 	matchup ("_stagk", $entr, ["entr"],        $t->{stagk}, ["entr"]);
+
+	matchup ("_chr",   $entr, ["entr"],        $chr,        ["entr"]);
+	matchup ("_cinf",  $chr,  ["entr"],        $t->{cinf},  ["entr"]);
 	$::Debug->{'Obj build time'} = time() - $start;
 	return $entr; }
  
@@ -626,7 +632,8 @@ our ($KANA,$HIRAGANA,$KATAKANA,$KANJI) = (1, 2, 4, 8);
 	    if ($s->{_xref})  { foreach $x (@{$s->{_xref}})  { $x->{entr} = $eid;  $x->{sens} = $nsens;  
 								 $x->{xref} = ++$nxref  } }
 	    if ($s->{_xrer})  { foreach $x (@{$s->{_xrer}})  { $x->{xentr}= $eid;  $x->{xsens}= $nsens; } } } }
-	if ($e->{_hist}) { foreach $x (@{$e->{_hist}})       { $x->{entr} = $eid;  $x->{hist} = ++$nhist; } } }
+	if ($e->{_hist})  { foreach $x (@{$e->{_hist}})      { $x->{entr} = $eid;  $x->{hist} = ++$nhist; } } 
+	if ($e->{_krslv}) { foreach $x (@{$e->{_krslv}})     { $x->{entr} = $eid; } } }
 
     sub addentr { my ($dbh, $entr) = @_;
 	# Write the entry defined by %$entr to the database open

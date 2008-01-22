@@ -22,8 +22,17 @@
 -- $Revision$ $Date$
 
 SELECT setval('entr_id_seq',  (SELECT max(id) FROM entr));
-SELECT setval('seq_jmdict',   (SELECT MAX(seq) FROM entr WHERE src=1 AND seq<9000000));
-SELECT setval('seq_jmnedict', (SELECT MAX(seq) FROM entr WHERE src=2));
-SELECT setval('seq_examples', (SELECT MAX(seq) FROM entr WHERE src=3));
-SELECT setval('seq',          (SELECT MAX(seq) FROM entr WHERE src>3));
+
+-- The following properly resets the state of the sequences that 
+-- generate entry "seq" column values.  The sequence used for a 
+-- particular entry is given by the kwsrc.seq datum in the kwsrc 
+-- row referenced by the entry.
+-- The values must be reset following a bulk load of data by programs
+-- such as jmload.pl, etc.
+
+SELECT setval('seq_jmdict',   (SELECT MAX(e.seq) FROM entr e JOIN kwsrc k ON k.id=e.src WHERE k.seq='seq_jmdict' AND e.seq<9000000));
+SELECT setval('seq_jmnedict', (SELECT MAX(e.seq) FROM entr e JOIN kwsrc k ON k.id=e.src WHERE k.seq='seq_jmnedict'));
+SELECT setval('seq_examples', (SELECT MAX(e.seq) FROM entr e JOIN kwsrc k ON k.id=e.src WHERE k.seq='seq_examples'));
+SELECT setval('seq_kanjidic', (SELECT MAX(e.seq) FROM entr e JOIN kwsrc k ON k.id=e.src WHERE k.seq='seq_kanjidic'));
+SELECT setval('seq',          (SELECT MAX(e.seq) FROM entr e JOIN kwsrc k ON k.id=e.src WHERE k.seq='seq'));
 

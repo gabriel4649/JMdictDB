@@ -33,6 +33,11 @@ CREATE LANGUAGE 'plpgsql';
 -- They are kept in here in comment form in order to provide a more
 -- cohesive view of the schema.
 
+CREATE TABLE kwcinf(
+    id SMALLINT PRIMARY KEY,
+    kw VARCHAR(50) NOT NULL UNIQUE,
+    descr VARCHAR(250));
+
 CREATE TABLE kwdial (
     id SMALLINT PRIMARY KEY,
     kw VARCHAR(20) NOT NULL UNIQUE,
@@ -97,6 +102,13 @@ CREATE TABLE kwxref (
     descr VARCHAR(255));
 
 
+CREATE TABLE chr(
+    entr INT PRIMARY KEY,
+    bushu SMALLINT,
+    strokes SMALLINT,
+    freq SMALLINT,
+    grade SMALLINT);
+--ALTER TABLE chr ADD CONSTRAINT chr_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE entr (
     id SERIAL NOT NULL PRIMARY KEY,
@@ -122,6 +134,8 @@ CREATE SEQUENCE seq_jmnedict	-- JMnedict seq numbers.
    OWNED BY entr.seq;
 CREATE SEQUENCE seq_examples	-- Examples file seq numbers.
    OWNED BY entr.seq;
+CREATE SEQUENCE seq_kanjidic	-- Kanjidic file seq numbers.
+   OWNED BY entr.seq;
 CREATE SEQUENCE seq		-- Other seq numbers.
    OWNED BY entr.seq;
 
@@ -146,7 +160,6 @@ CREATE FUNCTION entr_seqdef() RETURNS trigger AS $entr_seqdef$
 
 CREATE TRIGGER entr_seqdef BEFORE INSERT ON entr
     FOR EACH ROW EXECUTE PROCEDURE entr_seqdef();
-
 
 
 CREATE TABLE rdng (
@@ -250,6 +263,16 @@ CREATE TABLE editor (
 --CREATE INDEX editor_email ON editor(email);
 --CREATE UNIQUE INDEX editor_name ON editor(name);
 
+CREATE TABLE cinf(
+    entr INT NOT NULL,
+    kw SMALLINT NOT NULL,
+    value VARCHAR(50) NOT NULL,
+    mctype VARCHAR(50) NOT NULL DEFAULT(''),
+    PRIMARY KEY (entr,kw,value,mctype));
+--CREATE INDEX cinf_kw ON cinf(kw);
+--CREATE INDEX cinf_val ON cinf(value);
+--ALTER TABLE cinf ADD CONSTRAINT chr_entr_fkey FOREIGN KEY (entr) REFERENCES chr(entr) ON DELETE CASCADE ON UPDATE CASCADE;
+--ALTER TABLE cinf ADD CONSTRAINT chr_kw_fkey FOREIGN KEY (kw) REFERENCES kwcinf(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE dial (
     entr INT NOT NULL,
@@ -370,4 +393,13 @@ CREATE TABLE xresolv (
 --CREATE INDEX xresolv_kanj ON xresolv(ktxt);
 --ALTER TABLE xresolv ADD CONSTRAINT xresolv_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE xresolv ADD CONSTRAINT xresolv_typ_fkey FOREIGN KEY (typ) REFERENCES kwxref(id);
+
+CREATE TABLE kresolv (
+    entr INT NOT NULL,
+    kw SMALLINT NOT NULL,
+    value VARCHAR(250),
+    PRIMARY KEY(entr,kw,value));
+--ALTER TABLE kresolv ADD CONSTRAINT xresolv_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
+--ALTER TABLE kresolv ADD CONSTRAINT kresolv_kw_fkey FOREIGN KEY (kw) REFERENCES kwcinf(id);
+
 

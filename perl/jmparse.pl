@@ -114,10 +114,10 @@ use jmdict; use jmdictpgi; use kwstatic;
 
         die "No corpus id available, rerun with -s option.\n" if (!$::Corpus->{id});
 
-	  # $cntr counts the number of entries parsed.  The 1400 below was 
+	  # $cntr counts the number of entries parsed.  The 1550 below was 
 	  # picked to procude about 80 dots in the "progress bar" for a full
 	  # jmdict.xml file.
-	if (!($::cntr % 1500)) { print STDERR "."; } 
+	if (!($::cntr % 1550)) { print STDERR "."; } 
 	$::cntr += 1;
 
 	  # Get the entry's seq number.  jmnedict won't have a <ent_seq> element
@@ -398,8 +398,6 @@ use jmdict; use jmdictpgi; use kwstatic;
 	$s->{_dial} = [];
 	foreach $i (@$dial) {
 	    $txt = $i->text;
-	    if (substr ($txt, -1) eq ":") { $txt = substr ($txt, 0, -1); }
-	    else { print $::Flog "Seq $::Seq: missing dialect colon: '$txt'\n"; }
 	    if (!($kw = $::JM2ID{DIAL}{$txt})) {
 		print $::Flog "Seq $::Seq: unknown dial text: '$txt'\n";
 		next; }

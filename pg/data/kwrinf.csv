@@ -2,7 +2,6 @@
 2	ok	out-dated or obsolete kana usage
 3	ik	word containing irregular kana usage
 4	uK	word usually written using kanji alone
-
 103	name	reading used only in names (nanori)
 104	rad	reading used as name of radical
 105	jouyou	approved reading for jouyou kanji
@@ -11,5 +10,4 @@
 129	kan	on-yomi, kan
 130	go	on-yomi, go
 131	tou	on-yomi, tou
-132	kanyou	on-yomi, kan'you
-
+132	kanyou	on-yomi, kan\'you

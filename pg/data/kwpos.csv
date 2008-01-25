@@ -6,8 +6,8 @@
 6	adv	adverb (fukushi)
 8	adv-to	adverb taking the `to' particle
 9	aux	auxiliary
-54	aux-adj	auxiliary adjective
-10	aux-v	auxiliary verb
+10	aux-adj	auxiliary adjective
+11	aux-v	auxiliary verb
 12	conj	conjunction
 13	exp	Expressions (phrases, clauses, etc.)
 14	int	interjection (kandoushi)
@@ -41,10 +41,12 @@
 46	vs	noun or participle which takes the aux. verb suru
 47	vs-s	suru verb - special class
 48	vs-i	suru verb - irregular
-49	vz	zuru verb - (alternative form of -jiru verbs)
+49	vz	Ichidan verb - zuru verb (alternative form of -jiru verbs)
 50	vt	transitive verb
 51	ctr	counter
 52	vn	irregular nu verb
+53	v4r	Yondan verb with `ru' ending (archaic)
+55	v5z	Godan verb with `zu' ending
 181	surname	family or surname
 182	place	place name
 183	unclass	unclassified name

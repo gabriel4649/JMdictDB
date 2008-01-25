@@ -56,11 +56,22 @@ use jmdict;
 	my ($id, $kw, $descr, $rec);
 	open (F, $kwfile) || die ("mkkwmod.pl: unable to open file $kwfile: $!\n");
 	while (<F>) {
+	    chomp;
 	    next if (/^\s*(#.*)?$/o);	# Skip blank and comment lines.
 	    ($id, $kw, $descr) = split ("\t", $_);
-	    $rec = {id=>$id, kw=>$kw, descr=>$descr};
+	    $rec = {id=>$id, kw=>$kw, descr=>dequote($descr)};
 	    $KW->{$set}{$id} = $rec;  $KW->{$set}{$kw} = $rec; }
 	close F; }
+
+    sub dequote { my ($s) = @_;
+	# If a descr text contains a double quote character (") then
+	# it must be doubled in the cvs file text and the entire
+	# string quoted (in order to remain a valid csv file).  This
+	# function de-quotes such text.
+	if (!$s or (substr ($s, 0, 1) ne "\"") or (substr ($s, -1, 1) ne "\"")) { return $s; }
+	$s = substr ($s, 1, -1);
+	$s =~ s/""/"/g;
+	return $s; }
 
     sub usage { my ($exitstat) = @_;
 	local (*F);

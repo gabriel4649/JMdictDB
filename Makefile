@@ -115,7 +115,7 @@ all:
 activate:
 	psql $(PG_HOST) $(PG_USER) $(PG_DB) -c 'SELECT 1' >/dev/null # Check existance.
 	psql $(PG_HOST) $(PG_USER) -d postgres -c 'drop database if exists $(DBOLD)'
-	psql $(PG_HOST) $(PG_USER) -d postgres -c 'alter database $(DBACT) rename to $(DBOLD)'
+	-psql $(PG_HOST) $(PG_USER) -d postgres -c 'alter database $(DBACT) rename to $(DBOLD)'
 	psql $(PG_HOST) $(PG_USER) -d postgres -c 'alter database $(DB) rename to $(DBACT)'
 
 #------ Load JMdict -----------------------------------------------------
@@ -199,7 +199,7 @@ kanjidic2.xml:
 	gzip -d kanjidic2.xml.gz
 
 kanjidic2.pgi: kanjidic2.xml 
-	cd python && python kdparse.py -o ../kanjidic2.pgi -l ../kanjidic2.log ../kanjidic2.xml 
+	cd python && python kdparse.py -g en -o ../kanjidic2.pgi -l ../kanjidic2.log ../kanjidic2.xml 
 
 kanjidic2.dmp: kanjidic2.pgi 
 	cd perl && perl jmload.pl $(JM_HOST) $(JM_USER) $(JM_DB) -o ../kanjidic2.dmp ../kanjidic2.pgi

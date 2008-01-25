@@ -1,4 +1,11 @@
 
+2008-01-25 10:07	smcgrawx@frxii.com
+
+	* perl/lib/kwstatic.pm [1.14]
+	* pg/drpindex.sql [1.11]
+	* pg/mkindex.sql [1.20]
+	Rebuilt due to changes in prerequisite files. {383}
+
 2008-01-25 08:36	smcgrawx@frxii.com
 
 	* Makefile [1.34]
@@ -7,10 +14,10 @@
 	Add -g option to kdparse command. {373}
 
 	* perl/jmparse.pl [1.41]
-	Adjust progress bar divisor since number of entries in jmdict file
-	  has grown. {382}
 	JMdict XML file format changed, dialect now specified using an
 	  entity. {374}
+	Adjust progress bar divisor since number of entries in jmdict file
+	  has grown. {382}
 
 	* perl/lib/jmdictxml.pm [1.19]
 	JMdict XML file format changed, dialect now specified using an
@@ -38,10 +45,10 @@
 	  entr_dfrm_fkey constraint.  We don't want to accidently delete a
 	  revised current entry as the result of thoughtlessly deleting a
 	  superceeded entry. {367}
-	In table chr, add column 'uni' because pg has no builtin utf8->uni
-	  codepoint function. {370}
 	Add a seq for 'test" entries (to avoid mucking up any of the other
 	  seq's.)  This presumes the addition of a "test" src in kwsrc. {365}
+	In table chr, add column 'uni' because pg has no builtin utf8->uni
+	  codepoint function. {370}
 	Fix: In table kresolv, fix typo in 'kresolv_entr_fkey' constraint.
 	  {368}
 	In table kresolv, reduce size of column 'value'. {369}
@@ -228,11 +235,11 @@
 	* perl/lib/tal/edform.tal [1.8]
 	Move the Appove/Reject selector from edconf page back to edform page.
 	  {323}
+	Add a "delete entry" checkbox. {326}
+	Open help links in different target page. {325}
 	Added some missing help links. {324}
 	Adjust for the changes to tables entr and hist in pg/mktables.sql.
 	  {306}
-	Add a "delete entry" checkbox. {326}
-	Open help links in different target page. {325}
 	Pass "isdelete" parameter to TAL file to simplify setting the "delete
 	  entry" checkbox default. {314}
 
@@ -268,9 +275,9 @@
 
 	* pg/data/kwstat.csv [1.3]
 	Removed "obsolete" keyword {334}
-	"reject" keyword value changed from 8 to 6. {335}
 	Remove the "approval pending" statuses.  Pending status now
 	  maintained as a boolean column in entr table. {310}
+	"reject" keyword value changed from 8 to 6. {335}
 
 	* pg/mktables.sql [1.28]
 	Table entr: added new columns dfrm, unap. {304}
@@ -398,8 +405,8 @@
 	  {284}
 
 	* perl/lib/jmdictpgi.pm [1.10]
-	Add function wrcorp(). {287}
 	Make function pout() use function pgesc(). {289}
+	Add function wrcorp(). {287}
 	Move function pgesc() from jmparse.pl to jmdictpgi.pm. {288}
 
 	* perl/lib/kwstatic.pm [1.11]
@@ -511,11 +518,11 @@
 	  {232}
 
 	* Makefile [1.26]
+	Improve parameterization. {252}
+	Use xresolv.pl rather than xresolv.sql to resolve xrefs. {251}
 	Fix: Previous version did not use same parameters when running perl
 	  commands as it used for psql commands when non-default values were
 	  used. {253}
-	Use xresolv.pl rather than xresolv.sql to resolve xrefs. {251}
-	Improve parameterization. {252}
 
 	* doc/schema.dia [1.8]
 	* doc/schema.odt [1.8]
@@ -705,10 +712,10 @@
 	* pg/mktables.sql [1.25]
 	Add a functional index using lower() on gloss.txt to provide fast
 	  case-insensitive "=" search. {204}
-	Add varchar_pattern_ops indexes on kanj.txt, rdng.txt to provide fast
-	  LIKE search. {207}
 	Add varchar_pattern_ops indexes on gloss.txt to provide fast case-
 	  insensitive LIKE search. {208}
+	Add varchar_pattern_ops indexes on kanj.txt, rdng.txt to provide fast
+	  LIKE search. {207}
 
 	* web/cgi/edsubmit.pl [1.10]
 	Generate url to added entry with a corpus spec. {214}
@@ -848,9 +855,9 @@
 	* pg/mkviews.sql [1.21]
 	Delete views eksum, xrefesum. {189}
 	Change view hdwds to return entr.* rather than only entr.id. {167}
+	Add new view essum. {166}
 	Change view esum to get rdng and kanj strings from join on view
 	  hdwds, rather than generating them independently. {162}
-	Add new view essum. {166}
 
 	* pg/xresolv.sql [1.11]
 	Fix: Missing semi colon that causes syntax error when exceuted. {176}
@@ -957,10 +964,10 @@
 	* perl/lib/jmdict.pm [1.27]
 	Removed function get_seq() since addentr() no longer uses it per
 	  chgid-133. {139}
-	In function addentr() call setkeys() to set all the key values rather
-	  than doing it ourself. {138}
 	In function addentr(), don't assign a 'seq' value, leave it NULL and
 	  rely on the new entr table insert trigger to set it. {133}
+	In function addentr() call setkeys() to set all the key values rather
+	  than doing it ourself. {138}
 
 	* perl/lib/tal/edconf.tal [1.8]
 	Adjust layout of entr data to match current entr.tal {137}
@@ -1021,12 +1028,12 @@
 	  requiring the symbolic entr.id values used previously. {126}
 
 	* perl/lib/jmdictpgi.pm [1.7]
-	Make wrentr() write fixed entr.id numbers rather the symbolic form
-	  previously used. {125}
 	In finalize(), add additional parameter that will cause copy commands
 	  in output file to be wrapped in a transaction so that if anything
 	  fails when loading the file, nothing will be changed in the
 	  database. {129}
+	Make wrentr() write fixed entr.id numbers rather the symbolic form
+	  previously used. {125}
 
 	* perl/lib/tal/entr.tal [1.12]
 	Changed to allow display of entry even if there are no glosses in
@@ -1077,13 +1084,13 @@
 	  appears when running on *nix machines but nor MS Windows. {107}
 
 	* perl/lib/jbparser.yp [1.4]
+	Add new function qcleanup() like gcleanup but for quoted strings.
+	  {114}
+	In function gcleanup() reduce multiple WS characters to a single one.
+	  {113}
 	When creating lsrc and gloss records, make sure all fields are
 	  created even if they have default values (e.g. lang and ginf in
 	  gloss, and lang, part, and wasei in lsrc.) {112}
-	In function gcleanup() reduce multiple WS characters to a single one.
-	  {113}
-	Add new function qcleanup() like gcleanup but for quoted strings.
-	  {114}
 
 	* perl/lib/jmdict.pm [1.26]
 	Minor clarification to comments in filt(). {110}
@@ -1315,9 +1322,9 @@
 2007-05-22 09:19	smcgrawx@frxii.com
 
 	* Makefile [1.15]
-	Fix: Error in mv command of target "examples.txt". {62}
 	Fix: Examples file at Monash ftp site has extension ".utf", not
 	  ".utf8". {59}
+	Fix: Error in mv command of target "examples.txt". {62}
 
 	* perl/exparse.pl [1.5]
 	Fix: Was failing to set ginf column value in gloss table output. {64}
@@ -1349,10 +1356,10 @@
 	  things the old way. {53}
 
 	* README.txt [1.10]
-	Rewrite the install section based on using Makefile (which I have
-	  verified is useable on both Unix and Windows). {49}
 	Update the documentation for the schema changes related to jmdict dtd
 	  1.06 and gloss tags. {44}
+	Rewrite the install section based on using Makefile (which I have
+	  verified is useable on both Unix and Windows). {49}
 
 	* doc/Makefile [1.1]
 	* doc/README.txt [1.1]

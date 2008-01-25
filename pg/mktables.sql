@@ -104,6 +104,7 @@ CREATE TABLE kwxref (
 
 CREATE TABLE chr(
     entr INT PRIMARY KEY,
+    uni INT NOT NULL UNIQUE,
     bushu SMALLINT,
     strokes SMALLINT,
     freq SMALLINT,
@@ -125,7 +126,7 @@ CREATE TABLE entr (
 --CREATE INDEX entr_unap ON entr(unap) WHERE unap;
 --ALTER TABLE entr ADD CONSTRAINT entr_src_fkey FOREIGN KEY (src) REFERENCES kwsrc(id);
 --ALTER TABLE entr ADD CONSTRAINT entr_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
---ALTER TABLE entr ADD CONSTRAINT entr_dfrm_fkey FOREIGN KEY (dfrm) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;;
+--ALTER TABLE entr ADD CONSTRAINT entr_dfrm_fkey FOREIGN KEY (dfrm) REFERENCES entr(id) ON UPDATE CASCADE;
 
 CREATE SEQUENCE seq_jmdict	-- JMdict seq numbers.
    INCREMENT 10 MINVALUE 1000000 MAXVALUE 8999999 
@@ -136,7 +137,9 @@ CREATE SEQUENCE seq_examples	-- Examples file seq numbers.
    OWNED BY entr.seq;
 CREATE SEQUENCE seq_kanjidic	-- Kanjidic file seq numbers.
    OWNED BY entr.seq;
-CREATE SEQUENCE seq		-- Other seq numbers.
+CREATE SEQUENCE seq_test	-- Seq numbers for test entries.
+   OWNED BY entr.seq;
+CREATE SEQUENCE seq		-- Seq numbers for all other src's.
    OWNED BY entr.seq;
 
 CREATE FUNCTION entr_seqdef() RETURNS trigger AS $entr_seqdef$
@@ -229,7 +232,7 @@ CREATE TABLE hist (
     hist SMALLINT NOT NULL CHECK(hist>0),
     stat SMALLINT NOT NULL,
     edid INT,
-    dt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    dt TIMESTAMP NOT NULL DEFAULT NOW(),
     name VARCHAR(250),
     email VARCHAR(250),
     diff TEXT,
@@ -397,9 +400,9 @@ CREATE TABLE xresolv (
 CREATE TABLE kresolv (
     entr INT NOT NULL,
     kw SMALLINT NOT NULL,
-    value VARCHAR(250),
+    value VARCHAR(50) NOT NULL,
     PRIMARY KEY(entr,kw,value));
---ALTER TABLE kresolv ADD CONSTRAINT xresolv_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
+--ALTER TABLE kresolv ADD CONSTRAINT kresolv_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE kresolv ADD CONSTRAINT kresolv_kw_fkey FOREIGN KEY (kw) REFERENCES kwcinf(id);
 
 

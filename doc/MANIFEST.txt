@@ -54,6 +54,7 @@ pg/reload.sql.................Execute scripts to initialze database and create s
 pg/syncseq.sql................Set seqence numbers after jmdict load.
 pg/data/......................Keyword data
 pg/data/README.txt............General information.
+pg/data/kwcinf.csv............Kanjidic keywords.
 pg/data/kwdial.csv............Dialect keywords.
 pg/data/kwfld.csv.............Field keywords.
 pg/data/kwfreq.csv............Frequency-of-use (prio) keywords.

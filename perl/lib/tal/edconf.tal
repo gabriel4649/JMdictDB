@@ -82,7 +82,7 @@
 	  <span tal:if="not:eq: string:1 r/_RESTR" tal:omit-tag="">
 	    <span tal:repeat="z r/_RESTR" tal:omit-tag="">
 	      <span tal:if="not:repeat/start" tal:omit-tag="">,</span>
-	      <span tal:replace="z/txt"/>
+	      <span tal:replace="z"/>
 	      </span>
 	    </span>)
 	  </span>
@@ -101,7 +101,7 @@
 	    <span class="stag" tal:if="s/_STAG">
 	      (<span tal:if="s/_STAG" tal:repeat="z s/_STAG" tal:omit-tag="">
 		<span tal:if="not:repeat/start" tal:omit-tag="">,</span>
-		<span tal:replace="z/txt" tal:omit-tag="">stag-restr</span>
+		<span tal:replace="z" tal:omit-tag="">stag-restr</span>
 		</span> only)
 	      </span>
 	    <span class="pos" tal:if="s/_pos">
@@ -207,7 +207,7 @@
         </span>
 
       <hr/>
-      <form action="edsubmit.pl" method="get">
+      <form action="edsubmit.pl" tal:attributes="method method">
 	<input type="hidden" name="svc" tal:if="true:svc" tal:attributes="value svc"/>
 	<input type="hidden" name="entr" value="${serialized}"/>
 	<input type="Submit" value="Submit"/> 

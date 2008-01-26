@@ -25,7 +25,7 @@ use strict; use warnings;
 use CGI; use DBI; 
 use Petal; use Petal::Utils; 
 
-use lib ("../lib", "./lib", "../perl/lib");
+use lib ("../lib", "./lib", "../perl/lib", "../../perl/lib");
 use jmdict; use jmdicttal; use jmdictcgi;
 
 $|=1;

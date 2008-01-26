@@ -25,7 +25,7 @@ use strict; use warnings;
 use Cwd; use CGI; use Encode; use utf8; use DBI; 
 use Petal; use Petal::Utils (':all'); 
 
-use lib ("../lib", "./lib", "../perl/lib");
+use lib ("../lib", "./lib", "../perl/lib", "../../perl/lib");
 use jmdict; use jmdicttal; use jmdictcgi;
 
 $|=1;
@@ -53,7 +53,7 @@ $|=1;
 	set_editable_flag ($entries);
 
 	$tmpl = new Petal (file=>find_in_inc("tal")."/tal/entr.tal", 
-			   decode_charset=>'utf-8', output=>'HTML' );
+			   decode_charset=>'utf-8', output=>'HTML');
 	print $tmpl->process (entries=>$entries, svc=>$svc, dbg=>$::Debug); }
 
     sub errors_page { my ($errs) = @_;

@@ -8,7 +8,7 @@
 </head>
 <body class="srchfrm">
   <h1>JMdict Search</h1>
-  <form method="get" action="srchres.pl" name="srchres">
+  <form action="srchres.pl" name="srchres" tal:attributes="method method">
     <table class="form">
       <tr>
 	<td>

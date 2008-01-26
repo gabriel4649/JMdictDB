@@ -8,7 +8,7 @@
 </head>
 <body class="edform">
 <h1>JMdict Entry Edit Form</h1>
-<form method="get" action="edconf.pl" name="edconf">
+<form action="edconf.pl" name="edconf" tal:attributes="method method">
   <table class="form">
     <tbody>
       <tr>

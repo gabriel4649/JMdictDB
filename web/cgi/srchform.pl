@@ -25,7 +25,7 @@ use strict; use warnings;
 use Cwd; use CGI; use Encode; use utf8; use DBI; 
 use Petal; use Petal::Utils; 
 
-use lib ("../lib", "./lib", "../perl/lib");
+use lib ("../lib", "./lib", "../perl/lib", "../../perl/lib");
 use jmdict; use jmdicttal; use jmdictcgi;
 
 $|=1;
@@ -63,10 +63,10 @@ binmode (STDOUT, ":utf8");
 		push (@freq, $kw."2"); } }
 
 	$tmpl = new Petal (file=>find_in_inc("tal")."/tal/srchform.tal", 
-			   decode_charset=>'utf-8', output=>'HTML' );
+			   decode_charset=>'utf-8', output=>'HTML');
 	print $tmpl->process ({pos=>$pos, misc=>$misc, stat=>$stat, freq=>\@freq,
 				rinf=>\@rinf, kinf=>\@kinf, fld=>\@fld, src=>$src,
-				svc=>$svc});
+				svc=>$svc, method=>"get"});
 	$dbh->disconnect; }
 
     sub reshape { my ($array, $ncols, $default) = @_;

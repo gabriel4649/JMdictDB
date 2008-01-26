@@ -25,7 +25,7 @@ use strict; use warnings;
 use Cwd; use CGI; use Encode; use utf8; use DBI; 
 use Petal; use Petal::Utils; 
 
-use lib ("../lib", "./lib", "../perl/lib");
+use lib ("../lib", "./lib", "../perl/lib", "../../perl/lib");
 use jmdict; use jmdicttal; use jmdictfmt; use jmdictcgi;
 
 $|=1;
@@ -66,7 +66,8 @@ binmode (STDOUT, ":utf8");
 			   decode_charset=>'utf-8', output=>'HTML' );
 	print $tmpl->process ({e=>$entr, ktxt=>$ktxt, rtxt=>$rtxt, stxt=>$stxt,
 			       srcs=>$srcs, svc=>$svc, is_editor=>1,
-			       isdelete=>($entr->{stat}==$::KW->{STAT}{D}{id}?1:undef)}); }
+			       isdelete=>($entr->{stat}==$::KW->{STAT}{D}{id}?1:undef),
+			       method=>"get"}); }
 
     sub errors_page { my ($errs) = @_;
 	my $err_details = join ("\n    ", @$errs);

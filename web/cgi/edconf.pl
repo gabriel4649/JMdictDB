@@ -26,7 +26,7 @@ use CGI; use Encode; use DBI;
 use Petal; use Petal::Utils; 
 use POSIX qw(strftime);
 
-use lib ("../lib", "./lib", "../perl/lib");
+use lib ("../lib", "./lib", "../perl/lib", "../../perl/lib");
 use jmdict; use jmdictcgi; use jmdicttal; use jbparser;
 
 $|=1;
@@ -139,7 +139,7 @@ binmode (STDOUT, ":utf8");
 			   decode_charset=>'utf-8', output=>'HTML' );
 	    print $tmpl->process (entries=>$entrs, chklist=>$chklist, 
 				is_editor=>1, svc=>$svc, disp=>$disp,
-				serialized=>$serialized); }
+				method=>"post", serialized=>$serialized); }
 	else { errors_page (\@errs); }
 	$dbh->disconnect if ($dbh); } 
 

@@ -25,7 +25,7 @@ use strict; use warnings;
 use Cwd; use CGI; use Encode 'decode_utf8'; use DBI; 
 use Petal; use Petal::Utils; use Time::HiRes('time');
 
-use lib ("../lib", "./lib", "../perl/lib");
+use lib ("../lib", "./lib", "../perl/lib", "../../perl/lib");
 use jmdict; use jmdicttal; use jmdictcgi;
 
 $|=1;
@@ -97,7 +97,7 @@ binmode (STDOUT, ":utf8");
 	else {
 	    print "Content-type: text/html\n\n";
 	    $tmpl = new Petal (file=>find_in_inc("tal")."/tal/srchres.tal", 
-			   decode_charset=>'utf-8', output=>'HTML' );
+			   decode_charset=>'utf-8', output=>'HTML');
 	    print $tmpl->process (results=>$rs, svc=>$svc, dbg=>$::Debug); }
 	$dbh->disconnect; }
 
@@ -234,7 +234,7 @@ binmode (STDOUT, ":utf8");
 	    push (@whr, sprintf (
 		"(freq.kw=%s AND freq.value%s%s)", $kwid, $gacmp, $gaval)); }
 
-	# Now, @whr is a list of all the various freq ewlated conditions that 
+	# Now, @whr is a list of all the various freq related conditions that 
 	# were  selected.  We change it into a clause by connecting them all 
 	# with " OR".
 	$whr = "(" . join(" OR ", @whr) . ")";
@@ -245,11 +245,11 @@ binmode (STDOUT, ":utf8");
 	# Return two triples suitable for use by build-search_sql().  That function
 	# will build sql that effectivly "AND"s all the conditions (each specified 
 	# in a triple) given to it.  Our freq conditions applies to two tables 
-	# (rfreq and kfreq) and we want them OR'd not AND'd.  So we cheat and use a
-	# strisk in front of table name to tell build_search_sql() to use left joins
+	# (rfreq and kfreq) and we want them OR'd not AND'd.  So we cheat and use an
+	# asterisk in front of table name to tell build_search_sql() to use left joins
 	# rather than inner joins when refering to that condition's table.  This will
 	# result in the inclusion in the result set of rfreq rows that match the
 	# criteria, even if there are no matching kfreq rows (and visa versa). 
 	# The where clause refers to both the rfreq and kfreq tables, so need only
-	# be given in one constion triple rather than in each. 
+	# be given in one condition triple rather than in each. 
 	return (["freq",$whr,[]]); }

@@ -92,7 +92,7 @@
 #
 # A "reject" submission
 # ---------------------
-# We make a rejection by creating and entry with stat=R, unap=F,
+# We make a rejection by creating an entry with stat=R, unap=F,
 # and dfrm=NULL.  We delete the chain containing the parent
 # entry.   This may not go back to the root entry.
 #
@@ -106,7 +106,7 @@
 # disappearance of the edited entry's parents.
 # This situation is detected in merge_hist() when it tries 
 # to merge the history records from the parent entry.
-# Like other system that permit concurrent editing (e.g.
+# Like other systems that permit concurrent editing (e.g.
 # CVS) we report an edit conflict and require the user
 # to resolve conflicts manually by reediting the entry.
 # 
@@ -118,7 +118,8 @@
 # isolation.  The database state within the tranaction is
 # garaunteed not to change, and if someone else makes a 
 # conflicting change outside the transaction, the transaction
-# will fail with an error.
+# will fail with an error.  [However, this is not implemented
+#  yet].)
 
 @VERSION = (substr('$Revision$',11,-2), \
 	    substr('$Date$',7,-11));
@@ -128,7 +129,7 @@ use CGI; use Encode 'decode_utf8'; use DBI;
 use Petal; use Petal::Utils; 
 use POSIX ('strftime');
 
-use lib ("../lib", "./lib", "../perl/lib");
+use lib ("../lib", "./lib", "../perl/lib", "../../perl/lib");
 use jmdict; use jmdictcgi; use jmdicttal;
 
 $|=1;

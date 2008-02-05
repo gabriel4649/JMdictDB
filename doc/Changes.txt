@@ -1,4 +1,11 @@
 
+2008-02-04 21:30	smcgrawx@frxii.com
+
+	* perl/exparse.pl [1.11]
+	Update for new ID numbers in examples.txt file (see edict-jmdict
+	  mailing list thread, "Changes in Tanaka corpus format?",
+	  2008-01-28.) {390}
+
 2008-01-25 21:20	smcgrawx@frxii.com
 
 	* perl/lib/tal/edconf.tal [1.16]
@@ -50,10 +57,10 @@
 	Add -g option to kdparse command. {373}
 
 	* perl/jmparse.pl [1.41]
-	JMdict XML file format changed, dialect now specified using an
-	  entity. {374}
 	Adjust progress bar divisor since number of entries in jmdict file
 	  has grown. {382}
+	JMdict XML file format changed, dialect now specified using an
+	  entity. {374}
 
 	* perl/lib/jmdictxml.pm [1.19]
 	JMdict XML file format changed, dialect now specified using an
@@ -272,10 +279,10 @@
 	Move the Appove/Reject selector from edconf page back to edform page.
 	  {323}
 	Added some missing help links. {324}
+	Open help links in different target page. {325}
+	Add a "delete entry" checkbox. {326}
 	Adjust for the changes to tables entr and hist in pg/mktables.sql.
 	  {306}
-	Add a "delete entry" checkbox. {326}
-	Open help links in different target page. {325}
 	Pass "isdelete" parameter to TAL file to simplify setting the "delete
 	  entry" checkbox default. {314}
 
@@ -289,12 +296,12 @@
 	  differences were breaking some links. {327}
 
 	* perl/lib/tal/entr.tal [1.19]
-	Pass svc parameter along in href links. {321}
 	Display history items in table rather than ordered list. {322}
-	Create and use a "editable" flag on entries to simplify displaying of
-	  Edit button in entr.tal. {317}
 	Adjust for the changes to tables entr and hist in pg/mktables.sql.
 	  {306}
+	Create and use a "editable" flag on entries to simplify displaying of
+	  Edit button in entr.tal. {317}
+	Pass svc parameter along in href links. {321}
 
 	* perl/lib/tal/srchform.tal [1.13]
 	Fix: Make indenting more consistent with my standard style. {330}
@@ -311,9 +318,9 @@
 
 	* pg/data/kwstat.csv [1.3]
 	Removed "obsolete" keyword {334}
+	"reject" keyword value changed from 8 to 6. {335}
 	Remove the "approval pending" statuses.  Pending status now
 	  maintained as a boolean column in entr table. {310}
-	"reject" keyword value changed from 8 to 6. {335}
 
 	* pg/mktables.sql [1.28]
 	Table entr: added new columns dfrm, unap. {304}
@@ -441,9 +448,9 @@
 	  {284}
 
 	* perl/lib/jmdictpgi.pm [1.10]
+	Move function pgesc() from jmparse.pl to jmdictpgi.pm. {288}
 	Make function pout() use function pgesc(). {289}
 	Add function wrcorp(). {287}
-	Move function pgesc() from jmparse.pl to jmdictpgi.pm. {288}
 
 	* perl/lib/kwstatic.pm [1.11]
 	Remake due to changes in prerequisite files. {286}
@@ -626,10 +633,10 @@
 
 	* pg/mktables.sql [1.26]
 	Adjust for addition of reading/kanji to xrefs. {249}
-	Remove table xrefld and its trigger function. {256}
 	Disable the unique index on xref(entr,sens,typ,xentr,xsens) because
 	  the Examples file generates such xrefs (as does jmdict when there a
 	  sense has two xrefs to the same target.) {255}
+	Remove table xrefld and its trigger function. {256}
 	Add oids to table freq to that it will be editable in PgAdmin. {257}
 	Fix: Correct erroneous comment characters. {254}
 
@@ -718,10 +725,10 @@
 	* perl/showentr.pl [1.20]
 	Rework command line processing to allow a ".corpus" suffix on 'q...'
 	  arguments. {225}
-	Delete jmdict::Find() call since EntrList() can now use selection SQL
-	  directly. {224}
 	Change call of jmdict::add_xrefsums() since it no longer accepts the
 	  $tmptbl argument. {223}
+	Delete jmdict::Find() call since EntrList() can now use selection SQL
+	  directly. {224}
 
 	* web/cgi/edform.pl [1.7]
 	* web/cgi/entr.pl [1.12]
@@ -1064,12 +1071,12 @@
 	  requiring the symbolic entr.id values used previously. {126}
 
 	* perl/lib/jmdictpgi.pm [1.7]
+	Make wrentr() write fixed entr.id numbers rather the symbolic form
+	  previously used. {125}
 	In finalize(), add additional parameter that will cause copy commands
 	  in output file to be wrapped in a transaction so that if anything
 	  fails when loading the file, nothing will be changed in the
 	  database. {129}
-	Make wrentr() write fixed entr.id numbers rather the symbolic form
-	  previously used. {125}
 
 	* perl/lib/tal/entr.tal [1.12]
 	Changed to allow display of entry even if there are no glosses in
@@ -1358,9 +1365,9 @@
 2007-05-22 09:19	smcgrawx@frxii.com
 
 	* Makefile [1.15]
+	Fix: Error in mv command of target "examples.txt". {62}
 	Fix: Examples file at Monash ftp site has extension ".utf", not
 	  ".utf8". {59}
-	Fix: Error in mv command of target "examples.txt". {62}
 
 	* perl/exparse.pl [1.5]
 	Fix: Was failing to set ginf column value in gloss table output. {64}

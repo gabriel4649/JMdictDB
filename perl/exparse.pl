@@ -105,7 +105,8 @@ main: {
 	# Number of example pairs to process.  Program will terminate
 	#    after this many have been done.
 
-	my ($ln, $aln, $bln, $jtxt, $etxt, $kwds, $cntr, $idxlist, $entr, $eid); 
+	my ($ln, $aln, $bln, $jtxt, $etxt, $kwds, $cntr, $idxlist,
+	    $entr, $eid, $seq); 
 	while ($aln = <FIN>) {
 	    next if ($. < $begin);
 	    if ($. == 1 and (substr ($aln, 0, 1) eq "\x{FEFF}")) {
@@ -113,11 +114,15 @@ main: {
 	    next if (substr ($aln, 0, 2) ne "A:");
 	    $::Lnnum = $.; $bln = <FIN>;  ++$cntr;
 	    $aln =~ s/[\r\n]+$//;  $bln =~ s/[\r\n]+$//;
+	    $aln =~ s/\s*#\s*ID\s*=\s*(\d+)\s*$//;
+	    if (!$1) { msg ("No ID number found"); next; }
+	    else { $seq = $1; }
 	    ($jtxt, $etxt, $kwds) = eval { parsea ($aln); };
 	    if ($@) { chomp ($@); msg ($@); next; }
 	    $idxlist = eval { parseb ($bln, $jtxt); };
 	    if ($@) { chomp ($@); msg ($@); next; }
 	    $entr = mkentr ($jtxt, $etxt, $kwds, $corpid, $::Lnnum);
+	    $entr->{seq} = $seq;
 	    $entr->{_sens}[0]{_xrslv} = mkxrslv ($idxlist);
 	    if (!$::Opts{w}) {	# w--parse only option
 		setkeys ($entr, ++$eid); 
@@ -169,7 +174,8 @@ main: {
 	# Create an entry object to represent the "A" line text of the 
 	# example sentence.
 	my ($e, @kws, $snote);
-	$e = {src=>$corpid, stat=>$KWSTAT_A, seq=>$lnnum, unap=>0};
+	$e = {src=>$corpid, stat=>$KWSTAT_A, unap=>0};
+	$e->{srcnote} = "$lnnum";
 	if (@$kwds) {
 	    # Each @$kwds item is a 2-array consisting of the kw
 	    # id number and optionally a note string.

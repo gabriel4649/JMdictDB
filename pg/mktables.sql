@@ -319,7 +319,7 @@ CREATE TABLE lsrc (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
     lang SMALLINT NOT NULL DEFAULT 1,
-    txt VARCHAR(250),
+    txt VARCHAR(250) NOT NULL,
     part BOOLEAN DEFAULT FALSE,
     wasei BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (entr,sens,lang,txt));

@@ -64,7 +64,6 @@ pg/data/kwlang.csv............Language keywords.
 pg/data/kwmisc.csv............Sense misc keywords.
 pg/data/kwpos.csv.............Sense part-of-speech keywords.
 pg/data/kwrinf.csv............Reading info keywords.
-pg/data/kwsrc.csv.............Source keywords.
 pg/data/kwstat.csv............Status keywords.
 pg/data/kwxref.csv............Xref keywords.
 tools/........................Utility and build tools (used by makefiles, etc)

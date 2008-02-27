@@ -1,10 +1,12 @@
 
-2008-02-04 21:30	smcgrawx@frxii.com
+2008-02-26 12:09	smcgrawx@frxii.com
 
-	* perl/exparse.pl [1.11]
-	Update for new ID numbers in examples.txt file (see edict-jmdict
-	  mailing list thread, "Changes in Tanaka corpus format?",
-	  2008-01-28.) {390}
+	Tag: T0020 {393}
+
+	* pg/mktables.sql [1.31]
+	In table lsrc, column txt is part of table's primary key and is thus
+	  is forced to NOT NULL.  Add "NOT NULL" to column 'txt' to make this
+	  explicit. {392}
 
 2008-01-25 21:20	smcgrawx@frxii.com
 
@@ -755,10 +757,10 @@
 	* pg/mktables.sql [1.25]
 	Add a functional index using lower() on gloss.txt to provide fast
 	  case-insensitive "=" search. {204}
-	Add varchar_pattern_ops indexes on kanj.txt, rdng.txt to provide fast
-	  LIKE search. {207}
 	Add varchar_pattern_ops indexes on gloss.txt to provide fast case-
 	  insensitive LIKE search. {208}
+	Add varchar_pattern_ops indexes on kanj.txt, rdng.txt to provide fast
+	  LIKE search. {207}
 
 	* web/cgi/edsubmit.pl [1.10]
 	Generate url to added entry with a corpus spec. {214}
@@ -897,10 +899,10 @@
 
 	* pg/mkviews.sql [1.21]
 	Delete views eksum, xrefesum. {189}
-	Change view hdwds to return entr.* rather than only entr.id. {167}
-	Add new view essum. {166}
 	Change view esum to get rdng and kanj strings from join on view
 	  hdwds, rather than generating them independently. {162}
+	Change view hdwds to return entr.* rather than only entr.id. {167}
+	Add new view essum. {166}
 
 	* pg/xresolv.sql [1.11]
 	Fix: Missing semi colon that causes syntax error when exceuted. {176}
@@ -975,11 +977,11 @@
 	Remade due to changes in prerequisite mktables.sql. {153}
 
 	* pg/mktables.sql [1.23]
+	Create an insert trigger on table xref that will automatically assign
+	  value to column "xref". {151}
 	Add column "xref" to table xref, and change the PK from
 	  (entr,sens,xentr,xsens,typ) to (entr,sens,xref).  What was formerly
 	  the PK is now a unique index. {150}
-	Create an insert trigger on table xref that will automatically assign
-	  value to column "xref". {151}
 
 	* pg/mkviews.sql [1.20]
 	Adjust function adddup() and view xrefsum for change to xref table.
@@ -1013,8 +1015,8 @@
 	  rely on the new entr table insert trigger to set it. {133}
 
 	* perl/lib/tal/edconf.tal [1.8]
-	Allow editing of entr data seq, srcnote, notes. {135}
 	Adjust layout of entr data to match current entr.tal {137}
+	Allow editing of entr data seq, srcnote, notes. {135}
 
 	* perl/lib/tal/edform.tal [1.4]
 	Make 'src' selection a drop-down box. {136}
@@ -1071,12 +1073,12 @@
 	  requiring the symbolic entr.id values used previously. {126}
 
 	* perl/lib/jmdictpgi.pm [1.7]
-	Make wrentr() write fixed entr.id numbers rather the symbolic form
-	  previously used. {125}
 	In finalize(), add additional parameter that will cause copy commands
 	  in output file to be wrapped in a transaction so that if anything
 	  fails when loading the file, nothing will be changed in the
 	  database. {129}
+	Make wrentr() write fixed entr.id numbers rather the symbolic form
+	  previously used. {125}
 
 	* perl/lib/tal/entr.tal [1.12]
 	Changed to allow display of entry even if there are no glosses in

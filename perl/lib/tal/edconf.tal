@@ -1,4 +1,4 @@
-<html xmlns:tal="http://purl.org/petal/1.0/">
+﻿<html xmlns:tal="http://purl.org/petal/1.0/">
 <!--? Copyright (c) 2007 Stuart McGraw -->
 <!--? $Revision$ $Date$ -->
 <head>
@@ -25,7 +25,7 @@
 	should not be an amendment to, one of these entries.
 	<ol>
 	  <li tal:repeat="c chklist">
-	    <a tal:attributes="href string:entr.pl?svc=${svc}&q=${c/seq}.${c/src}" tal:content="c/seq">seq</span>
+	    <a tal:attributes="href string:entr.pl?svc=${svc}&q=${c/seq}.${c/src}" tal:content="c/seq">seq</a>
 	    <span tal:if="c/kanj" tal:content="c/kanj" tal:omit-tag="">kanji</span>
 	    <span tal:if="c/kanj">【</span>
 	    <span tal:content="c/rdng" tal:omit-tag="">reading</span>
@@ -105,7 +105,7 @@
 		</span> only)
 	      </span>
 	    <span class="pos" tal:if="s/_pos">
-	      [<span tal:replace="kwabbrs: 'POS' ',' s/_pos">pos</pos>]
+	      [<span tal:replace="kwabbrs: 'POS' ',' s/_pos">pos</span>]
 	      </span>
 	    <span class="misc" tal:if="s/_misc">
 	      [<span tal:replace="kwabbrs: 'MISC' ',' s/_misc">misc</span>]

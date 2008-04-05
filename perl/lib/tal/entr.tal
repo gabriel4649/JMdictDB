@@ -74,7 +74,7 @@
 		</span> only)
 	      </span>
 	    <span class="pos" tal:if="s/_pos">
-	      [<span tal:replace="kwabbrs: 'POS' ',' s/_pos">pos</pos>]
+	      [<span tal:replace="kwabbrs: 'POS' ',' s/_pos">pos</span>]
 	      </span>
 	    <span class="misc" tal:if="s/_misc">
 	      [<span tal:replace="kwabbrs: 'MISC' ',' s/_misc">misc</span>]

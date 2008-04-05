@@ -184,34 +184,47 @@ CREATE OR REPLACE VIEW xrefhw AS (
     LEFT JOIN kanj k ON k.entr=km.entr AND k.kanj=km.kanj);
 
 -------------------------------------------------------------
--- Provide a view of table "kanj" with additional column
--- that is <logical true> if the kanji would be marked as
--- "P" in edict.  According to 
---    http://www.csse.monash.edu.au/~jwb/edict_doc.html#IREF05
--- the "P" kanji are those tagged with "ichi1", "gai1",
--- "jdd1", "spec1", or "news1" (= "nf01"-"nf24") in JMdict.
+-- View "is_p" returns each row in table "entr" with an
+-- additional boolean column, "p" that if true indicates
+-- the entry meets the wwwjdic criteria for a "P" marking: 
+-- has a reading or a kanji with a freq tag of "inchi1", 
+-- "gai1", "spec1", or "news1" as documented at
+--   http://www.csse.monash.edu.au/~jwb/edict_doc.html#IREF05
 --
--- View prdng is identical except it is on  table "rdng"
--- instead of table "kanj".
+-- View pkfreq returned each row in table "kanj" with an
+-- additional boolean column, "p" that if true indicates
+-- the kanji meets the wwwjdic criteria for a "P" marking
+-- on its containing entry as described above.
+--
+-- View prfreq returned each row in table "rdng" with an
+-- additional boolean column, "p" that if true indicates
+-- the reading meets the wwwjdic criteria for a "P" marking
+-- on its containing entry as described above.
 -------------------------------------------------------------
+CREATE VIEW is_p AS (
+    SELECT e.*,
+	    EXISTS (
+		SELECT * FROM freq f
+       		WHERE f.entr=e.id AND
+		  -- ichi1, gai1, jdd1, spec1
+		  ((f.kw IN (1,2,3,4) AND f.value=1)))
+	    AS p
+    FROM entr e);
+
 CREATE VIEW pkfreq AS (
-    SELECT k.*, exists (
+    SELECT k.*, EXISTS (
         SELECT * FROM freq f
           WHERE f.entr=k.entr AND f.kanj=k.kanj AND
             -- ichi1, gai1, jdd1, spec1
-            ((f.kw IN (1,2,3,4) AND f.value=1) 
-            -- news1
-            OR (f.kw=5 AND f.value<=24))) AS p 
+            ((f.kw IN (1,2,3,4) AND f.value=1))) AS p 
     FROM kanj k);
  
-CREATE VIEW prdng AS (
-    SELECT r.*, exists (
+CREATE VIEW prfreq AS (
+    SELECT r.*, EXISTS (
         SELECT * FROM freq f
           WHERE f.entr=r.entr AND f.rdng=r.rdng AND
             -- ichi1, gai1, jdd1, spec1
-            ((f.kw IN (1,2,3,4) AND f.value=1) 
-            -- news1
-            OR (f.kw=5 AND f.value<=24))) AS p 
+            ((f.kw IN (1,2,3,4) AND f.value=1))) AS p 
     FROM rdng r);
 
 -------------------------------------------------------------
@@ -305,8 +318,8 @@ CREATE OR REPLACE FUNCTION children (tblname TEXT) RETURNS VOID AS $$
 	level INT := 0; rowcount INT;
     BEGIN
 	LOOP
-	    EXECUTE 'INSERT INTO '||tblname||'(id,root,lvl) (
-	        SELECT e.id,t.root,t.lvl+1 FROM entr e JOIN '||tblname||' t ON e.dfrm=t.id WHERE t.lvl='||level||')';
+	    EXECUTE 'INSERT INTO '||tblname||'(id,root,dfrm,lvl) (
+	        SELECT e.id,t.root,e.dfrm,t.lvl+1 FROM entr e JOIN '||tblname||' t ON e.dfrm=t.id WHERE t.lvl='||level||')';
 	    GET DIAGNOSTICS rowcount = ROW_COUNT;
 	    --raise notice 'rowcount=%, level=%', rowcount, level;
 	    EXIT WHEN rowcount = 0;
@@ -317,14 +330,25 @@ CREATE OR REPLACE FUNCTION children (tblname TEXT) RETURNS VOID AS $$
     END; $$ LANGUAGE 'plpgsql';
 
 CREATE OR REPLACE FUNCTION childrentbl (eid INT,tblname TEXT) RETURNS TEXT AS $$
+    -- Create a temporary table named 'tblname' populated with
+    -- information about entry 'eid' and all it's children (i.e.
+    -- entries linked by directly or recursively though column
+    -- 'dfrm').  Each row represents an entry and has the following
+    -- attributes:
+    --
+    --    id:   Id number of entry.
+    --    root: Id number of entry at tree root, i.e. 'eid'.
+    --    dfrm: 'dfrm' value of entry.
+    --    lvl:  Distance (in number 'dfrm' links) of entry from root.
+
     DECLARE
 	tbl TEXT;
     BEGIN
 	IF tblname IS NULL THEN tbl:='_tmpchld'; ELSE tbl:=tblname; END IF;
 	EXECUTE 'DROP TABLE IF EXISTS '||tbl;
-	EXECUTE 'CREATE TEMPORARY TABLE '||tbl||'(id INT, root INT, lvl INT)';
-	EXECUTE 'INSERT INTO '||tbl||'(id,root,lvl) '||
-		 '(SELECT id,id,0 FROM entr WHERE id='||eid||')';
+	EXECUTE 'CREATE TEMPORARY TABLE '||tbl||'(id INT, root INT, dfrm INT, lvl INT)';
+	EXECUTE 'INSERT INTO '||tbl||'(id,root,dfrm,lvl) '||
+		 '(SELECT id,id,dfrm,0 FROM entr WHERE id='||eid||')';
 	PERFORM children (tbl);
 	RETURN tbl;
     END; $$ LANGUAGE 'plpgsql';

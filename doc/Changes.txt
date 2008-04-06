@@ -1,4 +1,9 @@
 
+2008-04-05 19:29	smcgrawx@frxii.com
+
+	* pg/mkviews.sql [1.25]
+	Add "p" (wwwjdic P marker) column to view esum. {400}
+
 2008-04-05 15:45	smcgrawx@frxii.com
 
 	* perl/lib/tal/edconf.tal [1.17]
@@ -109,10 +114,10 @@
 	  entr_dfrm_fkey constraint.  We don't want to accidently delete a
 	  revised current entry as the result of thoughtlessly deleting a
 	  superceeded entry. {367}
-	Add a seq for 'test" entries (to avoid mucking up any of the other
-	  seq's.)  This presumes the addition of a "test" src in kwsrc. {365}
 	In table chr, add column 'uni' because pg has no builtin utf8->uni
 	  codepoint function. {370}
+	Add a seq for 'test" entries (to avoid mucking up any of the other
+	  seq's.)  This presumes the addition of a "test" src in kwsrc. {365}
 	Fix: In table kresolv, fix typo in 'kresolv_entr_fkey' constraint.
 	  {368}
 	In table kresolv, reduce size of column 'value'. {369}
@@ -148,9 +153,9 @@
 	Fix capitalization of "C.f." {361}
 
 	* pg/syncseq.sql [1.10]
+	Add support for kanjidic2 (incomplete). {360}
 	Get kwsrc id numbers by joining with kwsrc rather than hardwiring
 	  them as before. {362}
-	Add support for kanjidic2 (incomplete). {360}
 
 2007-10-05 00:58	smcgrawx@frxii.com
 
@@ -299,11 +304,11 @@
 	* perl/lib/tal/edform.tal [1.8]
 	Move the Appove/Reject selector from edconf page back to edform page.
 	  {323}
+	Add a "delete entry" checkbox. {326}
+	Open help links in different target page. {325}
 	Added some missing help links. {324}
 	Adjust for the changes to tables entr and hist in pg/mktables.sql.
 	  {306}
-	Add a "delete entry" checkbox. {326}
-	Open help links in different target page. {325}
 	Pass "isdelete" parameter to TAL file to simplify setting the "delete
 	  entry" checkbox default. {314}
 
@@ -318,9 +323,9 @@
 
 	* perl/lib/tal/entr.tal [1.19]
 	Pass svc parameter along in href links. {321}
-	Display history items in table rather than ordered list. {322}
 	Create and use a "editable" flag on entries to simplify displaying of
 	  Edit button in entr.tal. {317}
+	Display history items in table rather than ordered list. {322}
 	Adjust for the changes to tables entr and hist in pg/mktables.sql.
 	  {306}
 
@@ -339,9 +344,9 @@
 
 	* pg/data/kwstat.csv [1.3]
 	Removed "obsolete" keyword {334}
+	"reject" keyword value changed from 8 to 6. {335}
 	Remove the "approval pending" statuses.  Pending status now
 	  maintained as a boolean column in entr table. {310}
-	"reject" keyword value changed from 8 to 6. {335}
 
 	* pg/mktables.sql [1.28]
 	Table entr: added new columns dfrm, unap. {304}
@@ -532,8 +537,8 @@
 	Move function dbopen() from jmdict.pm to jmdictcgi.pm {276}
 
 	* web/cgi/srchform.pl [1.11]
-	Move function dbopen() from jmdict.pm to jmdictcgi.pm {276}
 	Fix: Fix "gkwrecs" typo that crept in during last edit. {275}
+	Move function dbopen() from jmdict.pm to jmdictcgi.pm {276}
 
 2007-08-22 14:52	smcgrawx@frxii.com
 
@@ -561,10 +566,10 @@
 	  {271}
 
 	* perl/xresolv.pl [1.2]
-	Add check for self-referential xrefs. {270}
 	Add -D (debugging) option. {269}
-	Get rid of #@$!^*%*! Microsoft utf8 BOM. {272}
 	Fix: Typo in debugging print statement {268}
+	Add check for self-referential xrefs. {270}
+	Get rid of #@$!^*%*! Microsoft utf8 BOM. {272}
 
 2007-08-21 17:22	smcgrawx@frxii.com
 
@@ -582,11 +587,11 @@
 	  {232}
 
 	* Makefile [1.26]
-	Improve parameterization. {252}
-	Use xresolv.pl rather than xresolv.sql to resolve xrefs. {251}
 	Fix: Previous version did not use same parameters when running perl
 	  commands as it used for psql commands when non-default values were
 	  used. {253}
+	Use xresolv.pl rather than xresolv.sql to resolve xrefs. {251}
+	Improve parameterization. {252}
 
 	* doc/schema.dia [1.8]
 	* doc/schema.odt [1.8]
@@ -613,14 +618,14 @@
 	  query returned 0 records. {234}
 	add_xrefsums(), grp_xrefs(), resolv_xref(): adjust for new xref
 	  columns kanj and rdng. {236}
+	Fix: fmt_jitem(): avoind an unitialized string warning if $slist
+	  param is undef. {235}
 	In class Tmptbl, method DESTROY(), wrap the sql execution in an eval
 	  in order to ignore errors.  Sometimes during normal program
 	  termination, the dbi handle goes away before the Tmptbl destructor
 	  is called resulting in a warning messge (safe to ignore because
 	  purpose of destructor is to delete the temp table, but it will be
 	  deleted automatically when the db connection is closed). {248}
-	Fix: fmt_jitem(): avoind an unitialized string warning if $slist
-	  param is undef. {235}
 
 	* perl/lib/jmdicted.pm [1.1]
 	Removed, no longer used anywhere. {229}
@@ -654,11 +659,11 @@
 
 	* pg/mktables.sql [1.26]
 	Adjust for addition of reading/kanji to xrefs. {249}
+	Add oids to table freq to that it will be editable in PgAdmin. {257}
 	Remove table xrefld and its trigger function. {256}
 	Disable the unique index on xref(entr,sens,typ,xentr,xsens) because
 	  the Examples file generates such xrefs (as does jmdict when there a
 	  sense has two xrefs to the same target.) {255}
-	Add oids to table freq to that it will be editable in PgAdmin. {257}
 	Fix: Correct erroneous comment characters. {254}
 
 	* pg/mkviews.sql [1.22]
@@ -996,11 +1001,11 @@
 	Remade due to changes in prerequisite mktables.sql. {153}
 
 	* pg/mktables.sql [1.23]
-	Create an insert trigger on table xref that will automatically assign
-	  value to column "xref". {151}
 	Add column "xref" to table xref, and change the PK from
 	  (entr,sens,xentr,xsens,typ) to (entr,sens,xref).  What was formerly
 	  the PK is now a unique index. {150}
+	Create an insert trigger on table xref that will automatically assign
+	  value to column "xref". {151}
 
 	* pg/mkviews.sql [1.20]
 	Adjust function adddup() and view xrefsum for change to xref table.
@@ -1028,10 +1033,10 @@
 	* perl/lib/jmdict.pm [1.27]
 	Removed function get_seq() since addentr() no longer uses it per
 	  chgid-133. {139}
-	In function addentr(), don't assign a 'seq' value, leave it NULL and
-	  rely on the new entr table insert trigger to set it. {133}
 	In function addentr() call setkeys() to set all the key values rather
 	  than doing it ourself. {138}
+	In function addentr(), don't assign a 'seq' value, leave it NULL and
+	  rely on the new entr table insert trigger to set it. {133}
 
 	* perl/lib/tal/edconf.tal [1.8]
 	Allow editing of entr data seq, srcnote, notes. {135}
@@ -1148,13 +1153,13 @@
 	  appears when running on *nix machines but nor MS Windows. {107}
 
 	* perl/lib/jbparser.yp [1.4]
-	Add new function qcleanup() like gcleanup but for quoted strings.
-	  {114}
-	In function gcleanup() reduce multiple WS characters to a single one.
-	  {113}
 	When creating lsrc and gloss records, make sure all fields are
 	  created even if they have default values (e.g. lang and ginf in
 	  gloss, and lang, part, and wasei in lsrc.) {112}
+	In function gcleanup() reduce multiple WS characters to a single one.
+	  {113}
+	Add new function qcleanup() like gcleanup but for quoted strings.
+	  {114}
 
 	* perl/lib/jmdict.pm [1.26]
 	Minor clarification to comments in filt(). {110}
@@ -1366,8 +1371,8 @@
 	  nwconf.tal. {69}
 
 	* perl/lib/jmdictxml.pm [1.14]
-	Add language ty (Tahitian) {70}
 	Add dialect 'kyu'. {73}
+	Add language ty (Tahitian) {70}
 
 	* perl/lib/kwstatic.pm [1.5]
 	Rebuild due to prerequisite file changes. {74}
@@ -1498,14 +1503,14 @@
 	  lang. {34}
 
 	* pg/mktables.sql [1.17]
-	Add >0 constraints to rdng.rdng, kanj.kanj, sens.sens, gloss.gloss,
-	  hist.hist.  This makes it a little easier to enforce consecutive
-	  numbering on these columns. {25}
 	Changes to track jmdict changes:  + Gloss tags: add column ginf to
 	  table gloss and new table  kwginf.  + <dial> now a child of
 	  <sense>: make table dial child table of sense.  + <lang> replaced
 	  by <lsource>.  Replace table "lang" with table "lsrc" and make
 	  child table of "sens".  New table "kwlsrc". {26}
+	Add >0 constraints to rdng.rdng, kanj.kanj, sens.sens, gloss.gloss,
+	  hist.hist.  This makes it a little easier to enforce consecutive
+	  numbering on these columns. {25}
 
 	* pg/mkviews.sql [1.17]
 	Adjust functions dupentr and delentr for the dial, lsrc, and gloss

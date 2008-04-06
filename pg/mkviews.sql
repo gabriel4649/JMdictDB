@@ -65,7 +65,8 @@ CREATE OR REPLACE VIEW esum AS (
 		    ORDER BY g.gloss) AS sg
 		ORDER BY entr,sens) AS gtxt
 	    FROM sens s WHERE s.entr=e.id ORDER BY s.sens) AS ss) AS gloss,
-	(SELECT COUNT(*) FROM sens WHERE sens.entr=e.id) AS nsens
+	(SELECT COUNT(*) FROM sens WHERE sens.entr=e.id) AS nsens,
+	(SELECT p FROM is_p WHERE is_p.id=e.id) AS p
     FROM entr e
     JOIN hdwds h on h.id=e.id);
     

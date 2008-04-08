@@ -1,4 +1,4 @@
-1	adj	adjective (keiyoushi)
+1	adj-i	adjective (keiyoushi)
 2	adj-na	adjectival nouns or quasi-adjectives (keiyodoshi)
 3	adj-no	nouns which may take the genitive case particle `no'
 4	adj-pn	pre-noun adjectival (rentaishi)
@@ -47,6 +47,8 @@
 52	vn	irregular nu verb
 53	v4r	Yondan verb with `ru' ending (archaic)
 55	v5z	Godan verb with `zu' ending
+56	adj-f	noun or verb acting prenominally
+57	adj	former adjective classification (being removed)
 181	surname	family or surname
 182	place	place name
 183	unclass	unclassified name

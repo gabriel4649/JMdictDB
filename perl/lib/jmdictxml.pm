@@ -164,7 +164,9 @@ our %JM2ID = (
 		'counter' => 51,
 		'irregular nu verb' => 52,
 		'Yondan verb with `ru\' ending (archaic)' => 53,
-		'Godan verb with `zu\' ending' => 54, 
+		'Godan verb with `zu\' ending' => 55, 
+		'noun or verb acting prenominally' => 56,
+		'former adjective classification (being removed)' => 57,
 
 		# JMnedict names
 		'family or surname' => 181,
@@ -186,7 +188,8 @@ our %JM2ID = (
 		'Tosa-ben' => 6,
 		'Touhoku-ben' => 7,
 		'Tsugaru-ben' => 8,
-		'Kyuushuu-ben' => 9, },
+		'Kyuushuu-ben' => 9,
+		'Ryukyu-ben' => 10, },
 	
 	LANG => {		# kwlang
 		'en' => 1,	# English

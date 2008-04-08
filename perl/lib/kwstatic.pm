@@ -11,7 +11,7 @@ BEGIN {
     use Exporter();
     our ($VERSION, @ISA, @EXPORT);
     @ISA = qw(Exporter);
-    @EXPORT   = qw($Kdws $KWGINF_equ $KWGINF_expl $KWGINF_id $KWGINF_lit $KWMISC_X $KWMISC_abbr $KWMISC_aphorism $KWMISC_arch $KWMISC_chn $KWMISC_col $KWMISC_derog $KWMISC_eK $KWMISC_fam $KWMISC_fem $KWMISC_hon $KWMISC_hum $KWMISC_id $KWMISC_m_sl $KWMISC_male $KWMISC_obs $KWMISC_obsc $KWMISC_poet $KWMISC_pol $KWMISC_proverb $KWMISC_quote $KWMISC_rare $KWMISC_sens $KWMISC_sl $KWMISC_uk $KWMISC_vulg $KWFREQ_gA $KWFREQ_gai $KWFREQ_ichi $KWFREQ_news $KWFREQ_nf $KWFREQ_spec $KWXREF_ant $KWXREF_cf $KWXREF_ex $KWXREF_kvar $KWXREF_pref $KWXREF_see $KWXREF_syn $KWXREF_uses $KWSTAT_A $KWSTAT_D $KWSTAT_N $KWSTAT_R $KWRINF_gikun $KWRINF_go $KWRINF_ik $KWRINF_jouyou $KWRINF_kan $KWRINF_kanyou $KWRINF_kun $KWRINF_name $KWRINF_ok $KWRINF_on $KWRINF_rad $KWRINF_tou $KWRINF_uK $KWKINF_ateji $KWKINF_iK $KWKINF_ik $KWKINF_io $KWKINF_oK $KWCINF_busy_people $KWCINF_crowley $KWCINF_deroo $KWCINF_four_corner $KWCINF_gakken $KWCINF_halpern_kkld $KWCINF_halpern_njecd $KWCINF_heisig $KWCINF_henshall $KWCINF_henshall3 $KWCINF_jf_cards $KWCINF_jis208 $KWCINF_jis212 $KWCINF_jis213 $KWCINF_kanji_in_ctx $KWCINF_kodansha_comp $KWCINF_korean_h $KWCINF_korean_r $KWCINF_misclass $KWCINF_moro $KWCINF_nelson_c $KWCINF_nelson_n $KWCINF_nelson_rad $KWCINF_oneill_kk $KWCINF_oneill_names $KWCINF_pinyin $KWCINF_s_h $KWCINF_sakade $KWCINF_sh_desc $KWCINF_sh_kk $KWCINF_skip $KWCINF_skip_mis $KWCINF_strokes $KWCINF_tutt_cards $KWFLD_Buddh $KWFLD_MA $KWFLD_comp $KWFLD_food $KWFLD_geom $KWFLD_ling $KWFLD_math $KWFLD_mil $KWFLD_physics $KWLANG_aa $KWLANG_ab $KWLANG_ae $KWLANG_af $KWLANG_ain $KWLANG_ak $KWLANG_am $KWLANG_an $KWLANG_ar $KWLANG_as $KWLANG_av $KWLANG_ay $KWLANG_az $KWLANG_ba $KWLANG_be $KWLANG_bg $KWLANG_bi $KWLANG_bm $KWLANG_bn $KWLANG_bo $KWLANG_br $KWLANG_bs $KWLANG_ca $KWLANG_ce $KWLANG_ch $KWLANG_co $KWLANG_cr $KWLANG_cs $KWLANG_cu $KWLANG_cv $KWLANG_cy $KWLANG_da $KWLANG_de $KWLANG_dv $KWLANG_dz $KWLANG_ee $KWLANG_el $KWLANG_en $KWLANG_eo $KWLANG_es $KWLANG_et $KWLANG_eu $KWLANG_fa $KWLANG_ff $KWLANG_fi $KWLANG_fj $KWLANG_fo $KWLANG_fr $KWLANG_fy $KWLANG_ga $KWLANG_gd $KWLANG_gl $KWLANG_gn $KWLANG_gu $KWLANG_gv $KWLANG_ha $KWLANG_he $KWLANG_hi $KWLANG_ho $KWLANG_hr $KWLANG_ht $KWLANG_hu $KWLANG_hy $KWLANG_hz $KWLANG_ia $KWLANG_id $KWLANG_ie $KWLANG_ig $KWLANG_ii $KWLANG_ik $KWLANG_io $KWLANG_is $KWLANG_it $KWLANG_iu $KWLANG_ja $KWLANG_jv $KWLANG_ka $KWLANG_kg $KWLANG_ki $KWLANG_kj $KWLANG_kk $KWLANG_kl $KWLANG_km $KWLANG_kn $KWLANG_ko $KWLANG_kr $KWLANG_ks $KWLANG_ku $KWLANG_kv $KWLANG_kw $KWLANG_ky $KWLANG_la $KWLANG_lb $KWLANG_lg $KWLANG_li $KWLANG_ln $KWLANG_lo $KWLANG_lt $KWLANG_lu $KWLANG_lv $KWLANG_mg $KWLANG_mh $KWLANG_mi $KWLANG_mk $KWLANG_ml $KWLANG_mn $KWLANG_mo $KWLANG_mr $KWLANG_ms $KWLANG_mt $KWLANG_my $KWLANG_na $KWLANG_nb $KWLANG_nd $KWLANG_ne $KWLANG_ng $KWLANG_nl $KWLANG_nn $KWLANG_no $KWLANG_nr $KWLANG_nv $KWLANG_ny $KWLANG_oc $KWLANG_oj $KWLANG_om $KWLANG_or $KWLANG_os $KWLANG_pa $KWLANG_pi $KWLANG_pl $KWLANG_ps $KWLANG_pt $KWLANG_qu $KWLANG_rm $KWLANG_rn $KWLANG_ro $KWLANG_ru $KWLANG_rw $KWLANG_sa $KWLANG_sc $KWLANG_sd $KWLANG_se $KWLANG_sg $KWLANG_sh $KWLANG_si $KWLANG_sk $KWLANG_sl $KWLANG_sm $KWLANG_sn $KWLANG_so $KWLANG_sq $KWLANG_sr $KWLANG_ss $KWLANG_st $KWLANG_su $KWLANG_sv $KWLANG_sw $KWLANG_ta $KWLANG_te $KWLANG_tg $KWLANG_th $KWLANG_ti $KWLANG_tk $KWLANG_tl $KWLANG_tn $KWLANG_to $KWLANG_tr $KWLANG_ts $KWLANG_tt $KWLANG_tw $KWLANG_ty $KWLANG_ug $KWLANG_uk $KWLANG_ur $KWLANG_uz $KWLANG_ve $KWLANG_vi $KWLANG_vo $KWLANG_wa $KWLANG_wo $KWLANG_xh $KWLANG_yi $KWLANG_yo $KWLANG_za $KWLANG_zh $KWLANG_zu $KWDIAL_ksb $KWDIAL_ktb $KWDIAL_kyb $KWDIAL_kyu $KWDIAL_osb $KWDIAL_std $KWDIAL_thb $KWDIAL_tsb $KWDIAL_tsug $KWPOS_adj $KWPOS_adj_na $KWPOS_adj_no $KWPOS_adj_pn $KWPOS_adj_t $KWPOS_adv $KWPOS_adv_to $KWPOS_aux $KWPOS_aux_adj $KWPOS_aux_v $KWPOS_company $KWPOS_conj $KWPOS_ctr $KWPOS_exp $KWPOS_fem $KWPOS_given $KWPOS_int $KWPOS_masc $KWPOS_n $KWPOS_n_adv $KWPOS_n_pref $KWPOS_n_suf $KWPOS_n_t $KWPOS_num $KWPOS_person $KWPOS_place $KWPOS_pref $KWPOS_product $KWPOS_prt $KWPOS_station $KWPOS_suf $KWPOS_surname $KWPOS_unclass $KWPOS_v1 $KWPOS_v4r $KWPOS_v5 $KWPOS_v5aru $KWPOS_v5b $KWPOS_v5g $KWPOS_v5k $KWPOS_v5k_s $KWPOS_v5m $KWPOS_v5n $KWPOS_v5r $KWPOS_v5r_i $KWPOS_v5s $KWPOS_v5t $KWPOS_v5u $KWPOS_v5u_s $KWPOS_v5uru $KWPOS_v5z $KWPOS_vi $KWPOS_vk $KWPOS_vn $KWPOS_vs $KWPOS_vs_i $KWPOS_vs_s $KWPOS_vt $KWPOS_vz); }
+    @EXPORT   = qw($Kdws $KWGINF_equ $KWGINF_expl $KWGINF_id $KWGINF_lit $KWMISC_X $KWMISC_abbr $KWMISC_aphorism $KWMISC_arch $KWMISC_chn $KWMISC_col $KWMISC_derog $KWMISC_eK $KWMISC_fam $KWMISC_fem $KWMISC_hon $KWMISC_hum $KWMISC_id $KWMISC_m_sl $KWMISC_male $KWMISC_obs $KWMISC_obsc $KWMISC_poet $KWMISC_pol $KWMISC_proverb $KWMISC_quote $KWMISC_rare $KWMISC_sens $KWMISC_sl $KWMISC_uk $KWMISC_vulg $KWFREQ_gA $KWFREQ_gai $KWFREQ_ichi $KWFREQ_news $KWFREQ_nf $KWFREQ_spec $KWXREF_ant $KWXREF_cf $KWXREF_ex $KWXREF_kvar $KWXREF_pref $KWXREF_see $KWXREF_syn $KWXREF_uses $KWSTAT_A $KWSTAT_D $KWSTAT_N $KWSTAT_R $KWRINF_gikun $KWRINF_go $KWRINF_ik $KWRINF_jouyou $KWRINF_kan $KWRINF_kanyou $KWRINF_kun $KWRINF_name $KWRINF_ok $KWRINF_on $KWRINF_rad $KWRINF_tou $KWRINF_uK $KWKINF_ateji $KWKINF_iK $KWKINF_ik $KWKINF_io $KWKINF_oK $KWCINF_busy_people $KWCINF_crowley $KWCINF_deroo $KWCINF_four_corner $KWCINF_gakken $KWCINF_halpern_kkld $KWCINF_halpern_njecd $KWCINF_heisig $KWCINF_henshall $KWCINF_henshall3 $KWCINF_jf_cards $KWCINF_jis208 $KWCINF_jis212 $KWCINF_jis213 $KWCINF_kanji_in_ctx $KWCINF_kodansha_comp $KWCINF_korean_h $KWCINF_korean_r $KWCINF_misclass $KWCINF_moro $KWCINF_nelson_c $KWCINF_nelson_n $KWCINF_nelson_rad $KWCINF_oneill_kk $KWCINF_oneill_names $KWCINF_pinyin $KWCINF_s_h $KWCINF_sakade $KWCINF_sh_desc $KWCINF_sh_kk $KWCINF_skip $KWCINF_skip_mis $KWCINF_strokes $KWCINF_tutt_cards $KWFLD_Buddh $KWFLD_MA $KWFLD_comp $KWFLD_food $KWFLD_geom $KWFLD_ling $KWFLD_math $KWFLD_mil $KWFLD_physics $KWLANG_aa $KWLANG_ab $KWLANG_ae $KWLANG_af $KWLANG_ain $KWLANG_ak $KWLANG_am $KWLANG_an $KWLANG_ar $KWLANG_as $KWLANG_av $KWLANG_ay $KWLANG_az $KWLANG_ba $KWLANG_be $KWLANG_bg $KWLANG_bi $KWLANG_bm $KWLANG_bn $KWLANG_bo $KWLANG_br $KWLANG_bs $KWLANG_ca $KWLANG_ce $KWLANG_ch $KWLANG_co $KWLANG_cr $KWLANG_cs $KWLANG_cu $KWLANG_cv $KWLANG_cy $KWLANG_da $KWLANG_de $KWLANG_dv $KWLANG_dz $KWLANG_ee $KWLANG_el $KWLANG_en $KWLANG_eo $KWLANG_es $KWLANG_et $KWLANG_eu $KWLANG_fa $KWLANG_ff $KWLANG_fi $KWLANG_fj $KWLANG_fo $KWLANG_fr $KWLANG_fy $KWLANG_ga $KWLANG_gd $KWLANG_gl $KWLANG_gn $KWLANG_gu $KWLANG_gv $KWLANG_ha $KWLANG_he $KWLANG_hi $KWLANG_ho $KWLANG_hr $KWLANG_ht $KWLANG_hu $KWLANG_hy $KWLANG_hz $KWLANG_ia $KWLANG_id $KWLANG_ie $KWLANG_ig $KWLANG_ii $KWLANG_ik $KWLANG_io $KWLANG_is $KWLANG_it $KWLANG_iu $KWLANG_ja $KWLANG_jv $KWLANG_ka $KWLANG_kg $KWLANG_ki $KWLANG_kj $KWLANG_kk $KWLANG_kl $KWLANG_km $KWLANG_kn $KWLANG_ko $KWLANG_kr $KWLANG_ks $KWLANG_ku $KWLANG_kv $KWLANG_kw $KWLANG_ky $KWLANG_la $KWLANG_lb $KWLANG_lg $KWLANG_li $KWLANG_ln $KWLANG_lo $KWLANG_lt $KWLANG_lu $KWLANG_lv $KWLANG_mg $KWLANG_mh $KWLANG_mi $KWLANG_mk $KWLANG_ml $KWLANG_mn $KWLANG_mo $KWLANG_mr $KWLANG_ms $KWLANG_mt $KWLANG_my $KWLANG_na $KWLANG_nb $KWLANG_nd $KWLANG_ne $KWLANG_ng $KWLANG_nl $KWLANG_nn $KWLANG_no $KWLANG_nr $KWLANG_nv $KWLANG_ny $KWLANG_oc $KWLANG_oj $KWLANG_om $KWLANG_or $KWLANG_os $KWLANG_pa $KWLANG_pi $KWLANG_pl $KWLANG_ps $KWLANG_pt $KWLANG_qu $KWLANG_rm $KWLANG_rn $KWLANG_ro $KWLANG_ru $KWLANG_rw $KWLANG_sa $KWLANG_sc $KWLANG_sd $KWLANG_se $KWLANG_sg $KWLANG_sh $KWLANG_si $KWLANG_sk $KWLANG_sl $KWLANG_sm $KWLANG_sn $KWLANG_so $KWLANG_sq $KWLANG_sr $KWLANG_ss $KWLANG_st $KWLANG_su $KWLANG_sv $KWLANG_sw $KWLANG_ta $KWLANG_te $KWLANG_tg $KWLANG_th $KWLANG_ti $KWLANG_tk $KWLANG_tl $KWLANG_tn $KWLANG_to $KWLANG_tr $KWLANG_ts $KWLANG_tt $KWLANG_tw $KWLANG_ty $KWLANG_ug $KWLANG_uk $KWLANG_ur $KWLANG_uz $KWLANG_ve $KWLANG_vi $KWLANG_vo $KWLANG_wa $KWLANG_wo $KWLANG_xh $KWLANG_yi $KWLANG_yo $KWLANG_za $KWLANG_zh $KWLANG_zu $KWDIAL_ksb $KWDIAL_ktb $KWDIAL_kyb $KWDIAL_kyu $KWDIAL_osb $KWDIAL_rkb $KWDIAL_std $KWDIAL_thb $KWDIAL_tsb $KWDIAL_tsug $KWPOS_adj $KWPOS_adj_f $KWPOS_adj_i $KWPOS_adj_na $KWPOS_adj_no $KWPOS_adj_pn $KWPOS_adj_t $KWPOS_adv $KWPOS_adv_to $KWPOS_aux $KWPOS_aux_adj $KWPOS_aux_v $KWPOS_company $KWPOS_conj $KWPOS_ctr $KWPOS_exp $KWPOS_fem $KWPOS_given $KWPOS_int $KWPOS_masc $KWPOS_n $KWPOS_n_adv $KWPOS_n_pref $KWPOS_n_suf $KWPOS_n_t $KWPOS_num $KWPOS_person $KWPOS_place $KWPOS_pref $KWPOS_product $KWPOS_prt $KWPOS_station $KWPOS_suf $KWPOS_surname $KWPOS_unclass $KWPOS_v1 $KWPOS_v4r $KWPOS_v5 $KWPOS_v5aru $KWPOS_v5b $KWPOS_v5g $KWPOS_v5k $KWPOS_v5k_s $KWPOS_v5m $KWPOS_v5n $KWPOS_v5r $KWPOS_v5r_i $KWPOS_v5s $KWPOS_v5t $KWPOS_v5u $KWPOS_v5u_s $KWPOS_v5uru $KWPOS_v5z $KWPOS_vi $KWPOS_vk $KWPOS_vn $KWPOS_vs $KWPOS_vs_i $KWPOS_vs_s $KWPOS_vt $KWPOS_vz); }
 
 our (@EXPORT);
 
@@ -315,11 +315,14 @@ our($KWDIAL_ktb) = 3;
 our($KWDIAL_kyb) = 4;
 our($KWDIAL_kyu) = 9;
 our($KWDIAL_osb) = 5;
+our($KWDIAL_rkb) = 10;
 our($KWDIAL_std) = 1;
 our($KWDIAL_thb) = 7;
 our($KWDIAL_tsb) = 6;
 our($KWDIAL_tsug) = 8;
-our($KWPOS_adj) = 1;
+our($KWPOS_adj) = 57;
+our($KWPOS_adj_f) = 56;
+our($KWPOS_adj_i) = 1;
 our($KWPOS_adj_na) = 2;
 our($KWPOS_adj_no) = 3;
 our($KWPOS_adj_pn) = 4;
@@ -586,6 +589,7 @@ our ($Kwds)   = do {
             },
     DIAL => {
               1 => { descr => "Tokyo-ben (std)", id => 1, kw => "std" },
+              10 => { descr => "Ryukyu-ben", id => 10, kw => "rkb" },
               2 => { descr => "Kansai-ben", id => 2, kw => "ksb" },
               3 => { descr => "Kantou-ben", id => 3, kw => "ktb" },
               4 => { descr => "Kyoto-ben", id => 4, kw => "kyb" },
@@ -599,6 +603,7 @@ our ($Kwds)   = do {
               kyb => 'fix',
               kyu => 'fix',
               osb => 'fix',
+              rkb => 'fix',
               std => 'fix',
               thb => 'fix',
               tsb => 'fix',
@@ -1117,7 +1122,7 @@ our ($Kwds)   = do {
               vulg     => 'fix',
             },
     POS  => {
-              1         => { descr => "adjective (keiyoushi)", id => 1, kw => "adj" },
+              1         => { descr => "adjective (keiyoushi)", id => 1, kw => "adj-i" },
               10        => { descr => "auxiliary adjective", id => 10, kw => "aux-adj" },
               11        => { descr => "auxiliary verb", id => 11, kw => "aux-v" },
               12        => { descr => "conjunction", id => 12, kw => "conj" },
@@ -1209,10 +1214,18 @@ our ($Kwds)   = do {
                              kw => "v4r",
                            },
               55        => { descr => "Godan verb with `zu' ending", id => 55, kw => "v5z" },
+              56        => { descr => "noun or verb acting prenominally", id => 56, kw => "adj-f" },
+              57        => {
+                             descr => "former adjective classification (being removed)",
+                             id => 57,
+                             kw => "adj",
+                           },
               6         => { descr => "adverb (fukushi)", id => 6, kw => "adv" },
               8         => { descr => "adverb taking the `to' particle", id => 8, kw => "adv-to" },
               9         => { descr => "auxiliary", id => 9, kw => "aux" },
               adj       => 'fix',
+              "adj-f"   => 'fix',
+              "adj-i"   => 'fix',
               "adj-na"  => 'fix',
               "adj-no"  => 'fix',
               "adj-pn"  => 'fix',
@@ -1368,6 +1381,7 @@ our ($Kwds)   = do {
   $a->{DIAL}{kyb} = $a->{DIAL}{4};
   $a->{DIAL}{kyu} = $a->{DIAL}{9};
   $a->{DIAL}{osb} = $a->{DIAL}{5};
+  $a->{DIAL}{rkb} = $a->{DIAL}{10};
   $a->{DIAL}{std} = $a->{DIAL}{1};
   $a->{DIAL}{thb} = $a->{DIAL}{7};
   $a->{DIAL}{tsb} = $a->{DIAL}{6};
@@ -1608,7 +1622,9 @@ our ($Kwds)   = do {
   $a->{MISC}{sl} = $a->{MISC}{21};
   $a->{MISC}{uk} = $a->{MISC}{22};
   $a->{MISC}{vulg} = $a->{MISC}{24};
-  $a->{POS}{adj} = $a->{POS}{1};
+  $a->{POS}{adj} = $a->{POS}{57};
+  $a->{POS}{"adj-f"} = $a->{POS}{56};
+  $a->{POS}{"adj-i"} = $a->{POS}{1};
   $a->{POS}{"adj-na"} = $a->{POS}{2};
   $a->{POS}{"adj-no"} = $a->{POS}{3};
   $a->{POS}{"adj-pn"} = $a->{POS}{4};

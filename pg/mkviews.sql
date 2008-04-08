@@ -44,6 +44,26 @@ CREATE OR REPLACE VIEW hdwds AS (
     WHERE (r.rdng=1 OR r.rdng IS NULL)
       AND (k.kanj=1 OR k.kanj IS NULL));
 
+-------------------------------------------------------------
+-- View "is_p" returns each row in table "entr" with an
+-- additional boolean column, "p" that if true indicates
+-- the entry meets the wwwjdic criteria for a "P" marking: 
+-- has a reading or a kanji with a freq tag of "ichi1", 
+-- "gai1", "spec1", or "news1" as documented at
+--   http://www.csse.monash.edu.au/~jwb/edict_doc.html#IREF05
+--
+-- See also views pkfreq and prfreq below.
+-------------------------------------------------------------
+CREATE VIEW is_p AS (
+    SELECT e.*,
+	    EXISTS (
+		SELECT * FROM freq f
+       		WHERE f.entr=e.id AND
+		  -- ichi1, gai1, jdd1, spec1
+		  ((f.kw IN (1,2,3,4) AND f.value=1)))
+	    AS p
+    FROM entr e);
+
 -----------------------------------------------------------
 -- Summarize each entry (one per row) with readings, kanji, 
 -- and sense/gloss.  Each of those columns values has the
@@ -185,14 +205,7 @@ CREATE OR REPLACE VIEW xrefhw AS (
     LEFT JOIN kanj k ON k.entr=km.entr AND k.kanj=km.kanj);
 
 -------------------------------------------------------------
--- View "is_p" returns each row in table "entr" with an
--- additional boolean column, "p" that if true indicates
--- the entry meets the wwwjdic criteria for a "P" marking: 
--- has a reading or a kanji with a freq tag of "inchi1", 
--- "gai1", "spec1", or "news1" as documented at
---   http://www.csse.monash.edu.au/~jwb/edict_doc.html#IREF05
---
--- View pkfreq returned each row in table "kanj" with an
+-- View pkfreq returns each row in table "kanj" with an
 -- additional boolean column, "p" that if true indicates
 -- the kanji meets the wwwjdic criteria for a "P" marking
 -- on its containing entry as described above.
@@ -201,17 +214,9 @@ CREATE OR REPLACE VIEW xrefhw AS (
 -- additional boolean column, "p" that if true indicates
 -- the reading meets the wwwjdic criteria for a "P" marking
 -- on its containing entry as described above.
+--
+-- See also is_p above.
 -------------------------------------------------------------
-CREATE VIEW is_p AS (
-    SELECT e.*,
-	    EXISTS (
-		SELECT * FROM freq f
-       		WHERE f.entr=e.id AND
-		  -- ichi1, gai1, jdd1, spec1
-		  ((f.kw IN (1,2,3,4) AND f.value=1)))
-	    AS p
-    FROM entr e);
-
 CREATE VIEW pkfreq AS (
     SELECT k.*, EXISTS (
         SELECT * FROM freq f

@@ -116,7 +116,7 @@ verified.
 
   Postgresql [8.2]
   Perl [5.8.8]
-    Petal [2.19]
+    Petal [2.19] [see doc/issue/000106.txt for required patch.]
     Petal::Utils [0.06]
     DBI [1.52]
     DBD::Pg [1.49] (Did not work with DBD::PgPP on Windows). 

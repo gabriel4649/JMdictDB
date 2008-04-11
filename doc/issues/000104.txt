@@ -1,0 +1,13 @@
+Title:	Add new misc tag, "poet"
+Stat:	closed
+Disp:	done
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-08-24 00:00:00 stuart@friix.com
+  I first noticed in the 2007-08-24 jmdict.xml file.
+
+2007-08-25 00:00:00 stuart@friix.com
+  Done.

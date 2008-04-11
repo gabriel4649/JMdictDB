@@ -1,0 +1,45 @@
+Title:	xref contraint violation during jmdict load
+Stat:	closed
+Disp:	done
+Prio:	high
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-05-22 00:00:00 stuart@friix.com
+  When loading the jmdict database from jmdict-20070522 via "make", we get
+  the following message when xrefs are resolved:
+  
+  > psql:xresolv.sql:108: ERROR:  new row for relation "xref" violates
+  check constraint "xref_check"
+
+2007-05-22 00:00:00 stuart@friix.com
+  mktables.sql-1.17 added a reasonable seeming constraint to table xref
+  that disallows any xref where the sorce entry (column entr) and target
+  entry (column xentr) are the same.
+  
+  This constraint fails on 4 records:
+  
+  jmdict=# select * from xref where entr=xentr;
+    entr  | sens | xentr  | xsens | typ | notes
+  --------+------+--------+-------+-----+-------
+    16957 |    1 |  16957 |     1 |   3 |
+    71531 |    1 |  71531 |     1 |   3 |
+   108835 |    1 | 108835 |     1 |   3 |
+   114013 |    1 | 114013 |     1 |   3 |
+  
+  The seq numbers of the above entries are:
+   1171620, 1724470, 2111170, 2163660
+  
+  These seem to be due to jmdict entries that have an xref that refers to
+  the same entry.  I.e. this is not a problem with jmdictdb.
+  
+  Resolution:
+  * Email the jmdict list with request for correction to jmdict.
+  * Temporarily remove the constraint, load the data, delete the problem
+  xrefs, and recreate the constraints.
+  
+  2007-06-09:
+  In xresolv.sql-1.8, the sql that loads xref from _xrsv was modified to
+  skip any self-referencing xrefs.  A separate script will be written to
+  detect and report self references.

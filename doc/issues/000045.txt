@@ -1,0 +1,14 @@
+Title:	Greater than 0 constraints
+Stat:	closed
+Disp:	done
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-04-30 00:00:00 stuart@friix.com
+  Add constraint to the rdng.rdng, sens.sens, etc, that enforces >0.   Add
+  constraint to xref that prevents entr=xentr.
+
+2007-05-22 00:00:00 stuart@friix.com
+  Done.

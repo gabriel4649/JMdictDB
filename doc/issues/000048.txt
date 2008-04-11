@@ -1,0 +1,14 @@
+Title:	Temp file location option
+Stat:	closed
+Disp:	done
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  load_jmdict.pl -- Add option to create temp files in some other
+  directory.
+
+2007-03-10 00:00:00 stuart@friix.com
+  Done.

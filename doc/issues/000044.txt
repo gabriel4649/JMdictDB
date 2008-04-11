@@ -1,0 +1,13 @@
+Title:	Gloss tags
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-04-30 00:00:00 stuart@friix.com
+  Add experimental support for gloss tags.
+
+2007-05-21 00:00:00 stuart@friix.com
+  Done.

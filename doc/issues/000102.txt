@@ -1,0 +1,20 @@
+Title:	cgi page db connections failing
+Stat:	closed
+Disp:	done
+Prio:	crit
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-08-23 00:00:00 stuart@friix.com
+  After the postgres "service" login change (2007/08/23 0:21, changeset
+  42) cgi pages are failing on my Fedora linux machine.  Message in httpd
+  error log include text:
+  > DBI connect('service=jmdict','',...) failed: FATAL:
+  >   password authentication failed for user "postgres"...
+  Double checked username, password, etc, all are correct.
+
+2007-08-23 00:00:00 stuart@friix.com
+  Problem was the pg_service.conf file was in dos format (had "\r\n" line
+  endings).  Converting it to unix ("\n" line endings) with the semi-
+  standard "dos2unix" tool fixed problem.

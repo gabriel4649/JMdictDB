@@ -1,0 +1,13 @@
+Title:	Query time variation
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  Retrieving one or a set of jmdict entries involves executing ~20 sql
+  select stements.  This takes anwhere from .8 to 30s on my (slow)
+  development machine.  I don't understand this almost order-of-magnitutde
+  variation.  Need to determine what's going on and find remedy.

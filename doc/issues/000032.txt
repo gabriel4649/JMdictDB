@@ -1,0 +1,12 @@
+Title:	Email addr obsfucation
+Stat:	open
+Disp:	
+Prio:	info
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  cgi -- Need to obsure email addresses for general display (unobsured on
+  conf form ok if none other than submitter/authenticated editors can
+  see.)

@@ -1,0 +1,19 @@
+Title:	Stop using magic number keyword values
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-07-13 00:00:00 stuart@friix.com
+  Currently we use the hack of using values >200 is the kw* tables to
+  indicate that the kw is obsolete.  Some programs print warning messages
+  when they encounter such keywords.  This is a hack and needs to be fix
+  by adding a boolean "obsol' column to the keyword tables.
+  
+  There are some other similar cases:
+  kwmisc -- Uses 1xx value keywords for jmnedict tags.  I don't think any
+  programs make use of that coding though.
+  kwpos -- Uses 3xx value keywords for extra PoS types used by
+  experimental verb inflection stuff.

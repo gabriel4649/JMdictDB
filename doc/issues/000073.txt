@@ -1,0 +1,24 @@
+Title:	lit glosses w nested parens parsed wrong
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-06-17 00:00:00 stuart@friix.com
+  In jmparse.pl, function extract_lit() uses the regex "/(lit:[^)]+)/ to
+  extract the literal text.  But it appears that some such glosses contain
+  parens as part of the lit text so the above pattern recognises it
+  incorrectly.  For example, 2149180 (行ってまいります), has the gloss: "So long
+  (lit:"(I'm) going and coming back")".
+  
+  Similar problem in 1029490 extracing lsrc (trans:) info from
+  <gloss>foam rubber (trans: Eversoft (trademark))</gloss>
+  (reported by JB).
+
+2007-06-17 00:00:00 stuart@friix.com
+  Since this is a temp hack until JB decides on an xml representation, it
+  may not be worth spending much time on this.  Perhaps we could generate
+  a warning and do manual fixup later since there probably aren't too many
+  of these.

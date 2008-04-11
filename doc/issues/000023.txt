@@ -1,0 +1,10 @@
+Title:	CGI security audit
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  cgi -- Do security audit of all pages.

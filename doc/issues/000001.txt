@@ -1,0 +1,19 @@
+Title:	Approval process flow
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  Need to work out details of approval process in terms of data changes
+  and the web pages needed to support those changes. [Need "edit entry"
+  page first]
+
+2007-02-01 00:00:00 stuart@friix.com
+  Changeset 49 includes editor approval and rejection capability including
+  entry deletion and (untested) concurrency handling.
+  
+  Still to do: testing, editor login, diffs between old and new entries,
+  security review.

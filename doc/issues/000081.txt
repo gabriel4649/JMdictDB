@@ -1,0 +1,26 @@
+Title:	Missing xrefs
+Stat:	closed
+Disp:	done
+Prio:	crit
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-07-26 00:00:00 stuart@friix.com
+  Reported by Jim Breen via email, 2007/07/26 00:37
+  > 2163180 has xrefs to 謹啓 and 粛白. showentr.pl only reports
+  > the one to 粛白.
+  Actually 粛白 is a reverse reference.  Both the forward xrefs are missing.
+
+2007-07-29 00:00:00 stuart@friix.com
+  Will wait until the completion of taskid-80 ("Ordered xrefs") since the
+  changes made for that could fix or expose the cause of this problem.
+  
+  After taskid-82, the missing xrefs now appear in showentr.pl and entr.pl
+  web page output.  Don't know why they were missing before.  Note that
+  the process that resolves the xrefs is hueristic and may not resolve
+  everything correctly.
+  
+  There are still 6 known entries with unresolved xrefs because the
+  resolver could not identify a unique target.  Documented in 2007/07/29
+  email to Jim Breen.

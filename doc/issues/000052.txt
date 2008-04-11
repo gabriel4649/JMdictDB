@@ -1,0 +1,33 @@
+Title:	Reading kanji pri pairs
+Stat:	closed
+Disp:	done
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-24 00:00:00 stuart@friix.com
+  Original schema design mistakenly treats ke_pri and re_pri tags as
+  independent.  Most commonly though, they are associated in pairs but
+  schema design does not consider this and duisallows two pri tags on the
+  same domain (e.g. "ichi1" and "ichi2" on the same reading or kanji.
+  Some options are:
+  
+  + Change PK on rfreq and kfreq tables to include column "value".  This
+  would mimic jmdict xml but the pairing would remain implicit and
+  unnormalized.
+  
+  + Add new table with columns [entr,rdng,kanj,kw,value] (pk is first 4
+  columns) to store only those tags common to both reading and kanji.
+  Contiinue to use rfreq and kfreq for tags unique to reading and kanji.
+  Downside is need for union query to get all tags for a given reading or
+  kanji.
+  
+  + Use new table with columns [entr,rdng,kanj,kw,value] to keep all pri
+  tags, with reading-only or kanji-only tags indicated by nulls in columns
+  kanj or rdng respectively.  Problem in that such a tavble can't have a
+  natural pk since pk's can't contain nullable columns.  Enforcing a
+  uniqueness contraint with null columns is doable but hackish.
+
+2007-02-27 00:00:00 stuart@friix.com
+  Done.

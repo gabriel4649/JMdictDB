@@ -1,0 +1,17 @@
+Title:	Simplify search subs
+Stat:	closed
+Disp:	done
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-26 00:00:00 stuart@friix.com
+  srchres.pl -- Simplify build_search_table() and mk_from_clause().
+  Because of the 2007-02-11 pk/fk change, we don't need join all the
+  parent tables of the table we're looking at -- the search target table
+  can be joined directly and soley to "entr" which should greatly simplify
+  the code.
+
+2007-08-05 00:00:00 stuart@friix.com
+  Done.

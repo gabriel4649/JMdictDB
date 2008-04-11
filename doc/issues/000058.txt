@@ -1,0 +1,16 @@
+Title:	jmdictxml keyword review
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  Review keywords (jmdict entities) in jmdictxml.pm and the
+  pg/data/kw*.sql files and eliminate those that aren't (supposed to be)
+  in use, eg misc/uK.  If detected in xml file, print warning, use anyway,
+  and don't die.
+
+2007-02-21 00:00:00 stuart@friix.com
+  Done.

@@ -1,0 +1,27 @@
+Title:	Load kwsrc table dynamically
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-08-24 00:00:00 stuart@friix.com
+  kwsrc is not really a kw* table -- it has different columns that the
+  other kw* tables and more importantly, does not really contain static
+  data.  OTOH, it is like a kw table in that apps frequently need to use
+  its information based on a kwsrc.id value.
+  I propose the following changes should be made:
+  2. Do not load static data into it when loadkw.sql is run.
+  3. Modify code that loads data (jmparse.pl, exparse.pl) to accept
+  arguments that define the corpus info, and create corpus record as part
+  of generating the other data.
+  4. Continue to have jmdict::Kwds include a {SRC} sub-hash.
+
+2007-08-25 00:00:00 stuart@friix.com
+  - Removed kwsrc from kwstatic.pm.
+  - Can't removed from code that builds or uses $::KW -- many display
+  functions need to be able to lookup corpus abbr by id.
+  - Added command line syntax to jmparse.pl, exparse.pl for user to give
+  corpus record info but: id,kw only.  No descr.  seq value hardwired in
+  code dependent on kw.

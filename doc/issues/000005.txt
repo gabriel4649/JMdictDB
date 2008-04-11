@@ -1,0 +1,14 @@
+Title:	Master file generation
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  Write a script to generate Jim Breen's master file (used to generate in
+  turn the various JMdict and Edict files) from the database.
+
+2007-02-01 00:00:00 stuart@friix.com
+  Being worked on by Jim [2007-07-26].

@@ -1,0 +1,20 @@
+Title:	Lib dir location
+Stat:	closed
+Disp:	done
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  perl -- Move lib to under cgi?  (This dir needs to be accessible to the
+  cgi scripts when installed in a cgi directory, but should not be
+  accessible via a web server url.  Putting under the cgi dir
+  wouldaccomplish this (at least for Apache, not sure about IIS.))
+  
+  Don't do. Files in lib/ are used by perl/*.pl scripts as well as the cgi
+  scripts, so moving it under cgi would be inappropriate.  Better way is
+  to use standard Apache/IIS config options to deny access.
+
+2007-02-12 00:00:00 stuart@friix.com
+  Done.

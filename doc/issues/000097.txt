@@ -1,0 +1,17 @@
+Title:	Edit conf page dying with restrs
+Stat:	open
+Disp:	
+Prio:	crit
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-08-21 00:00:00 stuart@friix.com
+  When an entry having restr restrictions is edited and submitted, the
+  edconf page dies when it tries to display restr txt not present in the
+  entry object.  Example is seq# 1250500.  Got to edit page and sumbit
+  without making any changes.  Petal rendering fails complaining it can't
+  access z/txt.
+  
+  Also noted that in edconf.pl, that restr lists are linked only to rdng
+  items, not to kanj items.

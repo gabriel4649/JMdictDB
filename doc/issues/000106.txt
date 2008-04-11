@@ -1,0 +1,11 @@
+Title:	Document required Petal patch
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-09-11 00:00:00 stuart@friix.com
+  Need to document in the README file (or a file referenced from there)
+  the patch that needs to be made to the decode function on Petal.

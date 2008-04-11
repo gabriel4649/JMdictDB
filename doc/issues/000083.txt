@@ -1,0 +1,19 @@
+Title:	Brackets in reading cause parse error
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-07-28 00:00:00 stuart@friix.com
+  The following text (which occurs in one of my mnn17 flash card entries)
+  causes a jbparser parse error when included in the "reading" section of
+  an edit submission:
+    ［おふろに］はいります
+  Problem seems to be the brackets which are classified as kanji
+  characters and thus make the whole string a kanji string and illegal in
+  the reading section.
+
+2007-07-28 00:00:00 stuart@friix.com
+  See also task-26: "Kana-kanji determination".

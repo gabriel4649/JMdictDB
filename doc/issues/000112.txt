@@ -1,0 +1,28 @@
+Title:	missing language support in perl libs
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	bug
+Reqtrs:	
+AssdTo:	
+
+2008-04-10 17:17:06 sysad
+  While working on three-letter language code support for parsing
+  jmdict xml, noted a number of places in the Perl libs where
+  language support is lacking:
+  
+  * Function jel_sens() in perl/lib/jmdictfmt.pm formats glosses
+  in JEL format but ignores the gloss' "lang" attribute.
+  
+  * perl/lib/jbparse.yp
+  No syntax for specifying a non-english gloss language.  Can try
+  [equ=fre:contraire]" but that is a syntax error because there is
+  no gloss text outside the tag brackets.
+  
+  * perl/lib/jbparse.yp
+  Possible confusion or shadowing between "lit" (gloss GINF tag) and
+  "lit" language ("Lithuanian").  There is no "equ" language in either
+  iso-639-2 or -3, so no confusion there.
+  
+  (Aside: this is a problem independent of language that also affects
+  intended syntax like "[lit:xxxxxx]" which also doesn't work.)

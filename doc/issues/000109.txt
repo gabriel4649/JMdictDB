@@ -1,0 +1,31 @@
+Title:	Change implementation language to Python
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-04-02 15:44:23 sysad
+  Some preliminary work shows that Python cgi scripts run
+  about 2-3x faster than the current Perl scripts.  Several
+  of the API's were converted to Python for the principle
+  developer's personal use and these contain a number of
+  bug fixes and design enhancements that would need to be
+  back ported to Perl.
+
+2008-04-02 15:55:00 sysad
+  Status to date:
+    APIs:
+        jbparser.yp     jellex.py, jelparse.y
+        jmdict.pm       jdb.py
+        jmdictcgi.pm    jmcgi.py
+        jmdictfmt.pm    fmt.py, fmtjel.py,
+        jmdictpgi.pm    [pgi.py incomplete]
+        jmdicttal.pm    tal.py
+        jmdictxml.pm    [fmtxml.py incomplete]
+    CGI:
+        ...
+
+2008-04-03 12:39:38 sysad
+  

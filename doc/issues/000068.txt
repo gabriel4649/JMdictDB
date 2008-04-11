@@ -1,0 +1,17 @@
+Title:	Finish move of resolv_xref() to jmdict module
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-06-14 00:00:00 stuart@friix.com
+  Change id {97} created a near duplicate of jmdictcgi::resolv_xref() in
+  module jmdict.  Need to change jmdictcgi to call the jmdict version
+  rather than continuing to use its own local version.
+
+2007-07-29 00:00:00 stuart@friix.com
+  xresolv_xref() was removed from jmdictgci:: in chgid-145.  It was used
+  only by obsolete new entry and edit entry form prior to adoptation of
+  current jbparser ones.

@@ -1,0 +1,10 @@
+Title:	CSS cleanup
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  *.tal,entr.css -- The .css file is a mess.

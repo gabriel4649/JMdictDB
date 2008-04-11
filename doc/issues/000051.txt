@@ -1,0 +1,16 @@
+Title:	Flatten dupentr function
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-26 00:00:00 stuart@friix.com
+  mkviews.sql -- Flatten view dupentr.  Currently uses loops and processes
+  an entry as a tree.  But with the pk/fk change of 2007-02-11, we can
+  copy everthing needed by finding it using fk field "entr" and the other
+  fields' values don't need changing, so all the looping no longer needed.
+
+2007-03-05 00:00:00 stuart@friix.com
+  Done.

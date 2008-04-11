@@ -1,0 +1,11 @@
+Title:	Circular lists
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  jmdict.pm -- The xrefs stuff might be circularly linked.  How does that
+  affect garbage collection in long-running process (e.g. modperl)?

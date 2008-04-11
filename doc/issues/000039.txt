@@ -1,0 +1,12 @@
+Title:	Multiple rdng/kanj tags displayed
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-26 00:00:00 stuart@friix.com
+  If a reading (or kanji) has a the same FoU tag paired with two (or more)
+  kanji (or readings), the tag will be shown twice (or more) on the
+  reading  (or kanji).  Example: seq 1579780 (主人).

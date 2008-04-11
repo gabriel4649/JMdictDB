@@ -1,0 +1,13 @@
+Title:	Modify loadjmdict.pl to load jmnedict
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  load_jmdict.pl -- Modify to load jmnedict names data.
+
+2007-03-10 00:00:00 stuart@friix.com
+  Done.

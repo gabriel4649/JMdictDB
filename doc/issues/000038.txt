@@ -1,0 +1,24 @@
+Title:	TAL whitespace
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-26 00:00:00 stuart@friix.com
+  entr.tal, and probably others does not have very good control over
+  whitespace.  For example, there is a space after the opening bracket of
+  a FoU tag (e.g. ichi1)  but no space before the closing bracket.  If
+  these templates get a life beyond development, need to go through them
+  and fix whitespace.
+
+2007-02-26 00:00:00 stuart@friix.com
+  Elimination of unwanted whitespace can be done by breaking the lines in
+  the html inside tags, ie
+    <xxx>foo</xxx>
+    <yyy>:</yyy>
+  becomes
+    <xxx>foo</xxx
+    ><yyy>:</yyy>
+  See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.

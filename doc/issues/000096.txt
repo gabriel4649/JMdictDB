@@ -1,0 +1,21 @@
+Title:	Consolidate restr/stagr/stagk
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	idea
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-08-13 00:00:00 stuart@friix.com
+  The restr, stagr, and stagk tables can be consolidated into a single
+  table with columns (entr,rdng,kanj,sens).
+
+2007-08-13 00:00:00 stuart@friix.com
+  Issues to be worked out
+  - What are the rules for conversion from restr/stagr/stagk into the
+  unified form? (Do conflicts exist in jmdict xml?  What are the rules for
+  resolving them?)
+  - How to convert back to the restr/stagr/stagk form for display, xml,
+  etc.
+  - Can back conversion exactly reconstruct the original
+  restr/stagr/stagk?

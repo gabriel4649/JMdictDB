@@ -1,0 +1,12 @@
+Title:	XML parse kw checks
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  load_jmdict.pl -- Check result of kw lookups, complain when not found
+  (may need to build entry struct, and only write to files when complete
+  which will allow skipping entries with problems.)

@@ -1,0 +1,33 @@
+Title:	Add support for "wasei" lsrc attribute
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-06-08 00:00:00 stuart@friix.com
+  Current thinking is that the "trans" text found in about 500 glosses
+  will become an lsrc attribute ("wasei") rather than a gloss attribute as
+  I anticipated in the previous schema version.  This will be a boolean
+  value.
+  
+  In previous schema version, lsrc attributes "full" and "part" (partial)
+  were treated like other keywords and coded in table kwlsrc.  However
+  subsequent discussion on the edict-jmdict email list has clarified that
+  these are mutually exclusive, and can be represented by a single boolean
+  value in table lsrc.
+  
+  See:
+  http://tech.groups.yahoo.com/group/edict-jmdict/message/1592
+  http://tech.groups.yahoo.com/group/edict-jmdict/message/1607
+  
+  Since the "part" and "wasei" values are independent, it is awkward to
+  represent them by a single list of keywords as the schema provided for
+  up to now.
+  
+  Change is to replace the kw column with two boolean columns in table
+  lsrc, remove table kwlsrc, and adjust the code to match.
+
+2007-06-08 00:00:00 stuart@friix.com
+  Done.

@@ -1,0 +1,25 @@
+Title:	Natural key for entries
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	idea
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-07-13 00:00:00 stuart@friix.com
+  Entr rows currently use a surrogate primary key (auto-number int id
+  column) but has not other way of uniquely identifying entries.  This is
+  a problem when exporting/importing entries, or moving them between
+  databases since there is no way to identify the target of inter-entry
+  reference (xrefs for example) sinve the entry id may change on being
+  reloaded.
+
+2007-07-13 00:00:00 stuart@friix.com
+  We can't use (src,seq) as a pk because multiple copies of the same entry
+  can exist with different or the same stat values (e.g. there can be
+  several "updated, approval pending" versins of the same entry).
+  
+  Option: add a version number (small int) field to entr, say 'entr', to
+  distinguish between otherwise indistinguishable entries, and make unique
+  key (src,seq,entr).  Don't really want it to be the PK becaue it will
+  make children table PK's too long.

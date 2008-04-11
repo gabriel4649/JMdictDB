@@ -1,0 +1,26 @@
+Title:	parse kanji/reading xref pairs
+Stat:	closed
+Disp:	done
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-08-03 00:00:00 stuart@friix.com
+  jmdict.xml (as of a week or so ago?), started denoting some xref targets
+  with the syntax KK.RRR.ss in the xref elements, where KK is a kanji
+  string, RRR a kana string, and ss a (optional) number indicating a
+  specific sense.  The ".s are actually a u\30fb. KK or RRR may be missing
+  (but not both of course.)
+  
+  Note that some jmdict entries have embedded \u30fb characters in their
+  kanji and/or reading text, and will need to be taken account of.
+  Currently they are of the forms KKK.KKK, RRR.RRR, RRR.KKK, and no
+  KKK.RRR so at present there in no ambiguity.
+  
+  Will also need to redo xresolv.sql (creates xrefs from the parsed xml
+  data) which currently assumes kanji or reading but not both, and no
+  sense info.
+
+2007-08-04 00:00:00 stuart@friix.com
+  Done.

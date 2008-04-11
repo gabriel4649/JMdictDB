@@ -1,0 +1,22 @@
+Title:	Kana-kanji determination
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  jmdict.pm -- The database expects text strings in table "rdng" to
+  contain no kanji chars and in table "kanj" to contain at least one.
+  Function jstr_classify used to determine kana/kanji-ness.  However there
+  are some jmdict items that have kanji text that are not considered kanji
+  by jmdict::jstr_classify:
+  1000060: 々
+  1000090: ◎
+  1000090: ×
+  1085560: トライ＆エラー (is reading but search thinks it's kanji)
+  Change jstr_classify?  Or do something else?
+
+2007-02-01 00:00:00 stuart@friix.com
+  See also task-83: "brackets in reading cause parse error".

@@ -1,0 +1,16 @@
+Title:	Add fields in hist table
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-06-17 00:00:00 stuart@friix.com
+  Currently we combine the user and email fields on submissions forms and
+  write to column 'user' in the hist table.  Similarly with fields
+  "comments" and "references".  All of these items should go into their
+  own columns in table hist.
+
+2007-09-09 00:00:00 stuart@friix.com
+  Done.

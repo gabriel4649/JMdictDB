@@ -1,0 +1,20 @@
+Title:	Loaded data validation
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	feat
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-26 00:00:00 stuart@friix.com
+  Need to find way to validate that db contents are same as jmdict.xml.
+  Just generating xml from database and diffing with original file
+  probably won't work because we don't maintain same order of entities,
+  comment positions, and parhaps other things.  xref targets won't be
+  identical.
+  
+  Maybe this could be done by generating a master file and letting Jim
+  Breen do the validation against the current master file?
+
+2007-02-26 00:00:00 stuart@friix.com
+  Being worked on by Jim [2007-07-26].

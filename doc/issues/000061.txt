@@ -1,0 +1,21 @@
+Title:	Entr.css location
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  entr.css -- move out of .cgi -- is inaccessible there on arakawa.
+  Or better: read config file giving lib dirs, db info, etc.
+
+2007-02-01 00:00:00 stuart@friix.com
+  Resolution:
+  Left in cgi/ in development environment but make Makefile will move to
+  different directory at install time (and update the *.tal files to
+  match.)
+  Potential problem: some cgi's write their own html (to create error
+  pages for example).  Currently these don't use any .css but if they did,
+  they would need to adjust location depending on whether they are running
+  from the development directory, or web server cgi directory.

@@ -1,0 +1,15 @@
+Title:	Split jmdict parse process
+Stat:	closed
+Disp:	done
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  jmparse.pl -- Rearchitect into two pieces:1) parse xml into a EntrList
+  struct, 2) Library code to translate struct to file text.  This will
+  make it easier to write loaders for other input sources.
+
+2007-03-13 00:00:00 stuart@friix.com
+  Done.

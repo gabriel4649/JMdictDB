@@ -1,0 +1,12 @@
+Title:	UTC datetimes
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  Check the everything storing a datetime value stores it in UTC or
+  localtime with timezone.  Check that everything displaying a datetime
+  does the same.

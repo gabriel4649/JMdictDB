@@ -1,0 +1,12 @@
+Title:	JEL parser: allow seq# in xref
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-08-22 00:00:00 stuart@friix.com
+  Since kanji.reading pair is not sufficient to uniquely indentify a
+  target entry, need to be able to give an entry seq#(/src#?).  Currently
+  the jel parser ha no syntax to support this.

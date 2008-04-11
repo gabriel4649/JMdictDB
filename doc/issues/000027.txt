@@ -1,0 +1,20 @@
+Title:	Database versioning
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  kwstatic.pm -- Provide way for caller to check name/version of database
+  used.
+
+2007-02-01 00:00:00 stuart@friix.com
+  This is really three issues:
+  1. What version of static data is loaded?
+  2. What version of entry data is loaded?  (Addressed by dt field in
+  kwsrc?)
+  3. What version of the schema is in use?
+  All are subject to inaccuracy due to changes made after db
+  created/loaded.

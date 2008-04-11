@@ -1,0 +1,18 @@
+Title:	Xrefs lost after edit submission
+Stat:	closed
+Disp:	done
+Prio:	crit
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-06-17 00:00:00 stuart@friix.com
+  Xrefs present in an edit submission (e.g. a "[see=...]" item in a sense)
+  appear in the confirmation form but not in the new/edited entry created
+  from the submission.
+
+2007-08-03 00:00:00 stuart@friix.com
+  Using debugger, noted that the entr structure created in edsubmit.pl has
+  a erefs substrucure, but no xrefs records.  This seems likely the cause.
+  
+  This was fixed in the changes to xref handling made in changeset 23.

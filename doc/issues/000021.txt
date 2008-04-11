@@ -1,0 +1,12 @@
+Title:	CGI html escaping
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  cgi -- Need a coherent approach to escaping html entities.
+  When/what/where to escape html entities?  currently some stuff gets
+  double escaped or not escaped at all.

@@ -1,0 +1,19 @@
+Title:	memory leak in master2.pl script
+Stat:	closed
+Disp:	done
+Prio:	high
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-08-04 00:00:00 stuart@friix.com
+  When running the master2.pl script from Jim, noticed that memory usage
+  grew continuously during execution.  The code was written to process
+  entries in blocks of 100 to avoid this problem.  Need to find the source
+  of this, particularly if it is due to EntrList() objects not getting
+  garbage-collected.
+
+2007-08-08 00:00:00 stuart@friix.com
+  Problem traced to the use of DBI method prepare_cached() in
+  jmdict::dbread().  Apparently DBI does not limit the cache size.
+  Changed method call to prepare() and memory use is flat.

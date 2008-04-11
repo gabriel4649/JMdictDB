@@ -1,0 +1,13 @@
+Title:	DB maintenance
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-02-01 00:00:00 stuart@friix.com
+  database -- write maintenance scripts to check for things that are hard
+  to write contraints for: do all senses have at least one gloss?  do all
+  (jmdict) entries have at least one sense and reading?, Are
+  rdng,kanj,sens,gloss ord numbers consecutive?

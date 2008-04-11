@@ -1,0 +1,20 @@
+Title:	Fix O(n^2) behavior in jmdict::matchup()
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-08-07 00:00:00 stuart@friix.com
+  The matchup function in jmdict.pm uses nested "for" loops to match child
+  table rows to their parent rows which is fine for the usual case where
+  less than a dozen or two entries are read at once but when one starts
+  reading a few thousand entries the O(n^2) behavior is a killer.
+
+2007-08-07 00:00:00 stuart@friix.com
+  Options:
+  - Use a hash matching approach when number of entries exceeds threshold.
+  - If row data has a reliable ordering, perhaps we could make next loop
+  iteration start where last left off, resulting in needed record usually
+  being found instantly.

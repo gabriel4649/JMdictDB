@@ -1,0 +1,24 @@
+Title:	display gloss tags following gloss number
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2007-05-23 00:00:00 stuart@friix.com
+  Currently in entr.tal and nwconf.tal, a gloss tag (if any) is displayed
+  in square brackets in front of the gloss number, e.g.:
+  
+    [lit.] 1. my gloss
+  
+  It would look better displayed after the gloss number:
+  
+    1. [lit.] my gloss
+  
+  or possibly at the end of the gloss:
+  
+    1. my gloss [lit.]
+
+2007-06-08 00:00:00 stuart@friix.com
+  Done.

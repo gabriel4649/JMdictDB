@@ -326,7 +326,7 @@ use jmdict; use jmdictpgi; use kwstatic;
 	$s->{_gloss} = [];
 	foreach $g (@$gloss) {
 	    $lng = $g->att("xml:lang");
-	    $lang = $lng ? $::JM2ID{LANG}{$lng} : $KWLANG_en;
+	    $lang = $lng ? $::JM2ID{LANG}{$lng} : $KWLANG_eng;
 	    if (!$lang && $lng) { 
 		print $::Flog "Seq $::Seq: invalid lang attribute '$lng'\n"; 
 		next;}
@@ -344,7 +344,7 @@ use jmdict; use jmdictpgi; use kwstatic;
 	    if ($lit) {
 	        push (@lit, [$lang, $lit]); }	# Save and write after all reg. glosses.
 	    if ($trans) {
-	        push (@{$s->{_lsrc}}, {lang=>$KWLANG_en, txt=>$trans, part=>0, wasei=>1}); } }
+	        push (@{$s->{_lsrc}}, {lang=>$KWLANG_eng, txt=>$trans, part=>0, wasei=>1}); } }
 	foreach $lit (@lit) {
 	    push (@{$s->{_gloss}}, {lang=>$lit->[0], ginf=>$KWGINF_lit, txt=>$lit->[1]}); } }
 
@@ -413,7 +413,7 @@ use jmdict; use jmdictpgi; use kwstatic;
 	$s->{_lsrc} = [];
 	foreach $i (@$lsrc) {
 	    $txt = $i->text;  
-	    $lang = $::JM2ID{LANG}{($lng=$i->att("xml:lang")) || "en"};
+	    $lang = $::JM2ID{LANG}{($lng=$i->att("xml:lang")) || "eng"};
 	    if (!$lang) { 
 		print $::Flog "Seq $::Seq: invalid lsource lang attribute '$lng'\n";
 		next; }

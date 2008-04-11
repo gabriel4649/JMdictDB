@@ -1,3 +1,49 @@
+	Support JMdict's 3-letter language codes.
+
+        The JMdict xml file recently started using 3-letter iso-639-2
+	language codes (it had been using iso-639-1 2-letter language 
+	codes) and this changset provides support in the Perl code 
+	and static database data for parsing, storing, and displaying
+	those codes (see IS-110).
+	Note that non-english glosses were unsupported in JEL 
+	formatting or parsing and remain so, see IS-112.
+
+	* perl/jmparse.pl
+	Changes uses of '$KWLANG_en' to '$KWLANG_eng'.
+
+	* perl/lib/jmdictxml.pm
+	Modified to import language codes from xmllang.pm.
+
+	* pg/data/kwlang.csv
+	* perl/lib/xmllang.pm
+	Generated using tools/mklang.py.
+
+	* perl/lib/kwstatic.pm
+	Rebuilt due to changed dependency pg/data/kwlang.csv.
+
+	* tools/mklang.py
+	Tool for creating csv and perl data from a downloaded 
+	  ISO-639-2 or -3 language code file (see IS-110 for details).
+
+	* Makefile
+	Add options for which JMdict file to download (JMdict or
+	JMdict_e) and jmparse.pl gloss language (-g) option.
+
+2008-04-08 09:08	smcg4191@frii.com	4ce1b7e08e49
+
+	Fix ordering problem that caused creation of view 'esum' to fail.
+
+	* pg/mkviews.sql 
+	'esum' uses view 'is_p' that was defined after it. 
+
+2008-04-07 23:16	smcg4191@frii.com	d9925cf17917
+
+	Update to support jmdict DTD version 1.07
+
+	* New dialect keyword, ryk (kwdial.csv, jmdictxml.pm)
+	* New POS keywords adj-i and adj-f, and changed POS keyword
+	    adj (kwpos.csv, jmdictxml.pm).
+	* Rebuild kwstatic.pm due to above changes.
 
 2008-04-05 19:29	smcgrawx@frxii.com
 

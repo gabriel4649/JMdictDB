@@ -9,8 +9,27 @@
 # "make all" will print a summary of targets.
 #
 # The following items should be adjusted based on your needs...
+# Alternatively, they can be overridden when "make" is run as in 
+# the following example:
+#
+#    make JMDICTFILE=JMdict "LANGOPT=-g fre"
+#
+# The JMdict file to download.  Choice is usually between JMdict 
+# which contains multi-lingual glosses, and JMdict_e that contains
+# only English glosses but is 25% smaller and parses faster.
+JMDICTFILE = JMdict_e
+#JMDICTFILE = JMdict
 
-# Name of database to load file data into.
+# Parse out only glosses of the specified language.  If not 
+# supplied, all glosses will be parsed, regardless of language.
+# Language specified using ISO-639-2 3-letter abbreviation.
+#LANGOPT = -g eng
+
+# Name of database to load new data into.  The new data is loaded
+# into this database first, without changing the in-service
+# production database, for any testing needed.  When the database
+# has been verified, in can be moved into the production database
+# usng the makefile target "activate".
 DB = jmnew
 
 # Name of the production database...
@@ -34,13 +53,14 @@ HOST =
 # The following specify where the cgi scripts, the perl modules they
 # use, and the .css file, respectively, go.  The location and names
 # can be changed, but (currently) their relative positions must remain
-# the same: the cgi and lib dirs must be siglings and the css file goes
+# the same: the cgi and lib dirs must be siblings and the css file goes
 # in their common parent directory.
 CGI_DIR = $(HOME)/public_html/cgi-bin
 LIB_DIR = $(HOME)/public_html/lib
 CSS_DIR = $(HOME)/public_html
 
-##############################################################################
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# You should not need to change anything below here.
 
 PG_DB = -d $(DB)
 JM_DB = -d $(DB)
@@ -121,13 +141,13 @@ activate:
 #------ Load JMdict -----------------------------------------------------
 
 jmdict.xml: 
-	rm -f JMdict_e.gz
-	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/JMdict_e.gz
-	gzip -d JMdict_e.gz
-	mv JMdict_e jmdict.xml
+	rm -f $(JMDICTFILE).gz
+	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/$(JMDICTFILE).gz
+	gzip -d $(JMDICTFILE).gz
+	mv $(JMDICTFILE) jmdict.xml
 
 jmdict.pgi: jmdict.xml
-	cd perl && perl jmparse.pl -y -l ../jmdict.log -o ../jmdict.pgi ../jmdict.xml
+	cd perl && perl jmparse.pl $(LANGOPT) -y -l ../jmdict.log -o ../jmdict.pgi ../jmdict.xml
 
 jmdict.dmp: jmdict.pgi
 	cd perl && perl jmload.pl $(JM_HOST) $(JM_USER) $(JM_DB) -i 1 -o ../jmdict.dmp ../jmdict.pgi

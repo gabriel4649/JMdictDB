@@ -1,6 +1,6 @@
 Title:	Edit entry page
-Stat:	open
-Disp:	
+Stat:	done
+Disp:	closed
 Prio:	high
 Cats:	dev
 Reqtrs:	
@@ -8,3 +8,7 @@ AssdTo:	stuart@friix.com
 
 2007-02-01 00:00:00 stuart@friix.com
   Need page that allows user to submit modifcations of existing entries.
+
+2008-04-11 22:04:00 stuart@friix.com
+  This issue is satisfied by web/cgi/edconf.pl and web/cgi/edsumbit.pl.
+  See also IS-1.

@@ -1,0 +1,45 @@
+Title:	Move from CVS to Mercurial for version control
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-04-11 14:56:00 sysad
+  Want to move project from CVS to a DVCS.  Driving factors are:
+  * Ability to replicate repos will allow a full, publicly accessible
+    repo to live on Arakawa, rather than just sporatically updated
+    snapshot files.
+  * I will be able to maintain a local remote repo supporting my
+    development work and push changes to Arakawa.
+  * Will noy need to maintain a static IP address at home solely
+    to make may CVS server accessible to Arakawa.
+  
+  Selected Mercurial because:
+  * git has poor windows support.
+  * bzr does not currently support multi-platform (unix/windows
+    development) since it lacks the ability to manage text file
+    line endings.
+  * monotone is written in haskell which would make writing extensions
+    difficult (for me; Mercurial (and bzr) written in Python).
+  * Other options (darcs, etc) seem to be insufficiently mature.
+
+2008-04-11 15:02:00 sysad
+  Plan:
+  1. Install Mercurial on Windows and Linux development machines [done]
+  2. Import jmdictdb project from CVS into Mercurial repo. [done]
+  3. Set up a central repo with full public read access, write access
+     limited to a few developers, accessible via http.
+  4. Things that need updating:
+        Project page on Arakawa: update the download instructions (be
+          sure to note that files will have unix eol's need conversion
+          for windows.)
+        README.txt -- revise download and install instructions
+          may want to add note about configuring mercurial (extensions
+          needed etc?)  Note need for Mercurial keyword expansion else
+          scripts will fail when run.)
+        What to do about doc/MANIFEST.txt, doc/CHANGES.txt (since this
+          info come from Mercurial now rather than the old Chglog MS
+          Access database?)
+  5. Ask William Maton to install Mercurial on Arakawa [done.]

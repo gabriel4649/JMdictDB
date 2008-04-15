@@ -183,7 +183,7 @@ main: {
 	    {no warnings qw(uninitialized);
 	    $snote = join ("; ", map ($_->[1], @$kwds)) || undef; } }
 	$e->{_kanj} = [{txt=>$jtxt}];
-	$e->{_sens} = [{_gloss=>[{lang=>$KWLANG_en, ginf=>$KWGINF_equ, txt=>$etxt}],
+	$e->{_sens} = [{_gloss=>[{lang=>$KWLANG_eng, ginf=>$KWGINF_equ, txt=>$etxt}],
 		        _misc=>[map ({kw=>$_}, @kws)],
 			notes=>$snote,},];
 	return $e; }

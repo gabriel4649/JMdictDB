@@ -322,7 +322,7 @@ use jmdict; use jmdictpgi; use kwstatic;
 		    print $::Flog "Seq $::Seq: No glosses found in sense $cntr\n"; } } } }
 
     sub do_gloss { my ($s, $gloss) = @_;
-	my ($g, $lang, $lng, $txt, $lit, $trans, @lit, %dupchk);
+	my ($g, $lang, $lng, $txt, $x, $trans, $lit, @lit, %dupchk, $transs, $lits);
 	$s->{_gloss} = [];
 	foreach $g (@$gloss) {
 	    $lng = $g->att("xml:lang");
@@ -331,22 +331,24 @@ use jmdict; use jmdictpgi; use kwstatic;
 		print $::Flog "Seq $::Seq: invalid lang attribute '$lng'\n"; 
 		next;}
 	    ($txt = $g->text) =~ s/\\/\\\\/go;
-	    $lit = $trans = "";
+	    $lit = $trans = "";  $lits = $transs = undef;
 	    if ($::Opts{y} and $txt =~ m/(lit:)|(trans:)/) { 
-		($txt,$lit,$trans) = extract_lit ($txt); }
-	    if ($dupchk{"${lang}_$txt"}) { 
+		($txt,$lits,$transs) = extract_lit ($txt); }
+	    if ($txt and $dupchk{"${lang}_$txt"}) { 
 		print $::Flog "Seq $::Seq: duplicate lang/text in gloss '$lang/$txt'\n";
 		next; }
 	    else { $dupchk{"${lang}_$txt"} = 1; }
 	    # (entr,sens,gloss,lang,txt)
 	    if ((!$::Opts{g} or $::Opts{g}=$lang) and $txt) {
 	        push (@{$s->{_gloss}}, {lang=>$lang, ginf=>$KWGINF_equ, txt=>$txt}); }
-	    if ($lit) {
-	        push (@lit, [$lang, $lit]); }	# Save and write after all reg. glosses.
-	    if ($trans) {
-	        push (@{$s->{_lsrc}}, {lang=>$KWLANG_eng, txt=>$trans, part=>0, wasei=>1}); } }
-	foreach $lit (@lit) {
-	    push (@{$s->{_gloss}}, {lang=>$lit->[0], ginf=>$KWGINF_lit, txt=>$lit->[1]}); } }
+	    if ($lits and @$lits) {
+	        push (@lit, [$lang, $lits]); }	# Save and write after all reg. glosses.
+	    if ($transs and @$transs) {
+	        push (@{$s->{_lsrc}}, 
+		      map ({lang=>$lang, txt=>$_, part=>0, wasei=>1}, @$transs)); } }
+	foreach $x (@lit) {
+	    push (@{$s->{_gloss}}, 
+		  map ({lang=>$x->[0], ginf=>$KWGINF_lit, txt=>$_}, @{$x->[1]})); } }
 
     sub do_pos { my ($s, $pos) = @_;
 	my ($i, $kw, $txt, %dupchk);
@@ -646,14 +648,24 @@ use jmdict; use jmdictpgi; use kwstatic;
 		push (@{$b->{$attrname}}, $restr_rec); } } } 
 
     sub extract_lit { my ($txt) = @_;
-	my ($lit, $trans) = ("", "");
-	if ($txt =~ s/\s*\(lit:\s*([^)]*)\)\s*/ /) { $lit = $1; }
-	elsif ($txt =~ s/\s*\(trans:\s*([^)]*)\)\s*/ /) { $trans = $1; }
-	elsif ($txt =~ s/^lit:\s*(.*)//) { $lit = $1; }
-	elsif ($txt =~ s/^trans:\s*(.*)//) { $trans = $1; }
-	$txt =~ s/^\s+//; $txt =~ s/\s+$//;
-	return ($txt, $lit, $trans); }
-
+	  # The following regex will match substrings like 
+	  #   "(lit: xxxx)" or "(trans: xxxx").  The "xxxx"
+	  # part may have a single nested parentheised phrase,
+	  # e.g.: "lit: foo (on you) dude". 
+	my ($start, $brk, $special, @special, $gloss, @gloss, @lit, @trans, $gtyp);
+	if ($txt =~ s/^lit:\s*//o)   { return ('', [$txt], []    ); }
+	if ($txt =~ s/^trans:\s*//o) { return ('', [],     [$txt]); }
+	$start = 0;
+	while ($txt =~ m/(\((lit|trans):\s*((?:(?:[^()]+)|(?:\(?:[^)]+\)))+)\))/g) {
+	    $gtyp = $2; $special = $3;
+	    $brk = pos($txt) - length ($1);
+	    if ($brk - $start > 0)  { push (@gloss, substr ($txt, $start, $brk-$start)); }
+	    if ($gtyp eq "lit")     { push (@lit, $special); }
+	    if ($gtyp eq "trans")   { push (@trans, $special); }
+	    $start = pos($txt); }
+	push (@gloss, substr ($txt, $start, length ($txt) - $start)); 
+	$gloss = join (' ', map (m/\s*(.*\S)\s*/, @gloss));
+	return $gloss, \@lit, \@trans; }
 
     sub usage { my ($exitstat) = @_;
 	print <<EOT;

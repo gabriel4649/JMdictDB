@@ -656,7 +656,7 @@ use jmdict; use jmdictpgi; use kwstatic;
 	if ($txt =~ s/^lit:\s*//o)   { return ('', [$txt], []    ); }
 	if ($txt =~ s/^trans:\s*//o) { return ('', [],     [$txt]); }
 	$start = 0;
-	while ($txt =~ m/(\((lit|trans):\s*((?:(?:[^()]+)|(?:\(?:[^)]+\)))+)\))/g) {
+	while ($txt =~ m/(\((lit|trans):\s*((([^()]+)|(\([^)]+\)))+)\))/g) {
 	    $gtyp = $2; $special = $3;
 	    $brk = pos($txt) - length ($1);
 	    if ($brk - $start > 0)  { push (@gloss, substr ($txt, $start, $brk-$start)); }

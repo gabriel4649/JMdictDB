@@ -54,7 +54,8 @@ binmode (STDOUT, ":utf8");
 
 	@fld  = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'FLD'));
 	@kinf = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'KINF'));
-	@rinf = sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'RINF'));
+	@rinf = sort ({$a->{kw} cmp $b->{kw}} grep ($_->{id}<100,
+						    kwrecs ($::KW, 'RINF')));
 
 	for $i (sort ({$a->{kw} cmp $b->{kw}} kwrecs ($::KW, 'FREQ'))) {
 	    $kw = $i->{kw};

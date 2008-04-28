@@ -1,0 +1,18 @@
+Title:	Change DIAL keyword "ryukyu" to "ryuukyuu"
+Stat:	closed
+Disp:	done
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-04-28 12:16:54 sysad
+  Jim changed dialect keyword "ryukyu" to 'ryuukyuu", see edict
+  mailing list post:
+    http://tech.groups.yahoo.com/group/edict-jmdict/message/2498
+    Date: 2008-04-08
+    Subject: Re: [edict-jmdict] a few more jmdict errors
+    From: Jim Breen
+  
+  Updated pg/data/kwdial.csv, perl/lib/jmdictxml.pm.
+  Ran "make" in perl/lib/ to rebuild kwstatic.pm.

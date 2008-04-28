@@ -82,7 +82,8 @@ our %JM2ID = (
 		'gikun (meaning) reading' => 1,
 		'out-dated or obsolete kana usage' => 2,
 		'word containing irregular kana usage' => 3,
-		'word usually written using kanji alone' => 4, },
+		'word usually written using kanji alone' => 4,
+		'old or irregular kana form' => 21, },		# Used in jmnedict.
 	
 	FLD => {		# kwfld
 		'Buddhist term' => 1,
@@ -118,7 +119,8 @@ our %JM2ID = (
 		'word usually written using kana alone' => 22,
 		'vulgar expression or word' => 24,
 		'sensitive' => 25, 
-		'poetical term' => 26, },
+		'poetical term' => 26,
+		'onomatopoeic or mimetic word' => 27, },
 	
 	POS => {		# kwpos
 		'adjective (keiyoushi)' => 1,

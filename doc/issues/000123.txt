@@ -1,0 +1,15 @@
+Title:	Add new jmnedict tag "organization"
+Stat:	closed
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-05-02 14:01:21 sysad
+  Recent parse of jmnedict turned up a new entity:
+    organization "organization name"
+
+  Add line to pg/date/kwpos.csv:
+    191     organization    organization name
+  Run make in python/lib/ to rebuild kwstatic.py.

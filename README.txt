@@ -25,23 +25,26 @@ The most recent version of this code may be downloaded at
 http://www.edrdg.org/~smg/.
 
 This package contains the following directories:
-  ./                Package directory.
-  ./doc/            Documentation.
-  ./perl/           Command line apps.
-  ./perl/cgi/       CGI scripts.
-  ./perl/lib/       Library modules.
-  ./perl/lib/tal/   PETAL templates.
-  ./pg/             Database scripts.
-  ./pg/data/        Database static data.
-  ./tools/	    Scripts used by Makefiles.
+  ./                   Package directory.
+  ./doc/               Documentation.
+  ./pg/                Database scripts.
+  ./pg/data/           Database static data.
+  ./python/            Command line apps.
+  ./python/cgi/        CGI scripts.
+  ./python/lib/        Library modules.
+  ./python/lib/tmpl/   TAL templates.
+  ./tools/	       Scripts used by Makefiles.
 
-See the file doc/MANIFEST.txt for a full, annotated
-listing of all the files
+The following directories are also included and contain
+code for previous version, implemented in the Perl language:
+  ./perl/              Command line apps.
+  ./perl/cgi/          CGI scripts.
+  ./perl/lib/          Library modules.
+  ./perl/lib/tal/      PETAL templates.
 
-See doc/Changes.txt for the detailed CVS change log.
-
-See TODO.html for list of outstanding and resolved bugs
-and to-do items.
+FIXME:
+  Add pointers to todo, Change log, files manifest (if avail)
+  Also document packaged issues files.
 
 ======
 STATUS
@@ -49,8 +52,12 @@ STATUS
 
 This code is under development and is pre-alpha quality.
 Everything here is subject to future change.  The web pages
-currently use Perl/cgi.  These will be changed, most likely
-to Apache/modperl, when the UI is stabilized.
+currently use Python/CGI.
+
+Development uses Mercurial (http://selenic.com/mercurial)
+as a version control system.  The development repository is
+available for download, and the project's revision history 
+can be browsed at http://edrdg.org/~smg/jmdictdb/.
 
 =============
 DOCUMENTATION
@@ -68,21 +75,8 @@ Database schema:
 
 API Documentation: 
   README.txt -- This file.
-  tut0.pl, tut1.pl, tut2.pl, tut3.pl -- These tutorials are
-	also executable Perl scripts.  You can run them under
-	the perl debugger and step through the statements, 
-	interactively examining variables, while reading 
-	the extensive comments.  They discuss:
 
-	tut0 -- Database connections.
-	tut1 -- Using the Kwds() "virtual keyword tables".
-	tut2 -- Finding and retrieving entries.
-	tut4 -- Structure and use of entry objects.
-
-	They may be somewhat out-of-date with respect to the
-	actual software.
-
-  perl/showentr.pl -- This is a command line tool for 
+  python/shentr.pl -- This is a command line tool for 
 	displaying JMdict entries from the database.  It
 	is well documented making it useful for understanding
 	the use of the API in a real (if tiny) application.
@@ -103,26 +97,39 @@ However, you may wish to install a local copy of this software:
 Requirements
 ------------
 The code is developed and tested on Microsoft Windows 2000, 
-Fedora Core 6, and Debian, with either Apache (on Unix/Linux)
+Fedora Core 8, and Debian, with either Apache (on Unix/Linux)
 or IIS (on MS Windows) as a web server.  The webserver should
-be configured to run Perl CGI scripts.
+be configured to run Python CGI scripts.
 
-Some additional Perl modules are also needed (may be installed
-using CPAN on Unix/Linux or Activestate's PPM on Windows).
+Some additional Python modules are also needed.
 Version numbers are the versions currently in use in the 
 author's development environment -- the software may work
 fine with earlier or later versions, but this has not been 
 verified.
 
-  Postgresql [8.2]
-  Perl [5.8.8]
-    Petal [2.19] [see doc/issue/000106.txt for required patch.]
-    Petal::Utils [0.06]
-    DBI [1.52]
-    DBD::Pg [1.49] (Did not work with DBD::PgPP on Windows). 
-    XML::Twig [3.26]
+  Postgresql [8.2 or 8.3]
+  Python [2.5.2]
+    psycopg2-2.0.5.1 Python-Postgresql connector.
+      http://
+    simpleTAL-4.1 -- Template file processor.
+      http://
+    simplejson-1.8.1 -- JSON en-/de-coder.
+      http://pypi.python.org/pypi/simplejson/1.8.1
+    ply-2.4 -- YACC'ish parser generator.
+      Need 2.4 development version, (current release 
+      version 2.3 does not have needed features), 
+      available from svn:
+      http://code.google.com/p/ply/source/checkout
+    wxPython-2.8.7.1 -- (Optional) Code inludes a simple
+      GUI interface to the database that is similar the the
+      cgi interface.  To run this requires wxPython.
+      http://www.wxpython.org/download.php
   Apache [2.2] (on Unix/Linux systems) or
-  or IIS [6.0] (on MS Windows systems)
+    IIS [5.0] (on MS Windows systems)
+  wget -- Used by Makefile to download the JMdict_e.gz, 
+    JMnedict.gz, and examples.utf8.gz file from the Monash
+    site.  If not available, you can download the needed 
+    files manually.
 
 On Windows you will also need a copy of the GNU "make"
 program if you want to use the Makefiles to automate some
@@ -133,20 +140,28 @@ Authentication
 Any program that accesses the database needs a username 
 and possibly a pasword to do so.  In a standard Postgresql 
 install, local connections made with user "postgres" do 
-not need a password, the the default configuration of 
-the Makefile and CGI files assumes this.  
+not need a password, but your installation may require
+you to use a different username and password.
 
-In the Makefile, the Postgresql username is defined in 
-variable $(USER).  psql and the jmdictdb perl tools do
-not accept passwords on the command line so those will
-need to be supplied via any of the standard methods
-described in 29.1, "Database Connection Control Functions"
-of the Postgreqsl docs.  See the "Connecting To A Database" 
-section of the psql docs.  Each of the jmdictdb perl
-tools has a -h (help) option that will describe the 
-login options for the tool.
-A .pgpass file will probably be most convenient.
-See 29.13, "The Password File".
+The database is accessed by the jmdictdb system in two
+contexts:
+ - When running the jmdictdb programs (including tools
+   run by the Makefile during installation).
+ - When a cgi script is executed by the web server.
+
+All the Python tools that access the database accept 
+command line parameters that allow specifying a username,
+password, host machine, and database name (run any program
+with the option "--help" for details).  However specifying
+a username or password on the command line is a bad idea 
+because on many systems that information will be visible 
+to other users of the system.  For a better alternative 
+you can set up a .pgpass file.  In the Postgresql docs 
+see:
+  29.13, "The Password File"
+  29.1, "Database Connection Control Functions"
+and 
+  "Connecting To A Database" section of the psql docs.
 
 CGI scripts are run as the web server user and database
 login credentials are stored in the postgresql service
@@ -189,23 +204,40 @@ loaded database to "jmdict".
    ~/public_html/cgi-bin/.  You may wish to change that
    if you will be using the cgi files.  There are also
    some options for the Postgresql database server 
-   commections.
+   connections, including authentication settings.
 
-2. In the top level directory, run "make" which won't
+2. Set (or modify) the enviroment variable PYTHONPATH
+   so that it contains an absolute path to the python/lib
+   directory.  For example, if you installed the jmdictdb
+   software in /home/joe/jmdictdb/, then PYTHONPATH must
+   contain (possibly in addition to other directories)
+   /home/joe/jmdictdb/python/lib.  
+
+3. (Optional) In the top-level directory, run 
+
+	make subdirs
+
+   This will make sure that the support files are up-
+   to-date.  You can generaly skip this step if you 
+   are running unmodified copy of the source (since 
+   an attempt is made to keep the distributed support 
+   files updated) but must do this if you've changes
+   any of the support files' dependencies.
+
+4. In the top level directory, run "make" which won't
    do anything other than list the available targets 
    that will do something.  For JMdict the targets are:
 
-   jmdict.xml: 
+   data/jmdict.xml: 
 	Download the current JMdict_e.gz file from the 
 	Moash FTP site, and unpack it.
 
-   jmdict.pgi: 
+   data/jmdict.pgi: 
 	Do target jmdict.xml if neccessary, then parse
 	the jmdict.xml file, generating a rebasable 
-	jmdict.pgi file and jmdict.log.  Note that 
-	this can take a long time (10's of minutes).
+	jmdict.pgi file and jmdict.log.
 
-   jmdict.dmp:
+   data/jmdict.dmp:
 	Do target jmdict.pgi if neccessary, then create
 	a Postgresql .dmp file with the entry id numbers
 	resolved.  
@@ -219,6 +251,9 @@ loaded database to "jmdict".
 	should be fully loaded and functional, but is
 	still name "jmnew" to avoid clobbering any
 	existing and in-use "jmdict" database.
+
+   loadall:
+	Load JMdict, JMnedict, and examples into jmnew.
 
    activate:
 	Renames the "jmnew" database produced above to 
@@ -243,9 +278,17 @@ loaded database to "jmdict".
    xrefs produced (1M+ total with some entries such as the
    particle "ha" having over 100K referring to it.)
 
-3. The makefile will load all the file data into a database
-   named "jmnew".  If everything was loaded sucessfully, 
-   run 
+   Makefile will download JMdict_e.gz (or JMdict.gz if so 
+   configured), JMnedict.gz, and examples.utf8.gz as needed 
+   depending on the make targets used, using the 'wget' 
+   program.  If wget is not available you can download 
+   the needed files manually, and put them in the ./data/ 
+   directory.
+
+5. The makefile will parse the data files, create a database
+   named "jmnew", load the jmdictdb schema, and finally load 
+   all the parsed data into it.  If everything was loaded 
+   sucessfully, run 
 
 	make activate
 
@@ -254,21 +297,24 @@ loaded database to "jmdict".
    it the active database.  There must be no active users in
    any of these database or the commands will fail.
 
-4. If you plan on using the cgi files with a web server, 
+6. If you plan on using the cgi files with a web server, 
    double check the settings in the Makefile (see step #1) 
    and then run:
 
 	make web
    
    to install the web CGI files.  
+   Note that it is also possible to configure your web server
+   to serve the cgi files directly from the development directory
+   making this step unnecessary.
 
-5. When the cgi files are executed by the web server, they
-   read the file perl/lib/pg_service.conf (or its copy as
-   installed in the web server cgi directory) to determine
+7. When the cgi files are executed by the web server, they
+   read the file python/lib/pg_service.conf (or its copy as
+   installed in the web server lib directory) to determine
    the database name and login credentials to use when
    connecting to the database.
  
-   In the ./perl/lib directory, copy the file, pg_service.sample,
+   In the ./python/lib directory, copy the file, pg_service.sample,
    to pg_service.conf.  Edit the latter file and set the user
    and password values appropriately for your database. 
    You can also delete these lines and Postgresql will use
@@ -285,11 +331,6 @@ loaded database to "jmdict".
    You should now be able to go to the url corresponding to 
    srchform.pl and do searches for jmdict entries.  The url
    corresponding to edform.pl will let you add new entries.
-
-6. (Optional)
-   Import Kale Stutzman's Google page count data into database.
-   [...to be supplied...]
-
 
 ===
 EOF

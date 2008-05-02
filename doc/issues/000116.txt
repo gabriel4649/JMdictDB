@@ -1,0 +1,17 @@
+﻿Title:	Add
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-04-24 23:12:25 sysad
+  From:
+    http://tech.groups.yahoo.com/group/edict-jmdict/message/2546
+  
+  > I have added the JLPT levels at which kanji are introduced to
+  > the kanji files. They appear as Jn in KANJIDIC and <jlpt>n</jlpt>
+  > in kanjidic2.
+  
+  Need to add support for this to kanjdic parser.

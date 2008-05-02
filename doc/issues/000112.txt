@@ -1,6 +1,6 @@
 Title:	missing language support in perl libs
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	wont
 Prio:	low
 Cats:	bug
 Reqtrs:	
@@ -26,3 +26,7 @@ AssdTo:
   
   (Aside: this is a problem independent of language that also affects
   intended syntax like "[lit:xxxxxx]" which also doesn't work.)
+
+2008-04-14 09:50:00 stuart@friix.com
+  Change to Python as the implementation language (IS-109) makes this 
+  issue moot.

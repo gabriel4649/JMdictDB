@@ -1,0 +1,20 @@
+[Most recent]
+sql = SELECT id FROM
+	  (SELECT id FROM entr ORDER BY id DESC LIMIT %s) AS x
+	  ORDER BY id
+help = Finds the P1  most recent (by highest entry id number) entries.
+	  P1: Number of entries
+
+[Most recent in corpus]
+sql = SELECT id FROM
+	  (SELECT id 
+	     FROM entr e 
+	     JOIN kwsrc y ON y.id=e.src 
+	     WHERE y.kw IN (%s)
+	     ORDER BY id DESC LIMIT %s) AS x
+	  ORDER BY id
+help = Finds the P1 most recent (by highest entry id number) entries
+	in the corpus P2.
+
+	  P1: Number of entries.
+	  P2: Corpus (short) name.

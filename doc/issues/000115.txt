@@ -1,0 +1,44 @@
+﻿Title:	Adjust web page UI for kanjidic in database.
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-04-24 21:55:19 sysad
+  Have added experimental support for loading kanjidic2 files
+  but it presents some UI issues:
+  * Do we want kanjidic to be option in corpus selection on
+    search page.  (Probably not -- kanji search likely needs
+    its own search form.)
+  * When executing searches we need to filter kanjidic results
+    out when building search criteria.
+  * It uses some unique RINF values -- do we want these to be
+    shown on the general search form (web/cgi/srchform.py)?
+    If kanjidic not available in the corpus selections, then
+    definately "no".  And definately "no" for pages used for
+    the wwwjdic submission system.)
+  * All the above require knowing which corpuses are kanjidic.
+    Don't want to hardwire magic id's or keywords.  Add column
+    to kwsrc table?
+  * What about corpus dropdown list on edit page?  Should edconf.py
+    (and edsubmit.py) pages refuse to accept entries wiyj kanjidic
+    corpus?
+  
+  * entr page probably ok as is since its driven by entr.id
+  * shentr.py util probably ok since that in internal tool and
+    should allow display of kanji entries is desired.
+  
+  We'll need a dedicated kanjidic search, results pages but will
+  open separate issue for that -- this issue is about how to
+  load kanjidic into database and not create UI confusion for
+  uses of current pages.
+
+2008-04-24 22:28:00 sysad
+  As a temp measure will assume kanjidic corpus is always id=4.
+  * Modified web/cgi/srchform.py to filter kanjidic corpus out
+    of corpus list and kanjidic-specific rinf values out of rinf
+    list.
+  * Modified srchres.py to always add a "entr.src!=4" condition
+    when building search criteria.

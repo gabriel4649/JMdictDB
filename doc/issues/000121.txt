@@ -1,0 +1,12 @@
+Title:	Move jmnedict tag from POS to MISC
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-04-28 17:00:22 sysad
+  Currently, the jmnedict tags (surname, place, unclass, company,
+  product, masc, person, given, station) are POS tags, but they
+  really should be changed to MISC tags.

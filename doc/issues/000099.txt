@@ -9,3 +9,7 @@ AssdTo:	stuart@friix.com
 2007-08-21 00:00:00 stuart@friix.com
   At least the xref section needs updating (e.g. bld_erefs no longer in
   api).
+
+2008-04-14 09:41:00 stuart@friix.com
+  The change from Perl to Python (IS-109) requires that these docs be 
+  rewritten.

@@ -1,6 +1,6 @@
 Title:	Srchform corpus default correct by accident.
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	wont
 Prio:	med
 Cats:	bug
 Reqtrs:	

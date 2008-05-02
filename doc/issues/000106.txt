@@ -1,6 +1,6 @@
 Title:	Document required Petal patch
 Stat:	closed
-Disp:	
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	

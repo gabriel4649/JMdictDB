@@ -1,8 +1,8 @@
 Title:	Support three-letter language codes
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	crit
-Cats:	
+Cats:	dev
 Reqtrs:	
 AssdTo:	
 
@@ -109,5 +109,13 @@ AssdTo:
   kwstatic.pm module. 
 
   Searched perl files and PETAL templates for uses of "en" when but
-  found few (some uses of KWLANG_en from kwstatic.pm was all.)  I'm
-  sure I must have missed some.
+  found few (some uses of KWLANG_en from kwstatic.pm was all.) 
+  Also fixed the new python code to correctly handle the 3-letter 
+  codes.
+
+2008-04-11 11:10:12 sysad
+  Successfully parsed and loaded the 2008-04-11 full multi-language
+  version of JMdict.  Perl and Python cgi scripts display the codes
+  correctly(*) as does showentr.pl and shentr.py.
+  (*) The perl cgi pages for editing entries had and continue to have
+  no support for non-english glosses yet.

@@ -1,6 +1,6 @@
 Title:	Handle duplicate tags in jbparser.yp
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	
@@ -16,3 +16,12 @@ AssdTo:	stuart@friix.com
   ambiguity.
   - After taking above considerations into account, should return a "is
   ambiguous" code when tag is ambiguous.
+
+2008-04-14 08:51:00 stuart@friix.com
+  This is fixed in the Python version of the JEL parser.  It passes
+  unresolved tags up to higher semantic levels in the parser where
+  they are resolved with knowlage of what tag types are allowable at
+  that level.
+
+  Since the Perl version of the code is being abandoned, it will not
+  be fixed there.

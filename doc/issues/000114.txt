@@ -1,4 +1,4 @@
-Title:	Use text-file-based issue tracking
+﻿Title:	Use text-file-based issue tracking
 Stat:	open
 Disp:	
 Prio:	high

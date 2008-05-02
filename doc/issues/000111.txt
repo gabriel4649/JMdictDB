@@ -1,6 +1,6 @@
 Title:	srchform.pl page has wrong corpus checkbox defaults
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	wont
 Prio:	low
 Cats:	bug
 Reqtrs:	
@@ -17,3 +17,7 @@ AssdTo:
   This idsa very low priority issue since the reimplementation
   in Python is nearly complete and I don't want to spend time
   on the soon-to-be-obsolete Perl stuff.
+
+2008-04-14 09:50:00 stuart@friix.com
+  Change to Python as the implementation language (IS-109) makes this 
+  issue moot.

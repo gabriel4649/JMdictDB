@@ -1,4 +1,4 @@
-Title:	Kana-kanji determination
+﻿Title:	Kana-kanji determination
 Stat:	open
 Disp:	
 Prio:	med
@@ -19,4 +19,37 @@ AssdTo:	stuart@friix.com
   Change jstr_classify?  Or do something else?
 
 2007-02-01 00:00:00 stuart@friix.com
-  See also task-83: "brackets in reading cause parse error".
+  See also IS-83: "brackets in reading cause parse error".
+
+2008-04-25 17:01:00 stuart@friix.com
+  Added check to jmparse.py that issues a warning to the log file if
+  a <keb> element is processed that does not contain any kanji chars.
+  When run on JMdict or JMnedict, a lot of such warnings occur, most
+  due to failure of jdb.jstr_classify() to treat full-width equivalents
+  of ascii characters as kanji.  In jdb.jstr_classify() changed the 
+  unicode range defining "kanji" from 0x4E00-0x9FFF to 0x4E00-0xFFFF.
+  However, the extended range is probably not right either as is 
+  contains half-width katakana (FF61-FF9F) and the unicode surrogate
+  range (D800-DFFF).
+
+  There are similar warnings from JMnedict but in addition there are 
+  a lot of kana-only <keb> texts.  See the following explanation by
+  Jim Breen on the Edict mailing list:
+    Subject: Re: [edict-jmdict] jmnedict non-kanji keb elements 
+    Date: 2008-04-24
+    http://tech.groups.yahoo.com/group/edict-jmdict/message/2547
+  Will either wait for Jim to fix in JMnedict, or will have to try
+  to detect and relocate during parsing.
+
+  Perhaps we need some code from jstr_classify() that indicates
+  characters that could be *either* kanji or kana?
+
+2008-04-25 23:59:27 stuart@friix.com
+  Just noticed that the above change fixes many "no kanji in keb"
+  warnings when processing jmdict, it now causes many "no kana in 
+  in "reb" warning when processing jmnedict!
+  If seems that the full-width ascii strings put in keb elements in
+  jmdict are in reb lements in jmnedict. 
+
+  Need to think about how to fix this.
+ 

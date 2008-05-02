@@ -1,7 +1,7 @@
 Title:	Consolidate restr/stagr/stagk
 Stat:	open
 Disp:	
-Prio:	low
+Prio:	med
 Cats:	idea
 Reqtrs:	
 AssdTo:	stuart@friix.com
@@ -19,3 +19,7 @@ AssdTo:	stuart@friix.com
   etc.
   - Can back conversion exactly reconstruct the original
   restr/stagr/stagk?
+
+2008-04-13 19:00:00 stuart@friix.com
+  This may be more important now because recently, JMdict has added some
+  stagk elements that include both kanji and reading, e.g, 1578780.

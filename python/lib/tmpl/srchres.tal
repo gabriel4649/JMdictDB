@@ -1,0 +1,56 @@
+<html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
+<!--? Copyright (c) 2008 Stuart McGraw -->
+<!--? $Revision$ $Date$ -->
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
+  <title>JMdict search results</title>
+</head>
+<body class="srchres">
+  <h1>JMdict Search Results</h1>
+  <div class="results">
+    <form method="get" action="entr.py">
+      <span class="count">
+        <span tal:replace="python:len(results)"/> matching entries found...
+	</span>
+      <span tal:condition="python:len(results)&gt;10">
+        <input name="show" value="Display selected entries" type="submit"/> 
+        <input value="Reset" type="reset"/> 
+	</span>
+      <table class="reslist" tal:condition="results">
+	<tr class="heading">
+	  <th> </th>
+	  <th>Seqnum</th>
+	  <th>S</th>
+	  <th>P</th>
+	  <th>Kanji</th>
+	  <th>Reading</th>
+	  <th>Gloss</th>
+	  </tr>
+	<tr class="resrow" tal:repeat="r results">
+	  <td><input type="checkbox" name="e" tal:attributes="value r/id"/></td>
+	  <td class="seq">
+	    <span tal:replace="python:TALabbr('SRC',r.src)"/>
+	    <span tal:replace="r/seq"/>
+	    </td>
+	  <td>
+	    <span tal:condition="not:r/unap" tal:replace="python:TALabbr('STAT',r.stat)"/>
+	    <span tal:condition="r/unap" class="pend">
+	      <span tal:replace="python:TALabbr('STAT',r.stat)"/>*</span>
+	    </td>
+	  <td>
+	    <span tal:condition="r/p" tal:omit-tag="">P</span>
+	    &nbsp;
+	    </td>
+	  <td class="kanj" tal:content="r/kanj"/>
+	  <td class="rdng" tal:content="r/rdng"/>
+	  <td class="gloss" tal:content="r/gloss"/>
+	  </tr>
+	</table>
+      <input name="show" value="Display selected entries" type="submit" tal:condition="results"/> 
+      <input name="show" value="Reset" type="reset" tal:condition="results"/> 
+      <input type="hidden" name="svc" tal:attributes="value svc"/>
+      </form>
+    </div>
+  </body>
+</html>

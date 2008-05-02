@@ -1,0 +1,15 @@
+<html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
+<!--? Copyright (c) 2008 Stuart McGraw -->
+<!--? $Revision$ $Date$ -->
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
+  <title>Invalid parameters</title>
+  </head>
+<body>
+  <h2>URL Parameter errors</h2>
+  <span tal:repeat="e errs">
+    <span tal:replace="structure e" tal:omit-tag="">err message</span><br/>
+    </span>
+  </body>
+</html>

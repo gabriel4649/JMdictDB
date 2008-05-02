@@ -1,0 +1,18 @@
+Title:	create "test" corpus when loading schema.
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-05-01 22:40:38 sysad
+  Think it would be good idea to create an initial corpus
+  entry named "test" in kwsrc when schema is initially
+  loaded by pg/reload.sql.  This will allow new entries
+  to be added (by the cgi new entry page for example) even
+  when no other corpus has been loaded.
+  
+  Need to add row to kwsrc table dynamically (since there
+  is no og/dasta/kwsrc.csv file)?  Note that sequence "seq_test"
+  is already created in pg/mktables.sql.

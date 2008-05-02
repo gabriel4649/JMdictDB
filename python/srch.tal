@@ -1,0 +1,210 @@
+﻿<html xmlns:tal="http://purl.org/petal/1.0/">
+<!--? Copyright (c) 2007 Stuart McGraw -->
+<!--? $Revision$ $Date$ -->
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
+  <title>JMdict</title>
+</head>
+<body>
+  <span tal:repeat="e entrs" tal:omit-tag="">
+    <div class="entry">
+      <span tal:replace="python:TALabbr('SRC',e.src)">src</span>
+      <span tal:replace="e/seq">seqnum</span>
+      <span class="status">
+	<span tal:content="python:TALdescr('STAT',e.stat)">status</span>
+	<span class="pend" tal:condition="e/unap">
+	  <font color="#FF0000">(unapproved)</font>
+	  </span>
+	</span>
+      <span class="pkid"><font size="-1">{id:<span tal:replace="e/id" tal:omit-tag=""/>}</font></span>
+      <span class="status" tal:condition="e/dfrm" tal:omit-tag=""> revision of  
+	<a tal:attributes="href string:entr?e=${e/dfrm}" tal:content="e/dfrm"/>
+	</span>
+      <span class="status" tal:condition="e/dfrmr" tal:omit-tag=""><br/>revised by
+	<span tal:repeat="f e/_dfrm" tal:omit-tag=""> 
+	  <span tal:condition="not:e/repeat/first" tal:omit-tag="">,</span>
+	  <a tal:attributes="href string:entr?e=${f}" tal:content="f"/>
+	  </span>
+	</span>
+
+      <span tal:condition="e/srcnote">
+	<br/>Src Notes: <span tal:replace="e/srcnote" tal:omit-tag="">srcnote</span>
+        </span>
+      <span tal:condition="e/notes">
+	<br/>Entry Notes: <span tal:replace="e/notes" tal:omit-tag="">notes</span>
+        </span>
+
+      <br/> 
+      <span tal:condition="e/_kanj" tal:repeat="k e/_kanj" tal:omit-tag="">
+        <font size="+1">
+	  <span tal:condition="not:repeat/k/start" tal:omit-tag="">； </span>
+	  <b><span class="kanj" tal:content="k/txt">kanji text</span></b>
+          </font>
+	<span class="kattrs" tal:condition="python:TALattror(k,'_inf','_freq')">
+	  <font size="-1">
+            [<span class="kinf" tal:condition="k/_inf" tal:content=
+		 "python: TALabbrs('KINF',k,'_inf')">kinf</span>
+	     <span tal:condition="python: TALattrand(k,'_inf','_freq')" tal:replace="string:/">/</span>
+	     <span class="kfreq" tal:condition="k/_freq" tal:content=
+	   	 "python: TALfreqs(k)">kfreq</span>]
+            </font>
+	  </span>
+	</span>
+
+      <br tal:condition="python: TALattrand(e,'_kanj','_rdng')"/>
+      <span tal:repeat="r e/_rdng">
+        <font size="+1">
+	  <span tal:condition="not:repeat/r/start" tal:omit-tag="">； </span>
+	  <b><span class="rdng" tal:content="r/txt">reading text</span></b>
+	  <span class="restr" tal:condition="r/_RESTR">
+	    <span tal:condition="python: r._RESTR==1" tal:omit-tag="">
+              <font size="-1">(no kanji)</font></span>
+	    <span tal:condition="python: r._RESTR!=1" tal:omit-tag="">(
+	      <span tal:repeat="z r/_RESTR" tal:omit-tag="">
+	        <span tal:condition="not:repeat/z/start" tal:omit-tag="">,</span>
+	        <span tal:replace="z"/>
+	        </span>)
+	      </span>
+	    </span>
+          </font>
+	<span class="rattrs" tal:condition="python: TALattror(r,'_inf','_freq')">
+          <font size="-1">
+	    [<span class="rinf" tal:condition="r/_inf" tal:content="python: TALabbrs('RINF',r,'_inf')">rinf</span>
+	    <span tal:condition="python: TALattrand(r,'_inf','_freq')" tal:replace="string:/">/</span>
+	    <span class="rfreq" tal:condition="r/_freq" tal:content="python: TALfreqs(r)">rfreq</span>]
+            </font>
+	  </span>
+	</span>
+
+      <table class="senses" border="0" width="100%" tal:condition="e/_sens">
+	<tr class="sense" tal:repeat="s e/_sens">
+	  <td valign="top" width="5" tal:content="string:${s/sens}.">n.</td>
+	  <td colspan="2">
+	    <span class="stag" tal:condition="s/_STAG">
+	      (<span tal:condition="s/_STAG" tal:repeat="z s/_STAG" tal:omit-tag="">
+		<span tal:condition="not:repeat/z/start" tal:omit-tag="">,</span>
+		<span tal:replace="z" tal:omit-tag="">stag-restr</span>
+		</span> only)
+	      </span>
+	    <span class="pos" tal:condition="s/_pos">
+	      [<span tal:replace="python:TALabbrs('POS',s,'_pos')">pos</span>]
+	      </span>
+	    <span class="misc" tal:condition="s/_misc">
+	      [<span tal:replace="python:TALabbrs('MISC',s,'_misc')">misc</span>]
+	      </span>
+	    <span class="fld" tal:condition="s/_fld">
+	      {<span tal:replace="python:TALdescrs('FLD',s,'_fld')">fields</span>}
+	      </span>
+
+	    <span class="dial" tal:condition="s/_dial">, 
+	      Dialect: <span tal:replace="python:TALabbrs('DIAL',s,'_dial')">dial</span>
+	      </span>
+	    <span class="lsrc" tal:condition="s/_lsrc">
+	      (from: 
+	      <span tal:repeat="z s/_lsrc" tal:omit-tag="">
+		<span tal:replace="python:TALabbr('LANG',z.lang)">(xx)</span
+		><span tal:condition="python: TALattror(z,'part','wasei')" tal:omit-tag=""
+		  >(<span tal:condition="z/part" tal:replace="string: p">p</span
+		  ><span tal:condition="python: TALattrand(z,'part','wasei')" tal:replace="string: ,">,</span
+		  ><span tal:condition="z/wasei" tal:replace="string: w">w</span
+		  >)</span
+		>:"<span tal:condition="z/txt" tal:replace="z/txt">source word</span
+		>"<span tal:condition="not:repeat/z/end" tal:omit-tag="">,</span>
+		</span>)
+	      </span>
+
+	    <span class="note" tal:condition="s/notes">
+	      <br/>《<span tal:replace="s/notes">sense-notes</span>》<br/>
+	      </span>
+
+	    <span tal:condition="s/_gloss" tal:omit-tag="">
+	      <span tal:repeat="g s/_gloss" tal:omit-tag="">
+	      <br/>
+	      <span class="gloss" tal:replace="string:${g/gloss}. ">num.</span>
+		<span tal:condition="python: g.lang!=1" omit-tag="">
+	          <span class="glang" tal:replace="python:TALabbr('LANG',g.lang)">lang</span>:
+		  </span>
+		<span tal:condition="python: g.ginf!=1" omit-tag="">
+	          [<span class="ginf" tal:replace="python:TALattr('GINF',g.ginf)">lang</span>.]
+		  </span>
+		<span class="gloss" tal:replace="g/txt">gloss</span>
+		</span>
+	      </span>
+
+	    <table border="0" class="xrefs" width="100%" tal:condition="python: TALattror(s,'_xref','_xrer')">
+	      <tr tal:condition="s/_xref">
+		<td colspan="2">Cross references:</td>   
+	        </tr>
+	      <tr tal:condition="s/_xref" >
+		<td width="5">&nbsp;</td>
+		<td>
+		  <span tal:repeat="x s/_xref" tal:omit-tag="">
+		    <span tal:replace="python:TALabbr('XREF',x.typ)">xref-type</span>:
+		    <a tal:attributes="href string:entr?e=${x/xentr}" tal:content="x/TARG/seq">seq-num</a
+		    ><span tal:condition="python: len(x.TARG._sens)&gt;1"
+		      >(<span tal:replace="x/xsens">sense</span>) </span> 
+		    <span tal:condition="x/kanj" tal:replace="python:x.TARG._kanj[x.kanj-1].txt">xref-kanj</span>
+		    <span tal:condition="python: TALattrand(x,'kanj','rdng')" tal:omit-tag="">／</span>
+		    <span tal:condition="x/rdng" tal:replace="python:x.TARG._rdng[x.rdng-1].txt">xref-rdng</span>
+		    <span tal:replace="python: TALtxts(x.TARG._sens[x.xsens-1],'_gloss')"></span>
+		    <span tal:condition="x/notes" replace="x/notes">xref-note</span>
+		    <br tal:condition="not:repeat/x/end"/>
+		    </span>
+		  </td>
+		</tr>
+	      <tr tal:condition="s/_xrer">
+		<td colspan="2">Reverse references:</td>
+		</tr>
+	      <tr tal:condition="s/_xrer">
+		<td width="5">&nbsp;</td>
+		<td>
+		  <span tal:repeat="x s/_xrer" tal:omit-tag="">
+		    <span tal:replace="python:TALabbr('XREF',x.typ)">xref-type</span>:
+		    <a tal:attributes="href string:entr?e=${x/entr}" tal:content="x/TARG/seq">seq-num</a
+		    ><span tal:condition="python: len(x.TARG._sens)&gt;1"
+		      >(<span tal:replace="x/sens">sense</span>) </span> 
+		    <span tal:condition="x/TARG/_kanj" tal:replace="x/TARG/_kanj/0/txt">xref-kanj</span>
+		    <span tal:condition="python: TALattrand(x,'kanj','rdng')" tal:omit-tag="">／</span>
+		    <span tal:condition="x/TARG/_rdng" tal:replace="x/TARG/_rdng/0/txt">xref-rdng</span>
+		    <span tal:replace="python: TALtxts(x.TARG._sens[x.sens-1],'_gloss')"></span>
+		    <span tal:condition="x/notes" replace="x/notes">xref-note</span>
+		    <br tal:condition="not:repeat/x/end"/>
+		    </span>
+		  </td>
+		</tr>
+	      </table>
+	    </td>
+	  </tr>
+	</table>
+
+      <span tal:condition="e/_hist" tal:omit-tag="">History:
+	<table border="0" width="100%">
+	  <span tal:repeat="h e/_hist">
+	    <tr>
+	      <td width="5" tal:content="string:${h/hist}.">#.</td> 
+	      <td class="hhdr" colspan="2" >
+		<span tal:replace="python:TALabbr('STAT',h.stat)"/>
+		<span tal:content="h/dt" tal:omit-tag="" />
+		<span tal:content="h/name" tal:omit-tag="" />
+		<span tal:condition="h/email" content="&lt;${h/email}&gt;" />
+		</td>
+	      </tr>
+	    <tr tal:condition="h/notes">
+	      <td>&nbsp;</td>
+	      <td valign="top" width="10">Comments:</td>
+	      <td tal:content="h/notes">notes</td>
+	     </tr>
+	    <tr tal:condition="h/refs">
+	      <td>&nbsp;</td>
+	      <td valign="top">Refs:</td>
+	      <td tal:content="h/refs">refs</td>
+	     </tr>
+	    </span>
+	  </table>
+	</span>
+
+      </div>
+    </span>
+  </body>
+</html>

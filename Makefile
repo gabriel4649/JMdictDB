@@ -2,9 +2,12 @@
 # $Date$
 #
 # This makefile simplifies some of the tasks needed when installing
-# or updating the jmdictdb files.  It works only on Unix/Linux systems.
-# On Microsoft Windows you will need to do the things this makefile
-# does, manually.
+# or updating the jmdictdb files.  It can be used on both Unix/Linux 
+# and Windows systems, although on the latter you will need to install
+# GNU Make, either a native port or from Cygwin.  (The Cywin Make can
+# be run directly from a CMD.EXE window -- it is not necessary to run
+# it from a Cygwin bash shell.)  On Windows you will likely want to 
+# change the definition of WEBROOT below.
 #
 # "make all" will print a summary of targets.
 #
@@ -50,14 +53,20 @@ USER = postgres
 # If blank, localhost will be used.
 HOST =
 
-# The following specify where the cgi scripts, the perl modules they
+# The following specify where the cgi scripts, the python modules they
 # use, and the .css file, respectively, go.  The location and names
 # can be changed, but (currently) their relative positions must remain
 # the same: the cgi and lib dirs must be siblings and the css file goes
 # in their common parent directory.
-CGI_DIR = $(HOME)/public_html/cgi-bin
-LIB_DIR = $(HOME)/public_html/lib
-CSS_DIR = $(HOME)/public_html
+# On Windows "~" expansion doesn't seem to work, so you will likely
+# want to change the definition of WEBROOT below.  Alternatively, you 
+# can configure your web server to serve the cgi files directly from 
+# the development working directory and not use the "web" target in 
+# this makefile install the cgi files to WEBROOT.
+WEBROOT = $(wildcard ~/public_html)
+CGI_DIR = $(WEBROOT)/cgi-bin
+LIB_DIR = $(WEBROOT)/lib
+CSS_DIR = $(WEBROOT)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # You should not need to change anything below here.
@@ -81,52 +90,55 @@ PG_HOST = -h $(HOST)
 JM_HOST = -r $(HOST)
 endif
 
-CSS_FILES = web/jmdict.css
+CSS_FILES = jmdict.css
+WEB_CSS = $(addprefix $(CSS_DIR)/,$(CSS_FILES))
 
-CGI_FILES = web/cgi/entr.pl \
-	web/cgi/edconf.pl \
-	web/cgi/edform.pl \
-	web/cgi/edhelp.pl \
-	web/cgi/edsubmit.pl \
-	web/cgi/srchform.pl \
-	web/cgi/srchres.pl \
-	web/cgi/jbparser.pl
+CGI_FILES = entr.py \
+	edconf.py \
+	edform.py \
+	edhelp.py \
+	edsubmit.py \
+	srchform.py \
+	srchres.py 
+WEB_CGI	= $(addprefix $(CGI_DIR)/,$(CGI_FILES))
 
-LIB_FILES = perl/lib/jmdict.pm \
-	perl/lib/jmdictcgi.pm \
-	perl/lib/jmdicttal.pm \
-	perl/lib/jbparser.pm \
-	perl/lib/jmdictfmt.pm \
-	perl/lib/jbparser.yp \
-	perl/lib/kwstatic.pm 
+LIB_FILES = jdb.py \
+	fmt.py \
+	fmtjel.py \
+	jellex.py \
+	jelparse.py \
+	jmcgi.py \
+	tal.py 
+WEB_LIB	= $(addprefix $(LIB_DIR)/,$(LIB_FILES))
 
-TAL_FILES = perl/lib/tal/entr.tal \
-	perl/lib/tal/edconf.tal \
-	perl/lib/tal/edform.tal \
-	perl/lib/tal/edhelp.tal \
-	perl/lib/tal/srchform.tal \
-	perl/lib/tal/srchres.tal
+TAL_FILES = entr.tal \
+	edconf.tal \
+	edform.tal \
+	edhelp.tal \
+	srchform.tal \
+	srchres.tal
+WEB_TAL	= $(addprefix $(LIB_DIR)/tmpl/,$(TAL_FILES))
 
 all:
 	@echo 'You must supply an explicit target with this makefile:'
-	@echo '  jmdict.xml -- Get latest jmdict xml file from Monash.'
-	@echo '  jmdict.pgi -- Create intermediate file from jmdict.xml file.'
-	@echo '  jmdict.dmp -- Create Postgres load file from intermediate file.'
+	@echo '  data/jmdict.xml -- Get latest jmdict xml file from Monash.'
+	@echo '  data/jmdict.pgi -- Create intermediate file from jmdict.xml file.'
+	@echo '  data/jmdict.dmp -- Create Postgres load file from intermediate file.'
 	@echo '  loadjm -- Initialize database and load jmdict.'
 	@echo
-	@echo '  jmnedict.xml -- Get latest jmnedict xml file from Monash.'
-	@echo '  jmnedict.pgi -- Create intermediate file from jmdict.xml file.'
-	@echo '  jmnedict.dmp -- Create Postgres load file from intermediate file.'
+	@echo '  data/jmnedict.xml -- Get latest jmnedict xml file from Monash.'
+	@echo '  data/jmnedict.pgi -- Create intermediate file from jmdict.xml file.'
+	@echo '  data/jmnedict.dmp -- Create Postgres load file from intermediate file.'
 	@echo '  loadne -- Load jmnedict into the existing database.'
 	@echo
-	@echo '  examples.txt -- Get latest Examples file from Monash.'
-	@echo '  examples.pgi -- Create intermediate file from examples.xml file.'
-	@echo '  examples.dmp -- Create Postgres load file from intermediate file.'
+	@echo '  data/examples.txt -- Get latest Examples file from Monash.'
+	@echo '  data/examples.pgi -- Create intermediate file from examples.xml file.'
+	@echo '  data/examples.dmp -- Create Postgres load file from intermediate file.'
 	@echo '  loadex -- Load examples into the existing database.'
 	@echo
 	@echo '  loadall -- Initialize database and load jmdict, jmnedict, and examples.'
 	@echo
-	@echo '  activate -- Move installed database to production status.
+	@echo '  activate -- Move installed database to production status.'
 	@echo '  web -- Install cgi and other web files to the appropriate places.'
 	@echo '  dist -- Make development snapshot distribution file.'
 
@@ -140,26 +152,25 @@ activate:
 
 #------ Load JMdict -----------------------------------------------------
 
-jmdict.xml: 
+data/jmdict.xml: 
 	rm -f $(JMDICTFILE).gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/$(JMDICTFILE).gz
 	gzip -d $(JMDICTFILE).gz
-	mv $(JMDICTFILE) jmdict.xml
+	mv $(JMDICTFILE) data/jmdict.xml
 
-jmdict.pgi: jmdict.xml
-	cd perl && perl jmparse.pl $(LANGOPT) -y -l ../jmdict.log -o ../jmdict.pgi ../jmdict.xml
+data/jmdict.pgi: data/jmdict.xml
+	cd python && python jmparse.py $(LANGOPT) -y -l ../data/jmdict.log -o ../data/jmdict.pgi ../data/jmdict.xml
 
-jmdict.dmp: jmdict.pgi
-	cd perl && perl jmload.pl $(JM_HOST) $(JM_USER) $(JM_DB) -i 1 -o ../jmdict.dmp ../jmdict.pgi
+data/jmdict.dmp: data/jmdict.pgi
+	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -i 1 -o ../data/jmdict.dmp ../data/jmdict.pgi
 
-
-loadjm: jmdict.dmp
+loadjm: data/jmdict.dmp
 	psql $(PG_HOST) $(PG_USER) -d postgres -c 'drop database if exists $(DB)'
 	psql $(PG_HOST) $(PG_USER) -d postgres -c "create database $(DB) encoding 'utf8'"
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f reload.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../jmdict.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/jmdict.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
-	cd perl && perl xresolv.pl -q $(JM_HOST) $(JM_USER) $(JM_DB) >../jmdict_xresolv.log
+	cd python && python xresolv.py -q $(JM_HOST) $(JM_USER) $(JM_DB) >../data/jmdict_xresolv.log
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -c "vacuum analyze xref"
 	@echo 'Remember to check the log files for warning messages.'
 
@@ -168,65 +179,65 @@ loadjm: jmdict.dmp
 
 # Assumes the jmdict has been loaded into database already.
 
-jmnedict.xml: 
+data/jmnedict.xml: 
 	rm -f JMnedict.xml.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/JMnedict.xml.gz
 	gzip -d JMnedict.xml.gz
-	mv JMnedict.xml jmnedict.tmp
-	mv jmnedict.tmp jmnedict.xml
+	mv JMnedict.xml data/jmnedict.xml
 
-jmnedict.pgi: jmnedict.xml
-	cd perl && perl jmparse.pl -l ../jmnedict.log -o ../jmnedict.pgi ../jmnedict.xml
+data/jmnedict.pgi: data/jmnedict.xml
+	cd python && python jmparse.py -l ../data/jmnedict.log -o ../data/jmnedict.pgi ../data/jmnedict.xml
 
-jmnedict.dmp: jmnedict.pgi
-	cd perl && perl jmload.pl $(JM_HOST) $(JM_USER) $(JM_DB) -o ../jmnedict.dmp ../jmnedict.pgi
+data/jmnedict.dmp: data/jmnedict.pgi
+	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -o ../data/jmnedict.dmp ../data/jmnedict.pgi
 
-loadne: jmnedict.dmp
+loadne: data/jmnedict.dmp
 	-cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../jmnedict.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/jmnedict.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f mkindex.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f syncseq.sql
 
 #------ Load examples ---------------------------------------------------
 
-examples.txt: 
+data/examples.txt: 
 	rm -f examples.utf.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/examples.utf.gz
 	gzip -d examples.utf.gz
-	mv examples.utf examples.txt
+	mv examples.utf data/examples.txt
 
-examples.pgi: examples.txt 
-	cd perl && perl exparse.pl -o ../examples.pgi ../examples.txt >../examples.log
+data/examples.pgi: data/examples.txt 
+	cd python && python exparse.py -o ../data/examples.pgi -l ../data/examples.log ../data/examples.txt
 
-examples.dmp: examples.pgi 
-	cd perl && perl jmload.pl $(JM_HOST) $(JM_USER) $(JM_DB) -o ../examples.dmp ../examples.pgi
+data/examples.dmp: data/examples.pgi 
+	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -o ../data/examples.dmp ../data/examples.pgi
 
-loadex: examples.dmp 
+loadex: data/examples.dmp 
 	-cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../examples.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/examples.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f mkindex.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f syncseq.sql
 	# The following command is commented out because of the long time
 	# it can take to run.  It may be run manually after 'make' finishes.
-	#cd perl && perl xresolv.pl -q $(JM_HOST) $(JM_USER) $(JM_DB) -s3 -t1 >../examples_xresolv.log
+	#cd python && python xresolv.py -q $(JM_HOST) $(JM_USER) $(JM_DB) -s3 -t1 >../data/examples_xresolv.log
 	#cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -c 'vacuum analyze xref;'
 
 #------ Load kanjidic2,xml ---------------------------------------------------
 
-kanjidic2.xml: 
+data/kanjidic2.xml: 
 	rm -f kanjidic2.xml.gz
 	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/kanjidic2.xml.gz
 	gzip -d kanjidic2.xml.gz
+	mv kanjidic2.xml data/kanjidic2.xml
 
-kanjidic2.pgi: kanjidic2.xml 
-	cd python && python kdparse.py -g en -o ../kanjidic2.pgi -l ../kanjidic2.log ../kanjidic2.xml 
+data/kanjidic2.pgi: data/kanjidic2.xml 
+	cd python && python kdparse.py -g en -o ../data/kanjidic2.pgi -l ../data/kanjidic2.log ../data/kanjidic2.xml 
 
-kanjidic2.dmp: kanjidic2.pgi 
-	cd perl && perl jmload.pl $(JM_HOST) $(JM_USER) $(JM_DB) -o ../kanjidic2.dmp ../kanjidic2.pgi
+data/kanjidic2.dmp: data/kanjidic2.pgi 
+	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -o ../data/kanjidic2.dmp ../data/kanjidic2.pgi
 
-loadkd: kanjidic2.dmp 
+loadkd: data/kanjidic2.dmp 
 	#-cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../kanjidic2.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/kanjidic2.dmp
 	#cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f mkindex.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f syncseq.sql
 
@@ -236,29 +247,49 @@ loadkd: kanjidic2.dmp
 # the number of entries may be different in the freshly loaded jmdict
 # set, invalidating the starting id numbers in the other .dmp files.
 
-loadall: jmdict.dmp jmnedict.pgi examples.pgi 
+loadall: data/jmdict.dmp data/jmnedict.pgi data/examples.pgi 
 	psql $(PG_HOST) $(PG_USER) -d postgres -c 'drop database if exists $(DB)'
 	psql $(PG_HOST) $(PG_USER) -d postgres -c "create database $(DB) encoding 'utf8'"
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f reload.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../jmdict.dmp
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/jmdict.dmp
 
-	cd perl && perl jmload.pl $(JM_HOST) $(JM_USER) $(JM_DB) -o ../examples.dmp ../examples.pgi
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../examples.dmp
+	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -o ../data/examples.dmp ../data/examples.pgi
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/examples.dmp
 
-	cd perl && perl jmload.pl $(JM_HOST) $(JM_USER) $(JM_DB) -o ../jmnedict.dmp ../jmnedict.pgi
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../jmnedict.dmp
+	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -o ../data/jmnedict.dmp ../data/jmnedict.pgi
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/jmnedict.dmp
 
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
-	cd perl && perl xresolv.pl -q $(JM_HOST) $(JM_USER) $(JM_DB) >../jmdict_xresolv.log
-	#cd perl && perl xresolv.pl -q $(JM_HOST) $(JM_USER) $(JM_DB) -s3 >../examples_xresolv.log
+	cd python && python xresolv.py -q $(JM_HOST) $(JM_USER) $(JM_DB) >../data/jmdict_xresolv.log
+	#cd python && python xresolv.py -q $(JM_HOST) $(JM_USER) $(JM_DB) -s3 >../data/examples_xresolv.log
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -c "vacuum analyze xref"
 	@echo 'Remember to check the log files for warning messages.'
+
+#------ Move cgi files to web server location --------------------------
+
+web:	webcgi weblib webtal webcss
+
+webcss: $(WEB_CSS)
+$(WEB_CSS): $(CSS_DIR)/%: web/%
+	cp -p $? $@
+
+webcgi: $(WEB_CGI)
+$(WEB_CGI): $(CGI_DIR)/%: web/cgi/%
+	cp -p $? $@
+
+weblib: $(WEB_LIB)
+$(WEB_LIB): $(LIB_DIR)/%: python/lib/%
+	cp -p $? $@
+
+webtal: $(WEB_TAL)
+$(WEB_TAL): $(LIB_DIR)/%: python/lib/%
+	cp -p $? $@
 
 #------ Other ----------------------------------------------------------
 
 subdirs:
 	cd pg/ && $(MAKE)
-	cd perl/lib/ && $(MAKE)
+	cd python/lib/ && $(MAKE)
 
 clean:
 	rm -f jmdict.tgz
@@ -273,59 +304,5 @@ dist:
 	# directory to avoid including spurious files.
 	rm jmdict.tgz
 	touch jmdict.tgz
-	tar -cz -f jmdict.tgz --exclude 'CVS' --exclude './jmdict.tgz' .
+	tar -cz -f jmdict.tgz --exclude data --exclude 'CVS' --exclude './jmdict.tgz' .
 
-web:	webcgi weblib webtal webcss
-webcss:	$(CSS_FILES:web/%=$(CSS_DIR)/%)
-webcgi:	$(CGI_FILES:web/cgi/%=$(CGI_DIR)/%)
-weblib:	$(LIB_FILES:perl/lib/%=$(LIB_DIR)/%)
-webtal:	$(TAL_FILES:perl/lib/tal/%=$(LIB_DIR)/tal/%)
-
-$(CSS_DIR)/jmdict.css: web/jmdict.css
-	cp -p $? $@
-
-$(CGI_DIR)/entr.pl: web/cgi/entr.pl
-	cp -p $? $@
-$(CGI_DIR)/edconf.pl: web/cgi/edconf.pl
-	cp -p $? $@
-$(CGI_DIR)/edform.pl: web/cgi/edform.pl
-	cp -p $? $@
-$(CGI_DIR)/edhelp.pl: web/cgi/edhelp.pl
-	cp -p $? $@
-$(CGI_DIR)/edsubmit.pl: web/cgi/edsubmit.pl
-	cp -p $? $@
-$(CGI_DIR)/srchform.pl: web/cgi/srchform.pl
-	cp -p $? $@
-$(CGI_DIR)/srchres.pl: web/cgi/srchres.pl
-	cp -p $? $@
-$(CGI_DIR)/jbparser.pl: web/cgi/jbparser.pl
-	cp -p $? $@
-
-$(LIB_DIR)/jmdict.pm: perl/lib/jmdict.pm
-	cp -p $? $@
-$(LIB_DIR)/jmdictcgi.pm: perl/lib/jmdictcgi.pm
-	cp -p $? $@
-$(LIB_DIR)/jmdicttal.pm: perl/lib/jmdicttal.pm
-	cp -p $? $@
-$(LIB_DIR)/jbparser.pm: perl/lib/jbparser.pm
-	cp -p $? $@
-# Needed for cgi/jbparser.pl...
-$(LIB_DIR)/jbparser.yp: perl/lib/jbparser.yp
-	cp -p $? $@
-$(LIB_DIR)/jmdictfmt.pm: perl/lib/jmdictfmt.pm
-	cp -p $? $@
-$(LIB_DIR)/kwstatic.pm: perl/lib/kwstatic.pm
-	cp -p $? $@
-
-$(LIB_DIR)/tal/entr.tal: perl/lib/tal/entr.tal
-	cp -p $? $@
-$(LIB_DIR)/tal/edconf.tal: perl/lib/tal/edconf.tal
-	cp -p $? $@
-$(LIB_DIR)/tal/edform.tal: perl/lib/tal/edform.tal
-	cp -p $? $@
-$(LIB_DIR)/tal/edhelp.tal: perl/lib/tal/edhelp.tal
-	cp -p $? $@
-$(LIB_DIR)/tal/srchform.tal: perl/lib/tal/srchform.tal
-	cp -p $? $@
-$(LIB_DIR)/tal/srchres.tal: perl/lib/tal/srchres.tal
-	cp -p $? $@

@@ -1,6 +1,6 @@
 Title:	Perlex
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	wont
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -16,3 +16,7 @@ AssdTo:	stuart@friix.com
   PerlEx comes with Activestate's Perl and provides fast execution of cgi
   scripts under Microsoft's IIS web server in (I think) a similar way to
   modperl's Modperl::Request.
+
+2008-04-14 09:50:00 stuart@friix.com
+  Change to Python as the implementation language (IS-109) makes this 
+  issue moot.

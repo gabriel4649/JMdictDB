@@ -1,7 +1,7 @@
 Title:	Fix O(n^2) behavior in jmdict::matchup()
 Stat:	open
 Disp:	
-Prio:	med
+Prio:	low
 Cats:	dev
 Reqtrs:	
 AssdTo:	stuart@friix.com
@@ -18,3 +18,6 @@ AssdTo:	stuart@friix.com
   - If row data has a reliable ordering, perhaps we could make next loop
   iteration start where last left off, resulting in needed record usually
   being found instantly.
+
+2008-04-14 09:46:00 stuart@friix.com
+  Change priority to low since this is not currently a bottleneck.

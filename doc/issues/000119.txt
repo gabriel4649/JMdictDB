@@ -1,0 +1,27 @@
+Title:	Make jelparse.py create temp files in temp dir
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	bug
+Reqtrs:	
+AssdTo:	
+
+2008-04-27 15:19:06 sysad
+  jelparser.py uses Ply (http://dabeaz.com/ply) to parse
+  new and edited entries described in JEL (Jmdict Edit
+  Language).  When the ply code runs, it creates cache
+  files that contain the generated parser tables.  These
+  files are reused the next time the ply code needs to do
+  a parse saving the considerable time it takes to generate
+  them.  Unfortunately they are created in the current
+  directory, whereever that may be.  This creates two
+  problems:
+  
+  * When program runs in a different directory, it inccurs
+    avoidable cost of regenerating the cache files.
+  * The files are annoying "droppings" and can create un-
+    wanted noise when using a version control system.
+  
+  Need to figure out how to tell Ply to create them in
+  some fixed, out-of-the-way place.
+  The files are parsetab.py and .pyc.

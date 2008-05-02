@@ -1,6 +1,6 @@
 Title:	Query time
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	bug
 Reqtrs:	
@@ -19,3 +19,6 @@ AssdTo:	stuart@friix.com
   Not sure when it happened (possibly as result of elimination of
   surrogate PKs in child tables) but object load times reported on the
   entr.pl page are now typically less the .3s on my development machine.
+
+2008-04-14 09:44:00 stuart@friix.com
+  Time seem reasonable fast now to justify closing this issue.

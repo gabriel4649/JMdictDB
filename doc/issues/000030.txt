@@ -11,3 +11,7 @@ AssdTo:	stuart@friix.com
   loaded into db): all senses have gloss?  All entries have sens and
   reading? ... (But remember that deleted entries have no sences or
   readings).
+
+2008-04-24 21:46:32 sysad
+  Added duplicate kanji and reading text checks in jmparse.py.
+  Added check that keb is kanji and reb is reading in jmparse.py.

@@ -1,6 +1,6 @@
-﻿Title:	Use text-file-based issue tracking
-Stat:	open
-Disp:	
+Title:	Use text-file-based issue tracking
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	
@@ -31,3 +31,9 @@ AssdTo:
   included in the jmdictdb repo.
   
   Added all the issue files (in doc/issues) to the mercurial repo.
+
+2008-05-02 20:05:47 sysad
+  Have been using this successfully so will consider this done
+  within the jmdictdb project.  The tools still need a lot of work
+  before they are ready for public use but I will do that in the
+  context of an independent project.

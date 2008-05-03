@@ -1,6 +1,6 @@
 Title:	Move from CVS to Mercurial for version control
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	
@@ -43,3 +43,10 @@ AssdTo:
           info come from Mercurial now rather than the old Chglog MS
           Access database?)
   5. Ask William Maton to install Mercurial on Arakawa [done.]
+
+2008-05-02 20:09:53 sysad
+  Cloned the jmdictdb repo on Arakawa today and am able to successfully
+  pull changes sets from my development machine at home.  Ran a full
+  parse and load cycle with a clean cloned distribution.  Updated the
+  jmdictdb project page on Arakawa including changing the links to
+  extract downloads directly from the repo.

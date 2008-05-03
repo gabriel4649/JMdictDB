@@ -1,0 +1,21 @@
+Title:	Use yaml instead of json
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	idea
+Reqtrs:	
+AssdTo:	
+
+2008-05-02 20:49:27 sysad
+  Currently we use JSON to serialize entries for shipping
+  between the edconf and edsubmit web pages.  Because JSON
+  has no means of representing items with multiple or cyclic
+  refernces (entry objects can have at multiply referenced
+  sub-objects, but don't think there are any cycles), the
+  serializing code has to transform the object to a coded
+  form that that captures the muliple references and represents
+  them without multiple references but allows the reconstruction
+  of those refernces at the receiving end.
+  
+  I believe that YAML suppports multiple references directly
+  and may allow simplification of the entry serialization code.

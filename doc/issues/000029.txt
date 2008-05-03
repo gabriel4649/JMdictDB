@@ -1,6 +1,6 @@
 Title:	XML parse kw checks
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -10,3 +10,6 @@ AssdTo:	stuart@friix.com
   load_jmdict.pl -- Check result of kw lookups, complain when not found
   (may need to build entry struct, and only write to files when complete
   which will allow skipping entries with problems.)
+
+2008-05-02 20:27:53 sysad
+  jmparse.py and jmparse.pl both do this.

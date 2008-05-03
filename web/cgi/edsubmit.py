@@ -126,7 +126,7 @@ __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
 import sys, cgi, datetime
-sys.path.extend (['../../python/lib','../python/lib'])
+sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import jdb, jmcgi, cgitb, json
 
 def main( args, opts ):

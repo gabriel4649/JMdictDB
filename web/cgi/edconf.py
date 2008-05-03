@@ -22,7 +22,7 @@ __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11])
 
 import sys, cgi, cgitb, re, datetime
-sys.path.extend (['../../python/lib','../python/lib'])
+sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import jdb, jmcgi, jelparse, jellex, json
 
 def main (args, opts):

@@ -1,0 +1,58 @@
+Title:	Ordered tags
+Stat:	closed
+Disp:	done
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-05-02 23:11:58 sysad
+  Jim Breen said he thought that the ordering of the various 
+  JMdict XML tags (pos. misc, k_inf, etc) was significant.
+  Need to consider how to preserve this order within the 
+  database.  Preserving it will also simplify the entry 
+  validation task of IS-10.
+
+2008-05-02 23:11:58 sysad
+  In a response to my email question about whether the order
+  of tags (pos, misc, kinf, etc) is significant, Jim Breen 
+  replied:
+
+  > >  Is the order of the pos tags significant?  Are they in 
+  > >  order of frequency of use?
+  >
+  > In the case of pos, it's in frequency of use order.
+  >
+  > >  What about the other tags?
+  > >  Right now I treat ke_ele, re_ele, sens, gloss, xref/ant, 
+  > >  audit as ordered lists and everything else as unordered 
+  > >  sets: ke_inf, ke_pri, re_inf, re_pri, pos, misc, field, 
+  > >  dial, stagr, stagk, re_restr, lsource.
+  > ...
+  > From my point of view, the order of most of them carry some
+  > frequency/importance information. The ones where order is of
+  > no importance are: stagr, stagk, re_restr,
+
+  Maintaining the order of the re_pri and ke_pri elements in the 
+  database is problematical because reading and kanji pri's are 
+  combined into single "freq" table rows.  It is also not at all
+  clear to me what information the ordering conveys.
+
+  For k_inf, r_inf, pos, misc, field, dial, and lsource, in some 
+  cases it also not clear what the order conveys (what is difference 
+  in meaning between an entry with:
+     <misc>&uk;</misc>
+     <misc>&vulg;</misc>
+  and one with:
+     <misc>&vulg;</misc>
+     <misc>&uk;</misc>
+  ?) but in many cases a meaning based on commoness of use could
+  be justified.  (If such a meaning is assigned, the obvious question
+  how many entries have a "correct" order, i.e. have been checked?)
+  In any event, the tags clearly mix information from different 
+  domains so it's hard to justify not adding ordering on relational
+  design grounds.
+
+2008-05-03 14:29:01 sysad
+  Added support for ordered k_inf, r_inf, pos, misc, field, dial, 
+  and lsource tags.

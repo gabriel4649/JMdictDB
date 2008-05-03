@@ -179,7 +179,6 @@ def kwds (parent, attr, domain, elem_name):
 	kwtab = getattr (XKW, domain)
 	kwlist = ['<%s>&%s;</%s>' % (elem_name, kwtab[x.kw].kw, elem_name)
 		  for x in nlist]
-	kwlist.sort()
 	return kwlist
 
 def freqs (parent, attr, rk):

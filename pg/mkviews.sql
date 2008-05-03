@@ -252,29 +252,29 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
 
 	INSERT INTO kanj(entr,kanj,txt) 
 	  (SELECT _p0_,kanj,txt FROM kanj WHERE entr=entrid);
-	INSERT INTO kinf(entr,kanj,kw)
+	INSERT INTO kinf(entr,kanj,ord,kw)
 	  (SELECT _p0_,kanj,kw FROM kinf WHERE entr=entrid);
 
 	INSERT INTO rdng(entr,rdng,txt) 
 	  (SELECT _p0_,rdng,txt FROM rdng WHERE entr=entrid);
-	INSERT INTO rinf(entr,rdng,kw)
+	INSERT INTO rinf(entr,rdng,ord,kw)
 	  (SELECT _p0_,rdng,kw FROM rinf WHERE entr=entrid);
 	INSERT INTO audio(entr,rdng,audio,fname,strt,leng) 
 	  (SELECT _p0_,rdng,audio,fname,strt,leng FROM audio a WHERE a.entr=entrid);
 	    
 	INSERT INTO sens(entr,sens,notes) 
 	  (SELECT _p0_,sens,notes FROM sens WHERE entr=entrid);
-	INSERT INTO pos(entr,sens,kw) 
+	INSERT INTO pos(entr,sens,ord,kw) 
 	  (SELECT _p0_,sens,kw FROM pos WHERE entr=entrid);
-	INSERT INTO misc(entr,sens,kw) 
+	INSERT INTO misc(entr,sens,ord,kw) 
 	  (SELECT _p0_,sens,kw FROM misc WHERE entr=entrid);
-	INSERT INTO fld(entr,sens,kw) 
+	INSERT INTO fld(entr,sens,ord,kw) 
 	  (SELECT _p0_,sens,kw FROM fld WHERE entr=entrid);
 	INSERT INTO gloss(entr,sens,gloss,lang,ginf,txt,notes) 
 	  (SELECT _p0_,sens,gloss,lang,txt,ginf,notes FROM gloss WHERE entr=entrid);
-	INSERT INTO dial(entr,sens,kw) 
+	INSERT INTO dial(entr,sens,ord,kw) 
 	  (SELECT _p0_,kw FROM dial WHERE dial.entr=entrid);
-	INSERT INTO lsrc(entr,sens,lang,txt,part,wasei) 
+	INSERT INTO lsrc(entr,sens,ord,lang,txt,part,wasei) 
 	  (SELECT _p0_,kw FROM lsrc WHERE lang.entr=entrid);
 	INSERT INTO xref(entr,sens,xref,typ,xentr,xsens,notes) 
 	  (SELECT _p0_,sens,xref,typ,xentr,xsens,notes FROM xref WHERE entr=entrid);

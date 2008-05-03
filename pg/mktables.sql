@@ -280,6 +280,7 @@ CREATE TABLE cinf(
 CREATE TABLE dial (
     entr INT NOT NULL,
     sens INT NOT NULL,
+    ord SMALLINT NOT NULL,
     kw SMALLINT NOT NULL DEFAULT 1,
     PRIMARY KEY (entr,sens,kw));
 --ALTER TABLE dial ADD CONSTRAINT dial_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -288,6 +289,7 @@ CREATE TABLE dial (
 CREATE TABLE fld (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
+    ord SMALLINT NOT NULL,
     kw SMALLINT NOT NULL,
     PRIMARY KEY (entr,sens,kw));
 --ALTER TABLE fld ADD CONSTRAINT fld_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -310,6 +312,7 @@ CREATE TABLE freq (
 CREATE TABLE kinf (
     entr INT NOT NULL,
     kanj SMALLINT NOT NULL,
+    ord SMALLINT NOT NULL,
     kw SMALLINT NOT NULL,
     PRIMARY KEY (entr,kanj,kw));
 --ALTER TABLE kinf ADD CONSTRAINT kinf_entr_fkey FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -318,6 +321,7 @@ CREATE TABLE kinf (
 CREATE TABLE lsrc (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
+    ord SMALLINT NOT NULL,
     lang SMALLINT NOT NULL DEFAULT 1,
     txt VARCHAR(250) NOT NULL,
     part BOOLEAN DEFAULT FALSE,
@@ -329,6 +333,7 @@ CREATE TABLE lsrc (
 CREATE TABLE misc (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
+    ord SMALLINT NOT NULL,
     kw SMALLINT NOT NULL,
     PRIMARY KEY (entr,sens,kw));
 --ALTER TABLE misc ADD CONSTRAINT misc_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -337,6 +342,7 @@ CREATE TABLE misc (
 CREATE TABLE pos (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
+    ord SMALLINT NOT NULL,
     kw SMALLINT  NOT NULL,
     PRIMARY KEY (entr,sens,kw));
 --ALTER TABLE pos ADD CONSTRAINT pos_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -345,6 +351,7 @@ CREATE TABLE pos (
 CREATE TABLE rinf (
     entr INT NOT NULL,
     rdng SMALLINT NOT NULL,
+    ord SMALLINT NOT NULL,
     kw SMALLINT NOT NULL,
     PRIMARY KEY (entr,rdng,kw));
 --ALTER TABLE rinf ADD CONSTRAINT rinf_entr_fkey FOREIGN KEY (entr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE;

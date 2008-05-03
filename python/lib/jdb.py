@@ -197,7 +197,11 @@ def entrList (dbh, crit=None, args=None, ord='', tables=None, ret_tuple=False):
 OrderBy = {
 	'rdng':"x.entr,x.rdng", 'kanj':"x.entr,x.kanj", 'sens':"x.entr,x.sens", 
 	'gloss':"x.entr,x.sens,x.gloss", 'xref':"x.entr,x.sens,x.xref", 
-	'hist':"x.entr,x.hist"}
+	'hist':"x.entr,x.hist", 
+	'kinf':"x.entr,x.kanj,x.ord", 'rinf':"x.entr,x.rdng,xord",
+	'pos':"x.entr,x.sens,x.ord", 'misc':"x.entr,x.sens,x.ord", 
+	'fld':"x.entr,x.sens,x.ord", 'dial':"x.entr,x.sens,x.rd", 
+	'lsrc':"x.entr,x.sens,x.ord"}
 
 def entr_data (dbh, crit, args=None, ord=None, tables=None):
 	#
@@ -422,7 +426,7 @@ def mup (attr, parents, pks, childs, fks, pattr=None):
 	    if pattr: setattr (c, pattr, p)
 
 #-------------------------------------------------------------------
-# The followng three functions deal with xrefs. 
+# The following three functions deal with xrefs. 
 #-------------------------------------------------------------------
 	# An xref (in the jdb api) is an object that represents 
 	# a record in the "xref" table (or "xresolv" table in the
@@ -708,11 +712,11 @@ def addentr (cur, entr):
 	    dbinsert (cur, "hist", ['entr','hist','stat','edid','dt','name','email','diff','refs','notes'], h)
 	for k in getattr (entr, '_kanj', []):
 	    dbinsert (cur, "kanj", ['entr','kanj','txt'], k)
-	    for x in getattr (k, '_inf',   []): dbinsert (cur, "kinf",  ['entr','kanj','kw'], x)
+	    for x in getattr (k, '_inf',   []): dbinsert (cur, "kinf",  ['entr','kanj','ord','kw'], x)
 	    for x in getattr (k, '_freq',  []): dbinsert (cur, "freq",  ['entr','rdng','kanj','kw','value'], x)
 	for r in getattr (entr, '_rdng', []):
 	    dbinsert (cur, "rdng", ['entr','rdng','txt'], r)
-	    for x in getattr (r, '_inf',   []): dbinsert (cur, "rinf",  ['entr','rdng','kw'], x)
+	    for x in getattr (r, '_inf',   []): dbinsert (cur, "rinf",  ['entr','rdng','ord','kw'], x)
 	    for x in getattr (r, '_audio', []): dbinsert (cur, "audio", ['entr','rdng','fname','strt','leng'], x)
 	    for x in getattr (r, '_restr', []):	dbinsert (cur, "restr", ['entr','rdng','kanj'], x)
 	    for x in getattr (r, '_freq',  []): 
@@ -724,11 +728,11 @@ def addentr (cur, entr):
 	for s in getattr (entr, '_sens'):
 	    dbinsert (cur, "sens", ['entr','sens','notes'], s)
 	    for g in getattr (s, '_gloss', []):	dbinsert (cur, "gloss", ['entr','sens','gloss','lang','ginf','txt'], g)
-	    for x in getattr (s, '_pos',   []): dbinsert (cur, "pos",   ['entr','sens','kw'], x)
-	    for x in getattr (s, '_misc',  []): dbinsert (cur, "misc",  ['entr','sens','kw'], x)
-	    for x in getattr (s, '_fld',   []): dbinsert (cur, "fld",   ['entr','sens','kw'], x)
-	    for x in getattr (s, '_dial',  []): dbinsert (cur, "dial",  ['entr','sens','kw'], x)
-	    for x in getattr (s, '_lsrc',  []): dbinsert (cur, "lsrc",  ['entr','sens','lang','txt','part','wasei'], x)
+	    for x in getattr (s, '_pos',   []): dbinsert (cur, "pos",   ['entr','sens','ord','kw'], x)
+	    for x in getattr (s, '_misc',  []): dbinsert (cur, "misc",  ['entr','sens','ord','kw'], x)
+	    for x in getattr (s, '_fld',   []): dbinsert (cur, "fld",   ['entr','sens','ord','kw'], x)
+	    for x in getattr (s, '_dial',  []): dbinsert (cur, "dial",  ['entr','sens','ord','kw'], x)
+	    for x in getattr (s, '_lsrc',  []): dbinsert (cur, "lsrc",  ['entr','sens','ord','lang','txt','part','wasei'], x)
 	    for x in getattr (s, '_stagr', []): dbinsert (cur, "stagr", ['entr','sens','rdng'], x)
 	    for x in getattr (s, '_stagk', []): dbinsert (cur, "stagk", ['entr','sens','kanj'], x)
 	    for x in getattr (s, '_xref',  []): dbinsert (cur, "xref",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
@@ -783,27 +787,27 @@ def setkeys (e, id=None):
 	else: id = e.id
 	for n,r in enumerate (getattr (e, '_rdng', [])):
 	    n += 1; (r.entr, r.rdng) = (id, n)
-	    for x in getattr (r, '_inf',   []): (x.entr, x.rdng) = (id, n)
+	    for p,x in enumerate (getattr (r, '_inf',   [])): (x.entr, x.rdng, x.ord) = (id, n, p+1)
 	    for x in getattr (r, '_freq',  []): (x.entr, x.rdng) = (id, n)
 	    for x in getattr (r, '_restr', []): (x.entr, x.rdng) = (id, n)
 	    for x in getattr (r, '_stagr', []): (x.entr, x.rdng) = (id, n)
 	for n,k in enumerate (getattr (e, '_kanj', [])):
 	    n += 1; (k.entr, k.kanj) = (id, n)
-	    for x in getattr (k, '_inf',   []): (x.entr, x.kanj) = (id, n)
+	    for p,x in enumerate (getattr (k, '_inf',   [])): (x.entr, x.kanj, x.ord) = (id, n, p+1)
 	    for x in getattr (k, '_freq',  []): (x.entr, x.kanj) = (id, n)
 	    for x in getattr (k, '_restr', []): (x.entr, x.kanj) = (id, n)
 	    for x in getattr (k, '_stagk', []): (x.entr, x.kanj) = (id, n)
 	for n,s in enumerate (getattr (e, '_sens', [])):
 	    n += 1; (s.entr, s.sens) = (id, n)
-	    for m,x in enumerate (getattr (s, '_gloss', [])): (x.entr,x.sens,x.gloss) = (id,n,m+1)
-	    for x in getattr (s, '_pos',   []): (x.entr, x.sens) = (id, n)
-	    for x in getattr (s, '_misc',  []): (x.entr, x.sens) = (id, n)
-	    for x in getattr (s, '_fld',   []): (x.entr, x.sens) = (id, n)
-	    for x in getattr (s, '_dial',  []): (x.entr, x.sens) = (id, n)
-	    for x in getattr (s, '_lsrc',  []): (x.entr, x.sens) = (id, n)
+	    for m,x in enumerate (getattr (s, '_gloss', [])): (x.entr,x.sens,x.gloss) = (id, n, m+1)
+	    for p,x in enumerate (getattr (s, '_pos',   [])): (x.entr, x.sens, x.ord) = (id, n, p+1)
+	    for p,x in enumerate (getattr (s, '_misc',  [])): (x.entr, x.sens, x.ord) = (id, n, p+1)
+	    for p,x in enumerate (getattr (s, '_fld',   [])): (x.entr, x.sens, x.ord) = (id, n, p+1)
+	    for p,x in enumerate (getattr (s, '_dial',  [])): (x.entr, x.sens, x.ord) = (id, n, p+1)
+	    for p,x in enumerate (getattr (s, '_lsrc',  [])): (x.entr, x.sens, x.ord) = (id, n, p+1)
 	    for x in getattr (s, '_stagr', []): (x.entr, x.sens) = (id, n)
 	    for x in getattr (s, '_stagk', []): (x.entr, x.sens) = (id, n)
-	    for m,x in enumerate (getattr (s, '_xref', [])): (x.entr,x.sens,x.xref) = (id,n,m+1)
+	    for m,x in enumerate (getattr (s, '_xref', [])): (x.entr,x.sens,x.xref) = (id, n, m+1)
 	    for x in getattr (s, '_xrer',  []): (x.entr, x.sens) = (id, n)
 	    for x in getattr (s, '_xrslv', []): (x.entr, x.sens) = (id, n)
 	for n,x in enumerate (getattr (e, '_hist', [])): (x.entr,x.hist) = (id,n+1)

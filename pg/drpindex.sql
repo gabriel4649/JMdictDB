@@ -1,5 +1,5 @@
 -- This file is recreated during the database build process.
--- See Makefile for details.
+-- See pg/Makefile for details.
 
 \set ON_ERROR_STOP 1
 DROP INDEX IF EXISTS entr_seq;
@@ -12,7 +12,7 @@ DROP INDEX IF EXISTS rdng_txt2; --For fast LIKE 'xxx%'
 DROP INDEX IF EXISTS kanj_txt;
 DROP INDEX IF EXISTS kanj_txt1;
 DROP INDEX IF EXISTS kanj_txt2; --For fast LIKE 'xxx%'
-DROP INDEX IF EXISTS gloss_txt; 
+DROP INDEX IF EXISTS gloss_txt;
 DROP INDEX IF EXISTS gloss_txt1;
 DROP INDEX IF EXISTS gloss_txt2; --For case-insensitive LIKE 'xxx%'
 DROP INDEX IF EXISTS gloss_txt3; 		    --For case-insensitive '='
@@ -25,7 +25,7 @@ DROP INDEX IF EXISTS editor_email;
 DROP INDEX IF EXISTS editor_name;
 DROP INDEX IF EXISTS cinf_kw;
 DROP INDEX IF EXISTS cinf_val;
-DROP INDEX IF EXISTS freq_idx1; 
+DROP INDEX IF EXISTS freq_idx1;
 DROP INDEX IF EXISTS xresolv_rdng;
 DROP INDEX IF EXISTS xresolv_kanj;
 ALTER TABLE chr DROP CONSTRAINT chr_entr_fkey;

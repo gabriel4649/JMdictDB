@@ -1,5 +1,5 @@
 -- This file is recreated during the database build process.
--- See Makefile for details.
+-- See pg/Makefile for details.
 
 \set ON_ERROR_STOP 1
 CREATE INDEX entr_seq ON entr(seq);
@@ -12,7 +12,7 @@ CREATE INDEX rdng_txt2 ON rdng(txt varchar_pattern_ops); --For fast LIKE 'xxx%'
 CREATE INDEX kanj_txt ON kanj(txt);
 CREATE UNIQUE INDEX kanj_txt1 ON kanj(entr,txt);
 CREATE INDEX kanj_txt2 ON kanj(txt varchar_pattern_ops); --For fast LIKE 'xxx%'
-CREATE INDEX gloss_txt ON gloss(txt); 
+CREATE INDEX gloss_txt ON gloss(txt);
 CREATE UNIQUE INDEX gloss_txt1 ON gloss(entr,sens,lang,txt);
 CREATE INDEX gloss_txt2 ON gloss(lower(txt) varchar_pattern_ops); --For case-insensitive LIKE 'xxx%'
 CREATE INDEX gloss_txt3 ON gloss(lower(txt)); 		    --For case-insensitive '='
@@ -25,7 +25,7 @@ CREATE INDEX editor_email ON editor(email);
 CREATE UNIQUE INDEX editor_name ON editor(name);
 CREATE INDEX cinf_kw ON cinf(kw);
 CREATE INDEX cinf_val ON cinf(value);
-CREATE UNIQUE INDEX freq_idx1 ON freq(entr,(coalesce(rdng,999)),(coalesce(kanj,999)),kw); 
+CREATE UNIQUE INDEX freq_idx1 ON freq(entr,(coalesce(rdng,999)),(coalesce(kanj,999)),kw);
 CREATE INDEX xresolv_rdng ON xresolv(rtxt);
 CREATE INDEX xresolv_kanj ON xresolv(ktxt);
 ALTER TABLE chr ADD CONSTRAINT chr_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;

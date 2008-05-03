@@ -27,24 +27,15 @@ http://www.edrdg.org/~smg/.
 This package contains the following directories:
   ./                   Package directory.
   ./doc/               Documentation.
+  ./doc/issues         Bugs and to-do's.
   ./pg/                Database scripts.
   ./pg/data/           Database static data.
   ./python/            Command line apps.
-  ./python/cgi/        CGI scripts.
   ./python/lib/        Library modules.
   ./python/lib/tmpl/   TAL templates.
-  ./tools/	       Scripts used by Makefiles.
-
-The following directories are also included and contain
-code for previous version, implemented in the Perl language:
-  ./perl/              Command line apps.
-  ./perl/cgi/          CGI scripts.
-  ./perl/lib/          Library modules.
-  ./perl/lib/tal/      PETAL templates.
-
-FIXME:
-  Add pointers to todo, Change log, files manifest (if avail)
-  Also document packaged issues files.
+  ./tools/             Scripts used by Makefiles.
+  ./web/               Web related files.
+  ./web/cgi/           CGI scripts.
 
 ======
 STATUS
@@ -57,7 +48,7 @@ currently use Python/CGI.
 Development uses Mercurial (http://selenic.com/mercurial)
 as a version control system.  The development repository is
 available for download, and the project's revision history 
-can be browsed at http://edrdg.org/~smg/jmdictdb/.
+can be browsed at http://www.edrdg.org/~smg/.
 
 =============
 DOCUMENTATION
@@ -132,8 +123,8 @@ verified.
     files manually.
 
 On Windows you will also need a copy of the GNU "make"
-program if you want to use the Makefiles to automate some
-of the install procedures, see below.
+program if you want to use the Makefiles to automate the 
+install procedure (described below).
 
 Authentication
 --------------

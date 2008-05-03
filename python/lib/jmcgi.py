@@ -399,6 +399,7 @@ def _freqcond (freq, nfval, nfcmp, gaval, gacmp):
 	# Process the checkboxes by creating a hash indexed by 
 	# by domain and with each value a list of freq values.
 
+	KW = jdb.KW
 	x = {};  inv = ''
 	if 'NOT' in freq:
 	    freq.remove ('NOT')

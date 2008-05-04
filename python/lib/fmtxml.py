@@ -192,7 +192,7 @@ def freqs (parent, attr, rk):
 
 def lsrc (x, enhanced=True):
 	fmt = [];  attrs = []
-	if True or x.lang != XKW.LANG['eng'].id:
+	if x.lang != XKW.LANG['eng'].id:
 	    attrs.append ('xml:lang="%s"' % XKW.LANG[x.lang].kw)
 	if x.part: attrs.append ('ls_type="part"')
 	if enhanced:

@@ -1,0 +1,34 @@
+Title:	full attribute sets on entry objects
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-05-02 22:37:51 sysad
+  An API code implementation decision was to minimize the
+  creation of attributes on entry objects and its sub-objects.
+  That is, if there were no kanji associated with an entry, 
+  the entry would have no '_kanj' attribute (as opposed to 
+  having one with a value of an empty list).
+  
+  In hindsight this was probably a bad choice.  It has the 
+  desired and positive effect of simplifying debugging since 
+  object display is not cluttered with a bunch of empty 
+  attributes, but it clutters the code since almost all 
+  attribute accesses have to be wrapped in a getattr() call, 
+  e.g. one must write
+  
+    ...getattr (entr, '_kanj', [])...
+  
+  rather than just
+  
+    ... entr._kanj ...
+  
+  I think code clarity is more important than ease of debugging.
+  So this issue proposes seeing if it's feasible to assure
+  that when objects are created that are created with default
+  values for the "standard" attributes.  (One way to do this
+  would be to make each object a class with an appropriate
+  __init__() function.)

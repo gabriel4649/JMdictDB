@@ -1,4 +1,4 @@
-﻿Title:	Add
+﻿Title:	Add "jlpt" to cinf table for kanjidic parser
 Stat:	open
 Disp:	
 Prio:	low
@@ -10,7 +10,7 @@ AssdTo:
   From:
     http://tech.groups.yahoo.com/group/edict-jmdict/message/2546
   
-  > I have added the JLPT levels at which kanji are introduced to
+  > I have added the C levels at which kanji are introduced to
   > the kanji files. They appear as Jn in KANJIDIC and <jlpt>n</jlpt>
   > in kanjidic2.
   

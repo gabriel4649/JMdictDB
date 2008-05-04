@@ -1,6 +1,6 @@
 Title:	Order index convention
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -34,3 +34,8 @@ AssdTo:	stuart@friix.com
   Entr objects being created for output need not supply record numbers.
   User of object responsible for checking index number presence/absense if
   it needs them.
+
+2008-05-03 15:13:00 sysad
+  The policy defined in the previous note seems to be working well, 
+  including during and after the transition to Python, so this issue 
+  is completed.

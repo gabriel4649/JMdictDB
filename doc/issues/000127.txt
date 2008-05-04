@@ -1,0 +1,14 @@
+Title:	New jmdict lsource attribute "ls_wasei"
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-05-03 22:25:42 sysad
+  From emai from Jim Breen (2008-05-03):
+  > I have just popped a new attribute "ls_wasei" into the
+  > DTD for the <lsource> elements. I suggest you convert
+  > any "trans: xxxx" as
+  > <lsource> xml:lang="eng" ls_wasei>xxxx</lsource>.

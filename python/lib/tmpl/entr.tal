@@ -11,7 +11,7 @@
   <span tal:repeat="e entries">
     <div class="entry">
       <span tal:replace="python:TALabbr('SRC',e.src)">src</span>
-      <a tal:attributes="href string:entr.py?q=${e/seq}.${e/src}&amp;svc=${svc}" tal:content="e/seq">seq#</a>
+      <a tal:attributes="href string:entr.py?svc=&amp;${svc}q=${e/seq}.${e/src}" tal:content="e/seq">seq#</a>
       <span class="status">
 	<span tal:condition="e/unap" class="pend">
 	  <span tal:content="python:TALdescr('STAT',e.stat)">status</span> pending
@@ -46,13 +46,10 @@
       <span tal:repeat="r e/_rdng">
 	<span tal:condition="not:repeat/r/start" tal:omit-tag="">； </span>
 	<span class="rdng" tal:content="r/txt">reading text</span>
-	<span class="restr" tal:condition="/r/_RESTR">(
-	  <span tal:condition="python: 1==r._RESTR" tal:omit-tag="">no kanji</span>
-	  <span tal:condition="python: 1!=r._RESTR" tal:omit-tag="">
-	    <span tal:repeat="z r/_RESTR" tal:omit-tag="">
-	      <span tal:condition="not:repeat/z/start" tal:omit-tag="">,</span>
-	      <span tal:replace="z"/>
-	      </span>
+	<span class="restr" tal:condition="r/_RESTR">(
+	  <span tal:repeat="z r/_RESTR" tal:omit-tag="">
+	    <span tal:condition="not:repeat/z/start" tal:omit-tag="">,</span>
+	    <span tal:replace="z"/>
 	    </span>)
 	  </span>
 	<span class="rattrs" tal:condition="python:TALattror(r,'_inf','_freq')">

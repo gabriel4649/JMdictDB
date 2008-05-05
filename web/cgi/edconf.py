@@ -122,10 +122,7 @@ def main (args, opts):
 
 	if not errs:
 	    serialized = json.serialize ([entr])
-	    jmcgi.fmt_p (entrs)
-	    jmcgi.fmt_restr (entrs)
-	    jmcgi.fmt_stag (entrs)
-	    jmcgi.set_audio_flag (entrs)
+	    jmcgi.htmlprep (entries)
 	    jmcgi.gen_page ("tmpl/edconf.tal", output=sys.stdout, entries=entrs,
 			    chklist=chklist, is_editor=1, svc=svc, disp=disp,
 			    method="get", serialized=serialized)

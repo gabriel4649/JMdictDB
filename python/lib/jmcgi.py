@@ -21,7 +21,7 @@ __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
 import sys, re, os, os.path
-import jdb, tal
+import jdb, tal, fmt
 
 def args():
 	"""
@@ -126,7 +126,19 @@ def gen_page (tmpl, output=None, **kwds):
 	if output: print >>output, html.encode ('utf-8')
 	return html
 
-def fmt_p (entrs):
+def htmlprep (entries):
+	"""\
+	Prepare a list of entries for display with an html template  
+	by adding some additional information that is inconvenient to 
+	generate from within a template."""
+
+	add_p_flag (entries)
+	add_restr_summary (entries)
+	add_stag_summary (entries) 
+	add_audio_flag (entries)
+	add_noedit_flag (entries)
+
+def add_p_flag (entrs):
 	# Add a supplemantary attribute to each entr object in
 	# list 'entrs', that has a boolean value indicating if 
 	# any of its readings or kabji meet wwwjdic's criteria
@@ -137,49 +149,43 @@ def fmt_p (entrs):
 	    if jdb.is_p (e): e.IS_P = True
 	    else: e.IS_P = False
 
-def fmt_restr (entrs):
+def add_restr_summary (entries):
 
-	# In the database we store the invalid combinations of readings
-	# and kanji, but for display, we want to show the valid combinations.
-	# So we subtract the former set which we got from the database from
-	# from the full set of all combinations, to get the latter set for
-	# display.  We also set a HAS_RESTR flag on the entry so that the 
-	# display machinery doesn't have to search all the readings to 
-	# determine if any restrictions exist for the entry.
+	# This adds an _RESTR attribute to each reading of each entry
+	# that has a restr list.  The ._RESTR attribute value is a list 
+	# of text strings giving the kanji that *are* allowed with the
+	# reading.  Recall that the database (and entry object created
+	# therefrom) stores the *disallowed* reading/kanji combinations
+	# but one generally wants to display the *allowed* combinations.
+	#
+	# Also add a HAS_RESTR boolean flag to the entry if there are 
+	# _restr items on any reading.
 
-	for e in entrs:
-	    if not hasattr (e, '_kanj'): continue
-	    nkanj = len (e._kanj)
-	    for r in getattr (e, '_rdng', []):
-		rs = getattr(r, '_restr', None)
-		if not rs: continue
-		e.HAS_RESTR = True
-		if len (r._restr) == nkanj: r._RESTR= True
-		else:
-		    r._RESTR = [x.txt for x in 
-			jdb.filt (e._kanj, ["kanj"], r._restr, ["kanj"])]
+	for e in entries:
+	    if not hasattr (e, '_rdng') or not hasattr (e, '_kanj'): continue
+	    for r in e._rdng:
+		rt = fmt.restrtxts (r._restr, 'kanj', e._kanj)
+	        if rt: r._RESTR = rt
+		e.HAS_RESTR = 1
 
-def fmt_stag (entrs): 
+def add_stag_summary (entries):
 
-	# Combine the stagr and stagk restrictions into a single
-	# list, which is ok because former show in kana and latter
-	# in kanji so there is no interference.  We also change
-	# from the "invalid combinations" stored in the database
-	# to "valid combinations" needed for display.
+	# This adds a STAG attribute to each sense that has any
+	# stagr or stagk restrictions.  .STAG is set to a single
+	# list that contains the kana or kanji texts strings that
+	# are allowed for the sense under the restrictions. 
 
-	for e in entrs:
-	    stag = []
+	for e in entries:
 	    for s in getattr (e, '_sens', []):
-		sk = getattr (s,'_stagk', None)
-		if sk: stag.extend ([x.txt for x in 
-			jdb.filt (e._kanj, ['kanj'], sk, ['kanj'])])
-		sr = getattr (s, '_stagr', None)
-		if sr: stag.extend ([x.txt for x in
-			jdb.filt (e._rdng, ["rdng"], s._stagr, ["rdng"])])
-		if stag:
-		    s._STAG = stag
+		rt = []
+		if getattr (s, '_stagr', None):
+		    rt.extend (fmt.restrtxts (s._stagr, 'rdng', e._rdng))
+		if getattr (s, '_stagk', None):
+		    rt.extend (fmt.restrtxts (s._stagk, 'kanj', e._kanj))
+		if rt:
+		    s._STAG = rt
 
-def set_audio_flag (entrs): 
+def add_audio_flag (entries): 
 
 	# The display template shows audio records at the entry level 
 	# rather than the reading level, so we set a HAS_AUDIO flag on 
@@ -190,26 +196,27 @@ def set_audio_flag (entrs):
 	# audio records, perhaps the template should set its own global
 	# variable when interating the readings, and use that when showing
 	# an audio block.  That would eliminate the need for this function.]
-
-	for e in entrs:
-	    e.HAS_AUDIO = True
-	    for r in getattr (e, '_rdng', []):
-		if getattr (r, '_audio', None): break
-	    else:
-		e.HAS_AUDIO = False
-
-def set_editable_flag (entrs): 
-
-	# This is a conveniene function to avoid embedding this logic 
-	# in the TAL templates.  This sets a EDITABLE flag on entries
-	# that should have an "Edit" button is entr.tal. 
  
-	KW = jdb.KW
-	for e in entrs:
-	    e.EDITABLE = (e.unap 
-		or (e.stat == KW.STAT['N'].id) 
-		or (e.stat == KW.STAT['A'].id))
+	for e in entries:
+	    for r in getattr (e, '_rdng', []):
+		if r._audio:
+		    e.HAS_AUDIO = 1
+		    break
 
+def add_noedit_flag (entries):
+
+	# This is a convenience function to avoid embedding this logic 
+	# in the TAL templates.  This sets a boolean NO_EDIT flag on 
+	# each entry that says whether or not an "Edit" button should
+	# be shown for the entry.  All unapproved entries, and approved
+	# new or active entries are editable.  Approved deleted and
+	# approved rejected entries aren't. 
+
+	KW = jdb.KW
+	for e in entries:
+	    e.NO_EDIT = not e.unap \
+		and (e.stat != KW.STAT['N'].id) \
+		and (e.stat != KW.STAT['A'].id)
 
 class SearchItems (jdb.Obj):
     """Convenience class for creating objects for use as an argument

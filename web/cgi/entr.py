@@ -41,11 +41,7 @@ def main (args, opts):
 		    if hasattr (s, '_xrer'): jdb.augment_xrefs (cur, s._xrer, 1)
 	    cur.close()
 	if not errs:
-	    jmcgi.fmt_p (entries)
-	    jmcgi.fmt_restr (entries)
-	    jmcgi.fmt_stag (entries)
-	    jmcgi.set_audio_flag (entries)
-	    jmcgi.set_editable_flag (entries)
+	    jmcgi.htmlprep (entries)
 	    jmcgi.gen_page ('tmpl/entr.tal', output=sys.stdout, entries=entries, svc=svc)
 	else:
 	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)

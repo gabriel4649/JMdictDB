@@ -198,9 +198,9 @@ OrderBy = {
 	'rdng':"x.entr,x.rdng", 'kanj':"x.entr,x.kanj", 'sens':"x.entr,x.sens", 
 	'gloss':"x.entr,x.sens,x.gloss", 'xref':"x.entr,x.sens,x.xref", 
 	'hist':"x.entr,x.hist", 
-	'kinf':"x.entr,x.kanj,x.ord", 'rinf':"x.entr,x.rdng,xord",
+	'kinf':"x.entr,x.kanj,x.ord", 'rinf':"x.entr,x.rdng,x.ord",
 	'pos':"x.entr,x.sens,x.ord", 'misc':"x.entr,x.sens,x.ord", 
-	'fld':"x.entr,x.sens,x.ord", 'dial':"x.entr,x.sens,x.rd", 
+	'fld':"x.entr,x.sens,x.ord", 'dial':"x.entr,x.sens,x.ord", 
 	'lsrc':"x.entr,x.sens,x.ord"}
 
 def entr_data (dbh, crit, args=None, ord=None, tables=None):

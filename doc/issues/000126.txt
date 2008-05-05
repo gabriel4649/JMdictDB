@@ -56,3 +56,7 @@ AssdTo:
 2008-05-03 14:29:01 sysad
   Added support for ordered k_inf, r_inf, pos, misc, field, dial, 
   and lsource tags.
+
+2008-05-05 15:10:00 sysad
+  Fix typo's introduced in the "ordered tags" change (86c48658214a).
+  Problem caused database read errors when entry has kinf or fld tags.

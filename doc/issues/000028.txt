@@ -7,5 +7,34 @@ Reqtrs:
 AssdTo:	stuart@friix.com
 
 2007-02-01 00:00:00 stuart@friix.com
-  jmdict.pm -- The xrefs stuff might be circularly linked.  How does that
-  affect garbage collection in long-running process (e.g. modperl)?
+  The entr object data structure might have circularly (cyclicly) 
+  linked references.  We should try to identify and eliminate them
+  if possible since they cause a potentially long delay before the
+  object is garbage collected.  If they can't be eliminated, their
+  effect, particularly in long running processes like mod-python,
+  should be investigated.
+
+  One place to look in the xrefs.
+
+2008-05-03 19:11:27 sysad
+  There are reference cycles in the restriction lists _restr,
+  _stagr, and _stagk.  When created by jdb.entrList(), these 
+  items have in addition to the row read from the database, 
+  additional attributes _rdng and _kanj (that are not lists 
+  despite the "_" in the name), which point back to the rdng/-
+  kanj item the the restr record's rdng/kanj index number 
+  identifies.  (Same is true for _stagr, _stagk, and _freq 
+  items.)
+
+  There are three places where entr objects are created: 
+    jdb.entr_data(), jmxml.py, and json.py.
+
+  In jdb.entr_data(), removed the last argument on the mup()
+  calls for _freq, _restr, _stagr, _stagk.  This prevents creating
+  the attributes that hold the back refs. 
+
+  jmxml.py does not create the back references.
+
+  json.py unserializes whatever it so it should not be a problem 
+  if nothing else creates circular refs.
+

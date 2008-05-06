@@ -329,14 +329,14 @@ def entr_bld (t):
 	mup ('_fld',   sens, ['entr','sens'], t.get('fld',  []), ['entr','sens'])
 	mup ('_dial',  sens, ['entr','sens'], t.get('dial', []), ['entr','sens'])
 	mup ('_lsrc',  sens, ['entr','sens'], t.get('lsrc', []), ['entr','sens'])
-	mup ('_restr', rdng, ['entr','rdng'], t.get('restr',[]), ['entr','rdng'], '_rdng')
-	mup ('_restr', kanj, ['entr','kanj'], t.get('restr',[]), ['entr','kanj'], '_kanj')
-	mup ('_stagr', sens, ['entr','sens'], t.get('stagr',[]), ['entr','sens'], '_sens')
-	mup ('_stagr', rdng, ['entr','rdng'], t.get('stagr',[]), ['entr','rdng'], '_rdng')
-	mup ('_stagk', sens, ['entr','sens'], t.get('stagk',[]), ['entr','sens'], '_sens')
-	mup ('_stagk', kanj, ['entr','kanj'], t.get('stagk',[]), ['entr','kanj'], '_kanj')
-	mup ('_freq',  rdng, ['entr','rdng'], [x for x in t.get('freq',[]) if x.rdng],  ['entr','rdng'], '_rdng')
-	mup ('_freq',  kanj, ['entr','kanj'], [x for x in t.get('freq',[]) if x.kanj],  ['entr','kanj'], '_kanj')
+	mup ('_restr', rdng, ['entr','rdng'], t.get('restr',[]), ['entr','rdng'])
+	mup ('_restr', kanj, ['entr','kanj'], t.get('restr',[]), ['entr','kanj'])
+	mup ('_stagr', sens, ['entr','sens'], t.get('stagr',[]), ['entr','sens'])
+	mup ('_stagr', rdng, ['entr','rdng'], t.get('stagr',[]), ['entr','rdng'])
+	mup ('_stagk', sens, ['entr','sens'], t.get('stagk',[]), ['entr','sens'])
+	mup ('_stagk', kanj, ['entr','kanj'], t.get('stagk',[]), ['entr','kanj'])
+	mup ('_freq',  rdng, ['entr','rdng'], [x for x in t.get('freq',[]) if x.rdng],  ['entr','rdng'])
+	mup ('_freq',  kanj, ['entr','kanj'], [x for x in t.get('freq',[]) if x.kanj],  ['entr','kanj'])
 	mup ('_xref',  sens, ['entr','sens'], t.get('xref', []), ['entr','sens']);
 	mup ('_xrer',  sens, ['entr','sens'], t.get('xrer', []), ['xentr','xsens']);
 	mup ('_snd',   entr, ['id'],          t.get('tsndasn',[]),['entr']);

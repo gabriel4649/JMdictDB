@@ -18,7 +18,7 @@
 	  </span>
 	<span tal:condition="not:e/unap" tal:content="python:TALdescr('STAT',e.stat)">status</span>
         <span tal:condition="e/dfrm" tal:omit-tag=""> 
-	  (parent: <a tal:attributes="href string:entr.pl?svc=${svc}&amp;e=${e/dfrm}" tal:content="e/dfrm"/>)
+	  (parent: <a tal:attributes="href string:entr.py?svc=${svc}&amp;e=${e/dfrm}" tal:content="e/dfrm"/>)
 	  </span>
 	</span>
       <span class="pkid" tal:condition="python:e.id&gt;0">{id:<span tal:replace="e/id" tal:omit-tag=""/>}</span>

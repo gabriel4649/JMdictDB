@@ -121,8 +121,8 @@ def main (args, opts):
 	    entrs = [entr]
 
 	if not errs:
-	    serialized = json.serialize ([entr])
-	    jmcgi.htmlprep (entries)
+	    serialized = json.serialize (entrs)
+	    jmcgi.htmlprep (entrs)
 	    jmcgi.gen_page ("tmpl/edconf.tal", output=sys.stdout, entries=entrs,
 			    chklist=chklist, is_editor=1, svc=svc, disp=disp,
 			    method="get", serialized=serialized)

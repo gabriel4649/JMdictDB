@@ -136,7 +136,7 @@ def htmlprep (entries):
 	add_restr_summary (entries)
 	add_stag_summary (entries) 
 	add_audio_flag (entries)
-	add_noedit_flag (entries)
+	add_editable_flag (entries)
 
 def add_p_flag (entrs):
 	# Add a supplemantary attribute to each entr object in
@@ -164,6 +164,7 @@ def add_restr_summary (entries):
 	for e in entries:
 	    if not hasattr (e, '_rdng') or not hasattr (e, '_kanj'): continue
 	    for r in e._rdng:
+		if not hasattr (r, '_restr'): continue
 		rt = fmt.restrtxts (r._restr, 'kanj', e._kanj)
 	        if rt: r._RESTR = rt
 		e.HAS_RESTR = 1
@@ -199,14 +200,14 @@ def add_audio_flag (entries):
  
 	for e in entries:
 	    for r in getattr (e, '_rdng', []):
-		if r._audio:
+		if getattr (r, '_audio', None):
 		    e.HAS_AUDIO = 1
 		    break
 
-def add_noedit_flag (entries):
+def add_editable_flag (entries):
 
 	# This is a convenience function to avoid embedding this logic 
-	# in the TAL templates.  This sets a boolean NO_EDIT flag on 
+	# in the TAL templates.  This sets a boolean EDITABLE flag on 
 	# each entry that says whether or not an "Edit" button should
 	# be shown for the entry.  All unapproved entries, and approved
 	# new or active entries are editable.  Approved deleted and
@@ -214,9 +215,9 @@ def add_noedit_flag (entries):
 
 	KW = jdb.KW
 	for e in entries:
-	    e.NO_EDIT = not e.unap \
-		and (e.stat != KW.STAT['N'].id) \
-		and (e.stat != KW.STAT['A'].id)
+	    e.EDITABLE = e.unap \
+		or (e.stat == KW.STAT['N'].id) \
+		or (e.stat == KW.STAT['A'].id)
 
 class SearchItems (jdb.Obj):
     """Convenience class for creating objects for use as an argument

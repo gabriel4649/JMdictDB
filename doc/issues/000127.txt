@@ -1,5 +1,5 @@
-Title:	New jmdict lsource attribute "ls_wasei"
-Stat:	close
+ï»¿Title:	New jmdict lsource attribute "ls_wasei"
+Stat:	closed
 Disp:	done
 Prio:	high
 Cats:	dev
@@ -13,8 +13,8 @@ AssdTo:
   >[...]
   > (a) the " ...... (trans: .....)" markings have mostly been 
   > extracted from the glosses and made into stand-alone markup,
-  > with an indication that they are ˜a»‰pŒê. The ones that are
-  > not real ˜a»‰pŒê have been left where they were, but changed 
+  > with an indication that they are å’Œè£½è‹±èªž. The ones that are
+  > not real å’Œè£½è‹±èªž have been left where they were, but changed 
   > into "....  (from ...)".
   >
   > (b) in JMdict they appear in lsource entities as:

@@ -62,7 +62,7 @@
 	<span tal:condition="not:repeat/k/start" tal:omit-tag="">； </span>
 	<span class="kanj" tal:content="k/txt">kanji text</span>
 	<span class="kattrs" tal:condition="python:TALattror(k,'_inf','_freq')">
-	  [<span class="kinf" tal:condition="k/_inf" tal:content="python:TALabbrs('KINF',k.'_inf')">kinf</span>
+	  [<span class="kinf" tal:condition="k/_inf" tal:content="python:TALabbrs('KINF',k,'_inf')">kinf</span>
 	   <span tal:condition="python:TALattrand(k,'_inf','_freq')" tal:replace="string:/">/</span>
 	   <span class="kfreq" tal:condition="k/_freq" tal:content="python:TALfreqs(k)">kfreq</span>]
 	  </span>

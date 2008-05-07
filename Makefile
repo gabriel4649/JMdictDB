@@ -108,7 +108,8 @@ LIB_FILES = jdb.py \
 	jellex.py \
 	jelparse.py \
 	jmcgi.py \
-	tal.py 
+	tal.py \
+	json.py
 WEB_LIB	= $(addprefix $(LIB_DIR)/,$(LIB_FILES))
 
 TAL_FILES = entr.tal \

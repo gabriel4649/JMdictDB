@@ -195,8 +195,7 @@ def lsrc (x, enhanced=True):
 	if x.lang != XKW.LANG['eng'].id:
 	    attrs.append ('xml:lang="%s"' % XKW.LANG[x.lang].kw)
 	if x.part: attrs.append ('ls_type="part"')
-	if enhanced:
-	    if x.wasei: attrs.append ('ls_type="wasei"')
+	if x.wasei: attrs.append ('ls_wasei="y"')
 	attr = (' ' if attrs else '') + ' '.join (attrs)
 	if not x.txt: fmt.append ('<lsource%s/>' % attr)
 	else: fmt.append ('<lsource%s>%s</lsource>' % (attr, x.txt))

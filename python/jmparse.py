@@ -207,7 +207,8 @@ Arguments:
 
 	p.add_option ("-y", "--extract", default=False, 
             dest="extract", action="store_true",
-            help="Extract literal and trans information from glosses.")
+            help='Extract "(lit: ...)" text from glosses into separate '
+		'"lit" glosess.')
 
 	p.add_option ("-k", "--keep", default=False,
             dest="keep", action="store_true",

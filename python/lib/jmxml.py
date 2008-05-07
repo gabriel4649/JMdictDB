@@ -99,8 +99,7 @@ def parse_xmlfile (
 	startseq=None, 	# (int) Skip until this entry seen, or None
 			#   to start at first entry.
 	elimit=None, 	# (int) Maximum number of entries to process.
-	xlit=False, 	# (bool) Extract "lit" and "trans" info from 
-			#   glosses.
+	xlit=False, 	# (bool) Extract "lit" info from glosses.
 	xlang=None,	# (list) List of lang id's to limit extracted
 			#   glosses to.
 	toptag=False):	# (bool) Make first item retuned by iterator 
@@ -279,8 +278,8 @@ def do_gloss (elems, sens, xlit=False, xlang=None):
 		continue
 	    txt = elem.text
 	    lit = []; trans = [];
-	    if xlit and ('lit:' in txt or 'trans:' in txt):
-		 txt, lit, trans = extract_lit (txt)
+	    if xlit and ('lit:' in txt):
+		 txt, lit = extract_lit (txt)
 	    if not unique ((lang,txt), dupchk):
 		warn ("Duplicate lang/text in gloss '%s'/'%s'" % (lng, txt))
 		continue
@@ -289,9 +288,6 @@ def do_gloss (elems, sens, xlit=False, xlang=None):
 	        glosses.append (jdb.Obj (lang=lang, ginf=XKW.GINF['equ'].id, txt=txt))
 	    if lit:
 	        lits.extend ([jdb.Obj (lang=lang, ginf=XKW.GINF['lit'].id, txt=x) for x in lit])
-	    if trans:
-		if not hasattr (sens, '_lsrc'): sens._lsrc = []
-	        sens._lsrc.extend ([jdb.Obj (lang=lang, txt=x, part=0, wasei=1) for x in trans])
 	if glosses or lits:
 	    if not hasattr (sens, '_gloss'): sens._gloss = []
 	    sens._gloss.extend (glosses + lits)
@@ -309,9 +305,14 @@ def do_lsrc (elems, sens):
 	    if lstyp and lstyp != 'part':
 		warn ("Invalid lsource type attribute: '%s'" % lstyp)
 		continue
-	    if lstyp and  not txt: 
-		warn ("Non-default lsource type '%s' and no text" % lstyp)
-	    lsrc.append (jdb.Obj (lang=lang, txt=txt, part=lstyp=='part', wasei=False))
+	    wasei = elem.get ('ls_wasei') is not None
+
+	    if (lstyp or wasei) and  not txt: 
+		attrs = ("ls_wasei" if wasei else '') \
+			+ ',' if wasei and lstyp else '' \
+			("ls_type" if lstyp else '')
+		warn ("lsource has attribute(s) %s but no text" % msg)
+	    lsrc.append (jdb.Obj (lang=lang, txt=txt, part=lstyp=='part', wasei=wasei))
 	if lsrc: sens._lsrc = lsrc
 
 def do_xref (elems, sens, xtypkw):
@@ -588,31 +589,26 @@ def freq_warn (warn_type, r, k, kwstr):
 
 def extract_lit (txt):
 	"""
-	Extract literal glosses and trans text from a gloss
-	text string, 'txt'.   
+	Extract literal gloss text from a gloss text string, 'txt'.   
 	"""
-	t = re.sub (r'^lit:\s*',   '', txt)
-	if len(t) != len(txt): return '', [t], []
-	t = re.sub (r'^trans:\s*', '', txt)
-	if len(t) != len(txt): return '',  [], [t]
-	  # The following regex will match substrings like 
-	  #   "(lit: xxxx)" or "(trans: xxxx").  The "xxxx"
-	  # part may have parenthesised text but not nested.
-	  # Thus, "lit: foo (on you) dude" will be correctly
-	  # parsed, but  "lit: (foo (on you)) dude" won't.
-	regex = r'\((lit|trans):\s*((([^()]+)|(\([^)]+\)))+)\)'
-        start = 0; gloss=[]; lit=[]; trans=[];
+	t = re.sub (r'^lit:\s*', '', txt)
+	if len(t) != len(txt): return '', [t]
+	  # The following regex will match substrings like "(lit: xxxx)".  
+	  # The "xxxx" part may have parenthesised text but not nested. 
+	  # Thus, "lit: foo (on you) dude" will be correctly parsed, but
+	  # "lit: (foo (on you)) dude" won't.
+	regex = r'\((lit):\s*((([^()]+)|(\([^)]+\)))+)\)'
+        start = 0; gloss=[]; lit=[]
         for mo in re.finditer(regex, txt):
             gtyp, special = mo.group(1,2)
             brk, end = mo.span(0)
 	    if brk - start > 0:   gloss.append (txt[start:brk].strip())
-	    if gtyp == 'lit':     lit.append (special.strip())
-	    elif gtyp == 'trans': trans.append (special.strip())
+	    lit.append (special.strip())
 	    start = end
 	t = txt[start:len(txt)].strip()
 	if t: gloss.append (t)
 	gloss = ' '.join(gloss)
-	return gloss, lit, trans
+	return gloss, lit
 
 def unique (key, dupchk):
 	if key in dupchk: return False

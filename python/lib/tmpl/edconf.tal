@@ -111,7 +111,7 @@
 	      Dialect: <span tal:replace="python:TALabbrs('DIAL',s,'_dial')">dial</span>
 	      </span>
 	    <span class="lsrc" tal:condition="s/_lsrc">, 
-	      From: 
+	      From
 	      <span tal:repeat="z s/_lsrc" tal:omit-tag="">
 		<span tal:replace="python:TALabbr('LANG',z.lang)">(xx)</span
 		><span tal:condition="python:TALattror(z,'part','wasei')" tal:omit-tag=""
@@ -119,8 +119,10 @@
 		  ><span tal:condition="python:TALattrand(z,'part','wasei')" tal:replace="string: ,">,</span
 		  ><span tal:condition="z/wasei" tal:replace="string: w">w</span
 		  >)</span
-		>:"<span tal:condition="z/txt" tal:replace="z/txt">source word</span
-		>"<span tal:condition="not:repeat/z/end" tal:omit-tag="">,</span>
+		>:<span tal:condition="z/txt" tal:omit-tag="">
+		  "<span tal:replace="z/txt">lsource text</span
+		  >"</span
+		><span tal:condition="not:repeat/z/end" tal:omit-tag="">,</span>
 		</span>
 	      </span>
 

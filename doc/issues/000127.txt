@@ -1,14 +1,36 @@
 Title:	New jmdict lsource attribute "ls_wasei"
-Stat:	open
-Disp:	
+Stat:	close
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	
 AssdTo:	
 
 2008-05-03 22:25:42 sysad
-  From emai from Jim Breen (2008-05-03):
-  > I have just popped a new attribute "ls_wasei" into the
-  > DTD for the <lsource> elements. I suggest you convert
-  > any "trans: xxxx" as
-  > <lsource> xml:lang="eng" ls_wasei>xxxx</lsource>.
+  From email to the edict list from Jim Breen (2008-05-05):
+  http://tech.groups.yahoo.com/group/edict-jmdict/message/2570
+
+  >[...]
+  > (a) the " ...... (trans: .....)" markings have mostly been 
+  > extracted from the glosses and made into stand-alone markup,
+  > with an indication that they are ˜a»‰pŒê. The ones that are
+  > not real ˜a»‰pŒê have been left where they were, but changed 
+  > into "....  (from ...)".
+  >
+  > (b) in JMdict they appear in lsource entities as:
+  > <lsource xml:lang="eng" ls_wasei="y">eye mate</lsource>
+  >[...]
+
+2008-05-07 08:14:39 sysad
+  Adjust the existing code in fmtxml.py and jmxml.py for the syntax
+  J.B. chose for the ls_wasei attribute.
+
+2008-05-07 14:54:00 sysad
+  No more need for ability to parse out the "(trans: ...)" text 
+  from glosses since JMdict after 2008-05-06 or so has these 
+  already extracted to lsource elements.  Note that the -y option 
+  in jmparse.py is still needed for controlling the extraction of
+  literal glosses.
+
+  Also improved the formatting of the lsource information in the 
+  entr.tal template (and its near twin edconf.tal).

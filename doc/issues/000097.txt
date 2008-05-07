@@ -1,6 +1,6 @@
 Title:	Edit conf page dying with restrs
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	crit
 Cats:	bug
 Reqtrs:	
@@ -15,3 +15,6 @@ AssdTo:	stuart@friix.com
   
   Also noted that in edconf.pl, that restr lists are linked only to rdng
   items, not to kanj items.
+
+2008-05-07 08:33:00 stuart
+  Tested, works in Python API.

@@ -264,7 +264,7 @@ def do_senss (elems, entr, xlit=False, xlang=None):
 	    do_xref  (elem.findall('ant'),       sens, jdb.KW.XREF['ant'].id)
 
 	    if not getattr (sens, '_gloss', None):
-		warn ("Sense %d has no glosses." % ord+1)
+		warn ("Sense %d has no glosses." % (ord+1))
 	    senss.append (sens)
 	if senss: entr._sens = senss
 

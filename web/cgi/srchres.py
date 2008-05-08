@@ -45,7 +45,7 @@ def main( args, opts ):
 	so.src   = fl('src');   so.stat  = fl('stat');  so.unap = fl('appr')
 	so.nfval = fv('nfval'); so.nfcmp = fv('nfcmp')
 	so.gaval = fv('gaval'); so.gacmp = fv('gacmp')
-	force_srchres = 1  #fv('srchres')  # Force display of srchres page even if only one result.
+	force_srchres = fv('srchres')  # Force display of srchres page even if only one result.
 
 	condlist = jmcgi.so2conds (so)
 	  # FIXME: [IS-115] Following will prevent kanjidic entries from

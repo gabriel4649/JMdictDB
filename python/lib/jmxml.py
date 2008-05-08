@@ -221,7 +221,8 @@ def do_rdngs (elems, entr, fmap):
 	    txt = elem.find('reb').text
 	    if not unique (txt, dupchk): 
 		warn ("Duplicate reb text: '%s'" % txt); continue
-	    if not (jdb.jstr_classify (txt) & jdb.KANA):
+	    t = jdb.jstr_classify (txt)
+	    if (t & jdb.KANJI) or not (t & jdb.KANA):
 		warn ("reb text '%s' not kana." % txt)
 	    rdng = jdb.Obj (rdng=ord+1, txt=txt)
 	    do_kws (elem.findall('re_inf'), rdng, '_inf', 'RINF')
@@ -263,7 +264,7 @@ def do_senss (elems, entr, xlit=False, xlang=None):
 	    do_xref  (elem.findall('ant'),       sens, jdb.KW.XREF['ant'].id)
 
 	    if not getattr (sens, '_gloss', None):
-		warn ("Sense %d has no glosses." % ord)
+		warn ("Sense %d has no glosses." % ord+1)
 	    senss.append (sens)
 	if senss: entr._sens = senss
 
@@ -441,12 +442,9 @@ def do_restr (elems, rdng, kanjs, rattr, kattr, pattr, nokanji=None):
 
 	if not elems and nokanji is None: return
 	if elems and nokanji is not None:
-	    warn ("Conflicting 'nokanji' and 're_restr' in reading %d." % rdng.ord)
+	    warn ("Conflicting 'nokanji' and 're_restr' in reading %d." % rdng.rdng)
 	if nokanji is not None: allowed_kanj = []
 	else: 
-	    ord =  getattr (rdng, 'rdng', None) \
-		or getattr (rdng, 'sens', None) \
-		or getattr (rdng, 'kanj', None)
 	    allowed_kanj, dups = remove_dups ([x.text for x in elems])
 	    if dups:
 		warn ("Duplicate %s item(s) %s in %s %d." 

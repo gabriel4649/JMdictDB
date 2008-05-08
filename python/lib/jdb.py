@@ -1339,4 +1339,32 @@ def first (seq, f, nomatch=None):
 	    if f(s): return s
 	return nomatch
 
+def unique (key, dupchk):
+	""" 
+	key -- An immutuable object.
+	dupchk -- An (initially empty) mapping object.
+
+	"""
+	if key in dupchk: return False
+	dupchk[key] = 1
+	return True
+
+def rmdups (recs, key=None):
+	"""
+	recs -- A list of objects
+	key -- None, or a one-parameter function that will be
+	  called with objects of 'recs' and is expected to return
+	  an immutable value that identified "same" objects of 
+	  'recs'. 
+	Returns: a 2-tuple:
+	  [0] -- List of unique objects in 'recs' (order preserved).
+	  [1] -- List of duplicate objects in 'recs'.
+	"""
+	uniq=[]; dups=[]; dupchk={}
+	for x in recs:
+	    if key: k = key (x)
+	    else: k = x
+	    if unique (k, dupchk): uniq.append (x)
+	    else: dups.append (x) 
+	return uniq, dups
 

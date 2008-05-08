@@ -56,8 +56,9 @@ def entr (entr):
 
 def kanj (k, n=None):
 	KW = jdb.KW
-	kwds = ",".join([KW.KINF[x.kw].kw for x in getattr (k,'_inf',[])] \
-		   + [KW.FREQ[x.kw].kw+str(x.value) for x in getattr (k,'_freq',[])])
+	kinf = [KW.KINF[x.kw].kw for x in getattr (k,'_inf',[])]
+	freq = [KW.FREQ[x.kw].kw+str(x.value) for x in getattr (k,'_freq',[])]
+	kwds = ",".join (kinf + jdb.rmdups (freq)[0])
 	if kwds: kwds = "[" + kwds + "]"
 	return "%s.%s%s" % (k.kanj, k.txt, kwds)
 
@@ -67,8 +68,9 @@ def rdng (r, k, n=None):
 	if hasattr (r, '_restr'):
 	    restr = ','.join (restrtxts (r._restr, 'kanj', k))
 	if restr: restr = "(%s)" % restr
-	kwds = ",".join([KW.RINF[x.kw].kw for x in getattr (r,'_inf',[])] \
-		   + [KW.FREQ[x.kw].kw+str(x.value) for x in getattr(r,'_freq',[])])
+	rinf = [KW.RINF[x.kw].kw for x in getattr (r,'_inf',[])]
+	freq = [KW.FREQ[x.kw].kw+str(x.value) for x in getattr(r,'_freq',[])]
+	kwds = ",".join (rinf + jdb.rmdups (freq)[0])
 	if kwds: kwds = "[" + kwds + "]"
 	return "%s.%s%s%s" % (r.rdng, r.txt, restr, kwds)
 

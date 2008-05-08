@@ -185,6 +185,7 @@ def freqs (parent, attr, rk):
 	kwds = getattr (parent, attr, [])
 	if not kwds: return []
 	tmp = [(XKW.FREQ[x.kw].kw, x.value) for x in kwds]
+	tmp = jdb.rmdups (tmp)[0]
 	tmp.sort()
 	return [('<%s>%s%02d</%s>' if x[0]=='nf' else '<%s>%s%d</%s>') 
 		  % (rk, x[0], x[1], rk) 

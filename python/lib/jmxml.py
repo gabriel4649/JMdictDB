@@ -199,7 +199,7 @@ def do_kanjs (elems, entr, fmap):
 	kanjs = []; dupchk = {}
 	for ord, elem in enumerate (elems):
 	    txt = elem.find('keb').text
-	    if not unique (txt, dupchk): 
+	    if not jdb.unique (txt, dupchk): 
 		warn ("Duplicate keb text: '%s'" % txt); continue
 	    if not (jdb.jstr_classify (txt) & jdb.KANJI):
 		warn ("keb text '%s' not kanji." % txt)
@@ -219,7 +219,7 @@ def do_rdngs (elems, entr, fmap):
 	rdngs = []; dupchk = {}
 	for ord, elem in enumerate (elems):
 	    txt = elem.find('reb').text
-	    if not unique (txt, dupchk): 
+	    if not jdb.unique (txt, dupchk): 
 		warn ("Duplicate reb text: '%s'" % txt); continue
 	    t = jdb.jstr_classify (txt)
 	    if (t & jdb.KANJI) or not (t & jdb.KANA):
@@ -281,7 +281,7 @@ def do_gloss (elems, sens, xlit=False, xlang=None):
 	    lit = []; trans = [];
 	    if xlit and ('lit:' in txt):
 		 txt, lit = extract_lit (txt)
-	    if not unique ((lang,txt), dupchk):
+	    if not jdb.unique ((lang,txt), dupchk):
 		warn ("Duplicate lang/text in gloss '%s'/'%s'" % (lng, txt))
 		continue
 	    # (entr,sens,gloss,lang,txt)
@@ -397,7 +397,7 @@ def do_kws (elems, obj, attr, kwtabname):
 	global XKW
 	if elems is None: return None
 	kwtab = getattr (XKW, kwtabname)
-	kwtxts, dups = remove_dups ([x.text for x in elems])
+	kwtxts, dups = jdb.rmdups ([x.text for x in elems])
 	kwrecs = []
 	for x in kwtxts:
 	    try: kw = kwtab[x].id
@@ -405,7 +405,7 @@ def do_kws (elems, obj, attr, kwtabname):
 		warn ("Unknown %s keyword '%s'" % (kwtabname,x))
 	    else:
 		kwrecs.append (jdb.Obj (kw=kw))
-	dups, x = remove_dups (dups)
+	dups, x = jdb.rmdups (dups)
 	for x in dups:
 	    warn ("Duplicate %s keyword '%s'" % (kwtabname, x))
 	if kwrecs: 
@@ -445,7 +445,7 @@ def do_restr (elems, rdng, kanjs, rattr, kattr, pattr, nokanji=None):
 	    warn ("Conflicting 'nokanji' and 're_restr' in reading %d." % rdng.rdng)
 	if nokanji is not None: allowed_kanj = []
 	else: 
-	    allowed_kanj, dups = remove_dups ([x.text for x in elems])
+	    allowed_kanj, dups = jdb.rmdups ([x.text for x in elems])
 	    if dups:
 		warn ("Duplicate %s item(s) %s in %s %d." 
 			% (pattr[1:], "'"+"','".join([dups])+"'", 
@@ -607,20 +607,6 @@ def extract_lit (txt):
 	if t: gloss.append (t)
 	gloss = ' '.join(gloss)
 	return gloss, lit
-
-def unique (key, dupchk):
-	if key in dupchk: return False
-	dupchk[key] = 1
-	return True
-
-def remove_dups (recs, key=None):
-	uniq=[]; dups=[]; dupchk={}
-	for x in recs:
-	    if key: k = key (x)
-	    else: k = x
-	    if unique (k, dupchk): uniq.append (x)
-	    else: dups.append (x) 
-	return uniq, dups
 
 def crossprod (*args):
 	"""

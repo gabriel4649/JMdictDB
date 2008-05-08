@@ -171,7 +171,7 @@ loadjm: data/jmdict.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f reload.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/jmdict.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
-	cd python && python xresolv.py -q $(JM_HOST) $(JM_USER) $(JM_DB) >../data/jmdict_xresolv.log
+	cd python && python xresolv.py $(JM_HOST) $(JM_USER) $(JM_DB) >../data/jmdict_xresolv.log
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -c "vacuum analyze xref"
 	@echo 'Remember to check the log files for warning messages.'
 
@@ -219,7 +219,7 @@ loadex: data/examples.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f syncseq.sql
 	# The following command is commented out because of the long time
 	# it can take to run.  It may be run manually after 'make' finishes.
-	#cd python && python xresolv.py -q $(JM_HOST) $(JM_USER) $(JM_DB) -s3 -t1 >../data/examples_xresolv.log
+	#cd python && python xresolv.py $(JM_HOST) $(JM_USER) $(JM_DB) -s3 -t1 >../data/examples_xresolv.log
 	#cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -c 'vacuum analyze xref;'
 
 #------ Load kanjidic2,xml ---------------------------------------------------
@@ -261,8 +261,8 @@ loadall: data/jmdict.dmp data/jmnedict.pgi data/examples.pgi
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/jmnedict.dmp
 
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
-	cd python && python xresolv.py -q $(JM_HOST) $(JM_USER) $(JM_DB) >../data/jmdict_xresolv.log
-	#cd python && python xresolv.py -q $(JM_HOST) $(JM_USER) $(JM_DB) -s3 >../data/examples_xresolv.log
+	cd python && python xresolv.py $(JM_HOST) $(JM_USER) $(JM_DB) >../data/jmdict_xresolv.log
+	#cd python && python xresolv.py $(JM_HOST) $(JM_USER) $(JM_DB) -s3 >../data/examples_xresolv.log
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -c "vacuum analyze xref"
 	@echo 'Remember to check the log files for warning messages.'
 

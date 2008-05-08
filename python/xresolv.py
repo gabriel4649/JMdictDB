@@ -82,12 +82,7 @@ def main (args, opts):
 			    xref_src, targ_src, krmap) 
 	    if not ncnt: break 
 	    start += ncnt
-	print_msg_summary()
 	dbh.close()
-
-def show_msg_sum_and_exit():
-	print_msg_summary()
-	sys.exit()
 
 #-----------------------------------------------------------------------
 
@@ -119,12 +114,21 @@ def resolv (dbh, start, blksz, xref_src, targ_src, krmap):
 
 	        entries = get_entries (dbh, targ_src, v.rtxt, v.ktxt, None)
 
+		  # If we didn't find anything, and we did not have both
+		  # a reading and a kanji, try again but search for reading
+		  # in kanj table or kanji in rdng table because our idea
+		  # of when a string is kanji and when it is a reading still
+		  # still does not agree with JMdict's in all casee (IS-26).
+		  # This hack will be removed when IS-26 is resolved.
+
+	        if not entries and (not v.rtxt or not v.ktxt):
+		    entries = get_entries (dbh, targ_src, v.ktxt, v.rtxt, None)
+
 		  # Choose_target() will examine the entries and determine if
-		  # if it can narrows the target down to a single entry, which
+		  # if it can narrow the target down to a single entry, which
 		  # it will return as a 7-element array (see get_entries() for
 		  # description).  If it can't find a unique entry, it takes
 		  # care of generating an error message and returns a false value. 
-
 		e = choose_target (v, entries)
 	        if not e: continue
 
@@ -331,7 +335,7 @@ def kr (v):
 	return s
 
 def fs (v):
-	s = "(%d,%d,%d)" % (v.seq,v.sens,v.ord)
+	s = "Seq %d (%d,%d):" % (v.seq,v.sens,v.ord)
 	return s
 
 def fmt_jitem (ktxt, rtxt, slist):
@@ -341,20 +345,10 @@ def fmt_jitem (ktxt, rtxt, slist):
 	if slist: jitem += '[' + ','.join ([str(s) for s in slist]) + ']'
 	return jitem	    
 
-Msgs = defaultdict (lambda:defaultdict (list))
 def msg (source, msg, arg):
 	if not Opts.quiet:
 	    print ("%s %s: %s" % (source,msg,arg)).encode (
 		Opts.encoding or sys.stdout.encoding or getdefaultencoding())
-	Msgs[msg][arg].append (source)
-
-def print_msg_summary():
-	print "Summary of unresolvable xrefs:\n----"
-	for k,sm in sorted (Msgs.items(), key=lambda x:x[0]):
-	    print k.capitalize() + ":"
-	    for t,tm in sorted (sm.items(), key=lambda x:x[0]):
-		print ("  %s (%d)" % (t, len(tm))).encode (
-		    Opts.encoding or sys.stdout.encoding or getdefaultencoding())
 
 #-----------------------------------------------------------------------
 
@@ -378,14 +372,10 @@ Arguments: none"""
 	p.add_option ("--help",
             action="help", help="Print this help message.")
 
-	p.add_option ("-o", "--output", default="JMdict.pgi",
-	    dest="output", metavar="FILENAME",
-	    help="Name of output postgresql rebasable dump file.  "
-		"By convention this is usually given the suffix \".pgi\".")
-
 	p.add_option ("-n", "--noaction", default=False,
 	    action="store_true",
-	    help="Resolve xrefs but don't write to database.")
+	    help="Resolve xrefs and generate log file but don't write "
+	        "to database.")
 
 	p.add_option ("-v", "--verbose", default=False,
 	    action="store_true",

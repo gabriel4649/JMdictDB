@@ -19,3 +19,15 @@ AssdTo:
   
   I believe that YAML suppports multiple references directly
   and may allow simplification of the entry serialization code.
+
+2008-05-03 19:11:27 sysad
+  There *are* reference cycles in the restriction lists _restr,
+  _stagr, _stagk, and in _freq.  See IS-28 2008-05-03.
+
+2008-05-10 07:25:00 sysad
+  This post contains information on yaml's (in)security:
+    http://mail.python.org/pipermail/python-list/2004-September/283010.html
+  However, it was written in 2004, refers to the first PyYAML
+  implementation (not the current completely rewritten version), 
+  and the PyYAML doc notes that yaml.load() is insecure as it can 
+  create arbitrary python objects (and offers a yaml.safe_load()).

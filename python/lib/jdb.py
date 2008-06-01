@@ -14,13 +14,14 @@
 # 
 #  You should have received a copy of the GNU General Public License
 #  along with JMdictDB; if not, write to the Free Software Foundation,
-#  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
+from __future__ import with_statement
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
-import sys, random, re, datetime
+import sys, os, random, re, datetime
 from time import time
 import pdb
 
@@ -73,8 +74,10 @@ class DbRow (object):
 	return c
 
 def _p (o):
-	if isinstance (o, (int,long,str,unicode,bool)):
+	if isinstance (o, (int,long,str,unicode,bool,type(None))):
 	    return repr(o)
+	if isinstance (o, (datetime.datetime, datetime.date, datetime.time)):
+	    return str(o)
 	if isinstance (o, list):
 	    if len(o) == 0: return "[]"
 	    else: return "[...]"
@@ -266,22 +269,22 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
 	global Debug; start = time()
 
 	if not tables: tables = (
-	    'entr','hist','rdng','rinf','audio','kanj','kinf',
+	    'entr','hist','rdng','rinf','kanj','kinf',
 	    'sens','gloss','misc','pos','fld','dial','lsrc',
 	    'restr','stagr','stagk','freq','xref','xrer',
-	    'tsndasn')
+	    'rdngsnd','entrsnd')
 	if args is None: args = []
 	if ord is None: ord = ''
 	if re.search (r'^((\d+|\?|%s),)*(\d+|\?|%s)$', crit):
-	    type = 'I'				# id number list
+	    typ = 'I'				# id number list
 	elif  (crit.startswith ('"')		# quoted table name
 	        or crit.find(' ')==-1		# no spaces: table name
 	        or crit.startswith ('(')): 	# parenthesised sql
-	    type = 'J'
-	else: type ='I'				# un-parenthesised sql.
+	    typ = 'J'
+	else: typ ='I'				# un-parenthesised sql.
 
-	if type == 'I': tmpl = "SELECT x.* FROM %s x WHERE x.%s IN (%s) %s %s"
-	else:           tmpl = "SELECT x.* FROM %s x JOIN %s t ON t.id=x.%s %s %s"
+	if typ == 'I': tmpl = "SELECT x.* FROM %s x WHERE x.%s IN (%s) %s %s"
+	else:          tmpl = "SELECT x.* FROM %s x JOIN %s t ON t.id=x.%s %s %s"
 
 	t = {}
 	for tbl in tables:
@@ -297,8 +300,8 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
 	    if tblx == "xref": limit = "LIMIT 20"
 	    else: limit = ''
 
-	    if   type == 'J': sql = tmpl % (tblx, crit, key, ordby, limit)
-	    elif type == 'I': sql = tmpl % (tblx, key, crit, ordby, limit)
+	    if   typ == 'J': sql = tmpl % (tblx, crit, key, ordby, limit)
+	    elif typ == 'I': sql = tmpl % (tblx, key, crit, ordby, limit)
 	    try: t[tbl] = dbread (dbh, sql, args)
 	    except (psycopg2.ProgrammingError), e:
 	        print >>sys.stderr, e,
@@ -321,7 +324,6 @@ def entr_bld (t):
 	mup ('_sens',  entr, ['id'],          sens,       ['entr'])
 	mup ('_hist',  entr, ['id'],          t.get('hist', []), ['entr'])
 	mup ('_inf',   rdng, ['entr','rdng'], t.get('rinf', []), ['entr','rdng'])
-	mup ('_audio', rdng, ['entr','rdng'], t.get('audio',[]), ['entr','rdng'])
 	mup ('_inf',   kanj, ['entr','kanj'], t.get('kinf', []), ['entr','kanj'])
 	mup ('_gloss', sens, ['entr','sens'], t.get('gloss',[]), ['entr','sens'])
 	mup ('_pos',   sens, ['entr','sens'], t.get('pos',  []), ['entr','sens'])
@@ -339,7 +341,8 @@ def entr_bld (t):
 	mup ('_freq',  kanj, ['entr','kanj'], [x for x in t.get('freq',[]) if x.kanj],  ['entr','kanj'])
 	mup ('_xref',  sens, ['entr','sens'], t.get('xref', []), ['entr','sens']);
 	mup ('_xrer',  sens, ['entr','sens'], t.get('xrer', []), ['xentr','xsens']);
-	mup ('_snd',   entr, ['id'],          t.get('tsndasn',[]),['entr']);
+	mup ('_snd',   entr, ['id'],          t.get('entrsnd',[]), ['entr']);
+	mup ('_snd',   rdng, ['entr','rdng'], t.get('rdngsnd',[]), ['entr','rdng']);
 
 	return entr
 
@@ -489,8 +492,8 @@ def augment_xrefs (dbh, xrefs, rev=False):
 	# that is a reference to an entr object describing the xref's
 	# target entry.  Unlike ordinary entr objects, the TARG objects
 	# have only a subset of sub items: they have no _inf, _freq, 
-	# _hist, _lsrc, _pos, _misc, _fld, _audio, _xrer, _restr, 
-	# _stagr, _stagk lists.
+	# _hist, _lsrc, _pos, _misc, _fld, _xrer, _restr, 
+	# _stagr, _stagk, _entrsnd, _edngsnd, lists.
 
 	global Debug; start = time()
 
@@ -717,12 +720,12 @@ def addentr (cur, entr):
 	for r in getattr (entr, '_rdng', []):
 	    dbinsert (cur, "rdng", ['entr','rdng','txt'], r)
 	    for x in getattr (r, '_inf',   []): dbinsert (cur, "rinf",  ['entr','rdng','ord','kw'], x)
-	    for x in getattr (r, '_audio', []): dbinsert (cur, "audio", ['entr','rdng','fname','strt','leng'], x)
 	    for x in getattr (r, '_restr', []):	dbinsert (cur, "restr", ['entr','rdng','kanj'], x)
 	    for x in getattr (r, '_freq',  []): 
 				  # Any freq recs with a non-null 'kanj' value were written when the kanji
 				  # records were processed, so we need write only the rdng-only freq's. 
 		if not getattr (x,'kanj',None): dbinsert (cur, "freq",  ['entr','rdng','kanj','kw','value'], x)
+	    for x in getattr (r,   '_snd', []): dbinsert (cur, "rdngsnd", ['entr','rdng','ord','snd'], x)
 	for x in freqs:
 	    dbinsert (cur, "freq",  ['entr','rdng','kanj','kw','value'], x)
 	for s in getattr (entr, '_sens'):
@@ -736,6 +739,7 @@ def addentr (cur, entr):
 	    for x in getattr (s, '_stagr', []): dbinsert (cur, "stagr", ['entr','sens','rdng'], x)
 	    for x in getattr (s, '_stagk', []): dbinsert (cur, "stagk", ['entr','sens','kanj'], x)
 	    for x in getattr (s, '_xref',  []): dbinsert (cur, "xref",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
+	for x in getattr (e, '_snd', []): dbinsert (cur, "entrsnd", ['entr','ord','snd'], x)
 	if getattr (entr, 'chr', None):
 	    c = e.chr
 	    dbinsert (cur, "chr", ['entr','bushu','strokes','freq','grade'], c)
@@ -791,6 +795,7 @@ def setkeys (e, id=None):
 	    for x in getattr (r, '_freq',  []): (x.entr, x.rdng) = (id, n)
 	    for x in getattr (r, '_restr', []): (x.entr, x.rdng) = (id, n)
 	    for x in getattr (r, '_stagr', []): (x.entr, x.rdng) = (id, n)
+	    for m,x in enumerate (getattr (r, '_snd',   [])): (x.entr, x.rdng, x.ord) = (id, n, m+1)
 	for n,k in enumerate (getattr (e, '_kanj', [])):
 	    n += 1; (k.entr, k.kanj) = (id, n)
 	    for p,x in enumerate (getattr (k, '_inf',   [])): (x.entr, x.kanj, x.ord) = (id, n, p+1)
@@ -810,7 +815,8 @@ def setkeys (e, id=None):
 	    for m,x in enumerate (getattr (s, '_xref', [])): (x.entr,x.sens,x.xref) = (id, n, m+1)
 	    for x in getattr (s, '_xrer',  []): (x.entr, x.sens) = (id, n)
 	    for x in getattr (s, '_xrslv', []): (x.entr, x.sens) = (id, n)
-	for n,x in enumerate (getattr (e, '_hist', [])): (x.entr,x.hist) = (id,n+1)
+	for n,x in enumerate (getattr (e, '_snd',  [])): (x.entr, x.ord) = (id, n+1)
+	for n,x in enumerate (getattr (e, '_hist', [])): (x.entr,x.hist) = (id, n+1)
 	if getattr (e, 'chr', None):
 	    c = e.chr
 	    c.entr = id
@@ -1056,6 +1062,60 @@ def is_p (entr):
 		if f.kw in (1,2,4,7) and f.value == 1: return True
 	return False
 
+class Snds:
+    def __init__ (self, cur):
+	self.cur = cur
+	sql = "SELECT * FROM sndvol"
+	self.vols = dbread (cur, sql)
+	sql = "SELECT * FROM sndfile"
+	self.sels = dbread (cur, sql)
+	mup (None, self.vols,  ['id'], self.sels, ['vol'],  'VOL')
+
+    def augment_snds (sndrecs):
+	augment_snds (self.cur, sndrecs, self.sels)
+
+def augment_snds (cur, sndrecs, sels=None):
+	"""
+	Augments entrsnd or rdngsnd records ('sndrecs') with sound
+	objects that describe the sound clip identified in each sndrec
+	only by id number.  The augmenting object is attached to each
+	sndrec items in attribute 'CLIP'.
+ 
+	cur -- An open DBAPI cursor to the jmdict database containing
+	    the sound records of interest.
+	sndrecs -- A list of entrsnd or rdngsnd records.
+	sels -- If provided, is a list of sound selection (aka file)
+	    records that have already matched it with volume records.
+	    If None, the appropriate selection and volume records will
+	    be read from the database.
+	"""
+	ids = [x.snd for x in sndrecs]
+	snds = get_recs (cur, 'snd', ids)
+	if sels is not None:
+	    sels = get_recs (cur, 'sndfile', [x.file for x in t['snd']])
+	    vols  = get_recs (cur, 'sndvol',  [x.vol  for x in t['sndfile']])
+	    mup (None, vols,  ['id'], sels, ['vol'],  'VOL')
+	mup (None, sels, ['id'], snds, ['file'], 'FILE')
+	mup (None, snds, ['id'], sndrecs, ['snd'],  'CLIP')
+
+#@memoize
+def get_recs (cur, table, ids):
+	s = set (ids)
+	sql = "SELECT * FROM %s WHERE id IN (%s)" % (table, ','.join(['%s'] * len (s)))
+	rs = dbread (cur, sql, list (s))
+	return rs
+
+def iter_snds (cur):
+	sql = "SELECT * FROM sndvol"
+	vols = dbread (cur, sql)
+	sql = "SELECT * FROM sndfile"
+	sels = dbread (cur, sql)
+	sql = "SELECT * FROM snd"
+	snds = dbread (cur, sql)
+	mup ('_snd',  sels, ['id'], snds, ['file'], None)
+	mup ('_file', vols, ['id'], sels, ['vol'],  None)
+	return vols, sels, snds
+
 
 class Tmptbl:
     def __init__ (self, cursor, tbldef=None, temp=True):
@@ -1151,31 +1211,37 @@ class Kwds:
     def loaddb( self, cursor ):
 	# Load instance from database.
 	for attr,table in self.Tables.items():
-	    d = dict(); setattr (self, attr, d)
-	    cursor.execute( "SELECT * FROM %s;" % table, ())
-	    for record in cursor.fetchall():	
-		self.add (attr, record[:3])
+	    d = dict(); 
+	    if not hasattr (self, attr): setattr (self, attr, d)
+	    recs = dbread (cursor, "SELECT * FROM %s;" % table, ())
+	    for record in recs:	self.add (attr, record)
 
     def loadcsv( self, dirname ):
 	# Load instance from csv files.
 	if dirname[-1] != '/' and dirname[-1] != '\\': dirname += '/'
 	for attr,table in self.Tables.items():
-	    if table == "kwsrc": continue
-	    d = dict(); setattr (self, attr, d)
-	    f = open (dirname + table + ".csv")
+	    ###if table == "kwsrc": continue
+	    d = dict(); 
+	    if not hasattr (self, attr): setattr (self, attr, d)
+	    try: f = open (dirname + table + ".csv")
+	    except IOError: continue
 	    for ln in f:
 		if re.match (r'\s*(#.*)?$', ln): continue
-		record = (ln.rstrip().split ("\t"))
-		self.add (attr, (int(record[0]),record[1],record[2]))
+		fields = (ln.rstrip().split ("\t"))
+		self.add (attr, fields)
 	    f.close()
 
     def add( self, attr, record ):
-	# Add a kw record.
+	  # If we don't have an attribute named attr ('KINF',
+	  # 'POS', etc.), create one with a value of an empty dict.
 	try: v = getattr (self, attr)
 	except AttributeError: 
 	    v = {}; setattr (self, attr, v)
-	r = DbRow (record[:3], ('id','kw','descr'))
-	v[record[0]] = r;  v[record[1]] = r;
+	  # Now add the record object to the dict, indexed by
+	  # its numeric id and its name (kw).
+	if not isinstance (record, (Obj, DbRow)):
+	    record = DbRow (record[:3], ('id','kw','descr'))
+	v[record.id] = record;  v[record.kw] = record;
 
     def attrs( self ):
 	# Return list of attr name strings.
@@ -1221,7 +1287,13 @@ def pmarks (sqlargs):
 def dbopts (opts):
 	# Convenience function for converting database-related
 	# OptionParser options to the keyword dictionary required
-	# by dbOpen().
+	# by dbOpen().  It is typically used like:
+	#
+	#   jdb.dbOpen (opts.database, **jdb.dbopts (opts))
+	#
+	# where opts is a optparse.Options object that may 
+	# have .database, .host, .user, or .password attributes
+	# in addition to other application options.
 
 	openargs = {}
 	if opts.user: openargs['user'] = opts.user
@@ -1368,3 +1440,18 @@ def rmdups (recs, key=None):
 	    else: dups.append (x) 
 	return uniq, dups
 
+def find_in_syspath (fname):
+	# Search the directories in sys.path for the first occurance
+	# of a readable file or directory named fname, and return 
+	# the sys.path directory in which it was found.
+
+	for d in sys.path: 
+	    if os.access (os.path.join (d, fname), os.R_OK):
+		return d
+	return None
+
+def get_dtd (filename, root="JMdict", encoding="UTF-8"):
+	with open (filename) as f:
+	    txt = f.read().decode(encoding) 
+	    txt %= {'root':root, 'encoding':encoding}
+	return txt

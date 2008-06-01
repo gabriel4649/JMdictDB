@@ -1,0 +1,33 @@
+﻿Title:	Finish support for audio clips.
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-05-27 21:54:18 sysad
+  Recent revision better supports audio clips (new sound tables
+  in schema, DTD extended to allow audio representation; fmt.py, 
+  fmtxml.py, jmxml.py, and various tools updated to handle clip
+  id's) but there is still a lot to finish up.
+
+  Still to do: 
+  Update documentation (schema.odt) for new sound tables.
+  Update JEL Parser (jelparse.y) and formatter (fmtjel.py).
+    (until those support audio clips, can't preserve audio
+    data through an entry edit.)
+  Show audio clip id's in entry template. (??) (Maybe should 
+    wait until we have have the page actually serve the sounrd 
+    to the client browser?)
+  Add a "play" button the the html entry display page that serves
+    the audio to client browser.
+  Add a play button to srch.py results form.
+  Create sound tools.  Plan to use Audacity to do clip segmentation
+    but will need something to take an Audacity label track, match
+    to entries, and load into database.
+  audio.py only works on Windows, port to *nix.
+  Add some means of playing audio to shentry.py.
+  
+
+

@@ -43,13 +43,15 @@ def entr (entr):
 	    fmt += "\n%s" % sens (s, kanjs, rdngs, n+1)
 
 	hdr = False;
+	a = getattr (entr, '_snd', [])
+	if a and not hdr: 
+	    fmt += "\nAudio: ";  hdr = True
+	if a: fmt += snd (a, None)
 	for r in rdngs:
-	    if not hasattr (r, '_audio') or len (r._audio) == 0: break
-	    if not hdr:
-		fmt += "\nAudio:";  hdr = True
-	    fmt += "\n  %s.%s" % (r.rdng, r.txt) 
-	    for i,a in enumerate (r._audio):
-		fmt += "\n    %d. %d %d %s {%d}" % (i, a.strt, a.leng, a.fname, a.id)
+	    a = getattr (r, '_snd', [])
+	    if a and not hdr:
+		fmt += "\nAudio: ";  hdr = True
+	    if a: fmt += snd (a, r.txt)
 
 	if hasattr (entr, '_hist'): fmt += hist (entr._hist);
 	return fmt
@@ -175,6 +177,11 @@ def xref (xref, rev=False):
 	    glosses = ' ' + '; '.join([x.txt for x in targ._sens[snum-1]._gloss])
 	t = (KW.XREF[xref.typ].kw).capitalize() + ': '
 	return t + '/'.join(v) + stxt + glosses
+
+def snd (snd_list, rtxt=None):
+	fmt = ", ".join ([str(x.snd) for x in snd_list]) 
+	if rtxt: fmt =  "(%s): %s" (rtxt, fmt)
+	return fmt
 
 def hist (hists):
 	KW = jdb.KW

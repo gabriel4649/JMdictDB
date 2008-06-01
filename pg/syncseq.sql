@@ -22,6 +22,9 @@
 -- $Revision$ $Date$
 
 SELECT setval('entr_id_seq',  (SELECT max(id) FROM entr));
+SELECT setval('snd_id_seq',  (SELECT max(id) FROM snd));
+SELECT setval('sndfile_id_seq',  (SELECT max(id) FROM sndfile));
+SELECT setval('sndvol_id_seq',  (SELECT max(id) FROM sndvol));
 
 -- The following properly resets the state of the sequences that 
 -- generate entry "seq" column values.  The sequence used for a 
@@ -35,4 +38,5 @@ SELECT setval('seq_jmnedict', (SELECT MAX(e.seq) FROM entr e JOIN kwsrc k ON k.i
 SELECT setval('seq_examples', (SELECT MAX(e.seq) FROM entr e JOIN kwsrc k ON k.id=e.src WHERE k.seq='seq_examples'));
 SELECT setval('seq_kanjidic', (SELECT MAX(e.seq) FROM entr e JOIN kwsrc k ON k.id=e.src WHERE k.seq='seq_kanjidic'));
 SELECT setval('seq',          (SELECT MAX(e.seq) FROM entr e JOIN kwsrc k ON k.id=e.src WHERE k.seq='seq'));
+
 

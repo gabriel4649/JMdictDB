@@ -22,23 +22,18 @@ __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
 import sys
-
-import jdb, jmxml, pgi, warns, kwstatic
-jdb.KW = kwstatic.KW
+import jdb, jmxml, pgi, warns
 import fmt
 
 def main (args, opts):
 	global Logfile
 
-	  #FIXME: need to come up with a framework for managing
-	  #  dicrepencies between database kw* table 'kw' codes,
-	  #  and entity code used in xml.  Currently there are
-	  #  no such discrepencies but should be prepared,
-	  #  Don't want to maintain a full set independently as 
-	  #  we did in Perl (jmdictxml.pm); maybe just a list of
-	  #  exceptions. 
-	jmxml.XKW = jmxml.xml_lookup_table (kwstatic.KW)
-	jdb.KW = kwstatic.KW
+	if opts.database:
+	    jdb.dbOpen (opts.database, **jdb.dbopts (opts))
+	else: 
+	    import kwstatic
+	    jdb.KW = kwstatic.KW
+	jmxml.XKW = jmxml.xml_lookup_table (jdb.KW)
 
 	xlang = None
 	if opts.lang:
@@ -49,30 +44,33 @@ def main (args, opts):
 	if opts.logfile: warns.Logfile = open (opts.logfile, "w")
 	if opts.encoding: warns.Encoding = opts.encoding
 
-	first = True;  eid = 0
-	for eid,entr in enumerate (jmxml.parse_xmlfile (inpf, opts.begin, opts.count,
-							opts.extract, xlang, toptag=True)):
-	    if first: 
+	eid = 0
+	for typ, entr in jmxml.parse_xmlfile (inpf, opts.begin, opts.count,
+					      opts.extract, xlang, toptag=True):
+	    if typ == 'root': 
 		  # Note that 'entr' here is actually the tag name of the
 		  # top-level element in the xml file, typically either
 		  # "JMdict" or "JMnedict".
-		corpid, corprec \
-		    = pgi.parse_corpus_opt (opts.corpus, entr, inpf.created)
-		if corprec: pgi.wrcorp (corprec, tmpfiles)
-		first = False
-		continue
-	    #print fmt.entr (entr)
-	    if not ((eid - 1) % 1550): 
-		sys.stdout.write ('.'); sys.stdout.flush()
-		warns.Logfile.flush()
-	    entr.src = corpid
-	    jdb.setkeys (entr, eid)
-	    pgi.wrentr (entr, tmpfiles)
+		try: corpid, corprec \
+		        = pgi.parse_corpus_opt (opts.corpus, entr, inpf.created)
+		except KeyError: pass
+		else:
+		    if corprec: pgi.wrcorp (corprec, tmpfiles)
+	    elif typ == 'corpus':
+		pgi.wrcorp (entr, tmpfiles)
+	    else: #typ == 'entry'
+		eid += 1
+		if not ((eid - 1) % 1550): 
+		    sys.stdout.write ('.'); sys.stdout.flush()
+		    warns.Logfile.flush()
+	        if not getattr (entr, 'src', None): entr.src = corpid
+	        jdb.setkeys (entr, eid)
+	        pgi.wrentr (entr, tmpfiles)
 	sys.stdout.write ('\n')
 	pgi.finalize (tmpfiles, opts.output, not opts.keep)
 
 
-from optparse import OptionParser
+from optparse import OptionParser, OptionGroup
 from pylib.optparse_formatters import IndentedHelpFormatterWithNL
 
 def parse_cmdline ():
@@ -228,6 +226,28 @@ Arguments:
 		"\"sjis\", \"utf8\", or \"euc-jp\").  This does not "
 		"affect the output .pgi file or the temp files which "
 		"are always written with utf-8 encoding.")
+
+	p.add_option ("-d", "--database", default=None,
+            help="""Name of the database to load keywords from.  If
+		not given, static keyword data will read from the file
+		"kwstatic.py".""")
+
+	g = OptionGroup (p, "Database access options",
+		"""If the --database (-d) option was given, the following 
+		options determine how to connect to that database.
+
+		Caution: On many systems, command line option contents
+		may be visible to other users on the system.  For that 
+		reason, you should avoid using the "--user" and "--password"
+		options below and use a .pgpass file (see the Postgresql
+		docs) instead. """)
+	g.add_option ("-h", "--host", default=None,
+            help="Name or ip address of machine database resides on.")
+	g.add_option ("-u", "--user", default=None,
+            help="Connect to database with this username.")
+	g.add_option ("-p", "--password", default=None,
+            help="Connect to database with this password.")
+	p.add_option_group (g)
 
 	opts, args = p.parse_args ()
 	if len (args) > 1: print >>sys.stderr, "%d arguments given, expected at most one"

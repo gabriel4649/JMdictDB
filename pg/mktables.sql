@@ -233,8 +233,8 @@ CREATE TABLE hist (
     stat SMALLINT NOT NULL,
     edid INT,
     dt TIMESTAMP NOT NULL DEFAULT NOW(),
-    name VARCHAR(250),
-    email VARCHAR(250),
+    name VARCHAR(60),
+    email VARCHAR(120),
     diff TEXT,
     refs TEXT,
     notes TEXT,
@@ -245,18 +245,6 @@ CREATE TABLE hist (
 --ALTER TABLE hist ADD CONSTRAINT hist_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE hist ADD CONSTRAINT hist_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
 --ALTER TABLE hist ADD CONSTRAINT hist_edid_fkey FOREIGN KEY (edid) REFERENCES editor(id);
-
-CREATE TABLE audio (
-    entr INT NOT NULL,
-    rdng SMALLINT NOT NULL,
-    audio SMALLINT NOT NULL,
-    fname VARCHAR(255) NOT NULL,
-    strt INT NOT NULL,
-    leng INT NOT NULL,
-    notes TEXT,
-    PRIMARY KEY(entr,rdng,audio));
---CREATE INDEX audio_fname ON audio(fname);
---ALTER TABLE audio ADD CONSTRAINT audio_entr_fkey FOREIGN KEY (entr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE editor (
     id SERIAL NOT NULL PRIMARY KEY,
@@ -381,6 +369,58 @@ CREATE TABLE stagk (
     PRIMARY KEY (entr,sens,kanj));
 --ALTER TABLE stagk ADD CONSTRAINT stagk_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE stagk ADD CONSTRAINT stagk_entr_fkey1 FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
+
+
+-- Tables for audio sound clips...
+
+CREATE TABLE sndvol (	-- Audio media volume (directory, CD, etc)
+    id SERIAL NOT NULL PRIMARY KEY,
+    title VARCHAR(50),
+    loc VARCHAR(500),
+    type SMALLINT NOT NULL,	-- 1:file, 2:cd
+    idstr VARCHAR(100),
+    corp INT,
+    notes TEXT);
+-- Anticipate this table will generally be too small to benefit from indexes.
+--ALTER TABLE sndvol ADD CONSTRAINT sndvol_corp_fkey FOREIGN KEY(corp) REFERENCES kwsrc(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+CREATE TABLE sndfile (	-- Audio file, track, etc.
+    id SERIAL NOT NULL PRIMARY KEY,
+    vol INT NOT NULL,
+    title VARCHAR(50),
+    loc VARCHAR(500),
+    type SMALLINT,
+    notes TEXT);
+--CREATE INDEX sndfile_vol ON sndfile(vol);
+--ALTER TABLE sndfile ADD CONSTRAINT sndfile_vol_fkey FOREIGN KEY(vol) REFERENCES sndvol(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+CREATE TABLE snd (	-- Audio sound clip.
+    id SERIAL NOT NULL PRIMARY KEY,
+    file SMALLINT NOT NULL,
+    strt INT NOT NULL DEFAULT(0),
+    leng INT NOT NULL DEFAULT(0),
+    trns TEXT,
+    notes VARCHAR(255));
+--ALTER TABLE snd ADD CONSTRAINT snd_file_fkey FOREIGN KEY(file) REFERENCES sndfile(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+CREATE TABLE entrsnd (	-- Entry to sound clip map.
+    entr INT NOT NULL,
+    ord SMALLINT NOT NULL,
+    snd INT NOT NULL,
+    PRIMARY KEY(entr,snd));
+--CREATE INDEX entrsnd_snd ON entrsnd(snd);
+--ALTER TABLE entrsnd ADD CONSTRAINT entrsnd_entr_fkey FOREIGN KEY(snd) REFERENCES snd(id) ON UPDATE CASCADE ON DELETE CASCADE;
+--ALTER TABLE entrsnd ADD CONSTRAINT entrsnd_entr_fkey1 FOREIGN KEY(entr) REFERENCES entr(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+CREATE TABLE rdngsnd (	-- Reading to sound clip map.
+    entr INT NOT NULL,
+    rdng INT NOT NULL,
+    ord SMALLINT NOT NULL,
+    snd INT NOT NULL,
+    PRIMARY KEY(entr,rdng,snd));
+--CREATE INDEX rdngsnd_snd ON rdngsnd(snd);
+--ALTER TABLE rdngsnd ADD CONSTRAINT rdngsnd_entr_fkey FOREIGN KEY(snd) REFERENCES snd(id) ON UPDATE CASCADE ON DELETE CASCADE;
+--ALTER TABLE rdngsnd ADD CONSTRAINT rdngsnd_entr_fkey1 FOREIGN KEY(entr,rdng) REFERENCES rdng(entr,rdng) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 -- The following tables are used for resolving textual xrefs to 

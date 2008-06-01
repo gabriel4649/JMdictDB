@@ -1,4 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="%(encoding)s"?>
+<!-- Rev 1.07-extended-1
+	This DTD is derived from the JMdict DTD version 1.07 (2008-04-11)
+	but is extended to allow for enhanced representational capabilities
+	to support JMdictDB entries.  Changes include:
+	  <corpus> new element to define corpus records.
+	  <entr> new attributes: stat, unap. dfrm; new child elements:
+	    corpus, audio, 
+	  <info> new child elements  notes, srcnotes.
+	  <audit> new child elements: email, name, refs, diff.
+	  <r_ele> new child element: audio.
+	  <gloss> new attribute: g_type.
+	  <xref> new attributes: type, seq, corp.
+-->
 <!-- Rev 1.07 
 	Revised POS tags for the adjectives
 -->
@@ -24,16 +37,35 @@
      some of the "*" as he suggested.  - 27 May 2000
 	 Added the re_nokanji element - Sep 2003.
      -->
-<!DOCTYPE JMdict [
-<!ELEMENT JMdict (entry*)>
+<!DOCTYPE %(root)s [
+<!ELEMENT %(root)s (corpdef*, entry*)>
 <!--                                                                   -->
-<!ELEMENT entry (ent_seq, k_ele*, r_ele+, info?, sense+)>
+<!ELEMENT corpus (name, descr?, date?, notes?, seqname?)>
+	<!-- Defines a corpus to which subsequent entries may belong. -->
+<!ATTLIST corpus id CDATA #REQUIRED>
+<!ELEMENT name (#PCDATA)>    <!-- Corpus short name. -->
+<!ELEMENT descr (#PCDATA)>   <!-- Description. -->
+<!ELEMENT date (#PCDATA)>    <!-- Date of corpus. -->
+<!ELEMENT notes (#PCDATA)>   <!-- Ad hoc notes. -->
+<!ELEMENT seqname (#PCDATA)> <!-- Name of associated Postgresql sequence. -->
+
+<!ELEMENT entry (ent_seq, ent_corp, k_ele*, r_ele+, info?, sense+, audio*)>
 	<!-- Entries consist of kanji elements, reading elements, 
 	general information and sense elements. Each entry must have at 
 	least one reading element and one sense element. Others are optional.
 	-->
+<!ATTLIST entr stat (N|A|D|R) "A">
+	<!-- Entry status, N:new, A:active, D:deleted, R:rejected. -->
+<!ATTLIST entr appr (y|n) "y">
+	<!-- Entry's approval status. -->
+<!ATTLIST entr dfrm CDATA #IMPLIED>
+	<!-- Entry's parent id number. -->
+
 <!ELEMENT ent_seq (#PCDATA)>
 	<!-- A unique numeric sequence number for each entry
+	-->
+<!ELEMENT ent_corp (#PCDATA)>
+	<!-- Shortname of the corpus this entry belongs to.
 	-->
 <!ELEMENT k_ele (keb, ke_inf*, ke_pri*)>
 	<!-- The kanji element, or in its absence, the reading element, is 
@@ -90,7 +122,7 @@
 	kanji/reading pair.
 	-->
 <!--                                                                   -->
-<!ELEMENT r_ele (reb, re_nokanji?, re_restr*, re_inf*, re_pri*)>
+<!ELEMENT r_ele (reb, re_nokanji?, re_restr*, re_inf*, re_pri*, audio*)>
 	<!-- The reading element typically contains the valid readings
 	of the word(s) in the kanji element using modern kanadzukai. 
 	Where there are multiple reading elements, they will typically be
@@ -124,8 +156,15 @@
 <!ELEMENT re_pri (#PCDATA)>
 	<!-- See the comment on ke_pri above. -->
 <!--                                                                   -->
-<!ELEMENT info (links*, bibl*, etym*, audit*)>
+<!ELEMENT audio (#PCDATA)>
+<!ATTLIST audio clipid CDATA #REQUIRED>
+<!--                                                                   -->
+<!ELEMENT info (notes?, srcnote?, links*, bibl*, etym*, audit*)>
 	<!-- general coded information relating to the entry as a whole.-->
+<!ELEMENT notes (#PCDATA)>
+	<!-- Ad hoc comments relevant to the entire entry. -->
+<!ELEMENT srcnote (#PCDATA)>
+	<!-- Detail related to source of entry, e.g. page number, url, etc. -->
 <!ELEMENT bibl (bib_tag?, bib_txt?)>
 <!ELEMENT bib_tag (#PCDATA)>
 <!ELEMENT bib_txt (#PCDATA)>
@@ -146,12 +185,16 @@
 	coded to indicate the type of link (text, image, sound), the 
 	link_desc will provided a textual label for the link, and the 
 	link_uri contains the actual URI.  -->
-<!ELEMENT audit (upd_date, upd_detl)>
+<!ELEMENT audit (upd_date, upd_detl, upd_refs?, upd_diff?, upd_name?, upd_email?)>
 <!ELEMENT upd_date (#PCDATA)>
 <!ELEMENT upd_detl (#PCDATA)>
 	<!-- The audit element will contain the date and other information
 	about updates to the entry. Can be used to record the source of 
 	the material. -->
+<!ELEMENT upd_refs (#PCDATA)>
+<!ELEMENT upd_diff (#PCDATA)>
+<!ELEMENT upd_name (#PCDATA)>
+<!ELEMENT upd_email (#PCDATA)>
 <!--                                                                   -->
 <!ELEMENT sense (stagk*, stagr*, pos*, xref*, ant*, field*, misc*, s_inf*, lsource*, dial*, gloss*, example*)>
 	<!-- The sense element will record the translational equivalent
@@ -169,6 +212,10 @@
 	this element must exactly match that of a keb or reb element in 
 	another entry.
 	-->
+<!ATTLIST xref type CDATA #IMPLIED>
+<!ATTLIST xref seq CDATA #IMPLIED>
+<!ATTLIST xref corp CDATA #IMPLIED>
+
 <!ELEMENT ant (#PCDATA)*>
 	<!-- This element is used to indicate another entry which is an
 	antonym of the current entry/sense. The content of this element
@@ -194,13 +241,18 @@
 <!ATTLIST lsource xml:lang CDATA "eng">
 	<!-- The xml:lang attribute defines the language(s) from which
 	a loanword is drawn.  It will be coded using the three-letter language 
-	code from the ISO 639 standard. When absent, the value "eng" (i.e. 
+	code from the ISO 639-2 standard. When absent, the value "eng" (i.e. 
 	English) is the default value. The bibliographic (B) codes are used. -->
 <!ATTLIST lsource ls_type CDATA #IMPLIED>
 	<!-- The ls_type attribute indicates whether the lsource element
 	fully or partially describes the source word or phrase of the
 	loanword. If absent, it will have the implied value of "full".
 	Otherwise it will contain "part".  -->
+<!ATTLIST lsource ls_wasei CDATA #IMPLIED>
+	<!-- The ls_wasei attribute indicates that the Japanese word
+	has been constructed from words in the source language, and
+	not from an actual phrase in that language. Most commonly used to
+	indicate "waseieigo". -->
 <!ELEMENT dial (#PCDATA)>
 	<!-- For words specifically associated with regional dialects in
 	Japanese, the entity code for that dialect, e.g. ksb for Kansaiben.
@@ -220,6 +272,9 @@
 	<!-- The g_gend attribute defines the gender of the gloss (typically
 	a noun in the target language. When absent, the gender is either
 	not relevant or has yet to be provided.
+	-->
+<!ATTLIST gloss g_type (equ|lit|id) "equ">
+	<!-- The g_type attribute defines the gloss category.
 	-->
 <!ELEMENT pri (#PCDATA)>
 	<!-- These elements highlight particular target-language words which 
@@ -298,6 +353,7 @@ various information fields.
 <!ENTITY obs "obsolete term">
 <!ENTITY obsc "obscure term">
 <!ENTITY ok "out-dated or obsolete kana usage">
+<!ENTITY on-mim "onomatopoeic or mimetic word">
 <!ENTITY poet "poetical term">
 <!ENTITY pol "polite (teineigo) language">
 <!ENTITY pref "prefix">
@@ -345,5 +401,36 @@ various information fields.
 <!ENTITY rkb "Ryuukyuu-ben">
 <!ENTITY vt "transitive verb">
 <!ENTITY vulg "vulgar expression or word">
+<!-- Added the following  -->
+<!ENTITY cop "copula"
+<!ENTITY v1x "like v1 but no potential, passive, causative forms"
+<!ENTITY v5kx "like v5k but no potential, passive, causative forms"
+<!ENTITY v5rx "like v5r but no potential, passive, causative forms"
+<!ENTITY v5mx "like v5m but no potential, causative forms"
+<!ENTITY v5ux "like v1 but no potential, causative forms"
+<!ENTITY v5ry "like v5r but no potential form"
+<!ENTITY demo "demonstrative pronoun"
+<!ENTITY pron "pronoun"
+<!ENTITY n-loc "noun, positional"
+<!ENTITY intr "interogative"
+<!ENTITY aff "affermative form"
+<!ENTITY naff "negative form"
+<!ENTITY infml "formal (polite) form"
+<!ENTITY fml "informal (plain) form"
+<!ENTITY dict "infl - dictionary form"
+<!ENTITY past "infl - past form"
+<!ENTITY te "infl - te-form"
+<!ENTITY te2 "infl - te-form (alt)"
+<!ENTITY cond "infl - conditional form"
+<!ENTITY prov "infl - provisional"
+<!ENTITY poten "infl - potential"
+<!ENTITY pass "infl - passive"
+<!ENTITY cause "infl - causative"
+<!ENTITY cause2 "infl - causative (alt)"
+<!ENTITY cp "infl - causative-passive"
+<!ENTITY vh "infl - volitional-hortative"
+<!ENTITY vh2 "infl - volitional-hortative (alt)"
+<!ENTITY conjec "infl - conjectural"
+<!ENTITY alt "infl - alternative"
+<!ENTITY imp "infl - imperative"
 ]>
-<!-- JMdict created: 2008-04-11 -->

@@ -118,7 +118,7 @@ def gen_page (tmpl, output=None, **kwds):
 	  # FIXME: 'tmpl' might contain a directory component containing 
 	  #  a dot which breaks the following.
 	if tmpl.find ('.') < 0: tmpl = tmpl + '.tal'
-	tmpldir = find_in_syspath (tmpl)
+	tmpldir = jdb.find_in_syspath (tmpl)
 	if tmpldir == '': tmpldir = "."
 	if not tmpldir: 
 	    raise IOError ("File or directory '%s' not found in sys.path" % tmpl)
@@ -199,8 +199,10 @@ def add_audio_flag (entries):
 	# an audio block.  That would eliminate the need for this function.]
  
 	for e in entries:
+	    if getattr (e, '_snd', None): 
+		e.HAS_AUDIO = 1;  continue
 	    for r in getattr (e, '_rdng', []):
-		if getattr (r, '_audio', None):
+		if getattr (r, '_snd', None):
 		    e.HAS_AUDIO = 1
 		    break
 
@@ -515,7 +517,7 @@ def dbOpenSvc (svcname, svcdir=None):
 	# 	is given, Postresql's default location will be
 	#	used.
 
-	if not svcdir: svcdir = find_in_syspath ("pg_service.conf")
+	if not svcdir: svcdir = jdb.find_in_syspath ("pg_service.conf")
 	if not svcname: svcname = "jmdict"
 
 	if svcdir: os.environ['PGSYSCONFDIR'] = svcdir
@@ -523,12 +525,3 @@ def dbOpenSvc (svcname, svcdir=None):
 	dbh = jdb.dbOpen (None, dsn='service=%s' % svcname)
 	return dbh
 
-def find_in_syspath (fname):
-	# Search the directories in sys.path for the first occurance
-	# of a readable file or directory named fname, and return 
-	# the sys.path directory in which it was found.
-
-	for d in sys.path: 
-	    if os.access (os.path.join (d, fname), os.R_OK):
-		return d
-	return None

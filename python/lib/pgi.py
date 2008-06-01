@@ -14,7 +14,7 @@
 # 
 #  You should have received a copy of the GNU General Public License
 #  along with JMdictDB; if not, write to the Free Software Foundation,
-#  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
 __version__ = ('$Revision$'[11:-2],
@@ -35,6 +35,7 @@ def wrentr (e, workfiles):
 	    for x in getattr (r, '_inf',   []): wrrow (x, workfiles['rinf'])
 	    for x in getattr (r, '_freq',  []): wrrow (x, workfiles['freq'])
 	    for x in getattr (r, '_restr', []): wrrow (x, workfiles['restr'])
+	    for x in getattr (r, '_snd',   []): wrrow (x, workfiles['rdngsnd'])
 	for k in getattr (e, '_kanj', []):
 	    wrrow (k, workfiles['kanj'])
 	    for x in getattr (k, '_inf',   []): wrrow (x, workfiles['kinf'])
@@ -53,11 +54,23 @@ def wrentr (e, workfiles):
 	    for x in getattr (s, '_xref',  []): wrrow (x, workfiles['xref'])
 	    for x in getattr (s, '_xrer',  []): wrrow (x, workfiles['xref'])
 	    for x in getattr (s, '_xrslv', []): wrrow (x, workfiles['xresolv'])
-	for x in getattr (e, '_hist', []):  wrrow (x, workfiles['hist'])
+	for x in getattr (e, '_snd',   []): wrrow (x, workfiles['entrsnd'])
+	for x in getattr (e, '_hist',  []): wrrow (x, workfiles['hist'])
 	for x in getattr (e, '_krslv', []): wrrow (x, workfiles['kresolv'])
 	if hasattr (e, 'chr'):
 	    wrrow (e.chr, workfiles['chr'])
 	    for x in getattr (e.chr, '_cinf', []): wrrow (x, workfiles['cinf'])
+
+def wrsnd (cur, workfiles):
+	vols = jdb.dbread (cur, "SELECT * FROM sndvol")
+	for v in vols:
+	    wrrow (x, workfiles['sndvol'])
+	    sels = jdb.dbread (cur, "SELECT * FROM sndfile s WHERE s.vol=%s", [v.id])
+	    for s in sels:
+		wrrow (x, workfiles['sndfile'])
+		clips = jdb.dbread (cur, "SELECT * FROM snd c WHERE c.file=%s", [s.id])
+		for c in clips:
+		    wrrow (x, workfiles['snd'])
 
 def initialize (tmpdir):
 	data = (
@@ -83,7 +96,13 @@ def initialize (tmpdir):
 	  ('hist',   ['entr','hist','stat','edid','dt','name','email','diff','refs','notes']),
 	  ('chr',    ['entr','bushu','strokes','freq','grade']),
 	  ('cinf',   ['entr','kw','value']),
-	  ('kresolv',['entr','kw','value']),)
+	  ('kresolv',['entr','kw','value']),
+	  ('sndvol', ['id','title','loc','type','idstr','corp','notes']),
+	  ('sndfile',['id','vol','title','loc','type','notes']),
+	  ('snd',    ['id','file','strt','leng','trns','notes']),
+	  ('entrsnd',['entr','ord','snd']),
+	  ('rdngsnd',['entr','rdng','ord','snd']),
+	  )
 
 	workfiles = {}
 	for n,(t,v) in enumerate (data):
@@ -92,7 +111,8 @@ def initialize (tmpdir):
 	return workfiles
 
 def wrrow (rowobj, workfile):
-	if not workfile.file: workfile.file = open (workfile.fn, "w")
+	if not workfile.file: 
+	    workfile.file = open (workfile.fn, "w")
 	s = "\t".join ([pgesc(getattr (rowobj, x, None)) for x in workfile.cols])
 	print >>workfile.file, s.encode ('utf-8')
 
@@ -105,16 +125,14 @@ def finalize (workfiles, outfn, delfiles=True, transaction=True):
 	if transaction:
 	    print >>fout, "\\set ON_ERROR_STOP 1\nBEGIN;\n"
 	for v in sorted (workfiles.values(), key=operator.attrgetter('ord')):
-	    t = v.tbl
-	    fn = v.fn
 	    if not v.file: continue
 	    v.file.close()
-	    fin = open (fn)
-	    print >>fout, "COPY %s(%s) FROM STDIN;" % (t,','.join(v.cols))
+	    fin = open (v.fn)
+	    print >>fout, "COPY %s(%s) FROM STDIN;" % (v.tbl,','.join(v.cols))
 	    for ln in fin: print >>fout, ln,
 	    print >>fout, '\\.\n'
 	    fin.close()
-	    if delfiles: os.unlink (fn)
+	    if delfiles: os.unlink (v.fn)
 	if transaction: print >>fout, 'COMMIT'
 	if fout != sys.stdout: fout.close()
 
@@ -134,7 +152,7 @@ def pgesc (s):
 	s = s.replace ('\t', '\\t')
 	return s
 
-def parse_corpus_opt (sopt, tag, datestamp):
+def parse_corpus_opt (sopt, roottag, datestamp):
 	"""
 	Return a corpus id number to use in entr.src and (possibly)
 	create a corpus (aka kwsrc) record in the output .pgi file.
@@ -142,7 +160,7 @@ def parse_corpus_opt (sopt, tag, datestamp):
 	(keyword), 'dt' (datetime stamp), 'seq' (name of a Postgresql
 	sequence that will be used to supply sequence numbers for
 	entries in this corpus.)  We derive those four fields from
-	information is the 'sopt' string, the 'tag' string, and the 
+	information is the 'sopt' string, the 'roottag' string, and the 
 	'datestamp' string paramaters.
 	'sopt' is contains one to four comma separated fields as
 	decribed in the help message for the (-s, --corpus) option. 
@@ -154,11 +172,11 @@ def parse_corpus_opt (sopt, tag, datestamp):
 
 	The procedure is:
 	 - If no sopt string is given:
-	    - If 'tag' is "jmdict" or jmnedict" use 1 or 2 respectively 
-	      as the 'id' value, 'tag' as the 'kw' value, 'datestamp'
+	    - If 'roottag' is "jmdict" or jmnedict" use 1 or 2 respectively 
+	      as the 'id' value, 'roottag' as the 'kw' value, 'datestamp'
 	      as the 'dt' value and "jmdict_seq" or "jmnedict_seq"
 	      respectively as the 'seq' value.
-	    - If tag is not "jmdict" or jmnedict", raise an error.
+	    - If roottag is not "jmdict" or jmnedict", raise an error.
 	 - If sopt was given then,
 	    - Use the first field as the corpus id number.
 	    - If the first field is the only field, no kwsrc record
@@ -167,8 +185,8 @@ def parse_corpus_opt (sopt, tag, datestamp):
 	      in the kwsrc table when the data in loaded into the 
 	      database.
 	    - If there is more than one field, they will be used to
-	      create a kwsrc record.  If 'kw' is missing, 'tag' will
-	      be used.  If 'tag' is also false, ands error is raised. 
+	      create a kwsrc record.  If 'kw' is missing, 'roottag' will
+	      be used.  If 'roottag' is also false, ands error is raised. 
 	      If 'dt' is missing, 'datestamp' will be used.  If 'seq' 
 	      is missing.
 	"""
@@ -183,14 +201,14 @@ def parse_corpus_opt (sopt, tag, datestamp):
 	    if len (a) > 1 and a[1]: corpnm = a[1]
 	    if len (a) > 2 and a[2]: corpdt = a[2]
 	    if len (a) > 3 and a[3]: corpseq = a[3]
-	if not corpnm: corpnm = tag.lower()
+	if not corpnm: corpnm = roottag.lower()
 	if not corpid: 
-	      # FIXME: unknown tag raises KeyError.  Should we raise something
+	      # FIXME: unknown roottag raises KeyError.  Should we raise something
 	      #   more informative and specific?
 	    corpid = {'jmdict':1, 'jmnedict':2, 'examples':3}[corpnm]
 	if not corpdt: corpdt = datestamp
 	if not corpseq and (corpnm == 'jmdict' or corpnm == 'jmnedict' 
 			    or corpnm == 'examples' or corpnm == 'test'): 
-		corpseq = corpnm + "_seq"
+		corpseq = "seq_" + corpnm
 	if not corpseq: corpseq = "seq"
 	return corpid, jdb.Obj (id=corpid, kw=corpnm, dt=corpdt, seq=corpseq)

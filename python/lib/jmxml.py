@@ -46,37 +46,43 @@ class NotFoundError (RuntimeError): pass
 
 def xml_lookup_table (KW):
 	"""
-	Create XML keyword lookup tables.
-	When XML files are parsed, keyword entities are expanded into
-	their long form descriptions given in the XML file's DTD. 
-	We need to be able to convert these descriptions into the
-	corresponding kw id's.  We provide this capability by adding
-	entries to a jdb.Kwds() object that are keyed by description.
+	This function generates jdb.Kwds -like structure used for
+	mapping JMdict entities to the kw* table id numbers used
+	to represent the corresponding information in jmdictdb.
 
-	For the most part the long descriptions used in the database
-	kw* tables are the same as in the XML DTD.  However in some
-	cases they may be different.  This function adds the descriptions
-	used in the kw tables, and overrides them in the special cases
-	where the DTD descriptions are different.
+	For the most part, jmdictdb uses the textual value of the 
+	JMdict XML entities as keywords.  (For example, if "&adj-na;"
+	is used to denote and na-adjective in JMdict, jmdictdb will 
+	use "na-adj" the the "kw" value of the na-adjective row in 
+	table kwpos.
+
+	But we don't want to be forced into this convention, so
+	we use this function to generate an independent set of mapping
+	tables (rather than just using jdb.KW), which is functionally
+	a copy of jdb.KW but allows the introduction of exceptions 
+	should we ever need to do that.
 	"""
 	for attr in 'DIAL FLD KINF MISC POS RINF'.split():
 	    kwdict = getattr (KW, attr)
-	    for kwrec in KW.recs(attr):
-		if kwrec.descr: kwdict[kwrec.descr] = kwrec
 	return KW
 
 class JmdictFile:
-    # Wrap a standard file object so as to keep track of the 
-    # current line number, and (since the xml parsing doesn't
-    # seem to be able to extract the JMdict creation date comment
-    # because it is outside of the root element), extract the 
-    # creation date.
+    # Wrap a standard file object and preprocess the lines being
+    # read (expectedly by an XML parser) for three purposes: 
+    #   1. Keep track of the file line number (for error messages).
+    #   2. Since the XML parser doesn't seem to be able to extract
+    #      the JMdict creation date comment (because it is outside
+    #      of the root element), we do it here.
+    #   3. Replace entities with non-entity strings of the same 
+    #      textual value.  It is more convinient to work with the
+    #      entity string values than their expanded text values.
 
     def __init__(self, source):
 	self.source = source;  self.lineno = 0
 	self.name = None; self.created=None
     def read(self, bytes):
 	s = self.source.readline();  self.lineno += 1
+	s = re.sub (r'&([a-zA-Z0-9-]+);', r'\1', s)
 	if self.created is None and self.lineno < 400:
 	    mo = re.search (r'<!-- ([a-zA-Z]+) created: (\d{4})-(\d{2})-(\d{2}) -->', s)
 	    if mo:
@@ -85,8 +91,17 @@ class JmdictFile:
 	return s
 
 def parse_entry (txt, dtd=None):
+	# Convert an XML text string into entry objects.
+	# 
+	# @param txt Text string containing a piece of XML defining
+	#            one of more entry elements.
+	# @param dtd (optional) A text string providing a DTD to be
+	#            prepended to 'txt'.  If not provide no DTD will 
+	#            be prepended.
+	# @returns An list of entry objects. 
+
 	if dtd: txt = dtd + txt
-	else: pass#txt = re.sub ('&([a-zA-Z0-9-]+);', r'\1', txt)
+	else: txt = re.sub ('&([a-zA-Z0-9-]+);', r'\1', txt)
 	xo = ElementTree.XML (txt)
 	if xo is None:
 	    print "No parse results"
@@ -102,6 +117,13 @@ def parse_xmlfile (
 	xlit=False, 	# (bool) Extract "lit" info from glosses.
 	xlang=None,	# (list) List of lang id's to limit extracted
 			#   glosses to.
+	corp_dict=None,	# (dict) A mapping that contains corpus (aka
+			#   "src") records indexed by id number and 
+			#   name.  <ent_corp> elements will be looked
+			#   up in this dict.  If not supplied, it is 
+			#   expected that <corpus> elements will occur
+			#   in the XML that define corpuses before they
+			#   are referenced by <ent_corp> elements.
 	toptag=False):	# (bool) Make first item retuned by iterator 
 			#   a string giving the name of the top-level
 			#   element.
@@ -109,17 +131,25 @@ def parse_xmlfile (
 	global Seq
 	etiter = iter(ElementTree.iterparse( inpf, ("start","end")))
 	event, root = etiter.next()
-	if toptag: yield root.tag
+	if toptag: yield 'root', root.tag
+	if corp_dict is None: corp_dict = {}
 	elist=[];  count=0;  entrnum=0
 	for event, elem in etiter:
-	    if elem.tag != "entry": continue
+	    if elem.tag != "entry" and elem.tag != 'corpus': continue
 	    if event == "start": 
 		lineno = getattr (inpf, 'lineno', None)
 		  # Only jmdict has "ent_seq" elements so if parsing jmnedici
 		  # we will use the the ordinal position of the entry in the
 		  # file, which we maintain by counting entries with 'entrnum',
 		  # as the seq number.
-		entrnum += 1
+		if elem.tag == 'entry': entrnum += 1
+		continue
+	      # At this point elem.tag must be either 'entry' or 'corpus'
+	      # and event is 'end'.
+	    if elem.tag == 'corpus':
+		corp = do_corpus (elem)
+		corp_dict[corp.id] = corp_dict[corp.kw] = corp
+		yield "corpus", corp
 		continue
 	    prevseq = Seq
 	    Seq = seq = int (elem.findtext ('ent_seq') or entrnum)
@@ -127,15 +157,27 @@ def parse_xmlfile (
 		warn (" (line %d): Sequence less than preceeding sequence" % lineno)
 	    if not startseq or seq >= startseq:
 		startseq = None
-		try: entr = do_entr (elem, seq, xlit, xlang)
+		try: entr = do_entr (elem, seq, xlit, xlang, corp_dict)
 		except ParseError, e:
 		    warn (" (line %d): %s" % (lineno, e))
-		else: yield entr
+		else: yield "entry", entr
 	        count += 1
 		if elimit and count >= elimit: break
 	    root.clear()
 
-def do_entr (elem, seq, xlit=False, xlang=None):
+def do_corpus (elem):
+	o = jdb.Obj (id=int(elem.get('id')), kw=elem.findtext ('name'))
+	descr = elem.findtext ('descr')
+	if descr: o.descr = descr
+	dt = elem.findtext ('date')
+	if dt: o.dt = dt
+	notes = elem.findtext ('notes')
+	if notes: o.notes = notes
+	seq = elem.findtext ('seqname')
+	if seq: o.seq = seq
+	return o
+
+def do_entr (elem, seq, xlit=False, xlang=None, corp_dict=None):
 	"""
     Create an entr object from a parsed ElementTree entry
     element, 'elem'.  'lineno' is the source file line number
@@ -144,8 +186,12 @@ def do_entr (elem, seq, xlit=False, xlang=None):
 
     Note that the entry object returned is different from one
     read from the database in the following respects:
-    * The 'entr' record has no .src (aka corpus) attribute. 
-      This is expected to be added by the caller.
+    * The 'entr' record will have no .src (aka corpus) attribute
+      if there is no <ent_corp> element in the entry.  In this
+      case the .src attribute is expected to be added by the
+      caller.  If there is a <ent_corp> element, it will be 
+      used to find a corpus in 'corp_dict', which in turn will
+      will provide an id number used in .src.
     * Items in sense's _xref list are unresolved xrefs, not 
       resolved xrefs as in a database entr object.  
       jdb.resolv_xref() or similar can be used to resolve the
@@ -174,25 +220,36 @@ def do_entr (elem, seq, xlit=False, xlang=None):
 	if seq <= 0: raise ParseError ("Invalid 'ent_seq' value, '%s'" % elem.text)
 	entr.seq = seq
 
+	id = elem.get('id')
+	if id is not None: entr.id = int (id)
+	dfrm = elem.get('dfrm')
+	if dfrm is not None: entr.dfrm = int (dfrm)
 	stat = elem.get('status') or jdb.KW.STAT['A'].id
 	try: stat = XKW.STAT[stat].id
 	except KeyError: raise ParseError ("Invalid <status> element value, '%s'" % stat)
 	entr.stat = stat
+	entr.unap = elem.get('appr') == 'n'
 
-	entr.unap = (elem.get('unapproved') and True) or False
-
-	notes = elem.find('notes')
-	srcnote = elem.find('srcnote')
-
+	corpname = elem.findtext('ent_corp')
+	if corpname is not None: entr.src = corp_dict[corpname].id
 	fmap = defaultdict (lambda:([],[]))
 	do_kanjs (elem.findall('k_ele'), entr, fmap)
 	do_rdngs (elem.findall('r_ele'), entr, fmap)
 	do_freq (fmap, entr)
 	do_senss (elem.findall('sense'), entr, xlit, xlang)
 	do_senss (elem.findall('trans'), entr, xlit, xlang)
-	do_hist  (elem.findall("info/audit"), entr)
-
+	do_info  (elem.findall("info"), entr)
+	do_audio (elem.findall("audio"), entr)
 	return entr
+
+def do_info (elems, entr):
+	if not elems: return 
+	elem = elems[0]	  # DTD allows only one "info" element.
+	x = elem.findtext ('srcnote')
+	if x: entr.srcnote = x
+	x = elem.findtext ('notes')
+	if x: entr.notes = x
+	do_hist (elem.findall("audit"), entr)
 
 def do_kanjs (elems, entr, fmap):
 	if elems is None: return 
@@ -378,15 +435,34 @@ def do_xref (elems, sens, xtypkw):
 def do_hist (elems, entr):
 	hists = []
 	for elem in elems:
-	    x = elem.find ("upd_date").text	  # Assume just one.
+	    x = elem.findtext ("upd_date")
 	    dt = datetime.datetime (*([int(z) for z in x.split ('-')] + [0, 0, 0]))
-	    op = elem.find ("upd_detl").text	  # Assume just one.
-	    # (entr,hist,stat,dt,who,diff,notes)
-	    hists.append (jdb.Obj (stat=kwstatic.KWSTAT_A, dt=dt, 
-				   notes="From JMdict <upd_detl>: %s" % op))
-	    if op != "Entry created":
-		warn ("Unexpected <upd_detl> contents: '%s'" % op)
+	    o = jdb.Obj (dt=dt, stat=kwstatic.KWSTAT_A)
+	    notes = elem.findtext ("upd_detl")
+	    name = elem.findtext ("upd_name")
+	    email = elem.findtext ("upd_email")
+	    diff = elem.findtext ("upd_diff")
+	    refs = elem.findtext ("upd_refs")
+	    if name: o.name = name
+	    if email: o.email = email
+	    if notes: o.notes = notes
+	    if refs: o.refs = refs
+	    if diff: o.diff = diff
+	    hists.append (o)
 	if hists: entr._hist = hists
+
+def do_audio (elems, entr_or_rdng):
+	snds = []
+	for elem in elems:
+	    v = elem.get ('clipid')
+	    if not v: 
+		warn ("Missing audio clipid attribute."); continue
+	    try: clipid = int (v.lstrip('c'))
+	    except (ValueError, TypeError): warn ("Invalid audio clipid attribute: %s" % v)
+	    else: snds.append (jdb.Obj (snd=clipid))
+	if snds:
+	    if not hasattr (entr_or_rdng, '_snd') and snds: entr_or_rdng._snd = []
+	    entr_or_rdng._snd.extend (snds)
 
 def do_kws (elems, obj, attr, kwtabname):
 	"""
@@ -773,6 +849,38 @@ def wanted (seq, seqs, counts, count):
 	    del seqs[n]; del counts[n]
 	return count
 
+def parse_sndfile (
+	inpf, 		# (file) An open sound clips XML file..
+	toptag=False):	# (bool) Make first item retuned by iterator 
+			#   a string giving the name of the top-level
+			#   element.
+
+	etiter = iter(ElementTree.iterparse( inpf, ("start","end")))
+	event, root = etiter.next()
+	vols = []
+	for event, elem in etiter:
+	    tag = elem.tag
+	    if tag not in ('avol','asel','aclip'): continue
+	    if event == 'start': lineno = inpf.lineno; continue
+	    if   tag == 'aclip': yield do_clip (elem), 'clip', lineno
+	    elif tag == 'asel':  yield do_sel (elem), 'sel', lineno
+	    elif tag == 'avol':  yield do_vol (elem), 'vol', lineno
+
+def do_vol (elem):
+	return jdb.Obj (id=int(elem.get('id')[1:]),
+			title=elem.findtext('av_title'), loc=elem.findtext('av_loc'), 
+			type=elem.findtext('av_type'), idstr=elem.findtext('av_idstr'),
+			corp=elem.findtext('av_corpus'), notes=elem.findtext('av_notes'))
+
+def do_sel (elem):
+	return jdb.Obj (id=int(elem.get('id')[1:]), vol=int(elem.get('vol')[1:]),
+			title=elem.findtext('as_title'), loc=elem.findtext('as_loc'),
+			type=elem.findtext('as_type'), notes=elem.findtext('as_notes'))
+
+def do_clip (elem):
+	return jdb.Obj (id=int(elem.get('id')[1:]), file=int(elem.get('sel')[1:]),
+			strt=int(elem.findtext('ac_strt')), leng=int(elem.findtext('ac_leng')),
+			trns=elem.findtext('ac_trns'), notes=elem.findtext('ac_notes'))
 
 def main (args=[], opts=jdb.Obj()):
 	global XKW
@@ -784,7 +892,8 @@ def main (args=[], opts=jdb.Obj()):
 		import fmt
 		print fmt.entr (entr)
 	else:
-	    dtd = open ("../../jmdict-dtd-1.07.xml").read()
+	    dir = jdb.find_in_syspath ("dtd-jmdict.xml")
+	    dtd = jdb.get_dtd (dir + "/" +  "dtd-jmdict.xml")
 	    while 1:
 	        s = raw_input ('test> ')
 		if not s: break

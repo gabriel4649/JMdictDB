@@ -1,0 +1,105 @@
+﻿<?xml version="1.0"?>
+<!DOCTYPE JMnedict [
+<!--
+	This is the DTD of the Japanese-Multilingual Named Entity
+	Dictionary file. It is based on the JMdict DTD, and carries
+	many fields from it. It is used for a quick-and-dirty conversion
+	of the ENAMDICT entries, plus the name entries from EDICTH.
+-->
+<!ELEMENT JMnedict (entry*)>
+<!--                                                                   -->
+<!ELEMENT entry (k_ele*, r_ele+, trans+)*>
+	<!-- Entries consist of kanji elements, reading elements 
+	name translation elements. Each entry must have at 
+	least one reading element and one sense element. Others are optional.
+	-->
+<!ELEMENT k_ele (keb, ke_inf*, ke_pri*)>
+	<!-- The kanji element, or in its absence, the reading element, is 
+	the defining component of each entry.
+	The overwhelming majority of entries will have a single kanji
+	element associated with an entity name in Japanese. Where there are 
+	multiple kanji elements within an entry, they will be orthographical
+	variants of the same word, either using variations in okurigana, or
+	alternative and equivalent kanji. Common "mis-spellings" may be 
+	included, provided they are associated with appropriate information
+	fields. Synonyms are not included; they may be indicated in the
+	cross-reference field associated with the sense element.
+	-->
+<!ELEMENT keb (#PCDATA)>
+	<!-- This element will contain an entity name in Japanese 
+	which is written using at least one kanji. The valid 
+	characters are kanji, kana, related characters such as chouon and 
+	kurikaeshi, and in exceptional cases, letters from other alphabets.
+	-->
+<!ELEMENT ke_inf (#PCDATA)>
+	<!-- This is a coded information field related specifically to the 
+	orthography of the keb, and will typically indicate some unusual
+	aspect, such as okurigana irregularity.
+	-->
+<!ELEMENT ke_pri (#PCDATA)>
+	<!-- This and the equivalent re_pri field are provided to record
+	information about the relative priority of the entry, and are for
+	use either by applications which want to concentrate on entries of 
+	a particular priority, or to generate subset files. The reason
+	both the kanji and reading elements are tagged is because on
+	occasions a priority is only associated with a particular
+	kanji/reading pair.
+	-->
+<!--                                                                   -->
+<!ELEMENT r_ele (reb, re_restr*, re_inf*, re_pri*)>
+	<!-- The reading element typically contains the valid readings
+	of the word(s) in the kanji element using modern kanadzukai. 
+	Where there are multiple reading elements, they will typically be
+	alternative readings of the kanji element. In the absence of a 
+	kanji element, i.e. in the case of a word or phrase written
+	entirely in kana, these elements will define the entry.
+	-->
+<!ELEMENT reb (#PCDATA)>
+	<!-- this element content is restricted to kana and related
+	characters such as chouon and kurikaeshi. Kana usage will be
+	consistent between the keb and reb elements; e.g. if the keb
+	contains katakana, so too will the reb.
+	-->
+<!ELEMENT re_restr (#PCDATA)>
+	<!-- This element is used to indicate when the reading only applies
+	to a subset of the keb elements in the entry. In its absence, all
+	readings apply to all kanji elements. The contents of this element 
+	must exactly match those of one of the keb elements.
+	-->
+<!ELEMENT re_inf (#PCDATA)>
+	<!-- General coded information pertaining to the specific reading.
+	Typically it will be used to indicate some unusual aspect of 
+	the reading. -->
+<!ELEMENT re_pri (#PCDATA)>
+	<!-- See the comment on ke_pri above. -->
+<!ELEMENT trans (name_type*, trans_det*)>
+	<!-- The trans element will record the translational equivalent
+	of the Japanese name, plus other related information. 
+	-->
+<!ELEMENT name_type (#PCDATA)>
+	<!-- The type of name, recorded in the appropriate entity codes.
+	-->
+<!ELEMENT trans_det (#PCDATA)>
+	<!-- The actual translations of the name, usually as a transcription
+	into the target language.
+	-->
+<!ATTLIST gloss g_lang CDATA #IMPLIED>
+	<!-- The g_lang attribute defines the target language of the
+	translated name. It will be coded using the two-letter language 
+	code from the ISO 639 standard. When absent, the value "en" 
+	(i.e. English) is implied. -->
+<!-- The following entity codes are used for common elements within the
+various information fields.
+-->
+<!ENTITY surname "family or surname">
+<!ENTITY place "place name">
+<!ENTITY unclass "unclassified name">
+<!ENTITY company "company name">
+<!ENTITY product "product name">
+<!ENTITY masc "male given name or forename">
+<!ENTITY fem "female given name or forename">
+<!ENTITY person "full name of a particular person">
+<!ENTITY given "given name or forename, gender not specified">
+<!ENTITY station "railway station">
+<!ENTITY ok "old or irregular kana form">
+]>

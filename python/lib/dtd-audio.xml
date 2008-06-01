@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="%(encoding)s"?>
+<!DOCTYPE %(root)s [
+<!ELEMENT %(root)s (avol|asel|aclip)*>
+
+<!ELEMENT avol (av_loc?, av_type?, av_title?, av_idstr?, av_corpus?, av_notes?)>
+	<!-- This element describes the volume or directory containing 
+	the selection (file, track, etc) that contains this audio clip. -->
+<!ATTLIST avol id ID #REQUIRED>
+	<!-- Volume identifier. -->
+<!ELEMENT av_loc (#PCDATA)>
+	<!-- URI identifying the volume or selection. -->
+<!ELEMENT av_type (#PCDATA)>
+	<!-- physical medium type -->
+<!ELEMENT av_title (#PCDATA)>
+	<!-- Identifying text for volume. -->
+<!ELEMENT av_idstr (#PCDATA)>
+	<!-- Embedded volume id string.  -->
+<!ELEMENT av_corpus (#PCDATA)>
+	<!-- Corpus id number. -->
+<!ELEMENT av_notes (#PCDATA)>
+	<!-- Ad-hoc comments. -->
+
+<!ELEMENT asel (as_loc, as_type?, as_title?, as_notes?)>
+	<!-- A specific selection (file, track, etc.) in <vol>. -->
+<!ATTLIST asel id ID #REQUIRED>
+	<!-- Selection identifier. -->
+<!ATTLIST asel vol IDREF #REQUIRED>
+	<!-- Belongs to this volume. -->
+<!ELEMENT as_loc (#PCDATA)>
+	<!-- URI identifying the volume or selection. -->
+<!ELEMENT as_type (#PCDATA)>
+	<!-- Media type of selection. -->
+<!ELEMENT as_title (#PCDATA)>
+	<!-- Title of volume or selection used for display. -->
+<!ELEMENT as_notes (#PCDATA)>
+	<!-- Ad-hoc comments. -->
+
+<!ELEMENT aclip (ac_strt, ac_leng, ac_trns?, ac_notes?)>
+	<!-- An audio clip. -->
+<!ATTLIST aclip id CDATA #REQUIRED>
+	<!-- Clip identifier. -->
+<!ATTLIST aclip sel IDREF #REQUIRED>
+	<!-- Belongs to this selection. -->
+<!ELEMENT ac_strt (#PCDATA)>
+	<!-- Position of start of clip in selection, in units of 10mS. -->
+<!ELEMENT ac_leng (#PCDATA)>
+	<!-- Length of clip, in units of 10mS. -->
+<!ELEMENT ac_trns (#PCDATA)>
+	<!-- Transcription of clip. -->
+<!ELEMENT ac_notes (#PCDATA)>
+	<!-- Ad-hoc comments. -->
+]>

@@ -15,7 +15,7 @@
 # 
 #  You should have received a copy of the GNU General Public License
 #  along with JMdictDB; if not, write to the Free Software Foundation,
-#  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
 __version__ = ('Revision: 0.0 '[11:-2],
@@ -58,8 +58,9 @@ def main (args, opts):
 	    'kinf'    : [0],    'sens'    : [0],    'gloss'   : [0],    'misc'    : [0],
 	    'pos'     : [0],    'fld'     : [0],    'hist'    : [0],    'dial'    : [0],
 	    'lsrc'    : [0],    'ginf'    : [0],    'restr'   : [0],    'stagr'   : [0],
-	    'stagk'   : [0],    'xref'    : [0,2],  'xresolv' : [0],    'tcard'   : [2], 
-	    'tsndasn' : [1],    'chr'     : [0],    'cinf'    : [0],    'kresolv' : [0],}
+	    'stagk'   : [0],    'xref'    : [0,2],  'xresolv' : [0],    'entrsnd' : [0],
+	    'rdngsnd' : [0],    'chr'     : [0],    'cinf'    : [0],    'kresolv' : [0],
+	    }
 
 	delt=0;  reading_table_data=False;  updtd=[]
 
@@ -150,9 +151,9 @@ Arguments:
 	    type="int",
 	    help="""Value that the minimum entr id (given 
 		by the -m option) will be adjusted to in order to 
-		prevent entry id conflits with existing database entries 
+		prevent entry id conflicts with existing database entries 
 		when these data are loaded.  
-		It not given  or 0, jmload.py will connect to the database 
+		It not given or 0, jmload.py will connect to the database 
 		(using the database access options below) to read the max
 		id number from the database and use that number plus one.""")
 
@@ -179,7 +180,7 @@ Arguments:
 	g = OptionGroup (p, "Database access options",
 		"""If -i was not given, the following options will be used  
 		to connect to a database in order to read the max entr.id 
-      		value.  If the dmp file is loaded into a different database, 
+      		value.  If the dump file is loaded into a different database, 
 		or if the max entr.id value changes between load_jmdict.pl's 
 		read and loading the dump file, it is likely duplicate key  
 		errors will occur.""")

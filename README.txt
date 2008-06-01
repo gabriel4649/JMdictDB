@@ -67,11 +67,56 @@ Database schema:
 API Documentation: 
   README.txt -- This file.
 
-  python/shentr.pl -- This is a command line tool for 
-	displaying JMdict entries from the database.  It
-	is well documented making it useful for understanding
-	the use of the API in a real (if tiny) application.
-	This program is kept up-to-date.
+========
+PROGRAMS
+========
+
+The ./python/ directory contains a number of independent 
+programs:
+
+The following tools find and display entries in the database.
+
+  shentr.py	Command line tool for searching for and
+		 displaying jmdict database entries.  It
+		 is well documented making it useful for
+		 understanding the use of the API in a real
+		 (if tiny) application.  This program is kept
+		 up-to-date.
+  srch.py, srch.tal, srch.xrc, srcht.tal, jmdbss.txt
+		GUI tool to search for and display dajmdict
+		 database entries.
+
+The following tools read an XML or text file and write a 
+file that can be loaded into a Postgresql database.
+
+  exparse.py	Read examples.txt file and create loadable
+		 Postgresql dump file.
+  jmparse.py	Read JMdict or JMnedict XML file and create
+		 loadable Postgresql dump file.
+  kdparse.py	Read kanjidic2 XML file and create loadable
+		 Postgresql dump file.
+  sndparse.py	Read JMaudio XML file and create loadable
+		 Postgresql dump file.
+
+  jmload.py	Adjust the entry id numbers in a loadable
+		 Postgresql dump file. 
+  xresolv.py	Resolve textual xrefs loaded into database
+		 from JMdict files, to real xrefs.
+
+The following tools will read information from the database and write 
+an XML file that can be loaded by the tools above.
+
+  entrs2xml.py	Read entries from database and write to
+		 XML file.
+  snds2xml.py	Read Audio data from database and write
+		 JMaudio XML file.
+
+The following work with labeled audio produced by Audacity.
+
+  mklabels.py	Generate a label file from a db sndfile entry
+		 that can be imported into Audacity.
+  updsnds.py	Update existing and add new snd records from
+		 an Audacity label file.
 
 ============
 INSTALLATION

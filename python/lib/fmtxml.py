@@ -14,7 +14,7 @@
 # 
 #  You should have received a copy of the GNU General Public License
 #  along with JMdictDB; if not, write to the Free Software Foundation,
-#  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
 __version__ = ('$Revision$'[11:-2],
@@ -24,22 +24,26 @@ __version__ = ('$Revision$'[11:-2],
 Functions for generating XML descriptions of entries.
 
 """
-
+from xml.sax.saxutils import escape as esc, quoteattr as esca
 import jdb
 
-global XKW
+global XKW, KW
 
-def entr (entr, enhanced=True, genhists=False, genxrefs=True, wantlist=False):
+
+def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False):
 	'''
 	Generate an XML description of entry 'entr'.
 	Parameters:
 	  entr -- An entry object (such as return by entrList()).
-	  enhanced -- If true, generate XML that completely 
+	  compat -- If false, generate XML that completely 
 		describes the entry using an enhanced version
 		of the jmdict DTD.
-		If false, generate XML that uses the standard
-		jmdict DTD (currently rev 1.06) but looses infor-
-		mation that is not representable with that DTD.
+		If "jmdict", generate XML that uses the standard
+		JMdict DTD but looses information that is not
+		representable with that DTD.
+		If "jmnedict", generate XML that uses the standard
+		JMnedict DTD but looses information that is not
+		representable with that DTD.
 	  genhists -- If true (and enhanced is also true), generate
 		<hist> elements in the XML.  If false, don't. 
 	  genxrefs -- If true generate <xref> elements.  If false
@@ -51,29 +55,25 @@ def entr (entr, enhanced=True, genhists=False, genxrefs=True, wantlist=False):
 	  # idependent of the KW table.  See comments in jmxml.py
 	  # but note the mapping used here needs to also support
 	  # the enhanced DTD.
-	global XKW; XKW = jdb.KW
+	global XKW, KW; XKW = KW = jdb.KW
 
-	fmt = ['<entry>']
-	fmt.extend (entrhdr (entr, enhanced))
-	if enhanced:
-	    x = getattr (entr, 'srcnote', None)
-	    if x: fmt.append ('<srcnote>%s</srcnote>' % entr.srcnote)
-	    x = getattr (entr, 'notes', None)
-	    if x: fmt.append ('<notes>%s</notes>' % entr.notes)
+	fmt= entrhdr (entr, compat)
 
 	kanjs = getattr (entr, '_kanj', [])
 	for k in kanjs: fmt.extend (kanj (k))
 
 	rdngs = getattr (entr, '_rdng', [])
-	for r in rdngs: fmt.extend (rdng (r, kanjs))
+	for r in rdngs: fmt.extend (rdng (r, kanjs, compat))
 
-	if enhanced: 
-	    if genhists: fmt.extend (hists (entr, '_hist'))
-	else: fmt.extend (audit (entr, '_hist'))
+	fmt.extend (info (entr, compat))
 
 	senss = getattr (entr, '_sens', [])
-	src = entr.src if enhanced else None
-	for x in senss: fmt.extend (sens (x, kanjs, rdngs, src, genxrefs))
+	if compat == 'jmnedict':
+	    for x in senss: fmt.extend (trans (x))
+	else:
+	    for x in senss: fmt.extend (sens (x, kanjs, rdngs, compat, entr.src, genxrefs))
+
+	if not compat: fmt.extend (audio (entr))
 
 	fmt.append ('</entry>')
 	if wantlist: return fmt
@@ -88,13 +88,14 @@ def kanj (k):
 	fmt.append ('</k_ele>')
 	return fmt
 
-def rdng (r, k):
+def rdng (r, k, compat):
 	fmt = []
 	fmt.append ('<r_ele>')
 	fmt.append ('<reb>%s</reb>' % r.txt)
 	fmt.extend (restrs (r, k))
 	fmt.extend (kwds (r, '_inf', 'RINF', 're_inf'))
 	fmt.extend (freqs (r, '_freq', 're_pri'))
+	if not compat: fmt.extend (audio (r))
 	fmt.append ('</r_ele>')
 	return fmt
 
@@ -109,23 +110,26 @@ def restrs (r, kanj):
 	        fmt.extend (['<re_restr>' + x.txt + '</re_restr>' for x in re])
 	return fmt
 
-def sens (s, kanj, rdng, src, genxrefs=True):
+def sens (s, kanj, rdng, compat, src, genxrefs=True):
 	"""
 	Format a sense.
 	fmt -- A list to which formatted text lines will be appended.
 	s -- The sense object to format.
 	kanj -- The kanji object of the entry that 's' belongs to.
 	rdng -- The reading object of the entry that 's' belongs to.
-	src -- If None, non-enhanced format will be generated.  If
-	    not None, it should be the value of the entry's .src
-	    attribute.  It is passed to the xref() func which needs
-	    it when formatting enhanced xml xrefs.  
+	compat -- See function entr().  We assume in sens() that if
+	    compat is not None it is =='jmdict', that is, if it is 
+	    'jmnedict', trans() would have been called rather than
+	    sens().
+	src -- If 'compat' is None, this should be the value of the
+	    entry's .src attribute.  It is passed to the xref() func
+	    which needs it when formatting enhanced xml xrefs.  If 
+	    'compat' is not None, this parameter is ignored.
 	genxrefs -- If false, do not attempt to format xrefs.  This
 	    will prevent an exception if the entry has only ordinary
 	    xrefs rather than augmented xrefs.
 	"""
 	fmt = []
-	enhanced = src
 	fmt.append ('<sense>')
 
 	stagk = getattr (s, '_stagk', None)
@@ -140,37 +144,61 @@ def sens (s, kanj, rdng, src, genxrefs=True):
 
 	fmt.extend (kwds (s, '_pos', 'POS', 'pos'))
 
-	xrefs = getattr (s, '_xref', None)
-	if xrefs and genxrefs:
-	    for x in xrefs: fmt.extend (xref (x, src))
+	xrfs = getattr (s, '_xref', None)
+	if xrfs and genxrefs:
+	    fmt.extend ([xref(x, (not compat) and src) for x in xrfs])
 
 	fmt.extend (kwds (s, '_fld', 'FLD', 'field'))
 
 	fmt.extend (kwds (s, '_misc', 'MISC', 'misc'))
 
 	notes = getattr (s, 'notes', None)
-	if notes: fmt.append ('<s_inf>%s</s_inf>' % notes)
+	if notes: fmt.append ('<s_inf>%s</s_inf>' % esc (notes))
 
 	lsource = getattr (s, '_lsrc')
 	if lsource: 
-	    for x in lsource: fmt.extend (lsrc (x, enhanced))
+	    for x in lsource: fmt.extend (lsrc (x))
 
 	fmt.extend (kwds (s, '_dial', 'DIAL', 'dial'))
 
-	for x in s._gloss: fmt.extend (gloss (x, enhanced))
+	for x in s._gloss: fmt.extend (gloss (x, compat))
 
 	fmt.append ('</sense>')
 	return fmt
+
+def trans (s):
+	"""Format a jmnedict trans element.
+	s -- A sense object."""
+
+	fmt = []
+	nlist = getattr (s, '_pos', [])
+	kwtab = getattr (XKW, 'POS')
+	fmt.extend (['<name_type>&%s;</name_type>' % kwtab[x.kw].kw
+		     for x in nlist if x.kw>=180 and x.kw<200])
+	eng_id = KW.LANG['eng'].id
+	for g in getattr (s, '_gloss', []):
+	    lang = getattr (g, 'g_lang', eng_id)
+	    lang_attr = (' xml:lang="%s"' % XKW.LANG[lang].kw) if lang != eng_id else ''
+	    fmt.append ('<trans_det%s>%s</trans_det>' % (lang_attr, g.txt))
+	if fmt: 
+	    fmt.insert (0, '<trans>')
+	    fmt.append ('</trans>')
+	return fmt
 	   
-def gloss (g, enhanced=True):
+def gloss (g, compat=None):
 	fmt = []
 	attrs = []
 	if g.lang != XKW.LANG['eng'].id:
 	    attrs.append ('xml:lang="%s"' % XKW.LANG[g.lang].kw)
-	if enhanced and g.ginf != XKW.GINF['equ'].id:
+	  # If 'compat' is not None, we generate all glosses as "equ"
+	  # glosses.  There is no way to regenerate the original gloss
+	  # for non-"equ" glosses since the were parsed out of some 
+	  # other gloss but we no longer have any information about 
+	  # which one. 
+	if not compat and g.ginf != XKW.GINF['equ'].id:
 	    attrs.append ('g_type="%s"' % XKW.GINF[g.ginf].kw)
 	attr = (' ' if attrs else '') + ' '.join (attrs)
-	fmt.append ("<gloss%s>%s</gloss>" % (attr, g.txt))
+	fmt.append ("<gloss%s>%s</gloss>" % (attr, esc(g.txt)))
 	return fmt
 
 def kwds (parent, attr, domain, elem_name):
@@ -191,7 +219,7 @@ def freqs (parent, attr, rk):
 		  % (rk, x[0], x[1], rk) 
 		for x in tmp]
 
-def lsrc (x, enhanced=True):
+def lsrc (x):
 	fmt = [];  attrs = []
 	if x.lang != XKW.LANG['eng'].id:
 	    attrs.append ('xml:lang="%s"' % XKW.LANG[x.lang].kw)
@@ -199,11 +227,17 @@ def lsrc (x, enhanced=True):
 	if x.wasei: attrs.append ('ls_wasei="y"')
 	attr = (' ' if attrs else '') + ' '.join (attrs)
 	if not x.txt: fmt.append ('<lsource%s/>' % attr)
-	else: fmt.append ('<lsource%s>%s</lsource>' % (attr, x.txt))
+	else: fmt.append ('<lsource%s>%s</lsource>' % (attr, esc(x.txt)))
 	return fmt
 
 def xref (xref, src):
-	fmt = []
+	"""
+	xref -- The xref object to be formatted.
+	src -- Corpus id number of the entry that contains 'xref'.
+	  If 'src' is true, enhanced XML will be generated.  If
+	  not, legacy JMdict XML will be generated.
+
+	"""
 	try: targobj = xref.TARG
 	except AttributeError:
 	    raise AttributeError ("Expected 'TARG' attribute on xref")
@@ -213,83 +247,142 @@ def xref (xref, src):
 	    k = targobj._kanj[xref.kanj-1].txt
 	if getattr (xref, 'rdng', None):
 	    r = targobj._rdng[xref.rdng-1].txt
-	if k and r: target = k + u'\uFF1D' + r 
+	if k and r: target = k + u'\u30FB' + r  # \u30FB is mid-height dot.
 	else: target = k or r
-	#target += '(%d)' % xref.xsens
+	if len(targobj._sens) != 1:
+	    target += u'\u30FB%d' % xref.xsens
 
-	attrs = []
+	tag = 'xref'; attrs = []
 	if src:
-	    tag = 'xref'
-	    attrs.append ('x_type="%s"' % XKW.XREF[xref.typ].kw)
-	    if targobj.src == src: targseq = targobj.seq
-	    else: targseq = "%s.%s" % (targobj.seq, jd.KW.SRC[targobj.src].kw)
-	    attrs.append ('x_seq="%s"' % targseq)
+	    attrs.append ('type="%s"' % XKW.XREF[xref.typ].kw)
+	    attrs.append ('seq="%s"' % targobj.seq)
+	    if targobj.src != src:
+		attr.append ('corp="%s"' % jd.KW.SRC[targobj.src].kw)
 	    if getattr (xref, 'notes', None): 
-		attrs.append ('x_note="%s"' % xref.notes)
+		attrs.append ('note="%s"' % esc(xref.notes))
 	else:
 	    if xref.typ == XKW.XREF['ant']: tag = 'ant'
-	    else : tag = 'xref'
 
 	attr = (' ' if attrs else '') + ' '.join (attrs)
-	fmt.append ('<%s%s>%s</%s>' % (tag, attr, target, tag))
+	return '<%s%s>%s</%s>' % (tag, attr, target, tag)
+
+def info (entr, compat=None):
+	fmt = [] 
+	if not compat:
+	    x = getattr (entr, 'srcnote', None)
+	    if x: fmt.append ('<srcnote>%s</srcnote>' % esc(entr.srcnote))
+	    x = getattr (entr, 'notes', None)
+	    if x: fmt.append ('<notes>%s</notes>' % esc(entr.notes))
+	for x in getattr (entr, '_hist', []):
+	    fmt.extend (audit (x, compat))
+	if fmt: 
+	    fmt.insert (0, '<info>')
+	    fmt.append ('</info>')
 	return fmt
 
-def hists (parent):
-	hlist = getattr (parent, '_hist', [])
-	return [hist (x) for x in hlist]
-
-def hist (h):
-	fmt = []; attrs = []
-	attrs.append ('date="%s"' % h.date)
-	attrs.append ('name="%s"' % h.name)
-	attrs.append ('email="%s"' % h.email)
-	attr = (' ' if attrs else '') + ' '.join (attrs)
-	fmt.append ('<hist%s>' % attr)
-	diff = getattr (h, 'diff', None)
-	if diff: fmt.append ('<h_diff>%s</h_diff>' % diff)
-	notes = getattr (h, 'notes', None)
-	if notes: fmt.append ('<h_notes>%s</h_notes>' % notes)
-	refs = getattr (h, 'refs', None)
-	if refs: fmt.append ('<h_refs>%s</h_refs>' % refs)
-
-def audit (parent, attr):
+def audit (h, compat=None):
 	fmt = []
-	hlist = getattr (parent, attr, [])
-	if not hlist: return []
-	key = 'From JMdict <upd_detl>: '
-	h = hlist[0] 
-	if hasattr (h, 'notes') and h.notes.startswith (key):
-	    fmt.extend (['<info>','<audit>'])
-	    fmt.append ('<upd_date>%s</upd_date>' % h.dt.date().isoformat())
-	    fmt.append ('<upd_detl>%s</upd_detl>' % h.notes[len(key):])
-	    fmt.extend (['</audit>','</info>'])
+	fmt.append ('<audit>')
+	fmt.append ('<upd_date>%s</upd_date>' % h.dt.date().isoformat())
+	if getattr (h, 'notes', None): fmt.append ('<upd_detl>%s</upd_detl>'   % esc(h.notes))
+	if not compat:
+	    if getattr (h, 'email', None): fmt.append ('<upd_email>%s</upd_email>' % esc(h.email))
+	    if getattr (h, 'name', None):  fmt.append ('<upd_name>%s</upd_name>'   % esc(h.name))
+	    if getattr (h, 'refs', None):  fmt.append ('<upd_refs>%s</upd_refs>'   % esc(h.refs))
+	    if getattr (h, 'diff', None):  fmt.append ('<upd_diff>%s</upd_diff>'   % esc(h.diff))
+	fmt.append ('</audit>')
 	return fmt
 
-def entrhdr (entr, enhanced=True):
-	fmt = []
-	id = getattr (entr, 'id',   '')
-	src = jdb.KW.SRC[entr.src].kw
-	if enhanced: fmt.append ('<corpus>%s</corpus>' % src)
+def audio (entr_or_rdng):
+	a = getattr (entr_or_rdng, '_snd', [])
+	if not a: return []
+	return ['<audio clipid="c%d">' % x.snd for x in a]
+
+def entrhdr (entr, compat=None):
+	global XKW
+	if not compat:
+	    id = getattr (entr, 'id', None)
+	    idattr = (' id="%d"' % id) if id else ""
+	    stat = getattr (entr, 'stat', None)
+	    statattr = (' stat="%s"' % XKW.STAT[stat].kw) if stat else ""
+	    apprattr = ' appr="n"' if entr.unap else ""
+	    dfrm = getattr (entr, 'dfrm', None)
+	    dfrmattr = (' dfrm="%d"' % entr.dfrm) if dfrm else ""
+	    fmt = ["<entry%s%s%s%s>" % (idattr, statattr, apprattr, dfrmattr)]
+	else: fmt = ['<entry>']
 	seq = fmt.append ('<ent_seq>%d</ent_seq>' % entr.seq)
-	if enhanced:
-	    stat = getattr (entr, 'stat', '')
-	    if stat: 
-		fmt.append ('<status>%s</status>' % jdb.KW.STAT[stat].kw)
-	    if getattr (entr, 'unap', False):
-		fmt.append ('<unapproved/>')
+	src = jdb.KW.SRC[entr.src].kw
+	if not compat: fmt.append ('<ent_corp>%s</ent_corp>' % src)
+	return fmt
+
+def sndvols (vols):
+	if not vols: return []
+	fmt = []
+	for v in vols:
+	    idstr = ' id="v%s"' % str (v.id)
+	    fmt.append ('<avol%s>' % idstr)
+	    if getattr (v, 'loc',   None) is not None: fmt.append ('<av_loc>%s</av_loc>'     % v.loc)
+	    if getattr (v, 'type',  None) is not None: fmt.append ('<av_type>%s</av_type>'   % v.type)
+	    if getattr (v, 'title', None) is not None: fmt.append ('<av_title>%s</av_title>' % v.title)
+	    if getattr (v, 'idstr', None) is not None: fmt.append ('<av_idstr>%s</av_idstr>' % v.idstr)
+	    if getattr (v, 'corp',  None) is not None: fmt.append ('<av_corpus>%s</av_corpus>' % v.corp)
+	    if getattr (v, 'notes', None) is not None: fmt.append ('<av_notes>%s</av_notes>' % v.notes)
+	    fmt.append ('</avol>')
+	return fmt
+
+def sndsels (sels):
+	if not sels: return []
+	fmt = []
+	for s in sels:
+	    idstr = ' id="s%s"' % str (s.id)
+	    volstr = ' vol="v%s"' % str (s.vol)
+	    fmt.append ('<asel%s%s>' % (idstr, volstr))
+	    if getattr (s, 'loc',   None) is not None: fmt.append ('<as_loc>%s</as_loc>'     % s.loc)
+	    if getattr (s, 'type',  None) is not None: fmt.append ('<as_type>%s</as_type>'   % s.type)
+	    if getattr (s, 'title', None) is not None: fmt.append ('<as_title>%s</as_title>' % s.title)
+	    if getattr (s, 'notes', None) is not None: fmt.append ('<as_notes>%s</as_notes>' % s.notes)
+	    fmt.append ('</asel>')
+	return fmt
+
+def sndclips (clips):
+	if not clips: return []
+	fmt = []
+	for c in clips:
+	    idstr = ' id="c%s"' % str (c.id)
+	    selstr = ' sel="s%s"' % str (c.file)
+	    fmt.append ('<aclip%s%s>' % (idstr,selstr))
+	    if getattr (c, 'strt',  None) is not None: fmt.append ('<ac_strt>%s</ac_strt>'   % c.strt)
+	    if getattr (c, 'leng',  None) is not None: fmt.append ('<ac_leng>%s</ac_leng>'   % c.leng)
+	    if getattr (c, 'trns',  None) is not None: fmt.append ('<ac_trns>%s</ac_trns>'   % c.trns)
+	    if getattr (c, 'notes', None) is not None: fmt.append ('<ac_notes>%s</ac_notes>' % c.notes)
+	    fmt.append ('</aclip>')
+	return fmt
+
+def corpus (corpuses):
+	KW = jdb.KW;  fmt = []
+	for c in corpuses:
+	    kwo = KW.SRC[c]
+	    fmt.append ('<corpus id="%d">' % kwo.id)
+	    fmt.append ('<name>%s</name>' % kwo.kw)
+	    if getattr (kwo, 'descr', None): fmt.append ('<descr>%s</descr>' % esc(KW.SRC[c].descr))
+	    if getattr (kwo, 'dt',    None): fmt.append ('<dt>%s</dt>'       % KW.SRC[c].dt)
+	    if getattr (kwo, 'notes', None): fmt.append ('<notes>%s</notes>' % esc(KW.SRC[c].notes))
+	    if getattr (kwo, 'seq',   None): fmt.append ('<seqname>%s</seqname>' % esc(KW.SRC[c].seq))
+	    fmt.append ('</corpus>')
 	return fmt
 
 def _main (args, opts):
-	cur = jdb.dbOpen ('jmnew')
+	cur = jdb.dbOpen ('jmdict')
 	while True:
-	    id = raw_input ("Id number? ")
+	    try: id = raw_input ("Id number? ")
+	    except EOFError: id = None
 	    if not id: break
 	    e, raw = jdb.entrList (cur, [int(id)], ret_tuple=True)
 	    jdb.augment_xrefs (cur, raw['xref'])
 	    if not e:
 		print "Entry id %d not found" % id
 	    else:
-		txt = entr (e[0], enhanced=False)
+		txt = entr (e[0], compat=None)
 		print txt
 
 if __name__ == '__main__':

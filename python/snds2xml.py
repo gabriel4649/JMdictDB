@@ -22,23 +22,20 @@ __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
 # Read sound clips from database and write to an XML file.
+# Currently, quite incomplete.
 # To-do:
-# * Add command line parse and options for database access, output
-#   encoding. dtd file selection, sound clips subset.
+# * Add command line args and options output encoding. 
+#   dtd file selection, xml roor name, sound clips subset, etc.
 
 import sys
 import jdb, fmtxml
 
 def main (args, opts):
-	enc = 'utf-8'
-	pout = lambda x:sys.stdout.write (x.encode(enc) + '\n')
+	pout = lambda x:sys.stdout.write (x.encode(opts.encoding) + '\n')
 	dir = jdb.find_in_syspath ("dtd-audio.xml")
-	dtd = jdb.get_dtd (dir + "/" + "dtd-audio.xml", "JMaudio", enc)
-	pout (dtd.read())
-	dtd.close()
-
-	pout ("<JMaudio>")
-	cur = jdb.dbOpen ('jmdict')
+	dtd = jdb.get_dtd (dir + "/" + "dtd-audio.xml", "JMaudio", opts.encoding)
+	pout (dtd); pout ("<JMaudio>")
+	cur = jdb.dbOpen (opts.database, **jdb.dbopts (opts))
 	vols = jdb.dbread (cur, "SELECT * FROM sndvol")
 	for v in vols:
 	    pout ("\n".join (fmtxml.sndvols ([v])))
@@ -50,6 +47,53 @@ def main (args, opts):
 		    pout ("\n".join (fmtxml.sndclips ([c])))
 	pout ('</JMaudio>')
 
+
+from optparse import OptionParser, OptionGroup
+from pylib.optparse_formatters import IndentedHelpFormatterWithNL
+
+def parse_cmdline ():
+	u = \
+"""\n\t%prog [options]
+
+%prog will read audio clip data from a jmdictdb database and write
+them in XML form to stdout.
+
+Arguments: none"""
+
+	v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
+	        + " Rev %s (%s)" % __version__
+	p = OptionParser (usage=u, version=v, add_help_option=False, 
+		formatter=IndentedHelpFormatterWithNL())
+
+	p.add_option ("--help",
+            action="help", help="Print this help message.")
+	p.add_option ("-e", "--encoding", default="utf-8",
+            help="Encoding for the output XML file.  Default is \"utf-8\".")
+
+	g = OptionGroup (p, "Database access options",
+		"""The following options are used to connect to a 
+		database in order to read the entries.
+
+		Caution: On many systems, command line option contents
+		may be visible to other users on the system.  For that 
+		reason, you should avoid using the "--user" and "--password"
+		options below and use a .pgpass file (see the Postgresql
+		docs) instead. """)
+
+	g.add_option ("-d", "--database", default="jmdict",
+            help="Name of the database to load.  Default is \"jmdict\".")
+	g.add_option ("-h", "--host", default=None,
+            help="Name host machine database resides on.")
+	g.add_option ("-u", "--user", default=None,
+            help="Connect to database with this username.")
+	g.add_option ("-p", "--password", default=None,
+            help="Connect to database with this password.")
+	p.add_option_group (g)
+
+	opts, args = p.parse_args ()
+	if len (args) != 0: p.error ("%d arguments given, expected at most one" % len(args))
+	return args, opts
+
 if __name__ == '__main__': 
-	args, opts = None, None #parse_cmdline()
+	args, opts = parse_cmdline()
 	main (args, opts)

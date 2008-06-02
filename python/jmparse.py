@@ -250,7 +250,7 @@ Arguments:
 	p.add_option_group (g)
 
 	opts, args = p.parse_args ()
-	if len (args) > 1: print >>sys.stderr, "%d arguments given, expected at most one"
+	if len (args) > 1: p.error ("%d arguments given, expected at most one" % len(args))
 	if len (args) < 1: args = ["JMdict"]
 	return args, opts
 

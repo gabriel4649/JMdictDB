@@ -296,7 +296,7 @@ def audit (h, compat=None):
 def audio (entr_or_rdng):
 	a = getattr (entr_or_rdng, '_snd', [])
 	if not a: return []
-	return ['<audio clipid="c%d">' % x.snd for x in a]
+	return ['<audio clipid="c%d"/>' % x.snd for x in a]
 
 def entrhdr (entr, compat=None):
 	global XKW

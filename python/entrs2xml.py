@@ -258,7 +258,14 @@ Arguments:
 
 	g = OptionGroup (p, "Database access options",
 		"""The following options are used to connect to a 
-		database in order to read the entries.  """)
+		database in order to read the entries.
+
+		Caution: On many systems, command line option contents
+		may be visible to other users on the system.  For that 
+		reason, you should avoid using the "--user" and "--password"
+		options below and use a .pgpass file (see the Postgresql
+		docs) instead. """)
+
 	g.add_option ("-d", "--database", default="jmdict",
             help="Name of the database to load.  Default is \"jmdict\".")
 	g.add_option ("-h", "--host", default=None,
@@ -273,7 +280,6 @@ Arguments:
             dest="debug", type="int",
             help="If given a value greater than 0, print debugging information "
 		"while executing.  See source code for details.")
-
 
 	opts, args = p.parse_args ()
 	if len (args) > 1: p.error ("%d arguments given, expected at most one.")

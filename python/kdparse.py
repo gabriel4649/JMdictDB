@@ -35,6 +35,7 @@ import sys, os
 from xml.etree import cElementTree as ElementTree
 import jdb, pgi
 from kwstatic import *
+from iso639maps import iso639_1_to_2
 jdb.KW = KW
 
 # Remap the keywords used in the kanjidic2.xml file to
@@ -43,7 +44,7 @@ jdb.KW = KW
 Xml2db = jdb.Obj (
     RINF = {'nanori':'name', 'jy':'jouyou', 'ja_kun':'kun', 'ja_on':'on',
 	    'kan\'you':'kanyou'},
-    LANG = {},
+    LANG = iso639_1_to_2,
     CINF = {'kanji_in_context':'kanji_in_ctx', 
 	    'kodansha_compact':'kodansha_comp','skip_misclass':'skip_mis',
 	    'stroke_count':'strokes'})
@@ -59,11 +60,11 @@ def main (args, opts):
 	    Opts.o = fn + ".pgi"
 	elif Opts.o  == "-":
 	    Opts.o = None
-	if opts.g: langs = [KW.LANG[x].id for x in opts.g.split(',')]
+	if opts.g: langs = [KW.LANG[iso639_1_to_2[x]].id for x in opts.g.split(',')]
 	else: langs = None
 	workfiles = pgi.initialize (Opts.t)
 	srcdate = parse_xmlfile (args[0], 4, workfiles, Opts.b, Opts.c, langs)
-	srcrec = Obj (id=4, kw='kanjidic', descr='Kanjifdict2.xml', 
+	srcrec = jdb.Obj (id=4, kw='kanjidic', descr='kanjidic2.xml', 
 		      dt=srcdate, seq='seq_kanjidic')
 	pgi.wrrow (srcrec, workfiles['kwsrc'])
 	pgi.finalize (workfiles, Opts.o, not Opts.k)
@@ -172,9 +173,9 @@ def do_chr (elem, srcid, langs):
 
 	chtxt = elem.find('literal').text
 	Char = chtxt	# For warning messages created by warn().
-	c = Obj (uni=uord(chtxt), _cinf=[])
-	e = Obj (src=srcid, stat=KWSTAT_A, seq=Lineno, unap=False,
-	         chr=c, _kanj=[Obj(txt=chtxt)], _rdng=[], _sens=[], _krslv=[])
+	c = jdb.Obj (uni=jdb.uord(chtxt), _cinf=[])
+	e = jdb.Obj (src=srcid, stat=KWSTAT_A, seq=Lineno, unap=False,
+	         chr=c, _kanj=[jdb.Obj(txt=chtxt)], _rdng=[], _sens=[], _krslv=[])
 	for x in elem.findall ('codepoint/cp_value'): codepoint (x, c, chtxt)
 	for x in elem.findall ('radical/rad_value'): radical (x, c)
 
@@ -216,8 +217,9 @@ def variant (x):
 
 	vt = x.get ('var_type')
 	vt = vmap.get(vt,vt)
-	kw = KW.CINF[Xml2db.CINF.get(vt,vt)].id
-	return Obj (kw=kw, value=x.text)
+	if vt == 'ucs': kw = 0
+	else: kw = KW.CINF[Xml2db.CINF.get(vt,vt)].id
+	return jdb.Obj (kw=kw, value=x.text)
 
 def codepoint (x, c, chtxt):
 	cinf = c._cinf
@@ -228,7 +230,7 @@ def codepoint (x, c, chtxt):
 	    if int (x.text, 16) != jdb.uord (chtxt): 
 		warn ("xml codepoint ucs value '%s' doesnt match character %s (0x%x)." \
 			% (x.text, chtxt, jdb.uord (chtxt)))
-	else: cinf.append( Obj( kw=KW.CINF[Xml2db.CINF.get(cp_type, cp_type)].id, value=x.text))
+	else: cinf.append( jdb.Obj( kw=KW.CINF[Xml2db.CINF.get(cp_type, cp_type)].id, value=x.text))
 
 def radical (x, c):
 	cinf = c._cinf
@@ -237,7 +239,7 @@ def radical (x, c):
 	if rad_attr != 'rad_type': warn ('Unexpected rad_value attribute: %s', rad_attr)
 	if rad_type == 'classical': c.bushu = int(x.text)
 	elif rad_type == 'nelson_c': 
-	    cinf.append (Obj (kw=KWCINF_nelson_rad, value=int(x.text)))
+	    cinf.append (jdb.Obj (kw=KWCINF_nelson_rad, value=int(x.text)))
 	else: warn ("Unknown radical attribute value: %s=\"%s\"", (rad_attr, rad_type))
 
 def strokes (x, n, c):
@@ -245,13 +247,13 @@ def strokes (x, n, c):
 	if n == 0: 
 	     c.strokes = int(x.text)
 	else: 
-	    cinf.append ( Obj (kw=KWCINF_strokes, value=int(x.text)))
+	    cinf.append ( jdb.Obj (kw=KWCINF_strokes, value=int(x.text)))
 
 def reading_meaning (rm, rdng, sens, cinf, langs):
 	for x in rm.findall ('rmgroup'):
 	    r, g, c = rmgroup (x, langs)
 	    rdng.extend (r)
-	    sens.append (Obj (_gloss=g))
+	    sens.append (jdb.Obj (_gloss=g))
 	  # Make a dict keyed by the readings already parsed.
 	rlookup = dict ([(r.txt,r) for r in rdng])
 	  # Get the nanori readings...
@@ -264,10 +266,10 @@ def reading_meaning (rm, rdng, sens, cinf, langs):
 	      # new reading record.
 	    try: r = rlookup[x.text]
 	    except KeyError: 
-		r = Obj (txt=x.text)
+		r = jdb.Obj (txt=x.text)
 		rdng.append (r)
 	    if not hasattr (r, '_inf'): r._inf = []
-	    r._inf.append (Obj (kw=KW.RINF[Xml2db.RINF.get('nanori','nanori')].id))
+	    r._inf.append (jdb.Obj (kw=KW.RINF[Xml2db.RINF.get('nanori','nanori')].id))
 	cinf.extend (c)
 
 def rmgroup (rmg, langs=None):
@@ -283,15 +285,15 @@ def rmgroup (rmg, langs=None):
 		    warn ("Duplicate reading ignored: %s, %s" % (rtype, x.text))
 		    continue
 		dupchk[(rtype,x.text)] = True
-		cinf.append (Obj (kw=KW.CINF[rtype].id, value=x.text))
+		cinf.append (jdb.Obj (kw=KW.CINF[rtype].id, value=x.text))
 	    elif rtype=='ja_on' or rtype=='ja_kun':
 		if x.text in dupchk: 
 		    warn ('Duplicate reading ignored: %s' % x.text)
 		    continue
 		dupchk[x.text] = True
-		rdng = Obj (txt=x.text, _inf=[])
-		rdng._inf.append (Obj (kw=KW.RINF[Xml2db.RINF.get(aval,aval)].id))
-		if rstat: rdng._inf.append (Obj (kw=KW.RINF[Xml2db.RINF.get(rstat,rstat)].id))
+		rdng = jdb.Obj (txt=x.text, _inf=[])
+		rdng._inf.append (jdb.Obj (kw=KW.RINF[Xml2db.RINF.get(aval,aval)].id))
+		if rstat: rdng._inf.append (jdb.Obj (kw=KW.RINF[Xml2db.RINF.get(rstat,rstat)].id))
 		rdngs.append (rdng)
 	    else:
 		raise KeyError ('Unkown r_type attribute: %s' % rtype)
@@ -305,7 +307,7 @@ def rmgroup (rmg, langs=None):
 		continue
 	    dupchk[(lang,x.text)] = True
 	    if not langs or langkw in langs:
-	        glosses.append (Obj (txt=x.text, lang=langkw, ginf=1))
+	        glosses.append (jdb.Obj (txt=x.text, lang=langkw, ginf=1))
 	return rdngs, glosses, cinf
 
 def dicnum (dic_number, cinf):
@@ -320,7 +322,7 @@ def dicnum (dic_number, cinf):
 		warn ('Duplicate dr_type,value pair ignored: %s, %s' % (drtype, val))
 		continue
 	    dupchk[(kw,val)] = True
-	    cinf.append (Obj (kw=kw, value=val))
+	    cinf.append (jdb.Obj (kw=kw, value=val))
 
 def qcode (query_code, cinf):
 	dupchk = {}; saw_misclass = False;  saw_skip = False
@@ -338,7 +340,7 @@ def qcode (query_code, cinf):
 		saw_misclass = True
 	    elif qctype == 'skip':
 		saw_skip = True
-	    cinf.append (Obj (kw=kw, value=val, mctype=misclass))
+	    cinf.append (jdb.Obj (kw=kw, value=val, mctype=misclass))
 	if saw_misclass and not saw_skip:
 	    warn ("Has skip_misclass but no skip")
 
@@ -366,7 +368,7 @@ arguments:
   xmlfile          Filename of a JMdict XML file."""
 
 	v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
-	        + " Rev %s (%s)" % _VERSION_
+	        + " Rev %s (%s)" % __version__
 	p = OptionParser (usage=u, version=v)
 	p.add_option ("-b", "--begin",
              type="int", dest="b", default=0,
@@ -385,7 +387,7 @@ arguments:
 	p.add_option ("-g", "--language", 
              type="str", dest="g", default=None,
              help="Value is a comma separated list (with no spaces) of "
-		"ISO-639 two-letter language codes.  Only glosses of " 
+		"ISO-639-1 two-letter language codes.  Only glosses of " 
 		"languages from this list will bre extracted.  If not "
 		"given, all glosses regardless of language will be extracted.")
 	p.add_option ("-l", "--logfile", 

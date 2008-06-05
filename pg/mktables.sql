@@ -104,7 +104,6 @@ CREATE TABLE kwxref (
 
 CREATE TABLE chr(
     entr INT PRIMARY KEY,
-    uni INT NOT NULL UNIQUE,
     bushu SMALLINT,
     strokes SMALLINT,
     freq SMALLINT,
@@ -450,6 +449,6 @@ CREATE TABLE kresolv (
     value VARCHAR(50) NOT NULL,
     PRIMARY KEY(entr,kw,value));
 --ALTER TABLE kresolv ADD CONSTRAINT kresolv_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE kresolv ADD CONSTRAINT kresolv_kw_fkey FOREIGN KEY (kw) REFERENCES kwcinf(id);
-
+-- No FK constraint on 'kw' (to kwcinf) because it may have a value of
+-- 0, meaning 'ucs', which we don't need or want to be a real cinf item.
 

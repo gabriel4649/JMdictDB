@@ -110,11 +110,12 @@ def get_entrs (dbh, elist, qlist, errs):
  	return entries
 
 def gen_page (tmpl, output=None, **kwds):
+	html = ''
 	httphdrs = kwds.get ('HTTP', None)
-	if httphdrs: print httphdrs, "\n"
-	else:
+	if not httphdrs: 
 	    if not kwds.get ('NoHTTP', None):
-		print "Content-type: text/html\n";
+		httphdrs = "Content-type: text/html\n"
+	if httphdrs: html += hrmlhdrs + "\n"
 	  # FIXME: 'tmpl' might contain a directory component containing 
 	  #  a dot which breaks the following.
 	if tmpl.find ('.') < 0: tmpl = tmpl + '.tal'
@@ -122,7 +123,7 @@ def gen_page (tmpl, output=None, **kwds):
 	if tmpldir == '': tmpldir = "."
 	if not tmpldir: 
 	    raise IOError ("File or directory '%s' not found in sys.path" % tmpl)
-	html = tal.fmt_simpletal (tmpldir + '/' + tmpl, **kwds)
+	html += tal.fmt_simpletal (tmpldir + '/' + tmpl, **kwds)
 	if output: print >>output, html.encode ('utf-8')
 	return html
 

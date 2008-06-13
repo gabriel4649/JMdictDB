@@ -8,7 +8,7 @@ _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 import sys, os, re
 import jdb, fmt, fmtjel
 
-global KW, Encl
+global KW, Enc
 
 def main (args, opts):
 	global Enc
@@ -17,7 +17,7 @@ def main (args, opts):
 	except jdb.dbapi.OperationalError, e:
 	    print >>sys.stderr, "Error, unable to connect to database, do you need -u or -p?\n", str(e);  
 	    sys.exit(1)
-	Enc = opts.encoding or sys.stdout.encoding
+	Enc = opts.encoding or sys.stdout.encoding or 'utf-8'
 	  # The following call will create a global (aka module-level) 
 	  # variable in jdb named KW which contains data from all
 	  # the static keyword database tables.  We read this data once

@@ -176,15 +176,19 @@
 	-->
 <!ELEMENT pos (#PCDATA)>
 	<!-- Part-of-speech information about the entry/sense. Should use 
-	appropriate entity codes.
+	appropriate entity codes. In general where there are multiple senses
+	in an entry, the part-of-speech of an earlier sense will apply to
+	later senses unless there is a new part-of-speech indicated.
 	-->
 <!ELEMENT field (#PCDATA)>
-	<!-- Information about the field of application of the entry. When
-	absent, general application is implied. Entity coding for specific
-	fields of application. -->
+	<!-- Information about the field of application of the entry/sense. 
+	When absent, general application is implied. Entity coding for 
+	specific fields of application. -->
 <!ELEMENT misc (#PCDATA)>
 	<!-- This element is used for other relevant information about 
-	the entry. -->
+	the entry/sense. As with part-of-speech, information will usually
+	apply to several senses.
+	-->
 <!ELEMENT lsource (#PCDATA)>
 	<!-- This element records the information about the source
 	language(s) of a loan-word/gairaigo. If the source language is other 
@@ -265,6 +269,7 @@ various information fields.
 <!ENTITY aux-v "auxiliary verb">
 <!ENTITY aux-adj "auxiliary adjective">
 <!ENTITY Buddh "Buddhist term">
+<!ENTITY chem "chemistry term">
 <!ENTITY chn "children's language">
 <!ENTITY col "colloquialism">
 <!ENTITY comp "computer terminology">

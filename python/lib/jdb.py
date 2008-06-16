@@ -1227,6 +1227,7 @@ class Kwds:
 	    for ln in f:
 		if re.match (r'\s*(#.*)?$', ln): continue
 		fields = (ln.rstrip().split ("\t"))
+		fields[0] = int (fields[0])
 		self.add (attr, fields)
 	    f.close()
 

@@ -60,7 +60,7 @@ def main (args, opts):
 		pgi.wrcorp (entr, tmpfiles)
 	    else: #typ == 'entry'
 		eid += 1
-		if not ((eid - 1) % 1550): 
+		if not ((eid - 1) % 1651): 
 		    sys.stdout.write ('.'); sys.stdout.flush()
 		    warns.Logfile.flush()
 	        if not getattr (entr, 'src', None): entr.src = corpid

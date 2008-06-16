@@ -29,7 +29,7 @@ KWDATA = \
 all: kwstatic.py jelparse.py
 
 kwstatic.py: $(KWDATA)
-	python ../../tools/mkkwmod.py -d ../../pg/data/ >kwstatic.py
+	python ../../tools/mkkwmod.py ../../pg/data/ >kwstatic.py
 
 jelparse.py: jelparse.y
 	python ../../tools/yply.py jelparse.y >jelparse.py

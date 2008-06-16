@@ -33,11 +33,6 @@ CREATE LANGUAGE 'plpgsql';
 -- They are kept in here in comment form in order to provide a more
 -- cohesive view of the schema.
 
-CREATE TABLE kwcinf(
-    id SMALLINT PRIMARY KEY,
-    kw VARCHAR(50) NOT NULL UNIQUE,
-    descr VARCHAR(250));
-
 CREATE TABLE kwdial (
     id SMALLINT PRIMARY KEY,
     kw VARCHAR(20) NOT NULL UNIQUE,
@@ -101,14 +96,6 @@ CREATE TABLE kwxref (
     kw VARCHAR(20) NOT NULL UNIQUE,
     descr VARCHAR(255));
 
-
-CREATE TABLE chr(
-    entr INT PRIMARY KEY,
-    bushu SMALLINT,
-    strokes SMALLINT,
-    freq SMALLINT,
-    grade SMALLINT);
---ALTER TABLE chr ADD CONSTRAINT chr_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE entr (
     id SERIAL NOT NULL PRIMARY KEY,
@@ -253,17 +240,6 @@ CREATE TABLE editor (
 --CREATE INDEX editor_email ON editor(email);
 --CREATE UNIQUE INDEX editor_name ON editor(name);
 
-CREATE TABLE cinf(
-    entr INT NOT NULL,
-    kw SMALLINT NOT NULL,
-    value VARCHAR(50) NOT NULL,
-    mctype VARCHAR(50) NOT NULL DEFAULT(''),
-    PRIMARY KEY (entr,kw,value,mctype));
---CREATE INDEX cinf_kw ON cinf(kw);
---CREATE INDEX cinf_val ON cinf(value);
---ALTER TABLE cinf ADD CONSTRAINT chr_entr_fkey FOREIGN KEY (entr) REFERENCES chr(entr) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE cinf ADD CONSTRAINT chr_kw_fkey FOREIGN KEY (kw) REFERENCES kwcinf(id) ON DELETE CASCADE ON UPDATE CASCADE;
-
 CREATE TABLE dial (
     entr INT NOT NULL,
     sens INT NOT NULL,
@@ -369,53 +345,54 @@ CREATE TABLE stagk (
 --ALTER TABLE stagk ADD CONSTRAINT stagk_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE stagk ADD CONSTRAINT stagk_entr_fkey1 FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
 
-
--- Tables for audio sound clips...
+-------------------------------
+-- Tables for audio sound clips
+-------------------------------
 
 CREATE TABLE sndvol (	-- Audio media volume (directory, CD, etc)
-    id SERIAL NOT NULL PRIMARY KEY,
-    title VARCHAR(50),
-    loc VARCHAR(500),
-    type SMALLINT NOT NULL,	-- 1:file, 2:cd
-    idstr VARCHAR(100),
-    corp INT,
-    notes TEXT);
+    id SERIAL NOT NULL PRIMARY KEY,	-- Volume id.
+    title VARCHAR(50),			-- Volume title (for display).
+    loc VARCHAR(500),			-- Volume location (directory name or CD id).
+    type SMALLINT NOT NULL,		-- Volume type, 1:file, 2:cd
+    idstr VARCHAR(100),			-- If type==2, this is CD ID string.
+    corp INT,				-- Corpus id (in table kwsrc).
+    notes TEXT);			-- Ad hoc notes pertinent to this sound volume.
 -- Anticipate this table will generally be too small to benefit from indexes.
 --ALTER TABLE sndvol ADD CONSTRAINT sndvol_corp_fkey FOREIGN KEY(corp) REFERENCES kwsrc(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 CREATE TABLE sndfile (	-- Audio file, track, etc.
-    id SERIAL NOT NULL PRIMARY KEY,
-    vol INT NOT NULL,
-    title VARCHAR(50),
-    loc VARCHAR(500),
-    type SMALLINT,
-    notes TEXT);
+    id SERIAL NOT NULL PRIMARY KEY,	-- File id.
+    vol INT NOT NULL,			-- Volume id (in table sndvol).
+    title VARCHAR(50),			-- File title (for display).
+    loc VARCHAR(500),			-- File location in vol (filename or track number).
+    type SMALLINT,			-- File type.
+    notes TEXT);			-- Ad hoc notes pertinent to this sound file.
 --CREATE INDEX sndfile_vol ON sndfile(vol);
 --ALTER TABLE sndfile ADD CONSTRAINT sndfile_vol_fkey FOREIGN KEY(vol) REFERENCES sndvol(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 CREATE TABLE snd (	-- Audio sound clip.
-    id SERIAL NOT NULL PRIMARY KEY,
-    file SMALLINT NOT NULL,
-    strt INT NOT NULL DEFAULT(0),
-    leng INT NOT NULL DEFAULT(0),
-    trns TEXT,
-    notes VARCHAR(255));
+    id SERIAL NOT NULL PRIMARY KEY,	-- Sound id.
+    file SMALLINT NOT NULL,		-- File id (in table sndfile).
+    strt INT NOT NULL DEFAULT(0),	-- Start of clip in file (10ms units).
+    leng INT NOT NULL DEFAULT(0),	-- Length of clip in file (10ms units).
+    trns TEXT,				-- Transcription of sound clip (typ. japanese).
+    notes VARCHAR(255));		-- Ad hoc notes pertinent to this clip.
 --ALTER TABLE snd ADD CONSTRAINT snd_file_fkey FOREIGN KEY(file) REFERENCES sndfile(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 CREATE TABLE entrsnd (	-- Entry to sound clip map.
-    entr INT NOT NULL,
-    ord SMALLINT NOT NULL,
-    snd INT NOT NULL,
+    entr INT NOT NULL,		-- Entry id.
+    ord SMALLINT NOT NULL,	-- Order in entry.
+    snd INT NOT NULL,		-- Sound id.
     PRIMARY KEY(entr,snd));
 --CREATE INDEX entrsnd_snd ON entrsnd(snd);
 --ALTER TABLE entrsnd ADD CONSTRAINT entrsnd_entr_fkey FOREIGN KEY(snd) REFERENCES snd(id) ON UPDATE CASCADE ON DELETE CASCADE;
 --ALTER TABLE entrsnd ADD CONSTRAINT entrsnd_entr_fkey1 FOREIGN KEY(entr) REFERENCES entr(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 CREATE TABLE rdngsnd (	-- Reading to sound clip map.
-    entr INT NOT NULL,
-    rdng INT NOT NULL,
-    ord SMALLINT NOT NULL,
-    snd INT NOT NULL,
+    entr INT NOT NULL,		-- Entry id.
+    rdng INT NOT NULL,		-- Reading number.
+    ord SMALLINT NOT NULL,	-- Order in reading.
+    snd INT NOT NULL,		-- Sound id.
     PRIMARY KEY(entr,rdng,snd));
 --CREATE INDEX rdngsnd_snd ON rdngsnd(snd);
 --ALTER TABLE rdngsnd ADD CONSTRAINT rdngsnd_entr_fkey FOREIGN KEY(snd) REFERENCES snd(id) ON UPDATE CASCADE ON DELETE CASCADE;
@@ -427,15 +404,15 @@ CREATE TABLE rdngsnd (	-- Reading to sound clip map.
 -- See file pg/xresolv.sql for a description of the process.
 
 CREATE TABLE xresolv (
-    entr INT NOT NULL,
-    sens SMALLINT NOT NULL,
-    ord SMALLINT NOT NULL,
-    typ SMALLINT NOT NULL,
-    rtxt VARCHAR(250),
-    ktxt VARCHAR(250),
-    tsens SMALLINT,
-    notes VARCHAR(250),
-    prio BOOLEAN DEFAULT FALSE,
+    entr INT NOT NULL,		-- Entry xref occurs in.
+    sens SMALLINT NOT NULL,	-- Sense number xref occurs in.
+    ord SMALLINT NOT NULL,	-- Order of xref in sense.
+    typ SMALLINT NOT NULL,	-- Type of xref (table kwxref).
+    rtxt VARCHAR(250),		-- Reading text of target given in xref.
+    ktxt VARCHAR(250),		-- Kanji text of target given in xref.
+    tsens SMALLINT,		-- Target sense number.
+    notes VARCHAR(250),		-- Notes.
+    prio BOOLEAN DEFAULT FALSE,	-- True if this is a Tanaka corpus exemplar.
     PRIMARY KEY(entr,sens,ord),
     CHECK (rtxt NOTNULL OR ktxt NOTNULL));
 --CREATE INDEX xresolv_rdng ON xresolv(rtxt);
@@ -443,7 +420,53 @@ CREATE TABLE xresolv (
 --ALTER TABLE xresolv ADD CONSTRAINT xresolv_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE xresolv ADD CONSTRAINT xresolv_typ_fkey FOREIGN KEY (typ) REFERENCES kwxref(id);
 
-CREATE TABLE kresolv (
+-------------------
+--  Kanjidic tables
+-------------------
+
+CREATE TABLE kwcinf(
+    id SMALLINT PRIMARY KEY,
+    kw VARCHAR(50) NOT NULL UNIQUE,
+    descr VARCHAR(250));
+
+CREATE TABLE rad(
+    num SMALLINT NOT NULL,	-- Radical (bushu) number.
+    var SMALLINT NOT NULL,	-- Variant number.
+    rchr CHAR(1),		-- Radical character from unicode blocks CJK radicals
+				--   2F00-2FDF and Radicals Supplement 2E80-2EFF.
+    chr CHAR(1),		-- Radical character from outside radical blocks.
+    strokes SMALLINT,		-- Number of strokes.
+    loc	CHAR(1) 		-- Location code.
+	CHECK(loc is NULL OR loc IN('O','T','B','R','L','E','V')),
+    name VARCHAR(50),		-- Name of radical (japanese).
+    examples VARCHAR(20),	-- Characters that include the radical.
+    PRIMARY KEY (num,var));
+
+CREATE TABLE chr(
+    entr INT PRIMARY KEY,	-- Defines readings and meanings, but not kanji.
+    chr CHAR(1) NOT NULL,	-- Defines kanji.
+    bushu SMALLINT,		-- Radical number.
+    strokes SMALLINT,
+    freq SMALLINT,
+    grade SMALLINT,
+    jlpt SMALLINT,
+    radname VARCHAR(50));
+--CREATE UNIQUE INDEX chr_chr ON chr(chr);
+--ALTER TABLE chr ADD CONSTRAINT chr_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
+-- XX ALTER TABLE chr ADD CONSTRAINT chr_rad_fkey FOREIGN KEY (bushu) REFERENCES rad(num);
+
+CREATE TABLE cinf(
+    entr INT NOT NULL,
+    kw SMALLINT NOT NULL,
+    value VARCHAR(50) NOT NULL,
+    mctype VARCHAR(50) NOT NULL DEFAULT(''),
+    PRIMARY KEY (entr,kw,value,mctype));
+--CREATE INDEX cinf_kw ON cinf(kw);
+--CREATE INDEX cinf_val ON cinf(value);
+--ALTER TABLE cinf ADD CONSTRAINT chr_entr_fkey FOREIGN KEY (entr) REFERENCES chr(entr) ON DELETE CASCADE ON UPDATE CASCADE;
+--ALTER TABLE cinf ADD CONSTRAINT chr_kw_fkey FOREIGN KEY (kw) REFERENCES kwcinf(id) ON DELETE CASCADE ON UPDATE CASCADE;
+
+CREATE TABLE kresolv(
     entr INT NOT NULL,
     kw SMALLINT NOT NULL,
     value VARCHAR(50) NOT NULL,

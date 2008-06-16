@@ -14,4 +14,8 @@ AssdTo:
   > the kanji files. They appear as Jn in KANJIDIC and <jlpt>n</jlpt>
   > in kanjidic2.
   
-  Need to add support for this to kanjdic parser.
+  Need to add support for this to kanjdic parser.  See also IS-129.
+
+2008-06-05 12:08:12 stuart
+  Done in the co-committed versions of python/kdparse.py, 
+  pg/mktables.sql, lib/fmt.py.

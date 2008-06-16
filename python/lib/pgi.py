@@ -94,7 +94,7 @@ def initialize (tmpdir):
 	  ('xref',   ['entr','sens','xentr','xsens','typ','notes']),
 	  ('xresolv',['entr','sens','ord','typ','rtxt','ktxt','tsens','notes','prio']),
 	  ('hist',   ['entr','hist','stat','edid','dt','name','email','diff','refs','notes']),
-	  ('chr',    ['entr','bushu','strokes','freq','grade']),
+	  ('chr',    ['entr','chr','bushu','strokes','freq','grade','jlpt','radname']),
 	  ('cinf',   ['entr','kw','value']),
 	  ('kresolv',['entr','kw','value']),
 	  ('sndvol', ['id','title','loc','type','idstr','corp','notes']),

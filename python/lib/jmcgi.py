@@ -110,12 +110,12 @@ def get_entrs (dbh, elist, qlist, errs):
  	return entries
 
 def gen_page (tmpl, output=None, **kwds):
-	html = ''
 	httphdrs = kwds.get ('HTTP', None)
 	if not httphdrs: 
 	    if not kwds.get ('NoHTTP', None):
 		httphdrs = "Content-type: text/html\n"
-	if httphdrs: html += hrmlhdrs + "\n"
+	if not httphdrs: html = ''
+	else: html = httphdrs + "\n"
 	  # FIXME: 'tmpl' might contain a directory component containing 
 	  #  a dot which breaks the following.
 	if tmpl.find ('.') < 0: tmpl = tmpl + '.tal'

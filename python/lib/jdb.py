@@ -200,7 +200,7 @@ def entrList (dbh, crit=None, args=None, ord='', tables=None, ret_tuple=False):
 OrderBy = {
 	'rdng':"x.entr,x.rdng", 'kanj':"x.entr,x.kanj", 'sens':"x.entr,x.sens", 
 	'gloss':"x.entr,x.sens,x.gloss", 'xref':"x.entr,x.sens,x.xref", 
-	'hist':"x.entr,x.hist", 
+	'hist':"x.entr,x.hist",
 	'kinf':"x.entr,x.kanj,x.ord", 'rinf':"x.entr,x.rdng,x.ord",
 	'pos':"x.entr,x.sens,x.ord", 'misc':"x.entr,x.sens,x.ord", 
 	'fld':"x.entr,x.sens,x.ord", 'dial':"x.entr,x.sens,x.ord", 
@@ -272,7 +272,7 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
 	    'entr','hist','rdng','rinf','kanj','kinf',
 	    'sens','gloss','misc','pos','fld','dial','lsrc',
 	    'restr','stagr','stagk','freq','xref','xrer',
-	    'rdngsnd','entrsnd')
+	    'rdngsnd','entrsnd','chr','cinf')
 	if args is None: args = []
 	if ord is None: ord = ''
 	if re.search (r'^((\d+|\?|%s),)*(\d+|\?|%s)$', crit):
@@ -315,13 +315,11 @@ def entr_bld (t):
 	# parent rows, thus building the object structure that
 	# application programs wil work with.
 
-	entr=t['entr']; 
-	rdng=t.get('rdng',[])
-	kanj=t.get('kanj',[])
-	sens=t.get('sens',[])
-	mup ('_rdng',  entr, ['id'],          rdng,       ['entr'])
-	mup ('_kanj',  entr, ['id'],          kanj,       ['entr'])
-	mup ('_sens',  entr, ['id'],          sens,       ['entr'])
+	entr, rdng, kanj, sens, chr = [t.get (x, []) 
+				       for x in ('entr', 'rdng', 'kanj', 'sens', 'chr')]
+	mup ('_rdng',  entr, ['id'],          rdng,              ['entr'])
+	mup ('_kanj',  entr, ['id'],          kanj,              ['entr'])
+	mup ('_sens',  entr, ['id'],          sens,              ['entr'])
 	mup ('_hist',  entr, ['id'],          t.get('hist', []), ['entr'])
 	mup ('_inf',   rdng, ['entr','rdng'], t.get('rinf', []), ['entr','rdng'])
 	mup ('_inf',   kanj, ['entr','kanj'], t.get('kinf', []), ['entr','kanj'])
@@ -340,10 +338,11 @@ def entr_bld (t):
 	mup ('_freq',  rdng, ['entr','rdng'], [x for x in t.get('freq',[]) if x.rdng],  ['entr','rdng'])
 	mup ('_freq',  kanj, ['entr','kanj'], [x for x in t.get('freq',[]) if x.kanj],  ['entr','kanj'])
 	mup ('_xref',  sens, ['entr','sens'], t.get('xref', []), ['entr','sens']);
-	mup ('_xrer',  sens, ['entr','sens'], t.get('xrer', []), ['xentr','xsens']);
-	mup ('_snd',   entr, ['id'],          t.get('entrsnd',[]), ['entr']);
-	mup ('_snd',   rdng, ['entr','rdng'], t.get('rdngsnd',[]), ['entr','rdng']);
-
+	mup ('_xrer',  sens, ['entr','sens'], t.get('xrer', []), ['xentr','xsens'])
+	mup ('_snd',   entr, ['id'],          t.get('entrsnd',[]), ['entr'])
+	mup ('_snd',   rdng, ['entr','rdng'], t.get('rdngsnd',[]), ['entr','rdng'])
+	mup ('_cinf',  chr,  ['entr'],        t.get('cinf',[]),  ['entr'])
+	if chr: mup ( None, chr, ['entr'], entr, ['id'], 'chr')
 	return entr
 
 def filt (parents, pks, children, fks):
@@ -397,7 +396,7 @@ def matches (parent, pks, child, fks):
 def mup (attr, parents, pks, childs, fks, pattr=None):
 	# Assign each element of list 'childs' to its matching parent
 	# and/or "assign" each parent to each matching child.
-	# A parent item ands child item "match" when the values of the
+	# A parent item and child item "match" when the values of the
 	# parent item attributes named in list 'pks' are equal to the
 	# child item attributes named in list 'fks'. 
 	#
@@ -407,7 +406,7 @@ def mup (attr, parents, pks, childs, fks, pattr=None):
 	# to each matching child by setting the child's attribute named
 	# by pattr, to the parent, if 'pattr' is not None.
 	#
-	# Not that if both 'attr' and 'pattr' are not None, a reference
+	# Note that if both 'attr' and 'pattr' are not None, a reference
 	# cycle will be created.  Refer to the description of reference
 	# counting and garbage collection in the Python docs for the
 	# implications of that.
@@ -742,8 +741,8 @@ def addentr (cur, entr):
 	for x in getattr (e, '_snd', []): dbinsert (cur, "entrsnd", ['entr','ord','snd'], x)
 	if getattr (entr, 'chr', None):
 	    c = e.chr
-	    dbinsert (cur, "chr", ['entr','bushu','strokes','freq','grade'], c)
-	    for x in getattr (c, '_cinf',  []): dbinsert (cur, "cinf",  ['entr','kw','value'], x)
+	    dbinsert (cur, "chr", ['entr','chr','bushu','strokes','freq','grade','jlpt','radname'], c)
+	    for x in getattr (c, '_cinf',  []): dbinsert (cur, "cinf",  ['entr','kw','value','mctype'], x)
 	return eid, entr.seq, entr.src
 
 def add_hist (cur, e, edid, name, email, notes, refs):

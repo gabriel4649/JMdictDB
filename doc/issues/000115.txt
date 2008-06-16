@@ -22,6 +22,7 @@ AssdTo:
   * All the above require knowing which corpuses are kanjidic.
     Don't want to hardwire magic id's or keywords.  Add column
     to kwsrc table?
+    [Can we use existance of .chr attribute on entry object?]
   * What about corpus dropdown list on edit page?  Should edconf.py
     (and edsubmit.py) pages refuse to accept entries wiyj kanjidic
     corpus?
@@ -33,7 +34,7 @@ AssdTo:
   We'll need a dedicated kanjidic search, results pages but will
   open separate issue for that -- this issue is about how to
   load kanjidic into database and not create UI confusion for
-  uses of current pages.
+  uses of current pages.  See also IS-129.
 
 2008-04-24 22:28:00 sysad
   As a temp measure will assume kanjidic corpus is always id=4.
@@ -42,3 +43,7 @@ AssdTo:
     list.
   * Modified srchres.py to always add a "entr.src!=4" condition
     when building search criteria.
+
+2008-06-03 19:18:00 sysad
+  Fixed a typo that prevented the kanjidic corpus from being 
+  suppressed on the web/cgi/srchform.py page.

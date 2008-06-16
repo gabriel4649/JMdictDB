@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2006,2008 Stuart McGraw 
+#  Copyright (c) 2008 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -14,24 +14,29 @@
 # 
 #  You should have received a copy of the GNU General Public License
 #  along with JMdictDB; if not, write to the Free Software Foundation,
-#  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
+from collections import defaultdict
 import jdb
 
 def entr (entr):
+	c = getattr (entr, 'chr', None)	# 'c' will be non-None for kanji entries.
 	fmt = "Entry: " + entrhdr (entr)
 	if getattr (entr, 'srcnote', None):
 	    fmt += "\nSrcnote: %s" % entr.srcnote
 	if getattr (entr, 'notes', None):
 	    fmt += "\nNotes: %s" % entr.notes
-
-	kanjs = getattr (entr, '_kanj', [])
+	if c:
+	    kanjs = []
+	    ktxt = c.chr
+	else:
+	    kanjs = getattr (entr, '_kanj', [])
+	    ktxt = " ".join([kanj(x) for x in kanjs])
 	rdngs = getattr (entr, '_rdng', [])
-	ktxt = " ".join([kanj(x) for x in kanjs])
 	rtxt = " ".join([rdng(x, kanjs) for x in rdngs])
 	if ktxt: fmt += "\nKanji: %s" % ktxt
 	fmt += "\nReading: %s" % rtxt
@@ -52,6 +57,11 @@ def entr (entr):
 	    if a and not hdr:
 		fmt += "\nAudio: ";  hdr = True
 	    if a: fmt += snd (a, r.txt)
+
+	if c: 
+	    fmt += "\n" + chr (c)
+	    fmt += "\n" + cinf (c._cinf)
+	    fmt += "\n" + encodings ([c.chr])
 
 	if hasattr (entr, '_hist'): fmt += hist (entr._hist);
 	return fmt
@@ -259,3 +269,35 @@ def restrtxts (restrs, key, kanjs,
 	if not restrs: return []
 	if len(restrs) == len(kanjs):  return ['no ' + english.get(key,key)]
 	return [x.txt for x in jdb.filt (kanjs, [key], restrs, [key])]
+
+def chr (c):
+	fmt = []; a = []
+	fmt.append ("Character %d:" % jdb.uord(c.chr))
+	if getattr (c, 'strokes', None): a.append ("strokes: %d" % c.strokes)
+	if getattr (c, 'bushu', None): a.append ("radical: %d" % c.strokes)
+	if getattr (c, 'freq', None): a.append ("freq: %d" % c.freq)
+	if getattr (c, 'grade', None): a.append ("grade: %d" % c.grade)
+	if getattr (c, 'jlpt', None): a.append ("jplt: %d" % c.jlpt)
+	if a: fmt.append ("  " + ', '.join (a))
+	return '\n'.join (fmt)
+
+def cinf (f):
+	fmt = ['Character info:']
+	d = defaultdict (list)
+	for r in f: 
+	    r.abbr = jdb.KW.CINF[r.kw].kw
+	    d[r.abbr].append (r)
+	for abbr,rs in sorted (d.items(), key=lambda x:x[0]):
+	    fmt.append ("  %s: %s" % (abbr, ', '.join (x.value for x in rs)))
+	return '\n'.join (fmt)
+
+def encodings (strs):
+	fmt = ['Encodings:',
+	       '  Unicode: %s' % '; '.join ([ucshex (s) for s in strs])]
+	for enc in ('utf-8', 'iso-2022-jp', 'sjis', 'euc-jp'):
+	    fmt.append ("  %s: %s" % (enc.upper(), '; '.join ([repr (s.encode (enc)) for s in strs])))
+	return '\n'.join (fmt)
+
+def ucshex (s):
+	 return ' '.join (["%0.4X" % jdb.uord(c) for c in s])
+

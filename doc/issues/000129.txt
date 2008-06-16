@@ -1,0 +1,39 @@
+﻿Title:	Support for kanjidic2.
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-06-03 13:43:22 stuart
+  Want to add support for kanjidic2 data since the current
+  schema can support it with relatively few additions.
+  The earlier Perl version on jmdict included support and 
+  some of this has been migrated to Python, the chr, cinf,
+  and kwcinf database tables, kdparser, makefile rules.  
+  Still to do:
+
+  1. Fix kdparser.py (has syntax errors) [done]
+  2. Update kdparser.py for jplt tags (see IS-116). [done]
+  3. Update lib/fmt.py, shentr.py to show kanjidic entries. 
+      [done]
+  4. Suppress display of kanjidic entries in current web
+      interface.  See also IS-115. [done]
+  5. Create new web pages for kanji search and display, 
+      see IS-115.
+  6. Update dtd-jmdict-ex.xml, fmtxml.py, jmxml.py, to support
+       kanjidic entries?
+  7.? In chr table, change name of column "bushu" to "radical".
+  8.? Add a second "radical" column for nelson_c values.
+  9.? Add a "stroke" table for all stroke counts including 
+       miscounts, remove "strokes" column from table chr.
+  10. Port kresolv.pl to Python (creates xrefs from the variant
+       info saved in the kresolv table by kdparse.py.)
+  11. Find source for radical character and create radical 
+       table. [done]
+  12. Also tables for the data in JB's kradfile and radkfile.
+
+2008-06-16 00:18:00 stuart
+  Did items 1, 2, 3, 4, 11.  See pg/data/rad.txt for more details
+  about item 11 and the rad.csv file.

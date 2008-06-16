@@ -13,3 +13,5 @@ from the table of ISO-639-2 language codes downloadable
 from:
  ISO-639-2 (1998) http://www.loc.gov/standards/iso639-2/php/code_list.php
 See issue IS-110 for more details.
+
+See file rad.txt for more inforation on the data on rad.csv.

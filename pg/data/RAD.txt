@@ -1,0 +1,38 @@
+*CAUTION*  Development/verification of rad.csv is still in progress.
+
+The data in rad.csv was compiled from the following sources:
+  http://www.csse.monash.edu.au/~jwb/radicalnames.html
+  Kadansha Kanji Lerner's Dictionary, Halpern Ed., 2001.
+  Kangxi Radicals (Unicode Consortium)
+    http://www.unicode.org/charts/PDF/U2F00.pdf
+  CJK Radicals Supplement (Unicode Consortium)
+    http://www.unicode.org/charts/PDF/U2E80.pdf
+  http://en.wikipedia.org/wiki/List_of_Kangxi_radicals
+  http://en.wikipedia.org/wiki/Radical_214
+
+To do:
+ Remove or replace examples characters that are not in kanjidic.
+ Remove radical variants that are not used in kanjidic characters
+  (but a few are listed in Halpern, and others may be used in 
+  jis-213 but i can't see because of no suitable font.) 
+
+Questions...
+12.1	Some of these examples should be moved to 12.2, 12.3?
+29	Unable to find any characters that look like Halpern's first 
+	 and I presume Breen's second) "mata" character, so ignored it.
+47.2	Wikipedia listed èB as an example?  Is that right?  kanjidic
+	 gives that character's radical as #6.
+92	The 'chr' character listed is a 5-stroke variant?
+122.3	Is 2EB4 the right radical for the rad column?
+129	Expand with the two additional characters in rad supplement, 
+	 even though not in Halpern, Breen, or Wikip?
+130.3	Is 2EBC the right radical for the rad column?
+180.1	Halpern shows top line is horiz.  Examples I picked have angled
+	 top line as might be written.  Is this right.  Variant and
+	 it's examples have a vertical top line.
+184.1	
+193	Halpern/Breen have two versions but they have identical shape
+	 and name (afaict) so I took as one.
+199.2	Is example baku or bakunyo?
+200.3	Examples correct?
+200.4	Examples correct? (added first two from kanjidic.)

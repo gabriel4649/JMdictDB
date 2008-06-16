@@ -43,7 +43,7 @@ def main( args, opts ):
 						     key=lambda x:x.kw), 5)
 	  # FIXME: Filter out the kanjidic corpus for now.  Will figure
 	  #  out how to itegrate it later.  This too is obviously a hack.
-	corp = reshape (sorted ([x for x in jdb.KW.recs('SRC') if x.kw!='kanjdic'] , 
+	corp = reshape (sorted ([x for x in jdb.KW.recs('SRC') if x.kw!='kanjidic'] , 
 						     key=lambda x:x.kw), 10)
 	freq = []
 	for x in sorted (jdb.KW.recs('FREQ'), key=lambda x:x.kw):

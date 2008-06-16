@@ -13,33 +13,51 @@ global KW, Enc
 def main (args, opts):
 	global Enc
 
+	  # The following call creates a database "cursor" that will
+	  # be used for subsequent database operations.  It also, as 
+	  # a side-effect, create a global variable in module 'jdb'
+	  # named 'KW' which contains data read from all the keyword
+	  # database tables (tables with names matchingthe pattern 
+	  # "kw*".  We read this data once at program startup to avoid
+	  # multiple hi-cost trips to the database later.  
 	try: cur = jdb.dbOpen (opts.database, **jdb.dbopts(opts))
 	except jdb.dbapi.OperationalError, e:
 	    print >>sys.stderr, "Error, unable to connect to database, do you need -u or -p?\n", str(e);  
 	    sys.exit(1)
 	Enc = opts.encoding or sys.stdout.encoding or 'utf-8'
-	  # The following call will create a global (aka module-level) 
-	  # variable in jdb named KW which contains data from all
-	  # the static keyword database tables.  We read this data once
-	  # at program startup to avoid multiple hi-cost trips to the 
-	  # database later.  The data is stored in a jdb.Kwds instance.
-	  # Since many library functions need it they look for a global
-	  # variable jdb.KW, which is easier than passing the the
-	  # data as a function argument.  jdb.KWglobal() is
-	  # simple helper function that saves repeating the same two
-	  # or three lines of boilerplate code in every program.
 
+	  # Get the command line options and convert them into a sql
+	  # statement that will find the desired entries.
 	sql, sqlargs = opts2sql (args, opts)
+
+	  # Retrieve the entries from the database.  'entrs' will be
+	  # set to a list on entry objects.  'raw' is set to dictionary, 
+	  # keyed by table name, and with values consisting of all the
+	  # rows retrieved from that table.  
 	entrs, raw = jdb.entrList (cur, sql, sqlargs, ret_tuple=True)
+
+	  # Any xrefs in the retrieved entry objects contain contain only 
+	  # the entry id numbers of the referenced entries.  We want to be
+	  # able to show the refernced entriy's kanji, glosses, etc so we
+	  # call "augment_xrefs" to get this extra information.  Same for
+	  # any reverse refrerences.
 	jdb.augment_xrefs (cur, raw['xref'])
 	jdb.augment_xrefs (cur, raw['xrer'], rev=1)
+
+	  # Now all we have to do is print the entries.
 	first = True
 	for e in entrs: 
+	      # Format the entry for printing, according to the 
+	      # kind of out put the user requested.
 	    if opts.jel: txt = fmtjel.entr (e)
 	    else:        txt = fmt.entr (e)
+
+	      # Print the formatted entry using the requested encoding
+	      # and inserting a blank line between entries.
 	    if not first: print
 	    print txt.encode (Enc, "replace")
 	    first = False
+
 	if len(entrs) == 0: print "No entries found"
 
 def opts2sql (args, opts):
@@ -47,6 +65,7 @@ def opts2sql (args, opts):
 	for x in args:
 	    if x.isdigit(): appendto (opts, 'id', x)
 	    else: appendto (opts, '_is', x)
+	if opts.char:     conds.extend (char2cond (opts.char))
 	if opts._is:      conds.extend (jdb.autocond (x.decode(Enc), 1, 1) for x in opts._is)
 	if opts.starts:   conds.extend (jdb.autocond (x.decode(Enc), 2, 1) for x in opts.starts)
 	if opts.contains: conds.extend (jdb.autocond (x.decode(Enc), 3, 1) for x in opts.contains)
@@ -70,6 +89,26 @@ def opts2sql (args, opts):
 	    sql = "%s WHERE src %sIN (%s) AND (%s)" % (s1, inv, jdb.pmarks(corp), s2)
 	    sqlargs[0:0] = corp
 	return sql, sqlargs
+
+def char2cond (opts_char):
+	conds = []; char_list = [];  ucs_list = []
+	for ch in opts_char:
+	    ch = ch.decode(Enc)
+	    if len (ch) == 1: char_list.append (ch)
+	    else:
+		try: ucs_list.append (int (ch, 16))
+		except ValueError: 
+		    print >>sys.stderr, "--char value must be unicode value in hex or single character."
+		    sys.exit (1)
+	if char_list:
+	     conds.append (('chr', 
+			    'chr IN (%s)' % ','.join(('%s',)*len(char_list)), 
+			    char_list))
+	if ucs_list:
+	    conds.append (('chr',
+			   'ascii(chr) IN (%s)' % ','.join(('%s',)*len(ucs_list)),
+		    	   ucs_list))
+	return conds
 
 def appendto (obj, attr, val):
 	try: getattr(obj,attr).append (val)
@@ -118,7 +157,7 @@ arguments:  [text | number]...
 	    help="Find the entry with id number ID.")
 	p.add_option ("--seq", "-q", action="append", dest="seq",
 	    help="Find entries with seq number SEQ.")
-	p.add_option ("--corpus", "-c", action="extend", dest="corp",
+	p.add_option ("--corpus", "-s", action="extend", dest="corp",
 	    help=u"Restrict the search to the given corpuses.  Each corpus "
 		"is specified by its keyword.  If more than one, they must "
 		" be comma separated. If the first comma separated word is "
@@ -129,6 +168,11 @@ arguments:  [text | number]...
 		"Specifying --corpus with --id is not usually useful since "
 		"id numbers uniquely identify an entry regardless of the "
 		"corpus it occurs in.")
+
+	p.add_option ("--char", action="append", dest="char",
+	    help="Find character CHAR 'chr' table.  CHAR may by a single character "
+		"string, of a four or more character string giving the character's "
+		"unicode code-point in hexadecimal.")
 
 	p.add_option ("--is", action="append", dest="_is", metavar='TXT',
 	    help="Search for and entry with text that exactly matches TXT.  "

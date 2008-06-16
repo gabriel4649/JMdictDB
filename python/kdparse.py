@@ -122,7 +122,7 @@ def parse_xmlfile (infn, srcid, workfiles, start, count, langs):
 	    if elem.tag == 'header' and event == 'end':
 		xmldate = (elem.find ('date_of_creation')).text
 		if (elem.find ('file_version')).text != '4' or \
-		   (elem.find ('database_version')).text != '2006-375':
+		   (elem.find ('database_version')).text != '2006-630':
 			warn ('Unexpected kanjidic file version or database version found.'
 			      '\nThis program may or may not work on this file.')
 
@@ -173,8 +173,8 @@ def do_chr (elem, srcid, langs):
 
 	chtxt = elem.find('literal').text
 	Char = chtxt	# For warning messages created by warn().
-	c = jdb.Obj (uni=jdb.uord(chtxt), _cinf=[])
-	e = jdb.Obj (src=srcid, stat=KWSTAT_A, seq=Lineno, unap=False,
+	c = jdb.Obj (chr=chtxt, _cinf=[])
+	e = jdb.Obj (src=srcid, stat=KWSTAT_A, seq=jdb.uord(chtxt), unap=False,
 	         chr=c, _kanj=[jdb.Obj(txt=chtxt)], _rdng=[], _sens=[], _krslv=[])
 	for x in elem.findall ('codepoint/cp_value'): codepoint (x, c, chtxt)
 	for x in elem.findall ('radical/rad_value'): radical (x, c)
@@ -196,16 +196,22 @@ def do_chr (elem, srcid, langs):
 	for n,x in enumerate (elem.findall ('misc/stroke_count')): 
 	    strokes (x, n, c)
 
+	rn = u'\u3001'.join ([x.text for x in elem.findall ('misc/rad_name')])
+	if rn: c.radname = rn
+
 	for x in elem.findall ('reading_meaning'): 
 	    reading_meaning (x, e._rdng, e._sens, c._cinf, langs)
 
 	x = elem.find ('dic_number')
-	if x: dicnum (x, c._cinf)
+	if x is not None: dicnum (x, c._cinf)
 
 	x = elem.find ('query_code')
-	if x: qcode (x, c._cinf)
+	if x is not None: qcode (x, c._cinf)
 
 	for x in elem.findall ('misc/variant'): e._krslv.append (variant (x))
+
+	x = elem.find ('misc/jlpt')
+	if x is not None: jlptnum (x, c)
 
 	return e
 
@@ -315,8 +321,8 @@ def dicnum (dic_number, cinf):
 	for x in dic_number.findall ('dic_ref'):
 	    drtype = x.get ('dr_type')
 	    val = x.text
-	    if 'm_vol' in x: 
-		    val = "%s.%s.%s" % (x.get ('m_vol'), x.get ('m_page'), x.text)
+	    if x.get ('m_vol'): 
+		val = "%s.%s.%s" % (x.get ('m_vol'), x.get ('m_page'), x.text)
 	    kw = KW.CINF[Xml2db.CINF.get(drtype,drtype)].id
 	    if (kw,val) in dupchk:
 		warn ('Duplicate dr_type,value pair ignored: %s, %s' % (drtype, val))
@@ -343,6 +349,11 @@ def qcode (query_code, cinf):
 	    cinf.append (jdb.Obj (kw=kw, value=val, mctype=misclass))
 	if saw_misclass and not saw_skip:
 	    warn ("Has skip_misclass but no skip")
+
+def jlptnum (x, c):
+	try: c.jlpt = int (x.text)
+	except (TypeError, ValueError):
+	    warn ("Bad jlpt value: '%r'" % x.text)
 
 def warn (msg, *args):
 	global Char, Lineno, Opts

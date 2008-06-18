@@ -738,7 +738,7 @@ def addentr (cur, entr):
 	    for x in getattr (s, '_stagr', []): dbinsert (cur, "stagr", ['entr','sens','rdng'], x)
 	    for x in getattr (s, '_stagk', []): dbinsert (cur, "stagk", ['entr','sens','kanj'], x)
 	    for x in getattr (s, '_xref',  []): dbinsert (cur, "xref",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
-	for x in getattr (e, '_snd', []): dbinsert (cur, "entrsnd", ['entr','ord','snd'], x)
+	for x in getattr (entr, '_snd', []): dbinsert (cur, "entrsnd", ['entr','ord','snd'], x)
 	if getattr (entr, 'chr', None):
 	    c = e.chr
 	    dbinsert (cur, "chr", ['entr','chr','bushu','strokes','freq','grade','jlpt','radname'], c)

@@ -1,0 +1,36 @@
+Title:	xml implicit pos elements 
+Stat:	closed
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2008-06-17 23:26:00 stuart@friix.com
+  Need to implement the "default POS" rule in fmtxml.py.
+  The rule says that if the POSes in a sense are the same
+  (number, values, and order) as the preceeding sense, they
+  should be omitted.  This will allow more congruence between
+  JMdict and XML generated from the database.
+
+2008-06-17 23:55:00 stuart@friix.com
+  In an email exchange on the edict list around 2008-06-11 
+  (subject: pos/misc entities), I pointed out that JMdict
+  was inconsistent in that in most entries with multiple 
+  senses, if the POS tags were the same as in the preceeding
+  sense, they were left out.  In a few senses however they
+  are explicitly given again in the following sense.
+  This makes it difficult to regenerate the xml exactly 
+  because there is no way to know when they should be given
+  explicitly and when they should be implied.
+  
+  I provided reasons why I thought they should always be 
+  given explicitly in the XML, but JB wants to keep the 
+  default rule and implied POSes.  No clarity yet on whether
+  the existing explicit (but should be implied) POSes will 
+  be corrected though there was support for that from 
+  Jean-Luc Leger.
+
+2008-06-18 00:13:00 stuart@friix.com
+  Done in the co-commited version of python/lib/fmtxml.py.
+

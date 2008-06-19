@@ -30,7 +30,8 @@ import jdb
 global XKW, KW
 
 
-def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False):
+def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
+		implicit_pos=True):
 	'''
 	Generate an XML description of entry 'entr'.
 	Parameters:
@@ -50,6 +51,13 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False):
 		don't.  In order to generate xrefs the 'entr' 
 		object must have augmented xrefs.  If it doesn't
 		a exception will be thrown.
+	  implicit_pos -- Boolean: if true, a sense's <pos> 
+		elements will not be added to sense if they exactly 
+		match (in number, values, and order) the previous 
+		sense's <pos> elements.  Does not extend across 
+		entry boundries.  This is the rule used in the 
+		Monash JMdict XML file.  If false, each sense will 
+		be generated with <pos> elements explictly expressed.
 	'''
 	  #FIXME: Need to generate an kwid->xml-entity mapping
 	  # idependent of the KW table.  See comments in jmxml.py
@@ -71,7 +79,9 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False):
 	if compat == 'jmnedict':
 	    for x in senss: fmt.extend (trans (x))
 	else:
-	    for x in senss: fmt.extend (sens (x, kanjs, rdngs, compat, entr.src, genxrefs))
+	    last_pos = [] if implicit_pos else None
+	    for x in senss: 
+		fmt.extend (sens (x, kanjs, rdngs, compat, entr.src, genxrefs, last_pos))
 
 	if not compat: fmt.extend (audio (entr))
 
@@ -110,7 +120,7 @@ def restrs (r, kanj):
 	        fmt.extend (['<re_restr>' + x.txt + '</re_restr>' for x in re])
 	return fmt
 
-def sens (s, kanj, rdng, compat, src, genxrefs=True):
+def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
 	"""
 	Format a sense.
 	fmt -- A list to which formatted text lines will be appended.
@@ -128,6 +138,16 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True):
 	genxrefs -- If false, do not attempt to format xrefs.  This
 	    will prevent an exception if the entry has only ordinary
 	    xrefs rather than augmented xrefs.
+	prev_pos -- If not None, should be set to the pos list of
+	    the previous sense, or an empty list if this is the 
+	    first sense of an entry.  This function will mutate 
+	    'prev_pos' (if not None) to the current pos list before
+	    returning so that usually, sens() will be called with
+	    with an empty list on the first sense of an entry, and
+	    te same list on subsequent calls.  It is used to suppress
+	    pos values when they are the same as in the prevuious 
+	    sense per the JMdict DTD.
+	    If None, an explict pos will be generated in each sense.
 	"""
 	fmt = []
 	fmt.append ('<sense>')
@@ -142,7 +162,10 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True):
 	    sr = jdb.filt (rdng, ['rdng'], stagr, ['rdng'])
 	    fmt.extend (['<stagr>' + x.txt + '</stagr>' for x in sr])
 
-	fmt.extend (kwds (s, '_pos', 'POS', 'pos'))
+	this_pos = [x.kw for x in getattr (s, '_pos', [])]
+	if not prev_pos or prev_pos != this_pos:
+	    fmt.extend (kwds (s, '_pos', 'POS', 'pos'))
+	    if prev_pos is not None: prev_pos[:] = this_pos
 
 	xrfs = getattr (s, '_xref', None)
 	if xrfs and genxrefs:
@@ -221,7 +244,7 @@ def freqs (parent, attr, rk):
 
 def lsrc (x):
 	fmt = [];  attrs = []
-	if x.lang != XKW.LANG['eng'].id:
+	if x.lang != XKW.LANG['eng'].id or not x.wasei: 
 	    attrs.append ('xml:lang="%s"' % XKW.LANG[x.lang].kw)
 	if x.part: attrs.append ('ls_type="part"')
 	if x.wasei: attrs.append ('ls_wasei="y"')

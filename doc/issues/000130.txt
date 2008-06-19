@@ -1,0 +1,34 @@
+Title:	xml lsource language formatting 
+Stat:	closed
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2008-06-17 23:26:00 stuart@friix.com
+  fmtxml.py currently does not generate a "xml:lang="eng""
+  attributes in lsource elements as that is the default.
+  However JMdict does generate such attributes when there
+  are two lsource attributes in the same sense.  Need to
+  do the same thing in fmtxml.py to improve compatiblity
+  with JMdict.
+
+2008-06-17 23:55:00 stuart@friix.com
+  An email exchange on the edict list around 2008-05-05 led
+  me to believe that in the JMdict XML, lsource attributes
+  with lang="eng" would be changed to not specify the lang 
+  attribute since "eng" was the default.  But current JMdict
+  XML still has a dozen or so lsource elements with explicit
+  "eng" lang attributes.  Further examination and edict list
+  discussion (2008-06-17) indicates that those elements were
+  occur in pairs with a non-english lsource that indicates the
+  source of the gairaigo is disputed, and JB's XML generator 
+  makes it difficult to remove the attribute in this condition.
+
+  Need to change fmtxml.py to reverse the logic and generate
+  and explicit 'xml:lang="eng"' attribute if the lsource does
+  not have a "wasei" flag.
+
+2008-06-18 00:13:00 stuart@friix.com
+  Done in the co-commited version of python/lib/fmtxml.py.

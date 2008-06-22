@@ -15,7 +15,7 @@
 # 
 #  You should have received a copy of the GNU General Public License
 #  along with JMdictDB; if not, write to the Free Software Foundation,
-#  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
 __version__ = ('$Revision$'[11:-2], \
@@ -463,7 +463,8 @@ def sens_tags (sens, gloss, tags):
                     errs.append (
                         "Sense tag '%s' is ambiguous, may be either any of %s." 
                         " Please specify tag explicity, using, for instance,"
-                        " \"%s=%s\"" % (t[0], ','.join([x[0] for x in v]), v[0], t[0]))
+                        " \"%s=%s\"" % (t[0], ','.join([x[0] for x in candidates]),
+                                        candidates[0][0], t[0]))
                     continue
                 if candidates:
                     typ, t = candidates[0][0], [candidates[0][1]]

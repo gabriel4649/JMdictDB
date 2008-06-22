@@ -1,6 +1,6 @@
 Title:	Unit tests
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	wont
 Prio:	low
 Cats:	feat
 Reqtrs:	
@@ -8,3 +8,40 @@ AssdTo:	stuart@friix.com
 
 2007-02-01 00:00:00 stuart@friix.com
   Need to write unit tests for library code
+
+2009-06-21 23:11:00 stuart@friix.com
+  After much thought have decided to make unit tests
+  a very low priority because:
+
+  * They involve a lot of work.  The wikipedia article
+    on Unit Testing says unit tests typically have 3-5
+    times as much code as the code being tested.  Have 
+    seem postings in comp.lang.python that confirm that 
+    (e.g. 20kloc product, 100kloc tests)
+  * I don't understand unit testing despites doing several
+    days research/reading.  Specifically my understanding 
+    is that unit testing benefit over conventional functional
+    testing is that errors detected by the tests are certain
+    to be errors in the code under test.  But that requires
+    mocking every 1st party callable in the unit -- something 
+    that few people seem to do.
+  * Mocking seems hard/time-consuming to me.
+  * Functional testing capable of offerring same coverage
+    detection ability, but loses the assurance that problem
+    is in unit-under-test: i.e., to find problem may require 
+    debugging.  This seems a reasonable trade off given that
+    one expects most tests not to fail -- trade test writing 
+    time for debugging time.  
+  * Functially testing high-level api's test everything lower
+    in the call graph at the same time, so one gets the most
+    testing bang for the buck testing the high level api first
+    (again with the caveat that more time is spent debugging.)
+
+  Will still write unit tests, particularly for leaf units 
+  in the call tree, as resources permit but main test focus 
+  will be on writing functional tests for the high-level 
+  api's and commnds.
+
+  Will close this issue since test writing will be on-going
+  with no clear completion criteria.
+  

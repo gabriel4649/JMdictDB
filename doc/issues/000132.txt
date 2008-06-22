@@ -1,0 +1,50 @@
+Title:	Unicode exception problem 
+Stat:	open
+Disp:	
+Prio:	info
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart@friix.com
+
+2008-06-21 23:51:00 stuart@friix.com
+  This issue is to document problem and solutions related
+  to uncode data in Python exceptions in Python 2.5.
+
+  When a Python exception is created that has a unicode 
+  message containing non-ascii characters, and is printed,
+  the message will usually appear as "Unprintable exception".
+  The reason is that the exception's __str__() method 
+  (or does this happen in the traceback handler?) calls
+  str() on the exception message with will result in a 
+  UnicodeEncodeError if the unicode string contains non-
+  ascii characters.
+
+  More details in Python bug: 
+    http://bugs.python.org/issue2517
+
+  This may be fixed in Python-2.6, for sure should go away 
+  in Python 3.0.
+
+2008-06-21 23:51:00 stuart@friix.com
+  For the jmdictdb test code, which needs to generate 
+  AssertException's with unicode messges, I used the following
+  code (in python/tests/unittest-extensions.py):
+  ~~~~~~~~~~~~~~~~
+  class EncodedAssertionError (AssertionError):
+      def __init__ (self, *args, **kwds):
+	  AssertionError.__init__ (self, *args, **kwds)
+	  self.encoding = sys.stdout.encoding or 'utf-8'
+      def __str__ (self):
+	  try: 
+	     if self.message: return self.message.encode(self.encoding)
+	     else: return self.args[0].encode(self.encoding)
+	  except: return AssertionError.__str__(self)
+
+  # Tell the unicode module to use it.
+  unittest.TestCase.failureException = EncodedAssertionError
+  ~~~~~~~~~~~~~~~~
+  The above code generally works as I want -- when stdout is 
+  writing to a console, it will usually (in my experience with
+  Python so far) have an encoding attribute that the console can 
+  display.  When writing to a file (redirected from the dhell) 
+  encoding will be None and I want in most cases to wtite utf-8.

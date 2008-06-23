@@ -82,6 +82,9 @@ class JmdictFile:
 	self.name = None; self.created=None
     def read(self, bytes):
 	s = self.source.readline();  self.lineno += 1
+	if self.lineno == 1: 
+	    if s[:3] == '\xef\xbb\xbf': s = s[3:]
+	    if s[0] == u'\uFEFF': s = s[1:]
 	s = re.sub (r'&([a-zA-Z0-9-]+);', r'\1', s)
 	if self.created is None and self.lineno < 400:
 	    mo = re.search (r'<!-- ([a-zA-Z]+) created: (\d{4})-(\d{2})-(\d{2}) -->', s)
@@ -371,7 +374,9 @@ def do_lsrc (elems, sens):
 			("ls_type" if lstyp else '')
 		warn ("lsource has attribute(s) %s but no text" % msg)
 	    lsrc.append (jdb.Obj (lang=lang, txt=txt, part=lstyp=='part', wasei=wasei))
-	if lsrc: sens._lsrc = lsrc
+	if lsrc: 
+	    if not hasattr (sens, '_lsrc'): sens._lsrc = []
+	    sens._lsrc.extend (lsrc)
 
 def do_xref (elems, sens, xtypkw):
 	  # Create a xresolv record for each xml <xref> element.  The xref 
@@ -430,7 +435,8 @@ def do_xref (elems, sens, xtypkw):
 		xrefs.append (jdb.Obj (typ=xtypkw, ktxt=ktxt, rtxt=rtxt, tsens=snum))
 	if xrefs: 
 	    for n, x in enumerate (xrefs): x.ord = n + 1
-	    sens._xrslv = xrefs
+	    if not hasattr (sens, '_xrslv'): sens._xrslv = []
+	    sens._xrslv.extend (xrefs)
 
 def do_hist (elems, entr):
 	hists = []
@@ -449,7 +455,9 @@ def do_hist (elems, entr):
 	    if refs: o.refs = refs
 	    if diff: o.diff = diff
 	    hists.append (o)
-	if hists: entr._hist = hists
+	if hists: 
+	    if not hasattr (entr, '_hist'): entr._hist = []
+	    entr._hist.extend (hists)
 
 def do_audio (elems, entr_or_rdng):
 	snds = []
@@ -461,7 +469,7 @@ def do_audio (elems, entr_or_rdng):
 	    except (ValueError, TypeError): warn ("Invalid audio clipid attribute: %s" % v)
 	    else: snds.append (jdb.Obj (snd=clipid))
 	if snds:
-	    if not hasattr (entr_or_rdng, '_snd') and snds: entr_or_rdng._snd = []
+	    if not hasattr (entr_or_rdng, '_snd'): entr_or_rdng._snd = []
 	    entr_or_rdng._snd.extend (snds)
 
 def do_kws (elems, obj, attr, kwtabname):
@@ -825,11 +833,19 @@ def extract (fin, seqs_wanted, dtd=False, fullscan=False, keepends=False):
 		    if keepends: rettxt.append (line)
 		    else: rettxt.append (line.rstrip())
 		ln = line.strip()
-		if ln.lstrip()[0] == "<" and ln[1] != '?' and ln[1] != '!':
-		    toplev = ln[1:-1]
-		    scanning = 'between_entries'
-		    if dtd: yield toplev, rettxt;  rettxt = []
+		if ln.lstrip() == "]>":
+		    scanning = 'after_dtd'
 
+	    elif scanning == 'after_dtd':
+		ln = line.strip()
+	 	if len(ln) > 2 and ln[0] == '<' and ln[1] != '!':
+		    if dtd: 
+		        toplev = line.strip()[1:-1]
+		        yield toplev, rettxt;  rettxt = []
+		    scanning = 'between_entries'
+
+	    
+		    
 	    else:
 		raise ValueError (scanning)
 

@@ -38,13 +38,14 @@ def main (args, opts):
 		seqlist.append ((int (seq), int (cnt or 1)))
 	fin = codecs.open (infn, "r", "utf_8_sig")
 	if seqlist:
-	    for entr in jmxml.extract (fin, seqlist, opts.dtd, opts.all):
+	    for seq,entr in jmxml.extract (fin, seqlist, opts.dtd, opts.all):
 		if opts.dtd and first:
-		    dtd, toplev = entr
-		    print (''.join (dtd)).encode (opts.encoding, 'backslashreplace'),
+		    toplev, dtd = seq, entr
+		    print ('\n'.join (dtd)).encode (opts.encoding, 'backslashreplace')
+		    print ("<%s>" % toplev)
 		    first = False;  continue
-		print (''.join (entr)).encode (opts.encoding, 'backslashreplace'),
-	    if opts.dtd: print ("</%s>" % toplev),
+		print ('\n'.join (entr)).encode (opts.encoding, 'backslashreplace')
+	    if opts.dtd: print ("</%s>" % toplev)
 	else: print >>sys.stderr, "No seq numbers!"
 
 def parse_seqfile (fname):

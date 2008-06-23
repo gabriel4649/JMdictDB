@@ -169,7 +169,7 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
 
 	xrfs = getattr (s, '_xref', None)
 	if xrfs and genxrefs:
-	    fmt.extend ([xref(x, (not compat) and src) for x in xrfs])
+	    fmt.extend (xrefs (xrfs, (not compat) and src))
 
 	fmt.extend (kwds (s, '_fld', 'FLD', 'field'))
 
@@ -253,18 +253,80 @@ def lsrc (x):
 	else: fmt.append ('<lsource%s>%s</lsource>' % (attr, esc(x.txt)))
 	return fmt
 
+def xrefs (xrefs, src):
+	# Generate xml for xrefs.  If there is an xref to every 
+	# sense of a target entry, the we generate a single 
+	# xref element without a sense number.  Otherwise we
+	# generate an xref element with sense number for each 
+	# target sense.
+	# 
+	# xrefs -- A list of xref objects to be formatted.  The
+	#   xrefs must have an augmented target attribute (as
+	#   produced by calling augment_xrefs()) or an error 
+	#   will be raised (in function xref).
+	# 
+	# src -- Corpus id number of the entry that contains
+	#   the target 'xref' of the xrefs.
+	#   If 'src' is true, enhanced XML will be generated.  
+	#   If not, legacy JMdict XML will be generated.
+
+	fmt = []
+	  # Group the xrefs by target.
+	xref_grps = jdb.grp_xrefs (xrefs)
+	for xref_grp in xref_grps:
+	      # In each group, the xrefs will differ only by 
+	      # target sense number, so we can use the first 
+	      # xref of the group as the prototype, and use 
+	      # function xref to format it into a string.
+	    xref0 = xref_grp[0]
+	    fmtdxref = xref (xref0, src)
+	      # Check that augment_xrefs() was called on this
+	      # xref.  The target object is needed because we
+	      # it has the actual kanji and reading texts that
+	      # will be used in the xml xref, as well and the
+	      # the number of senses, which we also need.
+	    try: targ = xref0.TARG
+	    except AttributeError:
+		raise AttributeError ("xref missing TARG attribute.  Did you forget to call augmented_xrefs()?")
+	      # We can assume that, since the database RI constraints
+	      # won't allow two xrefs in the same source to point to
+	      # the same target and sense, if the number of xrefs 
+	      # equals the number of target senses, there is one xrefs
+	      # pointing to each sense.  
+	    if len(targ._sens) != len(xref_grp):
+		  # There is not an xref for each target sense, so we
+		  # want to generate xrefs with explicit target senses.
+		for x in xref_grp:
+		      # Ther string returned by xref() has a "%s"
+		      # placeholder for the sense number.  Generate
+		      # an xref element with sense for each xref in
+		      # the group.  \u30FB is mid-height dot.
+		    fmt.append (fmtdxref % u'\u30FB%d' % x.xsens)
+	    else:
+		  # There is an xref for eaxh target sense so we want
+		  # to supress the target sense numbers.
+		fmt.append (fmtdxref % '')
+	return fmt
+
 def xref (xref, src):
 	"""
-	xref -- The xref object to be formatted.
+	Generate a formatter xml string for a single xref.  
+
+	xref -- The xref object to be formatted.  The xref must
+	  have an augmented target attribute (as produced by calling
+	  augment_xrefs()), since that infomation is require to 
+	  generate the kanji and reading texts, and an error will
+	  be raised if not.
+
 	src -- Corpus id number of the entry that contains 'xref'.
-	  If 'src' is true, enhanced XML will be generated.  If
-	  not, legacy JMdict XML will be generated.
+	  If 'src' is true, enhanced XML will be generated.  
+	  If not, legacy JMdict XML will be generated.
 
+	The returned xref string will have a "%s" where the target
+	sense number would go, which the caller	is expected to 
+	replace with the sense number or not, as desired.
 	"""
-	try: targobj = xref.TARG
-	except AttributeError:
-	    raise AttributeError ("Expected 'TARG' attribute on xref")
-
+	targobj = xref.TARG
 	k = r = ''
 	if getattr (xref, 'kanj', None):
 	    k = targobj._kanj[xref.kanj-1].txt
@@ -272,8 +334,6 @@ def xref (xref, src):
 	    r = targobj._rdng[xref.rdng-1].txt
 	if k and r: target = k + u'\u30FB' + r  # \u30FB is mid-height dot.
 	else: target = k or r
-	if len(targobj._sens) != 1:
-	    target += u'\u30FB%d' % xref.xsens
 
 	tag = 'xref'; attrs = []
 	if src:
@@ -284,10 +344,10 @@ def xref (xref, src):
 	    if getattr (xref, 'notes', None): 
 		attrs.append ('note="%s"' % esc(xref.notes))
 	else:
-	    if xref.typ == XKW.XREF['ant']: tag = 'ant'
+	    if xref.typ == XKW.XREF['ant'].id: tag = 'ant'
 
 	attr = (' ' if attrs else '') + ' '.join (attrs)
-	return '<%s%s>%s</%s>' % (tag, attr, target, tag)
+	return '<%s%s>%s%%s</%s>' % (tag, attr, target, tag)
 
 def info (entr, compat=None):
 	fmt = [] 

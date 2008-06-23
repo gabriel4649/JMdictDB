@@ -154,7 +154,8 @@ def xref (xrefs):
 	    if a: v.append (targ._kanj[a-1].txt)
 	    a = getattr (xref, 'rdng', None)
 	    if a: v.append (targ._rdng[a-1].txt)
-	    if len(targ._sens) == 1: stxt = ''
+	    if len(targ._sens) == 1 or len(targ._sens) == len(xrefs): 
+		stxt = ''
 	else:
 	    if hasattr (xref, 'ktxt'): v.append (xref.ktxt)
 	    if hasattr (xref, 'rtxt'): v.append (xref.rtxt)

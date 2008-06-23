@@ -406,14 +406,14 @@ CREATE TABLE rdngsnd (	-- Reading to sound clip map.
 CREATE TABLE xresolv (
     entr INT NOT NULL,		-- Entry xref occurs in.
     sens SMALLINT NOT NULL,	-- Sense number xref occurs in.
-    ord SMALLINT NOT NULL,	-- Order of xref in sense.
     typ SMALLINT NOT NULL,	-- Type of xref (table kwxref).
+    ord SMALLINT NOT NULL,	-- Order of xref in sense.
     rtxt VARCHAR(250),		-- Reading text of target given in xref.
     ktxt VARCHAR(250),		-- Kanji text of target given in xref.
     tsens SMALLINT,		-- Target sense number.
     notes VARCHAR(250),		-- Notes.
     prio BOOLEAN DEFAULT FALSE,	-- True if this is a Tanaka corpus exemplar.
-    PRIMARY KEY(entr,sens,ord),
+    PRIMARY KEY(entr,sens,typ,ord),
     CHECK (rtxt NOTNULL OR ktxt NOTNULL));
 --CREATE INDEX xresolv_rdng ON xresolv(rtxt);
 --CREATE INDEX xresolv_kanj ON xresolv(ktxt);

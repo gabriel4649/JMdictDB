@@ -29,6 +29,8 @@ def main (args, opts):
 	  # Get the command line options and convert them into a sql
 	  # statement that will find the desired entries.
 	sql, sqlargs = opts2sql (args, opts)
+	if opts.debug: 
+	    print ("%s  %s" % (sql, repr(sqlargs))).encode(Enc, 'replace')
 
 	  # Retrieve the entries from the database.  'entrs' will be
 	  # set to a list on entry objects.  'raw' is set to dictionary, 
@@ -65,23 +67,33 @@ def opts2sql (args, opts):
 	for x in args:
 	    if x.isdigit(): appendto (opts, 'id', x)
 	    else: appendto (opts, '_is', x)
-	if opts.char:     conds.extend (char2cond (opts.char))
-	if opts._is:      conds.extend (jdb.autocond (x.decode(Enc), 1, 1) for x in opts._is)
-	if opts.starts:   conds.extend (jdb.autocond (x.decode(Enc), 2, 1) for x in opts.starts)
-	if opts.contains: conds.extend (jdb.autocond (x.decode(Enc), 3, 1) for x in opts.contains)
-	if opts.ends:     conds.extend (jdb.autocond (x.decode(Enc), 4, 1) for x in opts.ends)
+	if opts.char:      conds.extend (char2cond (opts.char))
+	if opts._is:       conds.extend (jdb.autocond (x.decode(Enc), 1, 1) for x in opts._is)
+	if opts.starts:    conds.extend (jdb.autocond (x.decode(Enc), 2, 1) for x in opts.starts)
+	if opts.contains:  conds.extend (jdb.autocond (x.decode(Enc), 3, 1) for x in opts.contains)
+	if opts.ends:      conds.extend (jdb.autocond (x.decode(Enc), 4, 1) for x in opts.ends)
 
 	if opts.kis:       conds.extend (jdb.autocond (x.decode(Enc), 1, 2) for x in opts.kis)
 	if opts.kstarts:   conds.extend (jdb.autocond (x.decode(Enc), 2, 2) for x in opts.kstarts)
 	if opts.kcontains: conds.extend (jdb.autocond (x.decode(Enc), 3, 2) for x in opts.kcontains)
 	if opts.kends:     conds.extend (jdb.autocond (x.decode(Enc), 4, 2) for x in opts.kends)
 
-	if opts.id:	  conds.append (('entr',
-				         "id IN(%s)" % (','.join(('%s',)*len(opts.id))),
-					 tuple((int(x) for x in opts.id),) ))
-	if opts.seq:      conds.append (('entr',
-					 "seq IN(%s)" % (','.join(('%s',)*len(opts.seq))),
-					 tuple((int(x) for x in opts.seq),) ))
+	if opts.ris:       conds.extend (jdb.autocond (x.decode(Enc), 1, 3) for x in opts.ris)
+	if opts.rstarts:   conds.extend (jdb.autocond (x.decode(Enc), 2, 3) for x in opts.rstarts)
+	if opts.rcontains: conds.extend (jdb.autocond (x.decode(Enc), 3, 3) for x in opts.rcontains)
+	if opts.rends:     conds.extend (jdb.autocond (x.decode(Enc), 4, 3) for x in opts.rends)
+
+	if opts.gis:       conds.extend (jdb.autocond (x.decode(Enc), 1, 4) for x in opts.gis)
+	if opts.gstarts:   conds.extend (jdb.autocond (x.decode(Enc), 2, 4) for x in opts.gstarts)
+	if opts.gcontains: conds.extend (jdb.autocond (x.decode(Enc), 3, 4) for x in opts.gcontains)
+	if opts.gends:     conds.extend (jdb.autocond (x.decode(Enc), 4, 4) for x in opts.gends)
+
+	if opts.id:	   conds.append (('entr',
+					  "id IN(%s)" % (','.join(('%s',)*len(opts.id))),
+					  tuple((int(x) for x in opts.id),) ))
+	if opts.seq:       conds.append (('entr',
+					  "seq IN(%s)" % (','.join(('%s',)*len(opts.seq))),
+					  tuple((int(x) for x in opts.seq),) ))
 	sql, sqlargs = jdb.build_search_sql (conds, disjunct=True)
 	if opts.corp:
 	    corp, inv = jdb.kwnorm ('SRC', opts.corp)
@@ -197,15 +209,15 @@ arguments:  [text | number]...
 	p.add_option ("--kstarts", action="append", dest="kstarts", metavar='TXT',
 	    help="Search in the kanji for an entry that starts with or exactly "
 		"matches TXT.  The search is otherwise done as described for "
-		"\"--is\".")
+		"\"--starts\".")
 	p.add_option ("--kcontains", action="append", dest="kcontains", metavar='TXT',
 	    help="Search in the kanj for an entry that contains or exactly "
 		"matches TXT.  The search is otherwise done as described for "
-		"\"--is\".  ")
+		"\"--contains\".  ")
 	p.add_option ("--kends", action="append", dest="kends", metavar='TXT',
 	    help="Search in the kanji table for an entry that ends with or "
 		"exactly matches TXT.  The search is otherwise done as described "
-		"for \"--is\".  " )
+		"for \"--ends\".  " )
 
 	p.add_option ("--ris", action="append", dest="ris", metavar='TXT',
 	    help="Search in the readings table for an entry that exactly matches "
@@ -213,38 +225,58 @@ arguments:  [text | number]...
 	p.add_option ("--rstarts", action="append", dest="rstarts", metavar='TXT',
 	    help="Search in the readings for an entry that starts with or exactly "
 		"matches TXT.  The search is otherwise done as described for "
-		"\"--is\".")
+		"\"--starts\".")
 	p.add_option ("--rcontains", action="append", dest="rcontains", metavar='TXT',
 	    help="Search in the readings for an entry that contains or exactly "
 		"matches TXT.  The search is otherwise done as described for "
-		"\"--is\".  ")
+		"\"--contains\".  ")
 	p.add_option ("--rends", action="append", dest="rends", metavar='TXT',
 	    help="Search in the readings table for an entry that ends with or "
 		"exactly matches TXT.  The search is otherwise done as described "
-		"for \"--is\".  " )
+		"for \"--ends\".  " )
+
+	p.add_option ("--gis", action="append", dest="gis", metavar='TXT',
+	    help="Search in the gloss table for an entry that exactly matches "
+		"TXT.  The search is otherwise done as described for \"--is\".")
+	p.add_option ("--gstarts", action="append", dest="gstarts", metavar='TXT',
+	    help="Search in the gloss for an entry that starts with or exactly "
+		"matches TXT.  The search is otherwise done as described for "
+		"\"--starts\".")
+	p.add_option ("--gcontains", action="append", dest="gcontains", metavar='TXT',
+	    help="Search in the gloss for an entry that contains or exactly "
+		"matches TXT.  The search is otherwise done as described for "
+		"\"--contains\".  ")
+	p.add_option ("--gends", action="append", dest="gends", metavar='TXT',
+	    help="Search in the gloss table for an entry that ends with or "
+		"exactly matches TXT.  The search is otherwise done as described "
+		"for \"--ends\".  " )
 
 	p.add_option ("-j", "--jel",
             action="store_true", dest="jel", default=False,
             help="Write output in JEL (JMdict Edit language) format.")
 
-	p.add_option ("-d", "--database",
-            type="str", dest="database", default="jmdict",
+	p.add_option ("-d", "--database", default="jmdict",
+            type="str",
             help="Name of the database to load.")
 	p.add_option ("-h", "--host",
-            type="str", dest="host",
+            type="str", 
             help="Name host machine database resides on.")
 	p.add_option ("-u", "--user",
-            type="str", dest="user", 
+            type="str",  
             help="Connect to database with this username.")
 	p.add_option ("-e", "--encoding", default=None,
-            type="str", dest="encoding", 
+            type="str",  
             help="Encoding for output (typically \"sjis\", \"utf8\", "
 	      "or \"euc-jp\"")
 	p.add_option ("-p", "--password",
-            type="str", dest="password",
+            type="str", 
             help="Connect to database with this password.")
 	p.add_option ("--help",
             action="help", help="Print this help message.")
+
+	p.add_option ("-D", "--debug", default=0,
+	    type="int", 
+	    help="""If non-zero, print debugging info.""")
 
 	opts, args = p.parse_args ()
 

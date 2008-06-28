@@ -988,7 +988,7 @@ def autocond (srchtext, srchtype, srchin, inv=None, alias_suffix=''):
 	  # when the query is executed) and doesn't know that it is not
 	  # something like '%xxx'.
 
-	sin = stype = 0
+	sin = stype = m = 0
 	try: sin = int(srchin)
 	except ValueError: pass
 	try: stype = int(srchtype)

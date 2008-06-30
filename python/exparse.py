@@ -156,7 +156,7 @@ def parsebitem (s, n, jtxt):
 	
 	ktxt,rtxt,sens,atxt,prio = mo.group (1,3,4,6,7)
 	 
-	if rtxt and not kana_only (rtxt): 
+	if rtxt and not jdb.jstr_reb (rtxt): 
 	    raise ParseError ("Expected kana in item %d: '%s'" % (n, rtxt))
 	if kana_only (ktxt):
 	    if rtxt: raise ParseError ("Double kana in item %d: '%s', '%s'" % (n, ktxt, rtxt))
@@ -214,7 +214,7 @@ def mkxrslv (idxlist):
 	return res
 
 def kana_only (txt): 
-	v = jdb.jstr_classify (txt)
+	v = jdb.jstr_reb (txt)
 	return (v & jdb.KANA) and not (v & jdb.KANJI)
 
 def msg (msg):

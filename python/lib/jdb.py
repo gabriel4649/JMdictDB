@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-	 # non-ascii used in comments only.
 #######################################################################
 #  This file is part of JMdictDB. 
 #  Copyright (c) 2006,2008 Stuart McGraw 
@@ -995,9 +996,9 @@ def autocond (srchtext, srchtype, srchin, inv=None, alias_suffix=''):
 	except ValueError: pass
 
 	if sin == 1: m = jstr_classify (srchtext)
-	if   sin == 2 or (m & KANJI): tbl,col = 'kanj k%s',  'k%s.txt'
-	elif sin == 3 or (m & KANA):  tbl,col = 'rdng r%s',  'r%s.txt' 
-	elif sin == 4 or sin == 1: tbl,col = 'gloss g%s', 'g%s.txt'
+	if   sin == 3 or jstr_reb (m):  tbl,col = 'rdng r%s',  'r%s.txt' 
+	elif sin == 4 or jstr_gloss(m): tbl,col = 'gloss g%s', 'g%s.txt'
+	elif sin == 2 or sin == 1:      tbl,col = 'kanj k%s',  'k%s.txt'
 	else:
 	    raise ValueError ("autocond(): Bad 'srchin' parameter value: %r" % srchin)
 	tbl %= alias_suffix;  col %= alias_suffix
@@ -1305,28 +1306,75 @@ class Kwds:
 
 #=======================================================================
 # Bits used in the return value of function jstr_classify() below.
-KANA=1; HIRAGANA=2; KATAKANA=4; KANJI=8
+KANA=1; KANJI=2; KSYM=4; RX=8; LATIN=16; OTHER=32
+
 
 def jstr_classify (s):
 	"""\
 	Returns an integer with bits set according to whether
-	the indicated type of characters are present in string <s>.
-	    1 - Kana (either hiragana or katakana)
-	    2 - Hiragana
-	    4 - Katakana
-	    8 - Kanji
+	the certain types of characters are present in string <s>.
+	The bit settings are given by constants above.
+
+	When testing strings for compatibilty with xml <reb>
+	element or 'rdng' table, can use:
+	  ~jstr_class (text)
+	Strings appropriate for <reb> elements can be tested by
+	
+	  jstr_class (text) & (KANA | SPECIAL)
+
+	See Edict email list post, 2008-06-27,
+	  "Re: [edict-jmdict] jmdict/jmnedict inconsistency"
+	  for details of distinguishing reb text strings.
+
 	"""
 	r = 0
 	for c in s:
-	    n = ord (c)
-	    if   n >= 0x3040 and n <= 0x309F: r |= (HIRAGANA | KANA)
-	    elif n >= 0x30A0 and n <= 0x30FF: r |= (KATAKANA | KANA)
-	      # FIXME: FF01-FF5E are full-width ascii chars including
-	      #  puctuations.  FF61-FF9F are half width katakana and
-	      #  Jpanese puctuations.  D800-DFFF are unicode surrogate
-	      #  characters.  How to classify?
-	    elif n >= 0x4E00 and n <= 0xFFFF: r |= KANJI
+	    n = uord (c)
+	    if   n >= 0x0000 and n <= 0x02FF:     r |= LATIN
+	    elif n >= 0x3040 and n <= 0x30FF:  	  	      # Hiragana/katakana
+		if 1:				  r |= KANA 
+		if (n!=0x309d and n!=0x309e and n!=0x30fd     # ÅT, ÅU, ÅR, ÅS, Å[
+		    and n!=0x30fe and n!=0x30fc): r |= RX     # Kana excluding above.
+	    elif n >= 0x3000 and n <= 0x303F: 	  r |= KSYM   # CJK Symbols.
+	    elif (n >= 0x4E00 and n <= 0x9FFF		      # CJK Unified.
+	       or n >= 0xFF00 and n <= 0xFF5F		      # Fullwidth ascii.
+	       or n >= 0x20000 and n <= 0x2FFFF): r |= KANJI  # CJK Unified ExtB+Supl.
+	    else:				  r |= OTHER
 	return r
+
+def jstr_reb (s):
+	# Return a true value if the string 's' is a valid string
+	# for use in an XML <reb> element or 'rdng' table.
+	# It must consist exclusively of HIRAGANA or KATAKANA
+	# characters and have at least one character that is an RX
+	# character.  RX characters are kana characters excluding
+	# a few that can occur in <keb> elements and because they
+	# are a subset of kana characters whenever RX is set KANA
+	# and on of HIRAGANA or KATAKANA will also be set.
+
+	if isinstance (s, (str, unicode)):
+	    b = jstr_classify (s)
+	else: b = s
+	  # Must have at least one non-kebish kana char.
+	if not b & RX: return False 
+	  # Must not have any characters other than kana 
+	  # and CJK Symbols (to allow punctuation like ÅB.)
+	return not (b & ~(KANA|RX|KSYM))
+
+def jstr_gloss (s):
+	# Return a true value if the string 's' consists only
+	# of LATIN characters.
+
+	if isinstance (s, (str, unicode)):
+	    b = jstr_classify (s)
+	else: b = s
+	return not (b & ~LATIN)
+
+def jstr_keb (s):
+	if isinstance (s, (str, unicode)):
+	    b = jstr_classify (s)
+	else: b = s
+	return not jstr_reb (b) and not jstr_gloss (b)
 
 #=======================================================================
 import psycopg2 
@@ -1440,9 +1488,6 @@ def pmarks (sqlargs):
 	"'sqlargs'.  "
 
 	return ','.join (('%s',) * len (sqlargs))
-
-
-
 
 def iif (c, a, b):
 	"""Stupid Python!"""

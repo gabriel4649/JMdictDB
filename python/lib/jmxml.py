@@ -261,7 +261,7 @@ def do_kanjs (elems, entr, fmap):
 	    txt = elem.find('keb').text
 	    if not jdb.unique (txt, dupchk): 
 		warn ("Duplicate keb text: '%s'" % txt); continue
-	    if not (jdb.jstr_classify (txt) & jdb.KANJI):
+	    if not (jdb.jstr_keb (txt)):
 		warn ("keb text '%s' not kanji." % txt)
 	    kanj = jdb.Obj (kanj=ord+1, txt=txt)
 	    do_kws (elem.findall('ke_inf'), kanj, '_inf', 'KINF')
@@ -281,8 +281,7 @@ def do_rdngs (elems, entr, fmap):
 	    txt = elem.find('reb').text
 	    if not jdb.unique (txt, dupchk): 
 		warn ("Duplicate reb text: '%s'" % txt); continue
-	    t = jdb.jstr_classify (txt)
-	    if (t & jdb.KANJI) or not (t & jdb.KANA):
+	    if not jdb.jstr_reb (txt):
 		warn ("reb text '%s' not kana." % txt)
 	    rdng = jdb.Obj (rdng=ord+1, txt=txt)
 	    do_kws (elem.findall('re_inf'), rdng, '_inf', 'RINF')
@@ -338,7 +337,9 @@ def do_gloss (elems, sens, xlit=False, xlang=None):
 		warn ("Invalid gloss lang attribute: '%s'" % lng)
 		continue
 	    txt = elem.text
-	    lit = []; trans = [];
+	    if not jdb.jstr_gloss (txt):
+		warn ("gloss text '%s' not latin characters." % txt)
+	    lit = []
 	    if xlit and ('lit:' in txt):
 		 txt, lit = extract_lit (txt)
 	    if not jdb.unique ((lang,txt), dupchk):

@@ -52,4 +52,51 @@ AssdTo:	stuart@friix.com
   jmdict are in reb lements in jmnedict. 
 
   Need to think about how to fix this.
- 
+
+2008-06-23 21:49:00 stuart
+  In Edict list thread:
+    2008-04-23: [edict-jmdict] jmnedict non-kanji keb elements
+  JB said he'd changed mixed kana/FWascii ken element to reb elements
+  in JMnedict.
+
+  On the same issue in JMdict in:
+    2008-04-26: [edict-jmdict] jmdict/jmnedict inconsistency
+  his response was:
+    "OK, I am now accepting full-width alphabetics as keb members."
+
+  Wrote a quicky script to scan a jmdict file, and the find unicode
+  character blocks(s) for the character sin the reb, keb, and gloss
+  elements.  Results in moinmoin docs: 
+    http://localhost:8080/KanjiReadingDiscrimination
+
+2008-06-30 17:19:00 stuart
+  In Edict list thread:
+    2008-06-27: [edict-jmdict] jmnedict non-kanji keb elements
+  Jim Breen wrote:
+
+  > If it contains ONLY characters from the set
+  > <hiragana, katakana, ヽ, ヾ, ゝ, ゞ, ー> AND
+  > it has at least one kana, it goes into the <reb>. All
+  > others go into the <keb>
+  > 
+  > > (An aside... what is the rule for numbers in readings,
+  > > should they be given as western-style digits (２１),
+  > > spelled out in kana (にじゅういち), both?, either? Does
+  > > it depend on the counter, 21っぷん、にじゅういっぷん？)
+  > 
+  > Strictly the ２１ should be in the <keb>, perhaps with
+  > 二十一 as well, and the matching にじゅういち in the <reb>.
+  > 
+  > Anything that is *purely* a reading or a kana-only formation
+  > goes in the <reb>. All others, go in the <keb>. Does that make
+  > sense?
+
+  Modified jdb.jstr_classify() to incorporate the definition JB
+  suggested, and added three new functions, jstr_reb(), jstr_keb(),
+  and jstr_gloss() since those determinations are  nor more complex
+  than siple bit masking.
+
+  Also modified lib/jmxml.py, lib/jellex.py, autocond() in lib/jdb.py,
+  and progam exparse.py to use the new functions rather than 
+  jstr_classify.
+

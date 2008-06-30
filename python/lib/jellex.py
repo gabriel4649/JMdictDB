@@ -56,9 +56,10 @@ class LexSpec:
 	ur'[^;\uFF1B\[\u3000 \t\r\n]+'
 	  # Classify it as kanji, reading (kana), or ordinary
 	  # text and return token accordingly.
-	typ = jdb.jstr_classify (t.value)
-	if typ & jdb.KANJI: t.type = 'KTEXT'
-	elif typ & jdb.KANA: t.type = 'RTEXT'
+	m = jdb.jstr_classify (t.value)
+	if jdb.jstr_reb (m): t.type = 'RTEXT'
+	elif jdb.jstr_gloss (m): pass
+	else: t.type = 'KTEXT'
 	return t
 
 # State: TAGLIST
@@ -102,9 +103,10 @@ class LexSpec:
 	  # Classify it as kanji, reading (kana), or ordinary
 	  # text and return token accordingly.
 	t.value = qcleanup(t.value)
-	typ = jdb.jstr_classify (t.value)
-	if typ & jdb.KANJI: t.type = 'KTEXT'
-	elif typ & jdb.KANA: t.type = 'RTEXT'
+	m = jdb.jstr_classify (t.value)
+	if jdb.jstr_reb (m): t.type = 'RTEXT'
+	elif jdb.jstr_gloss (m): pass
+	else: t.type = 'KTEXT'
 	return t
 
 # State: SNUMLIST

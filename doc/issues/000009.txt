@@ -22,4 +22,4 @@ AssdTo:	stuart@friix.com
 
   Created runtests.py as a test driver, and unitttest_extensions.py
   to provide a better test runner, and working around the unicode
-  exceptions problem (see IS-
+  exceptions problem (see IS-8).

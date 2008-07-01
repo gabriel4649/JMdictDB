@@ -100,3 +100,5 @@ AssdTo:	stuart@friix.com
   and progam exparse.py to use the new functions rather than 
   jstr_classify.
 
+2008-07-01 11:14:00 stuart
+  Added tests for revised jdb.jstr_classify() function (IS-8).

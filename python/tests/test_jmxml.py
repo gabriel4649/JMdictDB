@@ -1,5 +1,5 @@
 import sys, unittest, pdb
-sys.path[0] = '../lib'
+sys.path.insert (0, '../lib')
 import jmxml
 
 __unittest = 1

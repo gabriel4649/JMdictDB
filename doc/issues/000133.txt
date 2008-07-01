@@ -1,0 +1,19 @@
+Title:	Changes to sys.path in importable modules
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-07-01 13:16:00 stuart
+  In python/tests/test_jmxml, sys.path was modified by replacing
+  item 0 (".") with "../lib" in order to import jdb and other lib
+  modules.  This works fine when test_jmxml is run as a standalone
+  test, but when imported by runtests.py, the change to sys.path 
+  persists and affects importing of other modules.  Other test_*
+  modules do "sys.path.append("../lib")" which won't cause any
+  failues, but will result in multiple "../lib"s on sys.path.  
+  Should find a way not to modify sys.path at all (adopt rule that
+  prohibits such global changes by any importable module?), or be
+  smarter in doing it.

@@ -5,6 +5,8 @@
 import sys, pdb, unittest
 sys.path.append ('../lib')
 import jdb
+try: import dbauth
+except ImportError: pass
 
 KwdsAttrs = set (('DIAL','FLD','FREQ','GINF','KINF','LANG','MISC',
 		  'POS','RINF','SRC','STAT','XREF','CINF',))
@@ -69,7 +71,12 @@ class Test_loadcsv (unittest.TestCase):
 class Test_loaddb (unittest.TestCase):
     def setUp (_):
 	  #FIXME: use dedicated test database, or mock database
-	cur = jdb.dbOpen ('jmdict')
+	try: 
+	    import dbauth
+	    kwargs = dbauth.auth
+	except ImportError: kwargs = {}
+	cur = jdb.dbOpen ('jmdict', **kwargs)
+
 	_.o = jdb.Kwds (cur)
     def test001 (_):
 	expect = set (((1,'equ','equivalent'),(2,'lit','literaly'),

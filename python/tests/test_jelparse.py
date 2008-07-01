@@ -18,7 +18,11 @@ def main():
 
 def globalSetup ():
 	global cur, KW, lexer, parser
-	cur = jdb.dbOpen ('jmdict', autocommit=True)
+	try:
+	    import dbauth; kwargs = dbauth.auth
+	except ImportError: kwargs = {}
+	kwargs['autocommit'] = True
+	cur = jdb.dbOpen ('jmdict', **kwargs)
 	KW = jdb.KW
         lexer, tokens = jellex.create_lexer ()
         parser = jelparse.create_parser (tokens)

@@ -30,7 +30,7 @@ import sys, os, re, datetime
 from collections import defaultdict
 #import lxml.etree as ElementTree
 import xml.etree.cElementTree as ElementTree
-import jdb, warns, kwstatic
+import jdb, warns, kwstatic, xmlkw
 
 # This module calls function warns.warn() (from inside local
 # function warn()) to log non-fatal warning messages.  By default,
@@ -43,28 +43,6 @@ Seq = None
 
 class ParseError (RuntimeError): pass
 class NotFoundError (RuntimeError): pass
-
-def xml_lookup_table (KW):
-	"""
-	This function generates jdb.Kwds -like structure used for
-	mapping JMdict entities to the kw* table id numbers used
-	to represent the corresponding information in jmdictdb.
-
-	For the most part, jmdictdb uses the textual value of the 
-	JMdict XML entities as keywords.  (For example, if "&adj-na;"
-	is used to denote and na-adjective in JMdict, jmdictdb will 
-	use "na-adj" the the "kw" value of the na-adjective row in 
-	table kwpos.
-
-	But we don't want to be forced into this convention, so
-	we use this function to generate an independent set of mapping
-	tables (rather than just using jdb.KW), which is functionally
-	a copy of jdb.KW but allows the introduction of exceptions 
-	should we ever need to do that.
-	"""
-	for attr in 'DIAL FLD KINF MISC POS RINF'.split():
-	    kwdict = getattr (KW, attr)
-	return KW
 
 class JmdictFile:
     # Wrap a standard file object and preprocess the lines being
@@ -310,7 +288,7 @@ def do_senss (elems, entr, xlit=False, xlang=None):
 	    elif last_pos: 
 		sens._pos = [jdb.Obj(kw=x.kw) for x in last_pos]
 
-	    do_kws   (elem.findall('name_type'), sens, '_pos',  'POS')
+	    do_kws   (elem.findall('name_type'), sens, '_misc', 'NAME_TYPE')
 	    do_kws   (elem.findall('misc'),      sens, '_misc', 'MISC')
 	    do_kws   (elem.findall('field'),     sens, '_fld',  'FLD')
 	    do_kws   (elem.findall('dial'),      sens, '_dial', 'DIAL')
@@ -480,7 +458,7 @@ def do_kws (elems, obj, attr, kwtabname):
 	the list attached to 'obj' named 'attr'.
 	""" 
 	global XKW
-	if elems is None: return None
+	if elems is None or len(elems) == 0: return None
 	kwtab = getattr (XKW, kwtabname)
 	kwtxts, dups = jdb.rmdups ([x.text for x in elems])
 	kwrecs = []
@@ -899,26 +877,20 @@ def do_clip (elem):
 			strt=int(elem.findtext('ac_strt')), leng=int(elem.findtext('ac_leng')),
 			trns=elem.findtext('ac_trns'), notes=elem.findtext('ac_notes'))
 
-def main (args=[], opts=jdb.Obj()):
+def main (args, opts):
 	global XKW
-	XKW = xml_lookup_table (kwstatic.KW)
+	XKW = xmlkw.make (kwstatic.KW)
 	jdb.KW = kwstatic.KW
 	if len(args) >= 1: 
             inpf = JmdictFile( open( args[0] ))
-	    for entr in parse_xmlfile (inpf, xlit=1):
+	    for tag,entr in parse_xmlfile (inpf, xlit=1):
 		import fmt
 		print fmt.entr (entr)
 	else:
-	    dir = jdb.find_in_syspath ("dtd-jmdict.xml")
-	    dtd = jdb.get_dtd (dir + "/" +  "dtd-jmdict.xml")
-	    while 1:
-	        s = raw_input ('test> ')
-		if not s: break
-		while 1:
-		    s2 += raw_input()
-		    if not s2: break
-		    s += s2
-	        e = parse_entry (s, dtd)
-	        print e
+	    print >>sys.stderr, """
+No argument given.  Please supply the name of a file containing
+test entries that will be read, formatted and printed.  The entries
+must be enclosed in a root element (e.g. <JMdict>...</JMdict>) but
+a DTD is not necessary.""" 
 
-if __name__ == '__main__': main (args=sys.argv[1:])
+if __name__ == '__main__': main (sys.argv[1:], None)

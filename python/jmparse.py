@@ -22,7 +22,7 @@ __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
 import sys
-import jdb, jmxml, pgi, warns
+import jdb, jmxml, xmlkw, pgi, warns
 import fmt
 
 def main (args, opts):
@@ -33,7 +33,7 @@ def main (args, opts):
 	else: 
 	    import kwstatic
 	    jdb.KW = kwstatic.KW
-	jmxml.XKW = jmxml.xml_lookup_table (jdb.KW)
+	jmxml.XKW = xmlkw.make (jdb.KW)
 
 	xlang = None
 	if opts.lang:

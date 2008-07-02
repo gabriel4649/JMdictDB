@@ -1,12 +1,47 @@
 Title:	Move jmnedict tag from POS to MISC
-Stat:	open
-Disp:	
-Prio:	low
+Stat:	closed
+Disp:	done
+Prio:	med
 Cats:	dev
 Reqtrs:	
 AssdTo:	
 
 2008-04-28 17:00:22 sysad
   Currently, the jmnedict tags (surname, place, unclass, company,
-  product, masc, person, given, station) are POS tags, but they
-  really should be changed to MISC tags.
+  product, masc, fem, person, given, station) are POS tags, but
+  they really should be changed to MISC tags.  'fem' should map 
+  to preexisting MISC.fem tag.  Also consider mapping 'masc' to 
+  MISC.male.
+
+2008-06-20 20:55:00 sysad
+  jmparser.Roundtrip test failing on jmdict entry 1000520 because 
+  that entry has a MISC 'fem' tag and it turns out there are 'fem'
+  tags in both MISC and POS, causing the tag lookup in the parser 
+  to declare it ambiguous.  The POS 'fem' tag is from the JMnedict
+  entities.  (For men, MISC uses 'male' and JMnedict/POS uses 'masc'.)
+
+  Since jmdictdb tags were made independent of jmdict in anticipation 
+  of problems like this, should we map the jmnedict 'masc' tag to
+  MISC.male?
+
+  Raised the priority of this issue.
+
+2008-07-02 07:33:00 stuart
+  Created new module xmlkw.py that contains a single function that
+  will generate a new jdb.Kwds object, given an existing initialized
+  (presumably from csv files or database) one.  The new one is 
+  modified so the kw strings match the entities used in JM/ne/dict
+  where usage differs.  Currently that is:
+	jmnedict 'masc' entity mapped to MISC 'male'.
+  In the standard Kwds csv data, changed the description on MISC 'male'
+  and 'fem' to indicate they can also mark names.
+
+  Moved the JMnedict keywords from pg/data/pos.csv to misc.csv but
+  deleted 
+    186    masc    male given name or forename
+    187    fem     female given name or forename
+  since 'fem already exists in misc.csv, and we will map jmnedict 
+  entity 'masc' to misc 'male' using xmlkw.make().
+
+  python/jmparse.py, python/lib/fmtxml.py, python/lib/jmxml.py were
+  modified to set XKW from xmlkw.make() rather than KW.

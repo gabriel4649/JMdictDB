@@ -6,12 +6,12 @@
 6	derog	derogatory
 7	eK	exclusively kanji
 8	fam	familiar language
-9	fem	female term or language
+9	fem	female term, language, or name
 11	hon	honorific or respectful (sonkeigo) language
 12	hum	humble (kenjougo) language
 13	id	idiomatic expression
 14	m-sl	manga slang
-15	male	male term or language
+15	male	male term, language, or name
 17	obs	obsolete term
 18	obsc	obscure term
 19	pol	polite (teineigo) language
@@ -25,3 +25,12 @@
 81	proverb	proverb
 82	aphorism	aphorism (pithy saying)
 83	quote	quotation
+181	surname	family or surname
+182	place	place name
+183	unclass	unclassified name
+184	company	company name
+185	product	product name
+188	person	full name of a particular person
+189	given	given name or forename, gender not specified
+190	station	railway station
+191	organization	organization name

@@ -25,7 +25,7 @@ Functions for generating XML descriptions of entries.
 
 """
 from xml.sax.saxutils import escape as esc, quoteattr as esca
-import jdb
+import jdb, xmlkw
 
 global XKW, KW
 
@@ -63,7 +63,7 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
 	  # idependent of the KW table.  See comments in jmxml.py
 	  # but note the mapping used here needs to also support
 	  # the enhanced DTD.
-	global XKW, KW; XKW = KW = jdb.KW
+	global XKW, KW; KW = jdb.KW; XKW = xmlkw.make (KW)
 
 	fmt= entrhdr (entr, compat)
 
@@ -172,7 +172,6 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
 	    fmt.extend (xrefs (xrfs, (not compat) and src))
 
 	fmt.extend (kwds (s, '_fld', 'FLD', 'field'))
-
 	fmt.extend (kwds (s, '_misc', 'MISC', 'misc'))
 
 	notes = getattr (s, 'notes', None)
@@ -194,10 +193,10 @@ def trans (s):
 	s -- A sense object."""
 
 	fmt = []
-	nlist = getattr (s, '_pos', [])
-	kwtab = getattr (XKW, 'POS')
+	nlist = getattr (s, '_misc', [])
+	kwtab = getattr (XKW, 'NAME_TYPE')
 	fmt.extend (['<name_type>&%s;</name_type>' % kwtab[x.kw].kw
-		     for x in nlist if x.kw>=180 and x.kw<200])
+		     for x in nlist])
 	eng_id = KW.LANG['eng'].id
 	for g in getattr (s, '_gloss', []):
 	    lang = getattr (g, 'g_lang', eng_id)
@@ -223,6 +222,14 @@ def gloss (g, compat=None):
 	attr = (' ' if attrs else '') + ' '.join (attrs)
 	fmt.append ("<gloss%s>%s</gloss>" % (attr, esc(g.txt)))
 	return fmt
+
+def kwds (parent, attr, domain, elem_name):
+	nlist = getattr (parent, attr, [])
+	if not nlist: return nlist
+	kwtab = getattr (XKW, domain)
+	kwlist = ['<%s>&%s;</%s>' % (elem_name, kwtab[x.kw].kw, elem_name)
+		  for x in nlist]
+	return kwlist
 
 def kwds (parent, attr, domain, elem_name):
 	nlist = getattr (parent, attr, [])

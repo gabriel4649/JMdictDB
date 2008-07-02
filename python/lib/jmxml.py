@@ -14,7 +14,7 @@
 # 
 #  You should have received a copy of the GNU General Public License
 #  along with JMdictDB; if not, write to the Free Software Foundation,
-#  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
 __version__ = ('$Revision$'[11:-2],
@@ -30,7 +30,7 @@ import sys, os, re, datetime
 from collections import defaultdict
 #import lxml.etree as ElementTree
 import xml.etree.cElementTree as ElementTree
-import jdb, warns, kwstatic, xmlkw
+import jdb, warns, xmlkw
 
 # This module calls function warns.warn() (from inside local
 # function warn()) to log non-fatal warning messages.  By default,
@@ -422,7 +422,7 @@ def do_hist (elems, entr):
 	for elem in elems:
 	    x = elem.findtext ("upd_date")
 	    dt = datetime.datetime (*([int(z) for z in x.split ('-')] + [0, 0, 0]))
-	    o = jdb.Obj (dt=dt, stat=kwstatic.KWSTAT_A)
+	    o = jdb.Obj (dt=dt, stat=jdb.KW.STAT_A)
 	    notes = elem.findtext ("upd_detl")
 	    name = elem.findtext ("upd_name")
 	    email = elem.findtext ("upd_email")
@@ -878,9 +878,10 @@ def do_clip (elem):
 			trns=elem.findtext('ac_trns'), notes=elem.findtext('ac_notes'))
 
 def main (args, opts):
-	global XKW
-	XKW = xmlkw.make (kwstatic.KW)
-	jdb.KW = kwstatic.KW
+	global KW, XKW
+	jdb.KW = KW = kw.Kwds (kw.std_csv_dir())
+	KW.__dict__.update (kw.short_vars (KW))
+	XKW = xmlkw.make (KW)
 	if len(args) >= 1: 
             inpf = JmdictFile( open( args[0] ))
 	    for tag,entr in parse_xmlfile (inpf, xlit=1):

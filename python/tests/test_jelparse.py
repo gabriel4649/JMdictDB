@@ -80,10 +80,9 @@ class Roundtrip (unittest.TestCase):
 
 class Lookuptag (unittest.TestCase):
 
-    # WARNING -- these tests depend on the keyword values in
-    # kwstatic.py whaich are subject to change with changes in
-    # Jim Breen's JMdict file DTD.  Therefore, these tests may
-    # require maintenance as changes occur in kwstatic.py.
+    # WARNING -- these tests depend on the keyword values 
+    # which are subject to change with changes in Jim Breen's
+    # JMdict file DTD.
 
     def setUp (self):
 	try: lexer

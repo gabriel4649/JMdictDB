@@ -15,7 +15,7 @@
 # 
 #  You should have received a copy of the GNU General Public License
 #  along with JMdictDB; if not, write to the Free Software Foundation,
-#  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
 __version__ = ('$Revision$'[11:-2],
@@ -33,10 +33,9 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, os
 from xml.etree import cElementTree as ElementTree
-import jdb, pgi
-from kwstatic import *
+import jdb, pgi, kw
 from iso639maps import iso639_1_to_2
-jdb.KW = KW
+
 
 # Remap the keywords used in the kanjidic2.xml file to
 # the keywords used in the kw* tables.  Those keywords
@@ -50,8 +49,14 @@ Xml2db = jdb.Obj (
 	    'stroke_count':'strokes'})
 
 def main (args, opts):
-	global Opts, Char, Lineno
-	Opts = opts;  Char = '';  Lineno = 1
+	global Opts; Opts = opts
+	global Char; Char = ''
+	global Lineno; Lineno = 1
+	global KW
+
+	jdb.KW = KW = kw.Kwds (kw.std_csv_dir())
+	KW.__dict__.update (kw.short_vars (KW))
+
 	if Opts.l: Opts.l = open (Opts.l, "w")
 	else: Opts.l = sys.stderr
 	if not Opts.o: 
@@ -174,7 +179,7 @@ def do_chr (elem, srcid, langs):
 	chtxt = elem.find('literal').text
 	Char = chtxt	# For warning messages created by warn().
 	c = jdb.Obj (chr=chtxt, _cinf=[])
-	e = jdb.Obj (src=srcid, stat=KWSTAT_A, seq=jdb.uord(chtxt), unap=False,
+	e = jdb.Obj (src=srcid, stat=KW.STAT_A, seq=jdb.uord(chtxt), unap=False,
 	         chr=c, _kanj=[jdb.Obj(txt=chtxt)], _rdng=[], _sens=[], _krslv=[])
 	for x in elem.findall ('codepoint/cp_value'): codepoint (x, c, chtxt)
 	for x in elem.findall ('radical/rad_value'): radical (x, c)
@@ -245,7 +250,7 @@ def radical (x, c):
 	if rad_attr != 'rad_type': warn ('Unexpected rad_value attribute: %s', rad_attr)
 	if rad_type == 'classical': c.bushu = int(x.text)
 	elif rad_type == 'nelson_c': 
-	    cinf.append (jdb.Obj (kw=KWCINF_nelson_rad, value=int(x.text)))
+	    cinf.append (jdb.Obj (kw=KW.CINF_nelson_rad, value=int(x.text)))
 	else: warn ("Unknown radical attribute value: %s=\"%s\"", (rad_attr, rad_type))
 
 def strokes (x, n, c):
@@ -253,7 +258,7 @@ def strokes (x, n, c):
 	if n == 0: 
 	     c.strokes = int(x.text)
 	else: 
-	    cinf.append ( jdb.Obj (kw=KWCINF_strokes, value=int(x.text)))
+	    cinf.append ( jdb.Obj (kw=KW.CINF_strokes, value=int(x.text)))
 
 def reading_meaning (rm, rdng, sens, cinf, langs):
 	for x in rm.findall ('rmgroup'):

@@ -15,7 +15,7 @@
 # 
 #  You should have received a copy of the GNU General Public License
 #  along with JMdictDB; if not, write to the Free Software Foundation,
-#  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
 __version__ = ('$Revision$'[11:-2],
@@ -24,10 +24,10 @@ __version__ = ('$Revision$'[11:-2],
 # This program will read a JMdict XML file and extract selected entries.
 
 import sys, re, codecs
-import jdb, jmxml, kwstatic
-jdb.KW = kwstatic.KW
+import jdb, jmxml, kw
 
 def main (args, opts):
+	jdb.KW = KW = kw.Kwds (kw.std_csv_dir())
 	seqlist = []; first = True
 	infn = args.pop (0)
 	if opts.seqfile:

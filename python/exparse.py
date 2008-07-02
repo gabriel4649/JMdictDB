@@ -45,8 +45,7 @@ __version__ = ('$Revision$'[11:-2],
 import sys, os, re, datetime
 from collections import defaultdict
 
-import jdb, pgi, warns, kwstatic
-jdb.KW = kwstatic.KW
+import jdb, kw, pgi, warns
 from warns import warn
 
 Msgs = defaultdict (list)
@@ -73,8 +72,10 @@ EX2ID = {
 class ParseError (StandardError): pass
 
 def main (args, opts):
-	global Opts
-	Opts = opts
+	global Opts; Opts = opts
+	global KW; jdb.KW = KW = kw.Kwds (kw.std_csv_dir())
+	KW.__dict__.update (kw.short_vars (KW))
+
 	if opts.logfile: warns.Logfile = open (opts.logfile, "w")
 	if opts.encoding: warns.Encoding = opts.encoding
 	fin = ABPairReader (args[0])
@@ -176,7 +177,7 @@ def hw (ktxt, rtxt):
 def mkentr (jtxt, etxt, kwds):
 	  # Create an entry object to represent the "A" line text of the 
 	  # example sentence.
-	e = jdb.Obj (stat=kwstatic.KWSTAT_A, unap=False)
+	e = jdb.Obj (stat=KW.STAT_A, unap=False)
 	e.srcnote = str (Lnnum)
 	  # Each @$kwds item is a 2-array consisting of the kw
 	  # id number and optionally a note string.
@@ -184,8 +185,8 @@ def mkentr (jtxt, etxt, kwds):
 	sens_note = "; ".join ([x[1] for x in kwds if len(x)>1]) or None
 	e._kanj = [jdb.Obj (txt=jtxt)]
 	e._sens = [jdb.Obj (notes=sens_note,
-		    _gloss=[jdb.Obj (lang=kwstatic.KWLANG_eng, 
-				     ginf=kwstatic.KWGINF_equ, txt=etxt)],
+		    _gloss=[jdb.Obj (lang=KW.LANG_eng, 
+				     ginf=KW.GINF_equ, txt=etxt)],
 		    _misc=[jdb.Obj (kw=x) for x in kws])]
 	return e
 
@@ -201,7 +202,7 @@ def mkxrslv (idxlist):
 		  # A list of explicit sens were give in the B line, 
 		  # create an xrslv record for each.
 	    	res.extend ([jdb.Obj (ktxt=ktxt, rtxt=rtxt, tsens=s,
-				      typ=kwstatic.KWXREF_uses, notes=note, prio=prio)
+				      typ=KW.XREF_uses, notes=note, prio=prio)
 				for s in senslst])
 	    else:
 		  # This is not list of senses so this cross-ref will 
@@ -209,7 +210,7 @@ def mkxrslv (idxlist):
 		  # field in the xrslv record will will result in a NULL
 		  # in the database record.
 		res.append (jdb.Obj (ktxt=ktxt, rtxt=rtxt,
-			    typ=kwstatic.KWXREF_uses, notes=note, prio=prio))
+			    typ=KW.XREF_uses, notes=note, prio=prio))
 	for n,r in enumerate (res): r.ord = n + 1
 	return res
 

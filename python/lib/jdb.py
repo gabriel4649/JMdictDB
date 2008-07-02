@@ -24,7 +24,7 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, os, random, re, datetime
 from time import time
-import pdb
+import kw
 
 global KW
 
@@ -1195,116 +1195,6 @@ class Tmptbl:
 
 
 #=======================================================================
-class Kwds:
-    """
-    This class stores data from the jmdictdb kw* tables.  The 
-    data in these tables are typically static and small in size,
-    so it is effecient to read it once when an app starts.
-    This class allows the data to be read either from a jmdictdb 
-    database, or from kw*.csv files in a directory.  After is
-    in initialized, and instance will have a set of attributes,
-    each corresponding to a table.  The value of each will be
-    a mapping containing keys that are the tables row's 'id' 
-    numbers and 'kw' strings.  The keys are distinguishable 
-    because the former will always be int's and the latter,
-    str's.
-    The value associated with of each key is a DbRow object
-    containingg a table row.  Note that because each row in 
-    indexed under both it's id and kw, there will appear to be
-    twice as many rows are there actually are in the corresponding
-    table.  Use method .recs() to get a single set of rows.
-
-    Typical use of this class in an app:
-
-	KW = jdb.Kwds (cursor)  # But note this is done by dbOpen().
-	KW.POS['adj-i'].id 	# => The id number of PoS 'adj-i'.
-	KW.DIAL[dialect].descr	# => The description string for 
-				#  'dialect'. 'dialect' may be
-				#  either an int id number or kw
-				#  string.
-    """
-
-    Tables = {'DIAL':"kwdial", 'FLD' :"kwfld",  'FREQ':"kwfreq", 'GINF':"kwginf",
-	      'KINF':"kwkinf", 'LANG':"kwlang", 'MISC':"kwmisc", 'POS' :"kwpos",
-	      'RINF':"kwrinf", 'SRC' :"kwsrc",  'STAT':"kwstat", 'XREF':"kwxref",
-	      'CINF':"kwcinf"}
-
-    def __init__( self, cursor_or_dirname=None ):
-	  # Add a set of standard attributes to this instance and
-	  # initialize each to an empty dict.
-	for attr,table in self.Tables.items():
-	    setattr (self, attr, dict())
-
-	  # 'cursor_or_dirname' may by a directory name, a database
-	  # cursor, or None.  If a string, assume the former.
-	if isinstance (cursor_or_dirname, (str, unicode)):
-	    self.loadcsv (cursor_or_dirname)
-
-	  # If not None, must be a database cursor.
-	elif cursor_or_dirname is not None:
-	    self.loaddb (cursor_or_dirname)
-	  # Otherwise it is None, and nothing else need be done.
-
-    def loaddb( self, cursor ):
-	# Load instance from database kw* tables.
-
-	for attr,table in self.Tables.items():
-	      # For item in Tables is a attribute name, database table
-	      # name pair.  Read the table from the database and use 
-	      # method .add() to store the records in attribute 'attr'.
-	    recs = dbread (cursor, "SELECT * FROM %s" % table, ())
-	    for record in recs:	self.add (attr, record)
-
-    def loadcsv( self, dirname ):
-	# Load instance from the csv files in directory 'dirname'.
-	
-	if dirname[-1] != '/' and dirname[-1] != '\\': dirname += '/'
-	for attr,table in self.Tables.items():
-	    try: f = open (dirname + table + ".csv")
-	    except IOError: continue
-	    for ln in f:
-		if re.match (r'\s*(#.*)?$', ln): continue
-		fields = ln.rstrip('\n\r').split ("\t")
-		fields = [x if x!='' else None for x in fields]
-		fields[0] = int (fields[0])
-		self.add (attr, fields)
-	    f.close()
-
-    def add( self, attr, row ):
-	# Add the row object to the set of rows in the dict in 
-	# attribute 'attr', indexed by its numeric id and its
-	# name (kw).  'row' may be either a DbRow object (such
-	# as returned by DbRead), or a seq.  In the latter case
-	# only the first three items will be used and they will 
-	# taken as the 'id', 'kw', and 'descr' values. 
-
-	v = getattr (self, attr)
-	if not isinstance (row, (Obj, DbRow)):
-	    row = DbRow (row[:3], ('id','kw','descr'))
-	v[row.id] = row;  v[row.kw] = row;
-
-    def attrs( self ):
-	# Return list of attr name strings for attributes that contain 
-	# non-empty setsa of rows.  Note that is this instance will
-	# contain every attribute listed in .Tables but some of them
-	# may be empty if they haven't been loaded (because the
-	# corresponding .csv file of table was missing or empty.)
-	  
-	return sorted([x for x in self.Tables.keys() if getattr(self, x)])
-
-    def recs( self, attr ):
-	# Return a list of DbRow objects representing the rows on the 
-	# table identified by 'attr'.
-	# 
-	# Example (assuming 'KW' is an initialized Kwds instance):
-	#    # Get the rows of the kwpos table:
-	#    pos_recs = KW ('POS')
-
-	vt = getattr (self, attr)
-	r = [v for k,v in vt.items() if isinstance(k, int)]
-	return r
-
-#=======================================================================
 # Bits used in the return value of function jstr_classify() below.
 KANA=1; KANJI=2; KSYM=4; RX=8; LATIN=16; OTHER=32
 
@@ -1461,7 +1351,7 @@ def dbOpen (dbname, **kwds):
 
 	if not nokw:
 	    global KW
-	    try: KW = Kwds (conn.cursor())
+	    try: KW = kw.Kwds (conn.cursor())
 	    except dbapi.ProgrammingError: pass
 	return conn.cursor()
 

@@ -22,7 +22,7 @@ __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
 import sys
-import jdb, jmxml, xmlkw, pgi, warns
+import jdb, kw, jmxml, xmlkw, pgi, warns
 import fmt
 
 def main (args, opts):
@@ -31,8 +31,9 @@ def main (args, opts):
 	if opts.database:
 	    jdb.dbOpen (opts.database, **jdb.dbopts (opts))
 	else: 
-	    import kwstatic
-	    jdb.KW = kwstatic.KW
+	    jdb.KW = kw.Kwds (kw.std_csv_dir())
+	global KW;  KW = jdb.KW
+	KW.__dict__.update (kw.short_vars (KW))
 	jmxml.XKW = xmlkw.make (jdb.KW)
 
 	xlang = None
@@ -230,7 +231,7 @@ Arguments:
 	p.add_option ("-d", "--database", default=None,
             help="""Name of the database to load keywords from.  If
 		not given, static keyword data will read from the file
-		"kwstatic.py".""")
+		.csv files in the standard location.""")
 
 	g = OptionGroup (p, "Database access options",
 		"""If the --database (-d) option was given, the following 

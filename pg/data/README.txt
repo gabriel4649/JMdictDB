@@ -13,6 +13,15 @@ See issue IS-110 for more details.
 
 See file rad.txt for more inforation on the data on rad.csv.
 
+*** IMPORTANT ***
+The test python/tests/test_jdb_kwds.py includes explicit 
+tests for each id/kw pair defined in the csv files of this
+directory (except for kwlang.csv, from which only a smale 
+sample of entries are tested) and that file should be updated
+in parallel when any changes are made to the csv files in
+this directory.
+
+*** IMPORTANT ***
 The function jdb.std_csv_dir() (in module python/lib/jdb.py)
 has the relative location of this data directory hardcoded
 into it.  If this directory moves, that function needs to 

@@ -1,0 +1,12 @@
+Title:	Add new jmdict POS tag "vr"
+Stat:	closed
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-07-02 20:45:00 stuart
+  Recent parse of jmdict turned up a new POS entity "vr".
+  Add line to pg/data/kwpos.csv:
+    58	vr	irregular ru verb, plain form ends with -ri

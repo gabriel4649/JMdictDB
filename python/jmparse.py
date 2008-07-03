@@ -22,19 +22,18 @@ __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
 import sys
-import jdb, kw, jmxml, xmlkw, pgi, warns
+import jdb, jmxml, xmlkw, pgi, warns
 import fmt
 
 def main (args, opts):
-	global Logfile
+	global Logfile; KW
 
 	if opts.database:
 	    jdb.dbOpen (opts.database, **jdb.dbopts (opts))
+	    KW = jdb.KW
 	else: 
-	    jdb.KW = kw.Kwds (kw.std_csv_dir())
-	global KW;  KW = jdb.KW
-	KW.__dict__.update (kw.short_vars (KW))
-	jmxml.XKW = xmlkw.make (jdb.KW)
+	    jdb.KW = KW = jdb.Kwds (jdb.std_csv_dir())
+	jmxml.XKW = xmlkw.make (KW)
 
 	xlang = None
 	if opts.lang:

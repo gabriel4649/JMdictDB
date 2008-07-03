@@ -22,9 +22,8 @@ from __future__ import with_statement
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
-import sys, os, random, re, datetime
+import sys, os, os.path, random, re, datetime
 from time import time
-import kw
 
 global KW
 
@@ -1116,6 +1115,164 @@ def iter_snds (cur):
 	mup ('_file', vols, ['id'], sels, ['vol'],  None)
 	return vols, sels, snds
 
+class Kwds:
+    """
+    This class stores data from the jmdictdb kw* tables.  The 
+    data in these tables are typically static and small in size,
+    so it is effecient to read them once when an app starts.
+    This class allows the data to be read either from a jmdictdb 
+    database, or from kw*.csv files in a directory.  After 
+    initialization, an instance will have a set of attributes,
+    each corresponding to a table.  The value of each will be
+    a mapping containing keys that are the tables row's 'id' 
+    numbers and 'kw' strings.  The keys are distinguishable 
+    because the former will always be int's and the latter,
+    str's.
+    The value associated with of each key is a DbRow object
+    containing a table row.  Note that because each row in 
+    indexed under both it's id and kw, there will appear to be
+    twice as many rows are there actually are in the corresponding
+    table.  Use method .recs() to get a single set of rows.
+
+    Typical use of this class in an app:
+
+	KW = jdb.Kwds (cursor)  # But note this is done by dbOpen().
+	KW.POS['adj-na'].id 	# => The id number of PoS 'adj-na'.
+	KW.DIAL[dialect].descr	# => The description string for 
+				#  'dialect'. 'dialect' may be
+				#  either an int id number or kw
+				#  string.
+
+    For the special (but common) case of mapping a kw to an id number,
+    each row in a Kwds instance also creates an attribute of the form,
+    XXX_kw where XXX of the table identifier, and kw is the kw string.
+    The attribute's value is the kw's id number.  For example,
+
+	KW.POS_vt	# => 50.
+
+    If the kw string contains a "-", it is changed to a "_" in the 
+    attribute:
+
+	KW.POS_adj_na	# => 2
+    """
+
+    Tables = {'DIAL':"kwdial", 'FLD' :"kwfld",  'FREQ':"kwfreq", 'GINF':"kwginf",
+	      'KINF':"kwkinf", 'LANG':"kwlang", 'MISC':"kwmisc", 'POS' :"kwpos",
+	      'RINF':"kwrinf", 'SRC' :"kwsrc",  'STAT':"kwstat", 'XREF':"kwxref",
+	      'CINF':"kwcinf"}
+
+    def __init__( self, cursor_or_dirname=None ):
+	# Create and optionally load a Kwds instance.  If 
+	# 'cursor_or_dirname' is None, an empty instance is 
+	# created and may be loaded later using the methods
+	# loadcsv() or loaddb().  Otherwise 'cursor_or_dirname'
+	# should be an open DBI cursor to a jmdictdb database,
+	# or a string giving the path to a directory containg 
+	# kw table csv files.  In the former case, the instance
+	# will be loaded from the database's kw tables.  In the
+	# latter, from the directory's csv files.  
+	# You may find function jdb.std_csv_dir() useful for
+	# providing a path to call this method with.
+
+	  # Add a set of standard attributes to this instance and
+	  # initialize each to an empty dict.
+	for attr,table in self.Tables.items():
+	    setattr (self, attr, dict())
+
+	  # 'cursor_or_dirname' may by a directory name, a database
+	  # cursor, or None.  If a string, assume the former.
+	if isinstance (cursor_or_dirname, (str, unicode)):
+	    self.loadcsv (cursor_or_dirname)
+
+	  # If not None, must be a database cursor.
+	elif cursor_or_dirname is not None:
+	    self.loaddb (cursor_or_dirname)
+	  # Otherwise it is None, and nothing else need be done.
+
+    def loaddb( self, cursor ):
+	# Load instance from database kw* tables.
+
+	for attr,table in self.Tables.items():
+	      # For item in Tables is a attribute name, database table
+	      # name pair.  Read the table from the database and use 
+	      # method .add() to store the records in attribute 'attr'.
+	    recs = dbread (cursor, "SELECT * FROM %s" % table, ())
+	    for record in recs:	self.add (attr, record)
+
+    def loadcsv( self, dirname=None ):
+	# Load instance from the csv files in directory 'dirname'.
+        # If 'dirname' is not supplied or is None, it will default
+        # to "../../pg/data/" relative to the location of this module.
+	
+        if dirname is None: dirname = std_csv_dir ()
+	if dirname[-1] != '/' and dirname[-1] != '\\' and len(dirname) > 1:
+            dirname += '/'
+	for attr,table in self.Tables.items():
+	    try: f = open (dirname + table + ".csv")
+	    except IOError: continue
+	    for ln in f:
+		if re.match (r'\s*(#.*)?$', ln): continue
+		fields = ln.rstrip('\n\r').split ("\t")
+		fields = [x if x!='' else None for x in fields]
+		fields[0] = int (fields[0])
+		self.add (attr, fields)
+	    f.close()
+
+    def add( self, attr, row ):
+	# Add the row object to the set of rows in the dict in 
+	# attribute 'attr', indexed by its numeric id and its
+	# name (kw).  'row' may be either a DbRow object (such
+	# as returned by DbRead), or a seq.  In the latter case
+	# only the first three items will be used and they will 
+	# taken as the 'id', 'kw', and 'descr' values.
+	#
+	# Additionally, every row added results in the creation
+	# of an addtional attribute with a name based on 'attr'
+	# and the row.kw value separated by a "_" and assigned
+	# a value 'row.id'.
+	# For example, if 'attr' is "POS", 'row.id' is 50, and
+	# 'row.kw' is "vt", then attribute "POS_vt" is created 
+	# with a value of 50.
+	# If the kw string contains a "-" character it is changed
+	# to "_" in the attribute name: POS kw "adj-i" results
+	# in attribute self.POS_adj_i.
+
+	v = getattr (self, attr)
+	if not isinstance (row, (Obj, DbRow)):
+	    row = DbRow (row[:3], ('id','kw','descr'))
+	v[row.id] = row;  v[row.kw] = row;
+	shortname = '%s_%s' % (attr, row.kw.replace ('-', '_'))
+	setattr (self, shortname, row.id)
+
+    def attrs( self ):
+	# Return list of attr name strings for attributes that contain 
+	# non-empty setsa of rows.  Note that is this instance will
+	# contain every attribute listed in .Tables but some of them
+	# may be empty if they haven't been loaded (because the
+	# corresponding .csv file of table was missing or empty.)
+	  
+	return sorted([x for x in self.Tables.keys() if getattr(self, x)])
+
+    def recs( self, attr ):
+	# Return a list of DbRow objects representing the rows on the 
+	# table identified by 'attr'.
+	# 
+	# Example (assuming 'KW' is an initialized Kwds instance):
+	#    # Get the rows of the kwpos table:
+	#    pos_recs = KW ('POS')
+
+	vt = getattr (self, attr)
+	r = [v for k,v in vt.items() if isinstance(k, int)]
+	return r
+
+def std_csv_dir ():
+	# Return the path to the directory containing the 
+	# kw table csv data files.  We use the location of
+	# of our own module as a reference point.
+
+	our_dir, dummy = os.path.split (__file__)
+        csv_dir = os.path.normpath (our_dir + "/../../pg/data")
+        return csv_dir
 
 class Tmptbl:
     def __init__ (self, cursor, tbldef=None, temp=True):
@@ -1351,7 +1508,7 @@ def dbOpen (dbname, **kwds):
 
 	if not nokw:
 	    global KW
-	    try: KW = kw.Kwds (conn.cursor())
+	    try: KW = Kwds (conn.cursor())
 	    except dbapi.ProgrammingError: pass
 	return conn.cursor()
 

@@ -45,7 +45,7 @@ __version__ = ('$Revision$'[11:-2],
 import sys, os, re, datetime
 from collections import defaultdict
 
-import jdb, kw, pgi, warns
+import jdb, pgi, warns
 from warns import warn
 
 Msgs = defaultdict (list)
@@ -73,8 +73,7 @@ class ParseError (StandardError): pass
 
 def main (args, opts):
 	global Opts; Opts = opts
-	global KW; jdb.KW = KW = kw.Kwds (kw.std_csv_dir())
-	KW.__dict__.update (kw.short_vars (KW))
+	global KW; jdb.KW = KW = jdb.Kwds (jdb.std_csv_dir())
 
 	if opts.logfile: warns.Logfile = open (opts.logfile, "w")
 	if opts.encoding: warns.Encoding = opts.encoding

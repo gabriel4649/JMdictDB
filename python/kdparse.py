@@ -33,7 +33,7 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, os
 from xml.etree import cElementTree as ElementTree
-import jdb, pgi, kw
+import jdb, pgi
 from iso639maps import iso639_1_to_2
 
 
@@ -54,8 +54,7 @@ def main (args, opts):
 	global Lineno; Lineno = 1
 	global KW
 
-	jdb.KW = KW = kw.Kwds (kw.std_csv_dir())
-	KW.__dict__.update (kw.short_vars (KW))
+	jdb.KW = KW = jdb.Kwds (jdb.std_csv_dir())
 
 	if Opts.l: Opts.l = open (Opts.l, "w")
 	else: Opts.l = sys.stderr

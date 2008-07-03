@@ -4,7 +4,7 @@
 
 import sys, pdb, unittest
 sys.path.append ('../lib')
-import jdb, kw
+import jdb
 try: import dbauth
 except ImportError: pass
 
@@ -14,7 +14,7 @@ __unittest = 1
 
 class Test_Empty (unittest.TestCase):
     def setUp (_):
-	_.o = kw.Kwds()
+	_.o = jdb.Kwds()
     def test001 (_):
 	  # Check that .Tables has the expected set of attribute 
 	  # names since we will use them in later tests.
@@ -42,7 +42,7 @@ class Test_Empty (unittest.TestCase):
 
 class Test_loadcsv (unittest.TestCase):
     def setUp (_):
-	_.o = kw.Kwds ('data/kwds')
+	_.o = jdb.Kwds ('data/kwds')
     def test001 (_): 
 	_.assert_ (hasattr (_.o, 'KINF'))
 	_.assert_ (hasattr (_.o, 'GINF'))
@@ -77,7 +77,7 @@ class Test_loaddb (unittest.TestCase):
 	except ImportError: kwargs = {}
 	cur = jdb.dbOpen ('jmdict', **kwargs)
 
-	_.o = kw.Kwds (cur)
+	_.o = jdb.Kwds (cur)
     def test001 (_):
 	expect = set (((1,'equ','equivalent'),(2,'lit','literaly'),
 		       (3,'id','idiomatically'),(4,'expl','explanatory')))

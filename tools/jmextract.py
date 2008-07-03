@@ -24,10 +24,10 @@ __version__ = ('$Revision$'[11:-2],
 # This program will read a JMdict XML file and extract selected entries.
 
 import sys, re, codecs
-import jdb, jmxml, kw
+import jdb, jmxml
 
 def main (args, opts):
-	jdb.KW = KW = kw.Kwds (kw.std_csv_dir())
+	jdb.KW = KW = jdb.Kwds (jdb.std_csv_dir())
 	seqlist = []; first = True
 	infn = args.pop (0)
 	if opts.seqfile:

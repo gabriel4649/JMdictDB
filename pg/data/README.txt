@@ -12,3 +12,8 @@ from:
 See issue IS-110 for more details.
 
 See file rad.txt for more inforation on the data on rad.csv.
+
+The function jdb.std_csv_dir() (in module python/lib/jdb.py)
+has the relative location of this data directory hardcoded
+into it.  If this directory moves, that function needs to 
+be updated.

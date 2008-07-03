@@ -118,7 +118,9 @@ TAL_FILES = entr.tal \
 	edform.tal \
 	edhelp.tal \
 	srchform.tal \
-	srchres.tal
+	srchres.tal \
+	submitted.tal \
+	url_errors.tal
 WEB_TAL	= $(addprefix $(LIB_DIR)/tmpl/,$(TAL_FILES))
 
 all:

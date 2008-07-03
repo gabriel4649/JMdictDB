@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/env python
 #######################################################################
 #  This file is part of JMdictDB. 
 #  Copyright (c) 2008 Stuart McGraw 

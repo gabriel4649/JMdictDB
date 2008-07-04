@@ -26,7 +26,7 @@ import jdb, jmxml, xmlkw, pgi, warns
 import fmt
 
 def main (args, opts):
-	global Logfile; KW
+	global Logfile, KW
 
 	if opts.database:
 	    jdb.dbOpen (opts.database, **jdb.dbopts (opts))

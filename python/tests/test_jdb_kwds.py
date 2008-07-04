@@ -5,8 +5,6 @@
 import sys, pdb, unittest
 sys.path.append ('../lib')
 import jdb
-try: import dbauth
-except ImportError: pass
 __unittest = 1
 
 KwdsAttrs = set (('DIAL','FLD','FREQ','GINF','KINF','LANG','MISC',
@@ -206,6 +204,14 @@ Current_kwds = [
 	('188', 'LANG', 460, 'vie'),
 	]
 
+Cursor = None
+def globalSetup ():
+	global Cursor
+	try:	# Get login credentials from dbauth.py if possible.
+	    import dbauth; kwargs = dbauth.auth
+	except ImportError: kwargs = {}
+	Cursor = jdb.dbOpen ('jmdict', **kwargs)
+
 class Test_Empty (unittest.TestCase):
     def setUp (_):
 	_.o = jdb.Kwds()
@@ -297,13 +303,8 @@ class Test_loaddb (unittest.TestCase):
 
     def setUp (_):
 	  #FIXME: use dedicated test database, or mock database
-	try: 
-	    import dbauth
-	    kwargs = dbauth.auth
-	except ImportError: kwargs = {}
-	cur = jdb.dbOpen ('jmdict', **kwargs)
-
-	_.o = jdb.Kwds (cur)
+	if not Cursor: globalSetup()
+	_.o = jdb.Kwds (Cursor)
 
     def test001 (_):
 	expect = set (((1,'equ','equivalent'),(2,'lit','literaly'),
@@ -345,8 +346,8 @@ class Test_actual_db (unittest.TestCase):
     def setUp (_):
 	global Test_actual_db_test_object
 	if Test_actual_db_test_object is None:
-	    cur = jdb.dbOpen ('jmdict')
-	    Test_actual_db_test_object = jdb.Kwds(cur)
+	    if not Cursor: globalSetup()
+	    Test_actual_db_test_object = jdb.Kwds(Cursor)
 	_.o = Test_actual_db_test_object
 add_tests (Test_actual_db)
 

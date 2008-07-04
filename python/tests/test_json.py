@@ -3,6 +3,15 @@ sys.path[0] = '../lib'
 import jdb, fmtxml
 import json
 
+Cursor = None
+def globalSetup ():
+	global Cursor
+	try:	# Get login credentials from dbauth.py if possible.
+	    import dbauth; kwargs = dbauth.auth
+	except ImportError: kwargs = {}
+	  # FIXME: don't hardwire dbname.
+	Cursor = jdb.dbOpen ('jmdict', **kwargs)
+
 class Test_obj2struc (unittest.TestCase):
 
       # Scalars...
@@ -87,10 +96,7 @@ def rt(_, seq):
 
 	  # FIXME: reading database to slow, too volatile.
 	  #   read from a test xml file instead.
-	global Cursor 
-	if not Cursor:
-	      # FIXME: dont hardwire dbname, user.
-	    Cursor = jdb.dbOpen ('jmdict', **{'user':'postgres'})
+	if not Cursor: globalSetup()
 	  # FIXME: don't hardwire corpus (aka src).
 	sql = "SELECT id FROM entr WHERE seq=%s AND src=1"
 	elist,r = jdb.entrList (Cursor, sql, [seq], ret_tuple=1)

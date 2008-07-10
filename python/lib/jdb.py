@@ -1158,8 +1158,8 @@ class Kwds:
 
     Tables = {'DIAL':"kwdial", 'FLD' :"kwfld",  'FREQ':"kwfreq", 'GINF':"kwginf",
 	      'KINF':"kwkinf", 'LANG':"kwlang", 'MISC':"kwmisc", 'POS' :"kwpos",
-	      'RINF':"kwrinf", 'SRC' :"kwsrc",  'STAT':"kwstat", 'XREF':"kwxref",
-	      'CINF':"kwcinf"}
+	      'RINF':"kwrinf", 'STAT':"kwstat", 'XREF':"kwxref", 'CINF':"kwcinf",
+	      'SRC' :"kwsrc"}
 
     def __init__( self, cursor_or_dirname=None ):
 	# Create and optionally load a Kwds instance.  If 
@@ -1182,7 +1182,8 @@ class Kwds:
 	  # 'cursor_or_dirname' may by a directory name, a database
 	  # cursor, or None.  If a string, assume the former.
 	if isinstance (cursor_or_dirname, (str, unicode)):
-	    self.loadcsv (cursor_or_dirname)
+	    files = self.loadcsv (cursor_or_dirname)
+	    if len (files) == 0: raise IOError ("No jmdictdb csv files found.")
 
 	  # If not None, must be a database cursor.
 	elif cursor_or_dirname is not None:
@@ -1207,8 +1208,10 @@ class Kwds:
         if dirname is None: dirname = std_csv_dir ()
 	if dirname[-1] != '/' and dirname[-1] != '\\' and len(dirname) > 1:
             dirname += '/'
+	files = []
 	for attr,table in self.Tables.items():
-	    try: f = open (dirname + table + ".csv")
+	    fname = dirname + table + ".csv"
+	    try: f = open (fname)
 	    except IOError: continue
 	    for ln in f:
 		if re.match (r'\s*(#.*)?$', ln): continue
@@ -1217,6 +1220,8 @@ class Kwds:
 		fields[0] = int (fields[0])
 		self.add (attr, fields)
 	    f.close()
+	    files.append (fname)
+	return files
 
     def add( self, attr, row ):
 	# Add the row object to the set of rows in the dict in 
@@ -1271,7 +1276,8 @@ def std_csv_dir ():
 	# of our own module as a reference point.
 
 	our_dir, dummy = os.path.split (__file__)
-        csv_dir = os.path.normpath (our_dir + "/../../pg/data")
+	if our_dir: our_dir += '/'
+        csv_dir = os.path.normpath (our_dir + "../../pg/data")
         return csv_dir
 
 class Tmptbl:

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="%(encoding)s"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Rev 1.07 
 	Revised POS tags for the adjectives
 -->
@@ -24,8 +24,8 @@
      some of the "*" as he suggested.  - 27 May 2000
 	 Added the re_nokanji element - Sep 2003.
      -->
-<!DOCTYPE %(root)s [
-<!ELEMENT %(root)s (entry*)>
+<!DOCTYPE JMdict [
+<!ELEMENT JMdict (entry*)>
 <!--                                                                   -->
 <!ELEMENT entry (ent_seq, k_ele*, r_ele+, info?, sense+)>
 	<!-- Entries consist of kanji elements, reading elements, 

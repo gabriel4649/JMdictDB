@@ -1,4 +1,4 @@
-import sys, unittest, time
+import sys, os, os.path, unittest, time, subprocess, tempfile, shutil, difflib
 
 class TextTestRunner (unittest.TextTestRunner):
     """
@@ -115,4 +115,34 @@ class EncodedAssertionError (AssertionError):
 unittest.TestCase.failureException = EncodedAssertionError
 
 
+def runcmd (wkdir, cmdln):
+	proc = subprocess.Popen (cmdln, shell=True, cwd=wkdir, 
+		    env=os.environ,
+		    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	rc = proc.wait()
+	stdout, stderr = proc.communicate()
+	if rc != 0: raise RuntimeError (stderr)
+	return stdout, stderr
 
+def mk_temp_dir (in_dir=".", keep=False):
+	dirname = tempfile.mkdtemp ("tmp", dir=in_dir)
+	if not keep: atexit.register (rm_temp_dir, dirname)
+	return dirname
+
+def rm_temp_dir (dirname):
+	if sys.platform == 'win32': dirname = unicode(dirname)
+	else: dirname = dirname.encode(sys.getfilesystemencoding())
+	print "Removing", dirname
+	shutil.rmtree (dirname)
+
+def diff_strings (a, b):
+        """Return ndiff between two strings containing lines.
+        A trailing newline is added if missing to make the strings
+        print properly."""
+
+        if b and b[-1] != '\n': b += '\n'
+        if a and a[-1] != '\n': a += '\n'
+        #difflines = difflib.ndiff(a.splitlines(True), b.splitlines(True),
+        #                          linejunk=lambda x: False, charjunk=lambda x: False)
+        difflines = difflib.unified_diff(a.splitlines(True), b.splitlines(True), n=0)
+        return ''.join(difflines)

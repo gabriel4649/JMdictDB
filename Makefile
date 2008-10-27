@@ -157,7 +157,7 @@ activate:
 
 data/jmdict.xml: 
 	rm -f $(JMDICTFILE).gz
-	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/$(JMDICTFILE).gz
+	wget ftp://ftp.monash.edu.au/pub/nihongo/$(JMDICTFILE).gz
 	gzip -d $(JMDICTFILE).gz
 	mv $(JMDICTFILE) data/jmdict.xml
 
@@ -184,7 +184,7 @@ loadjm: data/jmdict.dmp
 
 data/jmnedict.xml: 
 	rm -f JMnedict.xml.gz
-	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/JMnedict.xml.gz
+	wget ftp://ftp.monash.edu.au/pub/nihongo/JMnedict.xml.gz
 	gzip -d JMnedict.xml.gz
 	mv JMnedict.xml data/jmnedict.xml
 
@@ -204,7 +204,7 @@ loadne: data/jmnedict.dmp
 
 data/examples.txt: 
 	rm -f examples.utf.gz
-	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/examples.utf.gz
+	wget ftp://ftp.monash.edu.au/pub/nihongo/examples.utf.gz
 	gzip -d examples.utf.gz
 	mv examples.utf data/examples.txt
 
@@ -228,7 +228,7 @@ loadex: data/examples.dmp
 
 data/kanjidic2.xml: 
 	rm -f kanjidic2.xml.gz
-	wget ftp://ftp.cc.monash.edu.au/pub/nihongo/kanjidic2.xml.gz
+	wget ftp://ftp.monash.edu.au/pub/nihongo/kanjidic2.xml.gz
 	gzip -d kanjidic2.xml.gz
 	mv kanjidic2.xml data/kanjidic2.xml
 

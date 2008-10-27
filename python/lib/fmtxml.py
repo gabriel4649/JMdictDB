@@ -109,15 +109,28 @@ def rdng (r, k, compat):
 	fmt.append ('</r_ele>')
 	return fmt
 
-def restrs (r, kanj):
-	fmt = []
-	restr = getattr (r, '_restr', None)
-	if restr: 
-	    if len(restr) == len(kanj):
-		fmt.append ('<re_nokanji/>')
-	    else:
-	        re = jdb.filt (kanj, ['kanj'], restr, ['kanj'])
-	        fmt.extend (['<re_restr>' + x.txt + '</re_restr>' for x in re])
+def restrs (rdng, kanjs, attr='_restr'):
+	# Generate xml lines for reading-kanji (or sense-reading, or 
+	# sense-kanji) restrictions.  This function does the necessary
+	# inversion between the "dis-allowed" form of restrictions used
+	# in the database and API, and the "allowed" form used in the 
+	# XML.  It also properly generates "re_nokanji" elements when
+	# appropriate for reading-kanji restrictions.  It does not 
+	# require or use Rdng.rdng, Kanj.kanj, or Sens.sens attributes.
+	#
+	# rdng -- A Rdng (or Sens) object.
+	# kanjs -- A list of Kanj (or Rdng) objects.
+	# attr -- Name of the attribute on the 'rdng' or 'kanj' object(s)
+	#   that contains the restriction list.
+
+	fmt = []; invrestr = []
+	invdkanjs = jdb.restrs2ext (rdng, kanjs, attr)
+	if invdkanjs is None: 
+	    if attr != '_restr': raise RuntimeError ()
+	    fmt.append ('<re_nokanji/>')
+	elif invdkanjs:
+	    tag = "re_"+attr[1:] if attr=='_restr' else attr[1:]
+	    fmt.extend (['<%s>%s</%s>' % (tag, x.txt, tag) for x in invdkanjs])
 	return fmt
 
 def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
@@ -152,15 +165,8 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
 	fmt = []
 	fmt.append ('<sense>')
 
-	stagk = getattr (s, '_stagk', None)
-	if stagk: 
-	    sk = jdb.filt (kanj, ['kanj'], stagk, ['kanj'])
-	    fmt.extend (['<stagk>' + x.txt + '</stagk>' for x in sk])
-
-	stagr = getattr (s, '_stagr', None)
-	if stagr: 
-	    sr = jdb.filt (rdng, ['rdng'], stagr, ['rdng'])
-	    fmt.extend (['<stagr>' + x.txt + '</stagr>' for x in sr])
+	fmt.extend (restrs (s, kanj, '_stagk'))
+	fmt.extend (restrs (s, rdng, '_stagr'))
 
 	this_pos = [x.kw for x in getattr (s, '_pos', [])]
 	if not prev_pos or prev_pos != this_pos:

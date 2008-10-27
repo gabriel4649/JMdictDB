@@ -1,0 +1,177 @@
+<!-- 
+This file contains test data in jmdict XML format for driving
+unit and higher-level tests.   
+-->
+
+<entry>
+<!-- Minimal entry, hiragana -->
+<ent_seq>3000010</ent_seq>
+<r_ele>
+<reb>あああ</reb>
+</r_ele>
+<sense>
+<gloss>test10</gloss>
+</sense>
+</entry>
+<entry>
+<!-- Minimal entry, katakana -->
+<ent_seq>3000020</ent_seq>
+<r_ele>
+<reb>テスト</reb>
+</r_ele>
+<sense>
+<gloss>test20</gloss>
+</sense>
+</entry>
+<entry>
+<!-- Minimal entry, kanji -->
+<ent_seq>3000030</ent_seq>
+<k_ele>
+<keb>発音</keb>
+</k_ele>
+<r_ele>
+<reb>はつおん</reb>
+</r_ele>
+<sense>
+<gloss>test30</gloss>
+</sense>
+</entry>
+<entry>
+<!-- Multiple reading -->
+<ent_seq>3000040</ent_seq>
+<r_ele>
+<reb>はつおん</reb>
+</r_ele>
+<r_ele>
+<reb>ばしょう</reb>
+</r_ele>
+<r_ele>
+<reb>バショー</reb>
+</r_ele>
+<sense>
+<gloss>test40</gloss>
+</sense>
+</entry>
+<entry>
+<!-- Multiple kanji -->
+<ent_seq>3000050</ent_seq>
+<k_ele>
+<keb>発音</keb>
+<keb>本屋</keb>
+<keb>英会話</keb>
+</k_ele>
+<r_ele>
+<reb>はつおん</reb>
+</r_ele>
+<sense>
+<gloss>test50</gloss>
+</sense>
+</entry>
+<entry>
+<!-- Multiple senses -->
+<ent_seq>3000060</ent_seq>
+<r_ele>
+<reb>あい</reb>
+</r_ele>
+<sense>
+<gloss>test60-1</gloss>
+</sense>
+<sense>
+<gloss>test60-2</gloss>
+</sense>
+<sense>
+<gloss>test60-3</gloss>
+</sense>
+</entry>
+<entry>
+<!-- Multiple glosses -->
+<ent_seq>3000070</ent_seq>
+<r_ele>
+<reb>あえ</reb>
+</r_ele>
+<sense>
+<gloss>test70-1</gloss>
+<gloss>test70-2</gloss>
+<gloss>test70-3</gloss>
+</sense>
+</entry>
+
+<entry>
+<!-- embedded lit text -->
+<ent_seq>3000080</ent_seq>
+<r_ele>
+<reb>あえ</reb>
+</r_ele>
+<sense>
+<gloss>gloss text2 (lit: literal texta)</gloss>
+<gloss>(lit: literal textb) gloss text3</gloss>
+<gloss>gloss4 (lit: literal textc) more gloss</gloss>
+<gloss>(lit: literal textd)</gloss>
+<gloss>text8 (lit: with (parens) embedded) text2</gloss>
+<gloss>text5a (lit: with (parens) embedded)(gloss parens) text5b</gloss>
+<gloss>text6a (gloss parens)(lit: with (parens) embedded) text6b</gloss>
+</sense>
+</entry>
+
+<!-- Lsource: text/no-text; eng/non-eng; wasei?; part? -->
+<entry>
+<!-- lsource eng -->
+<ent_seq>3000090</ent_seq>
+<r_ele>
+<reb>あえ</reb>
+</r_ele>
+<sense>
+<lsource>lsctext</lsource>
+<gloss>test</gloss>
+</sense>
+</entry>
+
+
+<entry>
+<!-- lsource non-eng -->
+<ent_seq>3000100</ent_seq>
+<r_ele>
+<reb>あえ</reb>
+</r_ele>
+<sense>
+<lsource xml:lang="fre">lsctext</lsource>
+<gloss>test</gloss>
+</sense>
+</entry>
+
+<entry>
+<!-- lsource wasei, text -->
+<ent_seq>3000110</ent_seq>
+<r_ele>
+<reb>あえ</reb>
+</r_ele>
+<sense>
+<lsource ls_wasei="y">lsctext</lsource>
+<gloss>test</gloss>
+</sense>
+</entry>
+
+<entry>
+<!-- lsource eng, multi-word -->
+<ent_seq>3000120</ent_seq>
+<r_ele>
+<reb>あえ</reb>
+</r_ele>
+<sense>
+<lsource>multiword lsctext</lsource>
+<gloss>test</gloss>
+</sense>
+</entry>
+
+<entry>
+<!-- lsource non-eng, multi-word, non-ascii -->
+<ent_seq>3000130</ent_seq>
+<r_ele>
+<reb>あえ</reb>
+</r_ele>
+<sense>
+<lsource xml:lang="fre">lsctext abcëăz</lsource>
+<gloss>test</gloss>
+</sense>
+</entry>
+

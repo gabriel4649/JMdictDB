@@ -428,6 +428,134 @@ def mup (attr, parents, pks, childs, fks, pattr=None):
 	    if pattr: setattr (c, pattr, p)
 
 #-------------------------------------------------------------------
+# The following functions deal with restriction lists. 
+#-------------------------------------------------------------------
+	# Restriction lists limit readings to specific kanji (restr),
+	# or senses to specific readings (stagr) or kanji (stagk). 
+	# In some external representations such as JMdict XML, these
+	# resttrictions are given as text strings that list the kanji,
+	# readings, or kanji that the reading, sense, or sense respectively
+	# are limited to, with absense indicating that there are no
+	# restrictions.  In the case of "restr" (reading-kanji) restrictions
+	# there may also be a "nokanji" flag indicating that there are 
+	# no kanji assocciated with the reading.  (The flag is needed 
+	# since the absense of restr items indicate all kanji are allowable.)
+	#
+	# In the jdb API, restrictions are represented by lists of Restr
+	# objects attached dually to the lists Rdng._restr,Kanj._restr
+	# (for reading restrictions), Sens._stagr,Kanj._stagr (for stagr
+	# restrictions) or Sens._kanj, and Kanj._stagk (for stagk restrictions).
+	# A Restr object exists for each pair of Rdng,Kanj (or Sens,Rdng, or
+	# Sens,Kanj) that is *disallowed* (opposite of the XML).  There is
+	# in no need for a "nokanji" flag since that condition is effected
+	# when every kanji in the entry is given in a rdng object's _restr
+	# list.
+
+def find_restr (restrobj, objlist):
+	# Given an Restr object, 'restrobj', find the (first[*]) item
+	# in 'objlist' list that points (via an item in it's "_restr"
+	# list) to 'restrobj'.
+	#
+	# restrobj -- A Restr object.
+	# objlist -- A list of Kanj, Rdng, or Sens objects to search.
+	# 
+	# Returns: A 2-tuple consisting of the found object, and its
+	#   0-based index in 'objectlist'.  If 'restrobj' is not found, 
+	#   a KeyError is raised.
+ 	# 
+	# [*] In a correctly structured entry, only one 'obj' in 'objlist'
+	# will reference a given 'restrobj'.  However it is of course
+	# possible to contruct an entry that violates this.
+	# 
+	# Often in entries read from an external source, Restr objects
+	# will have .rdng, ,kanj, or .sens attributes that give the 
+	# index (1-based) of the Rdng, Kanj, or Sens object that contains
+	# the Restr object.  However, because the lists are short and 
+	# constructed entries may not have these values initialized, it
+	# is more convenient not to rely on the index values but use this
+	# function to search the list for the containing object.
+
+	for n, obj in enumerate (objlist):
+	    restrlist = getattr (obj, '_restr', [])
+	    for robj in restrlist:
+		if robj is restrobj: return obj, n
+	raise KeyError (restrobj)
+
+def find_restrs (restrobjs, objlist):
+	# Like find_restr() but first parameter is a list of Restr objects
+	# and returns a list of the 2-tuples returned by find_restr().
+
+	return [find_restr(x, objlist) for x in restrobjs]
+
+def restrs2ext (rdng, kanjs, attr='_restr'):
+	# Given a Rdng object, 'rdng', that may or may not have a 
+	# "_restr" attribute, create a list Kanj objects taken from
+	# 'kanjis' that are not given in "_restr".  However, if ._restr
+	# empty (of missing), return an empty list,  If every kanji
+	# is in ._restr, return None (rather than an empty list).
+	# 
+	# Although parameter names assume reading-kanji restrictions
+	# defined in 'rdng._restr", this function can be used for
+	# stagr or stagk restrictions by supplying a Sens object
+	# and list of Rdng or Kanj objects respectively for 'rdng'
+	# and 'kanj', and setting 'attr' to "_stagr" or "stagk"
+	# respectively.
+	#
+	# This function can be used in generating JMdict XML or
+	# similar textual output from jdb entry objects.
+	#
+	# rdng -- A Rdng (or Sens) object.
+	# kanjs -- A list of Kanj (or Rdng) objects.
+	# attr -- Name of the attribute on the 'rdng' or 'kanj' object(s)
+	#   that contains the restriction list.
+
+	invrestr = []
+	restrs = getattr (rdng, attr, [])
+	if len(restrs) > 0:
+	      # Check for "nokanji" condition.
+	    if len(restrs) == len(kanjs): return None
+	    for kanj in kanjs:
+		for r in getattr (kanj, attr, []):
+		    if r in restrs: break
+		else:	# This kanj obj has no restrs that are in rdng's restrs.
+		    invrestr.append (kanj)
+	return invrestr
+
+def add_restrobj (rdng, rattr, kanj, kattr, pattr):
+	"""
+	Create a restriction row object and link it to two items
+	that constitute the restriction.
+
+	rdng -- A Rdng, Sens, or Sens object.
+	rattr -- One of "rdng", "sens", or "sens".
+	kanj -- A Kanj, Rdng, or Kanj object.
+	kattr -- One of "kanj", "rdng", or "kanj".
+	pattr -- One of "_restr", "_stagr", or "_stagk".
+
+	Examples:
+	To create a reading restr:
+	    add_restr (rdng, 'rdng', kanj, 'kanj', '_restr')
+	To create a stagr restr:
+	    add_restr (sens, 'sens', rdng, 'rdng', '_stagr')
+	To create a stagk restr:
+	    add_restr (sens, 'sens', kanj, 'kanj', '_stagk')
+	"""
+	if not hasattr (rdng, pattr): setattr (rdng, pattr, [])
+	if not hasattr (kanj, pattr): setattr (kanj, pattr, [])
+	restr = Obj ()
+	setattr (restr, rattr, getattr (rdng, rattr))
+	setattr (restr, kattr, getattr (kanj, kattr))
+	getattr (rdng, pattr).append (restr)
+	getattr (kanj, pattr).append (restr)
+
+def add_restr (rdng, kanj):
+	add_restrobj (rdng, 'rdng', kanj, 'kanj', '_restr')
+def add_stagr (sens, rdng):
+	add_restrobj (sens, 'sens', rdng, 'rdng', '_stagr')
+def add_stagk (sens, kanj):
+	add_restrobj (sens, 'sens', kanj, 'kanj', '_stagk')
+
+#-------------------------------------------------------------------
 # The following three functions deal with xrefs. 
 #-------------------------------------------------------------------
 	# An xref (in the jdb api) is an object that represents 

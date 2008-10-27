@@ -268,7 +268,7 @@ def do_rdngs (elems, entr, fmap):
 		if rdng not in q: q.append (rdng)
 		else: freq_warn ("Duplicate", rdng, None, x.text)
 	    nokanji = elem.find ('re_nokanji')
-	    do_restr (elem.findall('re_restr'), rdng, kanjs, 'rdng', 'kanj', '_restr', nokanji)
+	    do_restr (elem.findall('re_restr'), rdng, kanjs, 'restr', nokanji)
 	    rdngs.append (rdng)
 	if rdngs: entr._rdng = rdngs
 
@@ -295,8 +295,8 @@ def do_senss (elems, entr, xlit=False, xlang=None):
 	    do_lsrc  (elem.findall('lsource'),   sens,)
 	    do_gloss (elem.findall('gloss'),     sens, xlit, xlang)
 	    do_gloss (elem.findall('trans_det'), sens,)
-	    do_restr (elem.findall('stagr'),     sens, rdngs, 'sens', 'rdng', '_stagr')
-	    do_restr (elem.findall('stagk'),     sens, kanjs, 'sens', 'kanj', '_stagk')
+	    do_restr (elem.findall('stagr'),     sens, rdngs, 'stagr')
+	    do_restr (elem.findall('stagk'),     sens, kanjs, 'stagk')
 	    do_xref  (elem.findall('xref'),      sens, jdb.KW.XREF['see'].id)
 	    do_xref  (elem.findall('ant'),       sens, jdb.KW.XREF['ant'].id)
 
@@ -347,11 +347,11 @@ def do_lsrc (elems, sens):
 		continue
 	    wasei = elem.get ('ls_wasei') is not None
 
-	    if (lstyp or wasei) and  not txt: 
+	    if (lstyp or wasei) and not txt: 
 		attrs = ("ls_wasei" if wasei else '') \
 			+ ',' if wasei and lstyp else '' \
-			("ls_type" if lstyp else '')
-		warn ("lsource has attribute(s) %s but no text" % msg)
+			+ ("ls_type" if lstyp else '')
+		warn ("lsource has attribute(s) %s but no text" % attrs)
 	    lsrc.append (jdb.Obj (lang=lang, txt=txt, part=lstyp=='part', wasei=wasei))
 	if lsrc: 
 	    if not hasattr (sens, '_lsrc'): sens._lsrc = []
@@ -476,27 +476,40 @@ def do_kws (elems, obj, attr, kwtabname):
 	    getattr (obj, attr).extend (kwrecs)
 	return kwrecs
 
-def do_restr (elems, rdng, kanjs, rattr, kattr, pattr, nokanji=None):
+def do_restr (elems, rdng, kanjs, rtype, nokanji=None):
 	"""
 	The function can be used to process stagr and stagk restrictions
         in addition to re_restr restrictions, but for simplicity, code
 	comments and variable names assume re_restr processing.
 
-	    rdng -- A rdng obj (must have a correct 'rdng' attribute').
 	    elems -- A list of 're_restr' xml elements (may be empty).
-	    nokanji -- True if the reading has a <no_kanji> element,
-		    false otherwise.
-	    kanjs -- A complete list of the entries kanj objects (with
-		    correct 'kanj' attributes).
+	    rtype -- One of: 'restr', 'stgr', stagk', indicating the type
+		    of restrictions being processed.
+	    rdng -- If 'rtype' is "restr", a Rdng object, otherwise a Sens
+		    object.
+	    kanjs -- If 'rtype' is "restr" or ""stagk", the entry's list
+		    of Kanj objects.  Otherwise, the entry's list of Rdng
+		    objects.
+	    nokanji -- True if the rtype in "restr" and the reading has a
+		    <no_kanji> element, false otherwise.
 
-	To use for stagr restictions:
+	Examples:
+	To use for restr restictions:
 
-	    do_restrs (stagr_elems, sens, rdngs, 'sens', 'rdng', '_stagr', False)
+	    do_restrs (restr_elems, entr._rdng, entr._kanj, "restr", nokanji)
+
+	or stagr restictions:
+
+	    do_restrs (stagr_elems, entr._sens, entr._rdng, "stagr")
 
 	or stagk restrictions:
 
-	    do_restrs (stagk_elems, sens, kanjs, 'sens', 'kanj', '_stagk', False)
+	    do_restrs (stagk_elems, entr._sens, entr._kanj, "stagk")
 	"""
+
+	if   rtype == 'restr': rattr, kattr, pattr = 'rdng', 'kanj', '_restr'
+	elif rtype == 'stagr': rattr, kattr, pattr = 'sens', 'rdng', '_stagr'
+	elif rtype == 'stagk': rattr, kattr, pattr = 'sens', 'kanj', '_stagk'
 
 	  # Warning, do not replace the 'nokanji is None' tests below
 	  # with 'not nokanji'.  'nokanji' may be an elementtree element
@@ -513,30 +526,9 @@ def do_restr (elems, rdng, kanjs, rattr, kattr, pattr, nokanji=None):
 		warn ("Duplicate %s item(s) %s in %s %d." 
 			% (pattr[1:], "'"+"','".join([dups])+"'", 
 			   rattr, getattr (rdng,rattr)))
-
 	for kanj in kanjs:
 	    if kanj.txt not in allowed_kanj:
-		add_restr (rdng, rattr, kanj, kattr, pattr)
-
-def add_restr (rdng, rattr, kanj, kattr, pattr):
-	"""
-	Create a restriction row object and link it to two items
-	that constitute the restriction.
-
-	To create a reading restr:
-	    add_restr (rdng, 'rdng', kanj, 'kanj', '_restr')
-	To create a stagr restr:
-	    add_restr (sens, 'sens', rdng, 'rdng', '_stagr')
-	To create a stagk restr:
-	    add_restr (sens, 'sens', kanj, 'kanj', '_stagk')
-	"""
-	restr = jdb.Obj (); 
-	setattr (restr, rattr, getattr (rdng, rattr))
-	setattr (restr, kattr, getattr (kanj, kattr))
-	if not hasattr (rdng, pattr): setattr (rdng, pattr, [])
-	if not hasattr (kanj, pattr): setattr (kanj, pattr, [])
-	getattr (rdng, pattr).append (restr)
-	getattr (kanj, pattr).append (restr)
+		jdb.add_restrobj (rdng, rattr, kanj, kattr, pattr)
 
 def do_freq (fmap, entr):
 	"""

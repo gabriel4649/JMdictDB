@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="%(encoding)s"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Rev 1.07-extended-1
 	This DTD is derived from the JMdict DTD version 1.07 (2008-04-11)
 	but is extended to allow for enhanced representational capabilities
@@ -37,8 +37,8 @@
      some of the "*" as he suggested.  - 27 May 2000
 	 Added the re_nokanji element - Sep 2003.
      -->
-<!DOCTYPE %(root)s [
-<!ELEMENT %(root)s (corpdef*, entry*)>
+<!DOCTYPE JMdict [
+<!ELEMENT JMdict (corpdef*, entry*)>
 <!--                                                                   -->
 <!ELEMENT corpus (name, descr?, date?, notes?, seqname?)>
 	<!-- Defines a corpus to which subsequent entries may belong. -->

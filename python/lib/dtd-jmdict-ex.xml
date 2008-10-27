@@ -209,8 +209,11 @@
 <!ELEMENT xref (#PCDATA)*>
 	<!-- This element is used to indicate a cross-reference to another
 	entry with a similar or related meaning or sense. The content of
-	this element must exactly match that of a keb or reb element in 
-	another entry.
+	this element is typically a keb or reb element in another entry. In some
+	cases a keb will be followed by a reb and/or a sense number to provide
+	a precise target for the cross-reference. Where this happens, a JIS
+	"centre-dot" (0x2126) is placed between the components of the
+	cross-reference.
 	-->
 <!ATTLIST xref type CDATA #IMPLIED>
 <!ATTLIST xref seq CDATA #IMPLIED>
@@ -366,6 +369,8 @@ various information fields.
 <!ENTITY uK "word usually written using kanji alone">
 <!ENTITY uk "word usually written using kana alone">
 <!ENTITY v1 "Ichidan verb">
+<!ENTITY v2a-s "Nidan verb with 'u' ending (archaic)">
+<!ENTITY v4h "Yondan verb with `hu/fu' ending (archaic)">
 <!ENTITY v4r "Yondan verb with `ru' ending (archaic)">
 <!ENTITY v5 "Godan verb (not completely classified)">
 <!ENTITY v5aru "Godan verb - -aru special class">

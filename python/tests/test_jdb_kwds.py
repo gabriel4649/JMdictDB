@@ -202,6 +202,8 @@ Current_kwds = [
 	('186', 'LANG', 137, 'fre'),
 	('187', 'LANG', 150, 'ger'),
 	('188', 'LANG', 460, 'vie'),
+	('189', 'POS', 59, 'v2a-s'),
+	('190', 'POS', 60, 'v4h'),
 	]
 
 Cursor = None
@@ -260,7 +262,7 @@ class Test_loadcsv (unittest.TestCase):
 	validate_rec (_, _.o, 'KINF', 8, 'qq-r')
 	validate_rec (_, _.o, 'GINF', 1, 'equ',  'equivalent')
 	validate_rec (_, _.o, 'GINF', 2, 'lit',  'literaly')
-	validate_rec (_, _.o, 'GINF', 3, 'id',   'idiomatically')
+	validate_rec (_, _.o, 'GINF', 3, 'fig',  'figuratively')
 	validate_rec (_, _.o, 'GINF', 4, 'expl', 'explanatory')
 
     def test002 (_):
@@ -277,7 +279,7 @@ class Test_loadcsv (unittest.TestCase):
     def test004 (_): 
 	  # Check GINF records.
 	expect = set (((1,'equ','equivalent'),(2,'lit','literaly'),
-		       (3,'id','idiomatically'),(4,'expl','explanatory')))
+		       (3,'fig','figuratively'),(4,'expl','explanatory')))
 	recs = _.o.recs('GINF')
 	_.assertEqual (len(recs), 4)
 	comparable_recs = set ((tuple(x) for x in recs))
@@ -286,14 +288,14 @@ class Test_loadcsv (unittest.TestCase):
     def test005 (_):
 	  # Check short-form kw->id attribute names.
 	expected = set (
-		'GINF_equ GINF_lit GINF_id GINF_expl '
+		'GINF_equ GINF_lit GINF_fig GINF_expl '
 		'KINF_xxx KINF_yy KINF_qq_r'.split())
 	actual = set ([x for x in _.o.__dict__.keys() if "_" in x])
 	_.assertEqual (expected, actual)
 
     def test006 (_):
 	  # Check values of short-form kw->id attributes.
-	attrs = 'GINF_equ GINF_lit GINF_id GINF_expl ' \
+	attrs = 'GINF_equ GINF_lit GINF_fig GINF_expl ' \
 		'KINF_xxx KINF_yy KINF_qq_r'.split()
 	expected = [1, 2, 3, 4, 13, 27, 8]
 	actual = [getattr (_.o, x) for x in attrs if "_" in x]
@@ -308,7 +310,7 @@ class Test_loaddb (unittest.TestCase):
 
     def test001 (_):
 	expect = set (((1,'equ','equivalent'),(2,'lit','literaly'),
-		       (3,'id','idiomatically'),(4,'expl','explanatory')))
+		       (3,'fig','figuratively'),(4,'expl','explanatory')))
 	recs = _.o.recs('GINF')
 	_.assertEqual (len(recs), 4)
 	comparable_recs = set ((tuple(x) for x in recs))

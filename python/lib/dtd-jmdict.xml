@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+ml version="1.0" encoding="UTF-8"?>
 <!-- Rev 1.07 
 	Revised POS tags for the adjectives
 -->
@@ -49,7 +49,8 @@
 	-->
 <!ELEMENT keb (#PCDATA)>
 	<!-- This element will contain a word or short phrase in Japanese 
-	which is written using at least one kanji. The valid characters are
+	which is written using at least one non-kana character (usually kanji,
+	but can be other characters). The valid characters are
 	kanji, kana, related characters such as chouon and kurikaeshi, and
 	in exceptional cases, letters from other alphabets.
 	-->
@@ -166,8 +167,11 @@
 <!ELEMENT xref (#PCDATA)*>
 	<!-- This element is used to indicate a cross-reference to another
 	entry with a similar or related meaning or sense. The content of
-	this element must exactly match that of a keb or reb element in 
-	another entry.
+	this element is typically a keb or reb element in another entry. In some
+	cases a keb will be followed by a reb and/or a sense number to provide
+	a precise target for the cross-reference. Where this happens, a JIS
+	"centre-dot" (0x2126) is placed between the components of the 
+	cross-reference.
 	-->
 <!ELEMENT ant (#PCDATA)*>
 	<!-- This element is used to indicate another entry which is an
@@ -193,7 +197,7 @@
 	<!-- This element records the information about the source
 	language(s) of a loan-word/gairaigo. If the source language is other 
 	than English, the language is indicated by the xml:lang attribute.
-	The entity value (if any) is the source word or phrase.
+	The element value (if any) is the source word or phrase.
 	-->
 <!ATTLIST lsource xml:lang CDATA "eng">
 	<!-- The xml:lang attribute defines the language(s) from which
@@ -321,6 +325,8 @@ various information fields.
 <!ENTITY uK "word usually written using kanji alone">
 <!ENTITY uk "word usually written using kana alone">
 <!ENTITY v1 "Ichidan verb">
+<!ENTITY v2a-s "Nidan verb with 'u' ending (archaic)">
+<!ENTITY v4h "Yondan verb with `hu/fu' ending (archaic)">
 <!ENTITY v4r "Yondan verb with `ru' ending (archaic)">
 <!ENTITY v5 "Godan verb (not completely classified)">
 <!ENTITY v5aru "Godan verb - -aru special class">
@@ -342,6 +348,7 @@ various information fields.
 <!ENTITY vi "intransitive verb">
 <!ENTITY vk "Kuru verb - special class">
 <!ENTITY vn "irregular nu verb">
+<!ENTITY vr "irregular ru verb, plain form ends with -ri">
 <!ENTITY vs "noun or participle which takes the aux. verb suru">
 <!ENTITY vs-s "suru verb - special class">
 <!ENTITY vs-i "suru verb - irregular">

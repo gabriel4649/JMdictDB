@@ -700,7 +700,7 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	#   is given in 'slist' that does not exist in target entry.
 	# enum (int or None) -- If 'corpid' value is given (below) then
 	#   this parameter is interpreted as a seq number.  Otherwise it
-	#   is interprested as an entry id number.
+	#   is interpreted as an entry id number.
 	# corpid (int or None) -- If given the resolved target must have
 	#   the same value of .src.
 	# one_entr_only (bool) -- Raise error if xref resolves to more
@@ -734,11 +734,13 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	condlist = []
 	if ktxt: condlist.append (('kanj k', "k.txt=%s", [ktxt]))
 	if rtxt: condlist.append (('rdng r', "r.txt=%s", [rtxt]))
-	if enum:
-	    if not corpid:
-		condlist.append (('entr e', 'e.id=%s', [enum]))
-	    else:
-		condlist.append (('entr e', 'e.seq=%s AND e.src=%s', [enum,corpid]))
+	if enum and not corpid:
+	    condlist.append (('entr e', 'e.id=%s', [enum]))
+	elif enum and corpid:
+	    condlist.append (('entr e', 'e.seq=%s AND e.src=%s', [enum,corpid]))
+	elif not enum and corpid:
+	    condlist.append (('entr e', 'e.src=%s', [corpid]))
+
 	sql, sql_args = build_search_sql (condlist)
 	tables = ('entr','rdng','kanj','sens','gloss')
 	entrs = entrList (dbh, sql, sql_args, tables=tables)

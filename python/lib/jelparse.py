@@ -712,7 +712,7 @@ def mk_restrs (listkey, rdngs, rdngkey, kanj, kanjkey, kmap=None):
 
         return "\n".join (errs)
 
-def resolv_xrefs (cur, entr):
+def resolv_xrefs (cur, entr, corpid=None):
         """\
         Convert any jelparser generated _XREF lists that are attached
         to any of the senses in 'entr' to a normal augmented xref list.
@@ -723,14 +723,16 @@ def resolv_xrefs (cur, entr):
           slist -- A list of ints specifying the target senses in
                     in the target entry.  
           enum -- An entry id number or None.
-        At least one of 'rtxt', 'ktxt', or 'enum' must be non-None.\
+        At least one of 'rtxt', 'ktxt', or 'enum' must be non-None.
+	'corpid', if given, is a integer and limits the xref search 
+	to that specific corpus.\
         """
         xrefs = []
         for s in getattr (entr, '_sens', []):
             if not hasattr (s, '_XREF'): continue
             for x in s._XREF: 
                 xrfs = jdb.resolv_xref (cur, x.typ, x.rtxt, x.ktxt,
-                                        x.slist, x.enum, None)
+                                        x.slist, x.enum, corpid)
                 xrefs.extend (xrfs)
             if xrefs: s._xref = xrefs
             del s._XREF
@@ -772,6 +774,8 @@ def main (args, opts):
 
         if opts.seq:
             seq = opts.seq
+	      #FIXME: Corpid (used for xref resolution) is hardwired
+	      # to 1 (jmdict) below.
             srctxt, parsedtxt = _roundtrip (cur, lexer, parser, seq, 1)
             if not srctxt:
                 print "Entry %s not found" % seq
@@ -800,6 +804,7 @@ def _roundtrip (cur, lexer, parser, seq, src):
         jeltxt = _get_jel_text (obj[0])
         jellex.lexreset (lexer, jeltxt)
         result = parser.parse (jeltxt,lexer=lexer)
+	resolv_xrefs (cur, result, src)
         jeltxt2 = _get_jel_text (result)
         return jeltxt, jeltxt2
 
@@ -854,11 +859,14 @@ def _parse_cmdline ():
   string, and parse it.  It prints both the input text and the
   object generated from the parse in the same format, and both
   should be functionally identical.  (There may be non-significant
-  differences such as tag order.)
+  differences such as tag order.)  
 
   If the --seq (-q) option is not given, this program will read 
   text input interactively until a blank line is entered, feed the 
-  text to the parser, and print the resulting object. 
+  text to the parser, and print the resulting object.  Note that
+  because a database is not available in this mode, xrefs will not
+  be resolved and thus not appear in the recreated output, even 
+  if present in the input. 
 
 Arguments: (None)
 """

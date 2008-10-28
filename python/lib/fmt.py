@@ -267,7 +267,7 @@ def restrtxts (restrs, key, kanjs,
 	"""
 
 	if not restrs: return []
-	if len(restrs) == len(kanjs):  return ['no ' + english.get(key,key)]
+	if len(restrs) == len(kanjs):  return ['no' + english.get(key,key)]
 	return [x.txt for x in jdb.filt (kanjs, [key], restrs, [key])]
 
 def chr (c):

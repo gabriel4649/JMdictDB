@@ -158,22 +158,30 @@
 	</table>
 
       <span tal:condition="e/HAS_AUDIO" tal:omit-tag="">Audio:
-	<dl>
-	  <span tal:repeat="a e/_snd" tal:omit-tag="">
-	    <dt>[entry]</dt>
-	    <dd tal:repeat="a r/_snd">
-	      <span tal:replace=a.snd>snd-id</span>
-	      </dd>
-	    </span>
-	  <span tal:repeat="r e/_rdng" tal:omit-tag="">
-	    <span tal:condition="r/_snd" tal:omit-tag="">
-	      <dt tal:content="r/txt">reading-text</dt>
-	      <dd tal:repeat="a r/_snd">
-		<span tal:replace=a.snd>snd-id</span>
-		</dd>
+	<table class="audio" border=1>
+	  <tr tal:repeat="a e/_snd">
+	    <td>&nbsp;</td>
+	    <td tal:content="a/snd">snd-id</td>
+	    <span tal:condition="a/CLIP" tal:omit-tag="">
+	      <td tal:content="a/CLIP/sdir">snd-dir</td>
+	      <td tal:content="a/CLIP/sfile">snd-file</td>
+	      <td tal:content="a/CLIP/strt">snd-strt</td>
+	      <td tal:content="a/CLIP/leng">snd-leng</td>
 	      </span>
+	    </tr>
+	  <span tal:repeat="r e/_rdng" tal:omit-tag="">
+	    <tr tal:repeat="a r/_snd">
+	      <td tal:content="r/txt">reading-text</td>
+	      <td tal:repeat="a r/_snd">snd-id</td>
+	      <span tal:condition="a/CLIP" tal:omit-tag="">
+	        <td tal:content="a/CLIP/sdir">snd-dir</td>
+	        <td tal:content="a/CLIP/sfile">snd-file</td>
+	        <td tal:content="a/CLIP/strt">snd-strt</td>
+	        <td tal:content="a/CLIP/leng">snd-leng</td>
+	        </span>
+	      </tr>
 	    </span>
-	  </dl>
+	  </table>
 	</span>
 
       <span tal:condition="e/_hist" tal:omit-tag="">History:

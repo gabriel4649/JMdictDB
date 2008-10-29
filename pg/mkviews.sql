@@ -419,4 +419,12 @@ CREATE OR REPLACE FUNCTION find_chain_head (eid INT) RETURNS entr AS $$
         RETURN p;
     END; $$ LANGUAGE 'plpgsql';
 
+CREATE OR REPLACE VIEW vsnd AS (
+    SELECT snd.id, snd.strt, snd.leng, 
+	sndfile.loc AS sfile, sndvol.loc AS sdir, 
+	sndvol.type=2 AS iscd, sndvol.id AS sdid, snd.trns
+    FROM sndvol 
+    JOIN sndfile ON sndvol.id = sndfile.vol
+    JOIN snd ON sndfile.id = snd.file);
+
 COMMIT;

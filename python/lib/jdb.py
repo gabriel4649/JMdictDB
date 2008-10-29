@@ -615,7 +615,7 @@ def add_stagk (sens, kanj):
 def augment_xrefs (dbh, xrefs, rev=False):
 	# Augment a set of xrefs with extra information about the 
 	# xrefs' targets.  After augment_xrefs() returns, each xref
-	# item in 'xrefs' will have an additional atttribute, "TARG"
+	# item in 'xrefs' will have an additional attribute, "TARG"
 	# that is a reference to an entr object describing the xref's
 	# target entry.  Unlike ordinary entr objects, the TARG objects
 	# have only a subset of sub items: they have no _inf, _freq, 
@@ -1203,7 +1203,21 @@ class Snds:
     def augment_snds (sndrecs):
 	augment_snds (self.cur, sndrecs, self.sels)
 
-def augment_snds (cur, sndrecs, sels=None):
+def augment_snds (dbh, snds):
+	# Augment a set of snds with extra information about the 
+	# snds' clips.  After augment_snds() returns, each snd
+	# item in 'snds' will have an additional attribute, "CLIP"
+	# that is a reference to a Clip object describing the snd's
+	# clip information. 
+
+	if not snds: return
+	sql = "SELECT * FROM vsnd WHERE id IN (%s)" % ','.join(['%s']*len(snds))
+	args = [x.snd for x in snds]
+	data = dbread (dbh, sql, args, 
+		       ('id','strt','leng','sfile','sdir','iscd','sdid','trns'))	
+	mup (None, data, ['id'], snds, ['snd'], 'CLIP')
+
+def xx_augment_snds (cur, sndrecs, sels=None):
 	"""
 	Augments entrsnd or rdngsnd records ('sndrecs') with sound
 	objects that describe the sound clip identified in each sndrec

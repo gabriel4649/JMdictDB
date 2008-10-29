@@ -39,6 +39,7 @@ def main (args, opts):
 		for s in e._sens:
 		    if hasattr (s, '_xref'): jdb.augment_xrefs (cur, s._xref)
 		    if hasattr (s, '_xrer'): jdb.augment_xrefs (cur, s._xrer, 1)
+		if hasattr (e, '_snd'): jdb.augment_snds (cur, e._snd)
 	    cur.close()
 	if not errs:
 	    jmcgi.htmlprep (entries)

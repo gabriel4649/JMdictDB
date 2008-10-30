@@ -70,6 +70,8 @@ class Roundtrip (unittest.TestCase):
     def test1401950(self): self.check(1401950)	# gloss, trailing numeric and paren
     def test1414950(self): self.check(1414950)	# gloss, mult quotes
     def test1075210(self): self.check(1075210)	# gloss, initial digits
+    def test1000090(self): self.check(1000090)	# xref and ant with hard to classify kanji.
+    def test1000920(self): self.check(1000920)	# xref w rdng (no kanj) and sense number.
 
     def check (self, seq):
 	global cur, lexer, parser

@@ -724,12 +724,12 @@ def resolv_xrefs (cur, entr, corpid=None):
                     in the target entry.  
           enum -- An entry id number or None.
         At least one of 'rtxt', 'ktxt', or 'enum' must be non-None.
-	'corpid', if given, is a integer and limits the xref search 
-	to that specific corpus.\
+        'corpid', if given, is a integer and limits the xref search
+        to that specific corpus.\
         """
-        xrefs = []
         for s in getattr (entr, '_sens', []):
             if not hasattr (s, '_XREF'): continue
+            xrefs = []
             for x in s._XREF: 
                 xrfs = jdb.resolv_xref (cur, x.typ, x.rtxt, x.ktxt,
                                         x.slist, x.enum, corpid)
@@ -774,8 +774,8 @@ def main (args, opts):
 
         if opts.seq:
             seq = opts.seq
-	      #FIXME: Corpid (used for xref resolution) is hardwired
-	      # to 1 (jmdict) below.
+              #FIXME: Corpid (used for xref resolution) is hardwired
+              # to 1 (jmdict) below.
             srctxt, parsedtxt = _roundtrip (cur, lexer, parser, seq, 1)
             if not srctxt:
                 print "Entry %s not found" % seq
@@ -804,7 +804,7 @@ def _roundtrip (cur, lexer, parser, seq, src):
         jeltxt = _get_jel_text (obj[0])
         jellex.lexreset (lexer, jeltxt)
         result = parser.parse (jeltxt,lexer=lexer)
-	resolv_xrefs (cur, result, src)
+        resolv_xrefs (cur, result, src)
         jeltxt2 = _get_jel_text (result)
         return jeltxt, jeltxt2
 
@@ -859,15 +859,14 @@ def _parse_cmdline ():
   string, and parse it.  It prints both the input text and the
   object generated from the parse in the same format, and both
   should be functionally identical.  (There may be non-significant
-  differences such as tag order.)  
+  differences such as tag order.)
 
   If the --seq (-q) option is not given, this program will read 
   text input interactively until a blank line is entered, feed the 
   text to the parser, and print the resulting object.  Note that
   because a database is not available in this mode, xrefs will not
-  be resolved and thus not appear in the recreated output, even 
-  if present in the input. 
-
+  be resolved and thus not appear in the recreated output, even
+  if present in the input.
 Arguments: (None)
 """
         p = OptionParser (usage=u)

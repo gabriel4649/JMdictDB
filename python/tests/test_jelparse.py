@@ -72,6 +72,17 @@ class Roundtrip (unittest.TestCase):
     def test1075210(self): self.check(1075210)	# gloss, initial digits
     def test1000090(self): self.check(1000090)	# xref and ant with hard to classify kanji.
     def test1000920(self): self.check(1000920)	# xref w rdng (no kanj) and sense number.
+    def test1000420(self): self.check(1000420)	# xref w K.R pair.
+    def test1011770(self): self.check(1011770)  # ant with K.R.s triple.
+    def test2234570(self): self.check(2234570)	# xref w K.s pair.
+    def test1055420(self): self.check(1055420)	# dotted reb, wide ascii xref.
+    def test1098650(self): self.check(1098650)	# dotted reb, kanji xref.
+    def test1099200(self): self.check(1099200)	# mult rdng w dots, kanj xref.
+    def test1140360(self): self.check(1140360)	# xref w kanj/katakana.
+    def test1578780(self): self.check(1578780)	# dotted pair (K.R) in stagk.
+    def test2038530(self): self.check(2038530)	# dotted keb w dotted restr.
+    def test2107800(self): self.check(2107800)	# double-dotted reb.
+    def test2159530(self): self.check(2159530)	# wide ascii kanj w dot and restr.
 
     def check (self, seq):
 	global cur, lexer, parser

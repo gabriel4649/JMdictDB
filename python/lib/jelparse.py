@@ -312,19 +312,19 @@ def p_jtext_2(p):
     p[0] = [None,p[1],None,None]
 
 def p_jtext_3(p):
-    '''jtext : KTEXT SLASH RTEXT'''
+    '''jtext : KTEXT DOT RTEXT'''
     p[0] = [p[1],p[3],None,None]
 
 def p_jtext_4(p):
-    '''jtext : NUMBER SLASH KTEXT'''
+    '''jtext : NUMBER DOT KTEXT'''
     p[0] = [p[3],None,None,toint(p[1])]
 
 def p_jtext_5(p):
-    '''jtext : NUMBER SLASH RTEXT'''
+    '''jtext : NUMBER DOT RTEXT'''
     p[0] = [None,p[3],None,toint(p[1])]
 
 def p_jtext_6(p):
-    '''jtext : NUMBER SLASH KTEXT SLASH RTEXT'''
+    '''jtext : NUMBER DOT KTEXT DOT RTEXT'''
     p[0] = [p[3],p[5],None,toint(p[1])]
 
 def p_jtext_7(p):

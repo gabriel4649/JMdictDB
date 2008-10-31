@@ -344,23 +344,23 @@
         <td>Cross-reference</td>
         <td>Sense</td>
         <td>
-	  [see=<span style="font-style: italic;">KK/RR</span>[<span style="font-style: italic;">sense-num</span>]]<br/>
-	  [ant=<span style="font-style: italic;">KK/RR</span>[<span style="font-style: italic;">sense-num</span>]]<br/>
+	  [see=<span style="font-style: italic;">KK・RR</span>[<span style="font-style: italic;">sense-num</span>]]<br/>
+	  [ant=<span style="font-style: italic;">KK・RR</span>[<span style="font-style: italic;">sense-num</span>]]<br/>
 	  ~~~~<br/>
 	  (1) There are two kinds of cross-reference:
 	    <ul><li>See also (a general cross reference)
 	    </li><li>Antonym</li></ul>
 	  (2) KK is the kanji of the target of the cross reference, RR is
 	    its reading.  sense-num is the specific sence in the target 
-	    being referenced.  The KK/RR pair must uniquely identify a
+	    being referenced.  The KK・RR pair must uniquely identify a
 	    single JMdict entry. <br/>
-	  (3) KK/ or /RR (but not both) may be left out if the
+	  (3) KK・ or ・RR (but not both) may be left out if the
 	  remaining text still uniquely identifies the target word.<br/>
 	  (4) sense-num is optional if the target word has only one sense.
 	  Otherwise, it must be given.  Multiple sense numbers can be 
 	  given, separated by commas.<br/>
 	  (5) If there are spaces or other special characters in the
-	  KK/RR[sense-num] text, enclose the entire string in quotes (").</td>
+	  KK・RR[sense-num] text, enclose the entire string in quotes (").</td>
 
         <td>[see=涼しい／すずしい[1]]<br/>[ant=暑い／あつい[1]]</td>
 	</tr>

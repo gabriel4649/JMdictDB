@@ -1,0 +1,45 @@
+﻿Title:	Change JEL xref separator from slash to dot
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-10-30 21:48:00 stuart
+  The JEL grammer (in jelparser.y) uses a slash character to
+  separate kanji and reading (and optionally seqid) in xref 
+  and antonym text.  For example:
+
+    [see=彼／あれ]
+
+  JMdict uses XML for this:
+
+    <xref>彼・あれ</xref>
+
+  To reduce differences between JMdict syntax and JEL syntax, 
+  it would be nice if JEL can also use a middle-dot character.
+
+2008-10-30 22:17:00 stuart
+  Changed jelex.py and jelparse.y to use middle-dot rather
+  than slash in xrefs.  (Also updated docs in lib/tmpl/edhelp.tal.)
+
+  This introduces a new problem: middle-dots are used in some 
+  rdng and kanj texts and consequently in restr text, (e.g.:
+
+    Entry: jmdict 2038530 A {98679}
+    Kanji: 1.原子力安全・保安院 2.原子力安全保安院
+    Reading: 1.げんしりょくあんぜんほあんいん(原子力安全保安院) 
+             2.げんしりょくあんぜん・ほあんいん(原子力安全・保安院)
+    1. [n]
+      1. Nuclear and Industrial Safety Agency
+
+  Restr text is parsed like xref text (as "jitem" in the parser)
+  and dotted text like R.R or K.K will cause a parse error (only
+  K.R is allowed).  Simply allowing those combination is insufficient
+  since there exist entries like R.R.R so presumably K.K.K is also
+  possible or existent, and so is a restr (or stagr, or stagk) 
+  referencing it. 
+  
+  Options are to return to using slash in jitems, or parse xref
+  and restr separately (or something else?)

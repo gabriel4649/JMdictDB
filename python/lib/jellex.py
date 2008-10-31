@@ -31,7 +31,7 @@ class LexSpec:
 	('GLOSS',   'exclusive'),
 	('SNUMLIST','exclusive'),)
 
-    tokens = ('SNUM', 'SEMI', 'BRKTL', 'TEXT', 'QTEXT', 'COLON', 'COMMA',
+    tokens = ('SNUM', 'SEMI', 'BRKTL', 'TEXT', 'QTEXT', 'COLON', 'COMMA', 'DOT',
 	      'EQL', 'SLASH', 'BRKTR', 'GTEXT', 'KTEXT', 'RTEXT', 'NUMBER')
 
     def __init__(self): pass
@@ -85,6 +85,9 @@ class LexSpec:
     def t_TAGLIST_SLASH (self, t):
 	ur'[\/\uFF0F]'
 	return t
+    def t_TAGLIST_DOT (self, t):
+	ur'[\u30FB]'
+	return t
     def t_TAGLIST_BRKTL (self, t):
 	ur'\['
 	t.lexer.push_state('SNUMLIST')
@@ -99,7 +102,7 @@ class LexSpec:
 	return t
 
     def t_TAGLIST_TEXT (self, t):
-	ur'[^;\uFF1B:=,\/\uFF0F\[\] \t\r\n]+'
+	ur'[^;\uFF1B:=,\/\uFF0F\u30FB\[\] \t\r\n]+'
 	  # Classify it as kanji, reading (kana), or ordinary
 	  # text and return token accordingly.
 	t.value = qcleanup(t.value)

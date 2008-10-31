@@ -268,7 +268,7 @@ tagitem
 			"Bad lsrc flags '%s', must be 'w' (wasei), 'p' (partial),or both" % p[5])
 		p[0] = ["lsrc", p[7], la.id, p[5]] }
  
-	| TEXT EQL jitems   /* xref=k/r[n1,n2,..], restr=k;k;.. (restr, stagr,stagk) */
+	| TEXT EQL jitems   /* xref=k.r[n1,n2,..], restr=k;k;.. (restr, stagr,stagk) */
 		{ if p[1] != "restr" and p[1] != "see" and p[1] != "ant":
 		    p.error(); xerror (p, "Keyword not \"restr\", \"see\", or \"ant\"")
 		if p[1] == "restr": p[1] = "RESTR"
@@ -299,13 +299,13 @@ jtext
 		{ p[0] = [p[1],None,None,None] }
 	| RTEXT
 		{ p[0] = [None,p[1],None,None] }
-	| KTEXT SLASH RTEXT
+	| KTEXT DOT RTEXT
 		{ p[0] = [p[1],p[3],None,None] }
-	| NUMBER SLASH KTEXT
+	| NUMBER DOT KTEXT
 		{ p[0] = [p[3],None,None,toint(p[1])] }
-	| NUMBER SLASH RTEXT
+	| NUMBER DOT RTEXT
 		{ p[0] = [None,p[3],None,toint(p[1])] }
-	| NUMBER SLASH KTEXT SLASH RTEXT
+	| NUMBER DOT KTEXT DOT RTEXT
 		{ p[0] = [p[3],p[5],None,toint(p[1])] }
 	| NUMBER
 		{ p[0] = [None,None,None,toint(p[1])] }

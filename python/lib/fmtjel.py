@@ -159,7 +159,7 @@ def xref (xrefs):
 	else:
 	    if hasattr (xref, 'ktxt'): v.append (xref.ktxt)
 	    if hasattr (xref, 'rtxt'): v.append (xref.rtxt)
-	txt = '/'.join (v)
+	txt = u'\u30FB'.join (v)
 	txt = KW.XREF[xref.typ].kw + '=' + txt + stxt
 	return txt
 

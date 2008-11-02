@@ -139,6 +139,7 @@ def main( args, opts ):
 	disp = fv ('disp') or ''  # '': User submission, 'a': Approve. 'r': Reject;
 	if not is_editor() and disp:
 	    errs.append ("Only registered editors can approve or reject entries")
+        #raise RuntimeError
 	if not errs:
 	    entrs = json.unserialize (fv ("entr"))
 	    added = []
@@ -146,7 +147,7 @@ def main( args, opts ):
 	    dbh.execute ("START TRANSACTION ISOLATION LEVEL SERIALIZABLE");
 	    for entr in entrs:
 		added.append (submission (dbh, svc, entr, disp, errs))
-	if not errs: 
+	if not errs:
 	    dbh.connection.commit()
 	    jmcgi.gen_page ("tmpl/submitted.tal", output=sys.stdout, added=added, svc=svc)
 	else: 
@@ -332,14 +333,14 @@ def merge_hist (dbh, entr, rev):
 	    return old
 
 def delentr (dbh, id):
-	# Delete entry $id (and by cascade, any edited entries
+	# Delete entry 'id' (and by cascade, any edited entries
 	# based on this one).  This function deletes the entire
 	# entry, including history.  To delete the entry contents
 	# but leaving the entr and hist records, use database 
-	# function delentr.
+	# function delentr.  'dbh' is an open dbapi cursor object.
 
 	sql = "DELETE FROM entr WHERE id=%s";
-	dbh.execute (sql, None, id)
+	dbh.execute (sql, (id,))
 
 def is_editor():
 	return 1

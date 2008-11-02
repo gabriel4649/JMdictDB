@@ -70,11 +70,11 @@ def main (args, opts):
 	refs    = url_str ('reference', form) or ''
 	name    = url_str ('name', form)      or ''
 	email   = url_str ('email', form)     or ''
-	if not email: errs.append ("Missing email address")
-	else:
-	    mo = re.search (r'^[A-Z0-9._%-]+@(?:[A-Z0-9-]+\.)+[A-Z]{2,4}$', email, re.I)
-	    if not mo:
-		errs.append ("Invalid email address: %s" % email)
+	#if not email: errs.append ("Missing email address")
+	#else:
+	#    mo = re.search (r'^[A-Z0-9._%-]+@(?:[A-Z0-9-]+\.)+[A-Z]{2,4}$', email, re.I)
+	#    if not mo:
+	#	errs.append ("Invalid email address: %s" % email)
 
 	  # Parse the entry data.  Problems will be reported
 	  # by messages in @$perrs.  We do the parse even if 

@@ -30,7 +30,7 @@ def main():
 	model = Model (cursor)
 
         gui = wx.App (redirect=0)
-	gui.edid = opts.authorized
+	gui.userid = opts.authorized
 	xrcres = wx.xrc.XmlResource ("srch.xrc")
 
 	if opts.edit is not None:
@@ -699,8 +699,8 @@ class Frame3 (wx.Frame):  # from srch.py
     def __init__ (self, parent, id, title, xrcres, model, entr):
 	self.model = model
 	self.xrcres = xrcres
-	edid = wx.GetApp().edid
-	self.authed = self.model.get_ed (edid) if edid else None 
+	userid = wx.GetApp().userid
+	self.authed = self.model.get_ed (userid) if userid else None 
 	self.entr = entr
 	wx.Frame.__init__ (self, parent, id, title)
 	self.SetMenuBar (xrcres.LoadMenuBar ("M_EDIT"))
@@ -761,7 +761,7 @@ class Frame3 (wx.Frame):  # from srch.py
     def save (self, evt, saved=[None]):
 	if not self.entr: dfrm = None
 	else: dfrm = self.entr.id
-	edid = self.authed.id if self.authed else None 
+	userid = self.authed.id if self.authed else None 
 	st, v = self.get_comment (saved[0])
 	saved[0] = v
 	if st == wx.ID_OK: user, email, comment, refs = v
@@ -778,7 +778,7 @@ class Frame3 (wx.Frame):  # from srch.py
 		not self.getvalue (GET(self, 'unap'),bool),
 		self.getvalue (GET(self, 'srcnote'),unicode),
 		self.getvalue (GET(self, 'notes'),unicode))
-	    self.model.add_entr ( newentr, edid, user, email, comment, refs)
+	    self.model.add_entr ( newentr, userid, user, email, comment, refs)
 	except (ParseError,AuthError), excep:
 	    msg (self, str(excep), wx.OK|wx.ICON_ERROR)
 	    return
@@ -801,7 +801,7 @@ class Frame3 (wx.Frame):  # from srch.py
 	    cntls[1].SetValue(self.authed.email)
 
 	if self.authed:
-	    dlg.FindWindowByName('edid').SetValue (str(self.authed.id))
+	    dlg.FindWindowByName('userid').SetValue (str(self.authed.id))
 	    dlg.FindWindowByName('edname').SetValue (self.authed.name)
 	    dlg.FindWindowByName('edemail').SetValue (self.authed.email)
 
@@ -869,8 +869,8 @@ class Model:
 	  = corp, seq, stat, dfrm, unap, srcnote, notes
 	return e
 
-    def add_entr (self, e, edid, name, email, comment, refs):
-	jdb.add_hist (self.cursor, e, edid, name, email, comment, refs)
+    def add_entr (self, e, userid, name, email, comment, refs):
+	jdb.add_hist (self.cursor, e, userid, name, email, comment, refs)
 	self.cursor.execute ('BEGIN')
 	id,x = jdb.addentr (self.cursor, e)
 	self.cursor.execute ('COMMIT')
@@ -881,11 +881,12 @@ class Model:
 	rs.sort (key=operator.attrgetter (ord))
 	return rs
 
-    def get_ed (self, edid_or_name):
-	if isinstance (edid_or_name, (str, unicode)): field = 'name'
-	else: field = 'id'
-	sql = "SELECT id,name,email,notes FROM editor WHERE %s=%%s" % field
-	rs = jdb.dbread (self.cursor, sql, (str(edid_or_name),), ('id','name','email','notes'))
+    def get_ed (self, userid):
+	#FIXME: don't hardwire "jmsess".
+	userdb = jdb.dbOpen ("jmsess")
+	sql = "SELECT id,name,email,notes FROM users WHERE id=%s"
+	rs = jdb.dbread (userdb, sql, (userid,), ('id','name','email','notes'))
+	userdb.close()
 	return rs[0] if rs else None
 
     def notify (self, topic, data=None):

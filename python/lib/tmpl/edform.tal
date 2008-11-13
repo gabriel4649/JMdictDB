@@ -7,7 +7,9 @@
   <title>JMdict Entry Edit Form</title>
 </head>
 <body class="edform">
-<h1>JMdict Entry Edit Form</h1>
+  <div metal:use-macro="macros/macros/login">
+    <h1 metal:fill-slot="title">JMdictDB Entry Edit Form</h1>
+    </div>
 <form action="edconf.py" name="edconf" tal:attributes="method method">
   <table class="form">
     <tbody>
@@ -35,7 +37,7 @@
 			</span>
 		      <span tal:condition="not:e/unap" tal:content="python:TALabbr('STAT',e.stat)">status</span>
 		      <span tal:condition="e/dfrm" tal:omit-tag=""> 
-			<a tal:attributes="href string:entr.py?svc=${svc}&amp;e=${e/dfrm}" tal:content="e/dfrm"/>
+			<a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${e/dfrm}" tal:content="e/dfrm"/>
 			</span>
 		      </td>
 		    </tr>
@@ -120,12 +122,12 @@
 	      </tr>
 	    <tr>
 	      <td>Name: <a class="helplink" target="edhelp" href="edhelp.py#name">help</a></td>
-	      <td><input type="text" name="name" size="30"/></td>
+	      <td><input type="text" name="name" size="30" tal:attributes="value session/fullname"/></td>
 	      <td></td>
 	      </tr>
 	    <tr>
 	      <td>Email: <a class="helplink" target="edhelp" href="edhelp.py#email">help</a></td>
-	      <td><input type="text" name="email" size="30"/></td>
+	      <td><input type="text" name="email" size="30" tal:attributes="value session/email"/></td>
 	      <td></td>
 	      </tr>
 	    <tr>
@@ -142,6 +144,7 @@
 	          </span>
 
 		<input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
+		<input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
 		<input type="hidden" name="id" tal:condition="e" tal:attributes="value e/id"/>
 		<input type="hidden" name="src" tal:condition="e" tal:attributes="value e/src"/>
 		<input type="hidden" name="stat" tal:condition="e" tal:attributes="value e/stat"/>

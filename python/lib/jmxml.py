@@ -418,21 +418,26 @@ def do_xref (elems, sens, xtypkw):
 	    sens._xrslv.extend (xrefs)
 
 def do_hist (elems, entr):
+	global XKW
 	hists = []
 	for elem in elems:
 	    x = elem.findtext ("upd_date")
 	    dt = datetime.datetime (*([int(z) for z in x.split ('-')] + [0, 0, 0]))
-	    o = jdb.Obj (dt=dt, stat=jdb.KW.STAT_A)
+	    o = jdb.Obj (dt=dt)
+	    stat = elem.findtext ("upd_stat")
+	    unap = elem.find ("upd_unap")
 	    notes = elem.findtext ("upd_detl")
 	    name = elem.findtext ("upd_name")
 	    email = elem.findtext ("upd_email")
 	    diff = elem.findtext ("upd_diff")
 	    refs = elem.findtext ("upd_refs")
-	    if name: o.name = name
-	    if email: o.email = email
-	    if notes: o.notes = notes
-	    if refs: o.refs = refs
-	    if diff: o.diff = diff
+	    o.stat = XKW.STAT[stat].id if stat else XKW.STAT['A'].id
+	    o.unap = unap is not None
+	    o.name = name if name else None
+	    o.email = email if email else None
+	    o.notes = notes if notes else None
+	    o.refs = refs if refs else None
+	    o.diff = diff if diff else None
 	    hists.append (o)
 	if hists: 
 	    if not hasattr (entr, '_hist'): entr._hist = []

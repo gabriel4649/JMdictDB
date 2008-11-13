@@ -131,13 +131,13 @@ import jdb, jmcgi, cgitb, json
 
 def main( args, opts ):
 	cgitb.enable()
-	form = cgi.FieldStorage(); fv = form.getfirst
 	errs = []
-	svc = jmcgi.safe (form.getfirst ('svc'))
-	dbh = jmcgi.dbOpenSvc (svc)
+	try: form, svc, dbh, sid, sess, parms = jmcgi.parseform()
+	except Exception, e: errs = [str (e)]
+	fv = form.getfirst
 
 	disp = fv ('disp') or ''  # '': User submission, 'a': Approve. 'r': Reject;
-	if not is_editor() and disp:
+	if not sess and disp:
 	    errs.append ("Only registered editors can approve or reject entries")
         #raise RuntimeError
 	if not errs:
@@ -146,16 +146,19 @@ def main( args, opts ):
 	    dbh.connection.commit()
 	    dbh.execute ("START TRANSACTION ISOLATION LEVEL SERIALIZABLE");
 	    for entr in entrs:
-		added.append (submission (dbh, svc, entr, disp, errs))
+		added.append (submission (dbh, sess, svc, entr, disp, errs))
 	if not errs:
 	    dbh.connection.commit()
-	    jmcgi.gen_page ("tmpl/submitted.tal", output=sys.stdout, added=added, svc=svc)
+	    jmcgi.gen_page ("tmpl/submitted.tal", macros='tmpl/macros.tal',
+			    added=added,
+			    svc=svc, sid=sid, session=sess, parms=parms, 
+			    output=sys.stdout, this_page='edsubmit.py')
 	else: 
 	    dbh.connection.rollback()
 	    jmcgi.gen_page ("tmpl/url_errors.tal", output=sys.stdout, errs=errs, svc=svc);
 	dbh.close()
 
-def submission (dbh, svc, entr, disp, errs):
+def submission (dbh, sess, svc, entr, disp, errs):
 
 	KW = jdb.KW
 	merge_rev = False
@@ -176,22 +179,37 @@ def submission (dbh, svc, entr, disp, errs):
 		  # if the submitter has done so. 
 		merge_rev = True
 
+
+	entr.unap = not disp
+
 	  # Merge_hist() will combine the history entry in the submitted
 	  # entry with the all the previous history records in the 
 	  # parent entry, so the the new entry will have a continuous
 	  # history.  In the process it checks that the parent entry
 	  # exists -- it might not if someone else has approved a 
 	  # different edit in the meantime.
-	entr = merge_hist (dbh, entr, merge_rev)
-	if not entr:
-	    errs.append (
-		"The entry you are editing has been changed by " 
-		"someone else.  Please check the current entry and " 
-		"reenter your changes if they are still applicable.")
+	  # merge_hist also returns an entry.  If 'merge_rev' is false,
+	  # the entry returned is 'entr'.  If 'merge_rev' is true,
+	  # the entry returned is the entr pointed to by 'entr.dfrm'
+	  # (i.e. the original entry that the submitter edited.)
+	  # This is done when a delete is requested and we want to 
+	  # ignore any edits the submitter may have made (which 'entr'
+	  # will contain.)
+
+	  # Before calling merge_hist() check for a condition that would
+	  # cause merge_hist() to fail.
+	if getattr (entr, 'dfrm', None) and entr.stat==KW.STAT['D'].id:
+	    errs.append ("Delete requested but entry is new (has no 'dfrm' value.")
 
 	if not errs:
+	    entr = merge_hist (dbh, entr, merge_rev, sess)
+	    if not entr:
+		errs.append (
+		    "The entry you are editing has been changed by " 
+		    "someone else.  Please check the current entry and " 
+		    "reenter your changes if they are still applicable.")
+	if not errs:
 	    if not disp:
-		entr.unap = True
 		added = submit (dbh, svc, entr, errs)
 	    elif disp == "a":
 		added = approve (dbh, svc, entr, errs)
@@ -208,8 +226,7 @@ def submit (dbh, svc, entr, errs):
 	    errs.append ("Bad url parameter, no dfrm");  return
 	if entr.stat == jdb.KW.STAT['R'].id: 
 	    errs.append ("Bad url parameter, stat=R");  return
-	entr.unap = True
-	res = jdb.addentr (dbh, entr)
+	res = addentr (dbh, entr)
 	return res
 
 def approve (dbh, svc, entr, errs):
@@ -267,7 +284,7 @@ def approve (dbh, svc, entr, errs):
 	  # the database..
 	entr.dfrm = None
 	entr.unap = False
-	res = jdb.addentr (dbh, entr)
+	res = addentr (dbh, entr)
 	  # Delete the old root if any.  Because the dfrm foreign key is
 	  # specified with "on delete cascade", deleting the root entry
 	  # will also delete all it's children. 
@@ -297,19 +314,25 @@ def reject (dbh, svc, entr, errs):
 	entr.stat = KW.STAT['R'].id
 	entr.dfrm = None
 	entr.unap = False
-	res = jdb.addentr (dbh, entr)
+	res = addentr (dbh, entr)
 	delentr (dbh, chhead)
 	dbh.connection.commit()
 	return res
 
-def merge_hist (dbh, entr, rev):
+def addentr (dbh, entr):
+	entr._hist[-1].unap = entr.unap
+	entr._hist[-1].stat = entr.stat
+	res = jdb.addentr (dbh, entr)
+	return res
+
+def merge_hist (dbh, entr, rev, sess):
 	# Merge the history from the derived-from entry
-	# having id $dfrmid, into the entry object $entr.
-	# Only the last hist entry of $entr is kept; all
-	# earlier entries are replaced with history entries
-	# from entry $dfrmid.  The timestamp in the last
-	# entry is reset to the current date/time.
-	# If $rev is true, then merge the new hist record
+	# having id 'dfrmid', into the entry object 'entr'.
+	# Only the last hist entry of 'entr' is kept; all
+	# earlier hist entries are replaced with hist entries
+	# from entry 'dfrmid'.  The timestamp in the last
+	# entry is reset to the current date/time.  The 
+	# If 'rev' is true, then merge the new hist record
 	# into the orignal entry.  This is used when processing
 	# a delete entry where we want to ignore the parsed 
 	# entry and use the original entr.
@@ -322,12 +345,18 @@ def merge_hist (dbh, entr, rev):
 	    hist = old._hist
 	newest = entr._hist.pop()
 	newest.dt = datetime.datetime.utcnow().replace(microsecond=0)
+	if sess: newest.userid = sess.userid
 	hist.append (newest)
 	if not rev:
 	    entr._hist = hist
 	    return entr
 	else:
+	      # 'rev' is true.  This means that we want to submit not
+	      # 'entr', which was built from the form data, but instead 
+	      # we want to submit the original entry the form data was
+	      # based on, i.e. the entry pointed to by 'dfrm'.
 	    old.stat = entr.stat
+	    old.unap = entr.unap
 	    old.dfrm = entr.dfrm
 	    old._hist = hist
 	    return old
@@ -341,9 +370,6 @@ def delentr (dbh, id):
 
 	sql = "DELETE FROM entr WHERE id=%s";
 	dbh.execute (sql, (id,))
-
-def is_editor():
-	return 1
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()

@@ -4,21 +4,23 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
-  <title>JMdict</title>
+  <title>JMdictDB Entries</title>
 </head>
 <body>
-  <h1>JMdict Database Entries</h1>
-  <span tal:repeat="e entries">
+  <div metal:use-macro="macros/macros/login">
+    <h1 metal:fill-slot="title">JMdictDB Entries</h1>
+    </div>
+  <span tal:repeat="e entries" tal:omit-tag="">
     <div class="entry">
       <span tal:replace="python:TALabbr('SRC',e.src)">src</span>
-      <a tal:attributes="href string:entr.py?svc=&amp;${svc}q=${e/seq}.${e/src}" tal:content="e/seq">seq#</a>
+      <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;q=${e/seq}.${e/src}" tal:content="e/seq">seq#</a>
       <span class="status">
 	<span tal:condition="e/unap" class="pend">
 	  <span tal:content="python:TALdescr('STAT',e.stat)">status</span> pending
 	  </span>
 	<span tal:condition="not:e/unap" tal:content="python:TALdescr('STAT',e.stat)">status</span>
         <span tal:condition="e/dfrm" tal:omit-tag=""> 
-	  (parent: <a tal:attributes="href string:entr.py?svc=${svc}&amp;e=${e/dfrm}" tal:content="e/dfrm"/>)
+	  (parent: <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${e/dfrm}" tal:content="e/dfrm"/>)
 	  </span>
 	</span>
       <span class="pkid" tal:condition="python:e.id&gt;0">{id:<span tal:replace="e/id" tal:omit-tag=""/>}</span>
@@ -125,7 +127,7 @@
 		<td>&nbsp;</td>
 		<td>
 		  <span tal:replace="python:TALabbr('XREF',x.typ)">xref-type</span>:
-		  <a tal:attributes="href string:entr.py?svc=${svc}&amp;e=${x/xentr}" tal:content="x/TARG/seq">seq-num</a>
+		  <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${x/xentr}" tal:content="x/TARG/seq">seq-num</a>
 		  <span tal:condition="x/TARG/_kanj" tal:replace="python:TALkrtxt(x.TARG,'_kanj',x.kanj)">xref-kanj</span>
 		  <span tal:condition="python:TALattrand(x,'kanj','rdng')" tal:omit-tag="">【</span>
 		  <span tal:condition="x/TARG/_rdng" tal:replace="python:TALkrtxt(x.TARG,'_rdng',x.rdng)">xref-rdng</span>
@@ -142,7 +144,7 @@
 		<td>&nbsp;</td>
 		<td>
 		  <span tal:replace="python:TALabbr('XREF',x.typ)">xref-type</span>:
-		  <a tal:attributes="href string:entr.py?svc=${svc}&amp;e=${x/entr}" tal:content="x/TARG/seq">seq-num</a>
+		  <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${x/entr}" tal:content="x/TARG/seq">seq-num</a>
 		  <span tal:condition="x/TARG/_kanj" tal:replace="x/TARG/_kanj/0/txt">xref-kanj</span>
 		  <span tal:condition="python:TALattrand(x/TARG,'_kanj','_rdng')" tal:omit-tag="">【</span>
 		  <span tal:condition="x/TARG/_rdng" tal:replace="x/TARG/_rdng/0/txt">xref-rdng</span>
@@ -189,7 +191,7 @@
 	  <span tal:repeat="h e/_hist">
 	    <tr>
 	      <td tal:content="string:${h/hist}.">#.</td> 
-	      <td class="hhdr" colspan="2" tal:content="string: ${python:TALabbr('STAT',h.stat)} ${h/dt} ${h/name}&lt;${h/email}&gt;">hist-header</td>
+	      <td class="hhdr" colspan="2" tal:content="string: ${python:TALabbr('STAT',h.stat)}${python:'*' if h.unap else ''} ${h/dt} ${h/name}&lt;${h/email}&gt;">hist-header</td>
 	      </tr>
 	    <tr tal:condition="h/notes">
 	      <td>&nbsp;</td>
@@ -209,6 +211,7 @@
 	<input type="submit" value="Edit"/>
 	<input type="hidden" name="e" tal:attributes="value e/id"/>
 	<input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
+	<input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
 	</form>
 
       </div>

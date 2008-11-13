@@ -18,7 +18,7 @@
     as provisional entries with the following seq. numbers:
   <p/>
   <span tal:repeat="a added" tal:omit-tag="">
-    <a tal:attributes="href string:entr.py?e=${a/0}&amp;svc=${svc}"
+    <a tal:attributes="href string:entr.py?e=${a/0}&amp;svc=${svc}&amp;sid=${sid}"
 	tal:content="string:${a/1} (${python:TALabbr('SRC',a[2])})"></a>
     </span>
   <p/>After review by the JMdict editors, they will be accepted

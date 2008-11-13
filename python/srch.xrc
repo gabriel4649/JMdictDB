@@ -887,7 +887,7 @@
                 <flag>wxALIGN_RIGHT</flag>
               </object>
               <object class="sizeritem">
-                <object class="wxTextCtrl" name="edid">
+                <object class="wxTextCtrl" name="userid">
                   <style>wxTE_READONLY|wxNO_BORDER</style>
                   <fg>#FFFFFF</fg>
                   <bg>#e8e8e8</bg>

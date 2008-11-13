@@ -153,6 +153,15 @@ activate:
 	-psql $(PG_HOST) $(PG_USER) -d postgres -c 'alter database $(DBACT) rename to $(DBOLD)'
 	psql $(PG_HOST) $(PG_USER) -d postgres -c 'alter database $(DB) rename to $(DBACT)'
 
+#------ Create jmsess ---------------------------------------------------
+
+jmsess: 
+	# Don't automatically drop old database due to risk 
+	# of loosing important user logins and passwords.
+	#psql $(PG_HOST) $(PG_USER) -d postgres -c 'drop database if exists $(DBOLD)'
+	psql $(PG_HOST) $(PG_USER) -d postgres -c 'create database jmsess'
+	cd pg && psql $(PG_HOST) $(PG_USER) -d jmsess -f mksess.sql
+
 #------ Load JMdict -----------------------------------------------------
 
 data/jmdict.xml: 

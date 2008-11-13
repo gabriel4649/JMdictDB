@@ -26,9 +26,13 @@ sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import jdb, jmcgi
 
 def main( args, opts ):
-	form = cgi.FieldStorage(); fv = form.getfirst; fl = form.getlist
-	svc = jmcgi.safe (form.getvalue ('svc'))
-	cur = jmcgi.dbOpenSvc (svc)
+	errs = []
+	try: form, svc, cur, sid, sess, parms = jmcgi.parseform()
+	except Exception, e: errs = [str (e)]
+	fv = form.getfirst; fl = form.getlist
+	if errs:
+	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
+	    return 
 
 	so = jmcgi.SearchItems()
 	so.idnum=fv('idval');  so.idtyp=fv('idtyp')
@@ -66,7 +70,11 @@ def main( args, opts ):
 	    svcstr = ("svc=%s&" % svc) if svc else ''
 	    print "Location: entr.py?%se=%d\n" % (svcstr, rs[0].id)
 	else:
-	    jmcgi.gen_page ("tmpl/srchres.tal", output=sys.stdout, results=rs, svc=svc)
+	    jmcgi.gen_page ("tmpl/srchres.tal", macros='tmpl/macros.tal', 
+			    results=rs, 
+			    svc=svc, sid=sid, session=sess, parms=parms,
+			    output=sys.stdout, this_page='srchres.py')
+
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()

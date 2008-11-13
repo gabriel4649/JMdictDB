@@ -27,14 +27,10 @@ import jdb, jmcgi, jelparse, jellex, json
 
 def main (args, opts):
 	#cgitb.enable()
-	errs = []; form = cgi.FieldStorage()
+	errs = []; 
+	try: form, svc, cur, sid, sess, parms = jmcgi.parseform()
+	except Exception, e: errs = [str (e)]
 	fv = form.getfirst; fl = form.getlist
-	svc = fv ('svc')
-	try: svc = jmcgi.safe (svc)
-	except ValueError: 
-	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=['svc=svc'])
-	    return
-	cur = jmcgi.dbOpenSvc (svc)
 	KW = jdb.KW
 
 	  # $eid will be an integer if we are editing an existing 
@@ -43,6 +39,8 @@ def main (args, opts):
 
 	  # Desired disposition: 'a':approve, 'r':reject, undef:submit.
 	disp = url_str ('disp', form)
+	if disp!='a' and disp!='r' and disp !='' and disp is not None: 
+	    errs.append ("Invalid 'disp' parameter: '%s'" % disp)
 
 	  # New status is A for edit of existing entry, N for new 
 	  # entry, D for deletion of existing entry.
@@ -101,11 +99,11 @@ def main (args, opts):
 	      # info provided by jbparser.  
 	    entr.dfrm = eid;  entr.seq = seq;      entr.stat = stat; 
 	    entr.src = src;   entr.notes = notes;  entr.srcnote = srcnote; 
-	    entr.unap = 1
+	    entr.unap = not disp
 
 	      # Append a new hist record details this edit.
 	    if not hasattr (entr, '_hist'): entr._hist = []
-	    entr._hist.append (newhist (entr, stat, comment, refs,
+	    entr._hist.append (newhist (entr, stat, entr.unap, comment, refs,
 					 name, email, errs))
 	    chkentr (entr, errs)
 
@@ -123,18 +121,20 @@ def main (args, opts):
 	if not errs:
 	    serialized = json.serialize (entrs)
 	    jmcgi.htmlprep (entrs)
-	    jmcgi.gen_page ("tmpl/edconf.tal", output=sys.stdout, entries=entrs,
-			    chklist=chklist, is_editor=1, svc=svc, disp=disp,
-			    method="get", serialized=serialized)
+	    jmcgi.gen_page ("tmpl/edconf.tal", macros='tmpl/macros.tal',
+			    entries=entrs, serialized=serialized,
+			    chklist=chklist, is_editor=1, disp=disp,
+			    svc=svc, sid=sid, session=sess, parms=parms, 
+			    method="get", output=sys.stdout, this_page='edconf.py')
 	else: jmcgi.gen_page ("tmpl/url_errors.tal", output=sys.stdout, errs=errs)
 	cur.close() 
 
-def newhist (entr, stat, comment, refs, name, email, errs):
+def newhist (entr, stat, unap, comment, refs, name, email, errs):
 	  # Create a history record for display.  A real record 
 	  # will be recreated when the entry is actually committed
 	  # to the database.
 	now = datetime.datetime.utcnow().replace(microsecond=0)
-	hist = jdb.Obj (hist=1, dt=now, stat=stat, name=name, 
+	hist = jdb.Obj (hist=1, dt=now, stat=stat, unap=unap, name=name, 
 		        email=email, diff='', refs=refs, notes=comment)
 	return hist
 
@@ -196,13 +196,15 @@ def chkentr (e, errs):
 			     "one regular gloss, or a [lit=...] or [expl=...] tag." % n)
 
 def parse (krstext):
-	errs = []
+	entr = None; errs = []
 	lexer, tokens = jellex.create_lexer ()
         parser = jelparse.create_parser (tokens, debug=0)
         jellex.lexreset (lexer, krstext)
-        try: e = parser.parse (krstext, lexer=lexer)
-	except StandardError, e: errs.append (str(e))
-	return e, errs
+        try: 
+	    entr = parser.parse (krstext, lexer=lexer)
+	except jelparse.ParseError, e:
+	    errs.append (str(e))
+	return entr, errs
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()

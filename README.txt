@@ -148,15 +148,12 @@ verified.
     psycopg2-2.0.5.1 Python-Postgresql connector.
       http://
     simpleTAL-4.1 -- Template file processor.
-      http://
+      http://www.owlfish.com/software/simpleTAL/
     simplejson-1.8.1 -- JSON en-/de-coder.
       http://pypi.python.org/pypi/simplejson/1.8.1
-    ply-2.4 -- YACC'ish parser generator.
-      Need 2.4 development version, (current release 
-      version 2.3 does not have needed features), 
-      available from svn:
-      http://code.google.com/p/ply/source/checkout
-    wxPython-2.8.7.1 -- (Optional) Code inludes a simple
+    ply-2.5 -- YACC'ish parser generator.
+      http://www.dabeaz.com/ply
+    wxPython-2.8.9.1 -- (Optional) Code inludes a simple
       GUI interface to the database that is similar the the
       cgi interface.  To run this requires wxPython.
       http://www.wxpython.org/download.php
@@ -171,8 +168,8 @@ On Windows you will also need a copy of the GNU "make"
 program if you want to use the Makefiles to automate the 
 install procedure (described below).
 
-Authentication
---------------
+Database Authentication
+-----------------------
 Any program that accesses the database needs a username 
 and possibly a pasword to do so.  In a standard Postgresql 
 install, local connections made with user "postgres" do 
@@ -205,6 +202,15 @@ file lib/pg_service.conf.  See the Postgresql docs
 29.1, "Database Connection Control Functions", and
 29.14, "The Connection Service File" for more information.
 The is an example file in lib/pg_service.sample.
+
+Editor Authentication
+---------------------
+The CGI scripts allow unauthenticated users to submit 
+unapproved edited or new entries, but to approve or 
+reject entries, a user must be logged in as an editor.
+The CGI scripts use a separate database named "jmsess" for 
+storing editor user info and active sessions.  This database
+need only be setup once.
 
 Procedure
 ---------
@@ -249,7 +255,17 @@ loaded database to "jmdict".
    contain (possibly in addition to other directories)
    /home/joe/jmdictdb/python/lib.  
 
-3. (Optional) In the top-level directory, run 
+3. If you have not done so before, in the top-level 
+   directory, run 
+
+        make jmsess
+
+   to create the users/sessions database.  You should
+   then use psql or similar to manually add rows to 
+   table "users" for each editor.  "pw" is the user's
+   password.
+
+4. (Optional) In the top-level directory, run 
 
 	make subdirs
 
@@ -260,7 +276,7 @@ loaded database to "jmdict".
    files updated) but must do this if you've changes
    any of the support files' dependencies.
 
-4. In the top level directory, run "make" which won't
+5. In the top level directory, run "make" which won't
    do anything other than list the available targets 
    that will do something.  For JMdict the targets are:
 
@@ -321,7 +337,7 @@ loaded database to "jmdict".
    the needed files manually, and put them in the ./data/ 
    directory.
 
-5. The makefile will parse the data files, create a database
+6. The makefile will parse the data files, create a database
    named "jmnew", load the jmdictdb schema, and finally load 
    all the parsed data into it.  If everything was loaded 
    sucessfully, run 
@@ -333,7 +349,7 @@ loaded database to "jmdict".
    it the active database.  There must be no active users in
    any of these database or the commands will fail.
 
-6. If you plan on using the cgi files with a web server, 
+7. If you plan on using the cgi files with a web server, 
    double check the settings in the Makefile (see step #1) 
    and then run:
 
@@ -344,7 +360,7 @@ loaded database to "jmdict".
    to serve the cgi files directly from the development directory
    making this step unnecessary.
 
-7. When the cgi files are executed by the web server, they
+8. When the cgi files are executed by the web server, they
    read the file python/lib/pg_service.conf (or its copy as
    installed in the web server lib directory) to determine
    the database name and login credentials to use when

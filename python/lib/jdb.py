@@ -44,7 +44,7 @@ class Obj(object):
 		 + ', '.join([k + '=' + _p(v)
 			      for k,v in self.__dict__.items()]) + ')'	
 
-class DbRow (object):
+class DbRow (Obj):
     def __init__(self, values=None, cols=None):
 	if values is not None: 
 	    if cols is not None:
@@ -61,13 +61,7 @@ class DbRow (object):
     def __len__(self): 
 	return len(self.__cols__)
     def __iter__(self):
-        for n in self.__cols__: yield getattr (self, n)
-        raise StopIteration
-    def __repr__(self):
-	return self.__class__.__name__ + '(' \
-		 + ', '.join([k + '=' + _p(v)
-			      for k,v in self.__dict__.items() 
-				if not k.startswith('__')]) + ')'	
+        for n in self.__cols__: yield getattr (self, n)	
     def __clone__(self):
 	c = DbRow ()
 	c.__dict__.update (self.__dict__)
@@ -121,9 +115,23 @@ def dbinsert (dbh, table, cols, row, wantid=False):
 	# %$hash which is ecepected to contain keys matching 
 	# the columns listed in @$cols.
 
+	args = None
 	sql = "INSERT INTO %s(%s) VALUES(%s)" \
 		% (table, ','.join(cols), pmarks(cols))
-	args = [getattr (row, x, None) for x in cols] 
+	  #FIXME: we want to take column values from attributes of 'row'
+	  # if possible, or sequentially from seq elements if not (i.e. 
+	  # assume a list, tuple, etc), but DbRow objects can be accessed  
+	  # either way.  Access by attribute should assume None if attribute
+	  # missing so we can't rely on missing attributes to switch to seq
+	  # access.  For now we will test explicitly for Obj (DbRow is Obj
+	  # subclass) but this is obviously a hack.
+
+	if isinstance (row, Obj):
+	    args = [getattr (row, x, None) for x in cols] 
+	else:
+	    if len(row) != len(cols): raise ValueError(row)
+	    args = row
+	if args is None: raise ValueError (args)
 	if Debug.get ('prtsql'): print repr(sql), repr(args)
 	try: dbh.execute (sql, args)
 	except StandardError, e:
@@ -764,9 +772,9 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	    # We know (from previous code) that if there was an slist, there
 	    # must be exactly one entry here.
 
-	    snums = [s.id for s in entrs[0]._sens]
+	    snums = len (entrs[0]._sens); nosens = []
 	    for s in slist:
-		if s not in snums: nosens.append (str(s))
+		if s<1 or s>snums: nosens.append (str(s))
 	    if nosens:
 		raise ValueError ('Sense(s) %s not in target "%s".' % (",".join(nosens), krtxt))
 	else:
@@ -841,19 +849,21 @@ def addentr (cur, entr):
 	  # a new database row.
 	freqs = set()
 	for h in getattr (entr, '_hist', []):
-	    dbinsert (cur, "hist", ['entr','hist','stat','edid','dt','name','email','diff','refs','notes'], h)
+	    dbinsert (cur, "hist", ['entr','hist','stat','unap','dt','userid','name','email','diff','refs','notes'], h)
 	for k in getattr (entr, '_kanj', []):
 	    dbinsert (cur, "kanj", ['entr','kanj','txt'], k)
 	    for x in getattr (k, '_inf',   []): dbinsert (cur, "kinf",  ['entr','kanj','ord','kw'], x)
-	    for x in getattr (k, '_freq',  []): dbinsert (cur, "freq",  ['entr','rdng','kanj','kw','value'], x)
+	    for x in getattr (k, '_freq',  []): 
+				  # Don't write any freq records that have rdng references; since
+				  # the readings have not been written yet, the foreign key constraint
+				  # will be violated and the write will fail.  They will written later
+				  # when the readings are written.
+		if not getattr (x,'rdng',None): dbinsert (cur, "freq",  ['entr','rdng','kanj','kw','value'], x)
 	for r in getattr (entr, '_rdng', []):
 	    dbinsert (cur, "rdng", ['entr','rdng','txt'], r)
 	    for x in getattr (r, '_inf',   []): dbinsert (cur, "rinf",  ['entr','rdng','ord','kw'], x)
 	    for x in getattr (r, '_restr', []):	dbinsert (cur, "restr", ['entr','rdng','kanj'], x)
-	    for x in getattr (r, '_freq',  []): 
-				  # Any freq recs with a non-null 'kanj' value were written when the kanji
-				  # records were processed, so we need write only the rdng-only freq's. 
-		if not getattr (x,'kanj',None): dbinsert (cur, "freq",  ['entr','rdng','kanj','kw','value'], x)
+	    for x in getattr (r, '_freq',  []): dbinsert (cur, "freq",  ['entr','rdng','kanj','kw','value'], x)
 	    for x in getattr (r,   '_snd', []): dbinsert (cur, "rdngsnd", ['entr','rdng','ord','snd'], x)
 	for x in freqs:
 	    dbinsert (cur, "freq",  ['entr','rdng','kanj','kw','value'], x)
@@ -875,7 +885,7 @@ def addentr (cur, entr):
 	    for x in getattr (c, '_cinf',  []): dbinsert (cur, "cinf",  ['entr','kw','value','mctype'], x)
 	return eid, entr.seq, entr.src
 
-def add_hist (cur, e, edid, name, email, notes, refs):
+def add_hist (cur, e, userid, name, email, notes, refs):
 	# Attach a history info to an entry.  Any existing hist on the 
 	# entry is discarded. If this is a new entry, a single new hist
 	# record is added. If this is an edit of an existing entry, 
@@ -886,7 +896,7 @@ def add_hist (cur, e, edid, name, email, notes, refs):
 	# (dfrm has a value) entry.  Caller should set dfrm to e.id
 	# before calling add_hist() if this is an edit of an existing
 	# entry. 
-	if not e.unap and not edid: 
+	if not e.unap and not userid: 
 	    # This check for convenience -- database authentication 
 	    # and integrity rules will also catch.
 	    raise AuthError ("Only logged in editors can create approved entries")
@@ -897,8 +907,8 @@ def add_hist (cur, e, edid, name, email, notes, refs):
 	    if not dfrm:
 		raise ValueError ("No entry matching dfrm value of %d" % e.dfrm) 
 	    dfrm = dfrm[0]
-	h = Obj (stat=e.stat, edid=edid, dt=datetime.datetime.utcnow(), 
-		 name=name, email=email, refs=refs, notes=notes)
+	h = Obj (stat=e.stat, unap=e.unap, dt=datetime.datetime.utcnow(), 
+		 userid=userid, name=name, email=email, refs=refs, notes=notes)
 	if dfrm: 
 	    e._hist = getattr (dfrm, '_hist', [])
 	    h.diff = None #diff (dfrm, e)  # FIXME: need diff function.

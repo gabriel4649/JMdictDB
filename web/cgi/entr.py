@@ -26,15 +26,14 @@ sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import jdb, jmcgi
 
 def main (args, opts):
-	form = cgi.FieldStorage()
+	#print "Content-type: text/html\n"
 	errs = []
-	svc = form.getfirst ('svc')
-	try: svc = jmcgi.safe (svc)
-	except ValueError: errs.append ('svc=' + svc)
+	try: form, svc, cur, sid, sess, parms = jmcgi.parseform()
+	except Exception, e: errs = [str (e)]
 	if not errs:
-	    cur = jmcgi.dbOpenSvc (svc)
 	    entries = jmcgi.get_entrs (cur, form.getlist ('e'),
 					    form.getlist ('q'), errs)
+	if not errs:
 	    for e in entries:
 		for s in e._sens:
 		    if hasattr (s, '_xref'): jdb.augment_xrefs (cur, s._xref)
@@ -43,7 +42,9 @@ def main (args, opts):
 	    cur.close()
 	if not errs:
 	    jmcgi.htmlprep (entries)
-	    jmcgi.gen_page ('tmpl/entr.tal', output=sys.stdout, entries=entries, svc=svc)
+	    jmcgi.gen_page ('tmpl/entr.tal', macros='tmpl/macros.tal', entries=entries,
+				svc=svc, sid=sid, session=sess, parms=parms, 
+				output=sys.stdout, this_page='entr.py')
 	else:
 	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
 

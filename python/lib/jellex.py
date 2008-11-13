@@ -154,10 +154,13 @@ class LexSpec:
     t_ignore = u' \u3000\r\t'
     t_TAGLIST_ignore = u' \u3000\r\t'
     t_SNUMLIST_ignore = u' \u3000\r\t'
+    t_GLOSS_ignore = u''
 
     def t_error(self, t):
 	print "Illegal character '%s'" % t.value[0]
 	t.lexer.skip(1)
+
+    t_TAGLIST_error = t_SNUMLIST_error = t_GLOSS_error = t_error
 
 def gcleanup (txt):
 	# Clean up a gloss string.

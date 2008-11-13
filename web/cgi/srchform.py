@@ -26,11 +26,8 @@ sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import jdb, jmcgi
 
 def main( args, opts ):
-	form = cgi.FieldStorage()
-	errs = []
-	svc = jmcgi.safe (form.getfirst ('svc'))
-	cur = jmcgi.dbOpenSvc (svc)
-
+	form, svc, cur, sid, sess, parms = jmcgi.parseform()
+	qs = jmcgi.form2qs (form)
 	pos =  reshape (sorted (jdb.KW.recs('POS'),  key=lambda x:x.kw), 10)
 	misc = reshape (sorted (jdb.KW.recs('MISC'), key=lambda x:x.kw), 10)
 	stat = reshape (sorted (jdb.KW.recs('STAT'), key=lambda x:x.kw), 10)
@@ -49,9 +46,11 @@ def main( args, opts ):
 	for x in sorted (jdb.KW.recs('FREQ'), key=lambda x:x.kw):
 	   if x.kw!='nf' and x.kw!='gA': freq.extend ([x.kw+'1', x.kw+'2'])
 
-	jmcgi.gen_page ("tmpl/srchform.tal", output=sys.stdout, svc=svc,
+	jmcgi.gen_page ("tmpl/srchform.tal", macros='tmpl/macros.tal', 
 			pos=pos, misc=misc, stat=stat, src=corp, freq=freq,
-			fld=fld, kinf=kinf, rinf=rinf)
+			fld=fld, kinf=kinf, rinf=rinf, 
+			svc=svc, sid=sid, session=sess, parms=parms, 
+			method='get', output=sys.stdout, this_page='srchform.py')
 
 def reshape (array, ncols, default=None):
 	result = []

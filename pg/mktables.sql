@@ -112,7 +112,7 @@ CREATE TABLE entr (
 --CREATE INDEX entr_unap ON entr(unap) WHERE unap;
 --ALTER TABLE entr ADD CONSTRAINT entr_src_fkey FOREIGN KEY (src) REFERENCES kwsrc(id);
 --ALTER TABLE entr ADD CONSTRAINT entr_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
---ALTER TABLE entr ADD CONSTRAINT entr_dfrm_fkey FOREIGN KEY (dfrm) REFERENCES entr(id) ON UPDATE CASCADE;
+--ALTER TABLE entr ADD CONSTRAINT entr_dfrm_fkey FOREIGN KEY (dfrm) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE SEQUENCE seq_jmdict	-- JMdict seq numbers.
    INCREMENT 10 MINVALUE 1000000 MAXVALUE 8999999 
@@ -217,8 +217,9 @@ CREATE TABLE hist (
     entr INT NOT NULL,
     hist SMALLINT NOT NULL CHECK(hist>0),
     stat SMALLINT NOT NULL,
-    edid INT,
+    unap BOOLEAN NOT NULL,
     dt TIMESTAMP NOT NULL DEFAULT NOW(),
+    userid VARCHAR(20),
     name VARCHAR(60),
     email VARCHAR(120),
     diff TEXT,
@@ -227,18 +228,9 @@ CREATE TABLE hist (
     PRIMARY KEY(entr,hist));
 --CREATE INDEX hist_dt ON hist(dt);
 --CREATE INDEX hist_email ON hist(email);
---CREATE INDEX hist_edid ON hist(edid);
+--CREATE INDEX hist_userid ON hist(userid);
 --ALTER TABLE hist ADD CONSTRAINT hist_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE hist ADD CONSTRAINT hist_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
---ALTER TABLE hist ADD CONSTRAINT hist_edid_fkey FOREIGN KEY (edid) REFERENCES editor(id);
-
-CREATE TABLE editor (
-    id SERIAL NOT NULL PRIMARY KEY,
-    name VARCHAR(80) NOT NULL,
-    email VARCHAR(250),
-    notes TEXT);
---CREATE INDEX editor_email ON editor(email);
---CREATE UNIQUE INDEX editor_name ON editor(name);
 
 CREATE TABLE dial (
     entr INT NOT NULL,

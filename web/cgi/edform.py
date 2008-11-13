@@ -26,13 +26,10 @@ sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import jdb, jmcgi, fmtjel
 
 def main (args, opts):
-	form = cgi.FieldStorage()
 	errs = []
-	is_editor = 1
-	svc = form.getfirst ('svc')
-	try: svc = jmcgi.safe (svc)
-	except ValueError: 
-	    errs.append ('svc=' + svc)
+	try: form, svc, cur, sid, sess, parms = jmcgi.parseform()
+	except Exception, e: errs = [str (e)]
+	is_editor = sess.userid if sess else None
 	if not errs:
 	    elist = form.getlist ('e')
 	    qlist = form.getlist ('q')
@@ -59,10 +56,11 @@ def main (args, opts):
 		entr = None; isdelete = None
 		ktxt = rtxt = ''
 		stxt = "[1][n]"
-	    jmcgi.gen_page ('tmpl/edform.tal', output=sys.stdout, e=entr, 
+	    jmcgi.gen_page ('tmpl/edform.tal', macros='tmpl/macros.tal', e=entr, 
 			     ktxt=ktxt, rtxt=rtxt, stxt=stxt,
 			     srcs=srcs, is_editor=is_editor, isdelete=isdelete,
-			     svc=svc, method='get')
+			     svc=svc, sid=sid, session=sess, parms=parms, 
+			     method='get', output=sys.stdout, this_page='edform.py')
 	else:
 	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
 

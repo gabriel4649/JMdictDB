@@ -19,9 +19,7 @@ CREATE INDEX gloss_txt3 ON gloss(lower(txt)); 		    --For case-insensitive '='
 CREATE INDEX xref_xentr ON xref(xentr,xsens);
 CREATE INDEX hist_dt ON hist(dt);
 CREATE INDEX hist_email ON hist(email);
-CREATE INDEX hist_edid ON hist(edid);
-CREATE INDEX editor_email ON editor(email);
-CREATE UNIQUE INDEX editor_name ON editor(name);
+CREATE INDEX hist_userid ON hist(userid);
 CREATE UNIQUE INDEX freq_idx1 ON freq(entr,(coalesce(rdng,999)),(coalesce(kanj,999)),kw);
 CREATE INDEX sndfile_vol ON sndfile(vol);
 CREATE INDEX entrsnd_snd ON entrsnd(snd);
@@ -33,7 +31,7 @@ CREATE INDEX cinf_kw ON cinf(kw);
 CREATE INDEX cinf_val ON cinf(value);
 ALTER TABLE entr ADD CONSTRAINT entr_src_fkey FOREIGN KEY (src) REFERENCES kwsrc(id);
 ALTER TABLE entr ADD CONSTRAINT entr_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
-ALTER TABLE entr ADD CONSTRAINT entr_dfrm_fkey FOREIGN KEY (dfrm) REFERENCES entr(id) ON UPDATE CASCADE;
+ALTER TABLE entr ADD CONSTRAINT entr_dfrm_fkey FOREIGN KEY (dfrm) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE rdng ADD CONSTRAINT rdng_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE kanj ADD CONSTRAINT kanj_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE sens ADD CONSTRAINT sens_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -46,7 +44,6 @@ ALTER TABLE xref ADD CONSTRAINT xref_rdng_fkey FOREIGN KEY (xentr,rdng) REFERENC
 ALTER TABLE xref ADD CONSTRAINT xref_kanj_fkey FOREIGN KEY (xentr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE hist ADD CONSTRAINT hist_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE hist ADD CONSTRAINT hist_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
-ALTER TABLE hist ADD CONSTRAINT hist_edid_fkey FOREIGN KEY (edid) REFERENCES editor(id);
 ALTER TABLE dial ADD CONSTRAINT dial_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE dial ADD CONSTRAINT dial_kw_fkey FOREIGN KEY (kw) REFERENCES kwdial(id);
 ALTER TABLE fld ADD CONSTRAINT fld_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;

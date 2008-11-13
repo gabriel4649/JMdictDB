@@ -246,8 +246,8 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
 	  (SELECT src,seq,3,notes FROM entr WHERE id=entrid);
 	SELECT lastval() INTO _p0_;
 
-	INSERT INTO hist(entr,hist,stat,edid,dt,name,email,diff,refs,notes) 
-	  (SELECT _p0_,hist,stat,edid,dt,name,email,diff,refs,notes 
+	INSERT INTO hist(entr,hist,stat,unap,dt,userid,name,email,diff,refs,notes) 
+	  (SELECT _p0_,hist,stat,unap,dt,userid,name,email,diff,refs,notes 
 	   FROM hist WHERE hist.entr=entrid);
 
 	INSERT INTO kanj(entr,kanj,txt) 
@@ -317,7 +317,9 @@ CREATE OR REPLACE FUNCTION delentr(entrid int) RETURNS void AS $$
 -------------------------------------------------------------
 -- Following two functions deal with finding the edit set
 -- (i.e. entries linked to an entry through entr.dfrm, either
--- directly or indirectly)
+-- directly or indirectly).  They are not intended for
+-- external use but are used interally by the 'find_*' 
+-- functions that follow below.
 -------------------------------------------------------------
 CREATE OR REPLACE FUNCTION children (tblname TEXT) RETURNS VOID AS $$
     DECLARE
@@ -359,10 +361,51 @@ CREATE OR REPLACE FUNCTION childrentbl (eid INT,tblname TEXT) RETURNS TEXT AS $$
 	RETURN tbl;
     END; $$ LANGUAGE 'plpgsql';
 
+CREATE TYPE editset AS (id INT, root INT, dfrm INT, lvl INT);
+  -- A type matching the tmptbl structure above, useful as a return 
+  -- type for functions that return tmptbl rows.
+
+-------------------------------------------------------------
+-- The following functions (with names prefixed with "find_")
+-- are used for getting information about the "edit set" for
+-- a given entry.  An "edit set" is a set of entries (or
+-- alternately rows in table 'entr') that are linked (possibly
+-- recursively) though attribute 'dfrm'.  The 'dfrm' attribute
+-- organizes the rows in the set as a tree, rooted at the given
+-- entry.
+-------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION find_edit_set (eid INT) RETURNS SETOF editset AS $$
+    -- Return the full edit set that contains 'eid'.  
+    -- Each row in the edit set identifies a row in table 'entr' that
+    -- is linked (directly or indirectly) to other rows in the set via
+    -- the .dfrm attribute, and organised as a tree.  The returned rows
+    -- are of type "editset" defined above as:
+    --    id INT,   -- Id number of entry.
+    --    root INT, -- Id number of entry at tree root.
+    --    dfrm INT, -- 'dfrm' value of entry.  Will be NULL for the root row.
+    --    lvl INT); -- Distance (in number 'dfrm' links) of entry from root.
+
+    DECLARE rootentr entr%ROWTYPE; tmptbl TEXT := '_tmpchld'; r editset%ROWTYPE; 
+    BEGIN
+	rootentr := find_edit_root (eid);
+	IF rootentr.id IS NOT NULL THEN
+	    PERFORM childrentbl (rootentr.id, tmptbl);
+	    -- Following doesn't work...
+	    --EXECUTE 'RETURN QUERY SELECT id,root,dfrm,lvl FROM '||tmptbl;
+	    -- So use an explicit loop instead...
+	    FOR r IN EXECUTE 'SELECT id,root,dfrm,lvl FROM '||tmptbl LOOP
+		RETURN NEXT r;
+		END LOOP;
+	    EXECUTE 'DROP TABLE '||tmptbl;
+	    END IF;
+	RETURN;
+    END; $$ LANGUAGE 'plpgsql';
+
 CREATE OR REPLACE FUNCTION find_edit_leaves (eid INT) RETURNS SETOF entr AS $$
     -- Starting at entry 'eid', find and return the set of entries
     -- linked (recursively) to entry 'eid' though foreign key 'dfrm'
-    -- that have no other entries referencing them.  That is, Viewing
+    -- that have no other entries referencing them.  That is, viewing
     -- the set of entr rows linked by 'dfrm' as a tree rooted at 'eid',
     -- thr entr rows returned by this function are the "leaf" nodes
     -- of the tree.
@@ -382,8 +425,9 @@ CREATE OR REPLACE FUNCTION find_edit_leaves (eid INT) RETURNS SETOF entr AS $$
 CREATE OR REPLACE FUNCTION find_edit_root (eid INT) RETURNS entr AS $$
     -- Starting at entry 'eid', follow the chain of 'dfrm' foreign
     -- keys until a entr row is found that has a NULL 'dfrm' value,
-    -- and return that row.  If now such row exists, a NULL row (one
-    -- with every attribute set to NULL) is returned. 
+    -- and return that row (which may be the row with id of 'eid').
+    -- If there is no row with an id of 'eid', a NULL row (one with
+    -- every attribute set to NULL) is returned. 
 
     DECLARE r entr%ROWTYPE; dfrm INT := eid;
     BEGIN

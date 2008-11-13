@@ -96,14 +96,18 @@
 
     <dt><a name="senses"></a>Senses</dt>
     <dd>Enter senses, glosses, and their associated tags in the Sense box.
-      <ul><li>Each sense start with a sense number in brackets, e.g., "[1]".
+      <ul><li>Each sense starts with a sense number in brackets, e.g., "[1]".
+      </li><li>Sense numbers not significant other than to signify the start
+      of a new sense.  When the entry is added to the database, senses
+      will be numbered from 1 in the order they occured in the Sense text box,
+      regardless of the actual sense numbers used. 
       </li><li>Following the sense number are any number of glosses and
       sense tags, which may be freely intermixed.
       </li><li>All glosses but the last must be followed by a semicolon.
       Glosses do not need to be enclosed in quotes. even when they contain
       space characters.  
       </li><li>If a gloss contains left bracket ([) or semicolon (;) characters,
-      they must be escaped by preceeding them with a backlslash (\).
+      those characters must be escaped by preceeding them with a backlslash (\).
       </li><li>Sense tags are enclosed in square brackets.  Multiple tags may
       occur in within a single pair of brackets, separated by commas.
       </li><li>Tags that can be used in the Sense box are:
@@ -125,11 +129,15 @@
       </li><li>Sense tag values are not propagated to following senses.  If
       sense [2] is a noun, you must explicity say so, even though sense [1]
       was a noun.
-      </li><li>Sense numbers not significant other than to signify the start
-      of a new sense.  When the entry is added to the database, senses
-      will be numbered from 1 in the order they occured in the Sense text box.
       </li></ul>
       Examples:
+      </dd>
+
+    <dt><a name="delete"></a>Delete</dt>
+    <dd>Click this checkbox if you wish the entire entry to be deleted.
+      Please enter comments, references, etc as normal since they will 
+      be preserved in the stub entry used to record deletions, but there
+      is no point in changing the entry contents. 
       </dd>
 
     <dt><a name="references"></a>References</dt>
@@ -269,7 +277,7 @@
 	  (1) The text must be enclosed in quotes (") if it contains
 	  spaces or commas.  Otherwise quotes are not needed.
 	  </td>
-        <td>[lsrc=pt:]<br/>[lsrc=de:Arbeit]<br/>[lsrc=en:"eye mate"]</td>
+        <td>[lsrc=por:]<br/>[lsrc=ger:Arbeit]<br/>[lsrc=eng:"eye mate"]</td>
 	</tr>
 
       <tr>
@@ -362,7 +370,7 @@
 	  (5) If there are spaces or other special characters in the
 	  KK・RR[sense-num] text, enclose the entire string in quotes (").</td>
 
-        <td>[see=涼しい／すずしい[1]]<br/>[ant=暑い／あつい[1]]</td>
+        <td>[see=涼しい・すずしい[1]]<br/>[ant=暑い・あつい[1]]</td>
 	</tr>
 
       </tbody>

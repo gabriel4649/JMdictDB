@@ -377,11 +377,14 @@ def info (entr, compat=None):
 	return fmt
 
 def audit (h, compat=None):
+	global XKW
 	fmt = []
 	fmt.append ('<audit>')
 	fmt.append ('<upd_date>%s</upd_date>' % h.dt.date().isoformat())
 	if getattr (h, 'notes', None): fmt.append ('<upd_detl>%s</upd_detl>'   % esc(h.notes))
 	if not compat:
+	    if getattr (h, 'stat', None):  fmt.append ('<upd_stat>%s</upd_stat>'   % XKW.STAT[h.stat].kw)
+	    if getattr (h, 'unap', None):  fmt.append ('<upd_unap/>')
 	    if getattr (h, 'email', None): fmt.append ('<upd_email>%s</upd_email>' % esc(h.email))
 	    if getattr (h, 'name', None):  fmt.append ('<upd_name>%s</upd_name>'   % esc(h.name))
 	    if getattr (h, 'refs', None):  fmt.append ('<upd_refs>%s</upd_refs>'   % esc(h.refs))

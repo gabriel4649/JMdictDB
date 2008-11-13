@@ -19,9 +19,7 @@ DROP INDEX IF EXISTS gloss_txt3; 		    --For case-insensitive '='
 DROP INDEX IF EXISTS xref_xentr;
 DROP INDEX IF EXISTS hist_dt;
 DROP INDEX IF EXISTS hist_email;
-DROP INDEX IF EXISTS hist_edid;
-DROP INDEX IF EXISTS editor_email;
-DROP INDEX IF EXISTS editor_name;
+DROP INDEX IF EXISTS hist_userid;
 DROP INDEX IF EXISTS freq_idx1;
 DROP INDEX IF EXISTS sndfile_vol;
 DROP INDEX IF EXISTS entrsnd_snd;
@@ -46,7 +44,6 @@ ALTER TABLE xref DROP CONSTRAINT xref_rdng_fkey;
 ALTER TABLE xref DROP CONSTRAINT xref_kanj_fkey;
 ALTER TABLE hist DROP CONSTRAINT hist_entr_fkey;
 ALTER TABLE hist DROP CONSTRAINT hist_stat_fkey;
-ALTER TABLE hist DROP CONSTRAINT hist_edid_fkey;
 ALTER TABLE dial DROP CONSTRAINT dial_entr_fkey;
 ALTER TABLE dial DROP CONSTRAINT dial_kw_fkey;
 ALTER TABLE fld DROP CONSTRAINT fld_entr_fkey;

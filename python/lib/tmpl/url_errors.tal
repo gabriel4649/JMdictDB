@@ -7,7 +7,9 @@
   <title>Invalid parameters</title>
   </head>
 <body>
-  <h2>URL Parameter errors</h2>
+  <h2>Error</h2>
+  We're sorry but your page request could not be processed
+  due to the following error(s):
   <span tal:repeat="e errs">
     <span tal:replace="structure e" tal:omit-tag="">err message</span><br/>
     </span>

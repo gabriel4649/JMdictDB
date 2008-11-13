@@ -8,3 +8,95 @@ AssdTo:	stuart@friix.com
 
 2007-02-01 00:00:00 stuart@friix.com
   Authentication for editors.  (work out process flow details first?)
+
+2008-11-09 19:18:50 sysad
+  Looked for login/session handling python package.  The Python
+  standard lib seems to have nothing for this.  Found logintools
+  (www.voidspace.org.uk/python/logintools.html) but that requires
+  (and contains) 400KB (compressed) of supporting packages.
+  Seems both too big, and too inflexible.  Also looked at some
+  lightweight web frameworks (pylons, webware, etc) but they seemed
+  to have too steep a learning curve and require too many changes
+  to what has already been developed for JMdictDB.  After a couple
+  days searching, decided it would be faster to do it myself.
+  
+  Wrote simple session handler that passes a sid parameter between
+  pages to maintain session identity (i.e. does not use a cookie.)
+  
+  * pg/mksess.sql creates a "jmsess" database containing two tables:
+  
+    CREATE TABLE users (
+        userid VARCHAR(20) PRIMARY KEY,
+        fullname VARCHAR(100),
+        email VARCHAR(250),
+        pw VARCHAR(50));
+  
+    CREATE TABLE sessions (
+        id BIGINT PRIMARY KEY,
+        userid VARCHAR(20) REFERENCES users(userid),
+        ts INT DEFAULT 0));
+  
+  * Added function parseform() to python/lib/jmcgi.py.  This function
+    is called at the start of each cgi script, and looks for login-
+    related cgi parameters "username", "password", "sid", "logout".
+    If "username"/"pasword" present, parseform() call jmcgi.login()
+    with them to create a new session.  If "sid" is present, parseform()
+    calls jmcgi.session() with it to get an existing session.  If
+    "sid"/"logout" are present, jmcgi.session is called and it will
+    delete the given session.
+  
+  * Added python/lib/tmpl/macros.tal that contains an HTML/TAL template
+    that will add either a login/password form, or a "you are logged in
+    as ..." message, depending if there is a session or not.  Modified
+    the other TAL templates to include it.
+  
+  * In each of the web/cgi/*.py files (that drive the templates), call
+    the jmcgi.parseform() function described above.  In the gen_page()
+    call that expands the template, add extra info that is needed by
+    the login macro: the session object, the sid (which the form needs
+    to pass as a hidden field to the next page), and the name of the
+    current page which is needed to return to if the login form is used,
+  
+  The following occurs when a users enters a username and password in a
+  form and clicks the login button:
+  
+  The client browser is sent to the page given in the login form's
+  action attribute.  This will be the same script that is currently being
+  presented (and was specified in the 'this_page' paramater to the
+  jmcgi.gen_page() call in the cgi script).
+  
+  The script is called again, this time with cgi parameters "username" and
+  "password".  The script calls jmcgi.parsecommands() which based on the
+  presence of these parameters, calls jmcgi.login() which looks up the
+  username and password in database "jmsess" and if valid, creates a new
+  session row in jmsess.sessions and returns a session object with the
+  session id and user information.
+  
+  The sid and session object are passed to jmcgi.gen_page() which expands
+  the page's TAL template.  The presense of the session object cause the
+  template to generate a "You are logged in as ..." message, rather than
+  the login username/password boxes.  The sid is passed as a hidden field
+  to subsequent pages.
+  
+  After a login, the sid is passed to subsequent pages as a hidden form
+  of link parameter.  The cgi for the susequent page calls jmcgi.parseform()
+  which will lookup the sid in jmsess.sessions.  If the sid is valid,
+  jmcgi.parseform() will return a session object which is passed to the
+  page template and causes the page's template to present the "you are
+  logged in as ..." message, just as when a user first logged in.  The
+  presence of the session object is also used in the cgi script to allow
+  access to features restricted to logged in editors.
+  
+  Each session in jmsess.sesions has a timestamp attribute which is updated
+  with the current date/time whenever a session is created or looked up.
+  There is currently no mechanism to expire sessions but when the JMdictDB
+  is deployed, I intend to provide a cron job that periodically deletes
+  sessions rows with timestamps older than some fixed age.
+  
+  Problems:
+  A login will clear any information that was entered by user into the
+  main form prior to the login (but not information passed from an previous
+  form and used to initialize the current form's fields.)
+  
+  Probably want to use cookie, at least optionally, since we will want to
+  provide per user customization ability a'la wwwjdic.

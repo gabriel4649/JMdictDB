@@ -20,8 +20,95 @@
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
-import sys, re, os, os.path
+import sys, re, cgi, urllib, os, os.path, random, time
 import jdb, tal, fmt
+
+def parseform ():
+	"""\
+    Do some routine tasksthat are needed for (most) every page, specifically:
+    * Call cgi.FieldStorage to parse parameters.
+    * Extract the svc parameter, validate it, and open the requested database.
+    * Get session id and handle log or logout requests.
+    Return a 5-tuple of: 
+	form (cgi.FieldStorage obj)
+	svc (string) -- Checked svc value.
+	cur (dbapi cursor) -- Open cursor for database defined by 'svc'.
+	sid (string) -- session.id in hexidecimal form or "".
+	sess (session obj) -- Session object for sid or None.
+	"""
+	errs=[]; sess=None; sid=''; cur=None; svc=None
+	form = cgi.FieldStorage()
+
+	sid, logout = form.getfirst ('sid'), form.getfirst ('logout')
+	sess = getsession (sid, logout=logout)
+	if logout: sid, session = '', None
+	if form.getfirst('username'):
+	    uname, pw = form.getfirst('username'), form.getfirst('password')
+	    sess = login (uname, pw)
+	    if sess: sid = "%X" % sess.id
+
+	svc = form.getfirst ('svc')
+	try: svc = safe (svc)
+	except ValueError: errs.append ('svc=' + svc)
+	if not errs: cur = dbOpenSvc (svc)
+	if errs: raise ValueError (';'.join (errs))
+
+	parms = [(k,v.decode('utf-8')) for k in form.keys() 
+			 if k not in ('login','logout','username','password')
+		       for v in form.getlist(k) ]
+
+	return form, svc, cur, sid, sess, parms
+
+def getsession (sid, logout=False, sessdb="jmsess", cur=None):
+	if not sid: return None
+	if not cur:
+	    cur = jdb.dbOpen (sessdb, nokw=True, user="postgres", password="satomi")
+	    cur.connection.rollback()
+	if isinstance (sid, (str, unicode)):
+	    try: sid = int (sid,16)
+	    except (ValueError, TypeError): return None
+	sql = "SELECT s.*,u.fullname,u.email " \
+		"FROM sessions s JOIN users u ON u.userid=s.userid WHERE id=%s"
+	rs = jdb.dbread (cur, sql, (sid,))
+	if len (rs) != 1: return None
+	if not logout:
+	    sql = "UPDATE sessions SET ts=%s WHERE id=%s"
+	    cur.execute (sql, (int(time.time()), sid))
+	else:
+	    sql = "DELETE FROM sessions WHERE id=%s"
+	    cur.execute (sql, (sid,))
+	cur.connection.close()
+	return rs[0]
+
+def login (userid, password, sessdb="jmsess"):
+	cur = jdb.dbOpen (sessdb, nokw=True, user="postgres", password="satomi")
+	cur.connection.rollback()
+	sql = "SELECT userid FROM users WHERE userid=%s " \
+		"AND pw=%s AND pw IS NOT NULL AND NOT disabled"
+	rs = jdb.dbread (cur, sql, (userid, password))
+	if len(rs) != 1: return None
+	remove_inactive_sessions (cur)
+	sid = random.randint (0, 2**63-1)
+	jdb.dbinsert (cur, 'sessions', ('id','userid','ts'),(sid,rs[0].userid,int(time.time())))
+	cur.connection.commit()
+	sess = getsession (sid, cur=cur)
+	return sess
+
+def remove_inactive_sessions (cur):
+	expire = 120	# Expiration time in minutes.
+	sql = "DELETE FROM sessions s WHERE s.ts<%s"
+	cur.execute (sql, (int (time.time() - 60 * expire),))
+
+def form2qs (form):
+	"""
+    Convert a cgi.FieldStorage object back into a query string.
+	"""
+	d = []
+	for k in form.keys():
+	    for v in form.getlist (k):
+		d.append ((k, v))
+	qs = urllib.urlencode (d)
+	return qs
 
 def args():
 	"""
@@ -109,7 +196,7 @@ def get_entrs (dbh, elist, qlist, errs):
 	    jdb.augment_xrefs (dbh, raw['xrer'], rev=1)
  	return entries
 
-def gen_page (tmpl, output=None, **kwds):
+def gen_page (tmpl, output=None, macros=None, **kwds):
 	httphdrs = kwds.get ('HTTP', None)
 	if not httphdrs: 
 	    if not kwds.get ('NoHTTP', None):
@@ -123,6 +210,9 @@ def gen_page (tmpl, output=None, **kwds):
 	if tmpldir == '': tmpldir = "."
 	if not tmpldir: 
 	    raise IOError ("File or directory '%s' not found in sys.path" % tmpl)
+	if macros:
+	    macros = tal.mktemplate (tmpldir + '/' + macros)
+	    kwds['macros'] = macros
 	html += tal.fmt_simpletal (tmpldir + '/' + tmpl, **kwds)
 	if output: print >>output, html.encode ('utf-8')
 	return html

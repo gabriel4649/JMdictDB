@@ -4,10 +4,12 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
-  <title>JMdict search form</title>
+  <title>JMdictDB search form</title>
 </head>
 <body class="srchfrm">
-  <h1>JMdict Search</h1>
+  <div metal:use-macro="macros/macros/login">
+    <h1 metal:fill-slot="title">JMdictDB Search Form</h1>
+    </div>
   <form action="srchres.py" name="srchres" tal:attributes="method method">
     <table class="form">
       <tr>
@@ -102,8 +104,8 @@
 		  <tr>
 		    <td>
 		      <input name="search" value="Search" type="submit"/>
-		      <input type="hidden" name="svc" tal:attributes="value svc"/>
-		      <!-- <input type="hidden" name="srchres" value="1"/> -->
+		      <input type="hidden" name="svc" tal:condition='svc' tal:attributes="value svc"/>
+		      <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>		      <!-- <input type="hidden" name="srchres" value="1"/> -->
 		      </td>
 		    <td><input type="reset" value="Reset"/></td>
 		    </tr>

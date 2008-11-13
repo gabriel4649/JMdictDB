@@ -198,8 +198,12 @@ def hist (hists):
 	if not hists: return ''
 	fmt = "\nHistory:" 
 	for h in hists:
-	    fmt += "\n  %s %s %s<%s>" % (KW.STAT[h.stat].kw, h.dt,
-		h.name or '', h.email or '')
+	    stat = getattr (h, 'stat', '')
+	    if stat: stat = KW.STAT[stat].kw
+	    unap = '*' if getattr (h, 'unap', '') else ''
+	    email =  ("<%s>" % h.email) if h.email else ''
+	    fmt += "\n  %s%s %s %s<%s>" \
+		    % (stat, unap, h.dt, h.name or '', email)
 	    if h.notes: fmt += "\n  Comments:\n" + indent (h.notes, 4)
 	    if h.refs: fmt += "\n  Refs:\n" + indent (h.refs, 4)
 	    if h.diff:  fmt += "\n  Diff:\n" + indent (h.notes, 4)
@@ -213,7 +217,7 @@ def entrhdr (entr):
 	if src: src = KW.SRC[src].kw
 	stat = getattr (entr, 'stat', '')
 	if stat: stat = KW.STAT[stat].kw
-	unap = '(pend)' if getattr (entr, 'unap', False) else ''
+	unap = '(pend)' if getattr (entr, 'unap', '') else ''
 	fmt = "%s %s %s%s {%s}" % (src, seq, stat, unap, id)
 	return fmt
 

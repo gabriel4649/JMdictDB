@@ -93,7 +93,7 @@ def initialize (tmpdir):
 	  ('stagk',  ['entr','sens','kanj']),
 	  ('xref',   ['entr','sens','xentr','xsens','typ','notes']),
 	  ('xresolv',['entr','sens','typ','ord','rtxt','ktxt','tsens','notes','prio']),
-	  ('hist',   ['entr','hist','stat','edid','dt','name','email','diff','refs','notes']),
+	  ('hist',   ['entr','hist','stat','unap','dt','userid','name','email','diff','refs','notes']),
 	  ('chr',    ['entr','chr','bushu','strokes','freq','grade','jlpt','radname']),
 	  ('cinf',   ['entr','kw','value']),
 	  ('kresolv',['entr','kw','value']),

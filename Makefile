@@ -105,11 +105,13 @@ WEB_CGI	= $(addprefix $(CGI_DIR)/,$(CGI_FILES))
 LIB_FILES = jdb.py \
 	fmt.py \
 	fmtjel.py \
+	fmtxml.py \
 	jellex.py \
 	jelparse.py \
 	jmcgi.py \
 	tal.py \
-	json.py
+	json.py \
+	xmlkw.py
 WEB_LIB	= $(addprefix $(LIB_DIR)/,$(LIB_FILES))
 
 TAL_FILES = entr.tal \

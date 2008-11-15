@@ -351,6 +351,8 @@ def p_snums_2(p):
 
 # -------------- RULES END ----------------
 
+def p_error (tok): pass
+
 def xp_error (tok):
         if tok is None:
             ln = None;  lp = None;  t = None;  v = None

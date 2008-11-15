@@ -228,6 +228,7 @@ def htmlprep (entries):
 	add_stag_summary (entries) 
 	add_audio_flag (entries)
 	add_editable_flag (entries)
+	fix_diff (entries)
 
 def add_p_flag (entrs):
 	# Add a supplemantary attribute to each entr object in
@@ -311,6 +312,20 @@ def add_editable_flag (entries):
 	    e.EDITABLE = e.unap \
 		or (e.stat == KW.STAT['N'].id) \
 		or (e.stat == KW.STAT['A'].id)
+
+def fix_diff (entries):
+
+	# Escape html-special characters (Translate '\n' characters in history "diff" strings
+	# to "<br/>" for display in an HTML page.  Note that 
+	# this function mutates the history diff strings in 
+	# the entries.
+
+	for e in entries:
+	    for h in getattr (e, '_hist', []):
+		d = getattr (h, 'diff')
+		if d: 
+		   d = cgi.escape (d)
+		   h.diff = d.replace ('\n', '<br/>\n')
 
 class SearchItems (jdb.Obj):
     """Convenience class for creating objects for use as an argument

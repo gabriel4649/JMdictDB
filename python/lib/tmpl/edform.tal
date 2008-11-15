@@ -141,6 +141,7 @@
 	            <option name="disp" value="a">Approve</option>
 	            <option name="disp" value="r">Reject</option>
 	            </select>
+		  <a class="helplink" target="edhelp" href="edhelp.py#action">help</a>
 	          </span>
 
 		<input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>

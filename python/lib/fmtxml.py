@@ -24,6 +24,7 @@ __version__ = ('$Revision$'[11:-2],
 Functions for generating XML descriptions of entries.
 
 """
+import re, difflib
 from xml.sax.saxutils import escape as esc, quoteattr as esca
 import jdb, xmlkw
 
@@ -45,12 +46,16 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
 		If "jmnedict", generate XML that uses the standard
 		JMnedict DTD but looses information that is not
 		representable with that DTD.
-	  genhists -- If true (and enhanced is also true), generate
-		<hist> elements in the XML.  If false, don't. 
+	  genhists -- If true, generate	<audit> elements in the XML. 
+		Otherwise, don't. 
 	  genxrefs -- If true generate <xref> elements.  If false
 		don't.  In order to generate xrefs the 'entr' 
 		object must have augmented xrefs.  If it doesn't
 		a exception will be thrown.
+	  wantlist -- If false, return the xml as a single string.
+		with embedded newline characters.  If true, return a 
+		list of strings, one line per string, with no embedded
+		newlines.
 	  implicit_pos -- Boolean: if true, a sense's <pos> 
 		elements will not be added to sense if they exactly 
 		match (in number, values, and order) the previous 
@@ -73,7 +78,7 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
 	rdngs = getattr (entr, '_rdng', [])
 	for r in rdngs: fmt.extend (rdng (r, kanjs, compat))
 
-	fmt.extend (info (entr, compat))
+	fmt.extend (info (entr, compat, genhists))
 
 	senss = getattr (entr, '_sens', [])
 	if compat == 'jmnedict':
@@ -183,7 +188,7 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
 	notes = getattr (s, 'notes', None)
 	if notes: fmt.append ('<s_inf>%s</s_inf>' % esc (notes))
 
-	lsource = getattr (s, '_lsrc')
+	lsource = getattr (s, '_lsrc', None)
 	if lsource: 
 	    for x in lsource: fmt.extend (lsrc (x))
 
@@ -362,15 +367,16 @@ def xref (xref, src):
 	attr = (' ' if attrs else '') + ' '.join (attrs)
 	return '<%s%s>%s%%s</%s>' % (tag, attr, target, tag)
 
-def info (entr, compat=None):
+def info (entr, compat=None, genhists=False):
 	fmt = [] 
 	if not compat:
 	    x = getattr (entr, 'srcnote', None)
 	    if x: fmt.append ('<srcnote>%s</srcnote>' % esc(entr.srcnote))
 	    x = getattr (entr, 'notes', None)
 	    if x: fmt.append ('<notes>%s</notes>' % esc(entr.notes))
-	for x in getattr (entr, '_hist', []):
-	    fmt.extend (audit (x, compat))
+	if genhists:
+	    for x in getattr (entr, '_hist', []):
+		fmt.extend (audit (x, compat))
 	if fmt: 
 	    fmt.insert (0, '<info>')
 	    fmt.append ('</info>')
@@ -471,6 +477,20 @@ def corpus (corpuses):
 	    if getattr (kwo, 'seq',   None): fmt.append ('<seqname>%s</seqname>' % esc(KW.SRC[c].seq))
 	    fmt.append ('</corpus>')
 	return fmt
+
+
+def entr_diff (eold, enew, n=2): 
+	eoldxml = entr (eold, wantlist=1, implicit_pos=0)
+	enewxml = entr (enew, wantlist=1, implicit_pos=0)
+	  # Generate diff and remove trailing whitespace, including newlines.
+	  # Also, skip the <entry> line since they will always differ.
+	rawdiff = difflib.unified_diff (eoldxml, enewxml, n=n)
+	diffs = [x.rstrip() for x in rawdiff
+		 if not (x[1:].startswith ('<entry') or x.startswith ('@@ -1,1 +1,1 @@')) ]
+	  # Remove the intial "---", "+++" lines.
+	if len(diffs) >= 2: diffs = diffs[2:]
+	diffstr = '\n'.join (diffs)
+	return diffstr
 
 def _main (args, opts):
 	cur = jdb.dbOpen ('jmdict')

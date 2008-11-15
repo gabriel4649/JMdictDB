@@ -328,6 +328,8 @@ snums
 	;
 
 %%
+def p_error (tok): pass
+
 def xp_error (tok):
 	if tok is None:
 	    ln = None;  lp = None;  t = None;  v = None

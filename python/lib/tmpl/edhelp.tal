@@ -50,48 +50,58 @@
     <dt><a name="kanji"></a>Kanji</dt>
     <dd>
       Enter the kanji used for this word, separated by semicolons (either
-      western on Japanese semicolons are ok).
+      western or Japanese semicolons are ok).
       Kinf (<a href="#syn_kinf">syntax</a>, <a href="#kw_kinf">abbrs</a>) and
       freq (<a href="#syn_freq">syntax</a>, <a href="#kw_freq">abbrs</a>) tags,
-      enclosed in square brackets ([]) may optionally follow any kanji.
-      Multiple tags may occur in within a single pair of brackets, separated by commas.
+      enclosed in square brackets ([]) may optionally follow any kanji (before the
+      semicolon if present.)
       <ul><li>Every kanji listed must contain at least one kanji character.
       </li><li>If the word being entered is written only in kana, leave this
       field blank and enter the kana in the Reading box.
       </li><li>Kanji should be listed in order of "commonness": the most commonly used
       kanji first, the most rarely used last.
-      </li><li>Within brackets, tags may be given in any order.
+      </li><li>Multiple sets of bracketed tags may be given.
+      </li><li>Multiple tags may occur in within a single pair of brackets, separated by commas.
+      </li><li>Order of tags is not significant.
       </li><li>Conflicting tags (e.g. nf14 and nf19) may not be applied to the same
       kanji.
       </li><li>Freq tags are only processed when submitted by registered editors.
       If you are not registered, you should should note in the Comments section 
-      any freq tags you believe should be applied. 	
+      any freq tags you believe should be applied.
+      <span class="caution">Not implemented yet.</span>
       </li></ul>
-      Examples:
+      Example: 缶 [ateji,ichi1,news1][nf6] ； 罐 [ateji,oK ]
       </dd>
 
     <dt><a name="readings"></a>Readings</dt>
     <dd>Enter the readings used for this word, separated by semicolons
-      (either western on Japanese semicolons are ok.
+      (either western or Japanese semicolons are ok.
       Rinf tags (<a href="#syn_rinf">syntax</a>, <a href="#kw_rinf">abbrs</a>),
       freq tags (<a href="#syn_freq">syntax</a>, <a href="#kw_freq">abbrs</a>), or 
       restrictions (<a href="#syn_restr">syntax</a>)
-      enclosed in square brackets ([]) may optionally follow any reading.
-      Multiple tags may occur in within a single pair of brackets, separated by commas.
+      enclosed in square brackets ([]) may optionally follow any reading (before the
+      semicolon if present.)
       <ul><li>Readings may not contain any kanji characters.
       </li><li>Readings should be listed in order of "commonness": the
       most commonly used reading first, the most rarely used last.
-      </li><li>Use a restr tag to indicate when a reading is only used
-      with a subset of the kanji listed in the Kanji box.
-
-      </li><li>Within brackets, tags may be given in any order.
+      </li><li>Multiple sets of bracketed tags may be given.
+      </li><li>Multiple tags may occur in within a single pair of brackets, separated by commas.
+      </li><li>Order of tags is not significant.
       </li><li>Conflicting tags (e.g. nf14 and nf19) may not be applied to the same
       reading.
       </li><li>Freq tags are only processed when submitted by registered editors.  
       If you are not registered, you should should note in the Comments section 
       any freq tags you believe should be applied. 
+      <span class="caution">Not implemented yet.</span>
+      </li><li>Use a restr tag to indicate when a reading is only used
+      with a subset of the kanji listed in the Kanji box.
+      </li><li>If multiple kanji texts are used in a restr tag, separate them 
+      with a semicolon (ascii or jp).
+      </li><li>If a reading is not used with any kanji, use a "restr=nokanji"
+      yag or equivalently but more simply, just a "nokanji" tag.
       </li></ul>
-      Examples:
+      Examples: のり [gikun,ichi1,news2][nf38] ; ノリ[ichi1,news2,nf38]<br/>
+	じゃがいも [spec1,restr=じゃが芋;馬鈴薯] ； ジャガイモ [nokanji]
       </dd>
 
     <dt><a name="senses"></a>Senses</dt>
@@ -153,14 +163,24 @@
       field.</dd>
 
     <dt><a name="name"></a>Name</dt>
-    <dd>You full name (optional).</dd>
+    <dd>Your full name.</dd>
 
     <dt><a name="email"></a>Email</dt>
-    <dd>Your email address (required).</dd>
+    <dd>Your email address.  Required if you want email notification
+    of actions taken that affect your submission. 
+    <span class="caution">Not implemented yet.</span></dd>
 
-    <dt><a name="approved"></a>Approved</dt>
-    <dd>Check this to approve the entry (available only to
-      registered editors.)</dd>
+    <dt><a name="action"></a>Action</dt>
+    <dd>This dropdown box is only available only to logged-in editors.
+    <ul><li>Submit -- Submit the entry as pending, just as a non-logged in
+	sumitter would.
+    </li><li>Approve -- The entry will be approved.  The entries that this
+    entry is based on will be deleted, and the current entry will become 
+    the active entry.  
+    </li><li>Reject -- The current entry will be marked rejected, and all
+    entries it was based on, except the original entry will be deleted.
+    The original entry will remain as the active entry.
+    </li></dd>
 
     </dl>
   </div>

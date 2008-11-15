@@ -24,6 +24,7 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, os, os.path, random, re, datetime
 from time import time
+import fmtxml
 
 global KW
 
@@ -796,6 +797,80 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 				  rdng=xrdng, kanj=xkanj, TARG=e))
 	return xrefs
 
+#-------------------------------------------------------------------
+# The following two functions deal with history lists. 
+#-------------------------------------------------------------------
+
+def newhist (
+    dbh, 	# Open cursor to same JMdictDB database that 'entr' came from.
+    entr, 	# Entry object (.stat, .unap, .dfrm must be correctly set).
+    userid, 	# Userid from session or None.
+    name, 	# Submitter's name.
+    email, 	# Submitter's email address.
+    notes, 	# Comments for history record.
+    refs):	# Reference comments for history record.
+	# Create a new history object based on the parameters
+	# (but sets the .diff attribute to None).
+	# Returns a 2-tuple consisting of the new history object
+	# and the entry object pointed to by 'entr's '.dfrm' 
+	# attribute (or None is 'entr.dfrm' is None.)
+	# If 'entr.dfrm' is not None but we are unable to retrieve
+	# an entry, a ValueError is raised.
+	# 'entr.stat' and 'entr.unap' will be used in the new 
+	# history record and so should be set correctly by the
+	# caller.
+
+	hist = [];  old = None
+	if getattr (entr, 'dfrm', None):
+	    old = entrList (dbh, [entr.dfrm])
+	    if len (old) != 1: raise ValueError (entr.dfrm)
+	    old = old[0]
+	h = Obj (dt= datetime.datetime.utcnow().replace(microsecond=0),
+		stat=entr.stat, unap=entr.unap, userid=userid, name=name,
+		email=email, diff=None, notes=notes, refs=refs)
+	return h, old
+
+def add_hist (
+    dbh, 	# Open cursor to same JMdictDB database that 'entr' came from.
+    entr, 	# Entry object (.stat, .unap, .dfrm must be correctly set).
+    userid, 	# Userid from session or None.
+    name, 	# Submitter's name.
+    email, 	# Submitter's email address.
+    notes, 	# Comments for history record.
+    refs,	# Reference comments for history record.
+    use_dfrm):	# If false, return entr with updated hist icluding diff.
+		# If true, return dfrm entry (or raise error) with updated
+		# hist and diff=''.
+	# Attach history info to an entry.  The history added is the
+	# history from entry 'entr.dfrm' to which a new history record,
+	# generated from the parameters to fhis function, is appended.
+	# Any existing hist on the 'entr' is ignored'.  
+	# If 'use_dfrm' is true, the history list is attached to the
+	# 'entr.dfrm' entry object, and that object returned.  If 
+	# 'use_dfrm' is false, the history list is attached to the
+	# 'entr' object, and that object returned.  
+
+	e = entr
+	h, edfrm = newhist (dbh, e, userid, name, email, notes, refs)
+	if use_dfrm: 
+	    if not edfrm: raise ValueError (e.dfrm)
+	    e = edfrm
+	    e.stat, e.unap, e.dfrm = entr.stat, entr.unap, entr.dfrm
+	if edfrm: 
+	    e._hist = getattr (edfrm, '_hist', [])
+	else: 
+	    e._hist = []
+	if edfrm:
+	    h.diff = fmtxml.entr_diff (edfrm, e, n=0) \
+			if edfrm is not e \
+			else ''
+	e._hist.append (h)
+	return e
+
+#-------------------------------------------------------------------
+# The following functions deal with writing entries to a database.
+#-------------------------------------------------------------------
+
 def addentr (cur, entr):
 	# Write the entry, 'entr', to the database open on connection
 	# 'cur'.  
@@ -885,39 +960,6 @@ def addentr (cur, entr):
 	    for x in getattr (c, '_cinf',  []): dbinsert (cur, "cinf",  ['entr','kw','value','mctype'], x)
 	return eid, entr.seq, entr.src
 
-def add_hist (cur, e, userid, name, email, notes, refs):
-	# Attach a history info to an entry.  Any existing hist on the 
-	# entry is discarded. If this is a new entry, a single new hist
-	# record is added. If this is an edit of an existing entry, 
-	# the hist records of the 'dfrm' entry are read, and the new 
-	# hist record appended to them and the list is attached to the
-	# entry.
-	# e.dfrm indicates whether this is a new (dfrm null) or old 
-	# (dfrm has a value) entry.  Caller should set dfrm to e.id
-	# before calling add_hist() if this is an edit of an existing
-	# entry. 
-	if not e.unap and not userid: 
-	    # This check for convenience -- database authentication 
-	    # and integrity rules will also catch.
-	    raise AuthError ("Only logged in editors can create approved entries")
-	dfrm = None
-	if e.dfrm:
-	    # Get source entry
-	    dfrm = entrList (cur, [e.dfrm])
-	    if not dfrm:
-		raise ValueError ("No entry matching dfrm value of %d" % e.dfrm) 
-	    dfrm = dfrm[0]
-	h = Obj (stat=e.stat, unap=e.unap, dt=datetime.datetime.utcnow(), 
-		 userid=userid, name=name, email=email, refs=refs, notes=notes)
-	if dfrm: 
-	    e._hist = getattr (dfrm, '_hist', [])
-	    h.diff = None #diff (dfrm, e)  # FIXME: need diff function.
-	else: 
-	    e._hist = []
-	    h.diff = None
-	e._hist.append (h)
-	return e;
-
 def setkeys (e, id=None):
 	  # Set the foreign and primary key values in each record
 	  # in the entry, 'e'.  If 'id' is provided, it will be used
@@ -962,8 +1004,9 @@ def setkeys (e, id=None):
 	    for x in getattr (c, '_cinf', []): x.entr = id
 	for x in getattr (e, '_krslv', []): x.entr = id
 
-def entrDiff (e1, e2): pass
-	
+#-------------------------------------------------------------------
+# The following functions deal with searches. 
+#-------------------------------------------------------------------
 
 def build_search_sql (condlist, disjunct=False, allow_empty=False):
 
@@ -1200,6 +1243,10 @@ def is_p (entr):
 	    for f in getattr (k, '_freq', []):
 		if f.kw in (1,2,4,7) and f.value == 1: return True
 	return False
+
+#-------------------------------------------------------------------
+# 
+#-------------------------------------------------------------------
 
 class Snds:
     def __init__ (self, cur):

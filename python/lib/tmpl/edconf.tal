@@ -200,6 +200,11 @@
 	      <td valign="top">Refs:</td>
 	      <td tal:content="h/refs">refs</td>
 	     </tr>
+	    <tr tal:condition="h/diff">
+	      <td>&nbsp;</td>
+	      <td valign="top">Diff:</td>
+	      <td tal:content="structure h/diff">diff</td>
+	     </tr>
 	    </span>
 	  </table>
 	</span>

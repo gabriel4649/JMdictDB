@@ -125,9 +125,9 @@
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
-import sys, cgi, datetime
+import sys, cgi, datetime, cgitb
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import jdb, jmcgi, cgitb, json
+import jdb, jmcgi, fmtxml, json
 
 def main( args, opts ):
 	cgitb.enable()
@@ -146,7 +146,8 @@ def main( args, opts ):
 	    dbh.connection.commit()
 	    dbh.execute ("START TRANSACTION ISOLATION LEVEL SERIALIZABLE");
 	    for entr in entrs:
-		added.append (submission (dbh, sess, svc, entr, disp, errs))
+		e = submission (dbh, sess, svc, entr, disp, errs)
+		if e: added.append (e)
 	if not errs:
 	    dbh.connection.commit()
 	    jmcgi.gen_page ("tmpl/submitted.tal", macros='tmpl/macros.tal',
@@ -179,7 +180,6 @@ def submission (dbh, sess, svc, entr, disp, errs):
 		  # if the submitter has done so. 
 		merge_rev = True
 
-
 	entr.unap = not disp
 
 	  # Merge_hist() will combine the history entry in the submitted
@@ -199,10 +199,17 @@ def submission (dbh, sess, svc, entr, disp, errs):
 	  # Before calling merge_hist() check for a condition that would
 	  # cause merge_hist() to fail.
 	if getattr (entr, 'dfrm', None) and entr.stat==KW.STAT['D'].id:
-	    errs.append ("Delete requested but entry is new (has no 'dfrm' value.")
+	    errs.append ("Delete requested but entry is new (has no 'dfrm' value.)")
 
 	if not errs:
-	    entr = merge_hist (dbh, entr, merge_rev, sess)
+	      # Entr contains the hist record generate by the edconf.py
+	      # but it is not trustworthy since it could be modified or
+	      # created from scratch before we get it.  So we extract
+	      # the unvalidated info from it (name, email, notes, refs)
+	      # and recreate it.
+	    h = entr._hist[-1]
+	    entr = jdb.add_hist (dbh, entr, sess.userid if sess else None, 
+				 h.name, h.email, h.notes, h.refs, merge_rev)
 	    if not entr:
 		errs.append (
 		    "The entry you are editing has been changed by " 
@@ -217,7 +224,8 @@ def submission (dbh, sess, svc, entr, disp, errs):
 		added = reject (dbh, svc, entr, errs)
 	    else:
 		errs.append ("Bad url parameter (disp=%s) % disp")
-	return added
+	if not errs: return added
+	return None
 
 def submit (dbh, svc, entr, errs):
 
@@ -324,42 +332,6 @@ def addentr (dbh, entr):
 	entr._hist[-1].stat = entr.stat
 	res = jdb.addentr (dbh, entr)
 	return res
-
-def merge_hist (dbh, entr, rev, sess):
-	# Merge the history from the derived-from entry
-	# having id 'dfrmid', into the entry object 'entr'.
-	# Only the last hist entry of 'entr' is kept; all
-	# earlier hist entries are replaced with hist entries
-	# from entry 'dfrmid'.  The timestamp in the last
-	# entry is reset to the current date/time.  The 
-	# If 'rev' is true, then merge the new hist record
-	# into the orignal entry.  This is used when processing
-	# a delete entry where we want to ignore the parsed 
-	# entry and use the original entr.
-
-	hist = [];
-	if entr.dfrm:
-	    old = jdb.entrList (dbh, [entr.dfrm])
-	    if len (old) != 1: return 0
-	    old = old[0]
-	    hist = old._hist
-	newest = entr._hist.pop()
-	newest.dt = datetime.datetime.utcnow().replace(microsecond=0)
-	if sess: newest.userid = sess.userid
-	hist.append (newest)
-	if not rev:
-	    entr._hist = hist
-	    return entr
-	else:
-	      # 'rev' is true.  This means that we want to submit not
-	      # 'entr', which was built from the form data, but instead 
-	      # we want to submit the original entry the form data was
-	      # based on, i.e. the entry pointed to by 'dfrm'.
-	    old.stat = entr.stat
-	    old.unap = entr.unap
-	    old.dfrm = entr.dfrm
-	    old._hist = hist
-	    return old
 
 def delentr (dbh, id):
 	# Delete entry 'id' (and by cascade, any edited entries

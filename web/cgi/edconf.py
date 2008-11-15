@@ -103,8 +103,9 @@ def main (args, opts):
 
 	      # Append a new hist record details this edit.
 	    if not hasattr (entr, '_hist'): entr._hist = []
-	    entr._hist.append (newhist (entr, stat, entr.unap, comment, refs,
-					 name, email, errs))
+	    entr = jdb.add_hist (cur, entr, sess.userid if sess else None, 
+				 name, email, comment, refs, 
+				 entr.stat==KW.STAT['D'].id)
 	    chkentr (entr, errs)
 
 	      # If this is a new entry, look for other entries that
@@ -128,15 +129,6 @@ def main (args, opts):
 			    method="get", output=sys.stdout, this_page='edconf.py')
 	else: jmcgi.gen_page ("tmpl/url_errors.tal", output=sys.stdout, errs=errs)
 	cur.close() 
-
-def newhist (entr, stat, unap, comment, refs, name, email, errs):
-	  # Create a history record for display.  A real record 
-	  # will be recreated when the entry is actually committed
-	  # to the database.
-	now = datetime.datetime.utcnow().replace(microsecond=0)
-	hist = jdb.Obj (hist=1, dt=now, stat=stat, unap=unap, name=name, 
-		        email=email, diff='', refs=refs, notes=comment)
-	return hist
 
 def find_similar (dbh, kanj, rdng, src):
 	# Find all entries that have a kanj in the set @$kanj,

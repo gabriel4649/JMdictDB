@@ -870,7 +870,8 @@ class Model:
 	return e
 
     def add_entr (self, e, userid, name, email, comment, refs):
-	jdb.add_hist (self.cursor, e, userid, name, email, comment, refs)
+	deleting = e.stat==KW.STAT['D'].id
+	e = jdb.add_hist (self.cursor, e, userid, name, email, comment, refs, deleting)
 	self.cursor.execute ('BEGIN')
 	id,x = jdb.addentr (self.cursor, e)
 	self.cursor.execute ('COMMIT')

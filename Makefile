@@ -116,6 +116,7 @@ TAL_FILES = entr.tal \
 	edconf.tal \
 	edform.tal \
 	edhelp.tal \
+	macros.tal \
 	srchform.tal \
 	srchres.tal \
 	submitted.tal \

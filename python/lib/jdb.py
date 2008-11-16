@@ -822,7 +822,8 @@ def newhist (
 
 	hist = [];  old = None
 	if getattr (entr, 'dfrm', None):
-	    old = entrList (dbh, [entr.dfrm])
+	    old, bulk = entrList (dbh, [entr.dfrm], ret_tuple=True)
+	    augment_xrefs (dbh, bulk['xref'])
 	    if len (old) != 1: raise ValueError (entr.dfrm)
 	    old = old[0]
 	h = Obj (dt= datetime.datetime.utcnow().replace(microsecond=0),

@@ -92,7 +92,12 @@ def main (args, opts):
 	      # here since that is the form used to store them in the 
 	      # database.  If any are unresolvable, an approriate error 
 	      # is saved and will reported later.
-	    perrs = jelparse.resolv_xrefs (cur, entr)
+	    try: 
+	        perrs = jelparse.resolv_xrefs (cur, entr)
+	    except StandardError, e:
+		errs.append (e.message)
+
+	if entr and not errs:
 
 	      # Migrate the entr details to the new entr object
 	      # which to this point had only the kanj/rdng/sens

@@ -23,7 +23,7 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi, cgitb, re, datetime
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import jdb, jmcgi, jelparse, jellex, json
+import jdb, jmcgi, jelparse, jellex, serialize
 
 def main (args, opts):
 	#cgitb.enable()
@@ -125,7 +125,7 @@ def main (args, opts):
 	    entrs = [entr]
 
 	if not errs:
-	    serialized = json.serialize (entrs)
+	    serialized = serialize.serialize (entrs)
 	    jmcgi.htmlprep (entrs)
 	    jmcgi.gen_page ("tmpl/edconf.tal", macros='tmpl/macros.tal',
 			    entries=entrs, serialized=serialized,

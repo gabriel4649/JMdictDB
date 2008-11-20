@@ -127,7 +127,7 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi, datetime, cgitb
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import jdb, jmcgi, fmtxml, json
+import jdb, jmcgi, fmtxml, serialize
 
 def main( args, opts ):
 	cgitb.enable()
@@ -141,7 +141,7 @@ def main( args, opts ):
 	    errs.append ("Only registered editors can approve or reject entries")
         #raise RuntimeError
 	if not errs:
-	    entrs = json.unserialize (fv ("entr"))
+	    entrs = serialize.unserialize (fv ("entr"))
 	    added = []
 	    dbh.connection.commit()
 	    dbh.execute ("START TRANSACTION ISOLATION LEVEL SERIALIZABLE");

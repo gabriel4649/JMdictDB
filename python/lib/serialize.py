@@ -20,7 +20,9 @@
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
-import zlib, base64, urllib, datetime, time, simplejson
+import zlib, base64, urllib, datetime, time
+try: import json
+except ImportError: import simplejson as json
 import jdb
 
 def serialize (obj):
@@ -39,11 +41,11 @@ def unserialize (str):
 
 def jencode (obj):
 	r = obj2struc (obj)
-	jstr = simplejson.dumps (r)
+	jstr = json.dumps (r)
 	return jstr
 
 def jdecode (jstr):
-	r = simplejson.loads (jstr)
+	r = json.loads (jstr)
 	o = struc2obj (r)
 	return o
 

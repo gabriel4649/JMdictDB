@@ -14,10 +14,10 @@
           <table class="notloggedin" align="right" tal:condition="not:session">
 	    <tr>
 	      <td>Editor login<br/><input name="login" value="Login" type="submit"/></td>
+	      <td>Username:<br/>Password:</td>
 	      <td>
-	        Username:<input name="username" type="text" size="8"/><br/>
-	        Password:<input name="password" type="password" size="8"/>
-	        </td>
+		<input name="username" type="text" size="8"/><br/>
+		<input name="password" type="password" size="8"/></td>
 	      </tr>
 	    </table>
 	  </form>

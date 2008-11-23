@@ -145,6 +145,12 @@ def main( args, opts ):
 	    added = []
 	    dbh.connection.commit()
 	    dbh.execute ("START TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+	      # FIXME: we unserialize the entr's xref's as they were resolved
+	      #  by the edconf.py page.  Should we check them again here? 
+	      #  If target entry was deleted in meantime, attempt to add 
+	      #  our entr to db will fail with obscure foreign key error. 
+	      #  Alternatively an edited version of target may have been 
+	      #  created which wont have our xref pointing to it as it should. 
 	    for entr in entrs:
 		e = submission (dbh, sess, svc, entr, disp, errs)
 		if e: added.append (e)

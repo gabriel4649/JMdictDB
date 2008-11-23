@@ -93,7 +93,7 @@ def main (args, opts):
 	      # database.  If any are unresolvable, an approriate error 
 	      # is saved and will reported later.
 	    try: 
-	        perrs = jelparse.resolv_xrefs (cur, entr)
+	        perrs = jelparse.resolv_xrefs (cur, entr, corpid=src)
 	    except StandardError, e:
 		errs.append (e.message)
 

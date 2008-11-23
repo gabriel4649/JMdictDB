@@ -1,0 +1,24 @@
+Title:	Supress stderr output from cgi scripts
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-11-22 16:16:41 sysad
+  Under Windows both stdout and stderr from cgi scripts is
+  sent to the client browser.
+  
+  jelparse.py (auto generated from jelparse.y), and the ply
+  parser it uses can generate such stderr output and under
+  Windows such output in intermingled with the html produced
+  by the cgi script.  In some cases this can corrupt the page,
+  or form data passed to subsequent pages (e.g.,IS-137).
+  
+  Need to control ply's propensity to write error messages to
+  stderr.  Also need make sure we don't write errors or warnings
+  to stderr ourself in lib modules.
+  This does not apply to output that preceeds abnormal termination
+  of the script such as a Python traceback also it might be better
+  to use the logging modules to control this stuff.

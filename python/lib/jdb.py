@@ -694,7 +694,7 @@ def grp_xrefs (xrefs, rev=0):
 def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None, 
 		 one_entr_only=True, one_sens_only=False):
 
-	# Find entries and their senses that match $ktxt and $rtxt
+	# Find entries and their senses that match 'ktxt' and 'rtxt'
 	# and create list of augmented xref records that points to
 	# them.
 	#
@@ -711,23 +711,24 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	#   this parameter is interpreted as a seq number.  Otherwise it
 	#   is interpreted as an entry id number.
 	# corpid (int or None) -- If given the resolved target must have
-	#   the same value of .src.
+	#   the same value in .src.
 	# one_entr_only (bool) -- Raise error if xref resolves to more
-	#   than one entry.  Regardless of this value, it is always an
-	#   error if 'slist' is given and the xref resolves to more than
-	#   one entry.  
+	#   than one set of entries having the same seq number.  Regard-
+	#   less of this value, it is always an error if 'slist' is given
+	#   and the xref resolves to more than one set of entries having
+	#   the same seq number.   
 	# one_sens_only (bool) -- Raise error if 'slist' not given and 
 	#   any of the resolved entries have more than one sense. 
 	# 
 	# resolv_xref() returns a list of augmented xrefs (see function 
 	# augment_xrefs() for description) except each xref has no {entr},
 	# {sens}, or {xref} elements, since those will be determined by
-	# the parent sense to which the xref is attached.
+	# the parent sense to which the xref will be attached.
 	# 
-	# Prohibited conditions such as resolving to multiple
-	# entries when the $one_entr_only flag is true, are 
-	# signalled with die().  The caller may want to call 
-	# resolv_xref() within an eval() to catch these conditions.
+	# Prohibited conditions such as resolving to multiple seq sets
+	# when the 'one_entr_only' flag is true, are signalled by raising
+	# a ValueError.  The caller may want to call resolv_xref() within
+	# a "try" block to catch these conditions.
 	
 	if not rtxt and not ktxt and not enum:
 	    raise ValueError ("No rtxt, ktxt, or enum value, need ay least one.")
@@ -743,6 +744,8 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	condlist = []
 	if ktxt: condlist.append (('kanj k', "k.txt=%s", [ktxt]))
 	if rtxt: condlist.append (('rdng r', "r.txt=%s", [rtxt]))
+	  # Exclude Deleted and Rejected entries from consideration.
+	condlist.append (('entr e', 'e.stat IN(%d,%d)' % (KW.STAT['A'].id,KW.STAT['N'].id), []))
 	if enum and not corpid:
 	    condlist.append (('entr e', 'e.id=%s', [enum]))
 	elif enum and corpid:
@@ -755,37 +758,36 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	entrs = entrList (dbh, sql, sql_args, tables=tables)
 
 	if not entrs: raise ValueError ('No entries found for cross-reference "%s".' % krtxt)
-	if len (entrs) > 1 and (one_entr_only or slist):
-	    raise ValueError ('Multiple entries found for cross-reference "%s".' % krtxt)
+	seqcnt = len (set ([x.seq for x in entrs]))
+	if seqcnt > 1 and (one_entr_only or slist):
+	    raise ValueError ('Xref "%s": Multiple entries found.' % krtxt)
 
 	# For every target entry, get all it's sense numbers.  We need
 	# these for two reasons: 1) If explicit senses were targeted we
 	# need to check them against the actual senses. 2) If no explicit
 	# target senses were given, then we need them to generate erefs 
 	# to all the target senses.
-	# The code currently compares actual sense numbers; if the database
-	# could guarantee that sense numbers are always sequential from
-	# one, this code could be simplified and speeded up.
+	# The code currently assumes that sense numbers of database entries
+	# are always sequential and start at 1.
 
 	if slist:
-	    # The submitter gave some specific senses that the xref will
-	    # target, so check that they actually exist in the target entry.
-	    # We know (from previous code) that if there was an slist, there
-	    # must be exactly one entry here.
-
-	    snums = len (entrs[0]._sens); nosens = []
-	    for s in slist:
-		if s<1 or s>snums: nosens.append (str(s))
-	    if nosens:
-		raise ValueError ('Sense(s) %s not in target "%s".' % (",".join(nosens), krtxt))
+	      # The submitter gave some specific senses that the xref will
+	      # target, so check that they actually exist in the target entry.
+	    for e in entrs:
+		snums = len (e._sens); nosens = []
+		for s in slist:
+		    if s<1 or s>snums: 
+			raise ValueError ('Xref "%s": Sense %s not in target id %d.'
+					  % (krtxt, s, e.id))
 	else:
-	    # No specific senses given, so this xref(s) should target every
-	    # sense in the target entry(s), unless $one_sens_only is true
-	    # in which case all the xrefs must have only one sense or we 
-	    # raise an error.
-	    if one_sens_only and first (entrs, lambda x: len(x._sens)>1):
-		raise ValueError ('The "%s" target(s) has more than one sense.' % (krtxt))
-
+	      # No specific senses given, so this xref(s) should target every
+	      # sense in the target entry(s), unless $one_sens_only is true
+	      # in which case all the xrefs must have only one sense or we 
+	      # raise an error.
+	    entr_multsens = first (entrs, lambda x: len(x._sens)>1)
+	    if one_sens_only and entr_multsens:
+		raise ValueError ('Xref "%s": Target entry id %d has more than one sense.' 
+				  % (krtxt, entr_multsens.id))
 	xrefs = []
 	for e in entrs:
 	    xrdng = xkanj = None

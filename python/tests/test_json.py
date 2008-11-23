@@ -1,7 +1,9 @@
-import sys, re, simplejson, unittest, pdb
+import sys, re, unittest, pdb
+try: import json
+except ImportError: import simplejson as json
 sys.path[0] = '../lib'
 import jdb, fmtxml
-import json
+import serialize
 
 Cursor = None
 def globalSetup ():
@@ -15,44 +17,44 @@ def globalSetup ():
 class Test_obj2struc (unittest.TestCase):
 
       # Scalars...
-    def test0001(_): _.assert_ (isEqual (json.obj2struc(None), None))
-    def test0002(_): _.assert_ (isEqual (json.obj2struc(1), 1))
-    def test0003(_): _.assert_ (isEqual (json.obj2struc(2000000000000), 2000000000000))
-    def test0004(_): _.assert_ (isEqual (json.obj2struc('abc'), 'abc'))
-    def test0005(_): _.assert_ (isEqual (json.obj2struc(u'abc'), u'abc'))
-    def test0006(_): _.assert_ (isEqual (json.obj2struc(u'\u304a\u5143\u6c17\u3067'), u'\u304a\u5143\u6c17\u3067'))
-    def test0007(_): _.assert_ (isEqual (json.obj2struc(1.1428), 1.1428))
-    def test0008(_): _.assert_ (isEqual (json.obj2struc(True), True))
-    def test0009(_): _.assert_ (isEqual (json.obj2struc(False), False))
+    def test0001(_): _.assert_ (isEqual (serialize.obj2struc(None), None))
+    def test0002(_): _.assert_ (isEqual (serialize.obj2struc(1), 1))
+    def test0003(_): _.assert_ (isEqual (serialize.obj2struc(2000000000000), 2000000000000))
+    def test0004(_): _.assert_ (isEqual (serialize.obj2struc('abc'), 'abc'))
+    def test0005(_): _.assert_ (isEqual (serialize.obj2struc(u'abc'), u'abc'))
+    def test0006(_): _.assert_ (isEqual (serialize.obj2struc(u'\u304a\u5143\u6c17\u3067'), u'\u304a\u5143\u6c17\u3067'))
+    def test0007(_): _.assert_ (isEqual (serialize.obj2struc(1.1428), 1.1428))
+    def test0008(_): _.assert_ (isEqual (serialize.obj2struc(True), True))
+    def test0009(_): _.assert_ (isEqual (serialize.obj2struc(False), False))
 
       # lists, tuples
-    def test0101(_): _.assert_ (isEqual (json.obj2struc([]),         ['list',[]]))
-    def test0102(_): _.assert_ (isEqual (json.obj2struc([3]),        ['list',[3]]))
-    def test0103(_): _.assert_ (isEqual (json.obj2struc(['abc', 7]), ['list',['abc',7]]))
-    def test0104(_): _.assert_ (isEqual (json.obj2struc(()),         ['list',[]]))
-    def test0105(_): _.assert_ (isEqual (json.obj2struc((3,)),       ['list',(3.)]))
-    def test0106(_): _.assert_ (isEqual (json.obj2struc(('abc', 7)), ['list',('abc',7)]))
+    def test0101(_): _.assert_ (isEqual (serialize.obj2struc([]),         ['list',[]]))
+    def test0102(_): _.assert_ (isEqual (serialize.obj2struc([3]),        ['list',[3]]))
+    def test0103(_): _.assert_ (isEqual (serialize.obj2struc(['abc', 7]), ['list',['abc',7]]))
+    def test0104(_): _.assert_ (isEqual (serialize.obj2struc(()),         ['list',[]]))
+    def test0105(_): _.assert_ (isEqual (serialize.obj2struc((3,)),       ['list',(3.)]))
+    def test0106(_): _.assert_ (isEqual (serialize.obj2struc(('abc', 7)), ['list',('abc',7)]))
 
       # TBS... objects, hashes?...
 
 class Test_struc2obj (unittest.TestCase):
 
       # Scalars...
-    def test0001(_): _.assert_ (isEqual (json.struc2obj(None), None))
-    def test0002(_): _.assert_ (isEqual (json.struc2obj(1), 1))
-    def test0003(_): _.assert_ (isEqual (json.struc2obj(2000000000000), 2000000000000))
-    def test0004(_): _.assert_ (isEqual (json.struc2obj('abc'), 'abc'))
-    def test0005(_): _.assert_ (isEqual (json.struc2obj(u'abc'), u'abc'))
-    def test0006(_): _.assert_ (isEqual (json.struc2obj(u'\u304a\u5143\u6c17\u3067'), u'\u304a\u5143\u6c17\u3067'))
-    def test0007(_): _.assert_ (isEqual (json.struc2obj(1.1428), 1.1428))
-    def test0008(_): _.assert_ (isEqual (json.struc2obj(True), True))
-    def test0009(_): _.assert_ (isEqual (json.struc2obj(False), False))
+    def test0001(_): _.assert_ (isEqual (serialize.struc2obj(None), None))
+    def test0002(_): _.assert_ (isEqual (serialize.struc2obj(1), 1))
+    def test0003(_): _.assert_ (isEqual (serialize.struc2obj(2000000000000), 2000000000000))
+    def test0004(_): _.assert_ (isEqual (serialize.struc2obj('abc'), 'abc'))
+    def test0005(_): _.assert_ (isEqual (serialize.struc2obj(u'abc'), u'abc'))
+    def test0006(_): _.assert_ (isEqual (serialize.struc2obj(u'\u304a\u5143\u6c17\u3067'), u'\u304a\u5143\u6c17\u3067'))
+    def test0007(_): _.assert_ (isEqual (serialize.struc2obj(1.1428), 1.1428))
+    def test0008(_): _.assert_ (isEqual (serialize.struc2obj(True), True))
+    def test0009(_): _.assert_ (isEqual (serialize.struc2obj(False), False))
 
       # TBS... lists, tuples, hashes?...
 
 class Test_obj2struc (unittest.TestCase):
 
-    def test01(_): _.assert_ (isEqual (json.obj2struc(None), None))
+    def test01(_): _.assert_ (isEqual (serialize.obj2struc(None), None))
 
 class Test_multirefs (unittest.TestCase):
       # Test that multiple references to a single object aren't
@@ -61,7 +63,7 @@ class Test_multirefs (unittest.TestCase):
     def test001(_):
 	a = [3, 4, 5]
 	b = jdb.Obj (x=a, y=a)
-	b2 = json.unserialize (json.serialize (b))
+	b2 = serialize.unserialize (serialize.serialize (b))
 	_.assertEqual (a, b2.x)
 	_.assertEqual (b2.x, b2.y)
 	_.assertEqual (id(b2.x), id(b2.y))
@@ -70,7 +72,7 @@ class Test_multirefs (unittest.TestCase):
 	a1 = [3, 4, 5]
 	a2 = [3, 4, 5]
 	b = jdb.Obj (x=a1, y=a2)
-	b2 = json.unserialize (json.serialize (b))
+	b2 = serialize.unserialize (serialize.serialize (b))
 	_.assertEqual (a1, b2.x)
 	_.assertEqual (b2.x, b2.y)
 	_.assertNotEqual (id(b2.x), id(b2.y))
@@ -89,7 +91,7 @@ def isEqual (a, b):
 Cursor = None
 def rt(_, seq):
 	# Test round trip from entry object through
-	# json.serialize, json.unserialize, back to
+	# serialize.serialize, serialize.unserialize, back to
 	# object.  Compare input and output objects 
 	# by converting both to xml and comparing 
 	# text.  (Watch out for order problems).
@@ -102,8 +104,8 @@ def rt(_, seq):
 	elist,r = jdb.entrList (Cursor, sql, [seq], ret_tuple=1)
 	e1 = elist[0]
 	jdb.augment_xrefs (Cursor, r['xref'])
-	s = json.serialize (e1)
-	e2 = json.unserialize (s)
+	s = serialize.serialize (e1)
+	e2 = serialize.unserialize (s)
 	f1 = fmtxml.entr (e1)
 	_.assert_ (len (f1) > 40)  # Sanity check to detect empty entry.
 	f2 = fmtxml.entr (e2)

@@ -6,7 +6,7 @@
 #---------------------------------------------------------------------
 
 import sys, unittest, pdb
-sys.path.insert (0, '../lib')
+if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb, jellex, jelparse, fmtjel
 
 __unittest = 1

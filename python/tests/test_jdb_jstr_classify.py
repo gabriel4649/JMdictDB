@@ -4,7 +4,7 @@
 # Tests the jdb.jstr_classify() function.
 
 import sys, pdb, unittest
-sys.path.append ('../lib')
+if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb
 
 __unittest = 1

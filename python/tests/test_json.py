@@ -1,7 +1,7 @@
 import sys, re, unittest, pdb
 try: import json
 except ImportError: import simplejson as json
-sys.path[0] = '../lib'
+if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb, fmtxml
 import serialize
 

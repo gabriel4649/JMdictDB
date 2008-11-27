@@ -4,7 +4,7 @@
 
 import sys, os, tempfile, atexit, subprocess, difflib, \
 	shutil, pdb, unittest, unittest_extensions
-sys.path.append ('../lib')
+if '../lib' not in sys.path: sys.path.append ('../lib')
 #__unittest = 1
 
 Global_setup_done = False

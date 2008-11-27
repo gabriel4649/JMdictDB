@@ -1,7 +1,7 @@
 Title:	Changes to sys.path in importable modules
-Stat:	open
-Disp:	
-Prio:	low
+Stat:	closed
+Disp:	done
+Prio:	med
 Cats:	dev
 Reqtrs:	
 AssdTo:	
@@ -10,10 +10,26 @@ AssdTo:
   In python/tests/test_jmxml, sys.path was modified by replacing
   item 0 (".") with "../lib" in order to import jdb and other lib
   modules.  This works fine when test_jmxml is run as a standalone
-  test, but when imported by runtests.py, the change to sys.path 
+  test, but when imported by runtests.py, the change to sys.path
   persists and affects importing of other modules.  Other test_*
   modules do "sys.path.append("../lib")" which won't cause any
-  failues, but will result in multiple "../lib"s on sys.path.  
+  failues, but will result in multiple "../lib"s on sys.path.
   Should find a way not to modify sys.path at all (adopt rule that
   prohibits such global changes by any importable module?), or be
   smarter in doing it.
+
+2008-11-27 10:26:13 sysad
+  After upgrading to Python-2.6 on Windows, same problem (ImportError
+  on one of the test_*.py files when running python/tests/runtests.py)
+  started reoccuring again.  Same code runs ok in Python-2.5 under
+  Linux.
+  
+  In all the test_*.py files, replaced the
+  
+    sys.path.insert(0, '../lib')
+  
+  lines with:
+  
+    if '../lib' not in sys.path: sys.path.append ('../lib')
+  
+  Tests run ok now.

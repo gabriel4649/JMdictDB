@@ -1,0 +1,15 @@
+Title:	Add new jmdict POS tag "pn"
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2008-11-27 15:04:07 stuart
+  Per email from Jim Breen to the edict mailing list on
+  2008-12-19, added support for new "pn" (pronoun) POS
+  keyword:
+  
+  Add line to pg/data/kwpos.csv:
+    61  pn      pronoun

@@ -529,7 +529,7 @@ def do_restr (elems, rdng, kanjs, rtype, nokanji=None):
 	    allowed_kanj, dups = jdb.rmdups ([x.text for x in elems])
 	    if dups:
 		warn ("Duplicate %s item(s) %s in %s %d." 
-			% (pattr[1:], "'"+"','".join([dups])+"'", 
+			% (pattr[1:], "'"+"','".join(dups)+"'", 
 			   rattr, getattr (rdng,rattr)))
 	for kanj in kanjs:
 	    if kanj.txt not in allowed_kanj:

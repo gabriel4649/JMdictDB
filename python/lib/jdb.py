@@ -1180,10 +1180,10 @@ def autocond (srchtext, srchtype, srchin, inv=None, alias_suffix=''):
 	try: stype = int(srchtype)
 	except ValueError: pass
 
-	if sin == 1: m = jstr_classify (srchtext)
-	if   sin == 3 or jstr_reb (m):  tbl,col = 'rdng r%s',  'r%s.txt' 
-	elif sin == 4 or jstr_gloss(m): tbl,col = 'gloss g%s', 'g%s.txt'
-	elif sin == 2 or sin == 1:      tbl,col = 'kanj k%s',  'k%s.txt'
+	if sin==1: m = jstr_classify (srchtext)
+	if   sin==3 or (sin==1 and jstr_reb (m)):  tbl,col = 'rdng r%s',  'r%s.txt' 
+	elif sin==4 or (sin==1 and jstr_gloss(m)): tbl,col = 'gloss g%s', 'g%s.txt'
+	elif sin==2 or sin==1:                     tbl,col = 'kanj k%s',  'k%s.txt'
 	else:
 	    raise ValueError ("autocond(): Bad 'srchin' parameter value: %r" % srchin)
 	tbl %= alias_suffix;  col %= alias_suffix

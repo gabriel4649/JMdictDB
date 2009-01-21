@@ -18,15 +18,15 @@
     <a href="mailto:jmdicthelp@somewhere.org">jmdicthelp@somewhere.org</a>
   <span tal:repeat="e entries">
     <div class="entry">
-
       <span class="warnings" tal:condition="chklist">
+      <span class="warnings" tal:condition="chklist/dups">
 	<span class="caution">Caution:</span>
 	The following existing entries contain kanji or readings
 	that exist in your proposed entry.  Before submitting your
 	entry, please make sure that it is not a duplicate of, or
 	should not be an amendment to, one of these entries.
 	<ol>
-	  <li tal:repeat="c chklist">
+	  <li tal:repeat="c chklist/dups">
 	    <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;q=${c/seq}.${c/src}" tal:content="c/seq">seq</a>
 	    <span tal:condition="c/kanj" tal:content="c/kanj" tal:omit-tag="">kanji</span>
 	    <span tal:condition="c/kanj">【</span>
@@ -35,8 +35,25 @@
 	    <span tal:content="c/gloss" tal:omit-tag="">gloss</span>
 	    </li>
 	  </ol>
+	</span>
+      <span class="warnings" tal:condition="chklist/xrslv">
+	<span class="caution">Caution:</span>
+	Your entry contains some xrefs that were not resolvable to other
+	entries in this corpus, either because no entries matched the seq
+	number, kanji, and reading you gave, or because multiple entries
+	did.  In the latter case you may be able to give the target more
+	specifically by giving a seq number or reading with the kanji.
+	Use your browsers 'back" button to return to the previous page
+	to make corrections.  Alternatively, you may submit this entry
+	as is for later correction, but please note that entries with
+	unresolved xrefs can't be approved.
+	<ol>
+	  <li tal:repeat="x chklist/xrslv">
+	    <span tal:replace="x">message</span>
+	    </li>
+	  </ol>
+	</span>
 	<hr/>
-	Your entry:<br/>
 	</span>
 
       <span tal:replace="python:TALabbr('SRC',e.src)">src</span>
@@ -146,7 +163,7 @@
 		</span>
 	      </span>
 
-	    <table class="xrefs" tal:condition="python:TALattror(s,'_xref','_xrer')">
+	    <table class="xrefs" tal:condition="python:TALattror(s,'_xref','_xrer','_xrslv')">
 	      <tr tal:condition="s/_xref">
 		<td colspan="2">Cross references:</td>   
 	        </tr>
@@ -162,6 +179,18 @@
 		  <span tal:replace="x/xsens">s#</span
 		  >.<span tal:replace="python:TALtxts(x.TARG._sens[x.xsens-1],'_gloss')"></span>
 		  <span tal:condition="x/notes" replace="x/notes">xref-note</span>
+		  </td>
+		</tr>
+	      <tr tal:condition="s/_xrslv">
+		<td colspan="2">Unresolved cross references:</td>   
+	        </tr>
+	      <tr tal:condition="s/_xrslv" tal:repeat="x s/_xrslv">
+		<td>&nbsp;</td>
+		<td>
+		  <span tal:replace="python:TALabbr('XREF',x.typ)">xrslv-type</span>:
+		  <span tal:condition="x/ktxt" tal:replace="x/ktxt">xrslv-kanj</span>
+		  <span tal:condition="python:TALattrand(x,'ktxt','rtxt')" tal:omit-tag="">・</span>
+		  <span tal:condition="x/rtxt" tal:replace="x/rtxt">xrslv-rdng</span>
 		  </td>
 		</tr>
 	      </table>

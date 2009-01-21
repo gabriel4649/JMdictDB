@@ -119,7 +119,7 @@
 		</span>
 	      </span>
 
-	    <table class="xrefs" tal:condition="python:TALattror(s,'_xref','_xrer')">
+	    <table class="xrefs" tal:condition="python:TALattror(s,'_xref','_xrer','_xrslv')">
 	      <tr tal:condition="s/_xref">
 		<td colspan="2">Cross references:</td>   
 	        </tr>
@@ -135,6 +135,18 @@
 		  <span tal:replace="x/xsens">s#</span
 		  >.<span tal:replace="python:TALtxts(x.TARG._sens[x.xsens-1],'_gloss')"></span>
 		  <span tal:condition="x/notes" replace="x/notes">xref-note</span>
+		  </td>
+		</tr>
+	      <tr tal:condition="s/_xrslv">
+		<td colspan="2">Unresolved cross references:</td>   
+	        </tr>
+	      <tr tal:condition="s/_xrslv" tal:repeat="x s/_xrslv">
+		<td>&nbsp;</td>
+		<td>
+		  <span tal:replace="python:TALabbr('XREF',x.typ)">xrslv-type</span>:
+		  <span tal:condition="x/ktxt" tal:replace="x/ktxt">xrslv-kanj</span>
+		  <span tal:condition="python:TALattrand(x,'ktxt','rtxt')" tal:omit-tag="">・</span>
+		  <span tal:condition="x/rtxt" tal:replace="x/rtxt">xrslv-rdng</span>
 		  </td>
 		</tr>
 	      <tr tal:condition="s/_xrer">

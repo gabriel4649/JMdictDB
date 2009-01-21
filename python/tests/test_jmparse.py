@@ -1,7 +1,9 @@
 #!/usr/bin/env python
-
-# Tests the jdb.Kwds class.
-
+#--------------------------------------------------------------------
+# WARNING -- Some of these tests involve excuting the jmparse.py
+#   program which in turn requires PYTHONPATH be properly configured
+#   so that jmparse.py can find the jdb libraries.
+#--------------------------------------------------------------------
 import sys, os, tempfile, atexit, subprocess, difflib, \
 	shutil, pdb, unittest, unittest_extensions
 if '../lib' not in sys.path: sys.path.append ('../lib')

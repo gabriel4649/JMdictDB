@@ -1,0 +1,7 @@
+﻿アイス[ichi1,gai1]
+[1][n]
+  [lsrc=eng:ice,lsrc=ger:Eis]
+  ice
+[2][n][abbr]
+  ice cream; icecream
+  [see=1013980・アイスクリーム[1]]

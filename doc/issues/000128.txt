@@ -32,3 +32,7 @@ AssdTo:
 2008-11-01 13:48:06 sysad
   Item "Show audio clip id's in entry template" above was done in
   changeset e3b3244ded86 (2008-10-29).
+
+2008-11-24 12:46:40 sysad
+  To do: pg/mkviews.sql: dupentr function still refers to obsolete
+  table 'audio' rather than replacement tables 'rdngsnd' and 'entrsnd'.

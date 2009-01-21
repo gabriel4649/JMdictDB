@@ -1,8 +1,11 @@
+﻿# -*- coding: utf-8 -*-
+
 import sys, re, unittest, pdb
 try: import json
 except ImportError: import simplejson as json
 if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb, fmtxml
+from objects import *
 import serialize
 
 Cursor = None
@@ -83,6 +86,76 @@ class Test_roundtrip (unittest.TestCase):
     def test002(_): rt (_, 1005930)
     def test003(_): rt (_, 1000920)
     def test004(_): rt (_, 2013840)
+
+class Test_objects (unittest.TestCase):
+    def test001(_):
+	e1 = Obj (id=555, seq=222, stat=2)
+	e2 = serialize.unserialize (serialize.serialize (e1))
+	_.assertEqual (type(e1), type(e2))
+	_.assertEqual (e1.id, e2.id)
+	_.assertEqual (e1.seq, e2.seq)
+	_.assertEqual (e1.stat, e2.stat)
+    def test002(_):
+	e1 = DbRow ([555,222,2],['id','seq','stat'])
+	e2 = serialize.unserialize (serialize.serialize (e1))
+	_.assertEqual (type(e1), type(e2))
+	_.assertEqual (e1.id, e2.id)
+	_.assertEqual (e1.seq, e2.seq)
+	_.assertEqual (e1.stat, e2.stat)
+
+    def test011(_):
+	e1 = Entr (id=555, seq=222, stat=2)
+	e2 = serialize.unserialize (serialize.serialize (e1))
+	_.assertEqual (type(e1), type(e2))
+	_.assertEqual (e1.id, e2.id)
+	_.assertEqual (e1.seq, e2.seq)
+	_.assertEqual (e1.stat, e2.stat)
+	_.assertEqual (e1.unap, e2.unap)
+	_.assertEqual (e1.notes, e2.notes)
+    def test012(_):
+	e1 = Rdng (txt=u'あいうえお', rdng=2, entr=555)
+	e2 = serialize.unserialize (serialize.serialize (e1))
+	_.assertEqual (type(e1), type(e2))
+	_.assertEqual (e1.entr, e2.entr)
+	_.assertEqual (e1.rdng, e2.rdng)
+	_.assertEqual (e1.txt, e2.txt)
+    def test013(_):
+	e1 = Kanj (txt=u'田中さん', kanj=2, entr=555)
+	e2 = serialize.unserialize (serialize.serialize (e1))
+	_.assertEqual (type(e1), type(e2))
+	_.assertEqual (e1.entr, e2.entr)
+	_.assertEqual (e1.kanj, e2.kanj)
+	_.assertEqual (e1.txt, e2.txt)
+    def test014(_):
+	e1 = Sens (notes=u'abcd', sens=2, entr=555)
+	e2 = serialize.unserialize (serialize.serialize (e1))
+	_.assertEqual (type(e1), type(e2))
+	_.assertEqual (e1.entr, e2.entr)
+	_.assertEqual (e1.sens, e2.sens)
+	_.assertEqual (e1.notes, e2.notes)
+    def test015(_):
+	e1 = Gloss (txt=u'abcd', sens=2, gloss=3, entr=555, lang=33)
+	e2 = serialize.unserialize (serialize.serialize (e1))
+	_.assertEqual (type(e1), type(e2))
+	_.assertEqual (e1.entr, e2.entr)
+	_.assertEqual (e1.sens, e2.sens)
+	_.assertEqual (e1.gloss, e2.gloss)
+	_.assertEqual (e1.lang, e2.lang)
+    # TBS... test cases for every object type?  Or just assume that,
+    #   since objects are all very similar, that the existing tests
+    #  are sufficient.
+    def test101(_):
+	e1 = Entr (id=555, seq=222, stat=2,
+		_rdng = [Rdng (txt=u'あいうえお'),
+			 Rdng (txt=u'たちつてと')],
+		_kanj = [Kanj (txt=u'田中さん')],
+		_sens = [Sens (_gloss = [Gloss (txt='abcd')]),
+			 Sens (_gloss = [Gloss (txt='abcd'),
+				         Gloss (txt='efg')])])
+	e2 = serialize.unserialize (serialize.serialize (e1))
+	_.assertEqual (e1, e2)
+	_.assertEqual (e1._rdng[1].txt, e2._rdng[1].txt)
+	_.assertEqual (e1._sens[1]._gloss[1].txt, e2._sens[1]._gloss[1].txt)
 
 def isEqual (a, b):
 	if type(a) != type(b) : return False

@@ -161,6 +161,9 @@ def resolv (dbh, start, blksz, xref_src, targ_src, krmap):
 			          ["entr","sens","xref","typ","xentr",
 				   "xsens","rdng","kanj","notes"],
 				  x)
+	    dbh.execute ("DELETE FROM xresolv "
+			  "WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s",
+			 (v.entr,v.sens,v.typ,v.ord))
 	return len (rs)
 
 class Memoize:

@@ -280,6 +280,8 @@ CREATE OR REPLACE FUNCTION dupentr(entrid int) RETURNS INT AS $$
 	  (SELECT _p0_,sens,xref,typ,xentr,xsens,notes FROM xref WHERE entr=entrid);
 	INSERT INTO xref(entr,sens,xref,typ,xentr,xsens,notes) 
 	  (SELECT entr,sens,xref,typ,_p0_,xsens,notes FROM xref WHERE xentr=entrid);
+	INSERT INTO xresolv(entr,sens,typ,ord,typ,rtxt,ktxt,tsens,notes,prio) 
+	  (SELECT _p0_,sens,typ,ord,typ,rtxt,ktxt,tsens,notes,prio FROM xresolv WHERE entr=entrid);
 
 	INSERT INTO freq(entr,kanj,kw,value) 
 	  (SELECT _p0_,rdng,kanj,kw,value FROM freq WHERE entr=entrid);

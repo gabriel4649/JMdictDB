@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-	 # non-ascii used in comments only.
+ï»¿# -*- coding: utf-8 -*-	 # non-ascii used in comments only.
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2006,2008 Stuart McGraw 
+#  Copyright (c) 2006,2009 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -22,9 +22,11 @@ from __future__ import with_statement
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
-import sys, os, os.path, random, re, datetime
+import sys, os, os.path, random, re, datetime, operator, warnings
 from time import time
+from collections import defaultdict
 import fmtxml
+from objects import *
 
 global KW
 
@@ -32,70 +34,7 @@ Debug = {}
 
 class AuthError (Exception): pass
 
-class Obj(object):
-    # This creates "bucket of attributes" objects.  That is,
-    # it creates a generic object with no special behavior
-    # that we can set and get atrribute values from.  One
-    # could use a keys in a dict the same way, but sometimes
-    # the attribute syntax is nicer.
-    def __init__ (self, **kwds):
-	for k,v in kwds.items(): setattr (self, k, v)
-    def __repr__ (self):
-	return self.__class__.__name__ + '(' \
-		 + ', '.join([k + '=' + _p(v)
-			      for k,v in self.__dict__.items()]) + ')'	
-
-class DbRow (Obj):
-    def __init__(self, values=None, cols=None):
-	if values is not None: 
-	    if cols is not None:
-		self.__cols__ = cols
-		for n,v in zip (cols, values): setattr (self, n, v)
-	    else:
-		self.__cols__ = values.keys()
-		for n,v in values.items(): setattr (self, n, v)
-    def __getitem__ (self, idx): 
-	return getattr (self, self.__cols__[idx])
-    def __setitem__ (self, idx, value):
-        name = self.__cols__[idx]
-        setattr (self, name, value)
-    def __len__(self): 
-	return len(self.__cols__)
-    def __iter__(self):
-        for n in self.__cols__: yield getattr (self, n)	
-    def __clone__(self):
-	c = DbRow ()
-	c.__dict__.update (self.__dict__)
-	return c
-
-def _p (o):
-	if isinstance (o, (int,long,str,unicode,bool,type(None))):
-	    return repr(o)
-	if isinstance (o, (datetime.datetime, datetime.date, datetime.time)):
-	    return str(o)
-	if isinstance (o, list):
-	    if len(o) == 0: return "[]"
-	    else: return "[...]"
-	if isinstance (o, dict):
-	    if len(o) == 0: return "{}"
-	    else: return "{...}"
-	else: return o.__class__.__name__
-
-class _Nothing: pass
-
-def o_compare (self, other):
-	try: attrs = set (self.__dict__.keys() + other.__dict__.keys())
-	except AttributeError: return cmp (id(self), id(other))
-	for a in attrs:
-	    s = getattr (self, a, _Nothing)
-	    o = getattr (other, a, _Nothing)
-	    if s is _Nothing: return -1
-	    if o is _Nothing: return +1
-	    c = cmp (s, o)
-	    if c: return c
-	return 0
-
-def dbread (cur, sql, args=None, cols=None):
+def dbread (cur, sql, args=None, cols=None, cls=None):
 	if args is None: args = []
 	try: cur.execute (sql, args)
 	except StandardError, e:
@@ -106,6 +45,8 @@ def dbread (cur, sql, args=None, cols=None):
 	v = []
 	for r in cur.fetchall ():
 	    x = DbRow (r, cols)
+	    # FIXME: is there a cleaner way?...
+	    if cls: x.__class__ = cls
 	    v.append (x)
 	return v
 
@@ -207,13 +148,13 @@ def entrList (dbh, crit=None, args=None, ord='', tables=None, ret_tuple=False):
 	return e
 
 OrderBy = {
-	'rdng':"x.entr,x.rdng", 'kanj':"x.entr,x.kanj", 'sens':"x.entr,x.sens", 
-	'gloss':"x.entr,x.sens,x.gloss", 'xref':"x.entr,x.sens,x.xref", 
-	'hist':"x.entr,x.hist",
-	'kinf':"x.entr,x.kanj,x.ord", 'rinf':"x.entr,x.rdng,x.ord",
-	'pos':"x.entr,x.sens,x.ord", 'misc':"x.entr,x.sens,x.ord", 
-	'fld':"x.entr,x.sens,x.ord", 'dial':"x.entr,x.sens,x.ord", 
-	'lsrc':"x.entr,x.sens,x.ord"}
+	'rdng':"x.entr,x.rdng",          'kanj':"x.entr,x.kanj", 
+	'sens':"x.entr,x.sens",		 'gloss':"x.entr,x.sens,x.gloss",
+	'xref':"x.entr,x.sens,x.xref", 	 'hist':"x.entr,x.hist",
+	'kinf':"x.entr,x.kanj,x.ord",	 'rinf':"x.entr,x.rdng,x.ord",
+	'pos':"x.entr,x.sens,x.ord",	 'misc':"x.entr,x.sens,x.ord", 
+	'fld':"x.entr,x.sens,x.ord",	 'dial':"x.entr,x.sens,x.ord", 
+	'lsrc':"x.entr,x.sens,x.ord",	 'xresolv':"x.entr,x.sens,x.typ,x.ord" }
 
 def entr_data (dbh, crit, args=None, ord=None, tables=None):
 	#
@@ -281,7 +222,7 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
 	    'entr','hist','rdng','rinf','kanj','kinf',
 	    'sens','gloss','misc','pos','fld','dial','lsrc',
 	    'restr','stagr','stagk','freq','xref','xrer',
-	    'rdngsnd','entrsnd','chr','cinf')
+	    'rdngsnd','entrsnd','chr','cinf','xresolv')
 	if args is None: args = []
 	if ord is None: ord = ''
 	if re.search (r'^((\d+|\?|%s),)*(\d+|\?|%s)$', crit):
@@ -308,10 +249,15 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
 	    else: tblx = tbl
 	    if tblx == "xref": limit = "LIMIT 20"
 	    else: limit = ''
+	    # FIXME: cls should not be dependent on lexical table name.
+	    # FIXME: rename database table "xresolv" to "xrslv".
+	    if tblx == "xresolv": cls_name = "Xrslv"
+	    else: cls_name = tblx.title()
+	    cls = globals()[cls_name]
 
 	    if   typ == 'J': sql = tmpl % (tblx, crit, key, ordby, limit)
 	    elif typ == 'I': sql = tmpl % (tblx, key, crit, ordby, limit)
-	    try: t[tbl] = dbread (dbh, sql, args)
+	    try: t[tbl] = dbread (dbh, sql, args, cls=cls)
 	    except (psycopg2.ProgrammingError), e:
 	        print >>sys.stderr, e,
 		print >>sys.stderr, '%s %s' % (sql, args)
@@ -352,6 +298,7 @@ def entr_bld (t):
 	mup ('_snd',   rdng, ['entr','rdng'], t.get('rdngsnd',[]), ['entr','rdng'])
 	mup ('_cinf',  chr,  ['entr'],        t.get('cinf',[]),  ['entr'])
 	if chr: mup ( None, chr, ['entr'], entr, ['id'], 'chr')
+	mup ('_xrslv', sens, ['entr','sens'],t.get('xresolv',[]),['entr','sens'])
 	return entr
 
 def filt (parents, pks, children, fks):
@@ -394,9 +341,10 @@ def lookup (parents, pks, child, fks, multpk=False):
 	return results
 
 def matches (parent, pks, child, fks):
-	# Return True if the attributes of object a listed in ak 
-	# are equal to the attributes of b listed in bk.  ak and
-	# bk are seq
+	# Return True if the values of the attributes of object 'parent'
+	# listed in 'pks' (a list of strings) are equal to the attributes
+	# of object 'child' listed in 'fks' (a list of strings).  Otherwise
+	# return False.  'pks' and 'fks' should have the same length.
 	
 	for pk,fk in zip (pks, fks):
 	    if getattr (parent, pk) != getattr (child, fk): return False
@@ -496,13 +444,29 @@ def find_restrs (restrobjs, objlist):
 
 	return [find_restr(x, objlist) for x in restrobjs]
 
+  #FIXME: fix modules using either of the following two functions
+  # function to standardize on one of them and remove the other.
 def restrs2ext (rdng, kanjs, attr='_restr'):
-	# Given a Rdng object, 'rdng', that may or may not have a 
-	# "_restr" attribute, create a list Kanj objects taken from
-	# 'kanjis' that are not given in "_restr".  However, if ._restr
-	# empty (of missing), return an empty list,  If every kanji
-	# is in ._restr, return None (rather than an empty list).
+	restrs = getattr (rdng, attr, [])
+	return restrs2ext_ (restrs, kanjs, attr)
+def restrs2ext_ (restrs, kanjs, attr='_restr'):
+	# Given a list of Restr objects, 'restr', create a list Kanj
+	# objects taken from 'kanjis' such that each Kanj object's
+	# ._restr list contains no Restr objects in 'restrs'.  However,
+	# if 'restrs' is an empty list, return an empty list.  And if 
+	# every Kanj object in 'kanjs' has a ._restr lisy item that
+	# in in 'restrs', return None.  Note that common membership
+	# of a Restr object in the 'restrs', and kanj._restr lists
+	# constitutes a restriction -- the values of the attributes 
+	# of the Restr objects ('.rdng', .kanj', etc) are ignored.
 	# 
+	# This function can be used in generating restr text when
+	# displaying an entry in JMdict XML, JEL, or similar textual
+	# output from jdb entry objects.  A return value [] indicates
+	# there are no restr's, a return of None indicates "nokanji",
+	# and a list of kanji are the "restr" kanji for the reading
+	# 'restrs' is from. 
+	#
 	# Although parameter names assume reading-kanji restrictions
 	# defined in 'rdng._restr", this function can be used for
 	# stagr or stagk restrictions by supplying a Sens object
@@ -510,23 +474,29 @@ def restrs2ext (rdng, kanjs, attr='_restr'):
 	# and 'kanj', and setting 'attr' to "_stagr" or "stagk"
 	# respectively.
 	#
-	# This function can be used in generating JMdict XML or
-	# similar textual output from jdb entry objects.
-	#
-	# rdng -- A Rdng (or Sens) object.
+	# restr -- A list of Restr objects on a Rdng (or Sens) object.
 	# kanjs -- A list of Kanj (or Rdng) objects.
-	# attr -- Name of the attribute on the 'rdng' or 'kanj' object(s)
-	#   that contains the restriction list.
+	# attr -- Name of the attribute on the 'rdng' and 'kanj' object(s)
+	#   that contains the restriction list, one of: "_restr", "_stagr",
+	#   "_stagk".
 
 	invrestr = []
-	restrs = getattr (rdng, attr, [])
 	if len(restrs) > 0:
 	      # Check for "nokanji" condition.
+	      # FIXME: len test only reliable if we assume no dups in 'restrs'.
 	    if len(restrs) == len(kanjs): return None
 	    for kanj in kanjs:
-		for r in getattr (kanj, attr, []):
-		    if r in restrs: break
-		else:	# This kanj obj has no restrs that are in rdng's restrs.
+		for rk in getattr (kanj, attr, []):
+		      # See if restriction 'rk' is in 'restrs'.  "In" here
+		      # requires an identity test rather than the equality
+		      # test done by the "in" operator, which is the test
+		      # used by jdb.isin().  If so, this kanj is not one
+		      # that should go into the returned list.
+		    if isin (rk, restrs): break
+		else:
+		      # Get here if no break in above loop, i.e., this kanji
+		      # has no restr items in the 'restrs' list.  So we want
+		      # this kanji in the returned list.
 		    invrestr.append (kanj)
 	return invrestr
 
@@ -551,7 +521,9 @@ def add_restrobj (rdng, rattr, kanj, kattr, pattr):
 	"""
 	if not hasattr (rdng, pattr): setattr (rdng, pattr, [])
 	if not hasattr (kanj, pattr): setattr (kanj, pattr, [])
-	restr = Obj ()
+	  #FIXME: gotta be a better way...
+	cls = globals()[pattr[1:].title()]
+	restr = cls ()
 	setattr (restr, rattr, getattr (rdng, rattr))
 	setattr (restr, kattr, getattr (kanj, kattr))
 	getattr (rdng, pattr).append (restr)
@@ -564,8 +536,155 @@ def add_stagr (sens, rdng):
 def add_stagk (sens, kanj):
 	add_restrobj (sens, 'sens', kanj, 'kanj', '_stagk')
 
+def txt2restr (restrtxts, rdng, kanjs, attr):
+	# Converts a list of text strings, 'restrtxts', into a list of
+	# Restr objects and sets the value of the attribute named by 'attr'
+	# on 'rdng' to that list.  Each Restr is also attached to the
+	# restr list, 'attr', on the approriate object in list 'kanjs'.
+	# 
+	# restrtxts -- List texts (that occur in kanjs) of allowed
+	#   restrictions.  However, if 'restrtxts' is empty, there
+	#   are no restrictions (all 'kanjs' items are ok.)  If
+	#   'restrtxts' is None, every 'kanjs' ietm is disallowed.  
+	# kanjs -- List of Kanj (or Rdng) objects.
+	# attr -- Name of restr list attribute on Kanj objects ('_restr',
+	#   'stagr', or 'stagk').
+	# Returns: A list of ints giving the 1-based indexes of the 
+	#  kanji objects matching the restr list set on 'rdng'. 
+
+	if attr == '_restr': restr_factory = Restr
+	elif attr == '_stagr': restr_factory = Stagr
+	elif attr == '_stagk': restr_factory = Stagk
+	restrs = []; nkanjs = []
+	if restrtxts or restrtxts is None:
+	    for n,k in enumerate (kanjs):
+		if restrtxts is None or k.txt not in restrtxts:
+		    r = restr_factory()
+		    restrs.append (r)
+		    a = getattr (k, attr, [])
+		    if not a: setattr (k, attr, a)
+		    a.append (r)
+		    nkanjs.append (n + 1)
+	setattr (rdng, attr, restrs)
+	return nkanjs
+
 #-------------------------------------------------------------------
-# The following three functions deal with xrefs. 
+# The following three functions deal with freq objects.
+#-------------------------------------------------------------------
+
+def make_freq_objs (fmap, entr):
+	"""
+	Convert the freq information collected in 'fmap' into Freq
+	objects attached to reading and kanji lists in 'entr._rdng'
+	and 'entr._kanj'.  'fmap' should be defined as:
+
+	    fmap = collections.defaultdict (lambda:([list(),list()]))
+
+	and as freq specs are parsed on a reading (or kanji) description,
+	they should be added to 'fmap' with something like the following:
+
+	    rlist = fmap[kw_val][1]
+	    if not jdb.first (rlist, lambda x: 
+		x is rdng): rlist.append (rdng)
+
+	where 'kw_val' is a 2-tuple of freq keyword id and value, and 
+	'rdng' is a Rdng object to which the freq spec will apply.
+	After all the freq data has been collected for 'entr', Freq
+	objects are created by calling:
+
+	   errs = make_freq_objs (fmap, entr):
+	   id errs: print '\n'.join (errs)
+
+	"""
+	  # 'fmap' is a dictionary, keyed by freq tuples (kw-id, value).
+	  # Each value in 'fmap' is a 2-tuple of lists.  The first list is
+	  # all the rdng's having that freq, the second is a list of all
+	  # the kanj's having that freq.  (In most cases the length of
+	  # each list will be either 0 or 1).
+
+	frecs = {};  errs = []
+	for (kw,val),(rdngs,kanjs) in fmap.items():
+	    #kw, val = parse_freq (freq, '')
+	    dups = []; repld = []
+	    if not rdngs:
+		for k in kanjs: 
+		    _freq_bin (None, k, kw, val, frecs, dups, repld)
+	    elif not kanjs:
+		for r in rdngs: 
+		    _freq_bin (r, None, kw, val, frecs, dups, repld)
+	    else:
+		for r,k in crossprod (rdngs, kanjs): 
+		    _freq_bin (r, k, kw, val, frecs, dups, repld)
+	    for r, k, kw, val in dups:
+		errs.append (("Duplicate", r, k, kw, val))
+	    for r, k, kw, val in repld:
+		errs.append (("Conflicting", r, k, kw, val)) 
+
+	for r, k, kw, val in frecs.values():
+	    fo = Freq (rdng=getattr(r,'rdng',None), kanj=getattr(k,'kanj',None),
+			  kw=kw, value=val)
+	    if r:
+		if not hasattr (r, '_freq'): r._freq = []
+		r._freq.append (fo)
+	    if k:
+		if not hasattr (k, '_freq'): k._freq = []
+		k._freq.append (fo)
+
+	return errs
+
+def _freq_bin (r, k, kw, val, freqs, dups, repld):
+	"""
+	This function takes a freq 2-tuple (freq kw id number,
+	freq value) in the context of a specific reading/kanji
+	pair (given as the associated Rdng and Kanj objects) and
+	puts it into one of three dicts: 
+	  * 'freqs' if the freq item will is selected to go into
+	    the database.
+	  * 'dups' if the freq item in a duplicate of one selected
+	    to go into the database.
+	  * 'replcd' for freq items that have the same domain (kw
+	    id) as one going into the database but with a greater 
+	    value (that is, given two freq items, "nf22", and "nf15",
+	    the "nf15" will go into 'freqs' and "nf22" in 'replcd'
+	    since they both have the same "nf" domain and the 
+	    latter's value of "22" is greater than the former's 
+	    "15".)
+
+	r -- Rdng object that this freq item is associated with
+	         or None.
+	k -- Kanj object that this freq item is associated with
+	         or None.
+	kw -- The id number in table kwfreq of the freq item.
+	val -- The value of the freq item.
+	freqs -- A dict that will receive freq items selected to go
+		into the database.
+	dups -- A dict that will receive freq items that are duplicates
+		of ones selected to go into the database.
+	replcd -- A dict that will receive freq items that are rejected
+		becase they have the same domain but a higher value as
+		one selected to go into the database.
+	"""
+	key = (getattr (r,'txt',None), getattr (k,'txt',None), kw)
+	if key in freqs:
+	    if val < freqs[key]:
+		repld.append ((r, k, kw, freqs[key][3]))
+	    elif val > freqs[key]:
+		repld.append ((r, k, kw, val))
+	    else:
+		dups.append ((r, k, kw, val))
+	else:
+	    freqs[key] = (r, k, kw, val)
+
+def freq2txts (freqs):
+	flist = []
+	for f in freqs:
+	    kwstr = KW.FREQ[f.kw].kw
+	    fstr = ('%s%02d' if kwstr=='nf' else '%s%d') % (kwstr, f.value) 
+	    if fstr not in flist: flist.append (fstr)
+	return sorted (flist)
+	    
+#-------------------------------------------------------------------
+# The following four functions deal with xrefs. 
 #-------------------------------------------------------------------
 	# An xref (in the jdb api) is an object that represents 
 	# a record in the "xref" table (or "xresolv" table in the
@@ -643,60 +762,106 @@ def augment_xrefs (dbh, xrefs, rev=False):
 
 	Debug['Xrefsum2 retrieval time'] = time() - start
 
-def grp_xrefs (xrefs, rev=0):
+def add_xsens_lists (xrefs, rev=False):
+	# Add an ._xsens attribute to the first xref is each
+	# set of xrefs with the same .entr, .sens, .typ, .xentr
+	# and .notes, that contains a list of all xsens numbers
+	# of the xrefs in that set.
 
-	# Group the xrefs in list @$xrefs into groups such that xrefs
-	# in each group have the same {entr}, {sens}, {typ}, {xentr},
-	# and {notes} values and differ only in the values of {sens}.
-	# Order is preserved so each xref will have the same relative
-	# position within its group as it did in @$xrefs.
-	# The grouped xrefs are returned as a (reference to) a list
-	# of lists of xrefs.
-	#
-	# If $rev is true, the xrefs are treated as reverse xrefs
-	# and grouped by {xentr}, {xsens}, {typ}, {entr}.
-	#
-	# This function is useful for grouping together all the senses
-	# of each xref target entry when it is desired to to display
-	# information for an xref entry once, even when multiple
-	# target senses exist.
-	# 
-	# WARNING -- this function currently assumes that the input
-	# list @$xrefs is already sorted by {entr}, {sens}, {typ}, 
-	# {xentr} (or {xentr}, {xsens}, {typ}, {entr} if $rev is
-	# true).  If that is not true then you may get duplicate
-	# groups in the result list.  However, it is true for xref
-	# lists in the entry structure returned by EntrList().
-
-	results = [];  prev = None
+	index = {}
 	for x in xrefs:
-	    if ((not rev and (not prev
-		  or (hasattr(x,'entr')  and prev.entr  != x.entr)
-		  or (hasattr(x,'sens')  and prev.sens  != x.sens
-		  or (hasattr(x,'typ')   and prev.typ   != x.typ)
-		  or (hasattr(x,'xentr') and prev.xentr != x.xentr)
-		  or (hasattr(x,'rdng')  and prev.rdng  != x.rdng)
-		  or (hasattr(x,'kanj')  and prev.kanj  != x.kanj))))
-	        or (rev and (not prev
-		  or (hasattr(x,'xentr') and prev.xentr != x.xentr)
-		  or (hasattr(x,'xsens') and prev.xsens != x.xsens
-		  or (hasattr(x,'typ')   and prev.typ   != x.typ)
-		  or (hasattr(x,'entr')  and prev.entr  != x.entr)
-		  or (hasattr(x,'rdng')  and prev.rdng  != x.rdng)
-		  or (hasattr(x,'kanj')  and prev.kanj  != x.kanj)))) ):
-		b = [x]
-		results.append (b)
+	    if not rev: 
+		key = (x.entr,  x.sens, x.typ, x.xentr, x.notes)
+		var = x.xsens
 	    else:
-		b.append(x)
-	    prev = x
-	return results
+		key = (x.xentr, x.xsens, x.typ, x.entr,  x.notes)
+		var = x.sens
+	    p = index.get (key, None)
+	    if p is None:
+                x._xsens = [var]
+		index[key] = x
+	    else: 
+		x._xsens = []
+		p._xsens.append (var)
+
+def mark_seq_xrefs (cur, xrefs):
+	# Go through the list of xrefs and add an '.SEQ' attribute
+	# to any that can be displayed as a seq-type xref, that is
+	# the xref group (common entr, sens, typ, note, values) 
+	# contains xrefs to every active entry of the target's
+	# seq number, and the list of target senses for each of 
+	# those target entries is the same.
+
+	  # Get a list of all target xref seq numbers, categorized
+	  # by corpus (aka src).
+	srcseq = defaultdict (set)
+	try:
+	    for x in xrefs: srcseq[x.TARG.src].add (x.TARG.seq)
+	except AttributeError:
+	      # Assume attribute error is due to missing .TARG, presumably
+	      # because jdb,augment_xrefs() was not called on xrefs.  In
+	      # this case bail since we can't group by seq number if seq
+	      # numbers (which are in .TARG entries) aren't available.
+	    return
+
+	  # Get a count of all the "active" entries for each (corpus,
+	  # seq-number) pair and put in dict 'seq_count' keyed by (corpous,
+	  # seq) with values being the corresponding counts.
+	seq_counts = {};  args = []
+	for src,seqs in srcseq.items():
+	    sql = "SELECT src,seq,COUNT(*) FROM entr " \
+		  "WHERE src=%%s AND seq IN(%s) AND stat=%%s GROUP BY src,seq" \
+		  % ",".join (["%s"]*len(seqs))
+	    args.append (seqs)
+	    cur.execute (sql, [src]+list(seqs)+[KW.STAT['A'].id])
+	    rs = cur.fetchall()
+	    for r in rs: seq_counts[(r[0],r[1])] = r[2]
+	    # 'seq_counts' is now a dict, keyed by (src,seq) 2-tuple and 
+	    # values being the number of active entries with that src,seq.
+
+	  # Categorize each xref by source (.entr, .sens, .typ, .notes),
+	  # then target (corpus, seq), then, sense list.  Gather a count
+	  # of the number of xrefs per category in dict 'collect'.
+	  # Don't count any non-active (rejected or deleted) ones, 
+	collect = defaultdict(lambda:defaultdict(set))
+	for x in xrefs:
+	      # JEL only represents xrefs to stat=A entries.
+	    if not hasattr (x, 'TARG'): continue
+	    if x.TARG.stat != KW.STAT['A'].id: continue
+	    key1 = (x.entr,x.sens,x.typ,x.notes)
+	    key2 = (x.TARG.src,x.TARG.seq)
+	    collect[key1][key2].add (x.TARG.id)
+
+	  # Go through the xrefs again, skipping non-active ones, and re-
+	  # categorizing as above, compare to number of xrefs for that 
+	  # category set (counts are in 'collect') with the total number
+	  # of potential target entries in the database.  If the numbers 
+	  # are equal, there is an xref to every target and we can use a
+	  # seq-style xref for that set of xrefs and we mark (only) the
+	  # first xref of each set with a .SEQ attribute.
+	marked = defaultdict(lambda:defaultdict(lambda:defaultdict(bool)))
+	for x in xrefs:
+	    if not hasattr (x, 'TARG'): continue
+	    if x.TARG.stat != KW.STAT['A'].id: continue
+	    #if getattr (x, 'SEQ', None) is None:
+	    key1 = (x.entr,x.sens,x.typ,x.notes)
+	    key2 = (x.TARG.src,x.TARG.seq)
+	    if len (collect[key1][key2]) == seq_counts[key2]:
+		key3 = tuple (getattr (x, '_xsens', (x.xsens,)))
+		if marked[key1][key2][key3]: 
+		    x.SEQ = False
+		else: 
+		    marked[key1][key2][key3] = x.SEQ = True
 
 def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None, 
 		 one_entr_only=True, one_sens_only=False):
 
 	# Find entries and their senses that match 'ktxt' and 'rtxt'
-	# and create list of augmented xref records that points to
-	# them.
+	# and return a list of augmented xref records that points to
+	# them.  If a match for ktxt/rtx/slist is not found (either 
+	# because nothing matches, or the 'one_entr_only' or 
+	# 'one_sens_only' criteria are not satified), a ValueError
+	# is raised.
 	#
 	# dbh (dbapi cursor) -- Handle to open database connection.
 	# typ (int) -- Type of reference per table kwxref.
@@ -707,11 +872,14 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	# slist (list of ints or None) -- Resolved xrefs will be limited
 	#   to these target senses.  A Value Error is raised in a sense
 	#   is given in 'slist' that does not exist in target entry.
-	# enum (int or None) -- If 'corpid' value is given (below) then
-	#   this parameter is interpreted as a seq number.  Otherwise it
-	#   is interpreted as an entry id number.
-	# corpid (int or None) -- If given the resolved target must have
-	#   the same value in .src.
+	# enum (int or None) -- If 'corpid' (below) value is non-None
+	#   then this parameter is interpreted as a seq number.  Other-
+	#   wise it is interpreted as an entry id number.  
+	# corpid (int or None) -- If given search for target will be
+	#   limited to the given corpus, and 'enum' if given will be
+	#   interpreted as a seq number.  If None, 'enum' if given
+	#   will be interpreted as an entry id number, otherwise,
+	#   all entries will be seached for matching ktxt/rtxt.
 	# one_entr_only (bool) -- Raise error if xref resolves to more
 	#   than one set of entries having the same seq number.  Regard-
 	#   less of this value, it is always an error if 'slist' is given
@@ -729,9 +897,13 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	# when the 'one_entr_only' flag is true, are signalled by raising
 	# a ValueError.  The caller may want to call resolv_xref() within
 	# a "try" block to catch these conditions.
+
+	#FIXME: Use a custom error rather than ValueError to signal 
+	# resolutiuon failure so the caller can distiguish failure
+	# to resolve from a parameter error that causes a ValueError.
 	
 	if not rtxt and not ktxt and not enum:
-	    raise ValueError ("No rtxt, ktxt, or enum value, need ay least one.")
+	    raise ValueError ("No rtxt, ktxt, or enum value, need at least one.")
 	krtxt = (ktxt or '') + (u'\u30fb' if ktxt and rtxt else '') + (rtxt or '')
 
 	  # Build a SQL statement that will find all entries
@@ -757,7 +929,7 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	tables = ('entr','rdng','kanj','sens','gloss')
 	entrs = entrList (dbh, sql, sql_args, tables=tables)
 
-	if not entrs: raise ValueError ('No entries found for cross-reference "%s".' % krtxt)
+	if not entrs: raise ValueError ('No entry found for cross-reference "%s".' % krtxt)
 	seqcnt = len (set ([x.seq for x in entrs]))
 	if seqcnt > 1 and (one_entr_only or slist):
 	    raise ValueError ('Xref "%s": Multiple entries found.' % krtxt)
@@ -772,7 +944,7 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 
 	if slist:
 	      # The submitter gave some specific senses that the xref will
-	      # target, so check that they actually exist in the target entry.
+	      # target, so check that they actually exist in the target entry(s).
 	    for e in entrs:
 		snums = len (e._sens); nosens = []
 		for s in slist:
@@ -788,6 +960,9 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	    if one_sens_only and entr_multsens:
 		raise ValueError ('Xref "%s": Target entry id %d has more than one sense.' 
 				  % (krtxt, entr_multsens.id))
+
+	  # Create an xref object for each entry/sense.
+
 	xrefs = []
 	for e in entrs:
 	    xrdng = xkanj = None
@@ -795,8 +970,9 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	    if ktxt: xkanj = (first (e._kanj, lambda x: x.txt==ktxt)).kanj
 	    for s in e._sens:
 		if not slist or s.sens in slist:
-		    xrefs.append (Obj (typ=typ, xentr=e.id, xsens=s.sens,
-				  rdng=xrdng, kanj=xkanj, TARG=e))
+		    x = Xref (typ=typ, xentr=e.id, xsens=s.sens, rdng=xrdng, kanj=xkanj)
+		    x.TARG = e
+		    xrefs.append (x)
 	return xrefs
 
 #-------------------------------------------------------------------
@@ -956,6 +1132,8 @@ def addentr (cur, entr):
 	    for x in getattr (s, '_stagr', []): dbinsert (cur, "stagr", ['entr','sens','rdng'], x)
 	    for x in getattr (s, '_stagk', []): dbinsert (cur, "stagk", ['entr','sens','kanj'], x)
 	    for x in getattr (s, '_xref',  []): dbinsert (cur, "xref",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
+	    for x in getattr (s, '_xrer',  []): dbinsert (cur, "xrer",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
+	    for x in getattr (s, '_xrslv', []): dbinsert (cur,"xresolv",['entr','sens','typ','ord','rtxt','ktxt','tsens','notes','prio'], x)
 	for x in getattr (entr, '_snd', []): dbinsert (cur, "entrsnd", ['entr','ord','snd'], x)
 	if getattr (entr, 'chr', None):
 	    c = e.chr
@@ -963,7 +1141,7 @@ def addentr (cur, entr):
 	    for x in getattr (c, '_cinf',  []): dbinsert (cur, "cinf",  ['entr','kw','value','mctype'], x)
 	return eid, entr.seq, entr.src
 
-def setkeys (e, id=None):
+def setkeys (e, id=0):
 	  # Set the foreign and primary key values in each record
 	  # in the entry, 'e'.  If 'id' is provided, it will be used
 	  # as the entry id number.  Otherwise, it is assumed that 
@@ -971,7 +1149,7 @@ def setkeys (e, id=None):
 	  # Please note that this function assumes that items with
 	  # multiple parents such as '_freq', '_restr', etc, are 
 	  # listed under both parents.
-	if id: e.id = id
+	if id!=0: e.id = id
 	else: id = e.id
 	for n,r in enumerate (getattr (e, '_rdng', [])):
 	    n += 1; (r.entr, r.rdng) = (id, n)
@@ -996,9 +1174,9 @@ def setkeys (e, id=None):
 	    for p,x in enumerate (getattr (s, '_lsrc',  [])): (x.entr, x.sens, x.ord) = (id, n, p+1)
 	    for x in getattr (s, '_stagr', []): (x.entr, x.sens) = (id, n)
 	    for x in getattr (s, '_stagk', []): (x.entr, x.sens) = (id, n)
-	    for m,x in enumerate (getattr (s, '_xref', [])): (x.entr,x.sens,x.xref) = (id, n, m+1)
+	    for m,x in enumerate (getattr (s, '_xrslv', [])): (x.entr, x.sens, x.ord) = (id, n, m+1)
+	    for m,x in enumerate (getattr (s, '_xref',  [])): (x.entr, x.sens, x.xref)= (id, n, m+1)
 	    for x in getattr (s, '_xrer',  []): (x.entr, x.sens) = (id, n)
-	    for x in getattr (s, '_xrslv', []): (x.entr, x.sens) = (id, n)
 	for n,x in enumerate (getattr (e, '_snd',  [])): (x.entr, x.ord) = (id, n+1)
 	for n,x in enumerate (getattr (e, '_hist', [])): (x.entr,x.hist) = (id, n+1)
 	if getattr (e, 'chr', None):
@@ -1394,26 +1572,28 @@ class Kwds:
 	    self.loaddb (cursor_or_dirname)
 	  # Otherwise it is None, and nothing else need be done.
 
-    def loaddb( self, cursor ):
+    def loaddb( self, cursor, tables=None ):
 	# Load instance from database kw* tables.
 
-	for attr,table in self.Tables.items():
+	if tables is None: tables = self.Tables
+	for attr,table in tables.items():
 	      # For item in Tables is a attribute name, database table
 	      # name pair.  Read the table from the database and use 
 	      # method .add() to store the records in attribute 'attr'.
 	    recs = dbread (cursor, "SELECT * FROM %s" % table, ())
 	    for record in recs:	self.add (attr, record)
 
-    def loadcsv( self, dirname=None ):
+    def loadcsv( self, dirname=None, tables=None ):
 	# Load instance from the csv files in directory 'dirname'.
         # If 'dirname' is not supplied or is None, it will default
         # to "../../pg/data/" relative to the location of this module.
 	
         if dirname is None: dirname = std_csv_dir ()
+	if tables is None: tables = self.Tables
 	if dirname[-1] != '/' and dirname[-1] != '\\' and len(dirname) > 1:
             dirname += '/'
 	files = []
-	for attr,table in self.Tables.items():
+	for attr,table in tables.items():
 	    fname = dirname + table + ".csv"
 	    try: f = open (fname)
 	    except IOError: continue
@@ -1590,7 +1770,7 @@ def jstr_classify (s):
 	    if   n >= 0x0000 and n <= 0x02FF:     r |= LATIN
 	    elif n >= 0x3040 and n <= 0x30FF:  	  	      # Hiragana/katakana
 		if 1:				  r |= KANA 
-		if (n!=0x309d and n!=0x309e and n!=0x30fd     # T, U, R, S, [
+		if (n!=0x309d and n!=0x309e and n!=0x30fd     # ã‚, ã‚ž, ãƒ½, ãƒ¾, ãƒ¼
 		    and n!=0x30fe and n!=0x30fc): r |= RX     # Kana excluding above.
 	    elif n >= 0x3000 and n <= 0x303F: 	  r |= KSYM   # CJK Symbols.
 	    elif (n >= 0x4E00 and n <= 0x9FFF		      # CJK Unified.
@@ -1615,7 +1795,7 @@ def jstr_reb (s):
 	  # Must have at least one non-kebish kana char.
 	if not b & RX: return False 
 	  # Must not have any characters other than kana 
-	  # and CJK Symbols (to allow punctuation like B.)
+	  # and CJK Symbols (to allow punctuation like ã€‚.)
 	return not (b & ~(KANA|RX|KSYM))
 
 def jstr_gloss (s):
@@ -1768,6 +1948,15 @@ def first (seq, f, nomatch=None):
 	    if f(s): return s
 	return nomatch
 
+_sentinal = object()
+def isin (object, seq):
+	"""Returns True if 'object' is "in" 'seq', when "in" is
+	based on object identity (i.e. the "is" operator) rather
+	thn equality ("==") as is used by the "in" operator.
+	Returns False otherwise.  'object' may be None."""
+
+	return _sentinal is not first (seq, lambda x: x is object, _sentinal)
+
 def unique (key, dupchk):
 	""" 
 	key -- An immutuable object.
@@ -1796,6 +1985,17 @@ def rmdups (recs, key=None):
 	    if unique (k, dupchk): uniq.append (x)
 	    else: dups.append (x) 
 	return uniq, dups
+
+def crossprod (*args):
+	"""
+	Return the cross product of an arbitrary number of lists.
+	"""
+	# From http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/159975
+	# N.B. Could be replaced by itertools.product() in Python-2.6+.
+	result = [[]]
+	for arg in args:
+	    result = [x + [y] for x in result for y in arg]
+	return result
 
 def find_in_syspath (fname):
 	# Search the directories in sys.path for the first occurance

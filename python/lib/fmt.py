@@ -63,13 +63,14 @@ def entr (entr):
 	    fmt += "\n" + cinf (c._cinf)
 	    fmt += "\n" + encodings ([c.chr])
 
-	if hasattr (entr, '_hist'): fmt += hist (entr._hist);
+	if hasattr (entr, '_hist'): fmt += hist (entr._hist)
+	fmt += xunrs (entr)
 	return fmt
 
 def kanj (k, n=None):
 	KW = jdb.KW
 	kinf = [KW.KINF[x.kw].kw for x in getattr (k,'_inf',[])]
-	freq = [KW.FREQ[x.kw].kw+str(x.value) for x in getattr (k,'_freq',[])]
+	freq = jdb.freq2txts (getattr (k,'_freq',[]))
 	kwds = ",".join (kinf + jdb.rmdups (freq)[0])
 	if kwds: kwds = "[" + kwds + "]"
 	return "%s.%s%s" % (k.kanj, k.txt, kwds)
@@ -78,10 +79,10 @@ def rdng (r, k, n=None):
 	KW = jdb.KW
 	restr = ""
 	if hasattr (r, '_restr'):
-	    restr = ','.join (restrtxts (r._restr, 'kanj', k))
+	    restr = ','.join (restrtxts (r._restr, k, '_restr'))
 	if restr: restr = "(%s)" % restr
 	rinf = [KW.RINF[x.kw].kw for x in getattr (r,'_inf',[])]
-	freq = [KW.FREQ[x.kw].kw+str(x.value) for x in getattr(r,'_freq',[])]
+	freq = jdb.freq2txts (getattr (r,'_freq',[]))
 	kwds = ",".join (rinf + jdb.rmdups (freq)[0])
 	if kwds: kwds = "[" + kwds + "]"
 	return "%s.%s%s%s" % (r.rdng, r.txt, restr, kwds)
@@ -96,13 +97,10 @@ def sens (s, kanj, rdng, n=None):
 	fld = ", ".join([KW.FLD[p.kw].descr for p in getattr (s,'_fld',[])])
 	if fld: fld = "{%s term}" % fld
 	  # Restrictions... 
-	if not getattr (s,'_stagr', None): sr = []
-	else: sr = jdb.filt (rdng, ["rdng"], s._stagr, ["rdng"])
-	if not getattr (s,'_stagk', None): sk = []
-	else: sk = jdb.filt (kanj, ["kanj"], s._stagk, ["kanj"])
+	sr = restrtxts (getattr (s,'_stagr',[]), rdng, '_stagr')
+	sk = restrtxts (getattr (s,'_stagk',[]), kanj, '_stagk')
 	stag = ""
-	if sr or sk: 
-	    stag = "(%s only)" % ", ".join([x.txt for x in sk+sr])
+	if sr or sk: stag = "(%s only)" % ", ".join (sk + sr)
 
 	_lsrc = _dial = ''
 	if hasattr(s,'_lsrc') and s._lsrc: 
@@ -126,6 +124,10 @@ def sens (s, kanj, rdng, n=None):
 	  # Reverse Cross-refs.
 	if hasattr(s, '_xrer'): 
 	    fmt += xrefs (s._xrer, "Reverse references:", True)
+
+	  # Unresolved Cross-refs.
+	if hasattr (s, '_xrslv'):
+	    fmt += xrslvs (s._xrslv, "Unresolved references:")
 
 	return fmt
 
@@ -155,6 +157,9 @@ def xrefs (xrefs, sep=None, rev=False):
 	fmtstr = '';  sep_done = False
 	for x in xrefs:
 
+	    txt = xref (x, rev)
+	    if txt is None: continue
+
 	      # Print a separator line, the first time round the loop.
 	      # The seperator text is passed by the caller because 
 	      # it depends on whether we are doing forward or reverse
@@ -166,11 +171,12 @@ def xrefs (xrefs, sep=None, rev=False):
 
 	      # Print the xref info.
 
-	    fmtstr += '\n    %s' % xref (x, rev)
+	    fmtstr += '\n    %s' % txt
 	return fmtstr
 
 def xref (xref, rev=False):
 	KW = jdb.KW
+	if not getattr (xref, 'SEQ', True): return None
 	if rev: eattr,sattr = 'entr','sens'
 	else: eattr,sattr = 'xentr','xsens'
 	v = [str(getattr (xref, eattr))]
@@ -187,6 +193,28 @@ def xref (xref, rev=False):
 	    glosses = ' ' + '; '.join([x.txt for x in targ._sens[snum-1]._gloss])
 	t = (KW.XREF[xref.typ].kw).capitalize() + ': '
 	return t + '/'.join(v) + stxt + glosses
+
+def xrslvs (xr, sep=None):
+	fmtstr = '';  sep_done = False
+	for x in xr:
+	      # Print a separator line, the first time round the loop.
+	      # The seperator text is passed by the caller because 
+	      # it depends on whether we are doing forward or reverse
+	      # cross-refs.
+	    if sep and not sep_done: 
+		fmtstr += '\n  ' + sep
+		sep_done = True
+	      # Print the xref info.
+	    fmtstr += '\n    %s' % xrslv (x)
+	return fmtstr
+
+def xrslv (xr):
+	KW = jdb.KW
+	k = getattr (xr, 'ktxt', '') or '' 
+	r = getattr (xr, 'rtxt', '') or '' 
+	kr = k + (u'\u30FB' if k and r else '') + r
+	t = (KW.XREF[xr.typ].kw).capitalize() + ': '
+	return t + kr
 
 def snd (snd_list, rtxt=None):
 	fmt = ", ".join ([str(x.snd) for x in snd_list]) 
@@ -218,7 +246,8 @@ def entrhdr (entr):
 	stat = getattr (entr, 'stat', '')
 	if stat: stat = KW.STAT[stat].kw
 	unap = '(pend)' if getattr (entr, 'unap', '') else ''
-	fmt = "%s %s %s%s {%s}" % (src, seq, stat, unap, id)
+	idtxt = (" {%s}" % id) if id is not None else ''
+	fmt = "%s %s %s%s%s" % (src, seq, stat, unap, idtxt)
 	return fmt
 
 def indent (s, n):
@@ -232,8 +261,7 @@ def kr (ktxt, rtxt):
 	elif rtxt: txt = rtxt
 	return txt
 
-def restrtxts (restrs, key, kanjs,
-	       english={'kanj':'kanji','sens':'senses','rdng':'readings'}):
+def restrtxts (restrs, kanjs, attr):
 
 	"""Return list of 'kanj.txt' strings of those 'kanj' items
 	without a matching item in 'restrs'.  "Maching" means two
@@ -271,8 +299,9 @@ def restrtxts (restrs, key, kanjs,
 	"""
 
 	if not restrs: return []
-	if len(restrs) == len(kanjs):  return ['no' + english.get(key,key)]
-	return [x.txt for x in jdb.filt (kanjs, [key], restrs, [key])]
+	if len(restrs) == len(kanjs): return ['no' + 
+		{'_restr':"kanji", '_stagr':"readings", '_stagk':"kanji"}[attr]]
+	return [x.txt for x in jdb.restrs2ext_ (restrs, kanjs, attr)]
 
 def chr (c):
 	fmt = []; a = []
@@ -293,6 +322,18 @@ def cinf (f):
 	    d[r.abbr].append (r)
 	for abbr,rs in sorted (d.items(), key=lambda x:x[0]):
 	    fmt.append ("  %s: %s" % (abbr, ', '.join (x.value for x in rs)))
+	return '\n'.join (fmt)
+
+def xunrs (e):
+	# Format unresolved xrefs.
+	KW = jdb.KW
+	fmt = []
+	for n, s in enumerate (e._sens):
+	    for x in getattr (s, '_xunr', []):
+		k = getattr (x,'ktxt','') or ''; r = getattr (x,'rtxt','') or ''
+		t = k + (u'\u30FB' if k and r else '') + r
+		fmt.append ("    Sense %d: %s %s" % (n+1, KW.XREF[x.typ].kw, t))
+	if fmt: fmt.insert (0, '\n  Unresolved xrefs:')
 	return '\n'.join (fmt)
 
 def encodings (strs):

@@ -21,48 +21,40 @@
 __version__ = ('$Revision$'[11:-2], \
 	       '$Date$'[7:-11]);
 
-import sys,ply.yacc, re, pdb
+import sys, ply.yacc, re, pdb
+from collections import defaultdict
 import jellex, jdb
+from objects import *
 import fmt, fmtjel	# For code in main().
 
-class ParseError (Exception): 
-    def __init__(self,msg,lineno,charno,toktyp,tokval):
-	Exception.__init__(self,msg,lineno,charno,toktyp,tokval)	
-    def __str__(self):
-	msg,lineno,charno,toktyp,tokval = self.args
-	if lineno is None:  pos = '(at EOF)'
-	else:  pos = "(at or before '%s' in line %s position %s)" \
-		      % (tokval,lineno,charno)
-	s = "%s %s" % (msg, pos)
-	return s
+class ParseError (Exception): pass
 
 %}
-
 %%
-
 entr	: preentr
 		{ p.lexer.begin('INITIAL')
 		e = p[1]
+		  # The Freq objects on the readings are inependent of
+		  # those on the kanjis.  The following function merges
+		  # common values.
+		merge_freqs (e)
 		  # Set the foreign key ids since they will be used 
 		  # needed by mk_restrs() below.
-		jdb.setkeys (e, -1)
+		jdb.setkeys (e, None)
 		  # The reading and sense restrictions here are simple
 		  # lists of text strings that give the allowed readings
 		  # or kanji.  mk_restrs() converts those to the canonical
 		  # format which uses the index number of the disallowed 
 		  # readings or kanji.
 		if hasattr (e, '_rdng') and hasattr (e, '_kanj'): 
-		    err = mk_restrs ("_RESTR", e._rdng, "rdng", e._kanj, "kanj")
-		    if err: 
-			p.error(); xerror (p, err)
+		    err = mk_restrs ("_RESTR", e._rdng, e._kanj)
+		    if err: xerror (p, err)
 		if hasattr (e, '_sens') and hasattr (e, '_kanj'): 
-		    err = mk_restrs ("_STAGK", e._sens, "sens", e._kanj, "kanj")
-		    if err: 
-			p.error(); xerror (p, err)
+		    err = mk_restrs ("_STAGK", e._sens, e._kanj)
+		    if err: xerror (p, err)
 		if hasattr (e, '_sens') and hasattr (e, '_rdng'): 
-		    err = mk_restrs ("_STAGR", e._sens, "sens", e._rdng, "rdng")
-		    if err: 
-			p.error(); xerror (p, err)
+		    err = mk_restrs ("_STAGR", e._sens, e._rdng)
+		    if err: xerror (p, err)
 		  # Note that the entry object returned may have an _XREF list
 		  # on its senses but the supplied xref records are not
 		  # complete.  We do not assume database access is available
@@ -76,11 +68,11 @@ entr	: preentr
 	;
 preentr
 	: rdngsect senses
-		{ p[0] = jdb.Obj(_rdng=p[1], _sens=p[2]) }			
+		{ p[0] = jdb.Entr(_rdng=p[1], _sens=p[2]) }			
 	| kanjsect senses
-		{ p[0] = jdb.Obj(_kanj=p[1], _sens=p[2]) }			
+		{ p[0] = jdb.Entr(_kanj=p[1], _sens=p[2]) }			
 	| kanjsect rdngsect senses
-		{ p[0] = jdb.Obj(_kanj=p[1], _rdng=p[2], _sens=p[3]) }
+		{ p[0] = jdb.Entr(_kanj=p[1], _rdng=p[2], _sens=p[3]) }
 	;
 kanjsect
 	: kanjitem
@@ -89,13 +81,12 @@ kanjsect
 		{ p[0] = p[1];  p[0].append (p[3]) }
 	;
 kanjitem
-	: KTEXT 
-		{ p[0] = jdb.Obj(txt=p[1]) }
+	: KTEXT
+		{ p[0] = jdb.Kanj(txt=p[1]) }
 	| KTEXT taglists
-		{ kanj = jdb.Obj(txt=p[1])
+		{ kanj = jdb.Kanj(txt=p[1])
 		err = bld_kanj (kanj, p[2])
-		if err: 
-		    p.error(); xerror (p, err)
+		if err: xerror (p, err)
 		p[0] = kanj }
 	;
 rdngsect
@@ -106,12 +97,11 @@ rdngsect
 	;
 rdngitem
 	: RTEXT
-		{ p[0] = jdb.Obj(txt=p[1]) }
+		{ p[0] = jdb.Rdng(txt=p[1]) }
 	| RTEXT taglists
-		{ rdng = jdb.Obj(txt=p[1])
+		{ rdng = jdb.Rdng(txt=p[1])
 		err = bld_rdng (rdng, p[2])
-		if err:
-		    p.error(); xerror (p, err)
+		if err: xerror (p, err)
 		p[0] = rdng }
 	;
 senses
@@ -122,10 +112,9 @@ senses
 	;
 sense
 	: SNUM glosses
-		{ sens = jdb.Obj()
+		{ sens = jdb.Sens()
 		err = bld_sens (sens, p[2])
-		if err: 
-		    p.error(); xerror (p, "Unable to build sense %s\n%s" % (p[1], err))
+		if err: xerror (p, "Unable to build sense %s\n%s" % (p[1], err))
 		p[0] = sens }
 	;
 glosses
@@ -193,43 +182,45 @@ tags
 		p[0].append (p[3]) }
 	;
 tagitem
-	: TEXT			    /* Simple keyword tag (including "nokanji"). */
-		{ x = lookup_tag (p[1])
-		if not x: 
-		    p.error(); xerror (p, "Unknown keyword: '%s'" % p[1])
-		else: 
-		    p[0] = [None, p[1]] }
+	: KTEXT 
+		{ p[0] = ['RESTR', [None, p[1], None, None, None]] }
+	| RTEXT
+		{ p[0] = ['RESTR', [p[1], None, None, None, None]] }
+	| TEXT			    /* Simple keyword tag (including "nokanji"). */
+		{ if p[1] == 'nokanji':
+		    p[0] = ['RESTR', [['nokanji', None, None, None, None]]]
+		else:
+		    x = lookup_tag (p[1])
+		    if not x: xerror (p, "Unknown keyword: '%s'" % p[1])
+		    else: p[0] = [None, p[1]] }
 
 	| TEXT EQL TEXT /* typ=tag,note=xxx,lsrc=txt,lit=text,expl=text,restr=nokanji */
 		{ KW = jdb.KW
 		if p[1] in ["note","lsrc","restr"]+[x.kw for x in KW.recs('GINF')]:
-		    if p[1] == "restr": p[1] = "RESTR"
-		    p[0] = [p[1], p[3], 1, None] 
+		    if p[1] == "restr":
+			if p[3] != "nokanji":
+			    xerror (p, "Bad restr value (expected \"nokanji\"): '%s'" % p[3])
+			p[0] = ["RESTR", [["nokanji", None, None, None, None]]]
+		    else: p[0] = [p[1], p[3], 1, None]
 		else:
 		    x = lookup_tag (p[3], p[1])
 		    if x and len(x) > 1:
 			raise RuntimeError ("Unexpected return value from lookup_tag()")
-		    if x is None:
-			p.error(); xerror (p, "Unknown keyword type: '%s'" % p[1])
-		    elif not x:
-			p.error(); xerror (p, "Unknown %s keyword: '%s" % (p[1],p[3]))
-		    else:
-			p[0] = x[0] } 
+		    if x is None: xerror (p, "Unknown keyword type: '%s'" % p[1])
+		    elif not x:   xerror (p, "Unknown %s keyword: '%s" % (p[1],p[3]))
+		    else:         p[0] = x[0] } 
 
 	| TEXT EQL QTEXT	    /* note=xxx, lsrc=txt, lit=text, expl=text */
 		{ KW = jdb.KW 
 		if p[1] in ["note","lsrc"]+[x.kw for x in KW.recs('GINF')]:
 		    p[0] = [p[1], jellex.qcleanup (p[3][1:-1]), 1, None] 
-		else:
-		    p.error(); xerror (p, "Unknown keyword: '%s" % p[1]) } 
+		else: xerror (p, "Unknown keyword: '%s" % p[1]) } 
 
 	| TEXT EQL TEXT COLON	    /* lsrc=xx: ('xx' is language code.) */
 		{ KW = jdb.KW 
-		if p[1] != "lsrc":
-		    p.error(); xerror (p, "Keyword must be \"lsrc\"")
+		if p[1] != "lsrc": xerror (p, "Keyword must be \"lsrc\"")
 		la = KW.LANG.get(p[3])
-		if not la: 
-		    p.error(); xerror (p, "Unrecognised language '%s'" % p[3])
+		if not la: xerror (p, "Unrecognised language '%s'" % p[3])
 		p[0] = ["lsrc", None, la.id, None] }
 
 	| TEXT EQL TEXT COLON atext  /* lsrc=xx:text, lsrc=w:text, lit=xx:text, expl=xx:text */
@@ -237,8 +228,7 @@ tagitem
 		lsrc_flags = None; lang = None
 		if p[1] in ["lsrc"]:
 		    la = KW.LANG.get(p[3])
-		    if not la:
-			p.error(); xerror (p, "Unrecognised language '%s'" % p[3])
+		    if not la: xerror (p, "Unrecognised language '%s'" % p[3])
 		    lang = la.id
 		elif p[1] in [x.kw for x in KW.recs('GINF')]:
 		    la = KW.LANG.get(p[3])
@@ -247,30 +237,31 @@ tagitem
 		      # contruct also used in rule below.
 		    if not la:
 			if p[3] not in ('w','p','wp','pw'):
-			    p.error(); xerror (p, "Unrecognised language '%s'" % p[3])
-			else: 
-			    lsrc_flags = p[3]
-		    else:
-			lang = la.id
-		else:
-		    p.error(); xerror (p, "Keyword not \"lsrc\", \"lit\", or \"expl\"")
+			    xerror (p, "Unrecognised language '%s'" % p[3])
+			else: lsrc_flags = p[3]
+		    else: lang = la.id
+		else: xerror (p, "Keyword not \"lsrc\", \"lit\", or \"expl\"")
 		p[0] = ["lsrc", p[5], lang, lsrc_flags] }
  
 	| TEXT EQL TEXT SLASH TEXT COLON atext /* lsrc=xx/wp:text */
 		{ KW = jdb.KW 
-		if p[1] != "lsrc":
-		    p.error(); xerror (p, "Keyword not \"lsrc\"")
+		if p[1] != "lsrc": xerror (p, "Keyword not \"lsrc\"")
 		la = KW.LANG.get(p[3])
-		if not la:
-		    p.error(); xerror (p, "Unrecognised language '%s'" % p[3])
+		if not la: xerror (p, "Unrecognised language '%s'" % p[3])
 		if p[5] not in ('w','p','wp','pw'):
-		    p.error(); xerror (p, 
-			"Bad lsrc flags '%s', must be 'w' (wasei), 'p' (partial),or both" % p[5])
+		    xerror (p, "Bad lsrc flags '%s', must be 'w' (wasei), "
+				"'p' (partial),or both" % p[5])
 		p[0] = ["lsrc", p[7], la.id, p[5]] }
  
-	| TEXT EQL jitems   /* xref=k.r[n1,n2,..], restr=k;k;.. (restr, stagr,stagk) */
-		{ if p[1] != "restr" and p[1] != "see" and p[1] != "ant":
-		    p.error(); xerror (p, "Keyword not \"restr\", \"see\", or \"ant\"")
+	| TEXT EQL xrefs   /* xref=k.r[n1,n2,..], restr=k;k;.. (restr, stagr,stagk) */
+		{ # 'xrefs' represents both xrefs and restrs, is list of 5-tuples:
+		  #   0 -- reading text
+		  #   1 -- kanji text
+		  #   2 -- sense number list
+		  #   3 -- number (entry, seq, or None)
+		  #   4 -- corpus (str:corp kw, "":current corp, None:entry id) 
+		if p[1] not in ("restr","see","ant"):
+		    xerror (p, "Keyword not \"restr\", \"see\", or \"ant\"")
 		if p[1] == "restr": p[1] = "RESTR"
 		p[0] = [p[1], p[3]] }
 	;
@@ -280,12 +271,22 @@ atext
 	| QTEXT
 		{ p[0] = jellex.qcleanup (p[1][1:-1]) }
 	;
-jitems
-	: jitem
+xrefs
+	: xref
 		{ p[0] = [p[1]] }
-	| jitems SEMI jitem	
+	| xrefs SEMI xref
 		{ p[0] = p[1]
 		p[0].append (p[3]) }
+	;
+xref
+	: xrefnum
+		{ p[0] = [None,None,None] + p[1] }
+	| xrefnum slist
+		{ p[0] = [None,None,p[2]] + p[1] }
+	| xrefnum DOT jitem
+		{ p[0] = p[3] + p[1] }
+	| jitem
+		{ p[0] = p[1] + [None,None] }
 	;
 jitem
 	: jtext
@@ -294,21 +295,21 @@ jitem
 		{ p[0] = p[1]
 		p[0][2] = p[2] }
 	;
-jtext	
+jtext
 	: KTEXT
-		{ p[0] = [p[1],None,None,None] }
+		{ p[0] = [None, p[1], None] }
 	| RTEXT
-		{ p[0] = [None,p[1],None,None] }
+		{ p[0] = [p[1], None, None] }
 	| KTEXT DOT RTEXT
-		{ p[0] = [p[1],p[3],None,None] }
-	| NUMBER DOT KTEXT
-		{ p[0] = [p[3],None,None,toint(p[1])] }
-	| NUMBER DOT RTEXT
-		{ p[0] = [None,p[3],None,toint(p[1])] }
-	| NUMBER DOT KTEXT DOT RTEXT
-		{ p[0] = [p[3],p[5],None,toint(p[1])] }
-	| NUMBER
-		{ p[0] = [None,None,None,toint(p[1])] }
+		{ p[0] = [p[3], p[1], None] }
+	;
+xrefnum
+	: NUMBER		/* Seq number. */
+		{ p[0] = [toint(p[1]), ''] }
+	| NUMBER HASH		/* Entry id number */
+		{ p[0] = [toint(p[1]), None] }
+	| NUMBER TEXT		/* Seq number, corpus */
+		{ p[0] = [toint(p[1]), p[2]] }
 	;
 slist
 	: BRKTL snums BRKTR
@@ -318,32 +319,22 @@ snums
 	: NUMBER
 		{ n = int(p[1])
 		if n<1 or n>99:
-		    p.error(); xerror (p, "Invalid sense number: '%s' % n")
+		    xerror (p, "Invalid sense number: '%s' % n")
 		p[0] = [n] }
 	| snums COMMA NUMBER
 		{ n = int(p[3])
 		if n<1 or n>99:
-		    p.error(); xerror (p, "Invalid sense number: '%s' % n")
+		    xerror (p, "Invalid sense number: '%s' % n")
  		p[0] = p[1] + [n] }
 	;
 
 %%
-def p_error (tok): pass
-
-def xp_error (tok):
-	if tok is None:
-	    ln = None;  lp = None;  t = None;  v = None
-	else: 
-	    ln = tok.lineno;  t = tok.type;  v = tok.value
-	    lp = find_column (tok)
-	raise ParseError ("Syntax error (p_error)", ln, lp, t, v)
+def p_error (tok): 
+	msg = "Bad syntax at token %s" % tok
+	raise RuntimeError (msg)
 
 def xerror (p, msg=None):
-	ln = None;  lp = None;  t = None;  v = None
-	if p is not None: 
-	    ln = p.lineno;  #t = p.type;  v = p.value
-	    #lp = find_column (p)
-	print >>sys.stderr, msg or "Syntax error"
+	raise RuntimeError (msg)
 
 def find_column (token):
 	i = token.lexpos
@@ -378,26 +369,23 @@ def lookup_tag (tag, typs=None):
 	KW = jdb.KW 
 	matched = []
 	if not typs:
-	    typs = [x for x in KW.attrs() if x not in ('LANG','GINF')]+['RESTR']
+	    typs = [x for x in KW.attrs() if x not in ('LANG','GINF')]
 	if isinstance (typs, (str, unicode)): typs = [typs]
 	for typ in typs:
 	    typ = typ.upper(); val = None
-	    if typ == "RESTR":
-		if tag == "nokanji": 
-		    matched.append ([typ, 1])
-	    else:
-		if typ == "FREQ":
-		    mo = re.search (r'^([^0-9]+)(\d+)$', tag)
-		    if mo:
-			tag = mo.group(1)
-			val = int (mo.group(2))
-		try:
-		    x = (getattr (KW, typ))[tag]
-		except AttributeError: return []
-		except KeyError: pass
-		else: 
-		    if not val: matched.append ([typ, x.id])
-		    else: matched.append ([typ, x.id, val])
+	    if typ == "FREQ":
+		mo = re.search (r'^([^0-9]+)(\d+)$', tag)
+		if mo:
+		    tag = mo.group(1)
+		    val = int (mo.group(2))
+	    try:
+		x = (getattr (KW, typ))[tag]
+	    except AttributeError: 
+		raise ValueError ("Unknown 'typ' value: %s." % typ)
+	    except KeyError: pass
+	    else: 
+		if not val: matched.append ([typ, x.id])
+		else: matched.append ([typ, x.id, val])
 	return matched
 
 def bld_sens (sens, glosses):
@@ -418,7 +406,7 @@ def bld_sens (sens, glosses):
 	KW = jdb.KW 
 	errs = []; sens._gloss = []
 	for gtxt, tags in glosses:
-	    gloss = jdb.Obj (txt=jellex.gcleanup(gtxt),
+	    gloss = jdb.Gloss (txt=jellex.gcleanup(gtxt),
 			 lang=KW.LANG['eng'].id, ginf=KW.GINF['equ'].id)
 	    sens._gloss.append (gloss)
 	    if tags: errs.extend (sens_tags (sens, gloss, tags))
@@ -434,7 +422,7 @@ def sens_tags (sens, gloss, tags):
 	    vals = None
 	    typ = t.pop(0)	# Get the item type.
 
-	    if typ is None:	
+	    if typ is None:
 		  # Unknown type, figure it out...
 		  # First, if we can interpret the tag as a sense tag, do so.
 		candidates = lookup_tag (t[0], ('POS','MISC','FLD','DIAL'))
@@ -464,61 +452,59 @@ def sens_tags (sens, gloss, tags):
 	    if typ in ('POS','MISC','FLD','DIAL'):
 		assert len(t)==1, "invalid length"
 		assert type(t[0])==int, "Unresolved kw"
-	        append (sens, "_"+typ.lower(), jdb.Obj(kw=t[0]))
+		if typ == 'POS': o = Pos(kw=t[0])
+		elif typ == 'MISC': o = Misc(kw=t[0])
+		elif typ == 'FLD': o = Fld(kw=t[0])
+		elif typ == 'DIAL': o = Dial(kw=t[0])
+	        append (sens, "_"+typ.lower(), o)
 	    elif typ == 'RESTR':
 		# We can't create real @{_stagk} or @{_stagr} lists here
 		# because the readings and kanji we are given by the user
 		# are allowed ones, but we need to store disallowed ones. 
 		# To get the disallowed ones, we need access to all the
- 		# readings/kanji for this entry and we don't have to that
+ 		# readings/kanji for this entry and we don't have that
 		# info at this point.  So we do what checking we can. and
 		# save the texts as given, and will fix later after the 
 		# full entry is built and we have access to the entry's
 		# readings and kanji.
 
-		for jitem in t[0]:
-		    if ((jitem[0] and jitem[1]) or 
-			     (not jitem[0] and not jitem[1]) or jitem[3]): 
+		for xitem in t[0]:
+		    rtxt,ktxt,slist,num,corp = xitem
+		    #if num or corp:
+		    if ((rtxt and ktxt) or (not rtxt and not ktxt)): 
 			errs.append ("Sense restrictions must have a "
 				     "reading or kanji (but not both): "
-			       + fmt_jitem (jitem))
-			errs += 1
-		    if jitem[0]: append (sens, '_STAGK', jitem[0])
-		    if jitem[1]: append (sens, '_STAGR', jitem[1])
+			 	     + fmt_xitem (xitem))
+		    if ktxt: append (sens, '_STAGK', ktxt)
+		    if rtxt: append (sens, '_STAGR', rtxt)
 
 	    elif typ == 'lsrc':  
 		wasei   = t[2] and 'w' in t[2]
 		partial = t[2] and 'p' in t[2]
 		append (sens, '_lsrc', 
-			jdb.Obj(txt=t[0], lang=(t[1] or lang_en), 
+			jdb.Lsrc(txt=t[0], lang=(t[1] or lang_en), 
 				part=partial, wasei=wasei))
 	    elif typ == 'note': 
-		if hasattr (sens, 'notes'): 
+		if getattr (sens, 'notes', None): 
 		    errs.append ("Only one sense note allowed")
 		sens.notes = t[0]
-	    elif typ == 'see' or typ == 'ant':
-		for jitem in t[0]:
-		      # jitem format: a 4-seq: [0]:kanji text, 
-		      # [1]:reading text, [2]list of sense numbers,
-		      # [3]:seq number
+	    elif typ in ('see', 'ant'):
+		for xitem in t[0]:
 		    kw = KW.XREF[typ].id
-		    append (sens, '_XREF', jdb.Obj (typ=kw, 
-			rtxt  = jitem[1] or None,	# Target reading text.
-			ktxt  = jitem[0] or None, 	# Target kanji text.
-			slist = jitem[2] or [], 	# Target sense numbers.
-			enum  = jitem[3]))		# Target seq or id number.
+		    xitem.insert (0, kw)
+		    append (sens, '_XREF', xitem)
 
 	    elif typ == 'GINF':
 		assert len(t)==1, "invalid length"
 		assert type(t[0])==int, "Non-int kw"
-		if hasattr (gloss, ginf): 
+		if getattr (gloss, ginf, None): 
 		    errs.append ( 
 		        "Warning, duplicate GINF tag '%s' ignored\n" % KW.GINF[t[0]].kw)
 		else: gloss.ginf = t[0]
  	    elif typ == 'LANG': 
 		assert type(t[0])==int, "Non-int kw"
 		assert len(t)==1, "invalid length"
-		if hasattr (gloss, lang): 
+		if getattr (gloss, lang, None): 
 		    errs.append ( 
 		        "Warning, duplicate LANG tag '%s' ignored\n" % KW.LANG[t[0]].kw)
 		else: gloss.lang = t[0]
@@ -533,17 +519,22 @@ def bld_rdng (r, taglist=[]):
 	for t in taglist:
 	    typ = t.pop(0)
 	    if typ is None:
-		if t[0] == 'nokanji': 
-		    typ = 'RESTR'
+		v = lookup_tag (t[0], ('RINF','FREQ'))
+		if not v: 
+		    typ = None
+		    errs.append ("Unknown reading tag %s" % t[0])
 		else:
-		    v = lookup_tag (t[0], ('RINF','FREQ'))
-		    if not v: 
-			typ = None
-			errs.append ("Unknown reading tag %s" % t[0])
-		    else:
-		        typ, t = v[0][0], v[0][1:] 
-	    if typ == 'RINF': append (r, '_inf', jdb.Obj(kw=t[0]))
-	    elif typ == 'FREQ': append (r, '_freq', jdb.Obj(kw=t[0], value=t[1]))
+		    typ, t = v[0][0], v[0][1:] 
+	    if typ == 'RINF': append (r, '_inf', jdb.Rinf(kw=t[0]))
+            elif typ == 'FREQ':
+		  # _freq objects are referenced by both the reading and
+		  # kanji _freq lists.  Since we don't have access to 
+		  # the kanj here, temporarily save the freq (kw, value)
+		  # tuple in attribute "._FREQ".  When the full entry is
+		  # processed, the info in here will be removed, merged
+		  # with parallel info from the kanj objects, and proper
+		  # ._freq objects created.
+		append (r, '_FREQ', (t[0], t[1]))
 	    elif typ == 'RESTR':
 		# We can't generate real restr records here because the real
 		# records are the disallowed kanji.  We have the allowed
@@ -552,25 +543,28 @@ def bld_rdng (r, taglist=[]):
 		# just save the allowed kanji as given, and will convert it
 		# after the full entry is built and we have all the info we
 		# need.
-		if t[0] == 'nokanji':
-		    nokanj = True
-		    r._NOKANJI = 1
-		    continue
-		for jitem in t[0]:
-		      # A jitem represents a reference to another entry
+		for xitem in t[0]:
+		      # An xitem represents a reference to another entry
 		      # or other info within an entry, in textual form.  It
-		      # is used for xrefs and restr info.  It is a 3-seq
+		      # is used for xrefs and restr info.  It is a 5-seq
 		      # with the following values:
-		      #   [0] -- Kanji text
-		      #   [1] -- Reading text
+		      #   [0] -- Reading text
+		      #   [1] -- Kanji text
 		      #   [2] -- A sequence of sense numbers.
+		      #   [3] -- An entry or seq number.
+		      #   [4] -- Corpus name or id number, "",  or None.
 		      # For a reading restr, it is expected to contain only 
 		      # a kanji text.
-		    if not jitem[0] or jitem[1] or jitem[2]:
+		    rtxt,ktxt,slist,num,corp = xitem
+		    if rtxt == "nokanji": 
+			nokanj = True
+			r._NOKANJI = 1
+			continue
+		    if rtxt or not ktxt or slist or num or corp:
 			errs.append ("Reading restrictions must be kanji only: "
-				      + fmt_jitem (jitem))
-		    append (r, "_RESTR", jitem[0])
-		if r._RESTR and nokanj:
+				      + fmt_xitem (xitem))
+		    append (r, "_RESTR", ktxt)
+		if hasattr (r,'_RESTR') and nokanj:
 		    errs.append ("Can't use both kanji and 'nokanji' in 'restr' tags")
 	    elif typ: 
 		errs.append ("Cannot use '%s' tag in a reading" % typ)
@@ -589,13 +583,21 @@ def bld_kanj (k, taglist=[]):
 		  # FREQ which could cause lookup_tag() to return more than one
 		  # candidate tags.
 		typ, t = v[0][0], v[0][1:]
-	    if typ == "KINF": append (k, "_inf", jdb.Obj(kw=t[0]))
-	    elif typ == "FREQ": append (k, "_freq", jdb.Obj(kw=t[0], value=t[1]))
+	    if typ == "KINF": append (k, "_inf", jdb.Kinf(kw=t[0]))
+            elif typ == "FREQ": 
+		  # _freq objects are referenced by both the reading and
+		  # kanji _freq lists.  Since we don't have access to 
+		  # the rdng here, temporarily save the freq (kw, value)
+		  # tuple in attribute "._FREQ".  When the full entry is
+		  # processed, the info in here will be removed, merged
+		  # with parallel info from the rdng objects, and proper
+		  # ._freq objects created.
+		append (k, "_FREQ", (t[0], t[1]))
 	    else: 
 		errs.append ("Cannot use %s tag with a kanji" % typ); 
 	return "\n".join (errs)
 
-def mk_restrs (listkey, rdngs, rdngkey, kanj, kanjkey, kmap=None):
+def mk_restrs (listkey, rdngs, kanjs):
 	# Note: mk_restrs() are used for all three
 	# types of restriction info: restr, stagr, stagk.  However to
 	# simplify things, the comments and variable names assume use
@@ -608,29 +610,20 @@ def mk_restrs (listkey, rdngs, rdngkey, kanj, kanjkey, kmap=None):
 	# are *invalid* with this reading.  The restr records identify
 	# kanji by id number rather than text.
 	#
-	# $listkey -- Name of the key used to get the list of text
-	#    restr items from $rdngs.  These are the text strings
+	# listkey -- Name of the key used to get the list of text
+	#    restr items from 'rdngs'.  These are the text strings
 	#    provided by the user.  Should be "_RESTR", "_STAGR", 
 	#    or "_STAGK".
-	# @$rdngs -- Lists of rdng or sens records depending on whether
+	# rdngs -- List of rdng or sens records depending on whether
 	#    we're doing restr or stagr/stagk restrictions.
-	# $rdngkey -- Either "rdng" or "sens" depending on whether we're
-	#    doing restr or  stagr/stagk restrictions.
-	# @$kanj -- List of the entry's kanji or reading records 
+	# kanjs -- List of the entry's kanji or reading records 
 	#    depending on whether we are doing restr/stagk or stagr
 	#    restrictions.
-	# $kanjkey -- Either "kanj" or "rdng" depending on whether we're
-	#    doing restr/stagk or stagr restrictions.
-	# %$kmap -- (Optional)  A hash of @$kanj keyed by the text strings.
-	#    If not given it will be automatically generated, but caller
-	#    can supply it to prevent it from being recalculated multiple
-	#    times.  [NB: we should cache after generation so caller need
-	#    not worry about it at all.]
 
-	if kmap is None: kmap = {}
 	errs = []
-	for r in rdngs:
+	ktxts = [x.txt for x in kanjs]
 
+	for n,r in enumerate (rdngs):
 	      # Get the list of restr text strings and nokanji flag and
 	      # delete them from the rdng object since they aren't part
 	      # of the standard api.
@@ -645,77 +638,135 @@ def mk_restrs (listkey, rdngs, rdngkey, kanj, kanjkey, kmap=None):
 
 	      # bld_rdngs() guarantees that {_NOKANJI} and {_RESTR} 
 	      # won't both be present on the same rdng.
-
-	    if not nokanj:
-		  # 'kmap' is a dict that indexes kanj records by 
-		  # by their text, to allow quick lookup by text.
-		  # If we did not receive it as a parameter, generate
-		  # it now.
-		if not kmap: kmap = dict ([(x.txt, x) for x in kanj])
-
-		  # Look for any restr kanji text that is not in the
-		  # entry's kanji text.
-		nomatch = [x for x in restrtxt if x not in kmap]
-
+	    if nokanj and restrtxt:
+		  # Only rdng-kanj restriction should have "nokanji" tag, so
+		  # message can hardwire "reading" and "kanji" text even though
+		  # this function in also used for sens-rdng and sens-kanj
+		  # restrictions.
+		errs.append ("Reading %d has 'nokanji' tag but entry has no kanji" % (n+1))
+		continue
+	    if nokanj: restrtxt = None
+	    z = jdb.txt2restr (restrtxt, r, kanjs, listkey.lower())
+	      # Check for kanji erroneously in the 'restrtxt' but not in
+	      # 'kanjs'.  As an optimization, we only do this check if the
+	      # number of Restr objects created (len(z)) plus the number of
+	      # 'restrtxt's are not equal to the number of 'kanjs's.  (This
+	      # criterion my not be valid in some corner cases.)
+	    if restrtxt is not None and len (z) + len (restrtxt) != len (kanjs):
+		nomatch = [x for x in restrtxt if x not in ktxts]
 		if nomatch:
-		    not_found_in = {'rdng':'readings','kanj':'kanji'}[kanjkey]
+		    if   listkey == "_RESTR": not_found_in = "kanji"
+		    elif listkey == "_STAGR": not_found_in = "readngs"
+		    elif listkey == "_STAGK": not_found_in = "kanji"
 		    errs.append ("restr value(s) '" + 
 			    "','".join (nomatch) + 
 			    "' not in the entry's %s" % not_found_in)
-
-		  # The restr kanji we received are the kanji allowed
-		  # for a given reading.  In the entry object being 
-		  # created (and in the database) the disallowed kanji
-		  # (the entry's kanji minus the ones in 'restrtxt') are
-		  # stored.  
-		disallowed = [x for x in kanj if x.txt not in restrtxt]
-
-	    else:
-		disallowed = [];
-		if not kanj:
-		    errs.append ("Entry has no kanji but reading has 'nokanji' tag")
-
-		  # If this reading was marked "nokanji", then all 
-		  # the entries kanji are disallowed.
-		else: disallowed = kanj
-
-	      # Use the list of disallowed kanji to create the restr 
-	      # list that is attached to the reading.
-	    restr = []
-	    for x in disallowed:
-		z = jdb.Obj (entr=r.entr)
-		setattr (z, rdngkey, getattr(r,rdngkey))
-		setattr (z, kanjkey, getattr(x,kanjkey))
-		restr.append (z)
-	    if restr: setattr (r, listkey.lower(), restr)
-
 	return "\n".join (errs)
 
-def resolv_xrefs (cur, entr, corpid=None):
+def resolv_xrefs (
+    cur, 	 # An open DBAPI cursor to the current JMdictDB database.
+    entr 	 # An entry with ._XREF tuples.
+    ):
 	"""\
 	Convert any jelparser generated _XREF lists that are attached
 	to any of the senses in 'entr' to a normal augmented xref list.
-	An _XREF list is a list of objects, each with attributes:
-	  kw -- The type of xref per id number in table kwxref.
-	  rtxt -- Reading text of the xref target entry or None.
-	  ktxt -- Kanji text of the target xref or None.
-	  slist -- A list of ints specifying the target senses in
-		    in the target entry.  
-	  enum -- An entry id number or None.
-	At least one of 'rtxt', 'ktxt', or 'enum' must be non-None.
-	'corpid', if given, is a integer and limits the xref search
-	to that specific corpus.\
+	An _XREF list is a list of 6-tuples:
+	  [0] -- The type of xref per id number in table kwxref.
+	  [1] -- Reading text of the xref target entry or None.
+	  [2] -- Kanji text of the target xref or None.
+	  [3] -- A list of ints specifying the target senses in
+		 in the target entry.
+	  [4] -- None or a number, either seq or entry id.
+	  [5] -- None, '', or a corpus name.  None means 'number'
+		 is a entry id, '' means it is a seq number in the
+		 corpus 'entr.src', otherwise it is the name or id
+		 number of a corpus in which to try resolving the
+		 xref. 
+	At least one of [3], [4], or [1] must be non-None.\
 	"""
+	errs = []
 	for s in getattr (entr, '_sens', []):
 	    if not hasattr (s, '_XREF'): continue
-	    xrefs = []
-	    for x in s._XREF: 
-		xrfs = jdb.resolv_xref (cur, x.typ, x.rtxt, x.ktxt,
-					x.slist, x.enum, corpid)
-		xrefs.extend (xrfs)
+	    xrefs = []; xunrs = []
+	    for typ, rtxt, ktxt, slist, seq, corp in s._XREF:
+		if corp == '': corp = entr.src
+		xrf, xunr = find_xref (cur, typ, rtxt, ktxt, slist, seq, corp)
+		if xrf: xrefs.extend (xrf)
+		else:
+		    xunrs.append (xunr)
+		    errs.append (xunr.msg)
 	    if xrefs: s._xref = xrefs
+	    if xunrs: s._xrslv = xunrs
 	    del s._XREF
-	return []
+	return errs
+
+def find_xref (cur, typ, rtxt, ktxt, slist, seq, corp, 
+		corpcache={}, clearcache=False):
+
+	xrfs = [];  xunrs = None;  msg = ''
+	if clearcache: corpcache.clear()
+	if isinstance (corp, (str, unicode)):
+	    if corpcache[corp]: corpid = corpcache[corp]
+	    else:
+	        rs = jdb.dbread ("SELECT id FROM kwsrc WHERE kw=%s", [corp])
+	        if len(rs) != 1: raise ValueError ("Invalid corpus name: '%s'" % corp)
+	        corpid = corpcache[corp] = rs[0][0]
+	else: corpid = corp
+
+	try:
+	    xrfs = jdb.resolv_xref (cur, typ, rtxt, ktxt, slist, seq, corpid)
+	except ValueError, e:
+	    msg = e.args[0]
+	    xunrs = jdb.Xrslv (typ=typ, ktxt=ktxt, rtxt=rtxt,tsens=None)
+	    xunrs.msg = msg
+	return xrfs, xunrs
+
+def merge_freqs (entr):
+	# This function is used by code that contructs Entr objects
+	# by parsing a textual entry description.  Generally such code
+	# will parse freq (a.k.a. prio) tags for readings and kanji
+	# individually.  Before the entry is used, these independent
+	# tags must be combined so that a rdng/kanj pairs with the 
+	# same freq tag point to a single Freq object.  This function
+	# does that merging.
+	# It expects the entry's Rdng and Kanj objects to have a temp
+	# attribute named "_FREQ" that contains a list of 2-tuples.
+	# Each 2-tuple contains the freq table kw id number, and the
+	# freq value.  After  merge_freqs() runs, all those .FREQ 
+	# attributes will have been deleted, and .freq attributes 
+	# created with equivalent, properly linked Freq objects.
+
+	fmap = defaultdict (lambda:([list(),list()]))
+
+	  # Collect the info in .FREQ attributes from all the readings.
+	for r in getattr (entr, '_rdng', []):
+	    for kw_val in getattr (r, '_FREQ', []):
+	          # 'kw_val' is a 2-tuple denoting the freq as a freq table
+		  # keyword id and freq value pair.
+		rlist = fmap[(kw_val)][0]
+		  # Add 'r' to rlist if it is not there already.
+		  # Use first() as a "in" operator that uses "is" rather
+		  #  than "==" as compare function.
+		if not jdb.isin (r, rlist): rlist.append (r)
+	    if hasattr (r, '_FREQ'): del r._FREQ
+
+	  # Collect the info in .FREQ attributes from all the kanji.
+	  # This works on kanj's the same as above section works on 
+	  # rdng's and comments above apply here too.
+	for k in getattr (entr, '_kanj', []):
+	    for kw_val in getattr (k, '_FREQ', []):
+		klist = fmap[(kw_val)][1]
+		if not jdb.isin (k, klist): klist.append (k)
+	    if hasattr (k, '_FREQ'): del k._FREQ
+
+	  # 'fmap' now has one entry for every unique freq (kw,value) tuple
+	  # which is a pair of sets.  The first set consists of all Rdng
+	  # objects that (kw,value) freq spec applies to.  The second is 
+	  # the set of all kanji it applies to.  We take all combinations
+	  # of readings with kanji, and create a Freq object for each.
+
+	errs = jdb.make_freq_objs (fmap, entr)
+	return errs
 
 def append (sens, key, item):
     # Append $item to the list, @{$sens->{$key}}, creating 
@@ -733,6 +784,21 @@ _uni_numeric = {
 def toint (s):
 	n = int (s.translate (_uni_numeric))
 	return n
+
+def fmt_xitem (xitem):
+	typ = None
+	if len (xitem) == 6: typ = xitem.pop (0)
+	rtxt, ktxt, slist, num, corp = xitem
+	k = ktxt or '';  r = rtxt or '';  n = num or ''
+	if num:
+	    if corp: c = ' ' + corp
+	    else: c = '#' if corp is None else ''
+	    n = n + c
+	else: c = ''
+	kr = k + (u'\u30FB' if k and r else '') + r
+	t = n + (u'\u30FB' if n and kr else '') + kr 
+	s = ('[%s]' % ','.join(slist)) if slist else ''
+	return t + s
 
 def create_parser (toks, **args):
 	global tokens
@@ -763,7 +829,7 @@ def main (args, opts):
 		print "----"
 		print parsedtxt
 	else:
-	    _interactive (lexer, parser)
+	    _interactive (cur, lexer, parser)
 
 def _roundtrip (cur, lexer, parser, seq, src):
     # Helper function useful for testing.  It will read an entry
@@ -783,7 +849,7 @@ def _roundtrip (cur, lexer, parser, seq, src):
 	jeltxt = _get_jel_text (obj[0])
 	jellex.lexreset (lexer, jeltxt)
 	result = parser.parse (jeltxt,lexer=lexer)
-	resolv_xrefs (cur, result, src)
+	resolv_xrefs (cur, result)
 	jeltxt2 = _get_jel_text (result)
 	return jeltxt, jeltxt2
 
@@ -798,7 +864,7 @@ def _get_jel_text (entr):
 	jeltxt = fmtjel.entr (entr)
 	return jeltxt.partition('\n')[2]
 
-def _interactive (lexer, parser):
+def _interactive (cur, lexer, parser):
 	cnt = 0;  instr = ''
         while 1:
 	    instr = _getinptext ()
@@ -808,9 +874,12 @@ def _interactive (lexer, parser):
 		result = parser.parse(instr,lexer=lexer,debug=opts.debug)
 	    except ParseError, e: 
 		print e
-	    else:
-                s = fmtjel.entr (result)
-                print s
+	    try:
+		resolv_xrefs (cur, result)
+	    except ValueError:
+		print e
+            s = fmtjel.entr (result)
+            print s
 
 def _getinptext ():
 	instr = '';  cnt = 0;  prompt = 'test> '

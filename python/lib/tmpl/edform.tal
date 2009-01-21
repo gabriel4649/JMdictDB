@@ -28,8 +28,6 @@
 		  <tr tal:condition="not:e">
 		    <td colspan="4">New Entry</td></tr>
 		  <tr tal:condition="e">
-		    <td>Id:</td>
-		    <td tal:content="e/id"></td>
 		    <td>Stat:</td>
 		    <td>
 		      <span tal:condition="e/unap" class="pend">
@@ -40,6 +38,8 @@
 			<a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${e/dfrm}" tal:content="e/dfrm"/>
 			</span>
 		      </td>
+		    <td>Id:</td>
+		    <td tal:content="e/id"></td>
 		    </tr>
 		  <tr>
 		    <td>Corpus: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#corpus">help</a></td>

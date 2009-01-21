@@ -27,7 +27,7 @@ import jdb, jmcgi, jelparse, jellex, serialize
 
 def main (args, opts):
 	#cgitb.enable()
-	errs = []; 
+	errs = []; chklist = {}
 	try: form, svc, cur, sid, sess, parms = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
 	fv = form.getfirst; fl = form.getlist
@@ -75,7 +75,7 @@ def main (args, opts):
 	#	errs.append ("Invalid email address: %s" % email)
 
 	  # Parse the entry data.  Problems will be reported
-	  # by messages in @$perrs.  We do the parse even if 
+	  # by messages in 'perrs'.  We do the parse even if 
 	  # the request is to delete the entry (is this right
 	  # thing to do???) since on the edconf page we want
 	  # to display what the entry was.  The edsubmit page
@@ -83,22 +83,7 @@ def main (args, opts):
 	entr, perrs = parse (intxt)
 	errs.extend (perrs)
 
-	  # The code in the "if" below assumes we have a valid entr
-	  # object from jbparser.  If there were parse errors that's
-	  # not true so we don't go there.
 	if entr and not errs:
-
-	      # If any xrefs were given, resolve them to actual entries
-	      # here since that is the form used to store them in the 
-	      # database.  If any are unresolvable, an approriate error 
-	      # is saved and will reported later.
-	    try: 
-	        perrs = jelparse.resolv_xrefs (cur, entr, corpid=src)
-	    except StandardError, e:
-		errs.append (e.message)
-
-	if entr and not errs:
-
 	      # Migrate the entr details to the new entr object
 	      # which to this point had only the kanj/rdng/sens
 	      # info provided by jbparser.  
@@ -106,6 +91,20 @@ def main (args, opts):
 	    entr.src = src;   entr.notes = notes;  entr.srcnote = srcnote; 
 	    entr.unap = not disp
 
+	  # The code in the "if" below assumes we have a valid entr
+	  # object from jbparser.  If there were parse errors that's
+	  # not true so we don't go there.
+	if entr and not errs and not delete:
+
+	      # If any xrefs were given, resolve them to actual entries
+	      # here since that is the form used to store them in the 
+	      # database.  If any are unresolvable, an approriate error 
+	      # is saved and will reported later.
+
+	    rslv_errs = jelparse.resolv_xrefs (cur, entr)
+	    if rslv_errs: chklist['xrslv'] = rslv_errs
+
+	if entr and not errs:
 	      # Append a new hist record details this edit.
 	    if not hasattr (entr, '_hist'): entr._hist = []
 	    entr = jdb.add_hist (cur, entr, sess.userid if sess else None, 
@@ -119,9 +118,9 @@ def main (args, opts):
 	      # hopes of reducing submissions of words already in 
 	      # the database.
 	    if not eid and not delete:
-		chklist = find_similar (cur, getattr (entr,'_kanj',[]),
+		dups = find_similar (cur, getattr (entr,'_kanj',[]),
 					getattr (entr,'_rdng',[]), entr.src)
-	    else: chklist = []
+	        if dups: chklist['dups'] = dups
 	    entrs = [entr]
 
 	if not errs:

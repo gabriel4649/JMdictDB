@@ -9,15 +9,15 @@ AssdTo:
 2008-05-02 22:37:51 sysad
   An API code implementation decision was to minimize the
   creation of attributes on entry objects and its sub-objects.
-  That is, if there were no kanji associated with an entry, 
-  the entry would have no '_kanj' attribute (as opposed to 
+  That is, if there were no kanji associated with an entry,
+  the entry would have no '_kanj' attribute (as opposed to
   having one with a value of an empty list).
   
-  In hindsight this was probably a bad choice.  It has the 
-  desired and positive effect of simplifying debugging since 
-  object display is not cluttered with a bunch of empty 
-  attributes, but it clutters the code since almost all 
-  attribute accesses have to be wrapped in a getattr() call, 
+  In hindsight this was probably a bad choice.  It has the
+  desired and positive effect of simplifying debugging since
+  object display is not cluttered with a bunch of empty
+  attributes, but it clutters the code since almost all
+  attribute accesses have to be wrapped in a getattr() call,
   e.g. one must write
   
     ...getattr (entr, '_kanj', [])...
@@ -32,3 +32,36 @@ AssdTo:
   values for the "standard" attributes.  (One way to do this
   would be to make each object a class with an appropriate
   __init__() function.)
+
+2009-01-06 01:22:33 sysad
+  Added new module "objects.py" that defines classes that correspond
+  to the table rows used to construct entries.  Changed (most)
+  everything that formerly created generic Obj instances to create
+  specific types (Entr, Rdng, etc) instances instead.  These classes
+  are fully populated with all the standard attributes of the table,
+  and of and children lists (e.g. "_rdng" on the Entr objects.)
+  (Have not changed pgi.py yet)
+  
+  Issues and second thoughts...
+  
+  serialize.py now has to understand many object types instead of
+  just Obj and DbRow.
+  
+  jdb.dbread() needs to return rows of the desired type which means
+  it needs a params to tell it what type to return.
+  
+  In jdb.dbread(), we create DbRow objects since that contains the
+  the needed __init__() behavior, but then set their .__class__ to
+  the desired object.  Is that yucky?
+  
+  jdb.entr_data() reads all the data needed to construct a set of
+  entry objects -- now it needs to map table names to clesses in
+  order to tell dbread what kind of row objects to create.
+  
+  jdb.add_restrobj() also now needs to create different object types
+  (Restr, Stagr, Stagk) so it to has to map from string to class.
+  
+  Often the objects are created, with the consequent creation of
+  lots of empty lists, which are thrown away later when the lists
+  are replaced with actual data. They also use more space.  How much
+  extra space/time do they take?

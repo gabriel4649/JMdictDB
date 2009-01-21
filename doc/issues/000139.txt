@@ -1,0 +1,64 @@
+Title:	Preserve unresolved xrefs
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	Jim Breen
+AssdTo:	
+
+2008-11-20 10:10:50 sysad
+  Ref: email from Jim Breen, 2008-11-17.
+  Currently the edconf.py cgi page will return an error
+  page if it is not able to resolve an xref to an actual
+  entry.
+  
+  This creates a problem when entering a batch of new entries
+  that contain mutually referential xrefs since it requires
+  earlier entered entries to be entered without xrefs, then
+  reedited to add the xrefs after the later entries have been
+  added.
+
+2008-11-20 10:10:50 sysad
+  Have the same problem when loading entries from jmdict xml
+  file: a xref in the entry currently being processed may refer
+  to an entry later in the file.  Solution here is to defer
+  processing of all xrefs until after all entries are loaded.
+  When processing jmdict xml file, xref data is saved in table
+  'xresolv' and a sperate program (xresolv.py) run after entries
+  are loaded, to process the xref data in this table and covert
+  into real xrefs.
+  
+  Proposal:
+  
+  * Make xresolv table perment.
+  
+  * Make xresolv.py delete each sucessfully converted xref in
+   xresolv table leaving only the uresolved ones when done.
+  
+  * Make jdb.entrList() (primary function for retrieving entries
+   from database) get any existent "unresolved xref" rows
+   related to the entry from table 'xresolv'.
+  
+  * Make jdb.addentr() (primary function that writes entry objects
+   back to database.
+  
+  * Modify entr.py and edcof.py to show unresolved xrefs.  In
+   edconf.py create an explicit warning message when unresolved
+   xref exist.
+  
+  * submit,py, allow submission of disallow submission of "active/
+   approve" entries but allow any unapproved submission or approved
+   reject and delete submissions.
+  
+  * Create (or verify currently works) jel syntax to specify
+   an xref by seq number or entry id in adddition to kanji/reading.
+  
+  * When fomatting jel syntax entries, format xrefs using the
+   explcit seq/id format above (in case of xrefs to all id's,
+   will need to compress down to a single seq xref).
+  
+  * When formating jel syntax entries, unresolved xrefs get
+   turned into K/R style xrefs.
+  
+  * Same to formatting tasks above also apply to formatting
+   the exhanced XML.

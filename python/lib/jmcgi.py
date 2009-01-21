@@ -86,7 +86,8 @@ def login (userid, password, sessdb="jmsess"):
 	sql = "SELECT userid FROM users WHERE userid=%s " \
 		"AND pw=%s AND pw IS NOT NULL AND NOT disabled"
 	rs = jdb.dbread (cur, sql, (userid, password))
-	if len(rs) != 1: return None
+	if len(rs) != 1: 
+	    time.sleep (1);  return None
 	remove_inactive_sessions (cur)
 	sid = random.randint (0, 2**63-1)
 	jdb.dbinsert (cur, 'sessions', ('id','userid','ts'),(sid,rs[0].userid,int(time.time())))
@@ -194,6 +195,8 @@ def get_entrs (dbh, elist, qlist, errs):
         if entries: 
 	    jdb.augment_xrefs (dbh, raw['xref'])
 	    jdb.augment_xrefs (dbh, raw['xrer'], rev=1)
+	    jdb.add_xsens_lists (raw['xref'])
+	    jdb.mark_seq_xrefs (dbh, raw['xref'])
  	return entries
 
 def gen_page (tmpl, output=None, macros=None, **kwds):
@@ -228,6 +231,7 @@ def htmlprep (entries):
 	add_stag_summary (entries) 
 	add_audio_flag (entries)
 	add_editable_flag (entries)
+	add_unreslvd_flag (entries)
 	fix_diff (entries)
 
 def add_p_flag (entrs):
@@ -257,7 +261,7 @@ def add_restr_summary (entries):
 	    if not hasattr (e, '_rdng') or not hasattr (e, '_kanj'): continue
 	    for r in e._rdng:
 		if not hasattr (r, '_restr'): continue
-		rt = fmt.restrtxts (r._restr, 'kanj', e._kanj)
+		rt = fmt.restrtxts (r._restr, e._kanj, '_restr')
 	        if rt: r._RESTR = rt
 		e.HAS_RESTR = 1
 
@@ -272,9 +276,9 @@ def add_stag_summary (entries):
 	    for s in getattr (e, '_sens', []):
 		rt = []
 		if getattr (s, '_stagr', None):
-		    rt.extend (fmt.restrtxts (s._stagr, 'rdng', e._rdng))
+		    rt.extend (fmt.restrtxts (s._stagr, e._rdng, '_stagr'))
 		if getattr (s, '_stagk', None):
-		    rt.extend (fmt.restrtxts (s._stagk, 'kanj', e._kanj))
+		    rt.extend (fmt.restrtxts (s._stagk, e._kanj, '_stagk'))
 		if rt:
 		    s._STAG = rt
 
@@ -312,6 +316,20 @@ def add_editable_flag (entries):
 	    e.EDITABLE = e.unap \
 		or (e.stat == KW.STAT['N'].id) \
 		or (e.stat == KW.STAT['A'].id)
+
+def add_unreslvd_flag (entries):
+
+	# This is a convenience function to avoid embedding this logic 
+	# in the TAL templates.  This sets a boolean UNRESLVD flag on 
+	# each entry that says whether or not it has any senses that
+	# have unresolved xrefs in its '_xunr' list. 
+
+	KW = jdb.KW
+	for e in entries:
+	    e.UNRESLVD = False
+	    for s in e._sens:
+		if len (getattr (s, '_xunr', [])) > 0:
+		    e.UNRESLVD = True
 
 def fix_diff (entries):
 

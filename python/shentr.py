@@ -45,6 +45,8 @@ def main (args, opts):
 	  # any reverse refrerences.
 	jdb.augment_xrefs (cur, raw['xref'])
 	jdb.augment_xrefs (cur, raw['xrer'], rev=1)
+	jdb.add_xsens_lists (raw['xref'])
+	jdb.mark_seq_xrefs (cur, raw['xref'])
 
 	  # Now all we have to do is print the entries.
 	first = True

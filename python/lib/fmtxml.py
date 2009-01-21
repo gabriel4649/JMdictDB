@@ -99,7 +99,8 @@ def kanj (k):
 	fmt.append ('<k_ele>')
 	fmt.append ('<keb>%s</keb>' % k.txt)
 	fmt.extend (kwds (k, '_inf', 'KINF', 'ke_inf'))
-	fmt.extend (freqs (k, '_freq', 'ke_pri'))
+	fmt.extend (['<ke_pri>%s</ke_pri>' %s 
+		     for s in jdb.freq2txts (getattr (k,'_freq',[]))])
 	fmt.append ('</k_ele>')
 	return fmt
 
@@ -109,7 +110,8 @@ def rdng (r, k, compat):
 	fmt.append ('<reb>%s</reb>' % r.txt)
 	fmt.extend (restrs (r, k))
 	fmt.extend (kwds (r, '_inf', 'RINF', 're_inf'))
-	fmt.extend (freqs (r, '_freq', 're_pri'))
+	fmt.extend (['<re_pri>%s</re_pri>' %s 
+		     for s in jdb.freq2txts (getattr (r,'_freq',[]))])
 	if not compat: fmt.extend (audio (r))
 	fmt.append ('</r_ele>')
 	return fmt
@@ -250,16 +252,6 @@ def kwds (parent, attr, domain, elem_name):
 		  for x in nlist]
 	return kwlist
 
-def freqs (parent, attr, rk):
-	kwds = getattr (parent, attr, [])
-	if not kwds: return []
-	tmp = [(XKW.FREQ[x.kw].kw, x.value) for x in kwds]
-	tmp = jdb.rmdups (tmp)[0]
-	tmp.sort()
-	return [('<%s>%s%02d</%s>' if x[0]=='nf' else '<%s>%s%d</%s>') 
-		  % (rk, x[0], x[1], rk) 
-		for x in tmp]
-
 def lsrc (x):
 	fmt = [];  attrs = []
 	if x.lang != XKW.LANG['eng'].id or not x.wasei: 
@@ -289,39 +281,46 @@ def xrefs (xrefs, src):
 	#   If not, legacy JMdict XML will be generated.
 
 	fmt = []
-	  # Group the xrefs by target.
-	xref_grps = jdb.grp_xrefs (xrefs)
-	for xref_grp in xref_grps:
-	      # In each group, the xrefs will differ only by 
-	      # target sense number, so we can use the first 
-	      # xref of the group as the prototype, and use 
-	      # function xref to format it into a string.
-	    xref0 = xref_grp[0]
-	    fmtdxref = xref (xref0, src)
+	  # Mark each xref that differs only by .xsens value with
+	  # a ._xsens attribute that will be a list of all .xsens 
+	  # values on the first such xref, and an emply list on 
+	  # subsequent such xrefs.
+	jdb.add_xsens_lists (xrefs)
+
+	for x in xrefs:
+	      # If ._xsens is empty, this xref can we ignored since 
+	      # we already formatted a preceeding matching xref that
+	      # contained a list of all .xsens values.
+	    if not x._xsens: continue
+
 	      # Check that augment_xrefs() was called on this
 	      # xref.  The target object is needed because we
 	      # it has the actual kanji and reading texts that
 	      # will be used in the xml xref, as well and the
 	      # the number of senses, which we also need.
-	    try: targ = xref0.TARG
+	    try: targ = x.TARG
 	    except AttributeError:
 		raise AttributeError ("xref missing TARG attribute.  Did you forget to call augmented_xrefs()?")
+
+	      # Format the xref into xml text.
+	    fmtdxref = xref (x, src)
+
 	      # We can assume that, since the database RI constraints
 	      # won't allow two xrefs in the same source to point to
-	      # the same target and sense, if the number of xrefs 
-	      # equals the number of target senses, there is one xrefs
-	      # pointing to each sense.  
-	    if len(targ._sens) != len(xref_grp):
+	      # the same target and sense, if the number of xsens values 
+	      # in the .xsens list equals the number of target senses,
+	      # there is one xref pointing to each sense.  
+	    if len(targ._sens) != len(x._xsens):
 		  # There is not an xref for each target sense, so we
 		  # want to generate xrefs with explicit target senses.
-		for x in xref_grp:
-		      # Ther string returned by xref() has a "%s"
+		for s in x._xsens:
+		      # The string returned by xref() has a "%s"
 		      # placeholder for the sense number.  Generate
 		      # an xref element with sense for each xref in
 		      # the group.  \u30FB is mid-height dot.
-		    fmt.append (fmtdxref % u'\u30FB%d' % x.xsens)
+		    fmt.append (fmtdxref % u'\u30FB%d' % s)
 	    else:
-		  # There is an xref for eaxh target sense so we want
+		  # There is an xref for each target sense so we want
 		  # to supress the target sense numbers.
 		fmt.append (fmtdxref % '')
 	return fmt

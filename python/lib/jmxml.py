@@ -191,7 +191,7 @@ def do_entr (elem, seq, xlit=False, xlang=None, corp_dict=None):
 	"""
 	global XKW, KW
 
-	entr = jdb.Obj ()
+	entr = jdb.Entr ()
 
 	if not seq:
 	    elemseq = elem.find ('ent_seq')
@@ -216,7 +216,12 @@ def do_entr (elem, seq, xlit=False, xlang=None, corp_dict=None):
 	fmap = defaultdict (lambda:([],[]))
 	do_kanjs (elem.findall('k_ele'), entr, fmap)
 	do_rdngs (elem.findall('r_ele'), entr, fmap)
-	do_freq (fmap, entr)
+	if fmap:
+	    freq_errs = jdb.make_freq_objs (fmap, entr)
+	    for x in freq_errs: 
+		typ, r, k, kw, val = x
+		kwstr = XKW.FREQ[kw].kw + str (val)
+		freq_warn (typ, r, k, kwstr)
 	do_senss (elem.findall('sense'), entr, xlit, xlang)
 	do_senss (elem.findall('trans'), entr, xlit, xlang)
 	do_info  (elem.findall("info"), entr)
@@ -241,11 +246,13 @@ def do_kanjs (elems, entr, fmap):
 		warn ("Duplicate keb text: '%s'" % txt); continue
 	    if not (jdb.jstr_keb (txt)):
 		warn ("keb text '%s' not kanji." % txt)
-	    kanj = jdb.Obj (kanj=ord+1, txt=txt)
+	    kanj = jdb.Kanj (kanj=ord+1, txt=txt)
 	    do_kws (elem.findall('ke_inf'), kanj, '_inf', 'KINF')
 	    for x in elem.findall ('ke_pri'): 
-		q = fmap[x.text][0]
-		if kanj not in q: q.append (kanj)
+		freqtuple = parse_freq (x.text, "ke_pri")
+		if not freqtuple: continue
+		klist = fmap[freqtuple][1]
+		if not jdb.isin (kanj, klist): klist.append (kanj)
 		else: freq_warn ("Duplicate", None, kanj, x.text)
 	    kanjs.append (kanj)
 	if kanjs: entr._kanj = kanjs
@@ -261,11 +268,13 @@ def do_rdngs (elems, entr, fmap):
 		warn ("Duplicate reb text: '%s'" % txt); continue
 	    if not jdb.jstr_reb (txt):
 		warn ("reb text '%s' not kana." % txt)
-	    rdng = jdb.Obj (rdng=ord+1, txt=txt)
+	    rdng = jdb.Rdng (rdng=ord+1, txt=txt)
 	    do_kws (elem.findall('re_inf'), rdng, '_inf', 'RINF')
 	    for x in elem.findall ('re_pri'): 
-		q = fmap[x.text][1]
-		if rdng not in q: q.append (rdng)
+		freqtuple = parse_freq (x.text, "re_pri")
+		if not freqtuple: continue
+		rlist = fmap[freqtuple][0]
+		if not jdb.isin (rdng, rlist): rlist.append (rdng)
 		else: freq_warn ("Duplicate", rdng, None, x.text)
 	    nokanji = elem.find ('re_nokanji')
 	    do_restr (elem.findall('re_restr'), rdng, kanjs, 'restr', nokanji)
@@ -278,7 +287,7 @@ def do_senss (elems, entr, xlit=False, xlang=None):
 	kanjs = getattr (entr, '_kanj', [])
 	senss = [];  last_pos = None
 	for ord, elem in enumerate (elems):
-	    sens = jdb.Obj (sens=ord+1)
+	    sens = jdb.Sens (sens=ord+1)
 	    snotes = elem.find ('s_inf')
 	    if snotes is not None and snotes.text: sens.notes = snotes.text
 
@@ -286,7 +295,7 @@ def do_senss (elems, entr, xlit=False, xlang=None):
 	    if pelems: 
 		last_pos = do_kws (pelems, sens, '_pos', 'POS')
 	    elif last_pos: 
-		sens._pos = [jdb.Obj(kw=x.kw) for x in last_pos]
+		sens._pos = [jdb.Pos(kw=x.kw) for x in last_pos]
 
 	    do_kws   (elem.findall('name_type'), sens, '_misc', 'NAME_TYPE')
 	    do_kws   (elem.findall('misc'),      sens, '_misc', 'MISC')
@@ -325,9 +334,9 @@ def do_gloss (elems, sens, xlit=False, xlang=None):
 		continue
 	    # (entr,sens,gloss,lang,txt)
 	    if txt and (not xlang or lang in xlang):
-	        glosses.append (jdb.Obj (lang=lang, ginf=XKW.GINF['equ'].id, txt=txt))
+	        glosses.append (jdb.Gloss (lang=lang, ginf=XKW.GINF['equ'].id, txt=txt))
 	    if lit:
-	        lits.extend ([jdb.Obj (lang=lang, ginf=XKW.GINF['lit'].id, txt=x) for x in lit])
+	        lits.extend ([jdb.Gloss (lang=lang, ginf=XKW.GINF['lit'].id, txt=x) for x in lit])
 	if glosses or lits:
 	    if not hasattr (sens, '_gloss'): sens._gloss = []
 	    sens._gloss.extend (glosses + lits)
@@ -352,7 +361,7 @@ def do_lsrc (elems, sens):
 			+ ',' if wasei and lstyp else '' \
 			+ ("ls_type" if lstyp else '')
 		warn ("lsource has attribute(s) %s but no text" % attrs)
-	    lsrc.append (jdb.Obj (lang=lang, txt=txt, part=lstyp=='part', wasei=wasei))
+	    lsrc.append (jdb.Lsrc (lang=lang, txt=txt, part=lstyp=='part', wasei=wasei))
 	if lsrc: 
 	    if not hasattr (sens, '_lsrc'): sens._lsrc = []
 	    sens._lsrc.extend (lsrc)
@@ -411,7 +420,7 @@ def do_xref (elems, sens, xtypkw):
 	    rtxt = u"\u30fb".join (rlst) or None
 
 	    if ktxt or rtxt:
-		xrefs.append (jdb.Obj (typ=xtypkw, ktxt=ktxt, rtxt=rtxt, tsens=snum))
+		xrefs.append (jdb.Xrslv (typ=xtypkw, ktxt=ktxt, rtxt=rtxt, tsens=snum))
 	if xrefs: 
 	    for n, x in enumerate (xrefs): x.ord = n + 1
 	    if not hasattr (sens, '_xrslv'): sens._xrslv = []
@@ -423,7 +432,7 @@ def do_hist (elems, entr):
 	for elem in elems:
 	    x = elem.findtext ("upd_date")
 	    dt = datetime.datetime (*([int(z) for z in x.split ('-')] + [0, 0, 0]))
-	    o = jdb.Obj (dt=dt)
+	    o = jdb.Hist (dt=dt)
 	    stat = elem.findtext ("upd_stat")
 	    unap = elem.find ("upd_unap")
 	    notes = elem.findtext ("upd_detl")
@@ -451,7 +460,7 @@ def do_audio (elems, entr_or_rdng):
 		warn ("Missing audio clipid attribute."); continue
 	    try: clipid = int (v.lstrip('c'))
 	    except (ValueError, TypeError): warn ("Invalid audio clipid attribute: %s" % v)
-	    else: snds.append (jdb.Obj (snd=clipid))
+	    else: snds.append (jdb.Snd (snd=clipid))
 	if snds:
 	    if not hasattr (entr_or_rdng, '_snd'): entr_or_rdng._snd = []
 	    entr_or_rdng._snd.extend (snds)
@@ -535,90 +544,6 @@ def do_restr (elems, rdng, kanjs, rtype, nokanji=None):
 	    if kanj.txt not in allowed_kanj:
 		jdb.add_restrobj (rdng, rattr, kanj, kattr, pattr)
 
-def do_freq (fmap, entr):
-	"""
-	Convert the freq information collected in 'fmap' into freq
-	records attached to reading and kanji records in lists 'rdng'
-	and 'kanj',
-	"""
-	  # 'fmap' is a dictionary, keyed by freq text ("ichi1", "gai2",
-	  # etc).  Each value is a 2-tuple of lists.  The first list is
-	  # all the rdng's having that freq, the second is a list of all
-	  # the kanj's having that freq.  (In most cases the length of
-	  # each list will be either 0 or 1).
-
-	frecs = {}
-	for freq, (kanjs, rdngs) in fmap.items():
-	    kw, val = parse_freq (freq, '')
-	    dups = []; repld = []
-	    if not rdngs:
-		for k in kanjs: 
-		    freq_bin (None, k, kw, val, frecs, dups, repld)
-	    elif not kanjs:
-		for r in rdngs: 
-		    freq_bin (r, None, kw, val, frecs, dups, repld)
-	    else:
-		for r,k in crossprod (rdngs, kanjs): 
-		    freq_bin (r, k, kw, val, frecs, dups, repld)
-	    if dups:
-		  # We filter out dup pri's in do_rdng() and do_kanj()
-		  # and thus should never see any here.
-		raise RuntimeError ("Unexpected duplicates in do_freq()")
-	    for r, k, kw, val in repld:
-		freq_warn ("Conflicting", r, k, freq) 
-
-	for (r, k, kw), val in frecs.items():
-	    fo = jdb.Obj (rdng=getattr(r,'rdng',None), kanj=getattr(k,'kanj',None),
-			  kw=kw, value=val)
-	    if r:
-		if not hasattr (r, '_freq'): r._freq = []
-		r._freq.append (fo)
-	    if k:
-		if not hasattr (k, '_freq'): k._freq = []
-		k._freq.append (fo)
-
-	
-def freq_bin (r, k, kw, val, freqs, dups, repld):
-	"""
-	This function takes a freq item (given in parsed form
-	as 'kw', 'val') in the context of a specific reading/kanji
-	pair (given as the rdng and kanj base-1 index numbers in an
-	entry's reading and kanji lists) and puts it into one of
-	three dicts: 'freqs' if the freq item will is selected to
-	go into the database, 'dups' if the freq item in a duplicate
-	of one selected to go into the database, and 'replcd' for 
-	freq items that have the same domain as one going into the
-	database but with a greater value (that is, given two freq
-	items, "nf22", and "nf15", the "nf15" will go into 'freqs'
-	and "nf22" in 'replcd' since they both have the same "nf" 
-	domain and the later's value of "22" is greater than the 
-	former's "15".)
-
-	r -- The 1-based index position of the rdng object this freq
-		item is acccosiated with.
-	k -- The 1-based index position of the kanj object this freq
-		item is acccosiated with.
-	kw -- The id number in table kwfreq of the freq item.
-	val -- The value of the freq item.
-	freqs -- A dict that will receive freq items selected to go
-		into the database.
-	dups -- A dict that will receive freq items that are duplicates
-		of ones selected to go into the database.
-	replcd -- A dict that will receive freq items that are rejected
-		becase they have the same domain but a higher value as
-		one selected to go into the database.
-	"""
-	key = (r, k, kw)
-	if key in freqs:
-	    if val < freqs[key]:
-		repld.append ((r, k, kw, freqs[key]))
-	    elif val > freqs[key]:
-		repld.append ((r, k, kw, val))
-	    else:
-		dups.append ((r, k, kw, val))
-	else:
-	    freqs[key] = val
-
 def parse_freq (fstr, ptype):
 	# Convert a re_pri or ke_pri element string (e.g "nf30") into
 	# numeric (id,value) pair (like 4,30) (4 is the id number of 
@@ -630,18 +555,22 @@ def parse_freq (fstr, ptype):
 
 	global XKW
 	mo = re.match (r'^([a-z]+)(\d+)$', fstr)
-	if not mo: warn ("Invalid %s, '%s'" % (ptype, fstr))
+	if not mo: 
+	    warn ("Invalid %s, '%s'" % (ptype, fstr))
+	    return None
 	kwstr, val = mo.group (1,2)
 	try: kw = XKW.FREQ[kwstr].id
-	except KeyError: warn ("Unrecognised %s, '%s'" % (ptype, fstr))
+	except KeyError: 
+	    warn ("Unrecognised %s, '%s'" % (ptype, fstr))
+	    return None
 	val = int (val)
 	#FIXME -- check for invalid values in 'val'.
 	return kw, val
 
 def freq_warn (warn_type, r, k, kwstr):
 	tmp = []
-	if r: tmp.append ("reading %d" % r.rdng)
-	if k: tmp.append ("kanji %d" % k.kanj)
+	if r: tmp.append ("reading %s" % r.txt)
+	if k: tmp.append ("kanji %s" % k.txt)
 	warn ("%s pri value '%s' in %s" 
 		% (warn_type, kwstr, ', '.join (tmp)))
 
@@ -859,18 +788,18 @@ def parse_sndfile (
 	    elif tag == 'avol':  yield do_vol (elem), 'vol', lineno
 
 def do_vol (elem):
-	return jdb.Obj (id=int(elem.get('id')[1:]),
+	return jdb.Sndvol (id=int(elem.get('id')[1:]),
 			title=elem.findtext('av_title'), loc=elem.findtext('av_loc'), 
 			type=elem.findtext('av_type'), idstr=elem.findtext('av_idstr'),
 			corp=elem.findtext('av_corpus'), notes=elem.findtext('av_notes'))
 
 def do_sel (elem):
-	return jdb.Obj (id=int(elem.get('id')[1:]), vol=int(elem.get('vol')[1:]),
+	return jdb.Sndfile (id=int(elem.get('id')[1:]), vol=int(elem.get('vol')[1:]),
 			title=elem.findtext('as_title'), loc=elem.findtext('as_loc'),
 			type=elem.findtext('as_type'), notes=elem.findtext('as_notes'))
 
 def do_clip (elem):
-	return jdb.Obj (id=int(elem.get('id')[1:]), file=int(elem.get('sel')[1:]),
+	return jdb.Snd (id=int(elem.get('id')[1:]), file=int(elem.get('sel')[1:]),
 			strt=int(elem.findtext('ac_strt')), leng=int(elem.findtext('ac_leng')),
 			trns=elem.findtext('ac_trns'), notes=elem.findtext('ac_notes'))
 

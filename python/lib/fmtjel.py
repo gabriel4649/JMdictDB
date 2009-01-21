@@ -22,6 +22,9 @@ __version__ = ('$Revision$'[11:-2],
 
 import re
 import jdb, fmt
+from collections import defaultdict
+
+MIDDOT = u'\u30FB'
 
 def qtxt (txt):
 	# Enclose txt in quotes if it contains any 
@@ -49,7 +52,7 @@ def kanj (kanj):
 	KW = jdb.KW
 	txt = kanj.txt
 	inf = [KW.KINF[x.kw].kw for x in getattr(kanj,'_inf',[])]
-	freq = [KW.FREQ[x.kw].kw + str(x.value) for x in getattr(kanj,'_freq',[])]
+	freq = jdb.freq2txts (getattr(kanj,'_freq',[]))
 	if inf or freq: txt += '[' + ','.join (inf + freq) + ']'
 	return txt
 
@@ -61,9 +64,9 @@ def rdng (rdng, kanjs):
 	KW = jdb.KW
 	txt = rdng.txt
 	inf = [KW.RINF[x.kw].kw for x in getattr(rdng,'_inf',[])] 
-	freq = [KW.FREQ[x.kw].kw + str(x.value) for x in getattr(rdng,'_freq',[])]
+	freq = jdb.freq2txts (getattr(rdng,'_freq',[]))
 	if inf or freq: txt += '[' + ','.join (inf + freq) + ']'
-	restrtxt = fmt.restrtxts (getattr(rdng,'_restr',[]), 'kanj', kanjs)
+	restrtxt = fmt.restrtxts (getattr(rdng,'_restr',[]), kanjs, '_restr')
 	if restrtxt: txt += '[restr=' + ';'.join(restrtxt) + ']' 
 	return txt
 
@@ -83,11 +86,14 @@ def sens (sens, kanjs, rdngs, nsens):
 	misc = [        KW.MISC[x.kw].kw for x in getattr(sens,'_misc',[])] 
 	pos  = [        KW.POS [x.kw].kw for x in getattr(sens,'_pos', [])] 
 	fld  = ['fld='+ KW.FLD [x.kw].kw for x in getattr(sens,'_fld', [])] 
-	stagk = fmt.restrtxts (getattr(sens,'_stagk',[]), 'kanj', kanjs)
-	stagr = fmt.restrtxts (getattr(sens,'_stagr',[]), 'rdng', rdngs)
+	stagk = fmt.restrtxts (getattr(sens,'_stagk',[]), kanjs, '_stagk')
+	stagr = fmt.restrtxts (getattr(sens,'_stagr',[]), rdngs, '_stagr')
 	_lsrc = [lsrc(x) for x in getattr(sens,'_lsrc',[])]
-	cxrefs = jdb.grp_xrefs (getattr(sens,'_xref',[]))
-	_xref = ['[' + xref (x) + ']' for x in cxrefs]
+
+	_xref =  ['[' + xref (x)  + ']' for x in getattr (sens, '_xref', []) 
+					  if getattr (x, 'SEQ', None) is not False
+					     and getattr (x, '_xsens', None)!=[]]
+	_xrslv = ['[' + xrslv (x) + ']' for x in getattr (sens, '_xrslv', [])]
 
 	kwds  = iif (pos,  '[' + ','.join (pos)  + ']', '')
 	kwds += iif (misc, '[' + ','.join (misc) + ']', '')
@@ -118,16 +124,17 @@ def sens (sens, kanjs, rdngs, nsens):
 	if note: lines.append (note) 
 	lines.extend (gloss)
 	lines.extend (_xref)
+	lines.extend (_xrslv)
 	txt = '\n  '.join (lines)
 	return txt
 
-def xref (xrefs):
+def xref (x):
 	# If only ordinary xrefs are available, the generated text will
-	# be of the form "{id}[n]" where 'id' is the target entry Id and
+	# be of the form "id#[n]" where 'id' is the target entry Id and
 	# 'n' is the target sense number, or a comma separated list of
 	# sense numbers.
 	#
-	# If .TARG is available, the format will be "Q.c/K/R[n]" where
+	# If .TARG is available, the format will be "Qc.K.R[n]" where
 	# 'Q' is the seq number, 'c' is the corpus name, 'K' and 'R' are
 	# the target's
 	# kanji and reading texts (either but not both may be absent),
@@ -142,25 +149,58 @@ def xref (xrefs):
 	# first kanji/reading of the target entry.
 
 	KW = jdb.KW
-	xref = xrefs[0]
-	v = [];  stxt = ''
-	if hasattr (xref, 'xentr') and not hasattr (xref, 'TARG'):
-	    v.append ('{' + str(xref.xentr) + '}')
-	if hasattr (xref, 'xsens'):
-	    stxt = '[' + ','.join ([str(x.xsens) for x in xrefs]) + ']'
-	targ = getattr (xref, 'TARG', None)
-	if targ:
-	    a = getattr (xref, 'kanj', None)
-	    if a: v.append (targ._kanj[a-1].txt)
-	    a = getattr (xref, 'rdng', None)
-	    if a: v.append (targ._rdng[a-1].txt)
-	    if len(targ._sens) == 1 or len(targ._sens) == len(xrefs): 
-		stxt = ''
+
+	#FIXME:
+	corpid = 1; kwsrc = KW.SRC;  txt = []
+	p = getattr (x, 'SEQ', None)
+	if p is False: return None
+	elif p: txt = fmt_xref_seq (x, corpid, kwsrc)
+	else: txt = fmt_xref_entr (x)
+	return txt
+
+
+def fmt_xref_seq (xref, corpid, kwsrc):
+	# Format a group of entries having a common seq number
+	# to a single seq-style JEL xref line.
+	# xrefs -- A list of augmented xref objects whose target 
+	#   entries are assumed to have the same seq number and
+	#   the same set of target senses.
+	KW = jdb.KW
+	corptxt = kwsrc[xref.TARG.src] if xref.TARG.src != corpid else ''
+	numtxt = str(xref.TARG.seq) + corptxt
+	krtxt = fmt_xref_kr (xref)
+	return KW.XREF[xref.typ].kw + '=' + numtxt + MIDDOT + krtxt
+
+def fmt_xref_entr (xref):
+	KW = jdb.KW
+	krtxt = fmt_xref_kr (xref)
+	numtxt = str(xref.xentr) + "#" 
+	return KW.XREF[xref.typ].kw + '=' + numtxt + MIDDOT + krtxt
+
+def fmt_xref_kr (xref):
+	snum_or_slist = getattr (xref, '_xsens', xref.xsens)
+	if snum_or_slist is None: ts = ''
+	elif hasattr (snum_or_slist, '__iter__'):
+	    ts = '[' + ','.join ((str(x) for x in snum_or_slist)) + ']'
+	else: ts = '[%d]' % snum_or_slist
+	t = getattr (xref, 'TARG', None)
+	if t:
+	    kt = (getattr (t, '_kanj', [])[xref.kanj-1]).txt if getattr (xref, 'kanj', None) else ''
+	    rt = (getattr (t, '_rdng', [])[xref.rdng-1]).txt if getattr (xref, 'rdng', None) else ''
 	else:
-	    if hasattr (xref, 'ktxt'): v.append (xref.ktxt)
-	    if hasattr (xref, 'rtxt'): v.append (xref.rtxt)
-	txt = u'\u30FB'.join (v)
-	txt = KW.XREF[xref.typ].kw + '=' + txt + stxt
+	    kt = getattr (xref, 'ktxt', '') or ''
+	    rt = getattr (xref, 'rtxt', '') or ''
+	txt = kt + (MIDDOT if kt and rt else '') + rt + ts
+	return txt
+
+def xrslv (xr):
+	KW = jdb.KW
+	v = []; 
+	ts = getattr (xr, 'tsens', '') or ''
+	if ts: ts  = '[%d]' % ts
+	kt = getattr (xr, 'ktxt', '') or ''
+	rt = getattr (xr, 'rtxt', '') or ''
+	txt = KW.XREF[xr.typ].kw + '=' + kt + (u'\u30FB' if kt and rt else '') + rt + ts
 	return txt
 
 def lsrc (lsrc):
@@ -174,12 +214,12 @@ def lsrc (lsrc):
 	if t: t = '/' + t
 	return 'lsrc=' + lang + t + ':' + (qtxt(lsrc.txt))
 
-def entr (entr):
-	# We assume that the caller has called jmdict::add_xrefsums()
+def entr (entr, nohdr=False):
+	# We assume that the caller has called jelfmt::markup_xrefs()
 	# on entr before calling fmt_entr() (because jel_xref() uses
 	# the info added by add_xrefsums()).
 	sects = []
-	sects.append (fmt.entrhdr (entr))
+	if not nohdr: sects.append (fmt.entrhdr (entr))
 	k = getattr (entr, '_kanj', [])
 	r = getattr (entr, '_rdng', [])
 	s = getattr (entr, '_sens', [])
@@ -189,6 +229,28 @@ def entr (entr):
 	txt = '\n'.join (sects)
 	return txt
 
+def markup_entr_xrefs (cur, entries):
+	all_xrefs = []
+	for e in entries:
+	    for s in e._sens: all_xrefs.extend (s._xref)
+	markto_xrefs (cur, )
+
+def markup_xrefs (cur, xrefs):
+	jdb.add_xsens_lists (xrefs)
+	jdb.mark_seq_xrefs (cur, xrefs)
+
 def iif (c, a, b):
     if c: return a
     return b
+
+def main():
+	cur = jdb.dbOpen ('jmnew')
+	entrs, data = jdb.entrList (cur, [542], ret_tuple=True)
+	jdb.augment_xrefs (cur, data['xref'])
+	jdb.augment_xrefs (cur, data['xref'], rev=1)
+	markup_xrefs (cur, data['xref'])
+	for e in entrs:
+	    txt = entr (e)
+	    print txt
+
+if __name__ == '__main__': main ()

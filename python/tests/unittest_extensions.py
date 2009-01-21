@@ -107,8 +107,7 @@ class EncodedAssertionError (AssertionError):
 	self.encoding = sys.stdout.encoding or 'utf-8'
     def __str__ (self):
 	try: 
-	   if self.message: return self.message.encode(self.encoding)
-	   else: return self.args[0].encode(self.encoding)
+	   return self.args[0].encode(self.encoding)
 	except: return AssertionError.__str__(self)
 
 # Tell the unicode module to use it.
@@ -123,6 +122,13 @@ def runcmd (wkdir, cmdln):
 	stdout, stderr = proc.communicate()
 	if rc != 0: raise RuntimeError (stderr)
 	return stdout, stderr
+
+def readfile_utf8 (fname):
+	f = open (fname)
+	txt = f.read().decode ('utf-8')
+	f.close()
+	if txt[0] == u'\uFEFF': txt = txt[1:]
+	return txt
 
 def mk_temp_dir (in_dir=".", keep=False):
 	dirname = tempfile.mkdtemp ("tmp", dir=in_dir)

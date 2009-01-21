@@ -100,6 +100,11 @@ def jdecode (jstr):
 # [4, 5, [[...], 6]]
 #
 
+Serializable_classes = (
+  'Obj', 'DbRow', 
+  'Chr', 'Cinf', 'Dial', 'Entr', 'Entrsnd', 'Fld', 'Freq', 'Gloss', 'Hist',
+  'Kanj', 'Kinf', 'Kreslv', 'Lsrc', 'Misc', 'Pos', 'Rdng', 'Restr', 'Rinf',
+  'Rdngsnd', 'Sens', 'Stagk', 'Stagr', 'Xref', 'Xrslv',)
 
 def obj2struc (o, seen=None):
 
@@ -128,7 +133,7 @@ def obj2struc (o, seen=None):
 	idn = id(o); typ = type(o).__name__
 	if typ == 'instance': typ = o.__class__.__name__
 
-	if typ in ('list', 'tuple', 'Obj', 'DbRow', 'datetime'):
+	if typ in (('list', 'tuple', 'datetime') + Serializable_classes):
 
 	      # These are complex types not directly representable
 	      # in JSON, or which may have references to them.
@@ -296,9 +301,9 @@ def struc2obj (desc, seen=None):
 		      # values after.
 		    o = tuple([struc2obj(v,seen) for v in val])
 		    if idn: seen[idn] = o
-		elif typ in ('Obj', 'DbRow'):
-		    if typ == 'Obj': o = jdb.Obj()
-		    elif typ == 'DbRow': o = jdb.DbRow()
+		elif typ in Serializable_classes:
+		    cls = getattr (jdb, typ)
+		    o = cls()
 		    if idn: seen[idn] = o
 		    for a,v in val.items():
 			setattr (o, a, struc2obj(v,seen))

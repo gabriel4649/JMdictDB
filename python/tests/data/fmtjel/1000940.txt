@@ -1,0 +1,6 @@
+いらっしゃる[ichi1]
+[1][v5aru,vi][hon]
+  [note="irregular forms such as いらした, etc. in colloquial Japanese; sometimes written 居らっしゃる"]
+  to come; to go; to be (somewhere)
+[2][aux-v]
+  (after a -te form, or the particle "de") is (doing); are (doing)

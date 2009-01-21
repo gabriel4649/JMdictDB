@@ -207,6 +207,9 @@ def submission (dbh, sess, svc, entr, disp, errs):
 	if getattr (entr, 'dfrm', None) and entr.stat==KW.STAT['D'].id:
 	    errs.append ("Delete requested but entry is new (has no 'dfrm' value.)")
 
+	if disp == 'a' and has_xrslv (entr):
+	    errs.append ("Can't approve because entry has unresolved xrefs")
+
 	if not errs:
 	      # Entr contains the hist record generate by the edconf.py
 	      # but it is not trustworthy since it could be modified or
@@ -348,6 +351,11 @@ def delentr (dbh, id):
 
 	sql = "DELETE FROM entr WHERE id=%s";
 	dbh.execute (sql, (id,))
+
+def has_xrslv (entr):
+	for s in entr._sens:
+	    if getattr (s, '_xrslv', None): return True
+	return False
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()

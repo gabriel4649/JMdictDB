@@ -112,8 +112,7 @@ def TALdescrs (kwtyp,parent,attr,sep=','):
 
 @add2builtins
 def TALfreqs (parent,sep=','):
-	f = [KW.FREQ[x.kw].kw + str(x.value) for x in getattr(parent,'_freq')]
-	f = jdb.rmdups (f)[0]
+	f = jdb.freq2txts(getattr(parent,'_freq'))
 	return sep.join (f)
 
 @add2builtins

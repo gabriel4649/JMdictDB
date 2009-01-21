@@ -4,10 +4,13 @@
 # To make any changes to the jelparse code, edit jelparse.y.  Then
 # run 'make' in the lib dir to regenerate jelparse.py from jelparse.y.
 #---------------------------------------------------------------------
+#----- WARNING -------------------------------------------------------
+# These tests rely on the correct functioning of the fmtjel.py module.
+#---------------------------------------------------------------------
 
 import sys, unittest, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')
-import jdb, jellex, jelparse, fmtjel
+import jdb, jellex, jelparse, fmtjel, unittest_extensions
 
 __unittest = 1
 cur = None
@@ -17,15 +20,15 @@ def main():
 	unittest.main()
 
 def globalSetup ():
-	global cur, KW, lexer, parser
+	global Cur, KW, Lexer, Parser
 	try:
 	    import dbauth; kwargs = dbauth.auth
 	except ImportError: kwargs = {}
 	kwargs['autocommit'] = True
-	cur = jdb.dbOpen ('jmdict', **kwargs)
+	Cur = jdb.dbOpen ('jmdict', **kwargs)
 	KW = jdb.KW
-        lexer, tokens = jellex.create_lexer ()
-        parser = jelparse.create_parser (tokens)
+        Lexer, tokens = jellex.create_lexer ()
+        Parser = jelparse.create_parser (tokens)
 
 class Roundtrip (unittest.TestCase):
 
@@ -37,7 +40,7 @@ class Roundtrip (unittest.TestCase):
     # applied as a result.
 
     def setUp (self):
-	try: lexer
+	try: Lexer
 	except NameError: globalSetup()
     def test1000290(self): self.check(1000290)	# simple, 1H1S1Ts1G
     def test1000490(self): self.check(1000490)	# simple, 1H1K1S1Ts1G
@@ -90,10 +93,19 @@ class Roundtrip (unittest.TestCase):
     #	    mid-dot used to separate K.R pairs.
 
     def check (self, seq):
-	global cur, lexer, parser
-	jeltxt, jeltxt2 = jelparse._roundtrip (cur, lexer, parser, seq, 1)
-	self.assert_ (3 < len (jeltxt))
-	msg = "\nA:\n%s\nB:\n%s" % (jeltxt, jeltxt2)
+	global Cur, Lexer, Parser
+	jeltxt = unittest_extensions.readfile_utf8 ("data/jelparse/%s.txt" % seq)
+        jellex.lexreset (Lexer, jeltxt)
+        entr = Parser.parse (jeltxt, lexer=Lexer)
+	entr.src = 1
+        jelparse.resolv_xrefs (Cur, entr)
+	for s in entr._sens: jdb.augment_xrefs (Cur, getattr (s, '_xref', []))
+	for s in entr._sens: jdb.add_xsens_lists (getattr (s, '_xref', []))
+	for s in entr._sens: jdb.mark_seq_xrefs (Cur, getattr (s, '_xref', []))
+        jeltxt2 = fmtjel.entr (entr, nohdr=True)
+	self.assert_ (8 < len (jeltxt))	    # Sanity check for non-empty entry.
+	self.assert_ (8 < len (jeltxt2))    # Sanity check for non-empty entry.
+	msg = "\nExpected:\n%s\nGot:\n%s" % (jeltxt, jeltxt2)
 	self.assertEqual (jeltxt, jeltxt2, msg)
 
 class Lookuptag (unittest.TestCase):
@@ -121,13 +133,10 @@ class Lookuptag (unittest.TestCase):
     def test014(self): self.assertEqual ([['MISC',19]], jelparse.lookup_tag('pol'))
     def test015(self): self.assertEqual ([['POS',44]], jelparse.lookup_tag('vi'))
     def test016(self): self.assertEqual ([], jelparse.lookup_tag('nf',['RINF']))
-    def test017(self): self.assertEqual ([['RESTR',1]], jelparse.lookup_tag('nokanji',['RESTR']))
     def test018(self): self.assertEqual ([['KINF',4],['RINF',3]], jelparse.lookup_tag('ik'))
 
-      # Should following raise an exception?
-    def test101(self): self.assertEqual ([],  jelparse.lookup_tag('n',['POSS']))
+    def test101(self): self.assertRaises (ValueError, jelparse.lookup_tag, 'n',['POSS'])
       # Is the following desired behavior? Or should value for 'n' in 'POS' be returned?
-    def test102(self): self.assertEqual ([],  jelparse.lookup_tag('n',['POS','POSS']))
-
+    def test102(self): self.assertRaises (ValueError, jelparse.lookup_tag, 'n',['POS','POSS'])
 
 if __name__ == '__main__': main()

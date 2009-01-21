@@ -153,6 +153,18 @@
 		    </span>
 		  </td>
 		</tr>
+	      <tr tal:condition="s/_xrslv">
+		<td colspan="2">Unresolved cross references:</td>   
+	        </tr>
+	      <tr tal:condition="s/_xrslv" tal:repeat="x s/_xrslv">
+		<td>&nbsp;</td>
+		<td>
+		  <span tal:replace="python:TALabbr('XREF',x.typ)">xrslv-type</span>:
+		  <span tal:condition="x/ktxt" tal:replace="x/ktxt">xrslv-kanj</span>
+		  <span tal:condition="python:TALattrand(x,'ktxt','rtxt')" tal:omit-tag="">・</span>
+		  <span tal:condition="x/rtxt" tal:replace="x/rtxt">xrslv-rdng</span>
+		  </td>
+		</tr>
 	      <tr tal:condition="s/_xrer">
 		<td colspan="2">Reverse references:</td>
 		</tr>

@@ -105,18 +105,14 @@ def sens (sens, kanjs, rdngs, nsens):
 	note  = ''
 	if getattr(sens,'notes',None): note = '[note=' + qtxt(sens.notes) + ']'
 
-	lastginf = -1;  gloss = []
+	lastginf = -1;  gloss = [];  gtxt = []
 	for g in getattr (sens, '_gloss', []):
-	    ginf = g.ginf;  t = g.txt
-	    if ginf != 1:
-		esctxt = qtxt (g.txt)
-		ginfkw = KW.GINF[ginf].kw
-		gloss.append ('[%s=%s]' % (ginfkw, esctxt))
-	    else:
-		t = escgloss (g.txt)
-		if lastginf != 1: gloss.append (t)
-		else: gloss[-1] += '; ' + t
-	    lastginf = ginf
+	    kws = []
+	    if g.ginf != KW.GINF['equ'].id: kws.append (KW.GINF[g.ginf].kw)
+	    if g.lang != KW.LANG['eng'].id: kws.append (KW.LANG[g.lang].kw)
+	    kwstr = ('\n  [%s] ' % ','.join(kws)) if kws else ''
+	    gtxt.append ('%s%s' % (kwstr, escgloss (g.txt)))
+	gloss = ['; '.join (gtxt)]
 	lines = []
 	lines.append ("[%d]%s%s" % (nsens,kwds,dial))
 	if restr: lines.append (restr) 

@@ -144,7 +144,7 @@ def p_glosses_2(p):
 
 def p_gloss_1(p):
     '''gloss : GTEXT'''
-    p[0] = [p[1], None]
+    p[0] = [p[1], []]
 
 def p_gloss_2(p):
     '''gloss : GTEXT taglists'''
@@ -200,7 +200,7 @@ def p_tagitem_3(p):
 def p_tagitem_4(p):
     '''tagitem : TEXT EQL TEXT'''
     KW = jdb.KW
-    if p[1] in ["note","lsrc","restr"]+[x.kw for x in KW.recs('GINF')]:
+    if p[1] in ["note","lsrc","restr"]:
         if p[1] == "restr":
             if p[3] != "nokanji":
                 xerror (p, "Bad restr value (expected \"nokanji\"): '%s'" % p[3])
@@ -217,7 +217,7 @@ def p_tagitem_4(p):
 def p_tagitem_5(p):
     '''tagitem : TEXT EQL QTEXT'''
     KW = jdb.KW 
-    if p[1] in ["note","lsrc"]+[x.kw for x in KW.recs('GINF')]:
+    if p[1] in ["note","lsrc"]:
         p[0] = [p[1], jellex.qcleanup (p[3][1:-1]), 1, None] 
     else: xerror (p, "Unknown keyword: '%s" % p[1])
 
@@ -235,13 +235,6 @@ def p_tagitem_7(p):
     lsrc_flags = None; lang = None
     if p[1] in ["lsrc"]:
         la = KW.LANG.get(p[3])
-        if not la: xerror (p, "Unrecognised language '%s'" % p[3])
-        lang = la.id
-    elif p[1] in [x.kw for x in KW.recs('GINF')]:
-        la = KW.LANG.get(p[3])
-          # FIXME: following works only because there are no 
-          # languages with two-letter code 'wp' or 'pw'.  Same
-          # contruct also used in rule below.
         if not la:
             if p[3] not in ('w','p','wp','pw'):
                 xerror (p, "Unrecognised language '%s'" % p[3])
@@ -400,7 +393,7 @@ def lookup_tag (tag, typs=None):
         KW = jdb.KW 
         matched = []
         if not typs:
-            typs = [x for x in KW.attrs() if x not in ('LANG','GINF')]
+            typs = [x for x in KW.attrs()]
         if isinstance (typs, (str, unicode)): typs = [typs]
         for typ in typs:
             typ = typ.upper(); val = None
@@ -437,10 +430,11 @@ def bld_sens (sens, glosses):
         KW = jdb.KW 
         errs = []; sens._gloss = []
         for gtxt, tags in glosses:
-            gloss = jdb.Gloss (txt=jellex.gcleanup(gtxt),
-                         lang=KW.LANG['eng'].id, ginf=KW.GINF['equ'].id)
+            gloss = jdb.Gloss (txt=jellex.gcleanup(gtxt))
             sens._gloss.append (gloss)
             if tags: errs.extend (sens_tags (sens, gloss, tags))
+            if gloss.ginf is None: gloss.ginf = KW.GINF['equ'].id
+            if gloss.lang is None: gloss.lang = KW.LANG['eng'].id
         return "\n".join (errs)
 
 def sens_tags (sens, gloss, tags):
@@ -469,13 +463,10 @@ def sens_tags (sens, gloss, tags):
             if typ is None:
                 candidates = lookup_tag (t[0], ('GINF','LANG'))
                 if candidates: 
-                    for candidate in candidates:
-                        z = candidate[0]; v = candidate[1]
-                        if z == 'GINF':
-                            typ = z;  t = v
-                        elif z == 'LANG' and not typ:
-                            typ = z;  t = v
-                        else: assert False, "Internal program error"
+                      # FIXME: assume kw that is iterpretable as both a GINF
+                      #   kw and a LANG kw (e.g. "lit") is a GINF keyword.
+                    candidate = candidates[0] 
+                    typ, t = candidate
             if typ is None:
                 errs.append ("Unknown tag '%r'" % t)
                 continue
@@ -488,6 +479,7 @@ def sens_tags (sens, gloss, tags):
                 elif typ == 'FLD': o = Fld(kw=t[0])
                 elif typ == 'DIAL': o = Dial(kw=t[0])
                 append (sens, "_"+typ.lower(), o)
+
             elif typ == 'RESTR':
                 # We can't create real @{_stagk} or @{_stagr} lists here
                 # because the readings and kanji we are given by the user
@@ -515,10 +507,12 @@ def sens_tags (sens, gloss, tags):
                 append (sens, '_lsrc', 
                         jdb.Lsrc(txt=t[0], lang=(t[1] or lang_en), 
                                 part=partial, wasei=wasei))
+
             elif typ == 'note': 
                 if getattr (sens, 'notes', None): 
                     errs.append ("Only one sense note allowed")
                 sens.notes = t[0]
+
             elif typ in ('see', 'ant'):
                 for xitem in t[0]:
                     kw = KW.XREF[typ].id
@@ -526,19 +520,18 @@ def sens_tags (sens, gloss, tags):
                     append (sens, '_XREF', xitem)
 
             elif typ == 'GINF':
-                assert len(t)==1, "invalid length"
-                assert type(t[0])==int, "Non-int kw"
-                if getattr (gloss, ginf, None): 
+                assert isinstance(t,int)
+                if getattr (gloss, 'ginf', None): 
                     errs.append ( 
-                        "Warning, duplicate GINF tag '%s' ignored\n" % KW.GINF[t[0]].kw)
-                else: gloss.ginf = t[0]
+                        "Warning, duplicate GINF tag '%s' ignored\n" % KW.GINF[t].kw)
+                else: gloss.ginf = t
+
             elif typ == 'LANG': 
-                assert type(t[0])==int, "Non-int kw"
-                assert len(t)==1, "invalid length"
-                if getattr (gloss, lang, None): 
+                assert isinstance(t,int)
+                if getattr (gloss, 'lang', None): 
                     errs.append ( 
-                        "Warning, duplicate LANG tag '%s' ignored\n" % KW.LANG[t[0]].kw)
-                else: gloss.lang = t[0]
+                        "Warning, duplicate LANG tag '%s' ignored\n" % KW.LANG[t].kw)
+                else: gloss.lang = t
 
             elif typ: 
                 errs.append ("Cannot use '%s' tag in a sense" % typ)

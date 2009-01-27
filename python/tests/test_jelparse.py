@@ -86,7 +86,8 @@ class Roundtrip (unittest.TestCase):
     #3 def test2038530(self): self.check(2038530)	# dotted keb w dotted restr.
     def test2107800(self): self.check(2107800)	# double-dotted reb.
     #2 def test2159530(self): self.check(2159530)	# wide ascii kanj w dot and restr.
-    def test1106120(self): self.check(1106120)	# Embedded semicolon in gloss.
+    def test1106120(self): self.check(1106120)	# embedded semicolon in gloss.
+    def test1329750(self): self.check(1329750)	# literal gloss.
 
     #1 -- Error due to dotted K.R pair in stagk.
     #2 -- Fails due to xref not found because of K/R misclassification.
@@ -98,19 +99,23 @@ class Roundtrip (unittest.TestCase):
 
     def check (self, seq):
 	global Cur, Lexer, Parser
-	jeltxt = unittest_extensions.readfile_utf8 ("data/jelparse/%s.txt" % seq)
-        jellex.lexreset (Lexer, jeltxt)
-        entr = Parser.parse (jeltxt, lexer=Lexer)
+	intxt = unittest_extensions.readfile_utf8 ("data/jelparse/%s.txt" % seq)
+	try:
+	    exptxt = unittest_extensions.readfile_utf8 ("data/jelparse/%s.exp" % seq)
+	except IOError:
+	    exptxt = intxt
+        jellex.lexreset (Lexer, intxt)
+	#pdb.set_trace()
+        entr = Parser.parse (intxt, lexer=Lexer)
 	entr.src = 1
         jelparse.resolv_xrefs (Cur, entr)
 	for s in entr._sens: jdb.augment_xrefs (Cur, getattr (s, '_xref', []))
 	for s in entr._sens: jdb.add_xsens_lists (getattr (s, '_xref', []))
 	for s in entr._sens: jdb.mark_seq_xrefs (Cur, getattr (s, '_xref', []))
-        jeltxt2 = fmtjel.entr (entr, nohdr=True)
-	self.assert_ (8 < len (jeltxt))	    # Sanity check for non-empty entry.
-	self.assert_ (8 < len (jeltxt2))    # Sanity check for non-empty entry.
-	msg = "\nExpected:\n%s\nGot:\n%s" % (jeltxt, jeltxt2)
-	self.assertEqual (jeltxt, jeltxt2, msg)
+        outtxt = fmtjel.entr (entr, nohdr=True)
+	self.assert_ (8 <= len (outtxt))    # Sanity check for non-empty entry.
+	msg = "\nExpected:\n%s\nGot:\n%s" % (exptxt, outtxt)
+	self.assertEqual (intxt, exptxt, msg)
 
 class Lookuptag (unittest.TestCase):
 
@@ -130,11 +135,11 @@ class Lookuptag (unittest.TestCase):
     def test007(self): self.assertEqual ([['FREQ',5,12]], jelparse.lookup_tag('nf12',['FREQ']))
     def test008(self): self.assertEqual ([['FREQ',5,12]], jelparse.lookup_tag('nf12'))
     def test009(self): self.assertEqual ([], jelparse.lookup_tag('nf12',['POS']))
-    def test010(self): self.assertEqual ([], jelparse.lookup_tag('eng'))
+    def test010(self): self.assertEqual ([['LANG', 1]], jelparse.lookup_tag('eng'))
     def test011(self): self.assertEqual ([['LANG',1]], jelparse.lookup_tag('eng',['LANG']))
     def test012(self): self.assertEqual ([['LANG',346]], jelparse.lookup_tag('pol',['LANG']))
     def test013(self): self.assertEqual ([['MISC',19]], jelparse.lookup_tag('pol',['MISC']))
-    def test014(self): self.assertEqual ([['MISC',19]], jelparse.lookup_tag('pol'))
+    def test014(self): self.assertEqual ([['LANG', 346], ['MISC', 19]], jelparse.lookup_tag('pol'))
     def test015(self): self.assertEqual ([['POS',44]], jelparse.lookup_tag('vi'))
     def test016(self): self.assertEqual ([], jelparse.lookup_tag('nf',['RINF']))
     def test018(self): self.assertEqual ([['KINF',4],['RINF',3]], jelparse.lookup_tag('ik'))

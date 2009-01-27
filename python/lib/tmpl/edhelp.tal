@@ -68,7 +68,7 @@
       </li><li>Freq tags are only processed when submitted by registered editors.
       If you are not registered, you should should note in the Comments section 
       any freq tags you believe should be applied.
-      <span class="caution">Not implemented yet.</span>
+      <span class="caution">Registration requirement not implemented yet.</span>
       </li></ul>
       Example: 缶 [ateji,ichi1,news1][nf6] ； 罐 [ateji,oK ]
       </dd>
@@ -92,7 +92,7 @@
       </li><li>Freq tags are only processed when submitted by registered editors.  
       If you are not registered, you should should note in the Comments section 
       any freq tags you believe should be applied. 
-      <span class="caution">Not implemented yet.</span>
+      <span class="caution">Registration requirement not implemented yet.</span>
       </li><li>Use a restr tag to indicate when a reading is only used
       with a subset of the kanji listed in the Kanji box.
       </li><li>If multiple kanji texts are used in a restr tag, separate them 
@@ -111,16 +111,22 @@
       of a new sense.  When the entry is added to the database, senses
       will be numbered from 1 in the order they occured in the Sense text box,
       regardless of the actual sense numbers used. 
-      </li><li>Following the sense number are any number of glosses and
-      sense tags, which may be freely intermixed.
-      </li><li>All glosses but the last must be followed by a semicolon.
+      </li><li>Following the sense number are any number of sense tags, glosses
+      and gloss tags, which may be freely intermixed.
+      </li><li>Multiple glosses in a sense are separated by semicolons.
       Glosses do not need to be enclosed in quotes. even when they contain
-      space characters.  
+      space characters.  Gloss tags (see below) are considered part of the 
+      gloss.  Example: <br/>
+	This is gloss 1 [lit][eng]; [fig] This is gloss 2; This is gloss 3<br/>
       </li><li>If a gloss contains left bracket ([) or semicolon (;) characters,
       those characters must be escaped by preceeding them with a backlslash (\).
+      Example: <br/>
+	This is a single gloss\; even though it contains a semicolon
       </li><li>Sense tags are enclosed in square brackets.  Multiple tags may
-      occur in within a single pair of brackets, separated by commas.
-      </li><li>Tags that can be used in the Sense box are:
+      occur in within a single pair of brackets, separated by commas.  Sense
+      tag apply to the entire sense, no matter where they appear textully in
+      the sense.
+      </li><li>Sense tags are:
 	<ul><li>ant -- An antonym cross-reference (<a href="#syn_xref">syntax</a>)
 	</li><li>dial -- Dialect (<a href="#syn_dial">syntax</a>, <a href="#kw_dial">abbrs</a>)
 	</li><li>expl -- Explanatory translation (<a href="#syn_expl">syntax</a>)
@@ -134,18 +140,34 @@
 	</li><li>restr -- Reading and kanji restrictions (<a href="#syn_restr">syntax</a>)
 	</li><li>see -- A "see also" cross reference (<a href="#syn_xref">syntax</a>)
 	</li></ul>
-      </li><li>Line breaks are not significant -- senses do not
+      </li><li>The syntax of gloss tags is the same as for sense tags but
+      gloss tags apply only to the gloss they are adjacent to.  They may
+      occur before or after the gloss they apply to.
+      </li><li>Gloss tags are:
+	<ul><li>equ -- Equivalent translation (<a href="#syn_equ">syntax</a>).
+	   This is the default if no other translation tag is given.
+	</li><li>expl -- Explanatory translation (<a href="#syn_expl">syntax</a>)
+	</li><li>fig -- Figurative translation (<a href="#syn_fig">syntax</a>)
+	</li><li>lit -- Literal translation (<a href="#syn_lit">syntax</a>)
+	</li><li>Language -- Any of the three-letter language codes from 
+	  ISO-639-2.  This tag indicate the language of the associated gloss.
+	  If not given, the default is "eng" (english).
+	</li></ul>
+      </li><li>Line breaks are not significant: senses do not 
       have to start on new lines, and glosses and tags may extend over
       several lines.
-      </li><li>Sense tag values are not propagated to following senses.  If
-      sense [2] is a noun, you must explicity say so, even though sense [1]
-      was a noun.
+      </li><li>Sense tag values, and specifical part-of-speech tags,
+      are not propagated to following senses.  If sense [2] is a noun,
+      you must explicity say so, even though sense [1] was a noun.
       </li></ul>
       Examples:<br/>
 	[1][n,vs] cherry blossom viewing; flower viewing <br/>
       <br/>
+	<i>Produces results identical to the preceeding example:</i> <br/>
+	[1] cherry blossom viewing [vs]; flower viewing [n] <br/>
+      <br/>
 	[1][exp] anyone can make a mistake <br/>
-	 &nbsp;[lit="even monkeys fall from trees"] <br/>
+	 &nbsp;[lit] even monkeys fall from trees <br/>
       <br/>
 	[1][pn,adj-no][uk,col] <br/>
 	 &nbsp;that person (guy, fellow) <br/>
@@ -154,18 +176,13 @@
 	[1][int,col] Go for it (kiddy talk) <br/>
 	[2] Keep at it <br/>
 	 &nbsp;[see=頑張って] <br/>
-      <br/>
 	[1][n] [note="possibly from 八九三"] <br/>
 	 &nbsp; professional gambler or ruffian; <br/>
 	 &nbsp; yakuza (member) <br/>
- 
- 
-
-
- 
-
-
-      </dd>
+      <br/>
+        [1][exp] welcome; [fre] bienvenue! <br/>
+	  [note="greeting used in shops, etc."]<br/>
+      <br/>
 
     <dt><a name="delete"></a>Delete</dt>
     <dd>Click this checkbox if you wish the entire entry to be deleted.
@@ -192,7 +209,7 @@
     <dt><a name="email"></a>Email</dt>
     <dd>Your email address.  Required if you want email notification
     of actions taken that affect your submission. 
-    <span class="caution">Not implemented yet.</span></dd>
+    <span class="caution">Email notification not implemented yet.</span></dd>
 
     <dt><a name="action"></a>Action</dt>
     <dd>This dropdown box is only available only to logged-in editors.
@@ -233,15 +250,29 @@
         </tr>
 
       <tr>
+        <td><a name="syn_equ"/>equ</td>
+        <td>Equivalent translation</td>
+        <td>Sense (applies to gloss)</td>
+        <td>
+	  [equ] <span style="font-style: italic;">the
+	  equivalent text</span>...<br/>
+	  (1) Since "equ" is the default translation type for 
+	  glosses, it will rarely need to be specified explicitly. <br/>
+	  (2) The tag can placed at either the beginning or end
+	  of the gloss text.
+	  </td>
+        <td>&nbsp;</td>
+	</tr>
+
+      <tr>
         <td><a name="syn_expl"/>expl</td>
         <td>Explanatory translation</td>
-        <td>Sense</td>
+        <td>Sense (applies to gloss)</td>
         <td>
-	  [expl="<span style="font-style: italic;">the
-	  explanatory text</span>..."]<br/>
-	  (1) The text must be enclosed in quotes (") if it contains
-	  spaces or commas.  Since the text will generally
-	  be a sentence, quotes will almost always be required.
+	  [expl] <span style="font-style: italic;">the
+	  explanatory text</span>...<br/>
+	  (1) The tag can placed at either the beginning or end
+	  of the gloss text.
 	  </td>
         <td>&nbsp;</td>
 	</tr>
@@ -249,12 +280,12 @@
       <tr>
         <td><a name="syn_fig"/>fig</td>
         <td>Figurative translation</td>
-        <td>Sense</td>
+        <td>Sense (applies to gloss)</td>
         <td>
-	  [fig="<span style="font-style: italic;">the
-	  figurative text</span>..."]<br/>
-	  (1) The text must be enclosed in quotes (") if it contains
-	  spaces or commas.  Otherwise quotes are not needed.
+	  [fig] <span style="font-style: italic;">the
+	  figurative text</span>...<br/>
+	  (1) The tag can placed at either the beginning or end
+	  of the gloss text.
 	  </td>
         <td>&nbsp;</td>
 	</tr>
@@ -266,7 +297,7 @@
         <td>
 	  [fld=<span style="font-style: italic;"><a href="#kw_fld">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_fld">kw</a></span>]</td>
-        <td>[food] [fld=mil]</td>
+        <td>[food]<br/>[fld=mil]</td>
 	</tr>
 
       <tr>
@@ -276,7 +307,7 @@
         <td>
 	  [freq=<span style="font-style: italic;"><a href="#kw_freq">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_freq">kw</a></span>]</td>
-        <td>[ichi1] [freq=ichi1] [news1,nf8]</td>
+        <td>[ichi1]<br/>[freq=ichi1]<br/>[news1,nf8]</td>
       </tr>
 
       <tr>
@@ -296,9 +327,12 @@
 	  escaped with a backslash character (\).<br/>
 	  (5) Glosses and sense tags may be freely intermixed in a sense.
 	  Sense tags always apply to the whole sense, no matter where
-	  they occur.</td>
+	  they occur.<br/>
+	  (6) Gloss tags may be placed either before or after the gloss
+	  they apply to.</td>
         <td>[1] house (one's own); one's household; one's family<br/>
-          [1] Okinawan traditional three-stringed instrument\; precursor to the shamisen</td>
+          [1] Okinawan traditional three-stringed instrument\; precursor to the shamisen<br/>
+	  [1] welcome; [fre] bienvenue! </td>
         </tr>
 
       <tr>
@@ -308,20 +342,37 @@
         <td>
 	  [kinf=<span style="font-style: italic;"><a href="#kw_kinf">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_kinf">kw</a></span>]</td>
-        <td>[ateji] [kinf=ik]</td>
+        <td>[ateji]<br/>[kinf=ik]</td>
+	</tr>
+
+      <tr>
+        <td><a name="syn_lang"></a>lit</td>
+        <td>Language</td>
+        <td>Sense (applies to gloss)</td>
+        <td>
+	  [xxx] <span style="font-style: italic;">gloss
+	  text...</span>]<br/>
+	  (1) Specifies the language of the associated gloss.
+	  "xxx" is a three-letter code from ISO-639-2. <br/>
+	  See <a href="#kw_lang">language keywords</a> for a full list.
+	  (2) The tag can placed at either the beginning or end
+	  of the gloss text. <br/>
+	  (3) If not given, default is "eng" (english).
+	  </td>
+        <td>[eng] welcome!; [fre] bienvenue! </td>
 	</tr>
 
       <tr>
         <td><a name="syn_lit"></a>lit</td>
-        <td>Literal translation </td>
-        <td>Sense</td>
+        <td>Literal translation</td>
+        <td>Sense (applies to gloss)</td>
         <td>
-	  [lit="<span style="font-style: italic;">the
-	  literal text..."</span>]<br/>
-	  (1) The text must be enclosed in quotes (") if it contains
-	  spaces or commas.  Otherwise quotes are not needed.
+	  [lit] <span style="font-style: italic;">the
+	  literal text...</span>]<br/>
+	  (1) The tag can placed at either the beginning or end
+	  of the gloss text.
 	  </td>
-        <td>[lit="even monkeys fall from trees"]</td>
+        <td>[lit] even monkeys fall from trees</td>
 	</tr>
 
       <tr>
@@ -329,10 +380,12 @@
         <td>Source language and word.</td>
         <td>Sense</td>
         <td>
-	  [lsrc=<span style="font-style: italic;"><a href="#kw_lang">lang</a></span>:]<br/>
+	  [lsrc=<span style="font-style: italic;"><a href="#kw_lang">xxx</a></span>:]<br/>
 	  [lsrc=<span style="font-style: italic;">text</span>]<br/>
-	  lsrc=<span style="font-style: italic;"><a href="#kw_lang">lang</a></span><span style="font-style: italic;"></span>:<span style="font-style: italic;">text</span>]<br/>
-	  (1) The text must be enclosed in quotes (") if it contains
+	  lsrc=<span style="font-style: italic;"><a href="#kw_lang">xxx</a></span><span style="font-style: italic;"></span>:<span style="font-style: italic;">text</span>]<br/>
+	  (1) "xxx" is a three-letter code from ISO-639-2. <br/>
+	  See <a href="#kw_lang">language keywords</a> for a full list. <br/>
+	  (2) The text must be enclosed in quotes (") if it contains
 	  spaces or commas.  Otherwise quotes are not needed.
 	  </td>
         <td>[lsrc=por:]<br/>[lsrc=ger:Arbeit]<br/>[lsrc=eng:"eye mate"]</td>
@@ -345,7 +398,7 @@
         <td>
 	  [misc=<span style="font-style: italic;"><a href="#kw_misc">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_misc">kw</a></span>]</td>
-        <td>[sl,derog] [misc=uk]</td>
+        <td>[sl,derog]<br/>[misc=uk]</td>
 	</tr>
 
       <tr>
@@ -368,7 +421,7 @@
         <td>
 	  [pos=<span style="font-style: italic;"><a href="#kw_pos">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_pos">kw</a></span>]</td>
-        <td>[n,vs] [pos=n,pos=adj-na]</td>
+        <td>[n,vs]<br/>[pos=n,pos=adj-na]</td>
 	</tr>
 
       <tr>
@@ -378,7 +431,7 @@
         <td>
 	  [rinf=<span style="font-style: italic;"><a href="#kw_rinf">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_rinf">kw</a></span>]</td>
-        <td>[ok] [rinf=ik]</td>
+        <td>[ok]<br/>[rinf=ik]</td>
 	</tr>
 
       <tr>
@@ -427,7 +480,7 @@
 	    identifies the target entry.<br/>
 	  (4) If SEQ is given, KK and RR are optional and if given will be
 	    used when displaying the xref.  If KK and/or RR are not given, a 
-	    suitable KK/RR pair for display will be selected automatcally.
+	    suitable KK/RR pair for display will be selected automatically.
 	    <br/>
 	  (5) sense-num is optional if the target word has only one sense.
 	    Otherwise, it must be given.  Multiple sense numbers can be 

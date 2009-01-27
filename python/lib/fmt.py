@@ -133,11 +133,11 @@ def sens (s, kanj, rdng, n=None):
 
 def gloss (g, n=None):
 	KW = jdb.KW
-	lang = KW.LANG[g.lang].kw
-	if lang == 'eng': lang = ""
-	if lang: lang = "%s: " % lang
-	ginf = '' if g.ginf == 1 else '[%s]' % KW.GINF[g.ginf].kw
-	fmt = "  %d. %s%s%s" % (getattr (g, 'gloss', n) ,ginf, lang, g.txt)
+	kws = []
+	if g.ginf != KW.GINF['equ'].id: kws.append (KW.GINF[g.ginf].kw)
+	if g.lang != KW.LANG['eng'].id: kws.append (KW.LANG[g.lang].kw)
+	kwstr = ('[%s] ' % ','.join(kws)) if kws else ''
+	fmt = "  %d. %s%s" % (getattr (g, 'gloss', n), kwstr, g.txt)
 	return fmt
 
 def lsrc (x):

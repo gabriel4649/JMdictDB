@@ -167,7 +167,7 @@ class Sens (DbRow):
 	s._xunr  = _xunr  or []
 
 class Gloss (DbRow):
-    def __init__ (s, entr=None, sens=None, gloss=None, lang=1, ginf=1, txt=None):
+    def __init__ (s, entr=None, sens=None, gloss=None, lang=None, ginf=None, txt=None):
 	DbRow.__init__(s, ( entr,  sens,  gloss,  lang,  ginf,  txt),
 	    		  ('entr','sens','gloss','lang','ginf','txt'))
 

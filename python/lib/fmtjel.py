@@ -41,7 +41,7 @@ def escgloss (txt):
 	# Add backslash escape characters in front of any 
 	# ";" or "[" characters in txt.  This is the escaping 
 	# used in glosses processed by the JEL parser.
-	txt = re.sub (r'([;\[])', r'\$1', txt)
+	txt = re.sub (r'([;\[])', r'\\\1', txt)
 	return txt
 
 def kanjs (kanjs):

@@ -67,6 +67,7 @@ class Test_general (unittest.TestCase):
     #3 def test2038530(self): self.check(2038530)	# dotted keb w dotted restr.
     def test2107800(self): self.check(2107800)	# double-dotted reb.
     #2 def test2159530(self): self.check(2159530)	# wide ascii kanj w dot and restr.
+    def test1106120(self): self.check(1106120)	# Semicolon in gloss.
 
     #1 -- Error due to dotted K.R pair in stagk.
     #2 -- Fails due to xref not found because of K/R misclassification.

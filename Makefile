@@ -109,6 +109,7 @@ LIB_FILES = jdb.py \
 	jellex.py \
 	jelparse.py \
 	jmcgi.py \
+	objects.py \
 	serialize.py \
 	tal.py \
 	xmlkw.py

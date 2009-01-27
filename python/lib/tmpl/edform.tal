@@ -17,9 +17,16 @@
         <td>
         <table class="top">
           <tbody>
+	    <tr>
+	      <td colspan="3" align="center">
+		<a class="helplink" href="edhelp.py">
+		  JEL (JMdictDB Edit Language) Help (complete)
+		  </a>
+		</td>
+	      </tr>
 
 	    <tr>
-	      <td>Entry: <br/><a class="helplink" target="edhelp" href="edhelp.py">help</a></td>
+	      <td>Entry:</td>
 	      <td>
 
 		<!-- Entry block -->

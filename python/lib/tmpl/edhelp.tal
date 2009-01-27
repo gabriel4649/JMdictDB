@@ -123,7 +123,8 @@
       </li><li>Tags that can be used in the Sense box are:
 	<ul><li>ant -- An antonym cross-reference (<a href="#syn_xref">syntax</a>)
 	</li><li>dial -- Dialect (<a href="#syn_dial">syntax</a>, <a href="#kw_dial">abbrs</a>)
-	</li><li>expl -- Explanatory translation ()
+	</li><li>expl -- Explanatory translation (<a href="#syn_expl">syntax</a>)
+	</li><li>fig -- Figurative translation (<a href="#syn_fig">syntax</a>)
 	</li><li>fld -- Domain (<a href="#syn_fld">syntax</a>, <a href="#kw_fld">abbrs</a>)
 	</li><li>lit -- Literal translation (<a href="#syn_lit">syntax</a>)
 	</li><li>lsrc -- Source word and language (<a href="#syn_lsrc">syntax</a>, <a href="#kw_lang">abbrs</a>)
@@ -140,7 +141,30 @@
       sense [2] is a noun, you must explicity say so, even though sense [1]
       was a noun.
       </li></ul>
-      Examples:
+      Examples:<br/>
+	[1][n,vs] cherry blossom viewing; flower viewing <br/>
+      <br/>
+	[1][exp] anyone can make a mistake <br/>
+	 &nbsp;[lit="even monkeys fall from trees"] <br/>
+      <br/>
+	[1][pn,adj-no][uk,col] <br/>
+	 &nbsp;that person (guy, fellow) <br/>
+	[2][pn][adj-no] that (one) <br/>
+      <br/>
+	[1][int,col] Go for it (kiddy talk) <br/>
+	[2] Keep at it <br/>
+	 &nbsp;[see=頑張って] <br/>
+      <br/>
+	[1][n] [note="possibly from 八九三"] <br/>
+	 &nbsp; professional gambler or ruffian; <br/>
+	 &nbsp; yakuza (member) <br/>
+ 
+ 
+
+
+ 
+
+
       </dd>
 
     <dt><a name="delete"></a>Delete</dt>
@@ -215,6 +239,20 @@
         <td>
 	  [expl="<span style="font-style: italic;">the
 	  explanatory text</span>..."]<br/>
+	  (1) The text must be enclosed in quotes (") if it contains
+	  spaces or commas.  Since the text will generally
+	  be a sentence, quotes will almost always be required.
+	  </td>
+        <td>&nbsp;</td>
+	</tr>
+
+      <tr>
+        <td><a name="syn_fig"/>fig</td>
+        <td>Figurative translation</td>
+        <td>Sense</td>
+        <td>
+	  [fig="<span style="font-style: italic;">the
+	  figurative text</span>..."]<br/>
 	  (1) The text must be enclosed in quotes (") if it contains
 	  spaces or commas.  Otherwise quotes are not needed.
 	  </td>
@@ -372,25 +410,34 @@
         <td>Cross-reference</td>
         <td>Sense</td>
         <td>
-	  [see=<span style="font-style: italic;">KK・RR</span>[<span style="font-style: italic;">sense-num</span>]]<br/>
-	  [ant=<span style="font-style: italic;">KK・RR</span>[<span style="font-style: italic;">sense-num</span>]]<br/>
+	  [see=<span style="font-style: italic;">SEQ KK・RR</span>[<span style="font-style: italic;">sense-nums</span>]]<br/>
+	  [ant=<span style="font-style: italic;">SEQ KK・RR</span>[<span style="font-style: italic;">sense-nums</span>]]<br/>
 	  ~~~~<br/>
 	  (1) There are two kinds of cross-reference:
 	    <ul><li>See also (a general cross reference)
 	    </li><li>Antonym</li></ul>
-	  (2) KK is the kanji of the target of the cross reference, RR is
-	    its reading.  sense-num is the specific sence in the target 
-	    being referenced.  The KK・RR pair must uniquely identify a
-	    single JMdict entry. <br/>
-	  (3) KK・ or ・RR (but not both) may be left out if the
-	  remaining text still uniquely identifies the target word.<br/>
-	  (4) sense-num is optional if the target word has only one sense.
-	  Otherwise, it must be given.  Multiple sense numbers can be 
-	  given, separated by commas.<br/>
-	  (5) If there are spaces or other special characters in the
-	  KK・RR[sense-num] text, enclose the entire string in quotes (").</td>
+	  (2) SEQ is the sequence number of the of the cross reference.
+	    KK is the kanji of the target of the cross reference, RR is
+	    its reading.  sense-nums is the specific sense(s) in the target 
+	    being referenced. At least one of SEQ, KK, or RR must be 
+	    given.<br/>
+	  (3) SEQ  may be left out if KK and/or RR are supplied and uniquely
+	    identify a single target entry.  The kanji (KK・ part) or reading
+	    (・RR part) may be left out if the remaining part still uniquely
+	    identifies the target entry.<br/>
+	  (4) If SEQ is given, KK and RR are optional and if given will be
+	    used when displaying the xref.  If KK and/or RR are not given, a 
+	    suitable KK/RR pair for display will be selected automatcally.
+	    <br/>
+	  (5) sense-num is optional if the target word has only one sense.
+	    Otherwise, it must be given.  Multiple sense numbers can be 
+	    given, separated by commas.
+	  </td>
 
-        <td>[see=涼しい・すずしい[1]]<br/>[ant=暑い・あつい[1]]</td>
+        <td>[see=涼しい・すずしい[1]]<br/>
+	    [ant=暑い[1,2]]</br>
+	    [see=1006830 その[1]]<br/>
+	  </td>
 	</tr>
 
       </tbody>
@@ -474,7 +521,7 @@
 
 	<tr><td colspan="3"><br/></td></tr>
         <tr><td colspan="3"><a name="kw_lang">Lang -- language
-	  <br/><span class="status">With the exception of "ai:Ainu" these two-letter codes are the
+	  <br/><span class="status">These three-letter codes are the
 	  same as those defined in ISO-639-2.</span>
 	  </a></td></tr>
 	<tr><td colspan="3"><hr/></td></tr>

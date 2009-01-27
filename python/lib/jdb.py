@@ -454,7 +454,7 @@ def restrs2ext_ (restrs, kanjs, attr='_restr'):
 	# objects taken from 'kanjis' such that each Kanj object's
 	# ._restr list contains no Restr objects in 'restrs'.  However,
 	# if 'restrs' is an empty list, return an empty list.  And if 
-	# every Kanj object in 'kanjs' has a ._restr lisy item that
+	# every Kanj object in 'kanjs' has a ._restr list item that
 	# in in 'restrs', return None.  Note that common membership
 	# of a Restr object in the 'restrs', and kanj._restr lists
 	# constitutes a restriction -- the values of the attributes 
@@ -567,6 +567,55 @@ def txt2restr (restrtxts, rdng, kanjs, attr):
 		    nkanjs.append (n + 1)
 	setattr (rdng, attr, restrs)
 	return nkanjs
+
+def headword (entr):
+	# Return a 2-tuple giving the rdng / kanj numbers (base-1) 
+	# or reading-kanji pair that represents the entry and which
+	# takes into consideration restrictions and 'uk' sense
+	# tags.  Either element of the 2-tuple, but not both,
+	# may be None if a reading of kanji element is not available
+	# or not appropriate.
+	# FIXME: I don't know how to pick headword.  Code below
+	#  is just a guess.
+	rdngs = getattr (entr, '_rdng', [])
+	kanjs = getattr (entr, '_kanj', [])
+	if not rdngs: return kanjs[0], None
+	if not kanjs: return rdngs[0], None
+
+	  # If the first reading is "nokanji", return only it.
+	if rdngs and len(getattr (rdngs[0], '_restr', [])) \
+		  == len(getattr (entr, '_kanj', [])):
+	    return rdngs[0], None
+
+	  # If first sense is 'uk', return only first reading.
+	uk = KW.MISC['uk'].id in [x.kw for x in 
+		getattr (getattr (entr, '_sens', [None])[0], '_misc', [])]
+	if uk:
+	    stagr = getattr (entr._sens[0], '_stagr', [])
+	    for r in rdngs:
+		if not isin (r, stagr): return (r, None)
+
+	  # Otherwise return the first reading-kanji pair allowed
+	  # by restrs, ordering by kanji before selection.
+	  # FIXME: does not consider stagr, stagk. 
+	rk = list (restr_expand (rdngs, kanjs))
+	rk.sort (key=lambda x: (x[1],x[0]))
+	nr, nk = rk[0]
+	return nr+1, nk+1
+
+def restr_expand (rdngs, kanjs, attr='_restr'):
+	for nr, r in enumerate (rdngs):
+	    rrestr = getattr (r, attr, [])
+	    for nk, k in enumerate (kanjs):
+		krestr = getattr (k, attr, [])
+		invalid = False
+		for rx in rrestr:
+		    for kx in krestr:
+			if rx is kx: 
+			    invalid = True;  break
+		    if invalid: break
+		else: 
+		    yield nr, nk
 
 #-------------------------------------------------------------------
 # The following three functions deal with freq objects.
@@ -856,11 +905,10 @@ def mark_seq_xrefs (cur, xrefs):
 def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None, 
 		 one_entr_only=True, one_sens_only=False):
 
-	# Find entries and their senses that match 'ktxt' and 'rtxt'
+	# Find entries and their senses that match 'ktxt','rtxt','enum'.
 	# and return a list of augmented xref records that points to
-	# them.  If a match for ktxt/rtx/slist is not found (either 
-	# because nothing matches, or the 'one_entr_only' or 
-	# 'one_sens_only' criteria are not satified), a ValueError
+	# them.  If a match is not found (because nothing matches, or
+	# the 'one_entr_only' or 'one_sens_only' criteria are not satified), a ValueError
 	# is raised.
 	#
 	# dbh (dbapi cursor) -- Handle to open database connection.
@@ -917,7 +965,7 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	if ktxt: condlist.append (('kanj k', "k.txt=%s", [ktxt]))
 	if rtxt: condlist.append (('rdng r', "r.txt=%s", [rtxt]))
 	  # Exclude Deleted and Rejected entries from consideration.
-	condlist.append (('entr e', 'e.stat IN(%d,%d)' % (KW.STAT['A'].id,KW.STAT['N'].id), []))
+	condlist.append (('entr e', 'e.stat=%d' % (KW.STAT['A'].id), []))
 	if enum and not corpid:
 	    condlist.append (('entr e', 'e.id=%s', [enum]))
 	elif enum and corpid:
@@ -965,15 +1013,41 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 
 	xrefs = []
 	for e in entrs:
-	    xrdng = xkanj = None
-	    if rtxt: xrdng = (first (e._rdng, lambda x: x.txt==rtxt)).rdng
-	    if ktxt: xkanj = (first (e._kanj, lambda x: x.txt==ktxt)).kanj
+	      # All xrefs require an .rtxt and/or.ktxt value with is the
+	      # position (indexd from 1) of a reading or kanji in the target
+	      # entry's reading of kanji lists, of the reading of kanji to 
+	      # to be used when displaying the xref.  'nrdng' anf 'nkanj'
+	      # will be set to these positions.
+
+	    nrdng = nkanj = None
+	    if not rtxt and not ktxt:
+		  # If no rtxt or ktxt received from caller, then call
+		  # headword() which will find reasonable values taking 
+		  # things like "nokanji", "uk", and other restrictions
+		  # into account.  headword() returns rdng/kanj positions
+		  # (ints, base-1).
+		  # FIXME: 'e' here is an abbreviated Entr without restr
+		  #  or misc data, which headword() needs to generate good
+		  #  results.  So currently it will just return the numbers
+		  #  for the first rdng/kanj.
+		nrdng, nkanj = headword (e)
+
+	      # If the caller did provide expliclir rtxt and/or ktxt strings,
+	      # find their position in the entry's rdng or kanj lists.
+	    if rtxt:
+		try: nrdng = [x.txt for x in e._rdng].index (rtxt) + 1
+		except ValueError: raise ValueError ("No reading '%s' in entry %d" % (rtxt, e.id))
+	    if ktxt:
+		try: nkanj = [x.txt for x in e._kanj].index (ktxt) + 1
+		except ValueError: raise ValueError ("No kanji '%s' in entry %d" % (ktxt, e.id))
+
+	      # Create an augmented xref for each target sense.
 	    for s in e._sens:
 		if not slist or s.sens in slist:
-		    x = Xref (typ=typ, xentr=e.id, xsens=s.sens, rdng=xrdng, kanj=xkanj)
+		    x = Xref (typ=typ, xentr=e.id, xsens=s.sens, rdng=nrdng, kanj=nkanj)
 		    x.TARG = e
 		    xrefs.append (x)
-	return xrefs
+	return xrefs	
 
 #-------------------------------------------------------------------
 # The following two functions deal with history lists. 

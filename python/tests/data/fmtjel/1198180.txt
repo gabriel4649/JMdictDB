@@ -1,5 +1,5 @@
-﻿会う[ichi1,nf26,news2]；逢う[ichi1]；遭う[ichi1,news2,nf34]；遇う
-あう[ichi1,nf26,news2]
+﻿会う[ichi1,news2,nf26]；逢う[ichi1]；遭う[ichi1,news2,nf34]；遇う
+あう[ichi1,news2,nf26]
 [1][v5u,vi]
   [note="逢う is often used for close friends, etc. and may be associated with drama or pathos; 遭う may have an undesirable nuance"]
   to meet; to encounter

@@ -1,5 +1,5 @@
-﻿衣替え[nf14,news1]；更衣；衣更え
-ころもがえ[nf14,news1]
+﻿衣替え[news1,nf14]；更衣；衣更え
+ころもがえ[news1,nf14]
 [1][n,vs]
   seasonal change of clothing; changing (one's) dress for the season
 [2][n,vs]

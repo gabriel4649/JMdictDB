@@ -313,9 +313,7 @@ def add_editable_flag (entries):
 
 	KW = jdb.KW
 	for e in entries:
-	    e.EDITABLE = e.unap \
-		or (e.stat == KW.STAT['N'].id) \
-		or (e.stat == KW.STAT['A'].id)
+	    e.EDITABLE = e.unap or (e.stat == KW.STAT['A'].id)
 
 def add_unreslvd_flag (entries):
 

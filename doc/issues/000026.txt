@@ -18,6 +18,12 @@ AssdTo:	stuart@friix.com
   1085560: トライ＆エラー (is reading but search thinks it's kanji)
   Change jstr_classify?  Or do something else?
 
+  Also, jelparse.y uses kanji/kana test to identify kanji and reading
+  sections, and also xrefs.  In 1000090, the xref [ant=×] gets mis-
+  interpreted as a tag (like "pos=vs") because the "×" character is
+  neither kanji or kana and results in a parse failure with error,
+  "ANT is unrecognised tag type".
+
 2007-02-01 00:00:00 stuart@friix.com
   See also IS-83: "brackets in reading cause parse error".
 

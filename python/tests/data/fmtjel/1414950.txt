@@ -1,5 +1,5 @@
-大文字[ichi1,nf35,news2]
-おおもじ[ichi1,nf35,news2]；だいもんじ
+﻿大文字[ichi1,news2,nf35]
+おおもじ[ichi1,news2,nf35]；だいもんじ
 [1][n]
   upper case letters; large characters; capital letter
 [2][n]

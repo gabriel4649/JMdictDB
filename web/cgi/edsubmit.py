@@ -170,13 +170,10 @@ def submission (dbh, sess, svc, entr, disp, errs):
 	KW = jdb.KW
 	merge_rev = False
 	if not entr.dfrm:	# This is new entry. 
-	    entr.stat = KW.STAT['N'].id
+	    entr.stat = KW.STAT['A'].id
 	    entr.id = None
 	    entr.seq = None  # Force addentr() to assign seq number. 
 	else:	# Modification of existing entry.
-	    if entr.stat == KW.STAT['N'].id:
-		errs.append ("Bad entry, stat=KW.STAT['N'].kw") 
-		return
 	    if entr.stat == KW.STAT['D'].id:
 		  # If this is a deletion, set $merge_rev.  When passed
 		  # to function merge_hist() it will tell it to return the 
@@ -239,7 +236,7 @@ def submission (dbh, sess, svc, entr, disp, errs):
 def submit (dbh, svc, entr, errs):
 
 	KW = jdb.KW
-	if not entr.dfrm and entr.stat != KW.STAT['N'].id:
+	if not entr.dfrm and entr.stat != KW.STAT['A'].id:
 	    errs.append ("Bad url parameter, no dfrm");  return
 	if entr.stat == jdb.KW.STAT['R'].id: 
 	    errs.append ("Bad url parameter, stat=R");  return
@@ -290,10 +287,7 @@ def approve (dbh, svc, entr, errs):
 		    "someone else.  Please check the current entry and " 
 		    "reenter your changes if they are still applicable.")
 		return
-	  # Check stat.  May be N, A or D, but not R.  If it is N, 
-	  # change it to A.
-	if entr.stat == KW.STAT['N'].id:
-	    entr.stat = KW.STAT['A'].id
+	  # Check stat.  May be A or D, but not R.
 	if entr.stat == KW.STAT['R'].id:
 	    errs.append ("Bad url parameter, stat=R"); return 
 

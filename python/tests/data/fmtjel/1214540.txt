@@ -1,4 +1,4 @@
-﻿缶[ateji,ichi1,nf06,news1]；罐[ateji,oK]；鑵[ateji]
-かん[ichi1,nf06,news1]
+﻿缶[ateji,ichi1,news1,nf06]；罐[ateji,oK]；鑵[ateji]
+かん[ichi1,news1,nf06]
 [1][n]
   can; tin

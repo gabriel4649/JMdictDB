@@ -42,11 +42,10 @@ def main (args, opts):
 	if disp!='a' and disp!='r' and disp !='' and disp is not None: 
 	    errs.append ("Invalid 'disp' parameter: '%s'" % disp)
 
-	  # New status is A for edit of existing entry, N for new 
-	  # entry, D for deletion of existing entry.
+	  # New status is A for edit of existing or new entry, D for
+	  # deletion of existing entry.
 	delete = fv ('delete')
-	stat = (KW.STAT['D'].id if delete else KW.STAT['A'].id) \
-		if eid else KW.STAT['N'].id
+	stat = KW.STAT['D'].id if delete else KW.STAT['A'].id
 
 	  # These will only have values when editing an entry. 
 	seq = url_int ('seq', form, errs)

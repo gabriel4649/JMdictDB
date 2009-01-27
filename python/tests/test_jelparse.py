@@ -73,7 +73,7 @@ class Roundtrip (unittest.TestCase):
     def test1401950(self): self.check(1401950)	# gloss, trailing numeric and paren
     def test1414950(self): self.check(1414950)	# gloss, mult quotes
     def test1075210(self): self.check(1075210)	# gloss, initial digits
-    #2 def test1000090(self): self.check(1000090)	# xref and ant with hard to classify kanji.
+    #4 def test1000090(self): self.check(1000090)	# xref and ant with hard to classify kanji.
     def test1000920(self): self.check(1000920)	# xref w rdng (no kanj) and sense number.
     def test1000420(self): self.check(1000420)	# xref w K.R pair.
     def test1011770(self): self.check(1011770)  # ant with K.R.s triple.
@@ -87,10 +87,14 @@ class Roundtrip (unittest.TestCase):
     def test2107800(self): self.check(2107800)	# double-dotted reb.
     #2 def test2159530(self): self.check(2159530)	# wide ascii kanj w dot and restr.
 
+
     #1 -- Error due to dotted K.R pair in stagk.
     #2 -- Fails due to xref not found because of K/R misclassification.
     #3 -- Fails due to mid-dot in restr text which is confused with the 
     #	    mid-dot used to separate K.R pairs.
+    #4 -- [ant=x] fails to parse because is is  not recognised as an xref 
+    #       because "x" is neither kanji or kana so is iterpreted as a  
+    #       "tag=x" and the lookup of tag type "ant" of course fails.
 
     def check (self, seq):
 	global Cur, Lexer, Parser

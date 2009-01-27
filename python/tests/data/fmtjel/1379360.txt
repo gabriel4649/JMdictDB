@@ -1,4 +1,4 @@
-生中継[nf19,news1]
-なまちゅうけい[nf19,news1]
+﻿生中継[news1,nf19]
+なまちゅうけい[news1,nf19]
 [1][n,vs]
   (on TV) "live" broadcast

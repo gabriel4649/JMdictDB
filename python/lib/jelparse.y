@@ -246,17 +246,26 @@ tagitem
 				"'p' (partial),or both" % p[5])
 		p[0] = ["lsrc", p[7], la.id, p[5]] }
  
-	| TEXT EQL xrefs   /* xref=k.r[n1,n2,..], restr=k;k;.. (restr, stagr,stagk) */
+	| TEXT EQL xrefs   /* xref=q.k.r[n1,n2,..], restr=k;k;.. (restr, stagr,stagk) */
 		{ # 'xrefs' represents both xrefs and restrs, is list of 5-tuples:
 		  #   0 -- reading text
 		  #   1 -- kanji text
 		  #   2 -- sense number list
 		  #   3 -- number (entry, seq, or None)
 		  #   4 -- corpus (str:corp kw, "":current corp, None:entry id) 
-		if p[1] not in ("restr","see","ant"):
-		    xerror (p, "Keyword not \"restr\", \"see\", or \"ant\"")
-		if p[1] == "restr": p[1] = "RESTR"
-		p[0] = [p[1], p[3]] }
+		KW = jdb.KW 
+		if p[1] == 'restr': 
+		    p[0] = ['RESTR', p[3]]
+		elif p[1] in [x.kw for x in KW.recs('XREF')]:
+		      # FIXME: instead of using XREF kw''s directly, do we want to
+		      #  change to an lsrc syntax like, "xref=cf:..." (possibly
+		      #  keeping "see" and "ant" as direct keywords)?
+		    p[0] = ['XREF', KW.XREF[p[1]].id, p[3]]
+		else: 
+		      # FIXME: msg is misleading, we also except other
+		      #  xref keywords.
+		    xerror (p, 'Bad keyword, expected one of "restr", "see", or "ant"')
+		}
 	;
 atext
 	: TEXT
@@ -369,10 +378,11 @@ def lookup_tag (tag, typs=None):
 	    if typ == "FREQ":
 		mo = re.search (r'^([^0-9]+)(\d+)$', tag)
 		if mo:
-		    tag = mo.group(1)
+		    tagbase = mo.group(1)
 		    val = int (mo.group(2))
+	    else: tagbase = tag
 	    try:
-		x = (getattr (KW, typ))[tag]
+		x = (getattr (KW, typ))[tagbase]
 	    except AttributeError: 
 		raise ValueError ("Unknown 'typ' value: %s." % typ)
 	    except KeyError: pass
@@ -482,9 +492,10 @@ def sens_tags (sens, gloss, tags):
 		    errs.append ("Only one sense note allowed")
 		sens.notes = t[0]
 
-	    elif typ in ('see', 'ant'):
-		for xitem in t[0]:
-		    kw = KW.XREF[typ].id
+	    elif typ == 'XREF':
+		xtyp = t[0]
+		for xitem in t[1]:
+		    kw = KW.XREF[xtyp].id
 		    xitem.insert (0, kw)
 		    append (sens, '_XREF', xitem)
 

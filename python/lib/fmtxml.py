@@ -357,7 +357,7 @@ def xref (xref, src):
 	    attrs.append ('type="%s"' % XKW.XREF[xref.typ].kw)
 	    attrs.append ('seq="%s"' % targobj.seq)
 	    if targobj.src != src:
-		attr.append ('corp="%s"' % jd.KW.SRC[targobj.src].kw)
+		attrs.append ('corp="%s"' % jdb.KW.SRC[targobj.src].kw)
 	    if getattr (xref, 'notes', None): 
 		attrs.append ('note="%s"' % esc(xref.notes))
 	else:

@@ -16,7 +16,14 @@
 
 <div class="entry">
   <h2>Overview</h2>
-  ...TBS...
+  JEL (JMdictDB Edit Language) is used to describe JMdictDB entries.
+  It allows one to enter any JMdict entry in three text boxs (Kanji, 
+  Reading, Sense) rather than the dozens of text boxes that would be 
+  required if every JMdict field used a separate text box for its entry.
+  The syntax of JEL is similar to EDICT but with modifications facilitate
+  machine parsing.
+  <p/>
+  ...to be continued...
   </div>
 
 <div class="entry">
@@ -176,6 +183,7 @@
 	[1][int,col] Go for it (kiddy talk) <br/>
 	[2] Keep at it <br/>
 	 &nbsp;[see=頑張って] <br/>
+      <br/>
 	[1][n] [note="possibly from 八九三"] <br/>
 	 &nbsp; professional gambler or ruffian; <br/>
 	 &nbsp; yakuza (member) <br/>

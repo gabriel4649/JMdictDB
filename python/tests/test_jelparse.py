@@ -143,6 +143,7 @@ class Lookuptag (unittest.TestCase):
     def test015(self): self.assertEqual ([['POS',44]], jelparse.lookup_tag('vi'))
     def test016(self): self.assertEqual ([], jelparse.lookup_tag('nf',['RINF']))
     def test018(self): self.assertEqual ([['KINF',4],['RINF',3]], jelparse.lookup_tag('ik'))
+    def test019(self): self.assertEqual ([['POS',28],], jelparse.lookup_tag('v1'))
 
     def test101(self): self.assertRaises (ValueError, jelparse.lookup_tag, 'n',['POSS'])
       # Is the following desired behavior? Or should value for 'n' in 'POS' be returned?

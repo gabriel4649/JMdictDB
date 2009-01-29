@@ -193,12 +193,15 @@ def chkentr (e, errs):
 def parse (krstext):
 	entr = None; errs = []
 	lexer, tokens = jellex.create_lexer ()
-        parser = jelparse.create_parser (tokens, debug=0)
+        parser = jelparse.create_parser (lexer, tokens, debug=0)
         jellex.lexreset (lexer, krstext)
         try: 
-	    entr = parser.parse (krstext, lexer=lexer)
+	    entr = parser.parse (krstext, lexer=lexer, tracking=True)
 	except jelparse.ParseError, e:
-	    errs.append (str(e))
+	    msg = "%s\n<pre>\n%s\n</pre>" % (e.args[0], e.loc)
+	    errs.append (msg)
+	except ValueError, e:
+	    errs.append (str (e))
 	return entr, errs
 
 if __name__ == '__main__': 

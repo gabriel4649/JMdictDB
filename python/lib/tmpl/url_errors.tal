@@ -10,8 +10,12 @@
   <h2>Error</h2>
   We're sorry but your page request could not be processed
   due to the following error(s):
-  <span tal:repeat="e errs">
-    <span tal:replace="structure e" tal:omit-tag="">err message</span><br/>
-    </span>
+  <ul>
+    <li tal:repeat="e errs">
+      <span class="errormsg" tal:replace="structure e">
+        err message
+        </span>
+      </li>
+    </ul>
   </body>
 </html>

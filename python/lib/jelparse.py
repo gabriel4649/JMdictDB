@@ -27,7 +27,11 @@ import jellex, jdb
 from objects import *
 import fmt, fmtjel      # For code in main().
 
-class ParseError (Exception): pass
+class ParseError (Exception): 
+    def __init__ (self, msg, loc=None, token=None):
+        self.args = (msg,)
+        self.loc = loc
+        self.token = token
 
 precedence =  []
 
@@ -209,7 +213,7 @@ def p_tagitem_4(p):
     else:
         x = lookup_tag (p[3], p[1])
         if x and len(x) > 1:
-            raise RuntimeError ("Unexpected return value from lookup_tag()")
+            raise ValueError ("Unexpected return value from lookup_tag()")
         if x is None: xerror (p, "Unknown keyword type: '%s'" % p[1])
         elif not x:   xerror (p, "Unknown %s keyword: '%s" % (p[1],p[3]))
         else:         p[0] = x[0]
@@ -361,21 +365,49 @@ def p_snums_2(p):
 
 # -------------- RULES END ----------------
 
-def p_error (tok): 
-        msg = "Bad syntax at token %s" % tok
-        raise RuntimeError (msg)
+def p_error (token): 
+        #pdb.set_trace()
+        if token: errpos = token.lexpos
+        else: errpos = None
+        descr = errloc (errpos)
+        raise ParseError ("Syntax error", '\n'.join (descr))
 
 def xerror (p, msg=None):
-        raise RuntimeError (msg)
+        #pdb.set_trace()
+        token = p.stack[-1]
+          # Caution: token will only have an 'endlexpos' if parser.parse()
+          #  was called with the argument, tracking=True.
+        if token: errpos = token.endlexpos
+        else: errpos = None
+        descr = errloc (errpos)
+        raise ParseError (msg, '\n'.join (descr))
 
-def find_column (token):
-        i = token.lexpos
-        input = token.lexer.lexdata
-        while i > 0:
-            if input[i] == '\n': break
-            i -= 1
-        column = (token.lexpos - i) + 1
-        return column
+def errloc (errpos):
+        # Return a list of text lines that consitute the parser
+        # input text (or more accurately the input text to the
+        # lexer used by the parser) with an inserted line containing
+        # a caret character that points to the lexer position when
+        # the error was detected.  'errpos' is the character offset
+        # in the input text of the error, or None if the error was
+        # at the end of input.
+        # Note: Function create_parser() makes the parser it creates
+        # global (in JelParser) and also make the lexer availble as 
+        # attribute '.lexer' of the parser, both of whech we rely on
+        # here.
+
+        global JelParser
+        input = JelParser.lexer.lexdata
+        if errpos is None: errpos = len (input)
+        lines = input.splitlines (True)
+        eol = 0;  out = []
+        for line in lines:
+            out.append (line.rstrip())
+            eol += len (line)
+            if eol >= errpos and errpos >= 0:
+                errcol = len(line) + errpos - eol
+                out.append ((' ' * errcol) + '^')
+                errpos = -1     # Ignore errpos on subsequent loops.
+        return out
 
 def lookup_tag (tag, typs=None):
         # Lookup 'tag' (given as a string) in the keyword tables
@@ -414,7 +446,7 @@ def lookup_tag (tag, typs=None):
             try:
                 x = (getattr (KW, typ))[tagbase]
             except AttributeError: 
-                raise ValueError ("Unknown 'typ' value: %s." % typ)
+                raise ParseError ("Unknown 'typ' value: %s." % typ)
             except KeyError: pass
             else: 
                 if not val: matched.append ([typ, x.id])
@@ -628,7 +660,7 @@ def bld_kanj (k, taglist=[]):
                   # ._freq objects created.
                 append (k, "_FREQ", (t[0], t[1]))
             else: 
-                errs.append ("Cannot use %s tag with a kanji" % typ); 
+                errs.append ("Cannot use %s tag in kanji section" % typ); 
         return "\n".join (errs)
 
 def mk_restrs (listkey, rdngs, kanjs):
@@ -834,11 +866,15 @@ def fmt_xitem (xitem):
         s = ('[%s]' % ','.join(slist)) if slist else ''
         return t + s
 
-def create_parser (toks, **args):
-        global tokens
+def create_parser (lexer, toks, **args):
+        global tokens, JelParser
         tokens = toks
-        parser = ply.yacc.yacc (**args)
-        return parser
+          # Set global JelParser since we need access to it
+          # from error handling function p_error() and I don't
+          # know any other way to make it available there. 
+        JelParser = ply.yacc.yacc (**args)
+        JelParser.lexer = lexer   # Access to lexer needed in error handler.
+        return JelParser
 
 def main (args, opts):
         global KW, tokens
@@ -848,7 +884,7 @@ def main (args, opts):
         KW = jdb.KW
 
         lexer, tokens = jellex.create_lexer (debug=opts.debug>>8)
-        parser = create_parser (tokens)
+        parser = create_parser (lexer, tokens)
         parser.debug = opts.debug
 
         if opts.seq:
@@ -882,7 +918,7 @@ def _roundtrip (cur, lexer, parser, seq, src):
             jdb.augment_xrefs (cur, getattr (s, '_xref', []))
         jeltxt = _get_jel_text (obj[0])
         jellex.lexreset (lexer, jeltxt)
-        result = parser.parse (jeltxt,lexer=lexer)
+        result = parser.parse (jeltxt,lexer=lexer,tracking=True)
         resolv_xrefs (cur, result)
         jeltxt2 = _get_jel_text (result)
         return jeltxt, jeltxt2

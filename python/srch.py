@@ -848,7 +848,7 @@ class Model:
     def __init__(self, cursor):
 	self.cursor = cursor
 	self.lexer, tokens = jellex.create_lexer ()
-        self.parser = jelparse.create_parser (tokens, debug=0)
+        self.parser = jelparse.create_parser (self.lexer, tokens, debug=0)
 
     def find_entrs (self, critera=None, args= None):
 	tmptbl = jdb.entrFind (self.cursor, critera, args)
@@ -864,7 +864,7 @@ class Model:
     def build_entr (self, dfrm, krstext, corp, seq, stat,
 		     unap, srcnote, notes):
         jellex.lexreset (self.lexer, krstext)
-        e = self.parser.parse (krstext, lexer=self.lexer)
+        e = self.parser.parse (krstext, lexer=self.lexer, tracking=True)
 	(e.src, e.seq, e.stat, e.dfrm, e.unap, e.srcnote, e.notes) \
 	  = corp, seq, stat, dfrm, unap, srcnote, notes
 	return e

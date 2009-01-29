@@ -1,4 +1,4 @@
-import sys, os, os.path, unittest, time, subprocess, tempfile, shutil, difflib
+import sys, os, os.path, unittest, time, subprocess, tempfile, shutil, difflib, re
 
 class TextTestRunner (unittest.TextTestRunner):
     """
@@ -152,3 +152,7 @@ def diff_strings (a, b):
         #                          linejunk=lambda x: False, charjunk=lambda x: False)
         difflines = difflib.unified_diff(a.splitlines(True), b.splitlines(True), n=0)
         return ''.join(difflines)
+
+def match (pat, a):
+	mo = re.search (pat, a)
+	return True if mo else False

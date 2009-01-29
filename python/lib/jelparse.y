@@ -298,7 +298,7 @@ xref		/* Return 5-seq:
 	| xrefnum DOT jitem
 		{ p[0] = p[3] + p[1] }
 	| jitem
-		{ p[0] = p[1] + [None,None] }
+		{ p[0] = p[1] + [None,''] }
 	;
 jitem
 	: jtext

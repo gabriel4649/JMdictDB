@@ -310,7 +310,7 @@ def p_xref_3(p):
 
 def p_xref_4(p):
     '''xref : jitem'''
-    p[0] = p[1] + [None,None]
+    p[0] = p[1] + [None,'']
 
 def p_jitem_1(p):
     '''jitem : jtext'''

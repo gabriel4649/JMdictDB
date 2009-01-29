@@ -55,13 +55,13 @@ def p_entr_1(p):
       # readings or kanji.
     if hasattr (e, '_rdng') and hasattr (e, '_kanj'): 
         err = mk_restrs ("_RESTR", e._rdng, e._kanj)
-        if err: xerror (p, err)
+        if err: p_error (p, err, loc=False)
     if hasattr (e, '_sens') and hasattr (e, '_kanj'): 
         err = mk_restrs ("_STAGK", e._sens, e._kanj)
-        if err: xerror (p, err)
+        if err: p_error (p, err, loc=False)
     if hasattr (e, '_sens') and hasattr (e, '_rdng'): 
         err = mk_restrs ("_STAGR", e._sens, e._rdng)
-        if err: xerror (p, err)
+        if err: p_error (p, err, loc=False)
       # Note that the entry object returned may have an _XREF list
       # on its senses but the supplied xref records are not
       # complete.  We do not assume database access is available
@@ -101,7 +101,7 @@ def p_kanjitem_2(p):
     '''kanjitem : KTEXT taglists'''
     kanj = jdb.Kanj(txt=p[1])
     err = bld_kanj (kanj, p[2])
-    if err: xerror (p, err)
+    if err: p_error (p, err)
     p[0] = kanj
 
 def p_rdngsect_1(p):
@@ -120,7 +120,7 @@ def p_rdngitem_2(p):
     '''rdngitem : RTEXT taglists'''
     rdng = jdb.Rdng(txt=p[1])
     err = bld_rdng (rdng, p[2])
-    if err: xerror (p, err)
+    if err: p_error (p, err)
     p[0] = rdng
 
 def p_senses_1(p):
@@ -135,7 +135,7 @@ def p_sense_1(p):
     '''sense : SNUM glosses'''
     sens = jdb.Sens()
     err = bld_sens (sens, p[2])
-    if err: xerror (p, "Unable to build sense %s\n%s" % (p[1], err))
+    if err: p_error (p, "Unable to build sense %s\n%s" % (p[1], err))
     p[0] = sens
 
 def p_glosses_1(p):
@@ -198,7 +198,7 @@ def p_tagitem_3(p):
         p[0] = ['RESTR', [['nokanji', None, None, None, None]]]
     else:
         x = lookup_tag (p[1])
-        if not x: xerror (p, "Unknown keyword: '%s'" % p[1])
+        if not x: p_error (p, "Unknown keyword: '%s'" % p[1])
         else: p[0] = [None, p[1]]
 
 def p_tagitem_4(p):
@@ -207,15 +207,15 @@ def p_tagitem_4(p):
     if p[1] in ["note","lsrc","restr"]:
         if p[1] == "restr":
             if p[3] != "nokanji":
-                xerror (p, "Bad restr value (expected \"nokanji\"): '%s'" % p[3])
+                p_error (p, "Bad restr value (expected \"nokanji\"): '%s'" % p[3])
             p[0] = ["RESTR", [["nokanji", None, None, None, None]]]
         else: p[0] = [p[1], p[3], 1, None]
     else:
         x = lookup_tag (p[3], p[1])
         if x and len(x) > 1:
             raise ValueError ("Unexpected return value from lookup_tag()")
-        if x is None: xerror (p, "Unknown keyword type: '%s'" % p[1])
-        elif not x:   xerror (p, "Unknown %s keyword: '%s" % (p[1],p[3]))
+        if x is None: p_error (p, "Unknown keyword type '%s'" % p[1])
+        elif not x:   p_error (p, "Unknown %s keyword '%s'" % (p[1],p[3]))
         else:         p[0] = x[0]
 
 def p_tagitem_5(p):
@@ -223,14 +223,14 @@ def p_tagitem_5(p):
     KW = jdb.KW 
     if p[1] in ["note","lsrc"]:
         p[0] = [p[1], jellex.qcleanup (p[3][1:-1]), 1, None] 
-    else: xerror (p, "Unknown keyword: '%s" % p[1])
+    else: p_error (p, "Unknown keyword: '%s'" % p[1])
 
 def p_tagitem_6(p):
     '''tagitem : TEXT EQL TEXT COLON'''
     KW = jdb.KW 
-    if p[1] != "lsrc": xerror (p, "Keyword must be \"lsrc\"")
+    if p[1] != "lsrc": p_error (p, "Keyword must be \"lsrc\"")
     la = KW.LANG.get(p[3])
-    if not la: xerror (p, "Unrecognised language '%s'" % p[3])
+    if not la: p_error (p, "Unrecognised language '%s'" % p[3])
     p[0] = ["lsrc", None, la.id, None]
 
 def p_tagitem_7(p):
@@ -241,20 +241,20 @@ def p_tagitem_7(p):
         la = KW.LANG.get(p[3])
         if not la:
             if p[3] not in ('w','p','wp','pw'):
-                xerror (p, "Unrecognised language '%s'" % p[3])
+                p_error (p, "Unrecognised language '%s'" % p[3])
             else: lsrc_flags = p[3]
         else: lang = la.id
-    else: xerror (p, "Keyword not \"lsrc\", \"lit\", or \"expl\"")
+    else: p_error (p, "Keyword not \"lsrc\", \"lit\", or \"expl\"")
     p[0] = ["lsrc", p[5], lang, lsrc_flags]
 
 def p_tagitem_8(p):
     '''tagitem : TEXT EQL TEXT SLASH TEXT COLON atext'''
     KW = jdb.KW 
-    if p[1] != "lsrc": xerror (p, "Keyword not \"lsrc\"")
+    if p[1] != "lsrc": p_error (p, "Keyword not \"lsrc\"")
     la = KW.LANG.get(p[3])
-    if not la: xerror (p, "Unrecognised language '%s'" % p[3])
+    if not la: p_error (p, "Unrecognised language '%s'" % p[3])
     if p[5] not in ('w','p','wp','pw'):
-        xerror (p, "Bad lsrc flags '%s', must be 'w' (wasei), "
+        p_error (p, "Bad lsrc flags '%s', must be 'w' (wasei), "
                     "'p' (partial),or both" % p[5])
     p[0] = ["lsrc", p[7], la.id, p[5]]
 
@@ -277,7 +277,7 @@ def p_tagitem_9(p):
     else: 
           # FIXME: msg is misleading, we also except other
           #  xref keywords.
-        xerror (p, 'Bad keyword, expected one of "restr", "see", or "ant"')
+        p_error (p, 'Bad keyword, expected one of "restr", "see", or "ant"')
 
 def p_atext_1(p):
     '''atext : TEXT'''
@@ -353,34 +353,45 @@ def p_snums_1(p):
     '''snums : NUMBER'''
     n = int(p[1])
     if n<1 or n>99:
-        xerror (p, "Invalid sense number: '%s' % n")
+        p_error (p, "Invalid sense number: '%s' % n")
     p[0] = [n]
 
 def p_snums_2(p):
     '''snums : snums COMMA NUMBER'''
     n = int(p[3])
     if n<1 or n>99:
-        xerror (p, "Invalid sense number: '%s' % n")
+        p_error (p, "Invalid sense number: '%s' % n")
     p[0] = p[1] + [n]
 
 # -------------- RULES END ----------------
 
-def p_error (token): 
+def p_error (t_or_p, msg="Syntax Error", loc=True): 
+        # 't_or_p' is either a YaccProduction (if called from 
+        # jelparse code), a LexToken (if called by Ply), or None
+        # (if called by Ply at end-of-text).
         #pdb.set_trace()
-        if token: errpos = token.lexpos
-        else: errpos = None
-        descr = errloc (errpos)
-        raise ParseError ("Syntax error", '\n'.join (descr))
-
-def xerror (p, msg=None):
-        #pdb.set_trace()
-        token = p.stack[-1]
-          # Caution: token will only have an 'endlexpos' if parser.parse()
-          #  was called with the argument, tracking=True.
-        if token: errpos = token.endlexpos
-        else: errpos = None
-        descr = errloc (errpos)
-        raise ParseError (msg, '\n'.join (descr))
+        if loc:
+            errpos = -1
+            if t_or_p is None: errpos = None
+            elif hasattr (t_or_p, 'stack'): 
+                  # 't_or_p' is a production.  Replace with a real token or
+                  # grammar symbol from the parser stack.
+                t_or_p = t_or_p.stack[-1]
+              # Grammar symbols will have a "endlexpos" attribute (presuming
+              # that the parse() function was called with argument: tracking=True).
+            if hasattr (t_or_p, 'endlexpos'): 
+                errpos = t_or_p.endlexpos
+              # LexTokens will have a "lexpos" attribute.
+            elif hasattr (t_or_p, 'lexpos'): 
+                errpos = t_or_p.lexpos
+            if errpos == -1:
+                raise ValueError ("Unable to get lexer error position.  "
+                                  "Was parser called with tracking=True?")
+            t = errloc (errpos)
+            loc_text = '\n'.join (t)
+        else:
+            loc_text = None
+        raise ParseError (msg, loc_text)
 
 def errloc (errpos):
         # Return a list of text lines that consitute the parser
@@ -446,7 +457,7 @@ def lookup_tag (tag, typs=None):
             try:
                 x = (getattr (KW, typ))[tagbase]
             except AttributeError: 
-                raise ParseError ("Unknown 'typ' value: %s." % typ)
+                return None
             except KeyError: pass
             else: 
                 if not val: matched.append ([typ, x.id])
@@ -509,7 +520,7 @@ def sens_tags (sens, gloss, tags):
                     candidate = candidates[0] 
                     typ, t = candidate
             if typ is None:
-                errs.append ("Unknown tag '%r'" % t)
+                errs.append ("Unknown tag '%s'" % t)
                 continue
 
             if typ in ('POS','MISC','FLD','DIAL'):
@@ -588,7 +599,7 @@ def bld_rdng (r, taglist=[]):
                 v = lookup_tag (t[0], ('RINF','FREQ'))
                 if not v: 
                     typ = None
-                    errs.append ("Unknown reading tag %s" % t[0])
+                    errs.append ("Unknown reading tag '%s'" % t[0])
                 else:
                     typ, t = v[0][0], v[0][1:] 
             if typ == 'RINF': append (r, '_inf', jdb.Rinf(kw=t[0]))
@@ -631,7 +642,7 @@ def bld_rdng (r, taglist=[]):
                                       + fmt_xitem (xitem))
                     append (r, "_RESTR", ktxt)
                 if hasattr (r,'_RESTR') and nokanj:
-                    errs.append ("Can't use both kanji and 'nokanji' in 'restr' tags")
+                    errs.append ("Can't use both kanji and \"nokanji\" in 'restr' tags")
             elif typ: 
                 errs.append ("Cannot use '%s' tag in a reading" % typ)
         return "\n".join (errs)
@@ -642,7 +653,7 @@ def bld_kanj (k, taglist=[]):
             typ = t.pop(0)
             if typ is None:
                 v = lookup_tag (t[0], ('KINF','FREQ'))
-                if not v: xerror ("Unknown kanji tag %s" % t[0])
+                if not v: p_error ("Unknown kanji tag '%s'" % t[0])
                   # Warning: The following simply uses the first resolved tag in
                   # the candidates list returned by lookup_tag().  This assumes
                   # there are no possible tags that are ambiguous in the KINF and
@@ -660,7 +671,7 @@ def bld_kanj (k, taglist=[]):
                   # ._freq objects created.
                 append (k, "_FREQ", (t[0], t[1]))
             else: 
-                errs.append ("Cannot use %s tag in kanji section" % typ); 
+                errs.append ("Cannot use '%s' tag in kanji section" % typ); 
         return "\n".join (errs)
 
 def mk_restrs (listkey, rdngs, kanjs):

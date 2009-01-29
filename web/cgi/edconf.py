@@ -198,10 +198,9 @@ def parse (krstext):
         try: 
 	    entr = parser.parse (krstext, lexer=lexer, tracking=True)
 	except jelparse.ParseError, e:
-	    msg = "%s\n<pre>\n%s\n</pre>" % (e.args[0], e.loc)
+	    if not e.loc: msg = e.args[0]
+	    else: msg = "%s\n<pre>\n%s\n</pre>" % (e.args[0], e.loc)
 	    errs.append (msg)
-	except ValueError, e:
-	    errs.append (str (e))
 	return entr, errs
 
 if __name__ == '__main__': 

@@ -11,4 +11,5 @@
 \copy kwstat from '../pg/data/kwstat.csv' CSV delimiter E'\t'
 \copy kwxref from '../pg/data/kwxref.csv' CSV delimiter E'\t'
 \copy kwcinf from '../pg/data/kwcinf.csv' CSV delimiter E'\t'
-\copy rad    from '../pg/data/rad.csv'  CSV HEADER delimiter E'\t'
+\copy kwsrc  from '../pg/data/kwsrc.csv'  CSV delimiter E'\t'
+\copy rad    from '../pg/data/rad.csv'    CSV HEADER delimiter E'\t'

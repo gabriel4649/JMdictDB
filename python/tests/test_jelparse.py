@@ -28,7 +28,7 @@ def globalSetup ():
 	Cur = jdb.dbOpen ('jmdict', **kwargs)
 	KW = jdb.KW
         Lexer, tokens = jellex.create_lexer ()
-        Parser = jelparse.create_parser (tokens)
+        Parser = jelparse.create_parser (Lexer, tokens)
 
 class Roundtrip (unittest.TestCase):
 
@@ -121,9 +121,9 @@ class ParseErrors  (unittest.TestCase):
 
     # No rdng or kanj.
     def test0200010(self): self.check('0200010', jelparse.ParseError,
-	"Bad syntax at token '[2]' (line 1)") 
+	"Syntax Error") 
     def test0200020(self): self.check('0200020', jelparse.ParseError,
-	"Invalid sense number '100'") 
+	"Unknown keyword: 'z'") 
 
     def check (self, seq, exception, msg):
 	global Cur, Lexer, Parser
@@ -195,8 +195,8 @@ class Lookuptag (unittest.TestCase):
     def test018(self): self.assertEqual ([['KINF',4],['RINF',3]], jelparse.lookup_tag('ik'))
     def test019(self): self.assertEqual ([['POS',28],], jelparse.lookup_tag('v1'))
 
-    def test101(self): self.assertRaises (ValueError, jelparse.lookup_tag, 'n',['POSS'])
+    def test101(self): self.assertEqual (None, jelparse.lookup_tag ('n',['POSS']))
       # Is the following desired behavior? Or should value for 'n' in 'POS' be returned?
-    def test102(self): self.assertRaises (ValueError, jelparse.lookup_tag, 'n',['POS','POSS'])
+    def test102(self): self.assertEqual (None, jelparse.lookup_tag ('n',['POS','POSS']))
 
 if __name__ == '__main__': main()

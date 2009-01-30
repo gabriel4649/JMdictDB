@@ -52,13 +52,13 @@ entr	: preentr
 		  # readings or kanji.
 		if hasattr (e, '_rdng') and hasattr (e, '_kanj'): 
 		    err = mk_restrs ("_RESTR", e._rdng, e._kanj)
-		    if err: p_error (p, err, loc=False)
+		    if err: perror (p, err, loc=False)
 		if hasattr (e, '_sens') and hasattr (e, '_kanj'): 
 		    err = mk_restrs ("_STAGK", e._sens, e._kanj)
-		    if err: p_error (p, err, loc=False)
+		    if err: perror (p, err, loc=False)
 		if hasattr (e, '_sens') and hasattr (e, '_rdng'): 
 		    err = mk_restrs ("_STAGR", e._sens, e._rdng)
-		    if err: p_error (p, err, loc=False)
+		    if err: perror (p, err, loc=False)
 		  # Note that the entry object returned may have an _XREF list
 		  # on its senses but the supplied xref records are not
 		  # complete.  We do not assume database access is available
@@ -90,7 +90,7 @@ kanjitem
 	| KTEXT taglists
 		{ kanj = jdb.Kanj(txt=p[1])
 		err = bld_kanj (kanj, p[2])
-		if err: p_error (p, err)
+		if err: perror (p, err)
 		p[0] = kanj }
 	;
 rdngsect
@@ -105,7 +105,7 @@ rdngitem
 	| RTEXT taglists
 		{ rdng = jdb.Rdng(txt=p[1])
 		err = bld_rdng (rdng, p[2])
-		if err: p_error (p, err)
+		if err: perror (p, err)
 		p[0] = rdng }
 	;
 senses
@@ -118,7 +118,7 @@ sense
 	: SNUM glosses
 		{ sens = jdb.Sens()
 		err = bld_sens (sens, p[2])
-		if err: p_error (p, "Unable to build sense %s\n%s" % (p[1], err))
+		if err: perror (p, "Unable to build sense %s\n%s" % (p[1], err))
 		p[0] = sens }
 	;
 glosses
@@ -195,7 +195,7 @@ tagitem
 		    p[0] = ['RESTR', [['nokanji', None, None, None, None]]]
 		else:
 		    x = lookup_tag (p[1])
-		    if not x: p_error (p, "Unknown keyword: '%s'" % p[1])
+		    if not x: perror (p, "Unknown keyword: '%s'" % p[1])
 		    else: p[0] = [None, p[1]] }
 
 	| TEXT EQL TEXT /* typ=tag,note=xxx,lsrc=txt,restr=nokanji */
@@ -203,28 +203,28 @@ tagitem
 		if p[1] in ["note","lsrc","restr"]:
 		    if p[1] == "restr":
 			if p[3] != "nokanji":
-			    p_error (p, "Bad restr value (expected \"nokanji\"): '%s'" % p[3])
+			    perror (p, "Bad restr value (expected \"nokanji\"): '%s'" % p[3])
 			p[0] = ["RESTR", [["nokanji", None, None, None, None]]]
 		    else: p[0] = [p[1], p[3], 1, None]
 		else:
 		    x = lookup_tag (p[3], p[1])
 		    if x and len(x) > 1:
 			raise ValueError ("Unexpected return value from lookup_tag()")
-		    if x is None: p_error (p, "Unknown keyword type '%s'" % p[1])
-		    elif not x:   p_error (p, "Unknown %s keyword '%s'" % (p[1],p[3]))
+		    if x is None: perror (p, "Unknown keyword type '%s'" % p[1])
+		    elif not x:   perror (p, "Unknown %s keyword '%s'" % (p[1],p[3]))
 		    else:         p[0] = x[0] } 
 
 	| TEXT EQL QTEXT	    /* note=xxx, lsrc=txt */
 		{ KW = jdb.KW 
 		if p[1] in ["note","lsrc"]:
 		    p[0] = [p[1], jellex.qcleanup (p[3][1:-1]), 1, None] 
-		else: p_error (p, "Unknown keyword: '%s'" % p[1]) } 
+		else: perror (p, "Unknown keyword: '%s'" % p[1]) } 
 
 	| TEXT EQL TEXT COLON	    /* lsrc=xx: ('xx' is language code.) */
 		{ KW = jdb.KW 
-		if p[1] != "lsrc": p_error (p, "Keyword must be \"lsrc\"")
+		if p[1] != "lsrc": perror (p, "Keyword must be \"lsrc\"")
 		la = KW.LANG.get(p[3])
-		if not la: p_error (p, "Unrecognised language '%s'" % p[3])
+		if not la: perror (p, "Unrecognised language '%s'" % p[3])
 		p[0] = ["lsrc", None, la.id, None] }
 
 	| TEXT EQL TEXT COLON atext  /* lsrc=lng:text, lsrc=w:text */
@@ -234,19 +234,19 @@ tagitem
 		    la = KW.LANG.get(p[3])
 		    if not la:
 			if p[3] not in ('w','p','wp','pw'):
-			    p_error (p, "Unrecognised language '%s'" % p[3])
+			    perror (p, "Unrecognised language '%s'" % p[3])
 			else: lsrc_flags = p[3]
 		    else: lang = la.id
-		else: p_error (p, "Keyword not \"lsrc\", \"lit\", or \"expl\"")
+		else: perror (p, "Keyword not \"lsrc\", \"lit\", or \"expl\"")
 		p[0] = ["lsrc", p[5], lang, lsrc_flags] }
  
 	| TEXT EQL TEXT SLASH TEXT COLON atext /* lsrc=xx/wp:text */
 		{ KW = jdb.KW 
-		if p[1] != "lsrc": p_error (p, "Keyword not \"lsrc\"")
+		if p[1] != "lsrc": perror (p, "Keyword not \"lsrc\"")
 		la = KW.LANG.get(p[3])
-		if not la: p_error (p, "Unrecognised language '%s'" % p[3])
+		if not la: perror (p, "Unrecognised language '%s'" % p[3])
 		if p[5] not in ('w','p','wp','pw'):
-		    p_error (p, "Bad lsrc flags '%s', must be 'w' (wasei), "
+		    perror (p, "Bad lsrc flags '%s', must be 'w' (wasei), "
 				"'p' (partial),or both" % p[5])
 		p[0] = ["lsrc", p[7], la.id, p[5]] }
  
@@ -268,7 +268,7 @@ tagitem
 		else: 
 		      # FIXME: msg is misleading, we also except other
 		      #  xref keywords.
-		    p_error (p, 'Bad keyword, expected one of "restr", "see", or "ant"')
+		    perror (p, 'Bad keyword, expected one of "restr", "see", or "ant"')
 		}
 	;
 atext
@@ -339,17 +339,22 @@ snums
 	: NUMBER
 		{ n = int(p[1])
 		if n<1 or n>99:
-		    p_error (p, "Invalid sense number: '%s' % n")
+		    perror (p, "Invalid sense number: '%s' % n")
 		p[0] = [n] }
 	| snums COMMA NUMBER
 		{ n = int(p[3])
 		if n<1 or n>99:
-		    p_error (p, "Invalid sense number: '%s' % n")
+		    perror (p, "Invalid sense number: '%s' % n")
  		p[0] = p[1] + [n] }
 	;
 
 %%
-def p_error (t_or_p, msg="Syntax Error", loc=True): 
+def p_error (token):
+	# Ply insists on having a p_error function that takes
+	# exactly one argument so provide a wrapper around perror.
+	perror (token)
+	
+def perror (t_or_p, msg="Syntax Error", loc=True): 
 	# 't_or_p' is either a YaccProduction (if called from 
 	# jelparse code), a LexToken (if called by Ply), or None
 	# (if called by Ply at end-of-text).
@@ -637,7 +642,7 @@ def bld_kanj (k, taglist=[]):
 	    typ = t.pop(0)
 	    if typ is None:
 		v = lookup_tag (t[0], ('KINF','FREQ'))
-		if not v: p_error ("Unknown kanji tag '%s'" % t[0])
+		if not v: perror ("Unknown kanji tag '%s'" % t[0])
  		  # Warning: The following simply uses the first resolved tag in
 		  # the candidates list returned by lookup_tag().  This assumes
 		  # there are no possible tags that are ambiguous in the KINF and

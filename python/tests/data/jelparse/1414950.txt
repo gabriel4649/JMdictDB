@@ -1,0 +1,10 @@
+﻿大文字[ichi1,news2,nf35]
+おおもじ[ichi1,news2,nf35]；だいもんじ
+[1][n]
+  upper case letters; large characters; capital letter
+[2][n]
+  [restr=だいもんじ]
+  the (kanji) character "dai" meaning "big"
+[3][n]
+  [restr=だいもんじ]
+  huge character "dai" formed by fires lit on the side of a mountain in Kyoto on 16 Aug each year

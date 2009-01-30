@@ -1,0 +1,9 @@
+﻿ランプ[gai1]
+[1][n]
+  [lsrc=eng:,lsrc=dut:]
+  lamp; light
+  [see=2195100・洋灯・ランプ[1]]
+[2][n]
+  ramp
+[3][n][fld=food]
+  rump

@@ -1,0 +1,9 @@
+﻿夕べ[news1,nf18]；夕[news1,nf02]；昨夜[ichi1,news1,nf21]
+ゆうべ[news1,nf18]；ゆう[news1,nf02][restr=夕]；さくや[ichi1,news1,nf21][restr=昨夜]
+[1][n-adv,n-t]
+  [restr=夕べ; 夕]
+  evening
+[2][n-adv,n-t]
+  [restr=ゆうべ; さくや]
+  [note="usu. 昨夜"]
+  last night

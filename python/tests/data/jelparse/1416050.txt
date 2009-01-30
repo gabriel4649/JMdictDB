@@ -1,0 +1,11 @@
+﻿叩き[spec1]；三和土；敲き
+たたき[spec1]；タタキ[spec1][restr=nokanji]
+[1][n][uk]
+  [restr=叩き; 敲き]
+  mince (minced meat or fish)
+[2][n][sl]
+  [restr=叩き; 敲き]
+  robbery; extortion
+[3][n]
+  [note="usu. 三和土 (gikun)"]
+  hard-packed dirt (clay, gravel, etc.) floor; concrete floor

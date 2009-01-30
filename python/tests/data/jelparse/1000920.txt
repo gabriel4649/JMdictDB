@@ -1,0 +1,7 @@
+﻿いらっしゃい[spec1]；いらしゃい[ik]
+[1][int,n][hon]
+  (used as a polite imperative) come; go; stay
+  [see=1000940・いらっしゃる[1,2]]
+[2][int,n]
+  welcome!
+  [see=1000930・いらっしゃいませ[1]]

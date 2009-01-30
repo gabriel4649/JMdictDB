@@ -1,6 +1,6 @@
 Title:	Approval process flow
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	
@@ -18,3 +18,8 @@ AssdTo:	stuart@friix.com
   
   Still to do: testing, editor login, diffs between old and new entries,
   security review.
+
+2009-01-30 11:45:00 stuart@friix.com
+  In current rev 2ca1e8193b3a editor login, diffs, etc have been implemented
+  and process flow seems to work though the ui needs improvement (with
+  complex trees of changes, it can be hard to sort out the dependencies.)

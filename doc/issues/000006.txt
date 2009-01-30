@@ -1,6 +1,6 @@
 Title:	Editor authenication
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	feat
 Reqtrs:	
@@ -100,3 +100,8 @@ AssdTo:	stuart@friix.com
   
   Probably want to use cookie, at least optionally, since we will want to
   provide per user customization ability a'la wwwjdic.
+
+2009-01-30 11:51:00 stuart
+  The above authentication scheme is sufficient for operational development.
+  It should be replaced by something better in the future.  For now, this
+  can be considered done.

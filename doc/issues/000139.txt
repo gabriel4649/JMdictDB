@@ -1,6 +1,6 @@
 Title:	Preserve unresolved xrefs
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	Jim Breen
@@ -62,3 +62,6 @@ AssdTo:
   
   * Same to formatting tasks above also apply to formatting
    the exhanced XML.
+
+2009-01-30 08:25:00 stuart
+  Done in changeset 5d56030ee622 and subsequent fixes.

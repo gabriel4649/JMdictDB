@@ -1,6 +1,6 @@
-Title:	JEL parser: allow seq# in xref
-Stat:	open
-Disp:	
+﻿Title:	JEL parser: allow seq# in xref
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	
@@ -10,3 +10,31 @@ AssdTo:	stuart@friix.com
   Since kanji.reading pair is not sufficient to uniquely indentify a
   target entry, need to be able to give an entry seq#(/src#?).  Currently
   the jel parser ha no syntax to support this.
+
+2009-01-30 08:25:00 stuart@friix.com
+  This works as of rev 2ca1e8193b3a.  Syntax is:
+
+    SEQ corpus・KANJI・READING[snums]
+    ENTRNUM#・KANJI・READING[snums]
+
+  where
+
+    SEQ -- Target sequence number.  Optional if KANJI/READING is
+  sufficient to uniquely identify target.
+
+    corpus -- The corpus in which to look for SEQ.  If not given
+  the corpus is the same as the xref source entry.
+
+    ENTRNUM -- A number followed by a "#" character is taken as an
+  entry id number.
+
+    KANJI・READING -- If SEQ not given, this will be used to find target
+  Whether ort not SEQ is given, his will be used to set xref's 'kanj' 
+  and 'rdng' fields.  Only one of KANJI or READING may be given if that 
+  is sufficient to uniquely locate the target entry.
+
+    snums -- Target sense number or ciomma separated list of target sense
+  numbers.
+
+  Possible to-do:  Get rid the ENTRNUM# form?  Are there any cases where 
+  we *do not* want all entries of the same SEQ number referenced?

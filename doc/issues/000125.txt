@@ -1,6 +1,6 @@
 Title:	full attribute sets on entry objects
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -65,3 +65,9 @@ AssdTo:
   lots of empty lists, which are thrown away later when the lists
   are replaced with actual data. They also use more space.  How much
   extra space/time do they take?
+
+2009-01-30 11:51:00 sysad
+  Above changes were implemented in most places where entry objects
+  are created (the pgi stuff is an exception).  Will gradually 
+  replace the few remaining uses of Obj and DbRow instances over 
+  time as they are encountered.

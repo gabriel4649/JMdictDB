@@ -187,9 +187,9 @@ tags
 	;
 tagitem
 	: KTEXT 
-		{ p[0] = ['RESTR', [None, p[1], None, None, None]] }
+		{ p[0] = ['RESTR', [[None, p[1], None, None, None]]] }
 	| RTEXT
-		{ p[0] = ['RESTR', [p[1], None, None, None, None]] }
+		{ p[0] = ['RESTR', [[p[1], None, None, None, None]]] }
 	| TEXT			    /* Simple keyword tag (including "nokanji"). */
 		{ if p[1] == 'nokanji':
 		    p[0] = ['RESTR', [['nokanji', None, None, None, None]]]

@@ -77,7 +77,7 @@ class LexSpec:
 	ur'[;\uFF1B]'
 	return t
     def t_TAGLIST_COMMA (self, t):
-	ur','
+	ur'[,\u3001]'
 	return t
     def t_TAGLIST_EQL (self, t):
 	ur'='
@@ -105,7 +105,7 @@ class LexSpec:
 	return t
 
     def t_TAGLIST_TEXT (self, t):
-	ur'[^;\uFF1B:=,\/\.\#\uFF0F\u30FB\[\] \t\r\n]+'
+	ur'[^;\uFF1B:=,\u3001\/\.\#\uFF0F\u30FB\[\] \t\r\n]+'
 	  # Classify it as kanji, reading (kana), or ordinary
 	  # text and return token accordingly.
 	t.value = qcleanup(t.value)

@@ -186,11 +186,11 @@ def p_tags_2(p):
 
 def p_tagitem_1(p):
     '''tagitem : KTEXT'''
-    p[0] = ['RESTR', [None, p[1], None, None, None]]
+    p[0] = ['RESTR', [[None, p[1], None, None, None]]]
 
 def p_tagitem_2(p):
     '''tagitem : RTEXT'''
-    p[0] = ['RESTR', [p[1], None, None, None, None]]
+    p[0] = ['RESTR', [[p[1], None, None, None, None]]]
 
 def p_tagitem_3(p):
     '''tagitem : TEXT'''

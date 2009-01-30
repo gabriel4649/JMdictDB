@@ -247,6 +247,7 @@ def approve (dbh, svc, entr, errs):
 
 	KW = jdb.KW
 	dfrmid = entr.dfrm
+	edroot = None
 	if dfrmid:
 	      # Since $dfrmid is not undef, this is an edit of an
 	      # existing entry.  We need to make sure there is a

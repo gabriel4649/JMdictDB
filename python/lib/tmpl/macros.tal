@@ -2,7 +2,7 @@
   <table width="100%">
     <tr>
       <td><h1 metal:define-slot="title">Page head text</h1></td>
-      <td align="right">
+      <td align="right" rowspan="2">
 	<form name="entrauth" method="get" tal:attributes="action this_page">
 	  <span tal:repeat="p parms" tal:omit-tag="">
 	    <input type="hidden" tal:attributes="name p/0; value p/1"/>
@@ -22,6 +22,14 @@
 	    </table>
 	  </form>
 	</td>
+      </tr>
+    <tr>
+      <td>
+	<a tal:attributes="href string:srchform.py?svc=${svc}&amp;sid=${sid}&amp;">
+	  New search</a> /
+	<a tal:attributes="href string:edform.py?svc=${svc}&amp;sid=${sid}&amp;">
+	  New Entry</a>
+        </td>
       </tr>
     </table>
   </div>

@@ -36,8 +36,9 @@
   and reading.
       <p/>
   Enter senses and glosses in the Senses box.  Each sense starts with
-  a number enclosed in square brackets, e.g. <samp>[1]</samp>.  This is followed
-  with one or more glosses, separated with (ASCII) semicolons.
+  a sense number enclosed in square brackets, e.g. <samp>[1]</samp>.  
+  This is   followed by one or more glosses.  When there is more than
+  one gloss, they are separated with (ASCII) semicolons.
   If a gloss contains any semicolon (<samp>;</samp>) or left bracket (<samp>[</samp>) 
   characters, they must be escaped with a backslash character (<samp>\</samp>).
   Whitespace (including newlines) is stripped from the beginning and 
@@ -62,7 +63,20 @@
   apply to the entire sense.  Gloss tags may occur before or after the
   gloss they apply to.
       <p/>
-  Some tags take arguments and are given in the form, <samp>tag_type=tag_value</samp>.
+  Tags are gouped into different types.  For example there are a set of
+  part-of-speech (pos) tags having values like <samp>n</samp> (noun), 
+  <samp>v5</samp> (go-dan verb), etc., and are used in senses.  The tags
+  in group Kinf provide information about kanji and have values like
+  <samp>ateji</samp> (phonetic reading) and <samp>iK</samp> (word containing
+  irregular kanji usage) and are use (unsurprisingly) with kanji.  
+  Case is sigfificant in tags; <samp>ik</samp> is not the same as <samp>iK</samp>.
+      <p/>
+  See <a href=#insyntax>Tag Syntax</a> for a list of tag groups and where 
+  each group may be used.  See <a href="#kwabbr">Keyword abbreviations</a>
+  for lists of the actual tag values in each group.
+      <p/>
+  Some tags take arguments (see *note below) and are given in the form,
+  <samp>tag_type=tag_value</samp>.
   In some cases the tag may be given multuple arguments separated with
   semicolons: <samp>tag_type=tag_value1;tag_value2;...</samp>.  Some tags can be 
   be given in the form, <samp>tag_type=tag_value</samp>, or just <samp>tag_value</samp>.
@@ -79,6 +93,16 @@
   <a href="#kanji">Kanji</a>, 
   <a href="#readings">Readings</a>, <a href="#senses">Senses</a>, and 
   <a href="#insyntax">Tag Syntax</a> sections below.
+      <p/>
+  *Note: Actually, all tags can be given in the form <samp>tag_type=tag_value</samp>.
+  <samp>v5</samp> is exactly equivalent to <samp>pos=v5</samp>.  The short
+  form is usually more covienient, but the longer form may sometimes
+  be needed to avoid misinterpretations.  For example, <samp>lit</samp>
+  can be the value of a gloss tag (literal gloss) or a language (Lithuanian).
+  Since <samp>[lit]</samp> will be interpreted as "literal" when used 
+  with a gloss, you will need to use <samp>[lang=lit]</samp> if 
+  you want to provide a gloss in Lithuanian.
+
   </div>
 
 <div class="entry">
@@ -295,7 +319,7 @@
   <table style="text-align: left;" border="1" cellpadding="2" cellspacing="2">
     <tbody>
       <tr>
-	<td>Tag</td>
+	<td>Tag group</td>
 	<td>Description</td>
 	<td>Where used</td>
 	<td>Format</td>
@@ -418,15 +442,19 @@
         <td>Source language and word.</td>
         <td>Senses</td>
         <td>
-	  [lsrc=<span style="font-style: italic;"><a href="#kw_lang">xxx</a></span>:]<br/>
-	  [lsrc=<span style="font-style: italic;">text</span>]<br/>
-	  lsrc=<span style="font-style: italic;"><a href="#kw_lang">xxx</a></span><span style="font-style: italic;"></span>:<span style="font-style: italic;">text</span>]<br/>
-	  (1) "xxx" is a three-letter code from ISO-639-2. <br/>
-	  See <a href="#kw_lang">language keywords</a> for a full list. <br/>
-	  (2) The text must be enclosed in quotes (") if it contains
-	  spaces or commas.  Otherwise quotes are not needed.
+	  lsrc=<span style="font-style: italic;"><a href="#kw_lang">lng</a></span>/<span style="font-style: italic;">wp</span>:<span style="font-style: italic;">text</span>]<br/>
+	  (1) "lng" is an optional three-letter language code from ISO-639-2. 
+	  See <a href="#kw_lang">language keywords</a> for a full list. 
+	  If not given, default is "eng" (English).<br/>
+	  (2) "wp" optional and is either <samp>w</samp> (wasei), 
+	  <samp>p</samp> (partial), or <samp>wp</samp> (wasei and partial).
+	  A slash character is used to separate the "lng" and "wp" arguments 
+	  and should not be given unless both arguments are given. <br/>
+	  (3) "text" is optional.  If given it must be enclosed in quotes (") 
+	  if it contains spaces or commas.  Otherwise quotes are not needed.
 	  </td>
-        <td>[lsrc=por:]<br/>[lsrc=ger:Arbeit]<br/>[lsrc=eng:"eye mate"]</td>
+        <td>[lsrc=por:]<br/>[lsrc=ger:Arbeit]<br/>[lsrc=eng/w:"eye mate"]<br/>
+	  [lsrc=w:outerior]</br>[lsrc=ice]</td>
 	</tr>
 
       <tr>
@@ -480,21 +508,20 @@
 	  [restr=<span style="font-style: italic;">XX</span>;<span style="font-style: italic;">XX</span>;...]<br/>
 	  [restr=nokanji]<br/>
 	  [nokanji]<br/>
-	  ~~~~<br/>
 	  (1) If the tag is in the Reading section, the XX's must be kanji
-	  strings occuring in the Kanji section. &nbsp;<br/>
+	  strings occuring in the Kanji section. <br/>
 	  (2) If the tag is in the Reading section, XX may be "nokanji".
 	  When "nokanji", no other XX's may be used on the reading the
-	  tag applies to. 
+	  tag applies to. <br/>
 	  (3) If the tag is in a Sense, the XX's may be either kana strings that
 	  occur in the Reading section, or kanji strings that occur in the Kanji
-	  section.<br/>
-	  (4) Restr tags are not allowed in the Kanji section.</br>
+	  section. <br/>
+	  (4) Restr tags are not allowed in the Kanji section. </br>
 	  (5) Muliple reading or kanji restriction text mat follow the "restr="
-	  part; separate them with ASCII or JP semicolons.
+	  part; separate them with ASCII or JP semicolons. </br>
 	  (6) The "restr=" part is optional, you can also just put the
 	  kanji or reading restriction text in brackets (separated by 
-	  ASCII or JP commas).<td/>
+	  ASCII or JP commas). </td>
         <td>[惚け、呆け]<br/>[restr=惚け；呆け]<br/>[惚け][restr=呆け]<br/>[nokanji]</td>
 	</tr>
 

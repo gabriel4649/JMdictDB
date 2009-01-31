@@ -129,7 +129,7 @@ def main (args, opts):
 			    entries=entrs, serialized=serialized,
 			    chklist=chklist, is_editor=1, disp=disp,
 			    svc=svc, sid=sid, session=sess, parms=parms, 
-			    method="get", output=sys.stdout, this_page='edconf.py')
+			    method="post", output=sys.stdout, this_page='edconf.py')
 	else: jmcgi.gen_page ("tmpl/url_errors.tal", output=sys.stdout, errs=errs)
 	cur.close() 
 

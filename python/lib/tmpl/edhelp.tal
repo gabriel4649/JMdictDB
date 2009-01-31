@@ -17,17 +17,17 @@
 <div class="entry">
   <h2>Overview</h2>
   JEL (JMdictDB Edit Language) is used to describe JMdictDB entries.
-  It allows one to enter any JMdict entry in three text boxes (Kanji, 
-  Readings, Senses) rather than the dozens of text boxes that would be 
-  required if every JMdict field used a separate text box for its entry.
-  The syntax of JEL is similar to EDICT but with modifications facilitate
-  machine parsing.
+  It allows one to enter the core information of a JMdict entry in three
+  text boxes (Kanji, Readings, Senses) rather than the dozens of text
+  boxes that would be required if every JMdict field used a separate
+  text box for its entry.  The syntax of JEL is similar to EDICT but
+  with modifications facilitate machine parsing.
 
   <h3>General Syntax Rules</h3>
 
   The Edit Entry Form consists of a number of text boxes for entering
-  information about an entry, but the three main ones are the Kanji, 
-  Readings, and Sense boxes.  
+  information about an entry, but there are three that accept and parse
+  JEL text: the Kanji, Readings, and Senses boxes.  
       <p/>
   In the Kanji and Readings boxes, enter the entry's kanji and readings.
   If the entry has more than one of either, separate them with semicolons.
@@ -36,10 +36,12 @@
   and reading.
       <p/>
   Enter senses and glosses in the Senses box.  Each sense starts with
-  a number enlosed in square brackets, e.g. <samp>[1]</samp>.  This is followed
+  a number enclosed in square brackets, e.g. <samp>[1]</samp>.  This is followed
   with one or more glosses, separated with (ASCII) semicolons.
   If a gloss contains any semicolon (<samp>;</samp>) or left bracket (<samp>[</samp>) 
   characters, they must be escaped with a backslash character (<samp>\</samp>).
+  Whitespace (including newlines) is stripped from the beginning and 
+  end of each gloss.
   The actual numbers used in sense numbers are not significant:
   when entered into the database, senses will be ordered starting 
   from 1 in the order they occur regardless of the sense numbers

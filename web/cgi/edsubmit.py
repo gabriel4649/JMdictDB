@@ -141,7 +141,10 @@ def main( args, opts ):
 	    errs.append ("Only registered editors can approve or reject entries")
         #raise RuntimeError
 	if not errs:
-	    entrs = serialize.unserialize (fv ("entr"))
+	    try: entrs = serialize.unserialize (fv ("entr"))
+	    except StandardEror:
+		errs.append ("Bad 'entr' parameter, unable to unserialize.")
+	if not errs:
 	    added = []
 	    dbh.connection.commit()
 	    dbh.execute ("START TRANSACTION ISOLATION LEVEL SERIALIZABLE");

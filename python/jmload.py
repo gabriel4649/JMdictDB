@@ -18,8 +18,8 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-__version__ = ('Revision: 0.0 '[11:-2],
-	       'Date: 0000/00/00 00:00:00 '[7:-11]);
+__version__ = ('$Revision$'[11:-2],
+	       '$Date$'[7:-11]);
 
 # This program will adjust the entr id numbers (both entr.id number
 # and references to them in other tables) in a Postgresql dump file
@@ -46,6 +46,7 @@ def main (args, opts):
 	rmin = opts.minimum_id; rmax = opts.maximum_id
 	eiddelt = eid - rmin;
 	print >>sys.stderr, "Rebasing %d to %d." % (rmin, eid)
+	srcid = opts.srcid
 
 	fin  = open (args[0])
 	fout = open (opts.output, 'w')
@@ -60,7 +61,10 @@ def main (args, opts):
 	    'lsrc'    : [0],    'ginf'    : [0],    'restr'   : [0],    'stagr'   : [0],
 	    'stagk'   : [0],    'xref'    : [0,2],  'xresolv' : [0],    'entrsnd' : [0],
 	    'rdngsnd' : [0],    'chr'     : [0],    'cinf'    : [0],    'kresolv' : [0],
+	    'freq'    : [0],
 	    }
+	  # Column numbers of id and kw in kwsrc, and src in entr tables.
+	KWSRC_ID=0;  KWSRC_KW=1; ENTR_SRC=1
 
 	delt=0;  reading_table_data=False;  updtd=[]
 
@@ -70,12 +74,17 @@ def main (args, opts):
 		if line.startswith (r'\.'):
 		    reading_table_data = False
 		    delt = 0
-		elif delt:
+		elif delt or srccol >= 0:
 		    a = line.split ("\t")
-		    for col in cols:
-			v = int(a[col])
-			if v >= rmin and (not rmax or v<rmax): 
-			    a[col] = str (v + delt)
+		    if delt:
+			for col in cols:
+			    v = int(a[col])
+			    if v >= rmin and (not rmax or v<rmax): 
+				a[col] = str (v + delt)
+		    if srccol >= 0:
+			a[srccol] = str (srcid)
+		    if kwcol >= 0:
+			a[KWSRC_KW] = opts.srckw
 		    line = "\t".join (a)
 	    else:
 		mo = re.search (r'^[\\]?COPY\s+([^\s(]+)', line)
@@ -87,6 +96,12 @@ def main (args, opts):
 		    else:
 			delt = eiddelt;
 			updtd.append (tblnm)
+		    srccol = kwcol = -1
+		    if srcid:
+			if tblnm == 'entr':  srccol = ENTR_SRC
+		        if tblnm == 'kwsrc': 
+			    srccol = KWSRC_ID
+			    kwcol  = KWSRC_KW
 	    fout.write (line + "\n")
 
 	if updtd and eiddelt != 0:
@@ -115,6 +130,7 @@ def parse_cmdline ():
 
         %prog -o output-filename [-i starting-id-value] 
                   [-m minimum-id] [-x maximum-id]
+		  [-s src-adjust-amount]
                   [-u username] [-p password] [-d database] 
                   [-r host] [-e encoding] 
               pgi-filename 
@@ -124,11 +140,13 @@ and adjusts the entr.id numbers in it.  This allows jmparse.py and
 other loader programs to generate entr.id numbers starting at 1, and 
 rely on this program to adjust the numbers prior to loading into a 
 database to avoid duplicate id numbers when the database already 
-contains other entries.
+contains other entries.  It can also adjust the kwsrc.id and entr.src
+numbers to avoid conflict when loading a second copy of the data.
 
 It also allows entries to be extracted from a database with the 
 Postgresql 'copy' command and loaded into another database by re-
-basing the entr.id numbers.
+basing the entr.id numbers and adjusting the kwsrc.id and entr.src
+numbers.
 
 Arguments:
 	pgi-filename -- Name of input dump file.  Default is 
@@ -172,6 +190,12 @@ Arguments:
 		entry id's in things like xref records that may refer
 		to entries outside those within the input file.""")
 
+	p.add_option ("-c", "--corpus", default=None,
+	    help="""Arg format is "xxx.n" where 'xxx' will be used as the 
+		corpus keyword (kwsrc.kw) and 'n' (a number) will be 
+		used as the corpus id (kwsrc.id).  All entr.src values 
+		will also be adjusted to match 'n'.""")
+
 	p.add_option ("-e", "--encoding", default="utf-8",
             dest="encoding", 
             help="Encoding for output (typically \"sjis\", \"utf8\", "
@@ -203,6 +227,14 @@ Arguments:
 	if len (args) > 1: p.error ("Too many arguments, expected only one.")
 	if len (args) < 1: p.error ("Not enough arguments, expected one.")
 	if not opts.output: p.error ("--output (-o) option is required.")
+	opts.srcid = None
+	if opts.corpus:
+	    cname, x, cid = opts.corpus.partition(".")
+	    if not cname or not cid: 
+		p.error ('Bad format for --corpus argument, "%s"' % opts.corpus)
+	    opts.srckw = cname
+	    try: opts.srcid = int(cid)
+	    except ValueError: p_error ('Bad format for --corpus argument, "%s"' % opts.corpus)
 	return args, opts
 
 if __name__ == '__main__': 

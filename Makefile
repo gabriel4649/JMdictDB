@@ -166,6 +166,14 @@ jmsess:
 	psql $(PG_HOST) $(PG_USER) -d postgres -c 'create database jmsess'
 	cd pg && psql $(PG_HOST) $(PG_USER) -d jmsess -f mksess.sql
 
+#------ Create new database for loading ---------------------------------
+
+newdb:
+	psql $(PG_HOST) $(PG_USER) -d postgres -c 'drop database if exists $(DB)'
+	psql $(PG_HOST) $(PG_USER) -d postgres -c "create database $(DB) encoding 'utf8'"
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f reload.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
+
 #------ Load JMdict -----------------------------------------------------
 
 data/jmdict.xml: 
@@ -181,9 +189,7 @@ data/jmdict.dmp: data/jmdict.pgi
 	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -i 1 -o ../data/jmdict.dmp ../data/jmdict.pgi
 
 loadjm: data/jmdict.dmp
-	psql $(PG_HOST) $(PG_USER) -d postgres -c 'drop database if exists $(DB)'
-	psql $(PG_HOST) $(PG_USER) -d postgres -c "create database $(DB) encoding 'utf8'"
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f reload.sql
+	-cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/jmdict.dmp
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
 	cd python && python xresolv.py $(JM_HOST) $(JM_USER) $(JM_DB) >../data/jmdict_xresolv.log
@@ -210,8 +216,7 @@ data/jmnedict.dmp: data/jmnedict.pgi
 loadne: data/jmnedict.dmp
 	-cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/jmnedict.dmp
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f mkindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f syncseq.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
 
 #------ Load examples ---------------------------------------------------
 
@@ -230,8 +235,7 @@ data/examples.dmp: data/examples.pgi
 loadex: data/examples.dmp 
 	-cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/examples.dmp
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f mkindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f syncseq.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
 	# The following command is commented out because of the long time
 	# it can take to run.  It may be run manually after 'make' finishes.
 	#cd python && python xresolv.py $(JM_HOST) $(JM_USER) $(JM_DB) -s3 -t1 >../data/examples_xresolv.log
@@ -263,10 +267,7 @@ loadkd: data/kanjidic2.dmp
 # the number of entries may be different in the freshly loaded jmdict
 # set, invalidating the starting id numbers in the other .dmp files.
 
-loadall: data/jmdict.dmp data/jmnedict.pgi data/examples.pgi 
-	psql $(PG_HOST) $(PG_USER) -d postgres -c 'drop database if exists $(DB)'
-	psql $(PG_HOST) $(PG_USER) -d postgres -c "create database $(DB) encoding 'utf8'"
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f reload.sql
+loadall: newdb data/jmdict.dmp data/jmnedict.pgi data/examples.pgi 
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/jmdict.dmp
 
 	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -o ../data/examples.dmp ../data/examples.pgi

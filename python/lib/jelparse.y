@@ -240,7 +240,7 @@ tagitem
 		else: perror (p, "Keyword not \"lsrc\", \"lit\", or \"expl\"")
 		p[0] = ["lsrc", p[5], lang, lsrc_flags] }
  
-	| TEXT EQL TEXT SLASH TEXT COLON atext /* lsrc=xx/wp:text */
+	| TEXT EQL TEXT SLASH TEXT COLON atext /* lsrc=lng/wp:text */
 		{ KW = jdb.KW 
 		if p[1] != "lsrc": perror (p, "Keyword not \"lsrc\"")
 		la = KW.LANG.get(p[3])

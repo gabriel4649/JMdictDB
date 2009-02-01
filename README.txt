@@ -133,7 +133,7 @@ However, you may wish to install a local copy of this software:
 Requirements
 ------------
 The code is developed and tested on Microsoft Windows 2000, 
-Fedora Core 8, and Debian, with either Apache (on Unix/Linux)
+Fedora Core 8, and Debian/Linux, with either Apache (on Linux)
 or IIS (on MS Windows) as a web server.  The webserver should
 be configured to run Python CGI scripts.
 
@@ -146,18 +146,20 @@ verified.
   Postgresql [8.2 or 8.3]
   Python [2.5.2]
     psycopg2-2.0.5.1 Python-Postgresql connector.
-      http://
+      http://initd.org/projects/psycopg2/
+      http://stickpeople.com/projects/python/win-psycopg/ (Windows)
     simpleTAL-4.1 -- Template file processor.
       http://www.owlfish.com/software/simpleTAL/
     simplejson-1.8.1 -- JSON en-/de-coder.
-      http://pypi.python.org/pypi/simplejson/1.8.1
+      http://pypi.python.org/pypi/simplejson/1.8.1/
+      [Python-2.6 and later includes simplejson as module "json".]
     ply-2.5 -- YACC'ish parser generator.
-      http://www.dabeaz.com/ply
-    wxPython-2.8.9.1 -- (Optional) Code inludes a simple
-      GUI interface to the database that is similar the the
+      http://www.dabeaz.com/ply/
+    wxPython-2.8.9.1 -- (Optional) JMdictDB inludes a simple
+      GUI interface to the database that is similar to the
       cgi interface.  To run this requires wxPython.
-      http://www.wxpython.org/download.php
-  Apache [2.2] (on Unix/Linux systems) or
+      http://www.wxpython.org/
+  Apache [2.2] (on Unix/Linux/Windows systems) or
     IIS [5.0] (on MS Windows systems)
   wget -- Used by Makefile to download the JMdict_e.gz, 
     JMnedict.gz, and examples.utf8.gz file from the Monash
@@ -270,7 +272,7 @@ loaded database to "jmdict".
 	make subdirs
 
    This will make sure that the support files are up-
-   to-date.  You can generaly skip this step if you 
+   to-date.  You can generally skip this step if you 
    are running unmodified copy of the source (since 
    an attempt is made to keep the distributed support 
    files updated) but must do this if you've changes
@@ -278,7 +280,25 @@ loaded database to "jmdict".
 
 5. In the top level directory, run "make" which won't
    do anything other than list the available targets 
-   that will do something.  For JMdict the targets are:
+   that will do something.  
+
+   Generally, to load JMdict only, run make thrice with
+   the targets:
+
+	make newdb
+	make loadjm
+	make activate
+
+   To load JMdict, JMnedict, and Examples, run:
+
+	make loadall
+	make activate
+
+   Somre of the more significant Makefile targets are:
+
+   newdb:
+	Create a new database named "jmnew" with all
+	tables needed and ready to load data into.
 
    data/jmdict.xml: 
 	Download the current JMdict_e.gz file from the 
@@ -295,17 +315,17 @@ loaded database to "jmdict".
 	resolved.  
 
    loadjm:
-	Do target jmdict.dmp if neccessary, then delete
-	any existing jmnew database, create a new empty 
-	jmnew database, load the .dmp file and do all
-	the post-load tasks like creating indexes, 
-	resolving xref's etc. After this, the database 
-	should be fully loaded and functional, but is
-	still name "jmnew" to avoid clobbering any
-	existing and in-use "jmdict" database.
+	Do target jmdict.dmp if neccessary, then load
+	the .dmp file into preexisting database "jmnew"
+	and do all the post-load tasks like creating
+	indexes, resolving xref's etc. After this, the
+	database should be fully loaded and functional,
+	but is still named "jmnew" to avoid clobbering
+	any existing and in-use "jmdict" database.
 
    loadall:
-	Load JMdict, JMnedict, and examples into jmnew.
+	Create database "jmnew" and load JMdict, JMnedict,
+	and Examples into it.
 
    activate:
 	Renames the "jmnew" database produced above to 
@@ -319,9 +339,6 @@ loaded database to "jmdict".
    alternatively, you can have them load directly into the
    active database (with the risk of corrupting it) by 
    doing, for example, "make DB=jmdict loadex" 
-
-   There is a target, "loadall", that will load all three
-   files (JMdict, JMnedict, and Examples).
 
    Note that currently, the Examples file cross references 
    are not resolved to jmdict xrefs as part of the Makefile

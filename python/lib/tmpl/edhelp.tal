@@ -96,7 +96,7 @@
       <p/>
   *Note: Actually, all tags can be given in the form <samp>tag_type=tag_value</samp>.
   <samp>v5</samp> is exactly equivalent to <samp>pos=v5</samp>.  The short
-  form is usually more covienient, but the longer form may sometimes
+  form is usually more convenient, but the longer form may sometimes
   be needed to avoid misinterpretations.  For example, <samp>lit</samp>
   can be the value of a gloss tag (literal gloss) or a language (Lithuanian).
   Since <samp>[lit]</samp> will be interpreted as "literal" when used 

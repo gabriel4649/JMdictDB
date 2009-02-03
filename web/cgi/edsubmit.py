@@ -171,10 +171,11 @@ def main( args, opts ):
 def submission (dbh, sess, svc, entr, disp, errs):
 
 	KW = jdb.KW
+	oldid = entr.id
+	entr.id = None		# All submissions will produce a new entry.
 	merge_rev = False
 	if not entr.dfrm:	# This is new entry. 
 	    entr.stat = KW.STAT['A'].id
-	    entr.id = None
 	    entr.seq = None  # Force addentr() to assign seq number. 
 	else:	# Modification of existing entry.
 	    if entr.stat == KW.STAT['D'].id:
@@ -204,7 +205,7 @@ def submission (dbh, sess, svc, entr, disp, errs):
 
 	  # Before calling merge_hist() check for a condition that would
 	  # cause merge_hist() to fail.
-	if getattr (entr, 'dfrm', None) and entr.stat==KW.STAT['D'].id:
+	if entr.stat==KW.STAT['D'].id and not getattr (entr, 'dfrm', None):
 	    errs.append ("Delete requested but entry is new (has no 'dfrm' value.)")
 
 	if disp == 'a' and has_xrslv (entr):

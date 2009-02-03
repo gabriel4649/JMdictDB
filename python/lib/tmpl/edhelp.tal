@@ -109,6 +109,20 @@
   <h2><a name="inboxes"/>Edit Form Input Boxes</h2>
 
   <dl>
+    <dt><a name="stat"></a>Stat</dt>
+    <dd>The status of this entry.  
+      Every entry has one of three statuses: Active (A), Deleted (D)
+      Rejected (R).  Aditionally, every entry is either Unapproved (the
+      status code is followed by an asterisk, "*"), or Approved (status
+      code not followed by asterisk.)  (<a href="#kw_stat">abbrs</a>)
+      </dd>
+
+    <dt><a name="id"></a>Id</dt>
+    <dd>The database id number of this entry.  
+      Every entry has a unique id number in the database.  Most 
+      people can ignore this value.
+      </dd>
+
     <dt><a name="corpus"></a>Corpus</dt>
     <dd>The corpus in which the entry exists or (for new entries) should
       be entered.  (<a href="#kw_src">abbrs</a>)
@@ -316,10 +330,11 @@
 <div class="entry">
   <h2><a name="insyntax"/>Tag Syntax</h2>
 
-  <table style="text-align: left;" border="1" cellpadding="2" cellspacing="2">
+  <table style="text-align:left;vertical-align:top" border="1" cellpadding="2" cellspacing="2">
     <tbody>
       <tr>
 	<td>Tag group</td>
+	<td>Tag</td>
 	<td>Description</td>
 	<td>Where used</td>
 	<td>Format</td>
@@ -328,6 +343,7 @@
 
       <tr>
         <td><a name="syn_dial"/>dial</td>
+	<td><a href="#kw_dial">kwds</a></td>
         <td>Dialect</td>
         <td>Senses</td>
         <td>
@@ -337,7 +353,8 @@
         </tr>
 
       <tr>
-        <td><a name="syn_equ"/>equ</td>
+        <td><a name="syn_gloss"/>equ</td>
+        <td><a name="syn_gloss_equ"/>equ</td>
         <td>Equivalent translation</td>
         <td>Senses (applies to gloss)</td>
         <td>
@@ -352,7 +369,8 @@
 	</tr>
 
       <tr>
-        <td><a name="syn_expl"/>expl</td>
+        <td>&nbsp;</td>
+        <td><a name="syn_gloss_expl"/>expl</td>
         <td>Explanatory translation</td>
         <td>Senses (applies to gloss)</td>
         <td>
@@ -365,7 +383,8 @@
 	</tr>
 
       <tr>
-        <td><a name="syn_fig"/>fig</td>
+        <td>&nbsp;</td>
+        <td><a name="syn_gloss_fig"/>fig</td>
         <td>Figurative translation</td>
         <td>Senses (applies to gloss)</td>
         <td>
@@ -378,7 +397,22 @@
 	</tr>
 
       <tr>
+        <td>&nbsp;</td>
+        <td><a name="syn_gloss_lit"/>lit</td>
+        <td>Literal translation</td>
+        <td>Senses (applies to gloss)</td>
+        <td>
+	  [lit] <span style="font-style: italic;">the
+	  literal text...</span>]<br/>
+	  (1) The tag can placed at either the beginning or end
+	  of the gloss text.
+	  </td>
+        <td>[lit] even monkeys fall from trees</td>
+	</tr>
+
+      <tr>
         <td><a name="syn_fld"/>fld</td>
+	<td><a href="#kw_fld">kwds</a></td>
         <td>Domain, aka field-of-application tags</td>
         <td>Senses</td>
         <td>
@@ -389,6 +423,7 @@
 
       <tr>
         <td><a name="syn_freq"></a>freq</td>
+	<td><a href="#kw_freq">kwds</a></td>
         <td>Frequency-of-use codes</td>
         <td>Kanji, Readings</td>
         <td>
@@ -399,6 +434,7 @@
 
       <tr>
         <td><a name="syn_kinf"></a>kinf</td>
+	<td><a href="#kw_kinf">kwds</a></td>
         <td>Kanji information</td>
         <td>Kanji</td>
         <td>
@@ -409,6 +445,7 @@
 
       <tr>
         <td><a name="syn_lang"></a>lang</td>
+	<td><a href="#kw_kinf">kwds</a></td>
         <td>Language</td>
         <td>Senses (applies to gloss)</td>
         <td>
@@ -425,20 +462,8 @@
 	</tr>
 
       <tr>
-        <td><a name="syn_lit"></a>lit</td>
-        <td>Literal translation</td>
-        <td>Senses (applies to gloss)</td>
-        <td>
-	  [lit] <span style="font-style: italic;">the
-	  literal text...</span>]<br/>
-	  (1) The tag can placed at either the beginning or end
-	  of the gloss text.
-	  </td>
-        <td>[lit] even monkeys fall from trees</td>
-	</tr>
-
-      <tr>
         <td><a name="syn_lsrc"></a>lsrc</td>
+	<td>lsrc</td>
         <td>Source language and word.</td>
         <td>Senses</td>
         <td>
@@ -459,6 +484,7 @@
 
       <tr>
         <td><a name="syn_misc"></a>misc</td>
+	<td><a href="#kw_misc">kwds</a></td>
         <td>Miscellaneous sense information</td>
         <td>Senses</td>
         <td>
@@ -469,6 +495,7 @@
 
       <tr>
         <td><a name="syn_note"></a>note</td>
+	<td>note</td>
         <td>Ad-hoc sense information.</td>
         <td>Senses</td>
         <td>
@@ -482,6 +509,7 @@
 
       <tr>
         <td><a name="syn_pos"></a>pos</td>
+	<td><a href="#kw_pos">kwds</a></td>
         <td>Part-of-speech information</td>
         <td>Senses</td>
         <td>
@@ -492,6 +520,7 @@
 
       <tr>
         <td><a name="syn_rinf"></a>rinf</td>
+	<td><a href="#kw_rinf">kwds</a></td>
         <td>Reading information</td>
         <td>Readings</td>
         <td>
@@ -502,12 +531,15 @@
 
       <tr>
         <td><a name="syn_restr"></a>restr</td>
+	<td>restr</td>
         <td>Reading and sense restrictions.</td>
-        <td>Kanji, Readings, Senses</td>
+        <td>Readings, Senses</td>
         <td>
+	  [<span style="font-style: italic;">XX</span>,<span style="font-style: italic;">XX</span>,...]<br/>
 	  [restr=<span style="font-style: italic;">XX</span>;<span style="font-style: italic;">XX</span>;...]<br/>
 	  [restr=nokanji]<br/>
 	  [nokanji]<br/>
+	  <br/>
 	  (1) If the tag is in the Reading section, the XX's must be kanji
 	  strings occuring in the Kanji section. <br/>
 	  (2) If the tag is in the Reading section, XX may be "nokanji".
@@ -529,13 +561,14 @@
         <td><a name="syn_xref"/>
 	  <a name="syn_see"/>
 	  <a name="syn_ant"/>
-	  see<br/>ant</td>
+	  xref</td>
+	<td>see, ant</td>
         <td>Cross-reference</td>
         <td>Senses</td>
         <td>
 	  [see=<span style="font-style: italic;">SEQ KK・RR</span>[<span style="font-style: italic;">sense-nums</span>]]<br/>
 	  [ant=<span style="font-style: italic;">SEQ KK・RR</span>[<span style="font-style: italic;">sense-nums</span>]]<br/>
-	  ~~~~<br/>
+	  <br/>
 	  (1) There are two kinds of cross-reference:
 	    <ul><li>See also (a general cross reference)
 	    </li><li>Antonym</li></ul>

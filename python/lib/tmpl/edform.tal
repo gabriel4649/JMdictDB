@@ -18,10 +18,12 @@
         <table class="top">
           <tbody>
 	    <tr>
-	      <td colspan="3" align="center">
-		<a class="helplink" href="edhelp.py">
-		  JEL (JMdictDB Edit Language) Help (complete)
-		  </a>
+	      <td colspan="3">
+		Use this form to suggest new JMdict entries or changes to existing entries.
+		For detailed help on the info required in the various fields, please
+		  use the "help" links beside each field, or view the
+		  <a class="helplink" href="edhelp.py"> full help file here</a>.
+		<p/>
 		</td>
 	      </tr>
 
@@ -35,7 +37,7 @@
 		  <tr tal:condition="not:e">
 		    <td colspan="4">New Entry</td></tr>
 		  <tr tal:condition="e">
-		    <td>Stat:</td>
+		    <td>Stat: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#stat">help</a></td>
 		    <td>
 		      <span tal:condition="e/unap" class="pend">
 			<span tal:content="python:TALabbr('STAT',e.stat)">status</span>*
@@ -45,7 +47,7 @@
 			<a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${e/dfrm}" tal:content="e/dfrm"/>
 			</span>
 		      </td>
-		    <td>Id:</td>
+		    <td>Id: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#id">help</a></td>
 		    <td tal:content="e/id"></td>
 		    </tr>
 		  <tr>
@@ -174,5 +176,6 @@
 <span class="notes">
 
   </span>
+<div metal:use-macro="macros/macros/footer"></div>
 </body>
 </html>

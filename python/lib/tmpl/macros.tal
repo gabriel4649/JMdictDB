@@ -33,3 +33,15 @@
       </tr>
     </table>
   </div>
+
+<div metal:define-macro="footer">
+  <table width="100%">
+    <tr>
+      <td>
+	If you have questions about, problems using, or suggestions
+	for improving this page, please send email to 
+	<a href="mailto:jimbreen@edrdg.org">jimbreen@edrdg.org</a>.
+	</td>
+      </tr>
+    </table>
+  </div>

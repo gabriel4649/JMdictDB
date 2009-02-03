@@ -900,7 +900,7 @@ def main (args, opts):
         KW = jdb.KW
 
         lexer, tokens = jellex.create_lexer (debug=opts.debug>>8)
-        parser = create_parser (lexer, tokens)
+        parser = create_parser (lexer, tokens, tabmodule='jelparse_tab')
         parser.debug = opts.debug
 
         if opts.seq:

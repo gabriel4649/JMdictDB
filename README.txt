@@ -161,14 +161,21 @@ verified.
       http://www.wxpython.org/
   Apache [2.2] (on Unix/Linux/Windows systems) or
     IIS [5.0] (on MS Windows systems)
+  make -- Gnu make is required if you want to use the provided
+    Makefile's to automate parts of the installation.
   wget -- Used by Makefile to download the JMdict_e.gz, 
     JMnedict.gz, and examples.utf8.gz file from the Monash
     site.  If not available, you can download the needed 
     files manually.
+  iconv -- Not required but very useful when dealing with
+    character enconding conversions that are frequenly required
+    when working with Japanese language text files.
 
-On Windows you will also need a copy of the GNU "make"
-program if you want to use the Makefiles to automate the 
-install procedure (described below).
+The principle author has Cygwin (http://cygwin.com) installed on 
+his Windows development machine and uses the make, wget, etc.,
+programs provided by that package.  A smaller (though untested)
+alternative might be to use the programs provided by the Gnuwin32
+project: http://gnuwin32.sourceforge.net.
 
 Database Authentication
 -----------------------

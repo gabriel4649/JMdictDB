@@ -31,6 +31,7 @@ def main (args, opts):
 	try: form, svc, cur, sid, sess, parms = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
 	fv = form.getfirst; fl = form.getlist
+	dbg = fv ('d')
 	KW = jdb.KW
 
 	  # $eid will be an integer if we are editing an existing 
@@ -123,13 +124,14 @@ def main (args, opts):
 	    entrs = [entr]
 
 	if not errs:
+	    meth = 'get' if dbg else 'post'
 	    serialized = serialize.serialize (entrs)
 	    jmcgi.htmlprep (entrs)
 	    jmcgi.gen_page ("tmpl/edconf.tal", macros='tmpl/macros.tal',
 			    entries=entrs, serialized=serialized,
-			    chklist=chklist, is_editor=1, disp=disp,
+			    chklist=chklist, disp=disp,
 			    svc=svc, sid=sid, session=sess, parms=parms, 
-			    method="post", output=sys.stdout, this_page='edconf.py')
+			    method=meth, output=sys.stdout, this_page='edconf.py')
 	else: jmcgi.gen_page ("tmpl/url_errors.tal", output=sys.stdout, errs=errs)
 	cur.close() 
 
@@ -193,7 +195,9 @@ def chkentr (e, errs):
 def parse (krstext):
 	entr = None; errs = []
 	lexer, tokens = jellex.create_lexer ()
-        parser = jelparse.create_parser (lexer, tokens, debug=0)
+        parser = jelparse.create_parser (lexer, tokens, module=jelparse,
+					 tabmodule='jelparse_tab',
+					 write_tables=0, optimize=1, debug=1)
         jellex.lexreset (lexer, krstext)
         try: 
 	    entr = parser.parse (krstext, lexer=lexer, tracking=True)

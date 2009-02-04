@@ -108,6 +108,7 @@ LIB_FILES = jdb.py \
 	fmtxml.py \
 	jellex.py \
 	jelparse.py \
+	jelparse_tab.py \
 	jmcgi.py \
 	objects.py \
 	serialize.py \

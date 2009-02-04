@@ -34,7 +34,7 @@ def main (args, opts):
 	dbg = fv ('d')
 	KW = jdb.KW
 
-	  # $eid will be an integer if we are editing an existing 
+	  # 'eid' will be an integer if we are editing an existing 
 	  # entry, or undefined if this is a new entry.
 	eid = url_int ('id', form, errs)
 
@@ -48,7 +48,7 @@ def main (args, opts):
 	delete = fv ('delete')
 	stat = KW.STAT['D'].id if delete else KW.STAT['A'].id
 
-	  # These will only have values when editing an entry. 
+	  # These will only have values when editing an existing entry. 
 	seq = url_int ('seq', form, errs)
 	src = url_int ('src', form, errs)
 	notes = url_str ('notes', form)

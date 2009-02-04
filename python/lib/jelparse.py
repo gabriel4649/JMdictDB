@@ -788,9 +788,9 @@ def find_xref (cur, typ, rtxt, ktxt, slist, seq, corp,
         xrfs = [];  xunrs = None;  msg = ''
         if clearcache: corpcache.clear()
         if isinstance (corp, (str, unicode)):
-            if corpcache[corp]: corpid = corpcache[corp]
+            if corpcache.get (corp, None): corpid = corpcache[corp]
             else:
-                rs = jdb.dbread ("SELECT id FROM kwsrc WHERE kw=%s", [corp])
+                rs = jdb.dbread (cur, "SELECT id FROM kwsrc WHERE kw=%s", [corp])
                 if len(rs) != 1: raise ValueError ("Invalid corpus name: '%s'" % corp)
                 corpid = corpcache[corp] = rs[0][0]
         else: corpid = corp

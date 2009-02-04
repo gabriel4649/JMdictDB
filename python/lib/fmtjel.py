@@ -162,7 +162,7 @@ def fmt_xref_seq (xref, corpid, kwsrc):
 	#   entries are assumed to have the same seq number and
 	#   the same set of target senses.
 	KW = jdb.KW
-	corptxt = kwsrc[xref.TARG.src] if xref.TARG.src != corpid else ''
+	corptxt = kwsrc[xref.TARG.src].kw if xref.TARG.src != corpid else ''
 	numtxt = str(xref.TARG.seq) + corptxt
 	krtxt = fmt_xref_kr (xref)
 	return KW.XREF[xref.typ].kw + '=' + numtxt + MIDDOT + krtxt

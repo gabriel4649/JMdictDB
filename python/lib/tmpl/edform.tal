@@ -111,8 +111,7 @@
 		<a class="helplink" target="edhelp" href="edhelp.py#kw_fld">fld</a><br/>
 		<a class="helplink" target="edhelp" href="edhelp.py#kw_dial">dial</a><br/>
 		<a class="helplink" target="edhelp" href="edhelp.py#syn_lsrc">lsrc</a><br/>
-		<a class="helplink" target="edhelp" href="edhelp.py#syn_lit">lit</a><br/>
-		<a class="helplink" target="edhelp" href="edhelp.py#syn_expl">expl</a><br/>
+		<a class="helplink" target="edhelp" href="edhelp.py#syn_ginf">ginf</a><br/>
 		<a class="helplink" target="edhelp" href="edhelp.py#syn_restr">restr</a><br/>
 		<a class="helplink" target="edhelp" href="edhelp.py#syn_xref">xref</a><br/>
 		</td></tr>

@@ -229,10 +229,10 @@
       </li><li>Sense tags are:
 	<ul><li>ant -- An antonym cross-reference (<a href="#syn_xref">syntax</a>)
 	</li><li>dial -- Dialect (<a href="#syn_dial">syntax</a>, <a href="#kw_dial">abbrs</a>)
-	</li><li>expl -- Explanatory translation (<a href="#syn_expl">syntax</a>)
-	</li><li>fig -- Figurative translation (<a href="#syn_fig">syntax</a>)
+	</li><li>expl -- Explanatory translation (<a href="#syn_ginf_expl">syntax</a>)
+	</li><li>fig -- Figurative translation (<a href="#syn_ginf_fig">syntax</a>)
 	</li><li>fld -- Domain (<a href="#syn_fld">syntax</a>, <a href="#kw_fld">abbrs</a>)
-	</li><li>lit -- Literal translation (<a href="#syn_lit">syntax</a>)
+	</li><li>lit -- Literal translation (<a href="#syn_ginf_lit">syntax</a>)
 	</li><li>lsrc -- Source word and language (<a href="#syn_lsrc">syntax</a>, <a href="#kw_lang">abbrs</a>)
 	</li><li>misc -- Misc sense tags (<a href="#syn_misc">syntax</a>, <a href="#kw_misc">abbrs</a>)
 	</li><li>note -- Sense notes (<a href="#syn_note">syntax</a>)
@@ -240,15 +240,15 @@
 	</li><li>restr -- Reading and kanji restrictions (<a href="#syn_restr">syntax</a>)
 	</li><li>see -- A "see also" cross reference (<a href="#syn_xref">syntax</a>)
 	</li></ul>
-      </li><li>The syntax of gloss tags is the same as for sense tags but
-      gloss tags apply only to the gloss they are adjacent to.  They may
+      </li><li>The syntax of gloss info (or ginf) tags is the same as for sense tags but
+      ginf tags apply only to the gloss they are adjacent to.  They may
       occur before or after the gloss they apply to.
-      </li><li>Gloss tags are:
-	<ul><li>equ -- Equivalent translation (<a href="#syn_equ">syntax</a>).
+      </li><li>Ginf tags are:
+	<ul><li>equ -- Equivalent translation (<a href="#syn_ginf_equ">syntax</a>).
 	   This is the default if no other translation tag is given.
-	</li><li>expl -- Explanatory translation (<a href="#syn_expl">syntax</a>)
-	</li><li>fig -- Figurative translation (<a href="#syn_fig">syntax</a>)
-	</li><li>lit -- Literal translation (<a href="#syn_lit">syntax</a>)
+	</li><li>expl -- Explanatory translation (<a href="#syn_ginf_expl">syntax</a>)
+	</li><li>fig -- Figurative translation (<a href="#syn_ginf_fig">syntax</a>)
+	</li><li>lit -- Literal translation (<a href="#syn_ginf_lit">syntax</a>)
 	</li><li>Language -- Any of the three-letter language codes from 
 	  ISO-639-2.  This tag indicate the language of the associated gloss.
 	  If not given, the default is "eng" (english).
@@ -361,8 +361,8 @@
         </tr>
 
       <tr>
-        <td><a name="syn_gloss"/>equ</td>
-        <td><a name="syn_gloss_equ"/>equ</td>
+        <td><a name="syn_ginf"/>ginf</td>
+        <td><a name="syn_ginf_equ"/>equ</td>
         <td>Equivalent translation</td>
         <td>Senses (applies to gloss)</td>
         <td>
@@ -378,7 +378,7 @@
 
       <tr>
         <td>&nbsp;</td>
-        <td><a name="syn_gloss_expl"/>expl</td>
+        <td><a name="syn_ginf_expl"/>expl</td>
         <td>Explanatory translation</td>
         <td>Senses (applies to gloss)</td>
         <td>
@@ -392,7 +392,7 @@
 
       <tr>
         <td>&nbsp;</td>
-        <td><a name="syn_gloss_fig"/>fig</td>
+        <td><a name="syn_ginf_fig"/>fig</td>
         <td>Figurative translation</td>
         <td>Senses (applies to gloss)</td>
         <td>
@@ -406,7 +406,7 @@
 
       <tr>
         <td>&nbsp;</td>
-        <td><a name="syn_gloss_lit"/>lit</td>
+        <td><a name="syn_ginf_lit"/>lit</td>
         <td>Literal translation</td>
         <td>Senses (applies to gloss)</td>
         <td>

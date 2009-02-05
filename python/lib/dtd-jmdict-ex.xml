@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Rev 1.07-extended-1
-	This DTD is derived from the JMdict DTD version 1.07 (2008-04-11)
+	This DTD is derived from the JMdict DTD version 1.07 (2009-01-21)
 	but is extended to allow for enhanced representational capabilities
 	to support JMdictDB entries.  Changes include:
 	  <corpus> new element to define corpus records.
@@ -81,7 +81,8 @@
 	-->
 <!ELEMENT keb (#PCDATA)>
 	<!-- This element will contain a word or short phrase in Japanese 
-	which is written using at least one kanji. The valid characters are
+	which is written using at least one non-kana character (usually kanji,
+	but can be other characters). The valid characters are
 	kanji, kana, related characters such as chouon and kurikaeshi, and
 	in exceptional cases, letters from other alphabets.
 	-->
@@ -212,7 +213,7 @@
 	this element is typically a keb or reb element in another entry. In some
 	cases a keb will be followed by a reb and/or a sense number to provide
 	a precise target for the cross-reference. Where this happens, a JIS
-	"centre-dot" (0x2126) is placed between the components of the
+	"centre-dot" (0x2126) is placed between the components of the 
 	cross-reference.
 	-->
 <!ATTLIST xref type CDATA #IMPLIED>
@@ -226,20 +227,24 @@
 	-->
 <!ELEMENT pos (#PCDATA)>
 	<!-- Part-of-speech information about the entry/sense. Should use 
-	appropriate entity codes.
+	appropriate entity codes. In general where there are multiple senses
+	in an entry, the part-of-speech of an earlier sense will apply to
+	later senses unless there is a new part-of-speech indicated.
 	-->
 <!ELEMENT field (#PCDATA)>
-	<!-- Information about the field of application of the entry. When
-	absent, general application is implied. Entity coding for specific
-	fields of application. -->
+	<!-- Information about the field of application of the entry/sense. 
+	When absent, general application is implied. Entity coding for 
+	specific fields of application. -->
 <!ELEMENT misc (#PCDATA)>
 	<!-- This element is used for other relevant information about 
-	the entry. -->
+	the entry/sense. As with part-of-speech, information will usually
+	apply to several senses.
+	-->
 <!ELEMENT lsource (#PCDATA)>
 	<!-- This element records the information about the source
 	language(s) of a loan-word/gairaigo. If the source language is other 
 	than English, the language is indicated by the xml:lang attribute.
-	The entity value (if any) is the source word or phrase.
+	The element value (if any) is the source word or phrase.
 	-->
 <!ATTLIST lsource xml:lang CDATA "eng">
 	<!-- The xml:lang attribute defines the language(s) from which
@@ -318,6 +323,7 @@ various information fields.
 <!ENTITY aux-v "auxiliary verb">
 <!ENTITY aux-adj "auxiliary adjective">
 <!ENTITY Buddh "Buddhist term">
+<!ENTITY chem "chemistry term">
 <!ENTITY chn "children's language">
 <!ENTITY col "colloquialism">
 <!ENTITY comp "computer terminology">
@@ -357,6 +363,7 @@ various information fields.
 <!ENTITY obsc "obscure term">
 <!ENTITY ok "out-dated or obsolete kana usage">
 <!ENTITY on-mim "onomatopoeic or mimetic word">
+<!ENTITY pn "pronoun">
 <!ENTITY poet "poetical term">
 <!ENTITY pol "polite (teineigo) language">
 <!ENTITY pref "prefix">
@@ -392,6 +399,7 @@ various information fields.
 <!ENTITY vi "intransitive verb">
 <!ENTITY vk "Kuru verb - special class">
 <!ENTITY vn "irregular nu verb">
+<!ENTITY vr "irregular ru verb, plain form ends with -ri">
 <!ENTITY vs "noun or participle which takes the aux. verb suru">
 <!ENTITY vs-s "suru verb - special class">
 <!ENTITY vs-i "suru verb - irregular">
@@ -407,3 +415,4 @@ various information fields.
 <!ENTITY vt "transitive verb">
 <!ENTITY vulg "vulgar expression or word">
 ]>
+

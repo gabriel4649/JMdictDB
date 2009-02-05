@@ -313,6 +313,7 @@ various information fields.
 <!ENTITY obsc "obscure term">
 <!ENTITY ok "out-dated or obsolete kana usage">
 <!ENTITY on-mim "onomatopoeic or mimetic word">
+<!ENTITY pn "pronoun">
 <!ENTITY poet "poetical term">
 <!ENTITY pol "polite (teineigo) language">
 <!ENTITY pref "prefix">
@@ -364,3 +365,4 @@ various information fields.
 <!ENTITY vt "transitive verb">
 <!ENTITY vulg "vulgar expression or word">
 ]>
+

@@ -45,10 +45,15 @@ def main (args, opts):
 
 	  # New status is A for edit of existing or new entry, D for
 	  # deletion of existing entry.
-	delete = fv ('delete')
+	delete = fv ('delete');  makecopy = fv ('makecopy')
+	if delete and makecopy: errs.append ("The 'delete' and 'treat as new'"
+	   " checkboxes are mutually exclusive; please check only one.")
 	stat = KW.STAT['D'].id if delete else KW.STAT['A'].id
+	if makecopy: eid = None
+	  # FIXME: we need to disallow new entries with corp.seq 
+	  # that matches an existing A, A*, R*, D*, D? entry.
+	  # Do same check in submit.py.
 
-	  # These will only have values when editing an existing entry. 
 	seq = url_int ('seq', form, errs)
 	src = url_int ('src', form, errs)
 	notes = url_str ('notes', form)
@@ -56,7 +61,7 @@ def main (args, opts):
 
 	  # These are the JEL (JMdict Edit Language) texts which
 	  # we will concatenate into a string that is fed to the
-	  # JEL parser which will create an entry object.
+	  # JEL parser which will create an Entr object.
 	kanj = url_str ('kanj', form) or ''
 	rdng = url_str ('rdng', form) or ''
 	sens = url_str ('sens', form) or ''

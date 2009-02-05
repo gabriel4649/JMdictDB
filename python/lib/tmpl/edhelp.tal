@@ -292,6 +292,14 @@
       is no point in changing the entry contents. 
       </dd>
 
+    <dt><a name="makecopy"></a>Delete</dt>
+    <dd>When this checkbox is checked, the entry will be submitted
+      as a new entry rather than an edit of an existing entry.  This
+      is useful when you want enter a new entry that is similar to an 
+      existing entry: edit the similar entry, modify it, check this 
+      check box, and submit it.
+      </dd>
+
     <dt><a name="references"></a>References</dt>
     <dd>Enter sources that validate the entry or entry
       changes being made.  This is a free form text field.

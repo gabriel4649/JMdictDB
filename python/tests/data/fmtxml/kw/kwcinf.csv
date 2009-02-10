@@ -1,0 +1,34 @@
+1	nelson_c	"""Modern Reader's Japanese-English Character Dictionary"", edited by Andrew Nelson (now published as the ""Classic"" Nelson)."
+2	nelson_n	"""The New Nelson Japanese-English Character Dictionary"", edited by John Haig."
+3	halpern_njecd	"""New Japanese-English Character Dictionary"", edited by Jack Halpern."
+4	halpern_kkld	"""Kanji Learners Dictionary"" (Kodansha) edited by Jack Halpern."
+5	heisig	"""Remembering The  Kanji""  by  James Heisig."
+6	gakken	"""A  New Dictionary of Kanji Usage"" (Gakken)."
+7	oneill_names	"""Japanese Names"", by P.G. O'Neill."
+8	oneill_kk	"""Essential Kanji"" by P.G. O'Neill."
+9	moro	"""Daikanwajiten"" compiled by Morohashi."
+10	henshall	"""A Guide To Remembering Japanese Characters"" by Kenneth G.  Henshall."
+11	sh_kk	"""Kanji and Kana"" by Spahn and Hadamitzky."
+12	sakade	"""A Guide To Reading and Writing Japanese"" edited by Florence Sakade."
+13	tutt_cards	Tuttle Kanji Cards, compiled by Alexander Kask.
+14	crowley	"""The Kanji Way to Japanese Language Power"" by Dale Crowley."
+15	kanji_in_ctx	"""Kanji in Context"" by Nishiguchi and Kono."
+16	busy_people	"""Japanese For Busy People"" vols I-III, published by the AJLT. The codes are the volume.chapter."
+17	kodansha_comp	"The ""Kodansha Compact Kanji Guide""."
+18	skip	Halpern's SKIP (System  of  Kanji  Indexing  by  Patterns) code.
+19	sh_desc	Descriptor codes for The Kanji Dictionary (Tuttle 1996) by Spahn and Hadamitzky.
+20	four_corner	"""Four Corner"" code for the kanji invented by Wang Chen in 1928."
+21	deroo	"Codes developed by the late Father Joseph De Roo, and published in  his book ""2001 Kanji"" (Bojinsha)."
+22	misclass	A possible misclassification of the kanji according to one of the code types.
+23	pinyin	Modern PinYin romanization of the Chinese reading.
+24	strokes	Stroke miscount or alternate count.
+25	jis208	JIS X 0208-1997 - kuten coding (nn-nn).
+26	jis212	JIS X 0212-1990 - kuten coding (nn-nn).
+27	jis213	JIS X 0213-2000 - kuten coding (p-nn-nn).
+28	henshall3	"""A Guide To Reading and Writing Japanese"" 3rd edition, edited by Henshall, Seeley and De Groot."
+29	korean_h	Korean reading of the kanji in hangul.
+30	korean_r	Romanized form of the Korean reading of the kanji.
+31	jf_cards	Japanese Kanji Flashcards, by Max Hodges and Tomoko Okazaki.
+32	nelson_rad	Radical number given in nelson_c.
+33	skip_mis	SKIP code misclassification.
+34	s_h	"""The Kanji Dictionary"" by Spahn and Hadamitzky."

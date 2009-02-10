@@ -1,0 +1,55 @@
+1	adj-i	adjective (keiyoushi)
+2	adj-na	adjectival nouns or quasi-adjectives (keiyodoshi)
+3	adj-no	nouns which may take the genitive case particle `no'
+4	adj-pn	pre-noun adjectival (rentaishi)
+5	adj-t	`taru' adjective
+6	adv	adverb (fukushi)
+8	adv-to	adverb taking the `to' particle
+9	aux	auxiliary
+10	aux-adj	auxiliary adjective
+11	aux-v	auxiliary verb
+12	conj	conjunction
+13	exp	Expressions (phrases, clauses, etc.)
+14	int	interjection (kandoushi)
+17	n	noun (common) (futsuumeishi)
+18	n-adv	adverbial noun (fukushitekimeishi)
+19	n-suf	noun, used as a suffix
+20	n-pref	noun, used as a prefix
+21	n-t	noun (temporal) (jisoumeishi)
+24	num	numeric
+25	pref	prefix
+26	prt	particle
+27	suf	suffix
+28	v1	Ichidan verb
+29	v5	Godan verb (not completely classified)
+30	v5aru	Godan verb - -aru special class
+31	v5b	Godan verb with `bu' ending
+32	v5g	Godan verb with `gu' ending
+33	v5k	Godan verb with `ku' ending
+34	v5k-s	Godan verb - Iku/Yuku special class
+35	v5m	Godan verb with `mu' ending
+36	v5n	Godan verb with `nu' ending
+37	v5r	Godan verb with `ru' ending
+38	v5r-i	Godan verb with `ru' ending (irregular verb)
+39	v5s	Godan verb with `su' ending
+40	v5t	Godan verb with `tsu' ending
+41	v5u	Godan verb with `u' ending
+42	v5u-s	Godan verb with `u' ending (special class)
+43	v5uru	Godan verb - Uru old class verb (old form of Eru)
+44	vi	intransitive verb
+45	vk	Kuru verb - special class
+46	vs	noun or participle which takes the aux. verb suru
+47	vs-s	suru verb - special class
+48	vs-i	suru verb - irregular
+49	vz	Ichidan verb - zuru verb (alternative form of -jiru verbs)
+50	vt	transitive verb
+51	ctr	counter
+52	vn	irregular nu verb
+53	v4r	Yondan verb with `ru' ending (archaic)
+55	v5z	Godan verb with `zu' ending
+56	adj-f	noun or verb acting prenominally
+57	adj	former adjective classification (being removed)
+58	vr	irregular ru verb, plain form ends with -ri
+59	v2a-s	Nidan verb with 'u' ending (archaic)
+60	v4h	Yondan verb with `hu/fu' ending (archaic)
+61	pn	pronoun

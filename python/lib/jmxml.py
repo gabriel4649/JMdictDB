@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2006,2008 Stuart McGraw 
+#  Copyright (c) 2006,2008,2009 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -99,12 +99,19 @@ def parse_xmlfile (
 	xlang=None,	# (list) List of lang id's to limit extracted
 			#   glosses to.
 	corp_dict=None,	# (dict) A mapping that contains corpus (aka
-			#   "src") records indexed by id number and 
+			#   "kwsrc") records indexed by id number and 
 			#   name.  <ent_corp> elements will be looked
 			#   up in this dict.  If not supplied, it is 
 			#   expected that <corpus> elements will occur
 			#   in the XML that define corpuses before they
 			#   are referenced by <ent_corp> elements.
+	grpdefs=None,   # (dict) A mapping that contains grpdef (aka
+			#   "kwgrp") records indexed by id number and 
+			#   name.  <group> elements will be looked
+			#   up in this dict.  If not supplied, it is 
+			#   expected that <grpdef> elements will occur
+			#   in the XML that define corpuses before they
+			#   are referenced by <group> elements.
 	toptag=False):	# (bool) Make first item retuned by iterator 
 			#   a string giving the name of the top-level
 			#   element.
@@ -113,10 +120,11 @@ def parse_xmlfile (
 	etiter = iter(ElementTree.iterparse( inpf, ("start","end")))
 	event, root = etiter.next()
 	if toptag: yield 'root', root.tag
-	if corp_dict is None: corp_dict = {}
+	if corp_dict is None: corp_dict   = {}
+	if grpdefs is None: grpdefs = {}
 	elist=[];  count=0;  entrnum=0
 	for event, elem in etiter:
-	    if elem.tag != "entry" and elem.tag != 'corpus': continue
+	    if elem.tag not in ['entry', 'grpdef', 'corpus']: continue
 	    if event == "start": 
 		lineno = getattr (inpf, 'lineno', None)
 		  # Only jmdict has "ent_seq" elements so if parsing jmnedici
@@ -125,20 +133,28 @@ def parse_xmlfile (
 		  # as the seq number.
 		if elem.tag == 'entry': entrnum += 1
 		continue
-	      # At this point elem.tag must be either 'entry' or 'corpus'
-	      # and event is 'end'.
+
+	      # At this point elem.tag must be either 'entry', 'corpus', or
+	      # 'grpdef', and event is 'end'.
+	    if elem.tag == 'grpdef':
+		grpdef = do_grpdef (elem)
+		grpdefs[grpdef.id] = grpdefs[grpdef.kw] = grpdef
+		yield "grpdef", grpdef
+		continue
 	    if elem.tag == 'corpus':
 		corp = do_corpus (elem)
 		corp_dict[corp.id] = corp_dict[corp.kw] = corp
 		yield "corpus", corp
 		continue
+
+	      # From this point on elem.tag is 'entr'...
 	    prevseq = Seq
 	    Seq = seq = int (elem.findtext ('ent_seq') or entrnum)
 	    if prevseq and seq <= prevseq: 
 		warn (" (line %d): Sequence less than preceeding sequence" % lineno)
 	    if not startseq or seq >= startseq:
 		startseq = None
-		try: entr = do_entr (elem, seq, xlit, xlang, corp_dict)
+		try: entr = do_entr (elem, seq, xlit, xlang, corp_dict, grpdefs)
 		except ParseError, e:
 		    warn (" (line %d): %s" % (lineno, e))
 		else: yield "entry", entr
@@ -147,18 +163,30 @@ def parse_xmlfile (
 	    root.clear()
 
 def do_corpus (elem):
-	o = jdb.Obj (id=int(elem.get('id')), kw=elem.findtext ('name'))
-	descr = elem.findtext ('descr')
+	o = jdb.Obj (id=int(elem.get('id')), kw=elem.findtext ('co_name'))
+	descr = elem.findtext ('co_descr')
 	if descr: o.descr = descr
-	dt = elem.findtext ('date')
+	dt = elem.findtext ('co_date')
 	if dt: o.dt = dt
-	notes = elem.findtext ('notes')
+	notes = elem.findtext ('co_notes')
 	if notes: o.notes = notes
-	seq = elem.findtext ('seqname')
-	if seq: o.seq = seq
+	sname = elem.findtext ('co_sname')
+	if sname: o.seq = sname
+	sinc = elem.findtext ('co_sinc')
+	if sinc: o.sinc = sinc
+	smin = elem.findtext ('co_smin')
+	if smin: o.smin = smin
+	smax = elem.findtext ('co_smax')
+	if smax: o.smax = smax
 	return o
 
-def do_entr (elem, seq, xlit=False, xlang=None, corp_dict=None):
+def do_grpdef (elem):
+	o = jdb.Obj (id=int(elem.get('id')), kw=elem.findtext ('gd_name'))
+	descr = elem.findtext ('gd_descr')
+	if descr: o.descr = descr
+	return o
+
+def do_entr (elem, seq, xlit=False, xlang=None, corp_dict=None, grpdefs=None):
 	"""
     Create an entr object from a parsed ElementTree entry
     element, 'elem'.  'lineno' is the source file line number
@@ -225,7 +253,8 @@ def do_entr (elem, seq, xlit=False, xlang=None, corp_dict=None):
 	do_senss (elem.findall('sense'), entr, xlit, xlang)
 	do_senss (elem.findall('trans'), entr, xlit, xlang)
 	do_info  (elem.findall("info"), entr)
-	do_audio (elem.findall("audio"), entr)
+	do_audio (elem.findall("audio"), entr, jdb.Entrsnd)
+	do_groups(elem.findall("group"), entr, grpdefs)
 	return entr
 
 def do_info (elems, entr):
@@ -278,6 +307,7 @@ def do_rdngs (elems, entr, fmap):
 		else: freq_warn ("Duplicate", rdng, None, x.text)
 	    nokanji = elem.find ('re_nokanji')
 	    do_restr (elem.findall('re_restr'), rdng, kanjs, 'restr', nokanji)
+	    do_audio (elem.findall("audio"), rdng, jdb.Rdngsnd)
 	    rdngs.append (rdng)
 	if rdngs: entr._rdng = rdngs
 
@@ -452,15 +482,37 @@ def do_hist (elems, entr):
 	    if not hasattr (entr, '_hist'): entr._hist = []
 	    entr._hist.extend (hists)
 
-def do_audio (elems, entr_or_rdng):
-	snds = []
+def do_groups (elems, entr, grpdefs):
+	grps = []
 	for elem in elems:
-	    v = elem.get ('clipid')
+	    txt = elem.text
+	    try: grpdefid = grpdefs[txt].id
+	    except KeyError:
+		warn ("Unrecognised group text '%s'." % txt)
+		continue
+	    ordtxt = elem.get ('ord')
+	    if not ordtxt: 
+		warn ("Missing group 'ord' attribute on group element '%s'." % (txt))
+		continue
+	    try: ord = int (ordtxt)
+	    except (ValueError, TypeError):
+		warn ("Invalid 'ord' attribute '%s' on group element '%s'." % (ordtxt, txt))
+		continue
+	    grps.append (jdb.Grp (kw=grpdefid, ord=ord))
+	if grps: 
+	    if not getattr (entr, '_grp', None): entr._grp = grps
+	    else: exnt._grps.extend (grps)
+
+def do_audio (elems, entr_or_rdng, sndclass):
+	snds = []
+	for n, elem in enumerate (elems):
+	    v =elem.get ('clipid')
 	    if not v: 
 		warn ("Missing audio clipid attribute."); continue
 	    try: clipid = int (v.lstrip('c'))
 	    except (ValueError, TypeError): warn ("Invalid audio clipid attribute: %s" % v)
-	    else: snds.append (jdb.Snd (snd=clipid))
+	    else:    
+	        snds.append (sndclass (snd=clipid, ord=n+1))
 	if snds:
 	    if not hasattr (entr_or_rdng, '_snd'): entr_or_rdng._snd = []
 	    entr_or_rdng._snd.extend (snds)

@@ -47,6 +47,9 @@ def entr (entr):
 	for n, s in enumerate (getattr (entr, '_sens', [])):
 	    fmt += "\n%s" % sens (s, kanjs, rdngs, n+1)
 
+	grpstxt = grps (entr)
+	if grpstxt: fmt += '\n' + grpstxt
+
 	hdr = False;
 	a = getattr (entr, '_snd', [])
 	if a and not hdr: 
@@ -335,6 +338,12 @@ def xunrs (e):
 		fmt.append ("    Sense %d: %s %s" % (n+1, KW.XREF[x.typ].kw, t))
 	if fmt: fmt.insert (0, '\n  Unresolved xrefs:')
 	return '\n'.join (fmt)
+
+def grps (e):
+	KW = jdb.KW
+	s = ','.join ([KW.GRP[x.kw].kw for x in getattr (e, '_grp', [])])
+	if s: s = "Group(s): %s" % s
+	return s
 
 def encodings (strs):
 	fmt = ['Encodings:',

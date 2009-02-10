@@ -1,8 +1,8 @@
-\set ON_ERROR_STOP 1
+﻿\set ON_ERROR_STOP 1
 BEGIN;
 
 COPY kwsrc(id,kw,descr,dt,notes,seq) FROM STDIN;
-1	jmdict	\N	\N	\N	seq_jmdict
+1	jmdict	\N	\N	\N	seq_jmdict	10	1000000	8999999
 \.
 
 COPY entr(id,src,stat,seq,dfrm,unap,srcnote,notes) FROM STDIN;

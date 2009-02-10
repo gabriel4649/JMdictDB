@@ -19,7 +19,7 @@
           <tbody>
 	    <tr>
 	      <td colspan="3">
-		Use this form to suggest new JMdict entries or changes to existing entries.
+		Use this form to suggest new JMdictDB entries or changes to existing entries.
 		For detailed help on the info required in the various fields, please
 		  use the "help" links beside each field, or view the
 		  <a href="edhelp.py"> full help file here</a>.
@@ -166,9 +166,13 @@
 		<input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
 		<input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
 		<input type="hidden" name="id" tal:condition="e" tal:attributes="value e/id"/>
-		<input type="hidden" name="osrc" tal:condition="e" tal:attributes="value e/src"/>
 		<input type="hidden" name="stat" tal:condition="e" tal:attributes="value e/stat"/>
-		<input type="hidden" name="oseq" tal:condition="e" tal:attributes="value e/seq"/>
+		<span tal:condition="not:session/userid" tal:omit-tag="">
+		  <input type="hidden" tal:condition="e" name="src" tal:attributes="value e/src"/>
+		  <input type="hidden" name="seq" tal:attributes="value e/seq"/>
+		  <input type="hidden" name="srcnote" tal:attributes="value e/srcnote"/>
+		  <input type="hidden" name="notes" tal:attributes="value e/notes"/>
+		  </span>
 		</td>
 	      <td></td>
 	      </tr>

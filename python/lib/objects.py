@@ -119,23 +119,28 @@ def _compare (self, other):
 class Entr (DbRow): 
     def __init__ (s, id=None, src=None, stat=None, seq=None, dfrm=None,
 		     unap=None, srcnote=None, notes=None,
-		     _kanj=None, _rdng=None, _sens=None, _hist=None):
+		     _kanj=None, _rdng=None, _sens=None, _hist=None,
+		     _snd=None, _grp=None, _cinf=None):
 	DbRow.__init__(s, ( id,  src,  stat,  seq,  dfrm,  unap,  srcnote,  notes),
 			  ('id','src','stat','seq','dfrm','unap','srcnote','notes'))
 	s._kanj = _kanj or []
 	s._rdng = _rdng or []
 	s._sens = _sens or []
 	s._hist = _hist or []
+	s._snd  = _snd  or []
+	s._grp  = _grp  or []
+	s._cinf = _cinf or []
 
 class Rdng (DbRow): 
     def __init__ (s, entr=None, rdng=None, txt=None, 
-		     _inf=None, _freq=None, _restr=None, _stagr=None):
+		     _inf=None, _freq=None, _restr=None, _stagr=None, _snd=None):
 	DbRow.__init__(s, ( entr,  rdng,  txt),
 			  ('entr','rdng','txt'))
 	s._inf   = _inf   or []
 	s._freq  = _freq  or []
 	s._restr = _restr or []
 	s._stagr = _stagr or []
+	s._snd   = _snd   or []
 
 class Kanj (DbRow): 
     def __init__ (s, entr=None, kanj=None, txt=None, 
@@ -237,6 +242,11 @@ class Hist (DbRow):
 	 	  email=None, diff=None, refs=None, notes=None):
 	DbRow.__init__(s, ( entr,  hist,  stat,  userid,  dt,  name,  email,  diff,  refs,  notes),
 			  ('entr','hist','stat','userid','dt','name','email','diff','refs','notes'))
+
+class Grp (DbRow):
+    def __init__ (s, entr=None, kw=None, ord=None, notes=None):
+	DbRow.__init__(s, ( entr,  kw,  ord,  notes),
+			  ('entr','kw','ord','notes'))
 
 class Cinf (DbRow):
     def __init__ (s, entr=None, kw=None, value=None, mctype=None):

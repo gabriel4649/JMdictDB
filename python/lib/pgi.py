@@ -25,56 +25,61 @@ Module: Functions for writing Postgres "COPY" data to ".pgi" files.
 import sys, os, operator, datetime
 import jdb
 
-def wrcorp (rowobj, workfiles):
-	wrrow (rowobj, workfiles['kwsrc'])
-
 def wrentr (e, workfiles):
-	wrrow (e, workfiles['entr'])
+	_wrrow (e, workfiles['entr'])
 	for r in getattr (e, '_rdng', []):
-	    wrrow (r, workfiles['rdng'])
-	    for x in getattr (r, '_inf',   []): wrrow (x, workfiles['rinf'])
-	    for x in getattr (r, '_freq',  []): wrrow (x, workfiles['freq'])
-	    for x in getattr (r, '_restr', []): wrrow (x, workfiles['restr'])
-	    for x in getattr (r, '_snd',   []): wrrow (x, workfiles['rdngsnd'])
+	    _wrrow (r, workfiles['rdng'])
+	    for x in getattr (r, '_inf',   []): _wrrow (x, workfiles['rinf'])
+	    for x in getattr (r, '_freq',  []): _wrrow (x, workfiles['freq'])
+	    for x in getattr (r, '_restr', []): _wrrow (x, workfiles['restr'])
+	    for x in getattr (r, '_snd',   []): _wrrow (x, workfiles['rdngsnd'])
 	for k in getattr (e, '_kanj', []):
-	    wrrow (k, workfiles['kanj'])
-	    for x in getattr (k, '_inf',   []): wrrow (x, workfiles['kinf'])
+	    _wrrow (k, workfiles['kanj'])
+	    for x in getattr (k, '_inf',   []): _wrrow (x, workfiles['kinf'])
 	    for x in getattr (k, '_freq',  []):
-		if not x.rdng: wrrow (x, workfiles['freq'])
+		if not x.rdng: _wrrow (x, workfiles['freq'])
 	for s in getattr (e, '_sens', []):
-	    wrrow (s, workfiles['sens'])
-	    for x in getattr (s, '_gloss', []): wrrow (x, workfiles['gloss'])
-	    for x in getattr (s, '_pos',   []): wrrow (x, workfiles['pos'])
-	    for x in getattr (s, '_misc',  []): wrrow (x, workfiles['misc'])
-	    for x in getattr (s, '_fld',   []): wrrow (x, workfiles['fld'])
-	    for x in getattr (s, '_dial',  []): wrrow (x, workfiles['dial'])
-	    for x in getattr (s, '_lsrc',  []): wrrow (x, workfiles['lsrc'])
-	    for x in getattr (s, '_stagr', []): wrrow (x, workfiles['stagr'])
-	    for x in getattr (s, '_stagk', []): wrrow (x, workfiles['stagk'])
-	    for x in getattr (s, '_xref',  []): wrrow (x, workfiles['xref'])
-	    for x in getattr (s, '_xrer',  []): wrrow (x, workfiles['xref'])
-	    for x in getattr (s, '_xrslv', []): wrrow (x, workfiles['xresolv'])
-	for x in getattr (e, '_snd',   []): wrrow (x, workfiles['entrsnd'])
-	for x in getattr (e, '_hist',  []): wrrow (x, workfiles['hist'])
-	for x in getattr (e, '_krslv', []): wrrow (x, workfiles['kresolv'])
+	    _wrrow (s, workfiles['sens'])
+	    for x in getattr (s, '_gloss', []): _wrrow (x, workfiles['gloss'])
+	    for x in getattr (s, '_pos',   []): _wrrow (x, workfiles['pos'])
+	    for x in getattr (s, '_misc',  []): _wrrow (x, workfiles['misc'])
+	    for x in getattr (s, '_fld',   []): _wrrow (x, workfiles['fld'])
+	    for x in getattr (s, '_dial',  []): _wrrow (x, workfiles['dial'])
+	    for x in getattr (s, '_lsrc',  []): _wrrow (x, workfiles['lsrc'])
+	    for x in getattr (s, '_stagr', []): _wrrow (x, workfiles['stagr'])
+	    for x in getattr (s, '_stagk', []): _wrrow (x, workfiles['stagk'])
+	    for x in getattr (s, '_xref',  []): _wrrow (x, workfiles['xref'])
+	    for x in getattr (s, '_xrer',  []): _wrrow (x, workfiles['xref'])
+	    for x in getattr (s, '_xrslv', []): _wrrow (x, workfiles['xresolv'])
+	for x in getattr (e, '_snd',   []): _wrrow (x, workfiles['entrsnd'])
+	for x in getattr (e, '_hist',  []): _wrrow (x, workfiles['hist'])
+	for x in getattr (e, '_grp',   []): _wrrow (x, workfiles['grp'])
+	for x in getattr (e, '_krslv', []): _wrrow (x, workfiles['kresolv'])
 	if hasattr (e, 'chr'):
-	    wrrow (e.chr, workfiles['chr'])
-	    for x in getattr (e.chr, '_cinf', []): wrrow (x, workfiles['cinf'])
+	    _wrrow (e.chr, workfiles['chr'])
+	    for x in getattr (e.chr, '_cinf', []): _wrrow (x, workfiles['cinf'])
+
+def wrcorp (rowobj, workfiles):
+	_wrrow (rowobj, workfiles['kwsrc'])
+
+def wrgrpdef (rowobj, workfiles):
+	_wrrow (rowobj, workfiles['kwgrp'])
 
 def wrsnd (cur, workfiles):
 	vols = jdb.dbread (cur, "SELECT * FROM sndvol")
 	for v in vols:
-	    wrrow (x, workfiles['sndvol'])
+	    _wrrow (x, workfiles['sndvol'])
 	    sels = jdb.dbread (cur, "SELECT * FROM sndfile s WHERE s.vol=%s", [v.id])
 	    for s in sels:
-		wrrow (x, workfiles['sndfile'])
+		_wrrow (x, workfiles['sndfile'])
 		clips = jdb.dbread (cur, "SELECT * FROM snd c WHERE c.file=%s", [s.id])
 		for c in clips:
-		    wrrow (x, workfiles['snd'])
+		    _wrrow (x, workfiles['snd'])
 
 def initialize (tmpdir):
 	data = (
-	  ('kwsrc',  ['id','kw','descr','dt','notes','seq']),
+	  ('kwsrc',  ['id','kw','descr','dt','notes','seq','sinc','smin','smax']),
+	  ('kwgrp',  ['id','kw','descr']),
 	  ('entr',   ['id','src','stat','seq','dfrm','unap','srcnote','notes']),
 	  ('kanj',   ['entr','kanj','txt']),
 	  ('kinf',   ['entr','kanj','ord','kw']),
@@ -94,6 +99,7 @@ def initialize (tmpdir):
 	  ('xref',   ['entr','sens','xentr','xsens','typ','notes']),
 	  ('xresolv',['entr','sens','typ','ord','rtxt','ktxt','tsens','notes','prio']),
 	  ('hist',   ['entr','hist','stat','unap','dt','userid','name','email','diff','refs','notes']),
+	  ('grp',    ['entr','kw','ord','notes']),
 	  ('chr',    ['entr','chr','bushu','strokes','freq','grade','jlpt','radname']),
 	  ('cinf',   ['entr','kw','value']),
 	  ('kresolv',['entr','kw','value']),
@@ -109,12 +115,6 @@ def initialize (tmpdir):
 	    fn = "%s/_jm_%s.tmp" % (tmpdir, t)
 	    workfiles[t] = jdb.Obj (ord=n, tbl=t, file=None, fn=fn, cols=v)
 	return workfiles
-
-def wrrow (rowobj, workfile):
-	if not workfile.file: 
-	    workfile.file = open (workfile.fn, "w")
-	s = "\t".join ([pgesc(getattr (rowobj, x, None)) for x in workfile.cols])
-	print >>workfile.file, s.encode ('utf-8')
 
 def finalize (workfiles, outfn, delfiles=True, transaction=True):
 	# Close all the temp files, merge them all into a single 
@@ -135,6 +135,12 @@ def finalize (workfiles, outfn, delfiles=True, transaction=True):
 	    if delfiles: os.unlink (v.fn)
 	if transaction: print >>fout, 'COMMIT'
 	if fout != sys.stdout: fout.close()
+
+def _wrrow (rowobj, workfile):
+	if not workfile.file: 
+	    workfile.file = open (workfile.fn, "w")
+	s = "\t".join ([pgesc(getattr (rowobj, x, None)) for x in workfile.cols])
+	print >>workfile.file, s.encode ('utf-8')
 
 def pgesc (s):
 	  # Escape characters that are special to the Postgresql COPY
@@ -191,6 +197,7 @@ def parse_corpus_opt (sopt, roottag, datestamp):
 	      is missing.
 	"""
 	corpid = corpnm = corpdt = corpseq = None
+	sinc = 10; smin = None; smax = None
 	if sopt:
 	    a = sopt.split (',')
 	      # FIXME: no or non-int a[0] raises IndexError or ValueError.
@@ -200,15 +207,19 @@ def parse_corpus_opt (sopt, roottag, datestamp):
 		return jdb.Obj (id=corpid)
 	    if len (a) > 1 and a[1]: corpnm = a[1]
 	    if len (a) > 2 and a[2]: corpdt = a[2]
-	    if len (a) > 3 and a[3]: corpseq = a[3]
+	    if len (a) > 3 and a[3]: sinc = a[3]
+	    if len (a) > 4 and a[4]: smin = a[4]
+	    if len (a) > 5 and a[5]: smax = a[5]
+
 	if not corpnm: corpnm = roottag.lower()
 	if not corpid: 
 	      # FIXME: unknown roottag raises KeyError.  Should we raise something
 	      #   more informative and specific?
 	    corpid = {'jmdict':1, 'jmnedict':2, 'examples':3}[corpnm]
 	if not corpdt: corpdt = datestamp
-	if not corpseq and (corpnm == 'jmdict' or corpnm == 'jmnedict' 
-			    or corpnm == 'examples' or corpnm == 'test'): 
-		corpseq = "seq_" + corpnm
-	if not corpseq: corpseq = "seq"
-	return corpid, jdb.Obj (id=corpid, kw=corpnm, dt=corpdt, seq=corpseq)
+	corpseq = "seq_" + corpnm
+	if corpid == 1:
+	    if not smin: smin = 1000000
+	    if not smax: smax = 8999999
+	return corpid, jdb.Obj (id=corpid, kw=corpnm, dt=corpdt, seq=corpseq, 
+				sinc=sinc, smin=smin, smax=smax)

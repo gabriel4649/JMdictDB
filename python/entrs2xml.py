@@ -24,8 +24,7 @@ __version__ = ('$Revision$'[11:-2],
 # Read entries from database and write to XML file.  Run with 
 # --help option for details.
 
-import sys
-
+import sys, time
 import jdb, fmt, fmtxml
 
 def main (args, opts):
@@ -75,7 +74,9 @@ def main (args, opts):
 	    sql = "SELECT id,seq,src FROM entr e WHERE seq=%s%s ORDER BY src" \
 		    % (int(opts.begin), corp_terms)
 	    if debug: print >>sys.stderr, sql
+	    start = time.time()
 	    rs = jdb.dbread (cur, sql)
+	    if debug: print >>sys.stderr, "Time: %s (init read)" % (time.time()-start)
 	    if not rs:
 		print >>sys.stderr, "No entry with seq '%s' found" \
 				     % opts.begin;  sys.exit (1)
@@ -89,12 +90,15 @@ def main (args, opts):
 	      # in the requested corpuses.
 	    cc = corp_terms[4:] if corp_terms else ''
 	    sql = "SELECT id,seq,src FROM entr e WHERE %s ORDER BY src,seq LIMIT 1" % cc
+	    start = time.time()
 	    if debug: print >>sys.stderr, sql
 	    rs = jdb.dbread (cur, sql)
+	    if debug: print >>sys.stderr, "Time: %s (init read)" % (time.time()-start)
 
 	lastsrc, lastseq, lastid = rs[0].src, rs[0].seq, rs[0].id  
 	count = opts.count; done = 0; blksize = opts.blocksize; corpuses = set()
 	outf.write ('<%s>\n' % opts.root)
+
 	while count is None or count > 0:
 
 	      # In this loop we read blocks of 'blksize' entries.  Each 
@@ -107,12 +111,12 @@ def main (args, opts):
 	      # and (lastsrc, lastseq, lastid) are from the last entry in 
 	      # the last block read.
 
-	    sql = "SELECT e.id FROM entr e " \
-		  "WHERE ((e.src=%%s AND e.seq=%%s AND e.id>=%%s) " \
+	    whr = "WHERE ((e.src=%%s AND e.seq=%%s AND e.id>=%%s) " \
 			  "OR (e.src=%%s AND e.seq>%%s) " \
-			  "OR e.src>%%s)" \
-			"%s ORDER BY src,seq,id LIMIT %d" \
-		   % (corp_terms, blksize if count is None else min (blksize, count))
+			  "OR e.src>%%s) %s" % (corp_terms)
+	    sql = "SELECT e.id FROM entr e" \
+		  " %s ORDER BY src,seq,id LIMIT %d" \
+		   % (whr, blksize if count is None else min (blksize, count))
 
 	      # The following args will be substituted for the "%%s" in
 	      # the sql above, in jbd.findEntr().
@@ -122,9 +126,13 @@ def main (args, opts):
 	      # jdb.entrList().  This is an order of magnitude faster than
 	      # giving the abover sql directly to entrList().
 	    if debug: print >>sys.stderr, sql, sql_args
+	    start = time.time()
 	    tmptbl = jdb.entrFind (cur, sql, sql_args)
+	    mid = time.time()
 	    entrs, raw = jdb.entrList (cur, tmptbl, None, ord="src,seq,id", ret_tuple=True)
+	    end = time.time()
 	    if debug: print >>sys.stderr, "read %d entries" % len(entrs)
+	    if debug: print >>sys.stderr, "Time: %s (entrFind), %s (entrList)" % (mid-start, end-mid)
 	    if not entrs : break
 
 	      # To format xrefs in xml, they must be augmented so that the 
@@ -132,13 +140,23 @@ def main (args, opts):
 	    jdb.augment_xrefs (cur, raw['xref'])
 
 	      # Generate xml for each entry and write it to the output file.
+	    start = time.time()
 	    for e in entrs:
-		if not opts.compat and e.src not in corpuses:
-		    txt = '\n'.join (fmtxml.corpus ([e.src]))
-		    outf.write (txt.encode (opts.encoding) + "\n")
-		    corpuses.add (e.src)
+		if not opts.compat:
+		    if e.src not in corpuses:
+			txt = '\n'.join (fmtxml.corpus ([e.src]))
+			outf.write (txt.encode (opts.encoding) + "\n")
+			corpuses.add (e.src)
+		    grp = getattr (e, '_grp', [])
+		    for g in grp:
+			gob = jdb.KW.GRP[g.kw]
+			if not hasattr (gob, 'written'):
+			    gob.written = True
+			    txt = '\n'.join (fmtxml.grpdef (gob))
+			    outf.write (txt.encode (opts.encoding) + "\n")
 		txt = fmtxml.entr (e, compat=opts.compat, genhists=True)
 		outf.write (txt.encode (opts.encoding) + "\n")
+	    if debug: print >>sys.stderr, "Time: %s (fmt)" % (time.time()-start)
 
 	      # Update the 'last*' variables for the next time through
 	      # the loop.  Also, decrement 'count', if we are counting.

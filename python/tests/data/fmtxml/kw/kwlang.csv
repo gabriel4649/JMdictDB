@@ -1,0 +1,484 @@
+1	eng	English
+2	abk	Abkhazian
+3	ace	Achinese
+4	ach	Acoli
+5	ada	Adangme
+6	ady	Adyghe; Adygei
+7	afa	Afro-Asiatic (Other)
+8	afh	Afrihili
+9	afr	Afrikaans
+10	ain	Ainu
+11	aka	Akan
+12	akk	Akkadian
+13	alb	Albanian
+14	ale	Aleut
+15	alg	Algonquian languages
+16	alt	Southern Altai
+17	amh	Amharic
+18	ang	English, Old (ca.450-1100)
+19	anp	Angika
+20	apa	Apache languages
+21	ara	Arabic
+22	arc	Official Aramaic (700-300 BCE); Imperial Aramaic (700-300 BCE)
+23	arg	Aragonese
+24	arm	Armenian
+25	arn	Mapudungun; Mapuche
+26	arp	Arapaho
+27	art	Artificial (Other)
+28	arw	Arawak
+29	asm	Assamese
+30	ast	Asturian; Bable; Leonese; Asturleonese
+31	ath	Athapascan languages
+32	aus	Australian languages
+33	ava	Avaric
+34	ave	Avestan
+35	awa	Awadhi
+36	aym	Aymara
+37	aze	Azerbaijani
+38	bad	Banda languages
+39	bai	Bamileke languages
+40	bak	Bashkir
+41	bal	Baluchi
+42	bam	Bambara
+43	ban	Balinese
+44	baq	Basque
+45	bas	Basa
+46	bat	Baltic (Other)
+47	bej	Beja; Bedawiyet
+48	bel	Belarusian
+49	bem	Bemba
+50	ben	Bengali
+51	ber	Berber (Other)
+52	bho	Bhojpuri
+53	bih	Bihari
+54	bik	Bikol
+55	bin	Bini; Edo
+56	bis	Bislama
+57	bla	Siksika
+58	bnt	Bantu (Other)
+59	bos	Bosnian
+60	bra	Braj
+61	bre	Breton
+62	btk	Batak languages
+63	bua	Buriat
+64	bug	Buginese
+65	bul	Bulgarian
+66	bur	Burmese
+67	byn	Blin; Bilin
+68	cad	Caddo
+69	cai	Central American Indian (Other)
+70	car	Galibi Carib
+71	cat	Catalan; Valencian
+72	cau	Caucasian (Other)
+73	ceb	Cebuano
+74	cel	Celtic (Other)
+75	cha	Chamorro
+76	chb	Chibcha
+77	che	Chechen
+78	chg	Chagatai
+79	chi	Chinese
+80	chk	Chuukese
+81	chm	Mari
+82	chn	Chinook jargon
+83	cho	Choctaw
+84	chp	Chipewyan; Dene Suline
+85	chr	Cherokee
+86	chu	Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic
+87	chv	Chuvash
+88	chy	Cheyenne
+89	cmc	Chamic languages
+90	cop	Coptic
+91	cor	Cornish
+92	cos	Corsican
+93	cpe	Creoles and pidgins, English based (Other)
+94	cpf	Creoles and pidgins, French-based (Other)
+95	cpp	Creoles and pidgins, Portuguese-based (Other)
+96	cre	Cree
+97	crh	Crimean Tatar; Crimean Turkish
+98	crp	Creoles and pidgins (Other)
+99	csb	Kashubian
+100	cus	Cushitic (Other)
+101	cze	Czech
+102	dak	Dakota
+103	dan	Danish
+104	dar	Dargwa
+105	day	Land Dayak languages
+106	del	Delaware
+107	den	Slave (Athapascan)
+108	dgr	Dogrib
+109	din	Dinka
+110	div	Divehi; Dhivehi; Maldivian
+111	doi	Dogri
+112	dra	Dravidian (Other)
+113	dsb	Lower Sorbian
+114	dua	Duala
+115	dum	Dutch, Middle (ca.1050-1350)
+116	dut	Dutch; Flemish
+117	dyu	Dyula
+118	dzo	Dzongkha
+119	efi	Efik
+120	egy	Egyptian (Ancient)
+121	eka	Ekajuk
+122	elx	Elamite
+124	enm	English, Middle (1100-1500)
+125	epo	Esperanto
+126	est	Estonian
+127	ewe	Ewe
+128	ewo	Ewondo
+129	fan	Fang
+130	fao	Faroese
+131	fat	Fanti
+132	fij	Fijian
+133	fil	Filipino; Pilipino
+134	fin	Finnish
+135	fiu	Finno-Ugrian (Other)
+136	fon	Fon
+137	fre	French
+138	frm	French, Middle (ca.1400-1600)
+139	fro	French, Old (842-ca.1400)
+140	frr	Northern Frisian
+141	frs	Eastern Frisian
+142	fry	Western Frisian
+143	ful	Fulah
+144	fur	Friulian
+145	gaa	Ga
+146	gay	Gayo
+147	gba	Gbaya
+148	gem	Germanic (Other)
+149	geo	Georgian
+150	ger	German
+151	gez	Geez
+152	gil	Gilbertese
+153	gla	Gaelic; Scottish Gaelic
+154	gle	Irish
+155	glg	Galician
+156	glv	Manx
+157	gmh	German, Middle High (ca.1050-1500)
+158	goh	German, Old High (ca.750-1050)
+159	gon	Gondi
+160	gor	Gorontalo
+161	got	Gothic
+162	grb	Grebo
+163	grc	Greek, Ancient (to 1453)
+164	gre	Greek, Modern (1453-)
+165	grn	Guarani
+166	gsw	Swiss German; Alemannic; Alsatian
+167	guj	Gujarati
+168	gwi	Gwich'in
+169	hai	Haida
+170	hat	Haitian; Haitian Creole
+171	hau	Hausa
+172	haw	Hawaiian
+173	heb	Hebrew
+174	her	Herero
+175	hil	Hiligaynon
+176	him	Himachali
+177	hin	Hindi
+178	hit	Hittite
+179	hmn	Hmong
+180	hmo	Hiri Motu
+181	hsb	Upper Sorbian
+182	hun	Hungarian
+183	hup	Hupa
+184	iba	Iban
+185	ibo	Igbo
+186	ice	Icelandic
+187	ido	Ido
+188	iii	Sichuan Yi; Nuosu
+189	ijo	Ijo languages
+190	iku	Inuktitut
+191	ile	Interlingue; Occidental
+192	ilo	Iloko
+193	ina	Interlingua (International Auxiliary Language Association)
+194	inc	Indic (Other)
+195	ind	Indonesian
+196	ine	Indo-European (Other)
+197	inh	Ingush
+198	ipk	Inupiaq
+199	ira	Iranian (Other)
+200	iro	Iroquoian languages
+201	ita	Italian
+202	jav	Javanese
+203	jbo	Lojban
+204	jpn	Japanese
+205	jpr	Judeo-Persian
+206	jrb	Judeo-Arabic
+207	kaa	Kara-Kalpak
+208	kab	Kabyle
+209	kac	Kachin; Jingpho
+210	kal	Kalaallisut; Greenlandic
+211	kam	Kamba
+212	kan	Kannada
+213	kar	Karen languages
+214	kas	Kashmiri
+215	kau	Kanuri
+216	kaw	Kawi
+217	kaz	Kazakh
+218	kbd	Kabardian
+219	kha	Khasi
+220	khi	Khoisan (Other)
+221	khm	Central Khmer
+222	kho	Khotanese
+223	kik	Kikuyu; Gikuyu
+224	kin	Kinyarwanda
+225	kir	Kirghiz; Kyrgyz
+226	kmb	Kimbundu
+227	kok	Konkani
+228	kom	Komi
+229	kon	Kongo
+230	kor	Korean
+231	kos	Kosraean
+232	kpe	Kpelle
+233	krc	Karachay-Balkar
+234	krl	Karelian
+235	kro	Kru languages
+236	kru	Kurukh
+237	kua	Kuanyama; Kwanyama
+238	kum	Kumyk
+239	kur	Kurdish
+240	kut	Kutenai
+241	lad	Ladino
+242	lah	Lahnda
+243	lam	Lamba
+244	lao	Lao
+245	lat	Latin
+246	lav	Latvian
+247	lez	Lezghian
+248	lim	Limburgan; Limburger; Limburgish
+249	lin	Lingala
+250	lit	Lithuanian
+251	lol	Mongo
+252	loz	Lozi
+253	ltz	Luxembourgish; Letzeburgesch
+254	lua	Luba-Lulua
+255	lub	Luba-Katanga
+256	lug	Ganda
+257	lui	Luiseno
+258	lun	Lunda
+259	luo	Luo (Kenya and Tanzania)
+260	lus	Lushai
+261	mac	Macedonian
+262	mad	Madurese
+263	mag	Magahi
+264	mah	Marshallese
+265	mai	Maithili
+266	mak	Makasar
+267	mal	Malayalam
+268	man	Mandingo
+269	mao	Maori
+270	map	Austronesian (Other)
+271	mar	Marathi
+272	mas	Masai
+273	may	Malay
+274	mdf	Moksha
+275	mdr	Mandar
+276	men	Mende
+277	mga	Irish, Middle (900-1200)
+278	mic	Mi'kmaq; Micmac
+279	min	Minangkabau
+280	mis	Uncoded languages
+281	mkh	Mon-Khmer (Other)
+282	mlg	Malagasy
+283	mlt	Maltese
+284	mnc	Manchu
+285	mni	Manipuri
+286	mno	Manobo languages
+287	moh	Mohawk
+288	mol	Moldavian
+289	mon	Mongolian
+290	mos	Mossi
+291	mul	Multiple languages
+292	mun	Munda languages
+293	mus	Creek
+294	mwl	Mirandese
+295	mwr	Marwari
+296	myn	Mayan languages
+297	myv	Erzya
+298	nah	Nahuatl languages
+299	nai	North American Indian
+300	nap	Neapolitan
+301	nau	Nauru
+302	nav	Navajo; Navaho
+303	nbl	Ndebele, South; South Ndebele
+304	nde	Ndebele, North; North Ndebele
+305	ndo	Ndonga
+306	nds	Low German; Low Saxon; German, Low; Saxon, Low
+307	nep	Nepali
+308	new	Nepal Bhasa; Newari
+309	nia	Nias
+310	nic	Niger-Kordofanian (Other)
+311	niu	Niuean
+312	nno	Norwegian Nynorsk; Nynorsk, Norwegian
+313	nob	Bokmål, Norwegian; Norwegian Bokmål
+314	nog	Nogai
+315	non	Norse, Old
+316	nor	Norwegian
+317	nqo	N'Ko
+318	nso	Pedi; Sepedi; Northern Sotho
+319	nub	Nubian languages
+320	nwc	Classical Newari; Old Newari; Classical Nepal Bhasa
+321	nya	Chichewa; Chewa; Nyanja
+322	nym	Nyamwezi
+323	nyn	Nyankole
+324	nyo	Nyoro
+325	nzi	Nzima
+326	oci	Occitan (post 1500); Provençal
+327	oji	Ojibwa
+328	ori	Oriya
+329	orm	Oromo
+330	osa	Osage
+331	oss	Ossetian; Ossetic
+332	ota	Turkish, Ottoman (1500-1928)
+333	oto	Otomian languages
+334	paa	Papuan (Other)
+335	pag	Pangasinan
+336	pal	Pahlavi
+337	pam	Pampanga; Kapampangan
+338	pan	Panjabi; Punjabi
+339	pap	Papiamento
+340	pau	Palauan
+341	peo	Persian, Old (ca.600-400 B.C.)
+342	per	Persian
+343	phi	Philippine (Other)
+344	phn	Phoenician
+345	pli	Pali
+346	pol	Polish
+347	pon	Pohnpeian
+348	por	Portuguese
+349	pra	Prakrit languages
+350	pro	Provençal, Old (to 1500)
+351	pus	Pushto; Pashto
+353	que	Quechua
+354	raj	Rajasthani
+355	rap	Rapanui
+356	rar	Rarotongan; Cook Islands Maori
+357	roa	Romance (Other)
+358	roh	Romansh
+359	rom	Romany
+360	rum	Romanian
+361	run	Rundi
+362	rup	Aromanian; Arumanian; Macedo-Romanian
+363	rus	Russian
+364	sad	Sandawe
+365	sag	Sango
+366	sah	Yakut
+367	sai	South American Indian (Other)
+368	sal	Salishan languages
+369	sam	Samaritan Aramaic
+370	san	Sanskrit
+371	sas	Sasak
+372	sat	Santali
+373	scc	Serbian
+374	scn	Sicilian
+375	sco	Scots
+376	scr	Croatian
+377	sel	Selkup
+378	sem	Semitic (Other)
+379	sga	Irish, Old (to 900)
+380	sgn	Sign Languages
+381	shn	Shan
+382	sid	Sidamo
+383	sin	Sinhala; Sinhalese
+384	sio	Siouan languages
+385	sit	Sino-Tibetan (Other)
+386	sla	Slavic (Other)
+387	slo	Slovak
+388	slv	Slovenian
+389	sma	Southern Sami
+390	sme	Northern Sami
+391	smi	Sami languages (Other)
+392	smj	Lule Sami
+393	smn	Inari Sami
+394	smo	Samoan
+395	sms	Skolt Sami
+396	sna	Shona
+397	snd	Sindhi
+398	snk	Soninke
+399	sog	Sogdian
+400	som	Somali
+401	son	Songhai languages
+402	sot	Sotho, Southern
+403	spa	Spanish; Castilian
+404	srd	Sardinian
+405	srn	Sranan Tongo
+406	srr	Serer
+407	ssa	Nilo-Saharan (Other)
+408	ssw	Swati
+409	suk	Sukuma
+410	sun	Sundanese
+411	sus	Susu
+412	sux	Sumerian
+413	swa	Swahili
+414	swe	Swedish
+415	syc	Classical Syriac
+416	syr	Syriac
+417	tah	Tahitian
+418	tai	Tai (Other)
+419	tam	Tamil
+420	tat	Tatar
+421	tel	Telugu
+422	tem	Timne
+423	ter	Tereno
+424	tet	Tetum
+425	tgk	Tajik
+426	tgl	Tagalog
+427	tha	Thai
+428	tib	Tibetan
+429	tig	Tigre
+430	tir	Tigrinya
+431	tiv	Tiv
+432	tkl	Tokelau
+433	tlh	Klingon; tlhIngan-Hol
+434	tli	Tlingit
+435	tmh	Tamashek
+436	tog	Tonga (Nyasa)
+437	ton	Tonga (Tonga Islands)
+438	tpi	Tok Pisin
+439	tsi	Tsimshian
+440	tsn	Tswana
+441	tso	Tsonga
+442	tuk	Turkmen
+443	tum	Tumbuka
+444	tup	Tupi languages
+445	tur	Turkish
+446	tut	Altaic (Other)
+447	tvl	Tuvalu
+448	twi	Twi
+449	tyv	Tuvinian
+450	udm	Udmurt
+451	uga	Ugaritic
+452	uig	Uighur; Uyghur
+453	ukr	Ukrainian
+454	umb	Umbundu
+455	und	Undetermined
+456	urd	Urdu
+457	uzb	Uzbek
+458	vai	Vai
+459	ven	Venda
+460	vie	Vietnamese
+461	vol	Volapük
+462	vot	Votic
+463	wak	Wakashan languages
+464	wal	Walamo
+465	war	Waray
+466	was	Washo
+467	wel	Welsh
+468	wen	Sorbian languages
+469	wln	Walloon
+470	wol	Wolof
+471	xal	Kalmyk; Oirat
+472	xho	Xhosa
+473	yao	Yao
+474	yap	Yapese
+475	yid	Yiddish
+476	yor	Yoruba
+477	ypk	Yupik languages
+478	zap	Zapotec
+479	zbl	Blissymbols; Blissymbolics; Bliss
+480	zen	Zenaga
+481	zha	Zhuang; Chuang
+482	znd	Zande languages
+483	zul	Zulu
+484	zun	Zuni
+485	zxx	No linguistic content
+486	zza	Zaza; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki

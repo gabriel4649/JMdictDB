@@ -47,7 +47,19 @@ def main (args, opts):
 	eid = 0
 	for typ, entr in jmxml.parse_xmlfile (inpf, opts.begin, opts.count,
 					      opts.extract, xlang, toptag=True):
-	    if typ == 'root': 
+	    if typ == 'entry':
+		eid += 1
+		if not ((eid - 1) % 1800): 
+		    sys.stdout.write ('.'); sys.stdout.flush()
+		    warns.Logfile.flush()
+	        if not getattr (entr, 'src', None): entr.src = corpid
+	        jdb.setkeys (entr, eid)
+	        pgi.wrentr (entr, tmpfiles)
+	    elif typ == 'corpus':
+		pgi.wrcorp (entr, tmpfiles)
+	    elif typ == 'grpdef':
+		pgi.wrgrpdef (entr, tmpfiles)
+	    elif typ == 'root': 
 		  # Note that 'entr' here is actually the tag name of the
 		  # top-level element in the xml file, typically either
 		  # "JMdict" or "JMnedict".
@@ -56,16 +68,7 @@ def main (args, opts):
 		except KeyError: pass
 		else:
 		    if corprec: pgi.wrcorp (corprec, tmpfiles)
-	    elif typ == 'corpus':
-		pgi.wrcorp (entr, tmpfiles)
-	    else: #typ == 'entry'
-		eid += 1
-		if not ((eid - 1) % 1750): 
-		    sys.stdout.write ('.'); sys.stdout.flush()
-		    warns.Logfile.flush()
-	        if not getattr (entr, 'src', None): entr.src = corpid
-	        jdb.setkeys (entr, eid)
-	        pgi.wrentr (entr, tmpfiles)
+
 	sys.stdout.write ('\n')
 	pgi.finalize (tmpfiles, opts.output, not opts.keep)
 

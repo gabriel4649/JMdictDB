@@ -104,7 +104,7 @@ Serializable_classes = (
   'Obj', 'DbRow', 
   'Chr', 'Cinf', 'Dial', 'Entr', 'Entrsnd', 'Fld', 'Freq', 'Gloss', 'Hist',
   'Kanj', 'Kinf', 'Kreslv', 'Lsrc', 'Misc', 'Pos', 'Rdng', 'Restr', 'Rinf',
-  'Rdngsnd', 'Sens', 'Stagk', 'Stagr', 'Xref', 'Xrslv',)
+  'Rdngsnd', 'Sens', 'Stagk', 'Stagr', 'Xref', 'Xrslv', 'Grp')
 
 def obj2struc (o, seen=None):
 

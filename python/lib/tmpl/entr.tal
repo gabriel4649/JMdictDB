@@ -1,6 +1,11 @@
 ﻿<html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
 <!--? Copyright (c) 2008 Stuart McGraw -->
 <!--? $Revision$ $Date$ -->
+
+<!--? ***NOTE***
+      Much of this form is very similar to edconf.tal and edits made
+      to this form likely also need to be made to edform.tal. -->
+
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
@@ -171,7 +176,17 @@
 	  </tr>
 	</table>
 
-      <span tal:condition="e/HAS_AUDIO" tal:omit-tag="">Audio:
+      <span tal:condition="e/_grp" tal:omit-tag=""><br/>Belongs to groups:
+	<span tal:repeat="g e/_grp" tal:omit-tag="">
+	  <span class="grp">
+	    <span tal:replace="python:TALabbr('GRP',g.kw)" tal:omit-tag="">grpname</span
+	    >(<span tal:replace="g/ord">ord</span 
+	    >)<span tal:condition="not:repeat/g/end" tal:omit-tag="">,</span>
+	    </span>
+	  </span>
+	</span>
+
+      <span tal:condition="e/HAS_AUDIO" tal:omit-tag=""><br/>Audio:
 	<table class="audio" border=1>
 	  <tr tal:repeat="a e/_snd">
 	    <td>&nbsp;</td>

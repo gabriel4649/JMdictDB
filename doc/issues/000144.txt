@@ -1,0 +1,36 @@
+Title:	Entry groups
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2009-02-05 01:30:00 stuart
+  "Entry groups" collect entries into ordered groups.
+  There are several applications of this capability:
+ 
+  * Subdivision of corpus's.  For example, given a corpus
+    of vocab words from a textbook, entry groups can be
+    used group word into sublists by chapter, and order
+    the words to match the list order.
+    (pro: may eliminate the need for entr.srcnotes which
+    I currently use to do this.)
+
+  * Group sentences that together provide a dialog.
+
+  * Semantic categorization of entries.  For example, a
+    group "food" can be created and food-related words
+    assigned to it.
+    (con: categories used for this really should be hierarchial.)
+    (con: FLD tags are more appropriate since they are sense
+    based.)
+    (con: a more fully-featured WordNet approach might be
+    better.)
+
+2009-02-05 01:31:00 stuart
+  Added basic capability in database (tables kwgrp, grp)
+  and in jdb and objects modules, also in fmt, fmtxml, and jmxml.
+  entr, edconf for
+  No support in fmtjel, or jelparse yet.
+ 

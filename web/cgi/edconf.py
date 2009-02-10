@@ -36,7 +36,13 @@ def main (args, opts):
 
 	  # 'eid' will be an integer if we are editing an existing 
 	  # entry, or undefined if this is a new entry.
+	orig_entr = None
 	eid = url_int ('id', form, errs)
+	if eid: 
+	    orig_entr = jdb.entrList (cur, None, [eid])
+	      # FIXME: Need a better message with more explanation.
+	    if not orig_entr: errs.append ("The entry you are editing has been deleted.")
+	    else: orig_entr = orig_entr[0]
 
 	  # Desired disposition: 'a':approve, 'r':reject, undef:submit.
 	disp = url_str ('disp', form)
@@ -90,17 +96,39 @@ def main (args, opts):
 
 	if entr and not errs:
 	      # Migrate the entr details to the new entr object
-	      # which to this point had only the kanj/rdng/sens
+	      # which to this point has only the kanj/rdng/sens
 	      # info provided by jbparser.  
 	    entr.dfrm = eid;  entr.seq = seq;      entr.stat = stat; 
 	    entr.src = src;   entr.notes = notes;  entr.srcnote = srcnote; 
 	    entr.unap = not disp
 
+	if entr and not errs and not delete:
+	      # Copy entr._grp, entr._snd, and rdng._snd from the original
+	      # entry since JEL currently provides no way to specify those
+	      # items.
+	    if orig_entr: 
+		if hasattr (orig_entr, '_grp'): entr._grp = orig_entr._grp
+		if hasattr (orig_entr, '_snd'): entr._snd = orig_entr._snd
+	          # FIXME: How to migrate audio if new readings are different 
+	          # than old readings (in attr '.txt', in order, or in number)?
+		if hasattr (entr, '_rdng') and hasattr (orig_entr, '_rdng'):
+		    for rnew, rold in zip (entr._rdng, orig_entr._rdng):
+			if hasattr (rold, '_snd'): rnew._snd = rold._snd
+
+	      # Add sound details so confirm page will look the same as the 
+	      # original entry page.  Otherwise, the confirm page will display
+	      # only the sounf clip id(s).
+	    snds = []
+	    for s in getattr (entr, '_snd', []): snds.append (s)
+	    for r in getattr (entr, '_rdng', []):
+		for s in getattr (r, '_snd', []): snds.append (s)
+	    if snds: jdb.augment_snds (cur, snds)
+
 	  # The code in the "if" below assumes we have a valid entr
 	  # object from jbparser.  If there were parse errors that's
 	  # not true so we don't go there.
-	if entr and not errs and not delete:
 
+	if entr and not errs and not delete:
 	      # If any xrefs were given, resolve them to actual entries
 	      # here since that is the form used to store them in the 
 	      # database.  If any are unresolvable, an approriate error 

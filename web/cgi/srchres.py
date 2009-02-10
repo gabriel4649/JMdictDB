@@ -29,33 +29,38 @@ def main( args, opts ):
 	errs = []
 	try: form, svc, cur, sid, sess, parms = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
-	fv = form.getfirst; fl = form.getlist
 	if errs:
 	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
 	    return 
 
-	so = jmcgi.SearchItems()
-	so.idnum=fv('idval');  so.idtyp=fv('idtyp')
-	tl = []
-	for i in (1,2,3):
-	    txt = (fv('t'+str(i)) or '').decode('utf-8')
-	    if txt: tl.append (jmcgi.SearchItemsTexts (
-				 srchtxt = txt, 
-				 srchin  = fv('s'+str(i)),
-				 srchtyp = fv('y'+str(i)) ))
-	if tl: so.txts = tl
-	so.pos   = fl('pos');   so.misc  = fl('misc');  so.fld  = fl('fld')
-	so.rinf  = fl('rinf');  so.kinf  = fl('kinf');  so.freq = fl('freq')
-	so.src   = fl('src');   so.stat  = fl('stat');  so.unap = fl('appr')
-	so.nfval = fv('nfval'); so.nfcmp = fv('nfcmp')
-	so.gaval = fv('gaval'); so.gacmp = fv('gacmp')
-	force_srchres = fv('srchres')  # Force display of srchres page even if only one result.
+	fv = form.getfirst; fl = form.getlist
+	sql = fv ('sql')
+	if not sql:
+	    so = jmcgi.SearchItems()
+	    so.idnum=fv('idval');  so.idtyp=fv('idtyp')
+	    tl = []
+	    for i in (1,2,3):
+	        txt = (fv('t'+str(i)) or '').decode('utf-8')
+	        if txt: tl.append (jmcgi.SearchItemsTexts (
+				     srchtxt = txt, 
+				     srchin  = fv('s'+str(i)),
+				     srchtyp = fv('y'+str(i)) ))
+	    if tl: so.txts = tl
+	    so.pos   = fl('pos');   so.misc  = fl('misc');  so.fld  = fl('fld')
+	    so.rinf  = fl('rinf');  so.kinf  = fl('kinf');  so.freq = fl('freq')
+	    so.src   = fl('src');   so.stat  = fl('stat');  so.unap = fl('appr')
+	    so.nfval = fv('nfval'); so.nfcmp = fv('nfcmp')
+	    so.gaval = fv('gaval'); so.gacmp = fv('gacmp')
+	    force_srchres = fv('srchres')  # Force display of srchres page even if only one result.
 
-	condlist = jmcgi.so2conds (so)
-	  # FIXME: [IS-115] Following will prevent kanjidic entries from
-	  #  appearing in results.  Obviously hardwiring id=4 is a hack.
-	condlist.append (('entr e', 'e.src!=4', []))
-	sql, sql_args = jdb.build_search_sql (condlist)
+	    condlist = jmcgi.so2conds (so)
+	      # FIXME: [IS-115] Following will prevent kanjidic entries from
+	      #  appearing in results.  Obviously hardwiring id=4 is a hack.
+	    condlist.append (('entr e', 'e.src!=4', []))
+	    sql, sql_args = jdb.build_search_sql (condlist)
+
+	else:
+	    sql_args = []
 
 	#  $::Debug->{'Search sql'} = $sql;  $::Debug->{'Search args'} = join(",", @$sql_args);
 	sql2 = "SELECT q.* FROM esum q JOIN (%s) AS i ON i.id=q.id" % sql

@@ -39,6 +39,28 @@ class Test_restr (unittest.TestCase):
 	xml = fmtxml.restrs (rdng, kanjs)
 	_.assertEqual (['<re_nokanji/>'], xml)
 
+
+class Test_entr (unittest.TestCase):
+    def setUp(_):
+	jdb.KW = jdb.Kwds ('data/fmtxml/kw/')
+
+    def test0200010 (_): 
+	e = Entr(); _.dotest (e, '0200010')
+    def test0201020 (_): 
+	e = Entr(_grp=[Grp(kw=2,ord=1)]); _.dotest (e, '0201020')
+    def test0201030 (_): 
+	e = Entr(_grp=[Grp(kw=11,ord=5),Grp(kw=10,ord=2)]); _.dotest (e, '0201030')
+    def test0201040 (_): 
+	e = Entr(_grp=[Grp(kw=5,ord=1)]); _.dotest (e, '0201040', compat='jmdict')
+    def test0201050 (_): 
+	e = Entr(_grp=[Grp(kw=1)]); _.dotest (e, '0201050')
+
+    def dotest(_, e, expected_file, **kwds):
+	#pdb.set_trace()
+	results = fmtxml.entr (e, **kwds)
+	expected = open ('data/fmtxml/'+expected_file+'.txt').read()
+	_.assertEqual (expected, results)
+
 if __name__ == '__main__': unittest.main()
 
 

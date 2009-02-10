@@ -29,7 +29,7 @@ from xml.sax.saxutils import escape as esc, quoteattr as esca
 import jdb, xmlkw
 
 global XKW, KW
-
+XKW = None
 
 def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
 		implicit_pos=True):
@@ -68,7 +68,8 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
 	  # idependent of the KW table.  See comments in jmxml.py
 	  # but note the mapping used here needs to also support
 	  # the enhanced DTD.
-	global XKW, KW; KW = jdb.KW; XKW = xmlkw.make (KW)
+	global XKW, KW; KW = jdb.KW; 
+	if not XKW: XKW = xmlkw.make (KW)
 
 	fmt= entrhdr (entr, compat)
 
@@ -89,7 +90,7 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
 		fmt.extend (sens (x, kanjs, rdngs, compat, entr.src, genxrefs, last_pos))
 
 	if not compat: fmt.extend (audio (entr))
-
+	if not compat: fmt.extend (grps (entr))
 	fmt.append ('</entry>')
 	if wantlist: return fmt
 	return '\n'.join (fmt)
@@ -397,6 +398,22 @@ def audit (h, compat=None):
 	fmt.append ('</audit>')
 	return fmt
 
+def grps (entr):
+	global XKW
+	fmt = []
+	for x in getattr (entr, '_grp', []):
+	    ord = (' ord="%d"' % x.ord) if x.ord is not None else ''
+	    fmt.append ('<group%s>%s</group>' % (ord, XKW.GRP[x.kw].kw))
+	return fmt
+
+def grpdef (kwgrp_obj):
+	fmt = []
+	fmt.append ('<grpdef id="%d">' % kwgrp_obj.id)
+	fmt.append ('<gd_name>%s</gd_name>' % kwgrp_obj.kw)
+	fmt.append ('<gd_descr>%s</gd_descr>' % kwgrp_obj.descr)
+	fmt.append ('</grpdef>')
+	return fmt
+
 def audio (entr_or_rdng):
 	a = getattr (entr_or_rdng, '_snd', [])
 	if not a: return []
@@ -458,9 +475,9 @@ def sndclips (clips):
 	    selstr = ' sel="s%s"' % str (c.file)
 	    fmt.append ('<aclip%s%s>' % (idstr,selstr))
 	    if getattr (c, 'strt',  None) is not None: fmt.append ('<ac_strt>%s</ac_strt>'   % c.strt)
-	    if getattr (c, 'leng',  None) is not None: fmt.append ('<ac_leng>%s</ac_leng>'   % c.leng)
-	    if getattr (c, 'trns',  None) is not None: fmt.append ('<ac_trns>%s</ac_trns>'   % c.trns)
-	    if getattr (c, 'notes', None) is not None: fmt.append ('<ac_notes>%s</ac_notes>' % c.notes)
+	    if getattr (c, 'leng',  None): fmt.append ('<ac_leng>%s</ac_leng>'   % c.leng)
+	    if getattr (c, 'trns',  None): fmt.append ('<ac_trns>%s</ac_trns>'   % c.trns)
+	    if getattr (c, 'notes', None): fmt.append ('<ac_notes>%s</ac_notes>' % c.notes)
 	    fmt.append ('</aclip>')
 	return fmt
 
@@ -469,11 +486,14 @@ def corpus (corpuses):
 	for c in corpuses:
 	    kwo = KW.SRC[c]
 	    fmt.append ('<corpus id="%d">' % kwo.id)
-	    fmt.append ('<name>%s</name>' % kwo.kw)
-	    if getattr (kwo, 'descr', None): fmt.append ('<descr>%s</descr>' % esc(KW.SRC[c].descr))
-	    if getattr (kwo, 'dt',    None): fmt.append ('<dt>%s</dt>'       % KW.SRC[c].dt)
-	    if getattr (kwo, 'notes', None): fmt.append ('<notes>%s</notes>' % esc(KW.SRC[c].notes))
-	    if getattr (kwo, 'seq',   None): fmt.append ('<seqname>%s</seqname>' % esc(KW.SRC[c].seq))
+	    fmt.append ('<co_name>%s</co_name>' % kwo.kw)
+	    if getattr (kwo, 'descr', None): fmt.append ('<co_descr>%s</co_descr>' % esc(KW.SRC[c].descr))
+	    if getattr (kwo, 'dt',    None): fmt.append ('<co_date>%s</co_date>'   % KW.SRC[c].dt)
+	    if getattr (kwo, 'notes', None): fmt.append ('<co_notes>%s</co_notes>' % esc(KW.SRC[c].notes))
+	    if getattr (kwo, 'seq',   None): fmt.append ('<co_sname>%s</co_sname>' % esc(KW.SRC[c].seq))
+	    if getattr (kwo, 'sinc',  None): fmt.append ('<co_sinc>%s</co_sinc>'   % esc(KW.SRC[c].seq))
+	    if getattr (kwo, 'smin',  None): fmt.append ('<co_smin>%s</co_smin>'   % esc(KW.SRC[c].seq))
+	    if getattr (kwo, 'smax',  None): fmt.append ('<co_smax>%s</co_smax>'   % esc(KW.SRC[c].seq))
 	    fmt.append ('</corpus>')
 	return fmt
 

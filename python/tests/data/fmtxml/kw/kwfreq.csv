@@ -1,0 +1,6 @@
+1	ichi	Ranking from "Ichimango goi bunruishuu", 1-2.
+2	gai	Common loanwords based on wordfreq file, 1-2
+4	spec	Ranking assigned by JMdict editors, 1-2 
+5	nf	Ranking in wordfreq file, 1-48
+6	gA	Google counts (by Kale Stutzman, 2007-01-14)
+7	news	Ranking in wordfreq file, 1-2

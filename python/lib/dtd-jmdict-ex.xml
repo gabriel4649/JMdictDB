@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Rev 1.07-extended-1
+<!-- $Rev: 000000000000 $ $Date: 0000/00/00 00:00:00 $
 	This DTD is derived from the JMdict DTD version 1.07 (2009-01-21)
 	but is extended to allow for enhanced representational capabilities
 	to support JMdictDB entries.  Changes include:
+	  <grpdef> new elements to define entry groups.
 	  <corpus> new element to define corpus records.
 	  <entr> new attributes: stat, unap. dfrm; new child elements:
-	    corpus, audio, 
+	    corpus, audio, group.
 	  <info> new child elements  notes, srcnotes.
 	  <audit> new child elements: email, name, refs, diff.
 	  <r_ele> new child element: audio.
 	  <gloss> new attribute: g_type.
 	  <xref> new attributes: type, seq, corp.
+	  <group> new element to denote entry group membership.
 -->
 <!-- Rev 1.07 
 	Revised POS tags for the adjectives
@@ -38,18 +40,27 @@
 	 Added the re_nokanji element - Sep 2003.
      -->
 <!DOCTYPE JMdict [
-<!ELEMENT JMdict (corpdef*, entry*)>
+<!ELEMENT JMdict (corpdef|grpdef|entry)*>
 <!--                                                                   -->
-<!ELEMENT corpus (name, descr?, date?, notes?, seqname?)>
+<!ELEMENT corpus (co_name, co_descr?, co_date?, co_notes?, co_sname?, co_sinc?, co_smin?, co_smax?)>
 	<!-- Defines a corpus to which subsequent entries may belong. -->
 <!ATTLIST corpus id CDATA #REQUIRED>
-<!ELEMENT name (#PCDATA)>    <!-- Corpus short name. -->
-<!ELEMENT descr (#PCDATA)>   <!-- Description. -->
-<!ELEMENT date (#PCDATA)>    <!-- Date of corpus. -->
-<!ELEMENT notes (#PCDATA)>   <!-- Ad hoc notes. -->
-<!ELEMENT seqname (#PCDATA)> <!-- Name of associated Postgresql sequence. -->
+<!ELEMENT co_name (#PCDATA)>    <!-- Corpus short name. -->
+<!ELEMENT co_descr (#PCDATA)>   <!-- Description. -->
+<!ELEMENT co_date (#PCDATA)>    <!-- Date of corpus. -->
+<!ELEMENT co_notes (#PCDATA)>   <!-- Ad hoc notes. -->
+<!ELEMENT co_sname (#PCDATA)>   <!-- Name of associated seq number generator. -->
+<!ELEMENT co_sinc (#PCDATA)>    <!-- Seq increment. -->
+<!ELEMENT co_smin (#PCDATA)>    <!-- Seq minvalue. -->
+<!ELEMENT co_smax (#PCDATA)>    <!-- Seq maxvalue. -->
+<!--                                                                   -->
+<!ELEMENT grpdef (name, descr?)>
+	<!-- Defines an entry group to which subsequent entries may belong. -->
+<!ATTLIST grpdef id CDATA #REQUIRED>
+<!ELEMENT gd_name (#PCDATA)>    <!-- group def short name. -->
+<!ELEMENT gd_descr (#PCDATA)>   <!-- group def description. -->
 
-<!ELEMENT entry (ent_seq, ent_corp, k_ele*, r_ele+, info?, sense+, audio*)>
+<!ELEMENT entry (ent_seq, ent_corp, k_ele*, r_ele+, info?, sense+, audio*, group*)>
 	<!-- Entries consist of kanji elements, reading elements, 
 	general information and sense elements. Each entry must have at 
 	least one reading element and one sense element. Others are optional.
@@ -159,6 +170,16 @@
 <!--                                                                   -->
 <!ELEMENT audio (#PCDATA)>
 <!ATTLIST audio clipid CDATA #REQUIRED>
+	<!-- Audio clip the represents the entry or reading. -->
+<!ATTLIST audio db CDATA>
+	<!-- Name of audio collection containing clip. -->
+<!ATTLIST audio dbver CDATA>
+	<!-- Collection version number at and above containing clip. -->
+<!--                                                                   -->
+<!ELEMENT group (#PCDATA)>
+	<!-- A group that this entry belongs to. -->
+<!ATTLIST group ord CDATA #REQUIRED>
+	<!-- Order of group element in all elements of the group. -->
 <!--                                                                   -->
 <!ELEMENT info (notes?, srcnote?, links*, bibl*, etym*, audit*)>
 	<!-- general coded information relating to the entry as a whole.-->

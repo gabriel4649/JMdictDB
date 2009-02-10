@@ -78,14 +78,6 @@ CREATE TABLE kwrinf (
     kw VARCHAR(20) NOT NULL UNIQUE,
     descr VARCHAR(255));
 
-CREATE TABLE kwsrc (
-    id SMALLINT PRIMARY KEY,
-    kw VARCHAR(20) NOT NULL UNIQUE,
-    descr VARCHAR(255),
-    dt DATE,
-    notes VARCHAR(255),
-    seq VARCHAR(20));
-
 CREATE TABLE kwstat (
     id SMALLINT PRIMARY KEY,
     kw VARCHAR(20) NOT NULL UNIQUE,
@@ -95,6 +87,90 @@ CREATE TABLE kwxref (
     id SMALLINT PRIMARY KEY,
     kw VARCHAR(20) NOT NULL UNIQUE,
     descr VARCHAR(255));
+
+CREATE TABLE kwgrp (
+    id SERIAL PRIMARY KEY,
+    kw VARCHAR(20) NOT NULL UNIQUE,
+    descr VARCHAR(255));
+
+CREATE TABLE kwsrc (
+    id SMALLINT PRIMARY KEY,
+    kw VARCHAR(20) NOT NULL UNIQUE,
+    descr VARCHAR(255),
+    dt DATE,
+    notes VARCHAR(255),
+    seq VARCHAR(20) NOT NULL,	-- Name of sequence to create for entr.seq default values.
+    sinc SMALLINT,		-- Sequence INCREMENT value used when creating seq.
+    smin INT,			-- Sequence MINVALUE value used when creating seq.
+    smax INT);			-- Sequence MAXVALUE value used when creating seq.
+
+CREATE OR REPLACE FUNCTION kwsrc_updseq() RETURNS trigger AS $kwsrc_updseq$
+    -- Create a sequence for entr.seq numbers whenever a new
+    -- row is added to table 'kwsrc' (and delete it when row 
+    -- is deleted).  This allows every corpus to maintain its
+    -- own sequence.  The sequence is *not* made default value
+    -- of entr.seq (because there multiple sequences are used
+    -- depending on entr.src); the API is responsible for choosing
+    -- and using the correct sequence. 
+
+    DECLARE seqnm VARCHAR; newseq VARCHAR := ''; oldseq VARCHAR := '';
+	partinc VARCHAR := ''; partmin VARCHAR := ''; partmax VARCHAR := '';
+	usedcnt INT;
+    BEGIN
+	IF TG_OP != 'DELETE' THEN newseq=NEW.seq; END IF;
+	IF TG_OP != 'INSERT' THEN oldseq=OLD.seq; END IF;
+	IF oldseq != '' THEN
+	    -- 'kwsrc' row was deleted or updated.  Drop the deleted sequence
+	    -- if not used in any other rows.
+	    SELECT INTO usedcnt COUNT(*) FROM kwsrc WHERE seq=oldseq;
+	    IF usedcnt = 0 THEN
+		EXECUTE 'DROP SEQUENCE IF EXISTS '||oldseq;
+		END IF;
+	ELSEIF newseq != '' THEN 
+	    -- 'kwsrc' row was inserted or updated.  See if sequence 'newseq'
+	    -- already exists, and if so, do nothing.  If not, create it.
+	    IF NEW.sinc IS NOT NULL THEN
+		partinc = ' INCREMENT ' || NEW.sinc;
+		END IF;
+	    IF NEW.smin IS NOT NULL THEN
+		partmin = ' MINVALUE ' || NEW.smin;
+		END IF;
+	    IF NEW.smax IS NOT NULL THEN
+		partmax = ' MAXVALUE ' || NEW.smax;
+		END IF;
+	    IF NOT EXISTS (SELECT relname FROM pg_class WHERE relname=NEW.seq AND relkind='S') THEN
+	        EXECUTE 'CREATE SEQUENCE '||newseq||partinc||partmin||partmax||' NO CYCLE';
+		END IF;
+	    END IF;
+	RETURN NEW;
+        END;
+    $kwsrc_updseq$ LANGUAGE plpgsql;
+
+CREATE TRIGGER kwsrc_updseq AFTER INSERT OR UPDATE OR DELETE ON kwsrc
+    FOR EACH ROW EXECUTE PROCEDURE kwsrc_updseq();
+
+CREATE OR REPLACE FUNCTION syncseq() RETURNS VOID AS $syncseq$
+    -- Syncronises all the sequences specified in table 'kwsrc'
+    -- (which are used for generation of corpus specific seq numbers.)
+    DECLARE cur REFCURSOR; seqname VARCHAR; maxseq INT;
+    BEGIN
+	-- Following cursor gets the max value of e.seq for each corpus
+	-- for e.seq values within the range of the associated seq (where
+	-- the range is what was given in kwsrc table.  Since those numbers
+	-- can be changed after the sequence was created, and doing so may
+	-- screwup the operation herein, don't do that!
+	OPEN cur FOR SELECT k.seq, COALESCE(MAX(e.seq),k.smin,1) 
+			FROM entr e JOIN kwsrc k ON k.id=e.src 
+			WHERE e.id BETWEEN COALESCE(k.smin,1) 
+			    AND COALESCE(k.smax,2147483647)
+			GROUP BY k.seq,k.smin;
+	LOOP
+	    FETCH cur INTO seqname, maxseq;
+	    EXIT WHEN NOT FOUND;
+	    EXECUTE 'SELECT setval(''' || seqname || ''', ' || maxseq || ')';
+	    END LOOP;
+	END;
+    $syncseq$ LANGUAGE plpgsql;
 
 
 CREATE TABLE entr (
@@ -110,23 +186,9 @@ CREATE TABLE entr (
 --CREATE INDEX entr_stat ON entr(stat) WHERE stat!=2;
 --CREATE INDEX entr_dfrm ON entr(dfrm) WHERE dfrm IS NOT NULL;
 --CREATE INDEX entr_unap ON entr(unap) WHERE unap;
---ALTER TABLE entr ADD CONSTRAINT entr_src_fkey FOREIGN KEY (src) REFERENCES kwsrc(id);
+--ALTER TABLE entr ADD CONSTRAINT entr_src_fkey FOREIGN KEY (src) REFERENCES kwsrc(id) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE entr ADD CONSTRAINT entr_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
 --ALTER TABLE entr ADD CONSTRAINT entr_dfrm_fkey FOREIGN KEY (dfrm) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
-
-CREATE SEQUENCE seq_jmdict	-- JMdict seq numbers.
-   INCREMENT 10 MINVALUE 1000000 MAXVALUE 8999999 
-   NO CYCLE OWNED BY entr.seq;
-CREATE SEQUENCE seq_jmnedict	-- JMnedict seq numbers.
-   OWNED BY entr.seq;
-CREATE SEQUENCE seq_examples	-- Examples file seq numbers.
-   OWNED BY entr.seq;
-CREATE SEQUENCE seq_kanjidic	-- Kanjidic file seq numbers.
-   OWNED BY entr.seq;
-CREATE SEQUENCE seq_test	-- Seq numbers for test entries.
-   OWNED BY entr.seq;
-CREATE SEQUENCE seq		-- Seq numbers for all other src's.
-   OWNED BY entr.seq;
 
 CREATE FUNCTION entr_seqdef() RETURNS trigger AS $entr_seqdef$
     -- This function is used as an "insert" trigger on table 
@@ -336,6 +398,16 @@ CREATE TABLE stagk (
     PRIMARY KEY (entr,sens,kanj));
 --ALTER TABLE stagk ADD CONSTRAINT stagk_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE stagk ADD CONSTRAINT stagk_entr_fkey1 FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
+
+CREATE TABLE grp (
+    entr INT NOT NULL,
+    kw INT NOT NULL,
+    ord INT NOT NULL,
+    notes VARCHAR(250),
+    PRIMARY KEY (entr,kw));
+--ALTER TABLE grp ADD CONSTRAINT grp_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
+--ALTER TABLE grp ADD CONSTRAINT grp_kw_fkey  FOREIGN KEY (kw)  REFERENCES kwgrp(id)  ON DELETE CASCADE ON UPDATE CASCADE;
+--CREATE INDEX grp_kw ON grp(kw);
 
 -------------------------------
 -- Tables for audio sound clips

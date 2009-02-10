@@ -61,7 +61,7 @@ def main (args, opts):
 	    'lsrc'    : [0],    'ginf'    : [0],    'restr'   : [0],    'stagr'   : [0],
 	    'stagk'   : [0],    'xref'    : [0,2],  'xresolv' : [0],    'entrsnd' : [0],
 	    'rdngsnd' : [0],    'chr'     : [0],    'cinf'    : [0],    'kresolv' : [0],
-	    'freq'    : [0],
+	    'freq'    : [0],	'grp'	  : [0],
 	    }
 	  # Column numbers of id and kw in kwsrc, and src in entr tables.
 	KWSRC_ID=0;  KWSRC_KW=1; ENTR_SRC=1

@@ -26,17 +26,10 @@ SELECT setval('snd_id_seq',  (SELECT max(id) FROM snd));
 SELECT setval('sndfile_id_seq',  (SELECT max(id) FROM sndfile));
 SELECT setval('sndvol_id_seq',  (SELECT max(id) FROM sndvol));
 
--- The following properly resets the state of the sequences that 
--- generate entry "seq" column values.  The sequence used for a 
--- particular entry is given by the kwsrc.seq datum in the kwsrc 
--- row referenced by the entry.
--- The values must be reset following a bulk load of data by programs
--- such as jmload.pl, etc.
+-- The following function (defined in mktables.sql) resets the
+-- state of the sequences that generate entry "seq" column values.
+-- The values must be reset following a bulk load of data or any
+-- other load tha gets seq numbers from somewhere other than the
+-- sequence tables.
 
-SELECT setval('seq_jmdict',   (SELECT MAX(e.seq) FROM entr e JOIN kwsrc k ON k.id=e.src WHERE k.seq='seq_jmdict' AND e.seq<9000000));
-SELECT setval('seq_jmnedict', (SELECT MAX(e.seq) FROM entr e JOIN kwsrc k ON k.id=e.src WHERE k.seq='seq_jmnedict'));
-SELECT setval('seq_examples', (SELECT MAX(e.seq) FROM entr e JOIN kwsrc k ON k.id=e.src WHERE k.seq='seq_examples'));
-SELECT setval('seq_kanjidic', (SELECT MAX(e.seq) FROM entr e JOIN kwsrc k ON k.id=e.src WHERE k.seq='seq_kanjidic'));
-SELECT setval('seq',          (SELECT MAX(e.seq) FROM entr e JOIN kwsrc k ON k.id=e.src WHERE k.seq='seq'));
-
-
+SELECT syncseq();

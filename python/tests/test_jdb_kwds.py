@@ -8,7 +8,7 @@ import jdb
 __unittest = 1
 
 KwdsAttrs = set (('DIAL','FLD','FREQ','GINF','KINF','LANG','MISC',
-		  'POS','RINF','SRC','STAT','XREF','CINF',))
+		  'POS','RINF','SRC','STAT','XREF','CINF','GRP'))
 
 # The following should be updated when changes are made to the 
 # base data in the ../../pg/data/*.csv files.

@@ -257,10 +257,9 @@ data/kanjidic2.dmp: data/kanjidic2.pgi
 	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -o ../data/kanjidic2.dmp ../data/kanjidic2.pgi
 
 loadkd: data/kanjidic2.dmp 
-	#cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/kanjidic2.dmp
-	#cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f mkindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f syncseq.sql
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
 
 #------ Load jmdict, jmnedict, examples -------------------------------------
 
@@ -269,6 +268,7 @@ loadkd: data/kanjidic2.dmp
 # set, invalidating the starting id numbers in the other .dmp files.
 
 loadall: newdb data/jmdict.dmp data/jmnedict.pgi data/examples.pgi 
+	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
 	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/jmdict.dmp
 
 	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -o ../data/examples.dmp ../data/examples.pgi

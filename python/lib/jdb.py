@@ -29,7 +29,7 @@ import fmtxml
 from objects import *
 
 global KW
-
+2011
 Debug = {}
 
 class AuthError (Exception): pass
@@ -222,7 +222,7 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
 	    'entr','hist','rdng','rinf','kanj','kinf',
 	    'sens','gloss','misc','pos','fld','dial','lsrc',
 	    'restr','stagr','stagk','freq','xref','xrer',
-	    'rdngsnd','entrsnd','chr','cinf','xresolv')
+	    'rdngsnd','entrsnd','grp','chr','cinf','xresolv')
 	if args is None: args = []
 	if ord is None: ord = ''
 	if re.search (r'^((\d+|\?|%s),)*(\d+|\?|%s)$', crit):
@@ -257,7 +257,10 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
 
 	    if   typ == 'J': sql = tmpl % (tblx, crit, key, ordby, limit)
 	    elif typ == 'I': sql = tmpl % (tblx, key, crit, ordby, limit)
-	    try: t[tbl] = dbread (dbh, sql, args, cls=cls)
+	    try: 
+		##start2 = time()
+		t[tbl] = dbread (dbh, sql, args, cls=cls)
+		##Debug['table read time, %s'%tbl] = time()start2
 	    except (psycopg2.ProgrammingError), e:
 	        print >>sys.stderr, e,
 		print >>sys.stderr, '%s %s' % (sql, args)
@@ -296,7 +299,8 @@ def entr_bld (t):
 	mup ('_xrer',  sens, ['entr','sens'], t.get('xrer', []), ['xentr','xsens'])
 	mup ('_snd',   entr, ['id'],          t.get('entrsnd',[]), ['entr'])
 	mup ('_snd',   rdng, ['entr','rdng'], t.get('rdngsnd',[]), ['entr','rdng'])
-	mup ('_cinf',  chr,  ['entr'],        t.get('cinf',[]),  ['entr'])
+	mup ('_grp',   entr, ['id'],          t.get('grp',[]),     ['entr'])
+	mup ('_cinf',  chr,  ['entr'],        t.get('cinf',[]),    ['entr'])
 	if chr: mup ( None, chr, ['entr'], entr, ['id'], 'chr')
 	mup ('_xrslv', sens, ['entr','sens'],t.get('xresolv',[]),['entr','sens'])
 	return entr
@@ -1209,6 +1213,7 @@ def addentr (cur, entr):
 	    for x in getattr (s, '_xrer',  []): dbinsert (cur, "xrer",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
 	    for x in getattr (s, '_xrslv', []): dbinsert (cur,"xresolv",['entr','sens','typ','ord','rtxt','ktxt','tsens','notes','prio'], x)
 	for x in getattr (entr, '_snd', []): dbinsert (cur, "entrsnd", ['entr','ord','snd'], x)
+	for x in getattr (entr, '_grp', []): dbinsert (cur, "grp",     ['entr','kw','ord'], x)
 	if getattr (entr, 'chr', None):
 	    c = e.chr
 	    dbinsert (cur, "chr", ['entr','chr','bushu','strokes','freq','grade','jlpt','radname'], c)
@@ -1253,6 +1258,8 @@ def setkeys (e, id=0):
 	    for x in getattr (s, '_xrer',  []): (x.entr, x.sens) = (id, n)
 	for n,x in enumerate (getattr (e, '_snd',  [])): (x.entr, x.ord) = (id, n+1)
 	for n,x in enumerate (getattr (e, '_hist', [])): (x.entr,x.hist) = (id, n+1)
+	# Note: do not set grp.ord; order is based on position in grp table, not entr._grp list.
+	for x in getattr (e, '_grp', []): x.entr = id
 	if getattr (e, 'chr', None):
 	    c = e.chr
 	    c.entr = id
@@ -1615,7 +1622,7 @@ class Kwds:
     Tables = {'DIAL':"kwdial", 'FLD' :"kwfld",  'FREQ':"kwfreq", 'GINF':"kwginf",
 	      'KINF':"kwkinf", 'LANG':"kwlang", 'MISC':"kwmisc", 'POS' :"kwpos",
 	      'RINF':"kwrinf", 'STAT':"kwstat", 'XREF':"kwxref", 'CINF':"kwcinf",
-	      'SRC' :"kwsrc"}
+	      'SRC' :"kwsrc",  'GRP':"kwgrp"}
 
     def __init__( self, cursor_or_dirname=None ):
 	# Create and optionally load a Kwds instance.  If 

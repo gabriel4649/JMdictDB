@@ -232,8 +232,8 @@ def copy_snd (fromentr, toentr, replace=False):
 	  # than old readings (in attr '.txt', in order, or in number)?
 	if hasattr (fromentr, '_rdng') and hasattr (toentr, '_rdng'):
 	    for rto, rfrom in zip (getattr (toentr,'_rdng',[]),
-				   getattr (tfromentr,'_rdng',[])):
-		 if hasattr (rold, '_snd'): rnew._snd.extend (rold._snd)
+				   getattr (fromentr,'_rdng',[])):
+		 if hasattr (rfrom, '_snd'): rto._snd.extend (rfrom._snd)
 
 def chkentr (e, errs):
 	# Do some validation of the entry.  This is nowhere near complete 

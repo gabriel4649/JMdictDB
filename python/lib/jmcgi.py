@@ -52,18 +52,20 @@ def parseform ():
 	except ValueError: errs.append ('svc=' + svc)
 	if not errs: cur = dbOpenSvc (svc)
 	if errs: raise ValueError (';'.join (errs))
+	host = jdb._extract_hostname (cur.connection)
 
 	parms = [(k,v.decode('utf-8')) for k in form.keys() 
 			 if k not in ('login','logout','username','password')
 		       for v in form.getlist(k) ]
 
-	return form, svc, cur, sid, sess, parms
+	return form, svc, host, cur, sid, sess, parms,
 
-def getsession (sid, logout=False, sessdb="jmsess", cur=None):
+_SESS_SVC = "jmsess"
+
+def getsession (sid, logout=False, cur=None):
 	if not sid: return None
 	if not cur:
-	    cur = jdb.dbOpen (sessdb, nokw=True, user="postgres", password="satomi")
-	    cur.connection.rollback()
+	    cur = dbOpenSvc (_SESS_SVC, nokw=True)
 	if isinstance (sid, (str, unicode)):
 	    try: sid = int (sid,16)
 	    except (ValueError, TypeError): return None
@@ -78,11 +80,11 @@ def getsession (sid, logout=False, sessdb="jmsess", cur=None):
 	    sql = "DELETE FROM sessions WHERE id=%s"
 	    cur.execute (sql, (sid,))
 	cur.connection.close()
-	return rs[0]
+	sess = rs[0]
+	return sess
 
-def login (userid, password, sessdb="jmsess"):
-	cur = jdb.dbOpen (sessdb, nokw=True, user="postgres", password="satomi")
-	cur.connection.rollback()
+def login (userid, password):
+	cur = dbOpenSvc (_SESS_SVC, nokw=True)
 	sql = "SELECT userid FROM users WHERE userid=%s " \
 		"AND pw=%s AND pw IS NOT NULL AND NOT disabled"
 	rs = jdb.dbread (cur, sql, (userid, password))
@@ -94,6 +96,14 @@ def login (userid, password, sessdb="jmsess"):
 	cur.connection.commit()
 	sess = getsession (sid, cur=cur)
 	return sess
+
+def is_editor (sess):
+	"""Return a true value if the 'sess' object (which may be None)
+	is for a logged-in editor.  Note that currently, any non-None
+	session is treated as a logged-in editor."""
+
+	if sess: return getattr (sess, 'userid', None)
+	return None
 
 def remove_inactive_sessions (cur):
 	expire = 120	# Expiration time in minutes.
@@ -613,8 +623,7 @@ def _freqcond (freq, nfval, nfcmp, gaval, gacmp):
 
 	return [("freq",whr,[])]
 
-
-def dbOpenSvc (svcname, svcdir=None):
+def dbOpenSvc (svcname, svcdir=None, **kwds):
 	# This function will open a database connection.  It is
 	# intended for the use of cgi scripts where we do not want
 	# to embed the connection information (username, password,
@@ -644,6 +653,5 @@ def dbOpenSvc (svcname, svcdir=None):
 
 	if svcdir: os.environ['PGSYSCONFDIR'] = svcdir
 
-	dbh = jdb.dbOpen (None, dsn='service=%s' % svcname)
+	dbh = jdb.dbOpen (None, dsn='service=%s' % svcname, **kwds)
 	return dbh
-

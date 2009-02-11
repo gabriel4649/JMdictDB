@@ -132,7 +132,7 @@ import jdb, jmcgi, fmtxml, serialize
 def main( args, opts ):
 	cgitb.enable()
 	errs = []
-	try: form, svc, dbh, sid, sess, parms = jmcgi.parseform()
+	try: form, svc, host, dbh, sid, sess, parms = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
 	fv = form.getfirst
 
@@ -161,7 +161,7 @@ def main( args, opts ):
 	    dbh.connection.commit()
 	    jmcgi.gen_page ("tmpl/submitted.tal", macros='tmpl/macros.tal',
 			    added=added,
-			    svc=svc, sid=sid, session=sess, parms=parms, 
+			    svc=svc, host=host, sid=sid, session=sess, parms=parms, 
 			    output=sys.stdout, this_page='edsubmit.py')
 	else: 
 	    dbh.connection.rollback()
@@ -169,7 +169,6 @@ def main( args, opts ):
 	dbh.close()
 
 def submission (dbh, sess, svc, entr, disp, errs):
-
 	KW = jdb.KW
 	oldid = entr.id
 	entr.id = None		# All submissions will produce a new entry.
@@ -177,7 +176,20 @@ def submission (dbh, sess, svc, entr, disp, errs):
 	if not entr.dfrm:	# This is new entry. 
 	    entr.stat = KW.STAT['A'].id
 	    entr.seq = None  # Force addentr() to assign seq number. 
+	    pentr = None	# No parent entr.
 	else:	# Modification of existing entry.
+	      # Get the parent entry and augment the xrefs so when hist diffs are
+	      # generated, they will show xref details.
+	    pentr, raw = jdb.entrList (dbh, None, [entr.dfrm], ret_tuple=True)
+	    if len (pentr) != 1: 
+		errs.append (
+		    "The entry you are editing has been deleted or changed " 
+		    "by someone else.  Please check the current entry and " 
+		    "reenter your changes if they are still applicable.")
+		return
+	    pentr = pentr[0]
+	    jdb.augment_xrefs (dbh, raw['xref'])
+
 	    if entr.stat == KW.STAT['D'].id:
 		  # If this is a deletion, set $merge_rev.  When passed
 		  # to function merge_hist() it will tell it to return the 
@@ -212,13 +224,22 @@ def submission (dbh, sess, svc, entr, disp, errs):
 	    errs.append ("Can't approve because entry has unresolved xrefs")
 
 	if not errs:
+	      # If this is a submission buy a non-editor, restore the
+	      # original entry's freq items which non-editors are not
+	      # allowed to change.
+	    if not jmcgi.is_editor (sess):
+		if pentr: 
+		    jdb.copy_freqs (pentr, entr, replace=True)
+		  # Note that non-editors can provide freq items on new
+		  # entries.  We expect an editor to vet this when approving.
+
 	      # Entr contains the hist record generate by the edconf.py
 	      # but it is not trustworthy since it could be modified or
 	      # created from scratch before we get it.  So we extract
 	      # the unvalidated info from it (name, email, notes, refs)
 	      # and recreate it.
 	    h = entr._hist[-1]
-	    entr = jdb.add_hist (dbh, entr, sess.userid if sess else None, 
+	    entr = jdb.add_hist (entr, pentr, sess.userid if sess else None, 
 				 h.name, h.email, h.notes, h.refs, merge_rev)
 	    if not entr:
 		errs.append (

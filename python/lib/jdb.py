@@ -735,7 +735,57 @@ def freq2txts (freqs):
 	    fstr = ('%s%02d' if kwstr=='nf' else '%s%d') % (kwstr, f.value) 
 	    if fstr not in flist: flist.append (fstr)
 	return sorted (flist)
-	    
+
+def copy_freqs (fromentr, toentr, replace=False):
+	# Copy the freq items from 'fromentr' to 'toentr'.  
+	# 'fmap' Is a mapping as returned by freq_map() and has nothing
+	# to do with the 'fmap' parameter in make_freq_objs() above.
+	# If 'replace' is false, the copied freqs will be appended
+	# to any freqs already on 'toentr'.  If true, all existing
+	# freqs on 'toentr' will be deleted before copying the freqs.
+
+	idx = freq_map (fromentr)
+	if replace:
+	    for r in getattr (toentr, '_rdng', []): r._freq = []
+	    for k in getattr (toentr, '_kanj', []): k._freq = []
+	for f, (r, nr, k, nk) in idx.items():
+	    if r: 
+		try: r2 = toentr._rdng[nr]
+		except (AttributeError, IndexError): pass
+		try: r2._freq.append (f)
+		except AttributeError: r2._freq = [f]
+	    if k: 
+		try: k2 = toentr._kanj[nk]
+		except (AttributeError, IndexError): pass
+		try: k2._freq.append (f)
+		except AttributeError: k2._freq = [f]
+
+def freq_map (entr):
+	# Create a mapping with keys being all the Freq objects in an
+	# entry (both reading and kanji), and each value being a 4-seq
+	# consisting of the reading, rdng index, kanji, and kanji index
+	# where the Freq object was found.  This function assumes that
+	# a given Freq item will not appear more than once in any given
+	# Rdng or Kanj ._freq list. 
+	# Note that the mapping returned by this function has nothing
+	# to do with the 'fmap' parameter in make_freq_objs() above.
+
+	idx = {}
+	for n, r in enumerate (getattr (entr, '_rdng', [])):
+	    for f in getattr (r, '_freq', []):
+		idx[f] = [r, n, None, None]
+	for n, k in enumerate (getattr (entr, '_kanj', [])):
+	    for f in getattr (k, '_freq', []):
+		if idx[f]: 
+		    v = idx[f];  v[2:4] = [k, n]
+		else: idx[f] = [None, None, k, n]
+	return idx
+
+def print_freqs (fmap): # For debugging...
+	# 'fmap' Is a mapping as returned by freq_map().
+	for f, (r, nr, k, nk) in fmap.items():
+	    print "%s: %s%s: rdng %s, kanj %s" % (id(f),KW.FREQ[f.kw].kw, f.value, nr, nk)
+
 #-------------------------------------------------------------------
 # The following four functions deal with xrefs. 
 #-------------------------------------------------------------------
@@ -1054,72 +1104,54 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	return xrefs	
 
 #-------------------------------------------------------------------
-# The following two functions deal with history lists. 
+# The following functions deal with history lists. 
 #-------------------------------------------------------------------
 
-def newhist (
-    dbh, 	# Open cursor to same JMdictDB database that 'entr' came from.
-    entr, 	# Entry object (.stat, .unap, .dfrm must be correctly set).
-    userid, 	# Userid from session or None.
-    name, 	# Submitter's name.
-    email, 	# Submitter's email address.
-    notes, 	# Comments for history record.
-    refs):	# Reference comments for history record.
-	# Create a new history object based on the parameters
-	# (but sets the .diff attribute to None).
-	# Returns a 2-tuple consisting of the new history object
-	# and the entry object pointed to by 'entr's '.dfrm' 
-	# attribute (or None is 'entr.dfrm' is None.)
-	# If 'entr.dfrm' is not None but we are unable to retrieve
-	# an entry, a ValueError is raised.
-	# 'entr.stat' and 'entr.unap' will be used in the new 
-	# history record and so should be set correctly by the
-	# caller.
-
-	hist = [];  old = None
-	if getattr (entr, 'dfrm', None):
-	    old, bulk = entrList (dbh, [entr.dfrm], ret_tuple=True)
-	    augment_xrefs (dbh, bulk['xref'])
-	    if len (old) != 1: raise ValueError (entr.dfrm)
-	    old = old[0]
-	h = Obj (dt= datetime.datetime.utcnow().replace(microsecond=0),
-		stat=entr.stat, unap=entr.unap, userid=userid, name=name,
-		email=email, diff=None, notes=notes, refs=refs)
-	return h, old
-
 def add_hist (
-    dbh, 	# Open cursor to same JMdictDB database that 'entr' came from.
     entr, 	# Entry object (.stat, .unap, .dfrm must be correctly set).
+    pentr,	# Parent of 'entr' (an Entr object) or None if no parent.
     userid, 	# Userid from session or None.
     name, 	# Submitter's name.
     email, 	# Submitter's email address.
     notes, 	# Comments for history record.
     refs,	# Reference comments for history record.
-    use_dfrm):	# If false, return entr with updated hist icluding diff.
-		# If true, return dfrm entry (or raise error) with updated
-		# hist and diff=''.
+    use_parent): # If false, return 'entr' with updated hist icluding diff.
+		# If true, return 'pentr' (or raise error) with updated
+		# hist and diff=''.  Latter is used when we want to ignore
+		# any changes to the entry made by the submitter, as in when
+		# he/she has requested deletion of the entry.
 	# Attach history info to an entry.  The history added is the
-	# history from entry 'entr.dfrm' to which a new history record,
+	# history from entry 'pentr' to which a new history record,
 	# generated from the parameters to fhis function, is appended.
 	# Any existing hist on the 'entr' is ignored'.  
-	# If 'use_dfrm' is true, the history list is attached to the
-	# 'entr.dfrm' entry object, and that object returned.  If 
-	# 'use_dfrm' is false, the history list is attached to the
-	# 'entr' object, and that object returned.  
+	# If 'use_parent' is true, the history list is attached to the
+	# 'pentr' entry object, and that object returned.  If 
+	# 'use_parent' is false, the history list is attached to the
+	# 'entr' object, and that object returned.
+
+	if pentr and (pentr.id is None or pentr.id != entr.dfrm):
+	    raise ValueError ("Entr 'drfm' (%s) does not match parent entr id (%s)" 
+			      % (entr.dfrm, pentr.id))
+	if not pentr:
+	    if entr.dfrm: raise ValueError ("Entr has parent %s but no 'pentr' arg given." \
+					    % (entr.dfrm))
+	    if use_parent: raise ValueError ("'use_parent' requested but no 'pentr' arg given.")
+
+	h = Obj (dt= datetime.datetime.utcnow().replace(microsecond=0),
+		stat=entr.stat, unap=entr.unap, userid=userid, name=name,
+		email=email, diff=None, notes=notes, refs=refs)
 
 	e = entr
-	h, edfrm = newhist (dbh, e, userid, name, email, notes, refs)
-	if use_dfrm: 
-	    if not edfrm: raise ValueError (e.dfrm)
-	    e = edfrm
+	if use_parent: 
+	    e = pentr
 	    e.stat, e.unap, e.dfrm = entr.stat, entr.unap, entr.dfrm
-	if edfrm: 
-	    e._hist = getattr (edfrm, '_hist', [])
+	if pentr: 
+	    e._hist = getattr (pentr, '_hist', [])
 	else: 
 	    e._hist = []
-	if edfrm:
-	    h.diff = fmtxml.entr_diff (edfrm, e, n=0) \
-			if edfrm is not e \
+	if pentr:
+	    h.diff = fmtxml.entr_diff (pentr, e, n=0) \
+			if pentr is not e \
 			else ''
 	e._hist.append (h)
 	return e
@@ -1981,6 +2013,7 @@ def dbOpen (dbname, **kwds):
 	    global KW
 	    try: KW = Kwds (conn.cursor())
 	    except dbapi.ProgrammingError: pass
+
 	return conn.cursor()
 
 def dbopts (opts):
@@ -1999,6 +2032,15 @@ def dbopts (opts):
 	if opts.password: openargs['password'] = opts.password
 	if opts.host: openargs['host'] = opts.host
 	return openargs
+
+def _extract_hostname (connection):
+	# CAUTION: Specific to pyscopg2 DBI cursors.
+	dsn = connection.dsn
+	dsns = dsn.split()
+	strs = [x for x in dsns if x.startswith ('host=')]
+	if len (strs) == 0: return "(localhost)"
+	elif len (strs) == 1: return strs[0][5:].strip()
+	raise ValueError ("Multiple host specs in dsn: '%s'" % dsn)
 
 def pmarks (sqlargs):
 	"Create and return a string consisting of N comma-separated "

@@ -28,7 +28,7 @@ import jdb, jmcgi
 def main (args, opts):
 	#print "Content-type: text/html\n"
 	errs = []
-	try: form, svc, cur, sid, sess, parms = jmcgi.parseform()
+	try: form, svc, host, cur, sid, sess, parms = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
 	if not errs:
 	    entries = jmcgi.get_entrs (cur, form.getlist ('e'),
@@ -43,7 +43,7 @@ def main (args, opts):
 	if not errs:
 	    jmcgi.htmlprep (entries)
 	    jmcgi.gen_page ('tmpl/entr.tal', macros='tmpl/macros.tal', entries=entries,
-				svc=svc, sid=sid, session=sess, parms=parms, 
+				svc=svc, host=host, sid=sid, session=sess, parms=parms, 
 				output=sys.stdout, this_page='entr.py')
 	else:
 	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)

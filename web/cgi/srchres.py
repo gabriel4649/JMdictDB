@@ -27,7 +27,7 @@ import jdb, jmcgi
 
 def main( args, opts ):
 	errs = []
-	try: form, svc, cur, sid, sess, parms = jmcgi.parseform()
+	try: form, svc, host, cur, sid, sess, parms = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
 	if errs:
 	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
@@ -77,7 +77,7 @@ def main( args, opts ):
 	else:
 	    jmcgi.gen_page ("tmpl/srchres.tal", macros='tmpl/macros.tal', 
 			    results=rs, 
-			    svc=svc, sid=sid, session=sess, parms=parms,
+			    svc=svc, host=host, sid=sid, session=sess, parms=parms,
 			    output=sys.stdout, this_page='srchres.py')
 
 

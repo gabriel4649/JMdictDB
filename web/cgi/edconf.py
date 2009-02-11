@@ -28,10 +28,10 @@ import jdb, jmcgi, jelparse, jellex, serialize
 def main (args, opts):
 	#cgitb.enable()
 	errs = []; chklist = {}
-	try: form, svc, cur, sid, sess, parms = jmcgi.parseform()
+	try: form, svc, host, cur, sid, sess, parms = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
 	fv = form.getfirst; fl = form.getlist
-	dbg = fv ('d')
+	dbg = fv ('d'); meth = fv ('meth')
 	KW = jdb.KW
 
 	  # 'eid' will be an integer if we are editing an existing 
@@ -53,7 +53,7 @@ def main (args, opts):
 	  # deletion of existing entry.
 	delete = fv ('delete');  makecopy = fv ('makecopy')
 	if delete and makecopy: errs.append ("The 'delete' and 'treat as new'"
-	   " checkboxes are mutually exclusive; please check only one.")
+	   " checkboxes are mutually exclusive; please select only one.")
 	stat = KW.STAT['D'].id if delete else KW.STAT['A'].id
 	if makecopy: eid = None
 	  # FIXME: we need to disallow new entries with corp.seq 
@@ -95,18 +95,23 @@ def main (args, opts):
 	errs.extend (perrs)
 
 	if entr and not errs:
-	      # Migrate the entr details to the new entr object
-	      # which to this point has only the kanj/rdng/sens
-	      # info provided by jbparser.  
-	    entr.dfrm = eid;  entr.seq = seq;      entr.stat = stat; 
-	    entr.src = src;   entr.notes = notes;  entr.srcnote = srcnote; 
+	    entr.dfrm = eid;
 	    entr.unap = not disp
 
 	if entr and not errs and not delete:
+	      # Migrate the entr details to the new entr object
+	      # which to this point has only the kanj/rdng/sens
+	      # info provided by jbparser.  
+	    entr.seq = seq;   entr.stat = stat; 
+	    entr.src = src;   entr.notes = notes;  entr.srcnote = srcnote; 
+
 	      # Copy entr._grp, entr._snd, and rdng._snd from the original
 	      # entry since JEL currently provides no way to specify those
 	      # items.
 	    if orig_entr: 
+		if not jmcgi.is_editor (sess): 
+		    jdb.copy_freqs (orig_entr, entr)
+
 		if hasattr (orig_entr, '_grp'): entr._grp = orig_entr._grp
 		if hasattr (orig_entr, '_snd'): entr._snd = orig_entr._snd
 	          # FIXME: How to migrate audio if new readings are different 
@@ -140,7 +145,7 @@ def main (args, opts):
 	if entr and not errs:
 	      # Append a new hist record details this edit.
 	    if not hasattr (entr, '_hist'): entr._hist = []
-	    entr = jdb.add_hist (cur, entr, sess.userid if sess else None, 
+	    entr = jdb.add_hist (entr, orig_entr, sess.userid if sess else None, 
 				 name, email, comment, refs, 
 				 entr.stat==KW.STAT['D'].id)
 	    chkentr (entr, errs)
@@ -157,13 +162,13 @@ def main (args, opts):
 	    entrs = [entr]
 
 	if not errs:
-	    meth = 'get' if dbg else 'post'
+	    if not meth: meth = 'get' if dbg else 'post'
 	    serialized = serialize.serialize (entrs)
 	    jmcgi.htmlprep (entrs)
 	    jmcgi.gen_page ("tmpl/edconf.tal", macros='tmpl/macros.tal',
 			    entries=entrs, serialized=serialized,
 			    chklist=chklist, disp=disp,
-			    svc=svc, sid=sid, session=sess, parms=parms, 
+			    svc=svc, host=host, sid=sid, session=sess, parms=parms, 
 			    method=meth, output=sys.stdout, this_page='edconf.py')
 	else: jmcgi.gen_page ("tmpl/url_errors.tal", output=sys.stdout, errs=errs)
 	cur.close() 

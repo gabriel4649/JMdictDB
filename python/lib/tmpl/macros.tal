@@ -2,7 +2,7 @@
   <table width="100%">
     <tr>
       <td><h1 metal:define-slot="title">Page head text</h1></td>
-      <td align="right" rowspan="2">
+      <td align="right" rowspan="1">
 	<form name="entrauth" method="get" tal:attributes="action this_page">
 	  <span tal:repeat="p parms" tal:omit-tag="">
 	    <input type="hidden" tal:attributes="name p/0; value p/1"/>
@@ -19,6 +19,7 @@
 		<input name="username" type="text" size="8"/><br/>
 		<input name="password" type="password" size="8"/></td>
 	      </tr>
+	
 	    </table>
 	  </form>
 	</td>
@@ -30,6 +31,12 @@
 	<a tal:attributes="href string:edform.py?svc=${svc}&amp;sid=${sid}&amp;">
 	  New Entry</a>
         </td>
+      <td align="right">
+	DB=<span tal:replace="svc">svc</span
+	><span tal:condition="host" tal:omit-tag=""
+	  >, host=<span tal:replace="host">host</span>
+	  </span>
+	</td>
       </tr>
     </table>
   </div>

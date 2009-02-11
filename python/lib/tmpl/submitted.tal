@@ -26,5 +26,6 @@
     will be described in the Comments section.  In either case
     the seq. numbers (and links) given above will show you
     their status.
+  <div metal:use-macro="macros/macros/footer"></div>
   </body>
 </html>

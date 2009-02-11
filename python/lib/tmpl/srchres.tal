@@ -55,5 +55,6 @@
       <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
       </form>
     </div>
+  <div metal:use-macro="macros/macros/footer"></div>
   </body>
 </html>

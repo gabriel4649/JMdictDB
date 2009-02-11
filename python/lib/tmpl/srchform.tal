@@ -269,5 +269,6 @@
       <a href="http://www.csse.monash.edu.au/~jwb/wwwjdicinf.html#code_tag">this page</a>.</li>
     </ul>
   </span>
+<div metal:use-macro="macros/macros/footer"></div>
 </body>
 </html>

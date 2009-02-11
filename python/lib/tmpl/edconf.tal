@@ -282,5 +282,6 @@
 
       </div>
     </span>
+    <div metal:use-macro="macros/macros/footer"></div>
   </body>
 </html>

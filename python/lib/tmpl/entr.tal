@@ -248,7 +248,7 @@
 
       </div>
     </span>
-
+  <div metal:use-macro="macros/macros/footer"></div>
   <div class="debug" tal:condition="dbg">
     <span tal:repeat="d h2l: dbg">
       <span tal:replace="d/key">key</span>: <span tal:replace="d/val">value</span><br/>

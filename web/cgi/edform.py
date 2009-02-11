@@ -27,13 +27,12 @@ import jdb, jmcgi, fmtjel
 
 def main (args, opts):
 	errs = []
-	try: form, svc, cur, sid, sess, parms = jmcgi.parseform()
+	try: form, svc, host, cur, sid, sess, parms = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
-	is_editor = sess.userid if sess else None
+	is_editor = jmcgi.is_editor (sess)
 	if not errs:
 	    elist = form.getlist ('e')
 	    qlist = form.getlist ('q')
-	    cur = jmcgi.dbOpenSvc (svc)
 	    if elist or qlist:
 	        entrs = jmcgi.get_entrs (cur, elist, qlist, errs)
 	    else: entrs = []
@@ -48,6 +47,7 @@ def main (args, opts):
 	    srcs.insert (0, jdb.Obj (id=0, kw='', descr=''))
 	    if entrs:
 		entr = entrs[0]
+		if not is_editor: remove_freqs (entr)
 		ktxt = fmtjel.kanjs (entr._kanj)
 		rtxt = fmtjel.rdngs (entr._rdng, entr._kanj)
 		stxt = fmtjel.senss (entr._sens, entr._kanj, entr._rdng)
@@ -59,10 +59,14 @@ def main (args, opts):
 	    jmcgi.gen_page ('tmpl/edform.tal', macros='tmpl/macros.tal', e=entr, 
 			     ktxt=ktxt, rtxt=rtxt, stxt=stxt,
 			     srcs=srcs, is_editor=is_editor, isdelete=isdelete,
-			     svc=svc, sid=sid, session=sess, parms=parms, 
+			     svc=svc, host=host, sid=sid, session=sess, parms=parms, 
 			     method='get', output=sys.stdout, this_page='edform.py')
 	else:
 	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
+
+def remove_freqs (entr):
+	for r in getattr (entr, '_rdng', []): r._freq = []
+	for k in getattr (entr, '_kanj', []): k._freq = []
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()

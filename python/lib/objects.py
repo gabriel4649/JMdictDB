@@ -17,10 +17,10 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-__version__ = ('$Revision:$'[11:-2],
-	       '$Date:$'[7:-11]);
+__version__ = ('$Revision$'[11:-2],
+	       '$Date$'[7:-11]);
+
 import sys, datetime
-#from jdb import DbRow
 import pdb
 
 #######################################################################
@@ -60,7 +60,7 @@ class Obj(object):
     def __repr__ (self):
 	return self.__class__.__name__ + '(' \
 		 + ', '.join([k + '=' + _p(v)
-			      for k,v in self.__dict__.items() if k != '__cols__']) + ')'	
+			      for k,v in self.__dict__.items() if k != '__cols__']) + ')'
 
 class DbRow (Obj):
     def __init__(self, values=None, cols=None):
@@ -82,8 +82,8 @@ class DbRow (Obj):
         for n in self.__cols__: yield getattr (self, n)	
     def __cmp__ (self, other):
 	return _compare (self, other)
-    def __clone__(self):
-	c = DbRow ()
+    def copy (self):
+	c = sel ()
 	c.__dict__.update (self.__dict__)
 	return c
 

@@ -743,6 +743,9 @@ def copy_freqs (fromentr, toentr, replace=False):
 	# If 'replace' is false, the copied freqs will be appended
 	# to any freqs already on 'toentr'.  If true, all existing
 	# freqs on 'toentr' will be deleted before copying the freqs.
+	# CAUTION: The Freq objects themselves are not duplicated, the 
+	#  same objects are referred to from both the 'fromentr' and
+	#  the 'toentr'.
 
 	idx = freq_map (fromentr)
 	if replace:
@@ -2038,7 +2041,7 @@ def _extract_hostname (connection):
 	dsn = connection.dsn
 	dsns = dsn.split()
 	strs = [x for x in dsns if x.startswith ('host=')]
-	if len (strs) == 0: return "(localhost)"
+	if len (strs) == 0: return ""
 	elif len (strs) == 1: return strs[0][5:].strip()
 	raise ValueError ("Multiple host specs in dsn: '%s'" % dsn)
 

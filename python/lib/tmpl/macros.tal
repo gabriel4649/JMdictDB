@@ -32,9 +32,12 @@
 	  New Entry</a>
         </td>
       <td align="right">
-	DB=<span tal:replace="svc">svc</span
-	><span tal:condition="host" tal:omit-tag=""
-	  >, host=<span tal:replace="host">host</span>
+	<span tal:condition="svc" tal:omit-tag="">
+	  DB=<span tal:replace="svc">svc</span>
+	  </span
+	><span tal:condition="and:svc host" tal:omit-tag="">,</span>
+	<span tal:condition="host">
+	  host=<span tal:replace="host">host</span>
 	  </span>
 	</td>
       </tr>

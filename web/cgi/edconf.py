@@ -36,13 +36,13 @@ def main (args, opts):
 
 	  # 'eid' will be an integer if we are editing an existing 
 	  # entry, or undefined if this is a new entry.
-	orig_entr = None
+	pentr = None
 	eid = url_int ('id', form, errs)
 	if eid: 
-	    orig_entr = jdb.entrList (cur, None, [eid])
+	    pentr = jdb.entrList (cur, None, [eid])
 	      # FIXME: Need a better message with more explanation.
-	    if not orig_entr: errs.append ("The entry you are editing has been deleted.")
-	    else: orig_entr = orig_entr[0]
+	    if not pentr: errs.append ("The entry you are editing has been deleted.")
+	    else: pentr = pentr[0]
 
 	  # Desired disposition: 'a':approve, 'r':reject, undef:submit.
 	disp = url_str ('disp', form)
@@ -54,7 +54,6 @@ def main (args, opts):
 	delete = fv ('delete');  makecopy = fv ('makecopy')
 	if delete and makecopy: errs.append ("The 'delete' and 'treat as new'"
 	   " checkboxes are mutually exclusive; please select only one.")
-	stat = KW.STAT['D'].id if delete else KW.STAT['A'].id
 	if makecopy: eid = None
 	  # FIXME: we need to disallow new entries with corp.seq 
 	  # that matches an existing A, A*, R*, D*, D? entry.
@@ -98,54 +97,58 @@ def main (args, opts):
 	    entr.dfrm = eid;
 	    entr.unap = not disp
 
-	if entr and not errs and not delete:
-	      # Migrate the entr details to the new entr object
-	      # which to this point has only the kanj/rdng/sens
-	      # info provided by jbparser.  
-	    entr.seq = seq;   entr.stat = stat; 
-	    entr.src = src;   entr.notes = notes;  entr.srcnote = srcnote; 
+	    if delete:
+		  # Ignore any content changes made by the submitter by 
+		  # restoring original values to the new entry.
+	        entr.seq = pentr.seq;	entr.src = pentr.src;
+		entr.stat = KW.STAT['D'].id
+		entr.notes = pentr.notes;  entr.srcnote = pentr.srcnote; 
+		entr._kanj = getattr (pentr, '_kanj', []); 
+		entr._rdng = getattr (pentr, '_rdng', []); 
+		entr._sens = getattr (pentr, '_sens', []); 
+		entr._snd  = getattr (pentr, '_snd',  []); 
+		entr._grp  = getattr (pentr, '_grp',  []); 
+		entr._cinf = getattr (pentr, '_cinf', []); 
+	    else:
+	          # Migrate the entr details to the new entr object
+	          # which to this point has only the kanj/rdng/sens
+	          # info provided by jbparser.  
+		entr.seq = seq;   entr.src = src;   
+		entr.stat = KW.STAT['A'].id
+		entr.notes = notes;  entr.srcnote = srcnote; 
 
-	      # Copy entr._grp, entr._snd, and rdng._snd from the original
-	      # entry since JEL currently provides no way to specify those
-	      # items.
-	    if orig_entr: 
-		if not jmcgi.is_editor (sess): 
-		    jdb.copy_freqs (orig_entr, entr)
+	          # Copy (shallowly since we won't be changing the copied
+		  # content) content from the original entry to the new
+		  # entry since JEL currently provides no way to specify
+	          # these items.
+		if pentr: 
+		    if not jmcgi.is_editor (sess): 
+			jdb.copy_freqs (pentr, entr)
+		    if hasattr (pentr, '_grp'): entr._grp = pentr._grp
+		    if hasattr (pentr, '_cinf'): entr._cinf = pentr._cinf
+		    copy_snd (pentr, entr)
 
-		if hasattr (orig_entr, '_grp'): entr._grp = orig_entr._grp
-		if hasattr (orig_entr, '_snd'): entr._snd = orig_entr._snd
-	          # FIXME: How to migrate audio if new readings are different 
-	          # than old readings (in attr '.txt', in order, or in number)?
-		if hasattr (entr, '_rdng') and hasattr (orig_entr, '_rdng'):
-		    for rnew, rold in zip (entr._rdng, orig_entr._rdng):
-			if hasattr (rold, '_snd'): rnew._snd = rold._snd
+	          # Add sound details so confirm page will look the same as the 
+	          # original entry page.  Otherwise, the confirm page will display
+	          # only the sounf clip id(s).
+	        snds = []
+	        for s in getattr (entr, '_snd', []): snds.append (s)
+	        for r in getattr (entr, '_rdng', []):
+		    for s in getattr (r, '_snd', []): snds.append (s)
+	        if snds: jdb.augment_snds (cur, snds)
 
-	      # Add sound details so confirm page will look the same as the 
-	      # original entry page.  Otherwise, the confirm page will display
-	      # only the sounf clip id(s).
-	    snds = []
-	    for s in getattr (entr, '_snd', []): snds.append (s)
-	    for r in getattr (entr, '_rdng', []):
-		for s in getattr (r, '_snd', []): snds.append (s)
-	    if snds: jdb.augment_snds (cur, snds)
+	          # If any xrefs were given, resolve them to actual entries
+	          # here since that is the form used to store them in the 
+	          # database.  If any are unresolvable, an approriate error 
+	          # is saved and will reported later.
 
-	  # The code in the "if" below assumes we have a valid entr
-	  # object from jbparser.  If there were parse errors that's
-	  # not true so we don't go there.
-
-	if entr and not errs and not delete:
-	      # If any xrefs were given, resolve them to actual entries
-	      # here since that is the form used to store them in the 
-	      # database.  If any are unresolvable, an approriate error 
-	      # is saved and will reported later.
-
-	    rslv_errs = jelparse.resolv_xrefs (cur, entr)
-	    if rslv_errs: chklist['xrslv'] = rslv_errs
+	        rslv_errs = jelparse.resolv_xrefs (cur, entr)
+	        if rslv_errs: chklist['xrslv'] = rslv_errs
 
 	if entr and not errs:
 	      # Append a new hist record details this edit.
 	    if not hasattr (entr, '_hist'): entr._hist = []
-	    entr = jdb.add_hist (entr, orig_entr, sess.userid if sess else None, 
+	    entr = jdb.add_hist (entr, pentr, sess.userid if sess else None, 
 				 name, email, comment, refs, 
 				 entr.stat==KW.STAT['D'].id)
 	    chkentr (entr, errs)
@@ -209,6 +212,28 @@ def url_str (name, form):
 	v = form.getfirst (name)
 	if v: v = v.decode ('utf-8') 
 	return v
+
+def copy_snd (fromentr, toentr, replace=False):
+	# Copy the snd items (both Entrsnd and Rdngsnd objects) from
+	# 'fromentr' to 'toentr'.  
+	# If 'replace' is false, the copied freqs will be appended
+	# to any freqs already on 'toentr'.  If true, all existing
+	# freqs on 'toentr' will be deleted before copying the freqs.
+	# CAUTION: The Entrsnd and Rdngsnd objects themselves are not
+	#  duplicated, the same objects are referred to from both the
+	#  'fromentr' and the 'toentr'.
+
+	if replace: 
+	    if hasattr (toentr, '_snd'): toentr._snd = []
+	    for r in getattr (toentr, '_rdng', []):
+		if hasattr (r, '_snd'): r._snd = []
+	if hasattr (fromentr, '_snd'): entr._snd.extend (fromentr._snd)
+	  # FIXME: How to migrate if new readings are different 
+	  # than old readings (in attr '.txt', in order, or in number)?
+	if hasattr (fromentr, '_rdng') and hasattr (toentr, '_rdng'):
+	    for rto, rfrom in zip (getattr (toentr,'_rdng',[]),
+				   getattr (tfromentr,'_rdng',[])):
+		 if hasattr (rold, '_snd'): rnew._snd.extend (rold._snd)
 
 def chkentr (e, errs):
 	# Do some validation of the entry.  This is nowhere near complete 

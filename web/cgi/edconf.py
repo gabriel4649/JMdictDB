@@ -227,7 +227,7 @@ def copy_snd (fromentr, toentr, replace=False):
 	    if hasattr (toentr, '_snd'): toentr._snd = []
 	    for r in getattr (toentr, '_rdng', []):
 		if hasattr (r, '_snd'): r._snd = []
-	if hasattr (fromentr, '_snd'): entr._snd.extend (fromentr._snd)
+	if hasattr (fromentr, '_snd'): toentr._snd.extend (fromentr._snd)
 	  # FIXME: How to migrate if new readings are different 
 	  # than old readings (in attr '.txt', in order, or in number)?
 	if hasattr (fromentr, '_rdng') and hasattr (toentr, '_rdng'):

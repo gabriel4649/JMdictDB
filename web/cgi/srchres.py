@@ -48,6 +48,7 @@ def main( args, opts ):
 	    if tl: so.txts = tl
 	    so.pos   = fl('pos');   so.misc  = fl('misc');  so.fld  = fl('fld')
 	    so.rinf  = fl('rinf');  so.kinf  = fl('kinf');  so.freq = fl('freq')
+	    so.grp   = fl('grp')
 	    so.src   = fl('src');   so.stat  = fl('stat');  so.unap = fl('appr')
 	    so.nfval = fv('nfval'); so.nfcmp = fv('nfcmp')
 	    so.gaval = fv('gaval'); so.gacmp = fv('gacmp')

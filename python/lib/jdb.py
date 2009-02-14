@@ -1327,23 +1327,24 @@ def build_search_sql (condlist, disjunct=False, allow_empty=False):
 	#     sql.
 	#   1: Sql snippit that will be AND'd into the WHERE clause.
 	#     Field names must be qualified by table.  When looking 
-	#     for a value in a field.  A "?" may (and should) be used 
-	#     where possible to denote an exectime parameter.  The value
-	#     to be used when the sql is executed is is provided in
-	#     the 3rd member of the tuple (see #2 next).
+	#     for a value in a field.  A sql parameter marker ("%s" for
+	#     the postgresql psycopg2 adaptor) may (and should) be used 
+	#     where possible to denote an exec-time parameter.  The value
+	#     to be used when the sql is executed is is provided in the
+	#     3rd member of the tuple (see #2 next).
 	#   2: A sequence of argument values for any exec-time parameters
-	#     ("?") used in the second value of the tuple (see #1 above).
+	#     ("%s") used in the second value of the tuple (see #1 above).
 	#
 	# Example:
-	#     [("entr e","e.typ=1", ()),
-	#      ("gloss", "gloss.text LIKE ?", ("'%'+but+'%'",)),
-	#      ("pos","pos.kw IN (?,?,?)",(8,18,47))]
+	#     [("entr e","e.stat=4", ()),
+	#      ("gloss", "gloss.txt LIKE %s", ("'%'+but+'%'",)),
+	#      ("pos","pos.kw IN (%s,%s,%s)",(8,18,47))]
 	#
 	#   This will generate the SQL statement and arguments:
 	#     "SELECT e.id FROM (((entr e INNER JOIN sens ON sens.entr=entr.id) 
-	# 	INNER JOIN gloss ON gloss.sens=sens.id) 
-	# 	INNER JOIN pos ON pos.sens=sens.id) 
-	# 	WHERE e.typ=1 AND (gloss.text=?) AND (pos IN (?,?,?))"
+	# 	INNER JOIN gloss ON gloss.entr=entr.id) 
+	# 	INNER JOIN pos ON pos.entr=entr.id) 
+	# 	WHERE e.stat=4 AND (gloss.txt=%s) AND (pos IN (%s,%s,%s))"
 	#     ('but',8,18,47)
 	#   which will find all entries that have a gloss containing the
 	#   substring "but" and a sense with a pos (part-of-speech) tagged
@@ -1361,7 +1362,7 @@ def build_search_sql (condlist, disjunct=False, allow_empty=False):
 	    raise ValueError ("Empty condlist parameter")
 
 	# $fclause will become the FROM clause of the generated sql.  Since
-	# all queries will rquire "entr" to be included, we start of with 
+	# all queries will require "entr" to be included, we start off with 
 	# that table in the clause.
 
 	fclause = 'entr e'
@@ -1370,7 +1371,7 @@ def build_search_sql (condlist, disjunct=False, allow_empty=False):
 
 	# Go through the condition list.  For each 3-tuple we will add the
 	# table name to the FROM clause, and the where and arguments items 
-	# to there own arrays.
+	# to their own arrays.
 
 	for tbl,cond,arg in condlist:
 
@@ -1380,7 +1381,7 @@ def build_search_sql (condlist, disjunct=False, allow_empty=False):
 	    if not cond: continue
 
 	    # The table name may be preceeded by a "*" to indicate that
-	    # it is to be joinged with a LEFT JOIN rather than the usual
+	    # it is to be joined with a LEFT JOIN rather than the usual
 	    # INNER JOIN".  It may also be followed by a space and an 
 	    # alias name.  Unpack these things.
 
@@ -1515,8 +1516,7 @@ def kwnorm (kwtyp, kwlist, inv=None):
 	    except ValueError: pass
 	    try: v = getattr (KW, kwtyp)[x].id
 	    except KeyError,e:
-		e.message = "'%s' is not a known %s keyword" % (x, kwtyp)
-		raise
+		raise ValueError ("'%s' is not a known %s keyword" % (x, kwtyp))
 	    nkwlist.append (v)
 	kwall = KW.recs(kwtyp)
 	inv_is_shorter = len (nkwlist) > len (kwall) / 2 

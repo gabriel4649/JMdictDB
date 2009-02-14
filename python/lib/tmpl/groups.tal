@@ -1,0 +1,58 @@
+<html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
+<!--? Copyright (c) 2009 Stuart McGraw -->
+<!--? $Revision$ $Date$ -->
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
+  <title>JMdict Entry Groups</title>
+</head>
+<body class="srchres">
+  <div metal:use-macro="macros/macros/login">
+    <h1 metal:fill-slot="title">JMdictDB Search Results</h1>
+    </div>
+  <div class="results">
+    <form method="get" action="srchres.py">
+      <span class="count">
+        <span tal:replace="python:len(results)"/> entry groups found...
+	</span>
+      <span tal:condition="python:len(results)&gt;10">
+        <input name="show" value="Display selected entries" type="submit"/> 
+        <input value="Reset" type="reset"/> 
+	</span>
+      <table class="reslist" tal:condition="results">
+	<tr class="heading">
+	  <th> </th>
+	  <th>Corpus</th>
+	  <th>Entries</th>
+	  <th>Name</th>
+	  <th>Descr</th>
+	  <th>GrpId</th>
+	  </tr>
+	<tr class="resrow" tal:repeat="r results">
+	  <td><input type="checkbox" name="grp" tal:attributes="value r/id"/></td>
+	  <td>
+	    <span tal:replace="r/corpus"/>
+	    </td>
+	  <td>
+	    <span tal:replace="r/cnt"/>
+	    </td>
+	  <td>
+	    <span tal:replace="r/kw"/>
+	    </td>
+	  <td>
+	    <span tal:replace="r/descr"/>
+	    </td>
+	  <td>
+	    <span tal:replace="r/id"/>
+	    </td>
+	  </tr>
+	</table>
+      <input name="show" value="Display selected groups" type="submit" tal:condition="results"/> 
+      <input name="show" value="Reset" type="reset" tal:condition="results"/> 
+      <input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
+      <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
+      </form>
+    </div>
+  <div metal:use-macro="macros/macros/footer"></div>
+  </body>
+</html>

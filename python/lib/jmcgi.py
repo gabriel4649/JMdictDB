@@ -360,7 +360,7 @@ class SearchItems (jdb.Obj):
 
     def __setattr__ (self, name, val):
 	if name not in ('idtyp','idnum','src','txts','pos','misc',
-			'fld','freq','kinf','rinf','stat','unap',
+			'fld','freq','kinf','rinf','grp','stat','unap',
 			'nfval','nfcmp','gaval','gacmp'):
 	    raise AttributeError ("'%s' object has no attribute '%s'" 
 				   % (self.__class__.__name__, name))
@@ -423,6 +423,7 @@ def so2conds (o):
 	  fld -- List of Field keywords.
 	  kinf -- List of Kanj Info keywords.
 	  rinf -- List of Reading Info of Speech keywords.
+	  grp -- List of entry group keywords.
 	  stat -- List of Status keywords.
 	  unap -- List of Unapproved keywords.  #FIXME
 	  freq -- List of Frequency keywords.  #FIXME
@@ -487,6 +488,7 @@ def so2conds (o):
 	conds.extend (_kwcond (o, 'fld',  "fld",    "fld.kw"))
 	conds.extend (_kwcond (o, 'kinf', "kinf",   "kinf.kw"))
 	conds.extend (_kwcond (o, 'rinf', "rinf",   "rinf.kw"))
+	conds.extend (_kwcond (o, 'grp',  "grp",    "grp.kw"))
 	conds.extend (_kwcond (o, 'src',  "entr e", "e.src"))
 	conds.extend (_kwcond (o, 'stat', "entr e", "e.stat"))
 	conds.extend (_boolcond (o, 'unap',"entr e","e.unap", 'unappr'))

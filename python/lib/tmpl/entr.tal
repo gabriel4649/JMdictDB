@@ -113,14 +113,14 @@
 
 	    <span tal:condition="s/_gloss" tal:omit-tag="">
 	      <span tal:repeat="g s/_gloss" tal:omit-tag="">
-	      <span class="gloss" tal:replace="string:${g/gloss}. ">num.</span>
+	      <span class="gloss" tal:replace="string:▶">num.</span>
 		<span tal:condition="python:1!=g.lang" omit-tag="">
 	          <span class="glang" tal:replace="python:TALabbr('LANG',g.lang)">lang</span>:
 		  </span>
 		<span tal:condition="python:1!=g.ginf" omit-tag="">
 	          [<span class="ginf" tal:replace="python:TALabbr('GINF',g.ginf)">lang</span>.]
 		  </span>
-		<span class="gloss" tal:replace="g/txt">gloss</span><br/>
+		<span tal:replace="g/txt">gloss</span><br/>
 		</span>
 	      </span>
 

@@ -19,35 +19,20 @@
 #######################################################################
 
 __version__ = ('$Revision$'[11:-2],
-	       '$Date$'[7:-11])
+	       '$Date$'[7:-11]);
 
 import sys, cgi
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import jdb, config, jmcgi
 
 def main( args, opts ):
-	errs = []
-	try: form, svc, host, cur, sid, sess = jmcgi.parseform()
-	except Exception, e: errs = [str (e)]
-	if errs:
-	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
-	    return 
-	fv = form.getfirst; fl = form.getlist
-	orderby = "k.id,s.kw,e.src"
-	sql = "SELECT k.id, k.kw, k.descr, s.kw AS corpus, count(*) AS cnt " \
-		"FROM kwgrp k " \
-		"LEFT JOIN grp g ON g.kw=k.id " \
-		"LEFT JOIN entr e ON e.id=g.entr " \
-		"LEFT JOIN kwsrc s ON s.id=e.src " \
-		"GROUP BY k.id, k.kw, k.descr, s.kw " \
-		"ORDER BY %s" % orderby
-		
-	rs = jdb.dbread (cur, sql)
-	jmcgi.gen_page ("tmpl/groups.tal", macros='tmpl/macros.tal', 
-			 results=rs, 
-			 svc=svc, host=host, sid=sid, session=sess, cfg=config,
-			 output=sys.stdout, this_page='goups.py')
+        form, svc, host, cur, sid, sess = jmcgi.parseform()
+	#qs = jmcgi.form2qs (form)
+	jmcgi.gen_page ("tmpl/srchadv.tal", macros='tmpl/macros.tal', 
+			svc=svc, host=host, sid=sid, session=sess, cfg=config, 
+			method='get', output=sys.stdout, this_page='srchadv.py')
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()
 	main (args, opts)
+

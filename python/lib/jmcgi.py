@@ -21,7 +21,7 @@ __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
 import sys, re, cgi, urllib, os, os.path, random, time
-import jdb, tal, fmt
+import jdb, config, tal, fmt
 
 def parseform ():
 	"""\
@@ -53,19 +53,12 @@ def parseform ():
 	if not errs: cur = dbOpenSvc (svc)
 	if errs: raise ValueError (';'.join (errs))
 	host = jdb._extract_hostname (cur.connection)
-
-	parms = [(k,v.decode('utf-8')) for k in form.keys() 
-			 if k not in ('login','logout','username','password')
-		       for v in form.getlist(k) ]
-
-	return form, svc, host, cur, sid, sess, parms,
-
-_SESS_SVC = "jmsess"
+	return form, svc, host, cur, sid, sess
 
 def getsession (sid, logout=False, cur=None):
 	if not sid: return None
 	if not cur:
-	    cur = dbOpenSvc (_SESS_SVC, nokw=True)
+	    cur = dbOpenSvc (config.SESSION_SVC, nokw=True)
 	if isinstance (sid, (str, unicode)):
 	    try: sid = int (sid,16)
 	    except (ValueError, TypeError): return None
@@ -84,7 +77,7 @@ def getsession (sid, logout=False, cur=None):
 	return sess
 
 def login (userid, password):
-	cur = dbOpenSvc (_SESS_SVC, nokw=True)
+	cur = dbOpenSvc (config.SESSION_SVC, nokw=True)
 	sql = "SELECT userid FROM users WHERE userid=%s " \
 		"AND pw=%s AND pw IS NOT NULL AND NOT disabled"
 	rs = jdb.dbread (cur, sql, (userid, password))

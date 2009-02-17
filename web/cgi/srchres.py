@@ -23,28 +23,22 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi, copy
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import jdb, jmcgi, serialize
-
-MAX_ENTRIES_PER_PAGE = 1000
-MIN_ENTRIES_PER_PAGE = 1
-DEF_ENTRIES_PER_PAGE = 100
-MAX_QUERY_COST = 200000
+import jdb, config, jmcgi, serialize
 
 def main( args, opts ):
 	errs = []; so = None
-	try: form, svc, host, cur, sid, sess, parms = jmcgi.parseform ()
+	try: form, svc, host, cur, sid, sess = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
-	if errs:
-	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
-	    return 
+	if errs: 
+	    err_page (errs)
 	fv = form.getfirst; fl = form.getlist
 	force_srchres = fv('srchres')  # Force display of srchres page even if only one result.
-	sqlp = None #fv ('sql')
+	sqlp = fv ('sql')
 	soj = fv ('soj')
 	pgoffset = int(fv('p1') or 0)
 	pgtotal = int(fv('pt') or -1)
-	entrs_per_page = min (max (int(fv('ps') or DEF_ENTRIES_PER_PAGE),
-			   MIN_ENTRIES_PER_PAGE), MAX_ENTRIES_PER_PAGE)
+	entrs_per_page = min (max (int(fv('ps') or config.DEF_ENTRIES_PER_PAGE),
+			   config.MIN_ENTRIES_PER_PAGE), config.MAX_ENTRIES_PER_PAGE)
 	if not sqlp and not soj:
 	    so = jmcgi.SearchItems()
 	    so.idnum=fv('idval');  so.idtyp=fv('idtyp')
@@ -73,12 +67,12 @@ def main( args, opts ):
 	      # of this script, which displayed the previous page.
 	    so = serialize.js2so (soj)
 
-	  # Disabled for now until database security issues worked out.
 	elif sqlp:
-	    if not jmcgi.is_editor(sess):
-		errs = ["'sql' parameter only accepted from logged in editors."]
-		jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
-		return
+	    if config.ENABLE_SQL_SEARCH == "editors" and not jmcgi.is_editor(sess):
+		err_page (["'sql' parameter only accepted from logged in editors."])
+	    elif config.ENABLE_SQL_SEARCH == "all": pass
+	    else: 
+		err_page (["Invalid 'sql' parameter in url."])
 	    sql = sqlp.strip()
 	    if sql.endswith (';'): sql = sql[:-1]
 	    sql_args = []
@@ -90,24 +84,28 @@ def main( args, opts ):
 	    condlist.append (('entr e', 'e.src!=4', []))
 	    sql, sql_args = jdb.build_search_sql (condlist)
 
-	sql2 = "SELECT q.* FROM esum q JOIN (%s) AS i ON i.id=q.id " \
-		 "ORDER BY q.seq,q.id OFFSET %s LIMIT %s" % (sql, pgoffset, entrs_per_page)
-	if MAX_QUERY_COST > 0:
-	    cost = jdb.get_query_cost (cur, sql2, sql_args);
-	    if cost > MAX_QUERY_COST: 
-		errs = ["The search request you made will likely take too long to execute. "
+	orderby = "ORDER BY __wrap__.seq,__wrap__.id"
+	sql2 = "SELECT __wrap__.* FROM esum __wrap__ " \
+		 "JOIN (%s) AS __user__ ON __user__.id=__wrap__.id " \
+		 "%s OFFSET %s LIMIT %s" % (sql, orderby, pgoffset, entrs_per_page)
+	if config.MAX_QUERY_COST > 0:
+	    try:
+	        cost = jdb.get_query_cost (cur, sql2, sql_args);
+	    except StandardError, e:
+		err_page (["Database error (%s):<pre> %s </pre></body></html>" 
+			   % (e.__class__.__name__, str(e))])
+	    if cost > config.MAX_QUERY_COST: 
+		err_page (
+		       ["The search request you made will likely take too long to execute. "
 			"Please use your browser's \"back\" button to return to the search "
 			"page and add more criteria to restrict your search more narrowly. "
 			"(The estimated cost was %.1f, max allowed is %d.)" 
-			% (cost,MAX_QUERY_COST)]
-		jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
-		return 
+			% (cost, config.MAX_QUERY_COST)])
 
 	try: rs = jdb.dbread (cur, sql2, sql_args)
 	except Exception, e:		#FIXME, what exception value(s)?
-	    print "<pre> %s </pre>\n<pre>%s</pre>\n<pre>%s</pre></body></html>" \
-		% (str(e), sql2, ", ".join(sql_args))
-	    return
+	    err_page (["Database error (%s):<pre> %s </pre></body></html>" 
+		       % (e.__class__.__name__, str(e))])
 	reccnt = len(rs)
 	if pgtotal < 0:
 	    if reccnt >= entrs_per_page:
@@ -132,8 +130,13 @@ def main( args, opts ):
 	    jmcgi.gen_page ("tmpl/srchres.tal", macros='tmpl/macros.tal', 
 			    results=rs, pt=pgtotal, p0=pgoffset,
 			    p1=pgoffset+reccnt, soj=soj, sql=sqlp,
-			    svc=svc, host=host, sid=sid, session=sess, parms=parms,
+			    svc=svc, host=host, sid=sid, session=sess, cfg=config,
 			    output=sys.stdout, this_page='srchres.py')
+
+def err_page (errs):
+	if isinstance (errs, (unicode, str)): errs = [errs]
+	jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
+	sys.exit()
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()

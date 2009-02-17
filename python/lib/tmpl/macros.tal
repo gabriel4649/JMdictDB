@@ -3,7 +3,7 @@
     <tr>
       <td><h1 metal:define-slot="title">Page head text</h1></td>
       <td align="right" rowspan="1">
-	<form name="entrauth" method="get" tal:attributes="action this_page">
+	<form name="entrauth" method="post" tal:attributes="action this_page">
 	  <span tal:repeat="p parms" tal:omit-tag="">
 	    <input type="hidden" tal:attributes="name p/0; value p/1"/>
 	    </span>
@@ -46,11 +46,11 @@
 
 <div metal:define-macro="footer">
   <table width="100%">
-    <tr>
+    <tr tal:condition="cfg/CONTACT_EMAIL">
       <td>
 	If you have questions about, problems using, or suggestions
 	for improving this page, please send email to 
-	<a href="mailto:jimbreen@edrdg.org">jimbreen@edrdg.org</a>.
+	<a tal:attributes="href string:mailto:${cfg/CONTACT_EMAIL}" tal:content="cfg/CONTACT_EMAIL">email</a>.
 	</td>
       </tr>
     </table>

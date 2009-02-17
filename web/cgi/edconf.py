@@ -23,12 +23,12 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi, cgitb, re, datetime
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import jdb, jmcgi, jelparse, jellex, serialize
+import jdb, config, jmcgi, jelparse, jellex, serialize
 
 def main (args, opts):
 	#cgitb.enable()
 	errs = []; chklist = {}
-	try: form, svc, host, cur, sid, sess, parms = jmcgi.parseform()
+	try: form, svc, host, cur, sid, sess = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
 	fv = form.getfirst; fl = form.getlist
 	dbg = fv ('d'); meth = fv ('meth')
@@ -171,7 +171,7 @@ def main (args, opts):
 	    jmcgi.gen_page ("tmpl/edconf.tal", macros='tmpl/macros.tal',
 			    entries=entrs, serialized=serialized,
 			    chklist=chklist, disp=disp,
-			    svc=svc, host=host, sid=sid, session=sess, parms=parms, 
+			    svc=svc, host=host, sid=sid, session=sess, cfg=config, 
 			    method=meth, output=sys.stdout, this_page='edconf.py')
 	else: jmcgi.gen_page ("tmpl/url_errors.tal", output=sys.stdout, errs=errs)
 	cur.close() 

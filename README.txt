@@ -248,7 +248,13 @@ any working database in the event of a problem.  A
 make target, "activate" is provided to move the newly
 loaded database to "jmdict".
 
-1. Check the settings in the Makefile.  There are some
+1. Copy the file python/lib/config.py.sample to config.py
+   in the same directory, edit it and adjust any settings
+   to your needs.  Note that if you change some of the
+   settings, you may have to make corresponding changes
+   in other files as documented in the comments.
+
+2. Check the settings in Makefile.  There are some
    configuration settings in the Makefile that you may
    want to change.  Read the comments therein.  In 
    particular, the cgi directory is assumed to be
@@ -257,14 +263,14 @@ loaded database to "jmdict".
    some options for the Postgresql database server 
    connections, including authentication settings.
 
-2. Set (or modify) the enviroment variable PYTHONPATH
+3. Set (or modify) the enviroment variable PYTHONPATH
    so that it contains an absolute path to the python/lib
    directory.  For example, if you installed the jmdictdb
    software in /home/joe/jmdictdb/, then PYTHONPATH must
    contain (possibly in addition to other directories)
    /home/joe/jmdictdb/python/lib.  
 
-3. If you have not done so before, in the top-level 
+4. If you have not done so before, in the top-level 
    directory, run 
 
         make jmsess
@@ -274,7 +280,7 @@ loaded database to "jmdict".
    table "users" for each editor.  "pw" is the user's
    password.
 
-4. (Optional) In the top-level directory, run 
+5. (Optional) In the top-level directory, run 
 
 	make subdirs
 
@@ -285,7 +291,7 @@ loaded database to "jmdict".
    files updated) but must do this if you've changes
    any of the support files' dependencies.
 
-5. In the top level directory, run "make" which won't
+6. In the top level directory, run "make" which won't
    do anything other than list the available targets 
    that will do something.  
 
@@ -361,7 +367,7 @@ loaded database to "jmdict".
    the needed files manually, and put them in the ./data/ 
    directory.
 
-6. The makefile will parse the data files, create a database
+7. The makefile will parse the data files, create a database
    named "jmnew", load the jmdictdb schema, and finally load 
    all the parsed data into it.  If everything was loaded 
    sucessfully, run 
@@ -373,7 +379,7 @@ loaded database to "jmdict".
    it the active database.  There must be no active users in
    any of these database or the commands will fail.
 
-7. If you plan on using the cgi files with a web server, 
+8. If you plan on using the cgi files with a web server, 
    double check the settings in the Makefile (see step #1) 
    and then run:
 
@@ -384,7 +390,7 @@ loaded database to "jmdict".
    to serve the cgi files directly from the development directory
    making this step unnecessary.
 
-8. When the cgi files are executed by the web server, they
+9. When the cgi files are executed by the web server, they
    read the file python/lib/pg_service.conf (or its copy as
    installed in the web server lib directory) to determine
    the database name and login credentials to use when

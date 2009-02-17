@@ -23,11 +23,11 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import jdb, jmcgi, fmtjel
+import jdb, config, jmcgi, fmtjel
 
 def main (args, opts):
 	errs = []
-	try: form, svc, host, cur, sid, sess, parms = jmcgi.parseform()
+	try: form, svc, host, cur, sid, sess = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
 	is_editor = jmcgi.is_editor (sess)
 	if not errs:
@@ -59,7 +59,7 @@ def main (args, opts):
 	    jmcgi.gen_page ('tmpl/edform.tal', macros='tmpl/macros.tal', e=entr, 
 			     ktxt=ktxt, rtxt=rtxt, stxt=stxt,
 			     srcs=srcs, is_editor=is_editor, isdelete=isdelete,
-			     svc=svc, host=host, sid=sid, session=sess, parms=parms, 
+			     svc=svc, host=host, sid=sid, session=sess, cfg=config, 
 			     method='get', output=sys.stdout, this_page='edform.py')
 	else:
 	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)

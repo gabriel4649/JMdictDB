@@ -27,7 +27,7 @@
 	</span>
       <span class="count" tal:condition="results">
         <span tal:replace="pt"/> matching entries found.
-	<span tal:condition="python:p1&lt;pt" tal:omit-tag="">
+	<span tal:condition="python:p1&lt;pt or p0&gt;0" tal:omit-tag="">
 	  Showing entries <span tal:replace="python:p0+1"/>
 	  to <span tal:replace="p1"/>.
 	  </span>

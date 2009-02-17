@@ -21,9 +21,9 @@
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11])
 
-import sys, cgi, json, copy
+import sys, cgi, copy
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import jdb, jmcgi
+import jdb, jmcgi, serialize
 
 MAX_ENTRIES_PER_PAGE = 1000
 MIN_ENTRIES_PER_PAGE = 1
@@ -39,13 +39,13 @@ def main( args, opts ):
 	    return 
 	fv = form.getfirst; fl = form.getlist
 	force_srchres = fv('srchres')  # Force display of srchres page even if only one result.
-	sql = None #fv ('sql')
+	sqlp = None #fv ('sql')
 	soj = fv ('soj')
 	pgoffset = int(fv('p1') or 0)
 	pgtotal = int(fv('pt') or -1)
 	entrs_per_page = min (max (int(fv('ps') or DEF_ENTRIES_PER_PAGE),
 			   MIN_ENTRIES_PER_PAGE), MAX_ENTRIES_PER_PAGE)
-	if not sql and not soj:
+	if not sqlp and not soj:
 	    so = jmcgi.SearchItems()
 	    so.idnum=fv('idval');  so.idtyp=fv('idtyp')
 	    tl = []
@@ -65,23 +65,21 @@ def main( args, opts ):
 	      # Pack up all the search criteria in a json string that will 
 	      # be given to the srchres form, which will in turn give it back
 	      # to us if the user want to display the "next page".  
-	    js = so2js (so)
-	    soj = json.dumps (js)
+	    soj = serialize.so2js (so)
 
 	elif soj:
 	      # 'soj' is a json string that encodes the so object (containing
 	      # the search criteria) that were used in previous invocation
 	      # of this script, which displayed the previous page.
-	    js = json.loads (soj)
-	    so = js2so (js)
+	    so = serialize.js2so (soj)
 
 	  # Disabled for now until database security issues worked out.
-	elif sql:
+	elif sqlp:
 	    if not jmcgi.is_editor(sess):
 		errs = ["'sql' parameter only accepted from logged in editors."]
 		jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
 		return
-	    sql = sql.strip()
+	    sql = sqlp.strip()
 	    if sql.endswith (';'): sql = sql[:-1]
 	    sql_args = []
 
@@ -99,7 +97,9 @@ def main( args, opts ):
 	    if cost > MAX_QUERY_COST: 
 		errs = ["The search request you made will likely take too long to execute. "
 			"Please use your browser's \"back\" button to return to the search "
-			"page and add more criteria to restrict your search more narrowly."]
+			"page and add more criteria to restrict your search more narrowly. "
+			"(The estimated cost was %.1f, max allowed is %d.)" 
+			% (cost,MAX_QUERY_COST)]
 		jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
 		return 
 
@@ -130,36 +130,10 @@ def main( args, opts ):
 	    print "Location: entr.py?%se=%d\n" % (svcstr, rs[0].id)
 	else:
 	    jmcgi.gen_page ("tmpl/srchres.tal", macros='tmpl/macros.tal', 
-			    results=rs, sql=sql, pt=pgtotal, p0=pgoffset,
-			    p1=pgoffset+reccnt, soj=soj,
+			    results=rs, pt=pgtotal, p0=pgoffset,
+			    p1=pgoffset+reccnt, soj=soj, sql=sqlp,
 			    svc=svc, host=host, sid=sid, session=sess, parms=parms,
 			    output=sys.stdout, this_page='srchres.py')
-
-def so2js (obj):
-	# Convert a SearchItems object to a structure serializable
-	# by json.  This is a temporary hack and should be generalized
-	# later, possibly in serialize.o2s().
-	js = obj.__dict__.copy()
-	if  hasattr (obj, 'txts'): 
-	    txts = [x.__dict__.copy() for x in obj.txts]
-	    if txts: js['txts'] = txts
-	return js
-
-def js2so (js):
-	# Convert a json-serialized SearchItems object back to an 
-	# object.  For convenience, we don't restore it to a SearchItem
-	# but to an Obj.  SearchItem's purpose is to prevent adding 
-	# unexpected attributes, something we don't have to worry about
-	# here since we're receiving one that was already checked.
-	obj = jdb.Obj()
-	obj.__dict__ = js
-	sis = []
-	for si in js.get ('txts', []):
-	    o = jdb.Obj()
-	    o.__dict__ = si
-	    sis.append (o)
-	if sis: obj.txts = sis
-	return obj 
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()

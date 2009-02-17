@@ -11,12 +11,13 @@
     <h1 metal:fill-slot="title">JMdictDB Search Results</h1>
     </div>
   <div class="results">
-    <form method="get" action="srchres.py" tal:condition="python:len(results)&gt;10">
+    <form method="get" action="srchres.py" tal:condition="python:p1&lt;pt and len(results)&gt;10">
       <input name="next" value="Next page" type="submit"/> 
       <input type="hidden" name="pt" tal:attributes="value pt"/>
       <input type="hidden" name="p0" tal:attributes="value p0"/>
       <input type="hidden" name="p1" tal:attributes="value p1"/>
-      <input type="hidden" name="sql" tal:attributes="value sql"/>
+      <input type="hidden" name="soj" tal:condition="soj" tal:attributes="value soj"/>
+      <input type="hidden" name="sql" tal:condition="sql" tal:attributes="value sql"/>
       <input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
       <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
       </form>
@@ -26,7 +27,7 @@
 	</span>
       <span class="count" tal:condition="results">
         <span tal:replace="pt"/> matching entries found.
-	<span tal:condition="python:p1<=pt" tal:omit-tag="">
+	<span tal:condition="python:p1&lt;pt" tal:omit-tag="">
 	  Showing entries <span tal:replace="python:p0+1"/>
 	  to <span tal:replace="p1"/>.
 	  </span>
@@ -71,13 +72,13 @@
       <input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
       <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
       </form>
-    <form method="get" action="srchres.py" tal:condition="python:p1<pt and len(results)!=0">
+    <form method="get" action="srchres.py" tal:condition="python:p1&lt;pt and len(results)!=0">
       <input name="next" value="Next page" type="submit"/> 
-      <input type="hidden" name="soj" tal:attributes="value soj"/>
       <input type="hidden" name="pt"  tal:attributes="value pt"/>
       <input type="hidden" name="p0"  tal:attributes="value p0"/>
       <input type="hidden" name="p1"  tal:attributes="value p1"/>
-      <input type="hidden" name="sql" tal:attributes="value sql"/>
+      <input type="hidden" name="soj" tal:condition="soj" tal:attributes="value soj"/>
+      <input type="hidden" name="sql" tal:condition="sql" tal:attributes="value sql"/>
       <input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
       <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
       </form>

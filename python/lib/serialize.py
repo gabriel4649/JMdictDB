@@ -319,3 +319,37 @@ def isoformat2datetime (isoformat):
 	ts = time.strptime (s, "%Y-%m-%d %H:%M:%S")
 	v = datetime.datetime(*ts[:6])
 	return v
+
+# The following two functions serialize and de-serialize 
+# jmcgi.SearchItems objects.  
+
+def so2js (obj):
+	# Convert a SearchItems object to a structure serializable
+	# by json.  This is a temporary hack and should be generalized
+	# later, possibly by generalizing serialize.obj2struct().
+
+	js = obj.__dict__.copy()
+	if  hasattr (obj, 'txts'): 
+	    txts = [x.__dict__.copy() for x in obj.txts]
+	    if txts: js['txts'] = txts
+	soj = json.dumps (js)
+	return soj
+
+def js2so (soj):
+	# Convert a json-serialized SearchItems object back to an 
+	# object.  For convenience, we don't restore it to a SearchItem
+	# but to an Obj.  SearchItem's purpose is to prevent adding 
+	# unexpected attributes, something we don't have to worry about
+	# here since we're receiving one that was already checked.
+	# 'soj' is a serialized SearchItems object to be restored.
+
+	js = json.loads (soj)
+	obj = jdb.Obj()
+	obj.__dict__ = js
+	sis = []
+	for si in js.get ('txts', []):
+	    o = jdb.Obj()
+	    o.__dict__ = si
+	    sis.append (o)
+	if sis: obj.txts = sis
+	return obj 

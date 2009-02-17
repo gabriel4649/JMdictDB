@@ -38,8 +38,8 @@ def dbread (cur, sql, args=None, cols=None, cls=None):
 	if args is None: args = []
 	try: cur.execute (sql, args)
 	except StandardError, e:
-	    e.sql = sql;  e.sqlargs = args
-	    e.message += "  %s [%s]" % (sql, ','.join(repr(x) for x in args))
+	    msg = e.args[0] + "\nSQL: %s\nArgs: %r" % (sql, sql_args)
+	    e.args = [msg] + list(args[1:])
 	    raise e
 	if not cols: cols = [x[0] for x in cur.description]
 	v = []
@@ -90,6 +90,26 @@ def dblastid (dbh, table):
 	dbh.execute ('SELECT LASTVAL()')
 	rs = dbh.fetchone()
 	return rs[0]
+
+def get_query_cost (cur, sql, sql_args=[]):
+	# Return Postgresql's idea of the cost of executing the the
+	# given sql statement with the given args.  The cost is a
+	# float number and in units of estimated disk page fetches.
+	# NOTE: The function is Postgresql specific.
+	# Ref: See the Postgresql Docs, Section VI (SQL Commands), "EXPLAIN".
+
+	  # Wrap the explain execution in a BEGIN/ROLLBACK in case
+	  # it is a statement like "delete" with side effects.
+	cur.execute ("BEGIN")
+	cur.execute ("EXPLAIN " + sql, sql_args)
+	rs = cur.fetchall()
+	cur.execute ("ROLLBACK")
+	if len(rs) < 1: 
+	    raise ValueError ("No results received from postgresql EXPLAIN")
+	firstline = rs[0][0]
+	mo = re.search (r'cost=(\d+(\.\d+)?)\.\.(\d+(\.\d+)?)', firstline)
+	if not mo: raise ValueError ("Unexpected result from postgresql EXPLAIN: %s" % firstline)
+	return float (mo.group(3))
 
 def entrFind (cur, sql, args=None):
 	if args is None: args = []

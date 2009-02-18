@@ -38,7 +38,7 @@ def dbread (cur, sql, args=None, cols=None, cls=None):
 	if args is None: args = []
 	try: cur.execute (sql, args)
 	except StandardError, e:
-	    msg = e.args[0] + "\nSQL: %s\nArgs: %r" % (sql, sql_args)
+	    msg = e.args[0] + "\nSQL: %s\nArgs: %r" % (sql, args)
 	    e.args = [msg] + list(args[1:])
 	    raise e
 	if not cols: cols = [x[0] for x in cur.description]

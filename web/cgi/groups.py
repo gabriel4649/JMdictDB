@@ -39,9 +39,9 @@ def main( args, opts ):
 		"LEFT JOIN grp g ON g.kw=k.id " \
 		"LEFT JOIN entr e ON e.id=g.entr " \
 		"LEFT JOIN kwsrc s ON s.id=e.src " \
-		"GROUP BY k.id, k.kw, k.descr, s.kw " \
+		"GROUP BY k.id, k.kw, k.descr, e.src,s.kw " \
 		"ORDER BY %s" % orderby
-		
+
 	rs = jdb.dbread (cur, sql)
 	jmcgi.gen_page ("tmpl/groups.tal", macros='tmpl/macros.tal', 
 			 results=rs, 

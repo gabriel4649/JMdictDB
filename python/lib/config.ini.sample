@@ -1,0 +1,102 @@
+########################################################################
+#
+#   This file defines global configuration settings that control 
+#   the operation of an individual instance of a JMdictDB system.
+# 
+#   *** WARNING ***
+#   This file contains database passwords and should be protected 
+#   appropriately.
+#
+########################################################################
+
+[web]
+
+  # Email address that will appear at the bottom of each
+  # cgi web page as the contact for questions etc.
+CONTACT_EMAIL = jimbreen@edrdg.org
+
+  # Database to use if no svc parameter given.
+DEFAULT_SVC = db_jmdict
+
+  # The following control the number of entries that the search
+  # page will show on the search results page (web/cgi/srchres.py). 
+
+  # Default entries per page, if not overridden in url.
+DEF_ENTRIES_PER_PAGE = 100	
+
+  # Absolute maximum/minimum number of entries per page
+  # regardless of any value provided in url.
+MAX_ENTRIES_PER_PAGE = 1000
+MIN_ENTRIES_PER_PAGE = 1
+
+#=======================================================================
+[search]
+
+ENABLE_SQL_SEARCH = editors
+  # If ENABLE_SQL_SEARCH is "no" or undefined, do not allow the
+  # search results page (web/cgi/srchres.py) to process "sql"
+  # url parameters.
+  # If not None or False, it may have either of the values,
+  # "all" or "editors" to allow it to accept a 'sql' parameter
+  # from any user, or only from logged in editors respectively.
+  # This requires that the database have special users added
+  # for use by JMdictDB app, the config.ini file be configured
+  # to use them, and that that security be set on all jmdictdb
+  # database objects correctly.  If these are not done correctly,
+  # a user enabled by ENABLE_SQL_SEARCH could delete or
+  # inappropriately change database data.
+  # If None or False, arbitrary sql won't be accepted by the
+  # srchres page and a simpler database security configuration
+  # can be used, but users of the Advanced Search page will get
+  # an error if they try to use it.
+
+MAX_QUERY_COST = 20000000
+  # Do not run any search query in web/cgi/srchres.py that has a
+  # cost (as reported by Postgresql's EXPLAIN command) greater
+  # than this number.
+
+#======================================================================
+
+  # The following sections define the databases that can be
+  # opened by name by jdb.dbOpenSvc().  Each section name must
+  # be prefixed with "db_".  Each section  must have at least
+  # the option:
+  #     dbname -- Name of database to open.
+  # Optional options are:
+  #     host -- Name or ip address of machine that database resides
+  #         on.  If not given, no "host" parameter will be passed to 
+  #         postgres resulting in use of the local database server.
+  #     user -- Username to use when connecting to database.  If not
+  #         given, the normal postgres username resolution procedure
+  #         will be used (.pgpass file, etc.)
+  #     pw -- Password for 'user'
+  #     sel_user -- Username for a user that has only "select"
+  #         priviledges in the database.  If not given, no login
+  #         will be done for the select-only user. 
+  #     sel_pw -- Password for 'sel_user'.
+  #     session_db -- Name of the section in this file that contains
+  #         login information for the session database.
+
+[db_session]
+;host = localhost
+dbname = jmsess
+user = jmdictdb
+pw = xxxxxx
+
+[db_jmdict]
+;host = localhost
+dbname = jmdict
+sel_user = jmdictdbv
+sel_pw = jmdict
+user = jmdictdb
+pw = xxxxxx
+session_db = db_session
+
+[db_jmnew]
+;host = localhost
+dbname = jmnew
+sel_user = jmdictdbv
+sel_pw = jmdict
+user = jmdictdb	
+pw = xxxxxx
+session_db = db_session

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2006,2008 Stuart McGraw 
+#  Copyright (c) 2006-2009 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -23,10 +23,10 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import jdb, config, jmcgi
+import jdb, jmcgi
 
 def main( args, opts ):
-	form, svc, host, cur, sid, sess = jmcgi.parseform()
+	form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
 	qs = jmcgi.form2qs (form)
 	pos =  reshape (sorted (jdb.KW.recs('POS'),  key=lambda x:x.kw), 10)
 	misc = reshape (sorted (jdb.KW.recs('MISC'), key=lambda x:x.kw), 10)
@@ -48,8 +48,8 @@ def main( args, opts ):
 
 	jmcgi.gen_page ("tmpl/srchform.tal", macros='tmpl/macros.tal', 
 			pos=pos, misc=misc, stat=stat, src=corp, freq=freq,
-			fld=fld, kinf=kinf, rinf=rinf, 
-			svc=svc, host=host, sid=sid, session=sess, cfg=config, 
+			fld=fld, kinf=kinf, rinf=rinf, parms=parms,
+			svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
 			method='get', output=sys.stdout, this_page='srchform.py')
 
 def reshape (array, ncols, default=None):

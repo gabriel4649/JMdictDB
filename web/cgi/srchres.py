@@ -23,22 +23,23 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi, copy
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import jdb, config, jmcgi, serialize
+import jdb, jmcgi, serialize
 
 def main( args, opts ):
 	errs = []; so = None
-	try: form, svc, host, cur, sid, sess = jmcgi.parseform()
+	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
-	if errs: 
-	    err_page (errs)
+	if errs: err_page (errs)
+	cfg_web = d2o (cfg['web'])
+	cfg_srch = d2o (cfg['search'])
 	fv = form.getfirst; fl = form.getlist
 	force_srchres = fv('srchres')  # Force display of srchres page even if only one result.
 	sqlp = fv ('sql')
 	soj = fv ('soj')
 	pgoffset = int(fv('p1') or 0)
 	pgtotal = int(fv('pt') or -1)
-	entrs_per_page = min (max (int(fv('ps') or config.DEF_ENTRIES_PER_PAGE),
-			   config.MIN_ENTRIES_PER_PAGE), config.MAX_ENTRIES_PER_PAGE)
+	entrs_per_page = min (max (int(fv('ps') or cfg_web.DEF_ENTRIES_PER_PAGE),
+			   cfg_web.MIN_ENTRIES_PER_PAGE), cfg_web.MAX_ENTRIES_PER_PAGE)
 	if not sqlp and not soj:
 	    so = jmcgi.SearchItems()
 	    so.idnum=fv('idval');  so.idtyp=fv('idtyp')
@@ -68,11 +69,8 @@ def main( args, opts ):
 	    so = serialize.js2so (soj)
 
 	elif sqlp:
-	    if config.ENABLE_SQL_SEARCH == "editors" and not jmcgi.is_editor(sess):
-		err_page (["'sql' parameter only accepted from logged in editors."])
-	    elif config.ENABLE_SQL_SEARCH == "all": pass
-	    else: 
-		err_page (["Invalid 'sql' parameter in url."])
+	    if not jmcgi.adv_srch_allowed (cfg, sess):
+		err_page (["'sql' parameter is disallowed."])
 	    sql = sqlp.strip()
 	    if sql.endswith (';'): sql = sql[:-1]
 	    sql_args = []
@@ -88,19 +86,19 @@ def main( args, opts ):
 	sql2 = "SELECT __wrap__.* FROM esum __wrap__ " \
 		 "JOIN (%s) AS __user__ ON __user__.id=__wrap__.id " \
 		 "%s OFFSET %s LIMIT %s" % (sql, orderby, pgoffset, entrs_per_page)
-	if config.MAX_QUERY_COST > 0:
+	if cfg_srch.MAX_QUERY_COST > 0:
 	    try:
 	        cost = jdb.get_query_cost (cur, sql2, sql_args);
 	    except StandardError, e:
 		err_page (["Database error (%s):<pre> %s </pre></body></html>" 
 			   % (e.__class__.__name__, str(e))])
-	    if cost > config.MAX_QUERY_COST: 
+	    if cost > cfg_srch.MAX_QUERY_COST: 
 		err_page (
 		       ["The search request you made will likely take too long to execute. "
 			"Please use your browser's \"back\" button to return to the search "
 			"page and add more criteria to restrict your search more narrowly. "
 			"(The estimated cost was %.1f, max allowed is %d.)" 
-			% (cost, config.MAX_QUERY_COST)])
+			% (cost, cfg_srch.MAX_QUERY_COST)])
 
 	try: rs = jdb.dbread (cur, sql2, sql_args)
 	except Exception, e:		#FIXME, what exception value(s)?
@@ -129,14 +127,26 @@ def main( args, opts ):
 	else:
 	    jmcgi.gen_page ("tmpl/srchres.tal", macros='tmpl/macros.tal', 
 			    results=rs, pt=pgtotal, p0=pgoffset,
-			    p1=pgoffset+reccnt, soj=soj, sql=sqlp,
-			    svc=svc, host=host, sid=sid, session=sess, cfg=config,
+			    p1=pgoffset+reccnt, soj=soj, sql=sqlp, parms=parms,
+			    svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
 			    output=sys.stdout, this_page='srchres.py')
 
 def err_page (errs):
 	if isinstance (errs, (unicode, str)): errs = [errs]
 	jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
 	sys.exit()
+
+def d2o (dict_):
+	# Copy the key/value items in a dict to attributes on an 
+	# object, converting numbers to ints when possible.
+	# FIXME: What about floats, bools, datetimes, lists, ...?
+	#  Should we consider JSON as an ini file format?
+	o = jdb.Obj()
+	for k,v in dict_.items():
+	    try: v = int (v)
+	    except (ValueError,TypeError): pass
+	    setattr (o, k, v)
+	return o
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()

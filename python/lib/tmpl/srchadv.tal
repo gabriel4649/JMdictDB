@@ -10,15 +10,20 @@
   <div metal:use-macro="macros/macros/login">
     <h1 metal:fill-slot="title">JMdictDB SQL Search</h1>
     </div>
-  <form action="srchres.py" name="srchres" tal:attributes="method method">
+  <div class="entry" tal:condition="not:adv_srch_allowed">
+    Advanced search is not available because you do not have 
+    the permissions required by the configuration settings for
+    this JMdictDB installation.
+    </div>
+  <form action="srchres.py" name="srchres" tal:attributes="method method" tal:condition="adv_srch_allowed">
     <table class="form" width="100%">
       <tr>
 	<td colspan="2">
-	  If you know the SQL language, and the JMdictDB database schema,
+	  If you know the SQL language and the JMdictDB database schema,
 	  you can use this form to enter a SQL statement that will find
 	  the entries you are interested in.  The SQL statement must return
-	  a result set whose first column contains the entry "id" numbers
-	  of the entries you want.
+	  a result set whose first column is named "id" and contains the
+	  entry "id" numbers of the entries you want to see.
 	  </td>
 	</tr>
       <tr>

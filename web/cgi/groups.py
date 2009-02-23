@@ -23,11 +23,11 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import jdb, config, jmcgi
+import jdb, jmcgi
 
 def main( args, opts ):
 	errs = []
-	try: form, svc, host, cur, sid, sess = jmcgi.parseform()
+	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
 	if errs:
 	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
@@ -44,8 +44,8 @@ def main( args, opts ):
 
 	rs = jdb.dbread (cur, sql)
 	jmcgi.gen_page ("tmpl/groups.tal", macros='tmpl/macros.tal', 
-			 results=rs, 
-			 svc=svc, host=host, sid=sid, session=sess, cfg=config,
+			 results=rs, parms=parms,
+			 svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
 			 output=sys.stdout, this_page='goups.py')
 
 if __name__ == '__main__': 

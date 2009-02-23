@@ -3,13 +3,7 @@ from odict import odict
 
 class Error(Exception):
     """Base class for ConfigParser exceptions."""
-    def __init__(self, msg=''):
-        self.message = msg
-        Exception.__init__(self, msg)
-    def __repr__(self):
-        return self.message
 
-    __str__ = __repr__
 class ParseError(Error):
     """Raised when a configuration file does not follow legal syntax."""
     def __init__(self, filename):
@@ -18,7 +12,7 @@ class ParseError(Error):
         self.errors = []
     def append(self, lineno, line):
         self.errors.append((lineno, line))
-        self.message += '\n\t[line %2d]: %s' % (lineno, line)
+        self.args = self.args[0] = self.args[0] + '\n\t[line %2d]: %s' % (lineno, line)
 
 class NoSectionError(Error):
     """Raised when no section matches a requested option."""
@@ -37,16 +31,32 @@ class MissingSectionHeaderError(ParseError):
         self.lineno = lineno
         self.line = line
 
-
-
 DEFAULTSECT = '# FIXME'
 
 class Config (odict):
-    def __init__ (self):
+    def __init__ (self, fn_or_iter=None, option_name_case=None):
+	  # 'fn_or_iter'
+	  #   If a string, will be used as a filename to open and read.
+	  #   Otherwise will be iterated to get lines of the ini file data. 
+	  # 'option_name_case' is one of:
+	  #   "u" -- Convert option names to upper case.
+	  #   "l" -- Convert option names to lower case.
+	  #   "c"-- Call optionxform() to get option names.
+	  #   anything else -- Use option names as-is.
+
 	odict.__init__ (self)
+	self.option_name_case = option_name_case
 	self.blank_line_between_sections = True
 	self.start_multiline_opt_on_new_line = False
 	self.line_terminator = '\n'
+	if fn_or_iter:
+	    if isinstance (fn_or_iter, (str, unicode)):
+	        fl = open (fn_or_iter)
+		fname = fn_or_iter
+	    else: 
+		fl = fn_or_iter
+		fname = None
+	    self.read (fl, fname)
 
     # Following stolen from the Python-2.5.1 ConfigParser module.
     # Regular expressions for parsing section headers and options.
@@ -121,7 +131,10 @@ class Config (odict):
                         # allow empty values
                         if optval == '""':
                             optval = ''
-                        optname = self.optionxform(optname.rstrip())
+			optname = optname.rstrip()
+			if   self.option_name_case == "lower":  optname = optname.lower()
+			elif self.option_name_case == "upper":  optname = optname.upper()
+			elif self.option_name_case == "custom": optname = self.optionxform (optname)
                         cursect[optname] = optval
                     else:
                         # a non-fatal parsing error occurred.  set up the
@@ -159,3 +172,4 @@ class Config (odict):
 
     def optionxform(self, optionstr):
         return optionstr.lower()
+

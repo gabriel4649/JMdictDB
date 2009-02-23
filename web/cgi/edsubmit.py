@@ -127,12 +127,12 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi, datetime, cgitb
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import jdb, config, jmcgi, fmtxml, serialize
+import jdb, jmcgi, fmtxml, serialize
 
 def main( args, opts ):
 	cgitb.enable()
 	errs = []
-	try: form, svc, host, dbh, sid, sess = jmcgi.parseform()
+	try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
 	fv = form.getfirst
 
@@ -160,8 +160,8 @@ def main( args, opts ):
 	if not errs:
 	    dbh.connection.commit()
 	    jmcgi.gen_page ("tmpl/submitted.tal", macros='tmpl/macros.tal',
-			    added=added,
-			    svc=svc, host=host, sid=sid, session=sess, cfg=config, 
+			    added=added, parms=parms,
+			    svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
 			    output=sys.stdout, this_page='edsubmit.py')
 	else: 
 	    dbh.connection.rollback()

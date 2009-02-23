@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2008 Stuart McGraw 
+#  Copyright (c) 2008-2009 Stuart McGraw 
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -21,9 +21,9 @@ __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
 import sys, re, cgi, urllib, os, os.path, random, time
-import jdb, config, tal, fmt
+import jdb, tal, fmt
 
-def parseform ():
+def parseform (readonly=False):
 	"""\
     Do some routine tasksthat are needed for (most) every page, specifically:
     * Call cgi.FieldStorage to parse parameters.
@@ -34,31 +34,45 @@ def parseform ():
 	svc (string) -- Checked svc value.
 	cur (dbapi cursor) -- Open cursor for database defined by 'svc'.
 	sid (string) -- session.id in hexidecimal form or "".
-	sess (session obj) -- Session object for sid or None.
+	sess (session inst.) -- Session object for sid or None.
+	cfg (Config inst.) -- Config object from reading config.ini.
 	"""
 	errs=[]; sess=None; sid=''; cur=None; svc=None
+	cfg = jdb.cfgOpen ('config.ini')
+	def_svc = cfg['web'].get ('DEFAULT_SVC', 'jmdict')
+	if def_svc.startswith ('db_'): def_svc = def_svc[3:]
+
 	form = cgi.FieldStorage()
+	svc = form.getfirst ('svc') or def_svc
+	try: svc = safe (svc)
+	except ValueError: errs.append ('svc=' + svc)
+	if not errs: cur = jdb.dbOpenSvc (cfg, svc)
+	if errs: raise ValueError (';'.join (errs))
+	host = jdb._extract_hostname (cur.connection)
 
 	sid, logout = form.getfirst ('sid'), form.getfirst ('logout')
-	sess = getsession (sid, logout=logout)
+	sess_cur = jdb.dbOpenSvc (cfg, svc, session=True)
+	sess = getsession (sess_cur, sid, logout=logout)
 	if logout: sid, session = '', None
 	if form.getfirst('username'):
 	    uname, pw = form.getfirst('username'), form.getfirst('password')
-	    sess = login (uname, pw)
+	    sess = login (sess_cur, uname, pw)
 	    if sess: sid = "%X" % sess.id
+	sess_cur.connection.close()
 
-	svc = form.getfirst ('svc')
-	try: svc = safe (svc)
-	except ValueError: errs.append ('svc=' + svc)
-	if not errs: cur = dbOpenSvc (svc)
-	if errs: raise ValueError (';'.join (errs))
-	host = jdb._extract_hostname (cur.connection)
-	return form, svc, host, cur, sid, sess
+	  # Collect the form parameters.  Caller is expected to pass
+	  # them to the page template which will use them in the login
+	  # section as hidden parms so the page can be recreated after
+	  # a login.
+        parms = [(k,v.decode('utf-8')) 
+		 for k in form.keys() 
+                 if k not in ('login','logout','username','password')
+                     for v in form.getlist(k) ]
 
-def getsession (sid, logout=False, cur=None):
+	return form, svc, host, cur, sid, sess, parms, cfg
+
+def getsession (cur, sid, logout=False, ):
 	if not sid: return None
-	if not cur:
-	    cur = dbOpenSvc (config.SESSION_SVC, nokw=True)
 	if isinstance (sid, (str, unicode)):
 	    try: sid = int (sid,16)
 	    except (ValueError, TypeError): return None
@@ -72,12 +86,10 @@ def getsession (sid, logout=False, cur=None):
 	else:
 	    sql = "DELETE FROM sessions WHERE id=%s"
 	    cur.execute (sql, (sid,))
-	cur.connection.close()
 	sess = rs[0]
 	return sess
 
-def login (userid, password):
-	cur = dbOpenSvc (config.SESSION_SVC, nokw=True)
+def login (cur, userid, password):
 	sql = "SELECT userid FROM users WHERE userid=%s " \
 		"AND pw=%s AND pw IS NOT NULL AND NOT disabled"
 	rs = jdb.dbread (cur, sql, (userid, password))
@@ -87,7 +99,7 @@ def login (userid, password):
 	sid = random.randint (0, 2**63-1)
 	jdb.dbinsert (cur, 'sessions', ('id','userid','ts'),(sid,rs[0].userid,int(time.time())))
 	cur.connection.commit()
-	sess = getsession (sid, cur=cur)
+	sess = getsession (cur, sid)
 	return sess
 
 def is_editor (sess):
@@ -97,6 +109,13 @@ def is_editor (sess):
 
 	if sess: return getattr (sess, 'userid', None)
 	return None
+
+def adv_srch_allowed (cfg, sess):
+	try: v = (cfg['search']['ENABLE_SQL_SEARCH']).lower()
+	except (TypeError, ValueError, KeyError): return False
+	if v == 'all': return True
+	if v == 'editors' and is_editor (sess): return True
+	return False
 
 def remove_inactive_sessions (cur):
 	expire = 120	# Expiration time in minutes.
@@ -618,35 +637,3 @@ def _freqcond (freq, nfval, nfcmp, gaval, gacmp):
 
 	return [("freq",whr,[])]
 
-def dbOpenSvc (svcname, svcdir=None, **kwds):
-	# This function will open a database connection.  It is
-	# intended for the use of cgi scripts where we do not want
-	# to embed the connection information (username, password,
-	# etc) in the script itself, for both security and
-	# maintenance reasons. 
-	# It uses a Postgresql "service" file.  For more info
-	# on the syntax and use of this file, see:
-	#
-	#   [Both the following are in Postgresql Docs, libpq api.]
-	#   29.1. Database Connection Control Functions
-	#   29.14. The Connection Service File
-	#
-	#   DBD-Pg / DBI Class Methods / connect() method
-	#   The JMdictDB README.txt file, installation section.
-	#
-	# svcname -- name of a postgresql service listed 
-	#	in the pg_service.conf file.  If not supplied,
-	#	"jmdict" will be used.
-	# svcdir -- Name of directory containing the pg_service.conf
-	#	file.  If undefined, "../lib/" will be used.  If 
-	#	an empty string (or other defined but false value)
-	# 	is given, Postresql's default location will be
-	#	used.
-
-	if not svcdir: svcdir = jdb.find_in_syspath ("pg_service.conf")
-	if not svcname: svcname = "jmdict"
-
-	if svcdir: os.environ['PGSYSCONFDIR'] = svcdir
-
-	dbh = jdb.dbOpen (None, dsn='service=%s' % svcname, **kwds)
-	return dbh

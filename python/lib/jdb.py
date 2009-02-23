@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*-	 # non-ascii used in comments only.
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2006,2009 Stuart McGraw 
+#  Copyright (c) 2006-2009 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -22,23 +22,25 @@ from __future__ import with_statement
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
-import sys, os, os.path, random, re, datetime, operator, warnings
+import sys, os, os.path, random, re, datetime, operator, \
+    warnings
 from time import time
 from collections import defaultdict
+import pylib; from pylib.config import Config
 import fmtxml
 from objects import *
 
 global KW
-2011
 Debug = {}
 
 class AuthError (Exception): pass
 
 def dbread (cur, sql, args=None, cols=None, cls=None):
-	if args is None: args = []
+	if args == []: args = None
 	try: cur.execute (sql, args)
 	except StandardError, e:
-	    msg = e.args[0] + "\nSQL: %s\nArgs: %r" % (sql, args)
+	    msg = e.args[0] if len(e.args) > 0 else ''
+	    msg += "\nSQL: %s\nArgs: %r" % (sql, args)
 	    e.args = [msg] + list(args[1:])
 	    raise e
 	if not cols: cols = [x[0] for x in cur.description]
@@ -73,7 +75,7 @@ def dbinsert (dbh, table, cols, row, wantid=False):
 	else:
 	    if len(row) != len(cols): raise ValueError(row)
 	    args = row
-	if args is None: raise ValueError (args)
+	if not args: raise ValueError (args)
 	if Debug.get ('prtsql'): print repr(sql), repr(args)
 	try: dbh.execute (sql, args)
 	except StandardError, e:
@@ -91,19 +93,24 @@ def dblastid (dbh, table):
 	rs = dbh.fetchone()
 	return rs[0]
 
-def get_query_cost (cur, sql, sql_args=[]):
+def get_query_cost (cur, sql, sql_args=None):
 	# Return Postgresql's idea of the cost of executing the the
 	# given sql statement with the given args.  The cost is a
 	# float number and in units of estimated disk page fetches.
-	# NOTE: The function is Postgresql specific.
+	# NOTE: This function is Postgresql specific.
 	# Ref: See the Postgresql Docs, Section VI (SQL Commands), "EXPLAIN".
 
-	  # Wrap the explain execution in a BEGIN/ROLLBACK in case
-	  # it is a statement like "delete" with side effects.
+	  # Wrap the explain execution in a BEGIN/ROLLBACK in case it
+	  # is (or contains) a statement like "delete" with side effects.
+	  # Execute within a try/finally to ensure rollback is done, even
+	  # if an exception is raised.
 	cur.execute ("BEGIN")
-	cur.execute ("EXPLAIN " + sql, sql_args)
-	rs = cur.fetchall()
-	cur.execute ("ROLLBACK")
+	try:
+	    if sql_args == []: sql_args = None
+	    cur.execute ("EXPLAIN " + sql, sql_args)
+	    rs = cur.fetchall()
+	finally:
+	    cur.execute ("ROLLBACK")
 	if len(rs) < 1: 
 	    raise ValueError ("No results received from postgresql EXPLAIN")
 	firstline = rs[0][0]
@@ -1834,7 +1841,7 @@ class Tmptbl:
 	nm = self.mktmpnm()
 	tmp = 'TEMPORARY ' if temp else ''
 	sql = "CREATE %s TABLE %s (%s)" % (tmp, nm, tbldef)
-	cursor.execute (sql, ())
+	cursor.execute (sql)
 	self.name = nm
 	self.cursor = cursor
 
@@ -1849,7 +1856,7 @@ class Tmptbl:
 	elif args: 
 	    vallist = ','.join(["(%d)"%x for x in args])
 	    s = "INSERT INTO %s(id) VALUES %s" % (self.name, vallist)
-	    cur.execute (s, [])
+	    cur.execute (s)
 	else: raise ValueError ("Either 'sql' or 'args' must have a value")
 	self.rowcount = cur.rowcount
 	cur.connection.commit ()
@@ -1865,7 +1872,7 @@ class Tmptbl:
     def delete (self):
 	#print >>sys.stderr, "Deleting temp table", self.name
 	sql = "DROP TABLE %s;" % self.name
-	self.cursor.execute (sql, ())
+	self.cursor.execute (sql)
 	self.cursor.connection.commit ()
 
     def __del__ (self):
@@ -1949,11 +1956,12 @@ def jstr_keb (s):
 	else: b = s
 	return not jstr_reb (b) and not jstr_gloss (b)
 
+
 #=======================================================================
 import psycopg2 
 import psycopg2.extensions
 dbapi = psycopg2
-def dbOpen (dbname, **kwds):
+def dbOpen (dbname_, **kwds):
 	"""\
 	Open a DBAPI cursor to a jmdict database and initialize
 	a Kwds instance with the name KW.
@@ -1989,14 +1997,12 @@ def dbOpen (dbname, **kwds):
 		any api functions that use it."""
  
 	  # Copy kwds dict since we are going to modify the copy.
-
 	kwargs = dict (kwds)
 
 	  # Extract from the parameter kwargs those which are strictly
-	  # of local intest, them delete them from kwargs to prevent
+	  # of local interest, then delete them from kwargs to prevent
 	  # them from being passed on to the dbapi.connect() call
 	  # which may object to parameters it does not know about.
-
 	autocommit = kwargs.get('autocommit'); 
 	if 'autocommit' in kwargs: del kwargs['autocommit']
 	isolation = kwargs.get('isolation'); 
@@ -2005,14 +2011,17 @@ def dbOpen (dbname, **kwds):
 	if 'nokw' in kwargs: del kwargs['nokw']
 	if isolation is not None and autocommit:
 	    raise ValueError ("Only one of 'autocommit' and 'isolation' may be given.")
+	if dbname_: kwargs['database'] = dbname_
 
-	if dbname: kwargs['database'] = dbname
+	  # Remove kwds with None values since psycopg2 doesn't
+	  # seem to like them.
+	nonekwds = [k for k,v in kwargs.items() if v is None]
+	for k in nonekwds: del kwargs[k]
 
 	conn = psycopg2.connect (**kwargs)
 
 	  # Magic psycopg2 incantation to ask the dbapi gods to return 
 	  # a unicode object rather than a utf-8 encoded str.
-
         psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 	if autocommit: isolation = 0	# 0 = ISOLATION_LEVEL_AUTOCOMMIT
@@ -2031,13 +2040,24 @@ def dbOpen (dbname, **kwds):
 	  # tables don't exist (e.g. for testing or in tools that will
 	  # create the database)` ignore the error that will result
 	  # when Kwds.__init_() tries to read non-existent tables.
-
 	if not nokw:
 	    global KW
 	    try: KW = Kwds (conn.cursor())
-	    except dbapi.ProgrammingError: pass
+	    except dbapi.ProgrammingError: conn.rollback()
 
 	return conn.cursor()
+
+def dbexecute (cur, sql, sql_args):
+	# Use this funtion rather than cur.execute() directly.
+	# If 'sql' contains a sql wildcard character, '%', the
+	# psycopg2 DBAPI will interpret it as a partial parameter
+	# marker (it uses "%s" as the parameter marker) and will 
+	# fail with an IndexError exception if sql_args is '[]'
+	# rather than 'None'.  This bug exists in at least 
+	# psycopg2-2.0.7.
+	# See: http://www.nabble.com/DB-API-corner-case-(psycopg2)-td18774677.html
+	if not sql_args: sql_args = None
+	return cur.execute (sql, sql_args)
 
 def dbopts (opts):
 	# Convenience function for converting database-related
@@ -2072,8 +2092,64 @@ def pmarks (sqlargs):
 
 	return ','.join (('%s',) * len (sqlargs))
 
+def cfgOpen (cfgname):
+	# Open and parse a config file returning the resulting
+	# config.Config() object.  If 'cfgname' contains a path
+	# separator character (either a back- or forward-slash)
+	# it is treated as a filename.  Otherwise it is a path-
+	# less filename that is searched for in sys.path. 
+	# To explicitly open a file in the current directory
+	# without searching sys.path, prefix the filename with
+	# "./".
+	
+	if '\\' in cfgname or '/' in cfgname:
+	    fname = cfgname
+	else:
+            dir = find_in_syspath (cfgname)
+	    fname = os.path.join (dir, cfgname)
+        cfg = pylib.config.Config (fname)
+	cfg.__filename__ = fname
+	return cfg
+
+def getSvc (cfg, svcname, readonly=False, session=False):
+	# Get the authentication values from config.Config 
+	# instance 'cfg' for a specific database service
+	# identified name name 'svcname'.
+	# *** CAUTION ***
+	# The options returned by this function are specific
+	# to the psycopg2 DBAPI.
+
+	cfgsec = cfg['db_' + svcname]
+	if session: cfgsec = cfg[cfgsec['session_db']]
+	if readonly: user, pw = 'sel_user', 'sel_pw'
+	else: user, pw = 'user', 'pw'
+	dbopts = {}
+	dbopts['database'] = cfgsec['dbname']
+	if cfgsec.get (user):   dbopts['user']     = cfgsec[user]
+	if cfgsec.get (pw):     dbopts['password'] = cfgsec[pw]
+	if cfgsec.get ('host'): dbopts['host']     = cfgsec['host']
+	return dbopts
+
+def dbOpenSvc (cfg, svcname, readonly=False, session=False, **kwds):
+	# Open the database identified by 'svcname' getting the
+	# authenication values from 'cfg' which may be either a 
+	# config.Config instance or configuration filename.  
+	# The authenication values are looked for in section 
+	# "db_"+'svcname'.  
+	# If 'readonly' is true, open with the read-only user. 
+	# Otherwise, open the database with the full-access user.
+	# If 'session' is true open the session database given in
+	# the svcname section rather than the 'svcname' database
+	# itself.
+
+	if isinstance (cfg, (str, unicode)): cfg = cfgOpen (cfg)	
+	dbopts = getSvc (cfg, svcname, readonly, session)
+	dbopts.update (kwds)
+	cur = dbOpen (None, **dbopts)
+	return cur
+
 def iif (c, a, b):
-	"""Stupid Python!"""
+	"""Stupid Python! at least prior to 2.5"""
 	if c: return a
 	return b
 
@@ -2105,7 +2181,7 @@ def isin (object, seq):
 
 def unique (key, dupchk):
 	""" 
-	key -- An immutuable object.
+	key -- A hashable object (i.e. usable as a dict key).
 	dupchk -- An (initially empty) mapping object.
 
 	"""
@@ -2158,3 +2234,4 @@ def get_dtd (filename, root="JMdict", encoding="UTF-8"):
 	    txt = f.read().decode(encoding) 
 	    txt %= {'root':root, 'encoding':encoding}
 	return txt
+

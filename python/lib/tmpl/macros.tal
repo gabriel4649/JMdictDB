@@ -3,7 +3,7 @@
     <tr>
       <td><h1 metal:define-slot="title">Page head text</h1></td>
       <td align="right" rowspan="1">
-	<form name="entrauth" method="post" tal:attributes="action this_page">
+	<form name="entrauth" method="get" tal:attributes="action this_page">
 	  <span tal:repeat="p parms" tal:omit-tag="">
 	    <input type="hidden" tal:attributes="name p/0; value p/1"/>
 	    </span>
@@ -18,6 +18,7 @@
 	      <td>
 		<input name="username" type="text" size="8"/><br/>
 		<input name="password" type="password" size="8"/></td>
+		<input type="hidden" name="svc" tal:condition='svc' tal:attributes="value svc"/>
 	      </tr>
 	
 	    </table>
@@ -46,11 +47,11 @@
 
 <div metal:define-macro="footer">
   <table width="100%">
-    <tr tal:condition="cfg/CONTACT_EMAIL">
+    <tr tal:condition="cfg/web/CONTACT_EMAIL">
       <td>
 	If you have questions about, problems using, or suggestions
 	for improving this page, please send email to 
-	<a tal:attributes="href string:mailto:${cfg/CONTACT_EMAIL}" tal:content="cfg/CONTACT_EMAIL">email</a>.
+	<a tal:attributes="href string:mailto:${cfg/web/CONTACT_EMAIL}" tal:content="cfg/web/CONTACT_EMAIL">email</a>.
 	</td>
       </tr>
     </table>

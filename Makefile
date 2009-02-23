@@ -42,12 +42,19 @@ DBACT = jmdict
 # created database is moved to production status...
 DBOLD = jmold
 
-# Postgresql user under which to run postgresql commands.
-# If blank, user name will be determined by the usual 
-# Postgresql libpq means (see subsection "Connecting To A 
-# Database" in the the Postgresql docs (Reference / PostgreSQL 
-# Client Applications / psql).
-USER = postgres
+# Postgresql user that will be used to create the jmdictdb
+# tables and other objects.  Users defined in the
+# python/lib/config.ini file should match.
+USER = jmdictdb
+
+# Postgres user that has select-only (i.e. read-only access
+# to the database.  Used only for creating this user in target
+# 'jminit'.  Users defined in the python/lib/config.ini file
+# should match.
+RO_USER = jmdictdbv
+
+# A postgresql user that has create database privs.
+PG_SUPER = postgres
 
 # Name of the machine hosting the Postgresql database server.
 # If blank, localhost will be used.
@@ -71,17 +78,6 @@ CSS_DIR = $(WEBROOT)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # You should not need to change anything below here.
 
-PG_DB = -d $(DB)
-JM_DB = -d $(DB)
-
-ifeq ($(USER),)
-PG_USER =
-JM_USER =
-else
-PG_USER = -U $(USER)
-JM_USER = -u $(USER)
-endif
-
 ifeq ($(HOST),)
 PG_HOST =
 JM_HOST =
@@ -103,7 +99,7 @@ CGI_FILES = entr.py \
 WEB_CGI	= $(addprefix $(CGI_DIR)/,$(CGI_FILES))
 
 LIB_FILES = jdb.py \
-	config.py \
+	config.cfg \
 	fmt.py \
 	fmtjel.py \
 	fmtxml.py \
@@ -151,30 +147,37 @@ all:
 	@echo '  web -- Install cgi and other web files to the appropriate places.'
 	@echo '  dist -- Make development snapshot distribution file.'
 
+#------ Create jmsess and jmdictdb users ---------------------------------
+
+    # Run this target only once when creating a jmdictdb server
+    # installation.  Creates a jmsess database and two dedicated
+    # users that the jmdictdb app will use to access the database.
+ 
+init: 
+	-createuser $(PG_HOST) -U $(PG_SUPER) -SDRP $(USER)
+	-createuser $(PG_HOST) -U $(PG_SUPER) -SDRP $(RO_USER)
+	# Don't automatically drop old session database due to risk 
+	# of loosing important user logins and passwords.
+	#psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'drop database if exists $(DBOLD)'
+	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'create database jmsess'
+	cd pg && psql $(PG_HOST) -U $(USER) -d jmsess -f mksess.sql
+	@echo 'Remember to add jmdictdb editors to the jmsess "users" table.' 
+
+#------ Create a new database for loading -------------------------------
+
+newdb:
+	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'drop database if exists $(DB)'
+	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c "create database $(DB) owner $(USER) encoding 'utf8'"
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f reload.sql
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
+
 #------ Move installation database to active ----------------------------
 
 activate:
-	psql $(PG_HOST) $(PG_USER) $(PG_DB) -c 'SELECT 1' >/dev/null # Check existance.
-	psql $(PG_HOST) $(PG_USER) -d postgres -c 'drop database if exists $(DBOLD)'
-	-psql $(PG_HOST) $(PG_USER) -d postgres -c 'alter database $(DBACT) rename to $(DBOLD)'
-	psql $(PG_HOST) $(PG_USER) -d postgres -c 'alter database $(DB) rename to $(DBACT)'
-
-#------ Create jmsess ---------------------------------------------------
-
-jmsess: 
-	# Don't automatically drop old database due to risk 
-	# of loosing important user logins and passwords.
-	#psql $(PG_HOST) $(PG_USER) -d postgres -c 'drop database if exists $(DBOLD)'
-	psql $(PG_HOST) $(PG_USER) -d postgres -c 'create database jmsess'
-	cd pg && psql $(PG_HOST) $(PG_USER) -d jmsess -f mksess.sql
-
-#------ Create new database for loading ---------------------------------
-
-newdb:
-	psql $(PG_HOST) $(PG_USER) -d postgres -c 'drop database if exists $(DB)'
-	psql $(PG_HOST) $(PG_USER) -d postgres -c "create database $(DB) encoding 'utf8'"
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f reload.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
+	psql $(PG_HOST) -U $(PG_SUPER) -d $(DB) -c 'SELECT 1' >/dev/null # Check existance.
+	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'drop database if exists $(DBOLD)'
+	-psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'alter database $(DBACT) rename to $(DBOLD)'
+	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'alter database $(DB) rename to $(DBACT)'
 
 #------ Load JMdict -----------------------------------------------------
 
@@ -188,16 +191,15 @@ data/jmdict.pgi: data/jmdict.xml
 	cd python && python jmparse.py $(LANGOPT) -y -l ../data/jmdict.log -o ../data/jmdict.pgi ../data/jmdict.xml
 
 data/jmdict.dmp: data/jmdict.pgi
-	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -i 1 -o ../data/jmdict.dmp ../data/jmdict.pgi
+	cd python && python jmload.py $(JM_HOST) -u $(USER) -d $(DB) -i 1 -o ../data/jmdict.dmp ../data/jmdict.pgi
 
 loadjm: data/jmdict.dmp
-	-cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/jmdict.dmp
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
-	cd python && python xresolv.py $(JM_HOST) $(JM_USER) $(JM_DB) >../data/jmdict_xresolv.log
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -c "vacuum analyze xref"
+	-cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/jmdict.dmp
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
+	cd python && python xresolv.py $(JM_HOST) -u $(USER) -d $(DB) >../data/jmdict_xresolv.log
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -c "vacuum analyze xref"
 	@echo 'Remember to check the log files for warning messages.'
-
 
 #------ Load JMnedict ----------------------------------------------------
 
@@ -213,12 +215,12 @@ data/jmnedict.pgi: data/jmnedict.xml
 	cd python && python jmparse.py -l ../data/jmnedict.log -o ../data/jmnedict.pgi ../data/jmnedict.xml
 
 data/jmnedict.dmp: data/jmnedict.pgi
-	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -o ../data/jmnedict.dmp ../data/jmnedict.pgi
+	cd python && python jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/jmnedict.dmp ../data/jmnedict.pgi
 
 loadne: data/jmnedict.dmp
-	-cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/jmnedict.dmp
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
+	-cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/jmnedict.dmp
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
 
 #------ Load examples ---------------------------------------------------
 
@@ -232,16 +234,16 @@ data/examples.pgi: data/examples.txt
 	cd python && python exparse.py -o ../data/examples.pgi -l ../data/examples.log ../data/examples.txt
 
 data/examples.dmp: data/examples.pgi 
-	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -o ../data/examples.dmp ../data/examples.pgi
+	cd python && python jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/examples.dmp ../data/examples.pgi
 
 loadex: data/examples.dmp 
-	-cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/examples.dmp
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
+	-cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/examples.dmp
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
 	# The following command is commented out because of the long time
 	# it can take to run.  It may be run manually after 'make' finishes.
-	#cd python && python xresolv.py $(JM_HOST) $(JM_USER) $(JM_DB) -s3 -t1 >../data/examples_xresolv.log
-	#cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -c 'vacuum analyze xref;'
+	#cd python && python xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -s3 -t1 >../data/examples_xresolv.log
+	#cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -c 'vacuum analyze xref;'
 
 #------ Load kanjidic2,xml ---------------------------------------------------
 
@@ -255,12 +257,12 @@ data/kanjidic2.pgi: data/kanjidic2.xml
 	cd python && python kdparse.py -g en -o ../data/kanjidic2.pgi -l ../data/kanjidic2.log ../data/kanjidic2.xml 
 
 data/kanjidic2.dmp: data/kanjidic2.pgi 
-	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -o ../data/kanjidic2.dmp ../data/kanjidic2.pgi
+	cd python && python jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/kanjidic2.dmp ../data/kanjidic2.pgi
 
 loadkd: data/kanjidic2.dmp 
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/kanjidic2.dmp
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/kanjidic2.dmp
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
 
 #------ Load jmdict, jmnedict, examples -------------------------------------
 
@@ -269,19 +271,19 @@ loadkd: data/kanjidic2.dmp
 # set, invalidating the starting id numbers in the other .dmp files.
 
 loadall: newdb data/jmdict.dmp data/jmnedict.pgi data/examples.pgi 
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f drpindex.sql
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/jmdict.dmp
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/jmdict.dmp
 
-	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -o ../data/examples.dmp ../data/examples.pgi
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/examples.dmp
+	cd python && python jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/examples.dmp ../data/examples.pgi
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/examples.dmp
 
-	cd python && python jmload.py $(JM_HOST) $(JM_USER) $(JM_DB) -o ../data/jmnedict.dmp ../data/jmnedict.pgi
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) <../data/jmnedict.dmp
+	cd python && python jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/jmnedict.dmp ../data/jmnedict.pgi
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/jmnedict.dmp
 
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -f postload.sql
-	cd python && python xresolv.py $(JM_HOST) $(JM_USER) $(JM_DB) >../data/jmdict_xresolv.log
-	#cd python && python xresolv.py $(JM_HOST) $(JM_USER) $(JM_DB) -s3 >../data/examples_xresolv.log
-	cd pg && psql $(PG_HOST) $(PG_USER) $(PG_DB) -c "vacuum analyze xref"
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
+	cd python && python xresolv.py $(JM_HOST) -u $(USER) -d $(DB) >../data/jmdict_xresolv.log
+	#cd python && python xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -s3 >../data/examples_xresolv.log
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -c "vacuum analyze xref"
 	@echo 'Remember to check the log files for warning messages.'
 
 #------ Move cgi files to web server location --------------------------

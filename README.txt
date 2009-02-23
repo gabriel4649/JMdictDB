@@ -185,11 +185,35 @@ install, local connections made with user "postgres" do
 not need a password, but your installation may require
 you to use a different username and password.
 
-The database is accessed by the jmdictdb system in two
+The database is accessed by the JMdictDB system in three
 contexts:
- - When running the jmdictdb programs (including tools
-   run by the Makefile during installation).
- - When a cgi script is executed by the web server.
+ - When running the Makefile to install the JMdictDB 
+     system.
+ - When cgi scripts are executed by the web server.
+ - When a local (or remote if permitted) user runs 
+     the command line or GUI tools.
+
+When the Makefile target "init" is run, it will create 
+two database users (by default, "jmdictdb" and "jmdictdbv").
+The other targets create and load databases as user 
+"jmdictdb".  The "jmdictdbv" user is given read-only
+access to the databases and is for use by the cgi scripts
+and not further used by the Makefile.
+
+CGI scripts access the databases using the usernames defined
+in the "db_*" sections of the config.ini file.  These should
+match the usernames used in the Makefile (i.e. "jmdictdb", 
+and for sel_user, "jmdictdbv" if Makefile wasn't changed.) 
+
+Command line tools all accept an optional username option.
+
+
+
+
+
+
+
+
 
 All the Python tools that access the database accept 
 command line parameters that allow specifying a username,
@@ -248,13 +272,19 @@ any working database in the event of a problem.  A
 make target, "activate" is provided to move the newly
 loaded database to "jmdict".
 
-1. Copy the file python/lib/config.py.sample to config.py
-   in the same directory, edit it and adjust any settings
-   to your needs.  Note that if you change some of the
-   settings, you may have to make corresponding changes
-   in other files as documented in the comments.
+1. Choose passswords to use for Postgreql users "jmdictdb"
+   and "jmdictdbv".
 
-2. Check the settings in Makefile.  There are some
+2. Copy the file python/lib/config.ini.sample to config.ini
+   in the same directory, edit it and change the passwords
+   in the db_jmdict, db_jmnew, and db_sess sections to match
+   what you choose in step 1.  
+   You may also want to adjust any other settings in the 
+   file to your needs.  Note that if you change some of the
+   settings, you may have to make corresponding changes in
+   other files as documented in the comments.
+
+3. Check the settings in Makefile.  There are some
    configuration settings in the Makefile that you may
    want to change.  Read the comments therein.  In 
    particular, the cgi directory is assumed to be
@@ -263,24 +293,44 @@ loaded database to "jmdict".
    some options for the Postgresql database server 
    connections, including authentication settings.
 
-3. Set (or modify) the enviroment variable PYTHONPATH
+4. When you run the Makefile in step 6 below, if there 
+   are passwords on the 'jmdictdb" and "postgres" accounts
+   (or their equivalents if you've changed them in Makefile)
+   and Postgresql does not know the passwords, you will be
+   prompted to enter them (many times).  To prevent the 
+   prompting, tell postgresql the passwords by creating a 
+   (or editing a preexisting) .pgpass file in your home 
+   directory and add a line like:
+
+        localhost:*:*:jmdictdb:xxxxxx
+
+   Change the "xxxxxx" to match the jmdictdb password chosen
+   in step 1, change "jmdictdb" to the appropriate username 
+   if you've changed it in the Makefile, and if you changed
+   PG_HOST in the Makefile (to access a database server on 
+   a remote machine), change "localhost".
+
+   The .pgpass file must have permissions 600 (rw-------) or
+   Postgresql will ignore it.
+
+5. Set (or modify) the enviroment variable PYTHONPATH
    so that it contains an absolute path to the python/lib
    directory.  For example, if you installed the jmdictdb
    software in /home/joe/jmdictdb/, then PYTHONPATH must
    contain (possibly in addition to other directories)
-   /home/joe/jmdictdb/python/lib.  
+   /home/joe/jmdictdb/python/lib. 
 
-4. If you have not done so before, in the top-level 
-   directory, run 
+6. If you have not done so before, in the top-level directory, 
+   run 
 
-        make jmsess
+        make init
 
    to create the users/sessions database.  You should
    then use psql or similar to manually add rows to 
    table "users" for each editor.  "pw" is the user's
    password.
 
-5. (Optional) In the top-level directory, run 
+7. (Optional) In the top-level directory, run 
 
 	make subdirs
 
@@ -291,7 +341,7 @@ loaded database to "jmdict".
    files updated) but must do this if you've changes
    any of the support files' dependencies.
 
-6. In the top level directory, run "make" which won't
+8. In the top level directory, run "make" which won't
    do anything other than list the available targets 
    that will do something.  
 
@@ -367,7 +417,7 @@ loaded database to "jmdict".
    the needed files manually, and put them in the ./data/ 
    directory.
 
-7. The makefile will parse the data files, create a database
+9. The makefile will parse the data files, create a database
    named "jmnew", load the jmdictdb schema, and finally load 
    all the parsed data into it.  If everything was loaded 
    sucessfully, run 
@@ -379,7 +429,7 @@ loaded database to "jmdict".
    it the active database.  There must be no active users in
    any of these database or the commands will fail.
 
-8. If you plan on using the cgi files with a web server, 
+10. If you plan on using the cgi files with a web server, 
    double check the settings in the Makefile (see step #1) 
    and then run:
 
@@ -390,7 +440,7 @@ loaded database to "jmdict".
    to serve the cgi files directly from the development directory
    making this step unnecessary.
 
-9. When the cgi files are executed by the web server, they
+11. When the cgi files are executed by the web server, they
    read the file python/lib/pg_service.conf (or its copy as
    installed in the web server lib directory) to determine
    the database name and login credentials to use when

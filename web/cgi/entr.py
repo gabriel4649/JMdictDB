@@ -23,12 +23,12 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import jdb, config, jmcgi
+import jdb, jmcgi
 
 def main (args, opts):
 	#print "Content-type: text/html\n"
 	errs = []
-	try: form, svc, host, cur, sid, sess = jmcgi.parseform()
+	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
 	if not errs:
 	    entries = jmcgi.get_entrs (cur, form.getlist ('e'),
@@ -43,8 +43,8 @@ def main (args, opts):
 	if not errs:
 	    jmcgi.htmlprep (entries)
 	    jmcgi.gen_page ('tmpl/entr.tal', macros='tmpl/macros.tal', entries=entries,
-				svc=svc, host=host, sid=sid, session=sess, cfg=config, 
-				output=sys.stdout, this_page='entr.py')
+				svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
+				parms=parms, output=sys.stdout, this_page='entr.py')
 	else:
 	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
 

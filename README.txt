@@ -185,6 +185,18 @@ install, local connections made with user "postgres" do
 not need a password, but your installation may require
 you to use a different username and password.
 
+Most command line programs supplied by Posgresql, such
+as psql, allow one to specify a user name but not a 
+password; the password will either be interactively 
+prompted for, or read from the user's ~/.pgpass [Note *1] 
+file.  Command line tools that are part of the JMdictDB 
+system generally allow a "-p" option for supplying a 
+password.  Using it on a multi-user machine is usually
+a bad idea since another user, using "ps" or other 
+such commands, can view it.  The safest way of supplying 
+passwords is to use a .pgpass file.  See [Note *2] for
+more info.
+
 The database is accessed by the JMdictDB system in three
 contexts:
  - When running the Makefile to install the JMdictDB 
@@ -200,41 +212,19 @@ The other targets create and load databases as user
 access to the databases and is for use by the cgi scripts
 and not further used by the Makefile.
 
-CGI scripts access the databases using the usernames defined
-in the "db_*" sections of the config.ini file.  These should
-match the usernames used in the Makefile (i.e. "jmdictdb", 
-and for sel_user, "jmdictdbv" if Makefile wasn't changed.) 
-
-Command line tools all accept an optional username option.
-
-
-
-
-
-
-
-
-
-All the Python tools that access the database accept 
-command line parameters that allow specifying a username,
-password, host machine, and database name (run any program
-with the option "--help" for details).  However specifying
-a username or password on the command line is a bad idea 
-because on many systems that information will be visible 
-to other users of the system.  For a better alternative 
-you can set up a .pgpass file.  In the Postgresql docs 
-see:
-  29.13, "The Password File"
-  29.1, "Database Connection Control Functions"
-and 
-  "Connecting To A Database" section of the psql docs.
-
-CGI scripts are run as the web server user and database
-login credentials are stored in the postgresql service
-file lib/pg_service.conf.  See the Postgresql docs
-29.1, "Database Connection Control Functions", and
-29.14, "The Connection Service File" for more information.
-The is an example file in lib/pg_service.sample.
+When CGI scripts access the database, they do so using 
+a username obtained from the file config.ini (in python/lib
+or the cgi lib/ directory.)  You need to create this file
+from the config.ini.sample file supplied.  The usernames
+in config.ini should match the usernames used by the 
+Makefile "init" target.
+Passwords for these usernames may also be supplied in the 
+config.ini file, but since the file must be readable by 
+the operating system user that the web server runs as, 
+you will want to limit read access to the file to only 
+the web server user.  Alternatively, you can install a 
+.pgpass file in the home directory of the web server user
+to provide the passwords.
 
 Editor Authentication
 ---------------------
@@ -276,24 +266,22 @@ loaded database to "jmdict".
    and "jmdictdbv".
 
 2. Copy the file python/lib/config.ini.sample to config.ini
-   in the same directory, edit it and change the passwords
-   in the db_jmdict, db_jmnew, and db_sess sections to match
-   what you choose in step 1.  
-   You may also want to adjust any other settings in the 
-   file to your needs.  Note that if you change some of the
-   settings, you may have to make corresponding changes in
-   other files as documented in the comments.
+   in the same directory.  Review it and make any changes
+   neccessary.  Uncomment and change the "pw" and "sel_pw" 
+   passwords in the "db_*" sections to the values chosen in
+   step (1) above if you wish to supply passwords via this
+   file (note warnings above.)  Otherwise create a .pgpass
+   file in the web server user's home directory.  The .pgpass
+   file should have two lines in it:
 
-3. Check the settings in Makefile.  There are some
-   configuration settings in the Makefile that you may
-   want to change.  Read the comments therein.  In 
-   particular, the cgi directory is assumed to be
-   ~/public_html/cgi-bin/.  You may wish to change that
-   if you will be using the cgi files.  There are also
-   some options for the Postgresql database server 
-   connections, including authentication settings.
+        localhost:*:*:jmdictdb:xxxxxx
+        localhost:*:*:jmdictdbv:xxxxxx
 
-4. When you run the Makefile in step 6 below, if there 
+   Change the "xxxxxx"s to match the passwords chosen in
+   step 1.  Permissions on the file must be 600 (rw-------) 
+   or Postgresql will ignore it.
+
+3. When you run the Makefile in step 6 below, if there 
    are passwords on the 'jmdictdb" and "postgres" accounts
    (or their equivalents if you've changed them in Makefile)
    and Postgresql does not know the passwords, you will be
@@ -303,15 +291,24 @@ loaded database to "jmdict".
    directory and add a line like:
 
         localhost:*:*:jmdictdb:xxxxxx
+	localhost:*:*:postgres:xxxxxx
 
-   Change the "xxxxxx" to match the jmdictdb password chosen
-   in step 1, change "jmdictdb" to the appropriate username 
-   if you've changed it in the Makefile, and if you changed
-   PG_HOST in the Makefile (to access a database server on 
-   a remote machine), change "localhost".
-
-   The .pgpass file must have permissions 600 (rw-------) or
+   Change the "xxxxxx"s to match the "jmdictdb" password
+   chosen in step 1, and the "postgres" user password.  If
+   PG_SUPER in the Makefile is changed (in next step) from
+   "postgres" to some other user, adjust the second line
+   above appropriately. 
+   Permissions on the file must be 600 (rw-------) or
    Postgresql will ignore it.
+
+4. Check the settings in Makefile.  There are some
+   configuration settings in the Makefile that you may
+   want to change.  Read the comments therein.  In 
+   particular, the cgi directory is assumed to be
+   ~/public_html/cgi-bin/.  You may wish to change that
+   if you will be using the cgi files.  There are also
+   some options for the Postgresql database server 
+   connections, including authentication settings.
 
 5. Set (or modify) the enviroment variable PYTHONPATH
    so that it contains an absolute path to the python/lib
@@ -325,10 +322,10 @@ loaded database to "jmdict".
 
         make init
 
-   to create the users/sessions database.  You should
-   then use psql or similar to manually add rows to 
-   table "users" for each editor.  "pw" is the user's
-   password.
+   to create the users/sessions database.  
+
+   Then, use psql or similar to manually add rows to table
+   "users" for each editor.  "pw" is the user's password.
 
 7. (Optional) In the top-level directory, run 
 
@@ -343,21 +340,21 @@ loaded database to "jmdict".
 
 8. In the top level directory, run "make" which won't
    do anything other than list the available targets 
-   that will do something.  
-
-   Generally, to load JMdict only, run make thrice with
-   the targets:
-
-	make newdb
-	make loadjm
-	make activate
+   that will do something.
 
    To load JMdict, JMnedict, and Examples, run:
 
 	make loadall
 	make activate
 
-   Somre of the more significant Makefile targets are:
+   To load JMdict only, run make thrice with the
+   targets:
+
+	make newdb
+	make loadjm
+	make activate
+
+   Some of the more significant Makefile targets are:
 
    newdb:
 	Create a new database named "jmnew" with all
@@ -463,6 +460,26 @@ loaded database to "jmdict".
    You should now be able to go to the url corresponding to 
    srchform.pl and do searches for jmdict entries.  The url
    corresponding to edform.pl will let you add new entries.
+
+Notes:
+
+[*1] 
+On Windows the Postgresql password file is typically in
+"C:\Documents and Settings\<your_windows_user_name>\ -
+  Application Data\Postgresql\pgpass.conf".  For obvious
+reasons we will refer simply to "~/.pgpass" in this document.
+
+[*2]
+For more information on usernames, passwords, and the .pgpass
+file, see the Postgresql docs:
+  30.13  Client Interfaces / libpq / The Password File
+  30.1   Client Interfaces / libpq / Database Connection -
+            Control Functions
+  21     Server Administration / Client Authentication
+  sec VI Refernece / Postgresql Client Applications / -
+            psql / Usage / Connecting to a Database
+Note that chapter numbers are Postgresql version dependent.  
+Numbers given are for Postgres version 8.3.5.
 
 ===
 EOF

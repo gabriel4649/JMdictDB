@@ -99,7 +99,7 @@ CGI_FILES = entr.py \
 WEB_CGI	= $(addprefix $(CGI_DIR)/,$(CGI_FILES))
 
 LIB_FILES = jdb.py \
-	config.cfg \
+	config.ini \
 	fmt.py \
 	fmtjel.py \
 	fmtxml.py \
@@ -112,6 +112,11 @@ LIB_FILES = jdb.py \
 	tal.py \
 	xmlkw.py
 WEB_LIB	= $(addprefix $(LIB_DIR)/,$(LIB_FILES))
+
+PYLIB_FILES = __init__.py \
+	config.py \
+	odict.py
+WEB_PYLIB = $(addprefix $(LIB_DIR)/pylib/,$(PYLIB_FILES))
 
 TAL_FILES = entr.tal \
 	edconf.tal \
@@ -157,7 +162,7 @@ init:
 	-createuser $(PG_HOST) -U $(PG_SUPER) -SDRP $(USER)
 	-createuser $(PG_HOST) -U $(PG_SUPER) -SDRP $(RO_USER)
 	# Don't automatically drop old session database due to risk 
-	# of loosing important user logins and passwords.
+	# of unintentionally loosing user logins and passwords.
 	#psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'drop database if exists $(DBOLD)'
 	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'create database jmsess'
 	cd pg && psql $(PG_HOST) -U $(USER) -d jmsess -f mksess.sql
@@ -288,7 +293,7 @@ loadall: newdb data/jmdict.dmp data/jmnedict.pgi data/examples.pgi
 
 #------ Move cgi files to web server location --------------------------
 
-web:	webcgi weblib webtal webcss
+web:	webcgi weblib webpylib webtal webcss
 
 webcss: $(WEB_CSS)
 $(WEB_CSS): $(CSS_DIR)/%: web/%
@@ -300,6 +305,10 @@ $(WEB_CGI): $(CGI_DIR)/%: web/cgi/%
 
 weblib: $(WEB_LIB)
 $(WEB_LIB): $(LIB_DIR)/%: python/lib/%
+	cp -p $? $@
+
+webpylib: $(WEB_PYLIB)
+$(WEB_PYLIB): $(LIB_DIR)/pylib/%: python/lib/pylib/%
 	cp -p $? $@
 
 webtal: $(WEB_TAL)

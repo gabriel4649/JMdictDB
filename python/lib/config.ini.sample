@@ -50,7 +50,7 @@ ENABLE_SQL_SEARCH = editors
   # can be used, but users of the Advanced Search page will get
   # an error if they try to use it.
 
-MAX_QUERY_COST = 20000000
+MAX_QUERY_COST = 2000000
   # Do not run any search query in web/cgi/srchres.py that has a
   # cost (as reported by Postgresql's EXPLAIN command) greater
   # than this number.
@@ -81,22 +81,23 @@ MAX_QUERY_COST = 20000000
 ;host = localhost
 dbname = jmsess
 user = jmdictdb
-pw = xxxxxx
+;pw = xxxxxx
 
 [db_jmdict]
 ;host = localhost
 dbname = jmdict
 sel_user = jmdictdbv
-sel_pw = jmdict
+;sel_pw = xxxxxx
 user = jmdictdb
-pw = xxxxxx
+;pw = xxxxxx
 session_db = db_session
 
 [db_jmnew]
 ;host = localhost
 dbname = jmnew
 sel_user = jmdictdbv
-sel_pw = jmdict
+;sel_pw = xxxxxx
 user = jmdictdb	
 pw = xxxxxx
 session_db = db_session
+

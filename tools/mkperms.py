@@ -39,7 +39,7 @@ def main (args, opts):
 	for filename in args:
 	    tables.extend (extract_object_names (filename))
 	tlist = ','.join (tables)
-	print "GRANT ALL ON %s TO jmdictdb;" % tlist
+	print "GRANT ALL ON %s TO jmdictdb;"     % tlist
 	print "GRANT SELECT ON %s TO jmdictdbv;" % tlist
 
 def extract_object_names (filename):

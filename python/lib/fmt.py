@@ -45,7 +45,7 @@ def entr (entr):
 	emap = {} #dict ([(x.eid, x) for x in entr._erefs])
 
 	for n, s in enumerate (getattr (entr, '_sens', [])):
-	    fmt += "\n%s" % sens (s, kanjs, rdngs, n+1)
+	    fmt += "\n%s" % sens (s, kanjs, rdngs, n+1, entr.src)
 
 	grpstxt = grps (entr)
 	if grpstxt: fmt += '\n' + grpstxt
@@ -90,7 +90,7 @@ def rdng (r, k, n=None):
 	if kwds: kwds = "[" + kwds + "]"
 	return "%s.%s%s%s" % (r.rdng, r.txt, restr, kwds)
 
-def sens (s, kanj, rdng, n=None):
+def sens (s, kanj, rdng, n=None, entrcorp=None):
 	KW = jdb.KW
 	  # Part-of-speech, misc keywords, field...
 	pos = ",".join([KW.POS[p.kw].kw for p in getattr (s,'_pos',[])])
@@ -122,11 +122,11 @@ def sens (s, kanj, rdng, n=None):
 	  # Forward Cross-refs.
 	    
 	if hasattr(s, '_xref'): 
-	    fmt += xrefs (s._xref, "Cross references:")
+	    fmt += xrefs (s._xref, "Cross references:", False, entrcorp)
 
 	  # Reverse Cross-refs.
 	if hasattr(s, '_xrer'): 
-	    fmt += xrefs (s._xrer, "Reverse references:", True)
+	    fmt += xrefs (s._xrer, "Reverse references:", True, entrcorp)
 
 	  # Unresolved Cross-refs.
 	if hasattr (s, '_xrslv'):
@@ -156,11 +156,11 @@ def lsrc (x):
 	fmt = lang + f + colon + x.txt
 	return fmt
 
-def xrefs (xrefs, sep=None, rev=False):
+def xrefs (xrefs, sep=None, rev=False, entrcorp=None):
 	fmtstr = '';  sep_done = False
 	for x in xrefs:
 
-	    txt = xref (x, rev)
+	    txt = xref (x, rev, entrcorp)
 	    if txt is None: continue
 
 	      # Print a separator line, the first time round the loop.
@@ -177,25 +177,29 @@ def xrefs (xrefs, sep=None, rev=False):
 	    fmtstr += '\n    %s' % txt
 	return fmtstr
 
-def xref (xref, rev=False):
+def xref (xref, rev=False, entrcorp=None):
 	KW = jdb.KW
 	if not getattr (xref, 'SEQ', True): return None
 	if rev: eattr,sattr = 'entr','sens'
 	else: eattr,sattr = 'xentr','xsens'
-	v = [str(getattr (xref, eattr))]
+	eidtxt = str(getattr (xref, eattr))
 	snum = getattr (xref, sattr)
 	stxt = '[' + str(snum) + ']'
-	glosses = ''
+	glosses = '';  kr = []; seq = ''; corp = None
 	targ = getattr (xref, 'TARG', None)
 	if targ:
+	    seqtxt = str (targ.seq)
+	    corp = targ.src
 	    i = getattr (xref, 'kanj', None)
-	    if i: v.append (targ._kanj[i-1].txt)
+	    if i: kr.append (targ._kanj[i-1].txt)
 	    i = getattr (xref, 'rdng', None)
-	    if i: v.append (targ._rdng[i-1].txt)
+	    if i: kr.append (targ._rdng[i-1].txt)
 	    if len(targ._sens) == 1: stxt = ''
 	    glosses = ' ' + '; '.join([x.txt for x in targ._sens[snum-1]._gloss])
 	t = (KW.XREF[xref.typ].kw).capitalize() + ': '
-	return t + '/'.join(v) + stxt + glosses
+	corp = '' if entrcorp == corp else (KW.SRC[corp].kw + ' ')
+	enum = "%s%s[%s] " % (corp, seqtxt, eidtxt)
+	return t + enum + u'\u30fb'.join(kr) + stxt + glosses
 
 def xrslvs (xr, sep=None):
 	fmtstr = '';  sep_done = False

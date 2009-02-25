@@ -92,6 +92,15 @@ user = jmdictdb
 ;pw = xxxxxx
 session_db = db_session
 
+[db_jmtest]
+;host = localhost
+dbname = jmtest
+sel_user = jmdictdbv
+;sel_pw = xxxxxx
+user = jmdictdb	
+pw = xxxxxx
+session_db = db_session
+
 [db_jmnew]
 ;host = localhost
 dbname = jmnew

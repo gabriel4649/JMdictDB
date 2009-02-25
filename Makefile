@@ -42,6 +42,9 @@ DBACT = jmdict
 # created database is moved to production status...
 DBOLD = jmold
 
+# Name of database used for general testing and experimentation.
+DBTEST = jmtest
+
 # Postgresql user that will be used to create the jmdictdb
 # tables and other objects.  Users defined in the
 # python/lib/config.ini file should match.
@@ -176,7 +179,7 @@ newdb:
 	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c "create database $(DB) owner $(USER) encoding 'utf8'"
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f reload.sql
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
-
+#
 #------ Move installation database to active ----------------------------
 
 activate:
@@ -184,6 +187,13 @@ activate:
 	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'drop database if exists $(DBOLD)'
 	-psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'alter database $(DBACT) rename to $(DBOLD)'
 	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'alter database $(DB) rename to $(DBACT)'
+
+#------ Move installation database to test ------------------------------
+
+activate_test:
+	psql $(PG_HOST) -U $(PG_SUPER) -d $(DB) -c 'SELECT 1' >/dev/null # Check existance.
+	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'drop database if exists $(DBTEST)'
+	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'alter database $(DB) rename to $(DBTEST)'
 
 #------ Load JMdict -----------------------------------------------------
 

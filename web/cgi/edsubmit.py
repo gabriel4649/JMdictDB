@@ -125,12 +125,12 @@
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
-import sys, cgi, datetime, cgitb
+import sys, cgi, datetime
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
+import cgitbx; cgitbx.enable()
 import jdb, jmcgi, fmtxml, serialize
 
 def main( args, opts ):
-	cgitb.enable()
 	errs = []
 	try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]

@@ -99,6 +99,7 @@ CGI_FILES = entr.py \
 WEB_CGI	= $(addprefix $(CGI_DIR)/,$(CGI_FILES))
 
 LIB_FILES = jdb.py \
+	cgitbx.py \
 	config.ini \
 	fmt.py \
 	fmtjel.py \

@@ -23,13 +23,14 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
+import cgitbx; cgitbx.enable()
 import jdb, jmcgi
 
 def main (args, opts):
 	form = cgi.FieldStorage()
-	svc = jmcgi.safe (form.getvalue ('svc'))
-	cur = jmcgi.dbOpenSvc (svc)
-	cur.close()
+	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+	except Exception, e: 
+	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=[str (e)])
 	kwlist = []; kwhash = {}
 	for t in 'RINF KINF FREQ MISC POS FLD DIAL LANG GINF SRC STAT XREF'.split():
 	    kw = jdb.KW.recs (t)

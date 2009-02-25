@@ -23,6 +23,7 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
+import cgitbx; cgitbx.enable()
 import jdb, jmcgi
 
 def main (args, opts):

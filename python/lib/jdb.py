@@ -36,18 +36,54 @@ Debug = {}
 class AuthError (Exception): pass
 
 def dbread (cur, sql, args=None, cols=None, cls=None):
-	if args == []: args = None
+	# Execute a result returning sql statement(s) and return the 
+	# result set as a list of 'cls' object, one object per row.
+	#
+	# cur -- Open DBAPI cursor object.
+	# args -- (optional) A list of args corresponding to parameter 
+	#	markers in the sql statement.  May be omitted, None, or
+	#	an empty sequence if 'sql' contains no pmarks.
+	# cols -- (optional) A list of column names to be used for each
+	# 	column of the results set.  If not given, the dbapi will
+	#       be queried from the column names.
+	# cls -- (optional) A class that will be used for row objects.
+	#	Must be a clas, not a factory function.  If not given,
+	#	DbRow will be used.
+
+	  # If there are no args, set args (which might be [], or ())
+	  # to None to avoid bug in psycopg2 (at least version 2.0.7)
+	  # Specifically, if 'sql' contains a sql wildcard character,
+	  # '%', the psycopg2 DBAPI will interpret it as a partial
+	  # parameter marker (it uses "%s" as the parameter marker)
+	  # and will fail with an IndexError exception if sql_args is 
+	  # an empty list or tuple rather than 'None'.  
+	  # See: http://www.nabble.com/DB-API-corner-case-(psycopg2)-td18774677.html
+	if not args: args = None
+	  # Execute the sql in a try statement to catch any errors.
 	try: cur.execute (sql, args)
-	except StandardError, e:
+	except dbapi.Error, e:
+	      # If the execute failed, append the sql and args to the
+	      # error message.
 	    msg = e.args[0] if len(e.args) > 0 else ''
 	    msg += "\nSQL: %s\nArgs: %r" % (sql, args)
-	    e.args = [msg] + list(args[1:])
-	    raise e
+	    e.args = [msg] + list(e.args[1:])
+	      # If a rollback is not done, all subsequent operations on this
+	      # cursor's connection will (with the psycopg2 DBAPI) result
+	      # in a InternalError("current transaction is aborted, commands
+	      # ignored until end of transaction block\n") error.
+	      # Catch any errors from this operation to prevent them from
+	      # being raised, rather than the original error.
+	    try: cur.execute ("ROLLBACK")
+	    except dbi.Error: pass
+	    raise	# Re-raise the original error.
+	  # If not given column name by the caller, get them from the cursor.
 	if not cols: cols = [x[0] for x in cur.description]
 	v = []
 	for r in cur.fetchall ():
+	      # For each row, create a generic DbRow object...
 	    x = DbRow (r, cols)
-	    # FIXME: is there a cleaner way?...
+	      # ...and coerce it to the desired type.
+	      # FIXME: is there a cleaner way?...
 	    if cls: x.__class__ = cls
 	    v.append (x)
 	return v
@@ -1708,23 +1744,37 @@ class Kwds:
 	  # cursor, or None.  If a string, assume the former.
 	if isinstance (cursor_or_dirname, (str, unicode)):
 	    files = self.loadcsv (cursor_or_dirname)
-	    if len (files) == 0: raise IOError ("No jmdictdb csv files found.")
+	    if len (failed) > 0: 
+		raise IOError ("Failed to load kw tables: %s" 
+				% ','.join(failed))
 
 	  # If not None, must be a database cursor.
 	elif cursor_or_dirname is not None:
-	    self.loaddb (cursor_or_dirname)
+	    failed = self.loaddb (cursor_or_dirname)
+	    if len (failed) > 0: 
+		raise IOError ("Failed to load kw tables: %s"
+				% ','.join(failed))
+
 	  # Otherwise it is None, and nothing else need be done.
 
     def loaddb( self, cursor, tables=None ):
 	# Load instance from database kw* tables.
 
+	failed = []
 	if tables is None: tables = self.Tables
 	for attr,table in tables.items():
 	      # For item in Tables is a attribute name, database table
 	      # name pair.  Read the table from the database and use 
 	      # method .add() to store the records in attribute 'attr'.
-	    recs = dbread (cursor, "SELECT * FROM %s" % table, ())
-	    for record in recs:	self.add (attr, record)
+	      # If there is a exception (typically because the table
+	      # does not exist or is not readable due to permissions)
+	      # catcj it and add the table name to the 'failed' list. 
+	    try: recs = dbread (cursor, "SELECT * FROM %s" % table, ())
+	    except dbapi.ProgrammingError, e: 
+		failed.append (table)
+	    else: 
+		for record in recs: self.add (attr, record)
+	return failed
 
     def loadcsv( self, dirname=None, tables=None ):
 	# Load instance from the csv files in directory 'dirname'.
@@ -1735,11 +1785,12 @@ class Kwds:
 	if tables is None: tables = self.Tables
 	if dirname[-1] != '/' and dirname[-1] != '\\' and len(dirname) > 1:
             dirname += '/'
-	files = []
+	failed = []
 	for attr,table in tables.items():
 	    fname = dirname + table + ".csv"
 	    try: f = open (fname)
-	    except IOError: continue
+	    except IOError: 
+		failed.append (table); continue
 	    for ln in f:
 		if re.match (r'\s*(#.*)?$', ln): continue
 		fields = ln.rstrip('\n\r').split ("\t")
@@ -1747,8 +1798,7 @@ class Kwds:
 		fields[0] = int (fields[0])
 		self.add (attr, fields)
 	    f.close()
-	    files.append (fname)
-	return files
+	return failed
 
     def add( self, attr, row ):
 	# Add the row object to the set of rows in the dict in 
@@ -2040,10 +2090,11 @@ def dbOpen (dbname_, **kwds):
 	  # tables don't exist (e.g. for testing or in tools that will
 	  # create the database)` ignore the error that will result
 	  # when Kwds.__init_() tries to read non-existent tables.
+
+	  # FIXME? Make nokw the default?
 	if not nokw:
 	    global KW
-	    try: KW = Kwds (conn.cursor())
-	    except dbapi.ProgrammingError: conn.rollback()
+	    KW = Kwds (conn.cursor())
 
 	return conn.cursor()
 

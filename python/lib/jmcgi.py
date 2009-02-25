@@ -51,7 +51,7 @@ def parseform (readonly=False):
 	host = jdb._extract_hostname (cur.connection)
 
 	sid, logout = form.getfirst ('sid'), form.getfirst ('logout')
-	sess_cur = jdb.dbOpenSvc (cfg, svc, session=True)
+	sess_cur = jdb.dbOpenSvc (cfg, svc, session=True, nokw=True)
 	sess = getsession (sess_cur, sid, logout=logout)
 	if logout: sid, session = '', None
 	if form.getfirst('username'):

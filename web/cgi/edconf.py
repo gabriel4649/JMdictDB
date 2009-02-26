@@ -42,7 +42,10 @@ def main (args, opts):
 	    pentr = jdb.entrList (cur, None, [eid])
 	      # FIXME: Need a better message with more explanation.
 	    if not pentr: errs.append ("The entry you are editing has been deleted.")
-	    else: pentr = pentr[0]
+	    else: 
+		pentr = pentr[0]
+		xrefs = jdb.collect_xrefs ([pentr])
+		if xrefs: jdb.augment_xrefs (cur, xrefs)
 
 	  # Desired disposition: 'a':approve, 'r':reject, undef:submit.
 	disp = url_str ('disp', form)

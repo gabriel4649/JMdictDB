@@ -909,6 +909,20 @@ def print_freqs (fmap): # For debugging...
 	# target senses.  The api function jdb.resolv_xrefs() can be
 	# used to turn unresolved xrefs into ordinary xrefs.
 
+def collect_xrefs (entrs, rev=False):
+	# Given a list of Entr objects, 'entrs', collect all the
+	# Xref's on their Sens' _xref lists (or _xrer if 'rev' is 
+	# true) into a single list which is returned, typically so
+	# the caller can call augment_xrefs() on them.
+	# (The _xref or _xrer lists are not changed.)
+
+	attr = '_xrer' if rev else '_xref'
+	xrefs = []
+	for e in entrs:
+	   for s in getattr (e, '_sens', []):
+		xrefs.extend (getattr (s, attr, []))
+	return xrefs
+
 def augment_xrefs (dbh, xrefs, rev=False):
 	# Augment a set of xrefs with extra information about the 
 	# xrefs' targets.  After augment_xrefs() returns, each xref

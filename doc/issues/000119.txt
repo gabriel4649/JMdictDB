@@ -1,6 +1,6 @@
 Title:	Make jelparse.py create temp files in temp dir
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	bug
 Reqtrs:	
@@ -25,3 +25,13 @@ AssdTo:
   Need to figure out how to tell Ply to create them in
   some fixed, out-of-the-way place.
   The files are parsetab.py and .pyc.
+
+2009-02-26 11:00:00 stuart
+  This was done in changeset e103bcff8f6a 2009-02-02 by 
+  writing a script to generate the parsetab file (tools/
+  gen_parsetab.py), and doing that in the python/lib/Makefile.
+  The parsetab file is now named python/lib/jelparse_tab.py
+  and is managed under Mercurial.  The main Makefile "web"
+  target copies it to the cgi lib directory.  All of this 
+  together should prevent Ply from needing to regenerate it
+  at runtime.

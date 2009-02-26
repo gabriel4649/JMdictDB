@@ -1,0 +1,17 @@
+Title:	Edict import
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2009-02-26 11:23:00 stuart
+  Edict2 import capability would be very handy for doing
+  bulk data import.  jwb also requested this, see email 
+  "Re jmdictdb progress", 2009-02-23 and 2009-02-24.
+
+2009-02-26 11:24:00 stuart
+  Have already started this a few months ago and have some
+  basic code and tests.
+

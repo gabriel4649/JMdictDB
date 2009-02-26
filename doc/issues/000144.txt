@@ -33,4 +33,54 @@ AssdTo:
   and in jdb and objects modules, also in fmt, fmtxml, and jmxml.
   entr, edconf for
   No support in fmtjel, or jelparse yet.
- 
+
+2009-02-05 01:31:00 stuart
+  For future reference, here is how I added groups for my personally
+  collected extra corpuses.  Plan is to generate a group for each
+  (src,srcnote) pair.  (Need src in there because some srcnotes,
+  e.g. "undefined" occurs in entries from more than one src.)
+  Temporarily add a 'src' column to 'kwgrp' table to allow this,
+  and then remove it when done.  We also require at least two 
+  entries with the same non-null srcnote to make a group.  After
+  groups added, will manually go through and delete groups that
+  really shouldn't be. 
+  I had previously added groups for my Minna no Nihongo vocab collection
+  (src=115) in kwgrp id's 1-50, hence that range is excluded below.
+  
+  -- Add kwgrp records.
+  DELETE FROM kwgrp WHERE id>50;
+  ALTER SEQUENCE kwgrp_id_seq START 51;
+  ALTER TABLE kwgrp ADD COLUMN src INT;
+
+  INSERT INTO kwgrp(src,descr,kw) 
+    (SELECT src,srcnote, 'x'||MIN(id)  -- Generate a meaningless name.
+    FROM entr e 
+    WHERE srcnote IS NOT NULL AND src>99 AND src!=115
+    GROUP BY src,srcnote
+    HAVING COUNT(*)>1  -- Only if there are 2+ entries w/same srcnote.
+    ORDER BY src,srcnote)
+
+  -- Add grp records...
+  CREATE SEQUENCE xx START 1;
+  INSERT INTO grp(entr,kw,ord)
+    (SELECT entr, kw, NEXTVAL('xx')
+    FROM
+      (SELECT e.id AS entr, k.id AS kw
+      FROM entr e 
+      JOIN kwgrp k ON k.descr=e.srcnote AND k.src=e.src
+      ORDER BY e.id) z);
+
+  DROP SEQUENCE xx;
+  ALTER TABLE kwgrp DROP COLUMN src.
+
+  -- The grp.ord numbers are sequential across all the rows in the 
+  -- grp table (having come from the same sequence).  Renumber them
+  -- so they are sequential from 1 within each group.
+
+  UPDATE grp SET ord=ord-m+1
+  FROM (
+    SELECT kw,MIN(ord) AS m
+    FROM grp 
+    GROUP BY kw) as z
+  WHERE z.kw=grp.kw
+

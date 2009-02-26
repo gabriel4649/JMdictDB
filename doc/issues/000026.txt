@@ -108,3 +108,21 @@ AssdTo:	stuart@friix.com
 
 2008-07-01 11:14:00 stuart
   Added tests for revised jdb.jstr_classify() function (IS-8).
+
+2009-02-26 08:34:00 stuart
+  From email to the jmdict list from Jim Breen, 2009-02-26:
+  >[...]
+  > I propose to state some rules for what can go
+  > in the "reading" fields. They are:
+  > 
+  > - kana
+  > - the kana-related specials: ー ヽ ヾ ゝ ゞ
+  > - ・
+  > - ～
+  > 
+  > All the others, such as double-width alphanumerics are invalid
+  > in readings, but can appear in the "kanji" part. Also, anything
+  > that fits that set above has to go in the reading part.
+  > 
+  > Thus for ＩＣカード, etc. it must be "ＩＣカード [アイシーカード]"
+  >[...]

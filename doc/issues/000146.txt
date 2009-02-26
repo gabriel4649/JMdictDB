@@ -1,0 +1,18 @@
+Title:	Edict export
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2009-02-26 11:25:00 stuart
+  Edict2/Edict export capability would be very handy for 
+  generating files for use in other systems since it is a 
+  widely used format.
+
+2009-02-26 11:26:00 stuart
+  In email "Re: jmdictdb progress", 2009-02-09 and 2009-02-24, Jim 
+  Breen mentions that he has some XSLT written by Jean-Luc Leger that
+  will transform jmdict xml into edict.  If that xslt is shareable, 
+  it might be the easiet way to generate edict format.

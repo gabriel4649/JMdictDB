@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!-- $Rev: 000000000000 $ $Date: 0000/00/00 00:00:00 $
 	This DTD is derived from the JMdict DTD version 1.07 (2009-01-21)
 	but is extended to allow for enhanced representational capabilities
@@ -40,7 +40,7 @@
 	 Added the re_nokanji element - Sep 2003.
      -->
 <!DOCTYPE JMdict [
-<!ELEMENT JMdict (corpdef|grpdef|entry)*>
+<!ELEMENT JMdict (corpus|grpdef|entry)*>
 <!--                                                                   -->
 <!ELEMENT corpus (co_name, co_descr?, co_date?, co_notes?, co_sname?, co_sinc?, co_smin?, co_smax?)>
 	<!-- Defines a corpus to which subsequent entries may belong. -->
@@ -65,11 +65,13 @@
 	general information and sense elements. Each entry must have at 
 	least one reading element and one sense element. Others are optional.
 	-->
-<!ATTLIST entr stat (N|A|D|R) "A">
-	<!-- Entry status, N:new, A:active, D:deleted, R:rejected. -->
-<!ATTLIST entr appr (y|n) "y">
+<!ATTLIST entry id CDATA #REQUIRED>
+        <!-- Entry id number. -->
+<!ATTLIST entry stat (N|A|D|R) "A">
+	<!-- Entry status, A:active, D:deleted, R:rejected. -->
+<!ATTLIST entry appr (y|n) "y">
 	<!-- Entry's approval status. -->
-<!ATTLIST entr dfrm CDATA #IMPLIED>
+<!ATTLIST entry dfrm CDATA #IMPLIED>
 	<!-- Entry's parent id number. -->
 
 <!ELEMENT ent_seq (#PCDATA)>
@@ -171,9 +173,9 @@
 <!ELEMENT audio (#PCDATA)>
 <!ATTLIST audio clipid CDATA #REQUIRED>
 	<!-- Audio clip the represents the entry or reading. -->
-<!ATTLIST audio db CDATA>
+<!ATTLIST audio db CDATA #IMPLIED>
 	<!-- Name of audio collection containing clip. -->
-<!ATTLIST audio dbver CDATA>
+<!ATTLIST audio dbver CDATA #IMPLIED>
 	<!-- Collection version number at and above containing clip. -->
 <!--                                                                   -->
 <!ELEMENT group (#PCDATA)>
@@ -436,4 +438,3 @@ various information fields.
 <!ENTITY vt "transitive verb">
 <!ENTITY vulg "vulgar expression or word">
 ]>
-

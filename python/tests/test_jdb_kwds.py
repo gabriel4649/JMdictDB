@@ -301,6 +301,21 @@ class Test_loadcsv (unittest.TestCase):
 	actual = [getattr (_.o, x) for x in attrs if "_" in x]
 	_.assertEqual (expected, actual)
 
+class Test_missing_csv (unittest.TestCase):
+    def test001 (_):
+	_.assertRaises (IOError, jdb.Kwds, 'data/kwds/empty')
+    def test002 (_):
+	o = jdb.Kwds()
+	expected = set (o.Tables.values()) - set (['kwginf', 'kwkinf'])
+	missing = o.loadcsv ('data/kwds')
+	_.assertEquals (expected, set (missing))
+    def test003 (_):
+	o = jdb.Kwds()
+	missing = o.loadcsv ('data/kwds/full')
+	_.assertEquals ([], missing)
+
+#FIXME: need Test_missing_db.
+
 class Test_loaddb (unittest.TestCase):
 
     def setUp (_):

@@ -168,20 +168,42 @@ def esc(s): #FIXME
 	else: return str(s)
 
 def str2seq (q):
+	# Convert 'q', a string of the form of either 'seq" or 
+	# "seq.corp", where "seq" is a string of digits representing
+	# a seq number, and "corp" is either a string of digits
+	# representing a corpus id number or the name of a corpus.
+	# The existence of the  corpus, if given, is validated in
+	# the KW.SRC dict.  The seq number is only validated as 
+	# being greater than 0.
+	# If sucessful, a 2-tuple of (seq-number, corpus-id) is 
+	# retuened, where 'corpus-id will be None if the first
+	# input string format was given.  Otherwise a ValueError
+	# exception is raised.
+	
 	KW = jdb.KW
-	a = q.split ('.')
-	try: n = int (a[0])
-	except (ValueError, IndexError): 
+	seq_part, x, corp_part = q.partition ('.')
+	try: seq = int (seq_part)
+	except (ValueError, TypeError): 
 	    raise ValueError("Invalid seq number '%s'." % (q,))
-	if n <= 0: raise ValueError("Invalid seq number '%s'." % (q,))
-	c = None
-	if len(a) > 1: 
-	    try: c = int (a[1])
-	    except ValueError:
-		try: c = KW.SRC[a[1]].id
-		except KeyError: raise ValueError("Invalid seq number '%s'." % (q,))
-	    if c <= 0: raise ValueError("Invalid seq number '%s'." % (q,))
-	return n, c
+	if seq <= 0: raise ValueError("Invalid seq number '%s'." % (q,))
+	corp = None
+	if corp_part:
+	    corp = corp2id (corp_part)
+	    if not corp: raise ValueError("Invalid corpus in '%s'." % (q,))
+	return seq, corp
+
+def corp2id (c):
+	# Convert 'c' which identifies a corpus and is either
+	# the corpus id number in integer or string form or 
+	# the name of a corpus, to the id number of the corpus.
+	# The existence id th corpus is validadedin the KW.SRC
+	# dict.
+
+	try: c = int (c)
+	except (ValueError, TypeError): pass
+	try: corpid = jdb.KW.SRC[c].id
+	except KeyError: return None
+	return corpid
 
 def str2eid (e):
 	n = int (e)
@@ -193,8 +215,37 @@ def safe (s):
 	if re.search (r'^[a-zA-Z_][a-zA-Z_0-9]*$', s): return s
 	raise ValueError ()
 
-def get_entrs (dbh, elist, qlist, errs):
-	eargs = []; qargs = []; whr = []
+def get_entrs (dbh, elist, qlist, errs, active=None, corpus=None):
+	# Retrieve a set of Entr objects from the database, specified
+	# by their entry id and/or seq numbers.
+	#
+	# dbh -- Open dbapi cursor to the current database.
+	# elist -- List of id numbers of entries to get.  Each number
+	#	may by either a integer or a string.
+	# qlist -- List of seq numbers of entries to get.  Each seq
+	#	number may be an integer or a string.  If the latter
+	#	it may be followed by a period, and a corpus identifier
+	#	which is either the corpus id number or the corpus name.
+	# errs -- Must be a list (or other append()able object) to 
+	#	which any error messages will be appended.
+	# active -- If True, only active/approved or new/(unapproved)
+	#	entries will be retrieved.  Otherwise all entries meeting
+	#	the entry-id, seq, or seq-corpus criteria will be 
+	#	retrieved.
+	# corpus -- If not none, this is a corpus id number or name 
+	#	and will apply to any seq numbers without an explicit 
+	#	corpus given with the number.
+	# 
+	# If the same entry is specified more than once in 'elist' and/or
+	# 'qlist' ir will only occur once in the returned object list.
+	# Objects in the returned list are in no particular order.
+	
+	eargs = []; qargs = []; xargs = []; whr = [];  corpid = None
+	if corpus is not None:
+	    corpid = corp2id (corpus)
+	    if corpid is None:
+		errs.append ("Bad corpus parameter: %s" % corpus)
+		return []
         for x in elist:
 	    try: eargs.append (str2eid (x))
 	    except ValueError:
@@ -202,18 +253,26 @@ def get_entrs (dbh, elist, qlist, errs):
         if eargs: whr.append ("id IN (" + ','.join(['%s']*len(eargs)) + ")")
 
         for x in qlist:
-	    try: args = str2seq (x)
+	    try: args = list (str2seq (x))
 	    except ValueError:
-                errs.append ("Bad url parameter received: " + esc(x))
-	    if args[1]:
-                whr.append ("(seq=%s AND src=%s)"); qargs.extend (args)
+                errs.append ("Bad parameter received: " + esc(x))
 	    else:
-		whr.append ("seq=%s"); qargs.append (args[0])
+		if corpus and not args[1]: args[1] = corpid
+		if args[1]:
+                    whr.append ("(seq=%s AND src=%s)"); qargs.extend (args)
+		else:
+		    whr.append ("seq=%s"); qargs.append (args[0])
         if not whr: errs.append ("No valid entry or seq numbers given.")
-        if errs: return None 
+        if errs: return None
+	whr2 = ''
+	if active: 
+	      # Following will restrict returned rows to active/approved
+	      # or new (stat=A, dfrm=NULL).
+	    whr2 = " AND stat=%s AND (NOT unap OR dfrm IS NULL)"
+	    xargs.append (jdb.KW.STAT['A'].id)
 
-        sql = "SELECT e.id FROM entr e WHERE " + " OR ".join (whr)
-        entries, raw = jdb.entrList (dbh, sql, eargs + qargs, ret_tuple=True)
+        sql = "SELECT e.id FROM entr e WHERE (" + " OR ".join (whr) + ")" + whr2
+        entries, raw = jdb.entrList (dbh, sql, eargs+qargs+xargs, ret_tuple=True)
         if entries: 
 	    jdb.augment_xrefs (dbh, raw['xref'])
 	    jdb.augment_xrefs (dbh, raw['xrer'], rev=1)

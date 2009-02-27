@@ -1,4 +1,4 @@
-Title:	merge page
+Title:	Merge page
 Stat:	open
 Disp:	
 Prio:	med
@@ -38,3 +38,7 @@ AssdTo:	stuart
   Alternatively, a dedicated "merge" edit form could be written
   that behaves the same wway, but has the input boxes for each
   entry side-by-side.
+
+2009-02-26 15:52:00 stuart
+  Edform.py/edform.tal will now display multiple entries for 
+  edit, if that helps.

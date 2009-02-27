@@ -15,6 +15,10 @@
   <div metal:use-macro="macros/macros/login">
     <h1 metal:fill-slot="title">JMdictDB Entries</h1>
     </div>
+  <div class="entry" tal:condition="not:entries"> 
+     We're sorry, but the entry(s) you requested are not (or are no longer)
+     available in the database.
+     </div>
   <span tal:repeat="e entries" tal:omit-tag="">
     <div class="entry">
       <span tal:replace="python:TALabbr('SRC',e.src)">src</span>

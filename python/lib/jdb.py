@@ -1751,25 +1751,26 @@ class Kwds:
 
 	  # Add a set of standard attributes to this instance and
 	  # initialize each to an empty dict.
+	failed = []
 	for attr,table in self.Tables.items():
 	    setattr (self, attr, dict())
 
 	  # 'cursor_or_dirname' may by a directory name, a database
 	  # cursor, or None.  If a string, assume the former.
 	if isinstance (cursor_or_dirname, (str, unicode)):
-	    files = self.loadcsv (cursor_or_dirname)
-	    if len (failed) > 0: 
-		raise IOError ("Failed to load kw tables: %s" 
-				% ','.join(failed))
+	    failed = self.loadcsv (cursor_or_dirname)
 
 	  # If not None, must be a database cursor.
 	elif cursor_or_dirname is not None:
 	    failed = self.loaddb (cursor_or_dirname)
-	    if len (failed) > 0: 
-		raise IOError ("Failed to load kw tables: %s"
-				% ','.join(failed))
+	
+	if len (failed) >= len (self.Tables): 
+	      # Raise error if no tables were loaded.
+	    raise IOError ("Failed to load kw tables: %s"
+			   % ','.join(failed))
 
-	  # Otherwise it is None, and nothing else need be done.
+	  # Otherwise 'cursor_or_dirname' is None, and we won't 
+	  # load anything, just return the empty instance.
 
     def loaddb( self, cursor, tables=None ):
 	# Load instance from database kw* tables.

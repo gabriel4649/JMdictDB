@@ -22,7 +22,7 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, logging, StringIO, copy, re
 from simpletal import simpleTAL, simpleTALES
-import jdb
+import jdb, fmtjel
 
 logging.basicConfig (level=logging.WARNING, stream=sys.stderr)
 
@@ -130,6 +130,15 @@ def TALkrtxt (parent,attr,idx):
 	x = getattr(parent,attr,None)
 	if not x or idx is None: return ''
 	return x[idx-1].txt
+
+@add2builtins
+def TALfmtjel (entr,what):
+	  # Item is _kanj, _rdng, or _sens list.  Return a jel formatted
+	  # string for the item.  
+	if   what=='s': return fmtjel.senss (getattr(entr,'_sens',[]), getattr(entr,'_kanj',[]), getattr(entr,'_rdng',[]))
+	elif what=='r': return fmtjel.rdngs (getattr(entr,'_rdng',[]), getattr(entr,'_kanj',[]))
+	elif what=='k': return fmtjel.kanjs (getattr(entr,'_kanj',[]))
+	else: raise ValueError ("Invalid 'what' value: %s" % what)
 
 @add2builtins
 def TALdecode (arg, *args):

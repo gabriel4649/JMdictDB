@@ -1,6 +1,4 @@
 <html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
-<!--? Copyright (c) 2008 Stuart McGraw -->
-<!--? $Revision$ $Date$ -->
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
@@ -10,76 +8,196 @@
   <div metal:use-macro="macros/macros/login">
     <h1 metal:fill-slot="title">JMdictDB Entry Edit Form</h1>
     </div>
-<form action="edconf.py" name="edconf" tal:attributes="method method">
-  <table class="form">
-    <tbody>
-      <tr>
-        <td>
-        <table class="top">
-          <tbody>
+  <span tal:repeat="e entrs" tal:omit-tag="">
+    <!--? 
+    If an entry does not have an id number, is is treated as a new entry.
+    It can have other info such as a sense element with PoS list, which
+    will set the default text in the appropriate fields.
+    -->
+    <form action="edconf.py" name="edconf" tal:attributes="method method">
+      <table class="form">
+	<tbody>
+	  <tr>
+	    <td colspan="3">
+	      Use this form to suggest new JMdictDB entries or changes to existing 
+	      entries.  For detailed help on the info required in the various fields, 
+	      please use the "help" links beside each field, or view the
+	      <a href="edhelp.py"> full help file here</a>.
+	      <p/>
+	      </td>
+	    </tr>
+
+	  <tr>
+	    <td> </td>
+	    <td>
+
+	      <!-- Entry block -->
+	      <table width="100%">
+
+		<tr tal:condition="not:e/id">
+		  <td colspan="4">New Entry</td></tr>
+
+		<tr tal:condition="e/id">
+		  <td colspan="2">Status: 
+		    <span tal:condition="e/stat" tal:replace="python:TALdescr('STAT',e.stat)">status</span>
+		    <span tal:condition="e/unap" class="pend">(Unapproved)</span>
+		    </td>
+		  <td colspan="2">Id:
+		    <span tal:condition="e/id" tal:replace="e/id">id</span>
+		    <span tal:condition="e/dfrm">(parent:
+		      <span tal:condition="e/dfrm" tal:omit-tag=""> 
+			<a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${e/dfrm}" tal:content="e/dfrm"/>
+			</span>)
+		      </span>
+		    </td>
+		  </tr>
+		<tr tal:condition="e/id">
+		  <td colspan="2">Corpus:
+		    <span tal:condition="e/src" tal:content="python:TALabbr('SRC',e.src)">src</span>
+		    </td>
+		  <td>Seq:
+		    <a tal:condition="e/seq" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;q=${e/seq}.${e/src}" tal:content="e/seq">seq#</a>
+		    </td>
+		  </tr>
+		<tr tal:condition="e/srcnote">
+		  <td>Src note: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#srcnote">help</a></td>
+		  <td colspan="4" tal:content="e/srcnote">src note</td>
+		  </tr>
+		<tr tal:condition="e/notes">
+		  <td>Entr note: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#entrnote">help</a></td>
+		  <td colspan="4" tal:content="e/notes">entr note</td>
+		  </tr>
+		</table>
+
+	      </td>
+	    </tr>
+
+	  <tr tal:condition="not:e/id">
+	    <td>Corpus: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#corpus">help</a></td>
+	    <td colspan="2">
+	      <!-- #1 src parameter when new entry and user is editor (or non-ed w corp option). -->
+	      <select name="src" tal:condition="python:not e.NOCORPOPT or is_editor or not e.src">
+		<option tal:condition="not:e/src" tal:attributes="name string:src;value string:0" tal:content=" "/>
+		<span tal:repeat="s srcs" tal:omit-tag="">
+		  <span tal:omit-tag="">
+		    <option name="src" tal:condition="python:s.id==e.src" selected="1" tal:attributes="value s/id" tal:content="s/kw"/>
+		    <option name="src" tal:condition="python:s.id!=e.src"              tal:attributes="value s/id" tal:content="s/kw"/>
+		    </span>
+		  </span>
+		</select>
+	      <span tal:condition="python:not(not e.NOCORPOPT or is_editor or not e.src)" tal:omit-tag="">
+		<span tal:replace="python:TALabbr('SRC',e.src)">corpus</span>
+		<!-- #2 src parameter when new entry and user is not editor w/o corp option. -->
+		<input type="hidden" name="src" tal:attributes="value e/src"/>
+		</span>
+	      </td>
+	    </tr>
+	  <tr>
+	    <td>Kanji: <br/><a class="helplink" target="edhelp" href="edhelp.py#kanji">help</a></td>
+	    <td><textarea tal:content="python:TALfmtjel(e,'k')" name="kanj" wrap="physical" cols="60" rows="3"></textarea></td>
+	    <td>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_kinf">kinf</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_freq">freq</a> 
+	      </td></tr>
+	  <tr>
+	    <td>Readings: <br/><a class="helplink" target="edhelp" href="edhelp.py#readings">help</a></td>
+	    <td><textarea tal:content="python:TALfmtjel(e,'r')" name="rdng" wrap="physical" cols="60" rows="3"></textarea></td>
+	    <td>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_rinf">rinf</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_freq">freq</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#syn_restr">restr</a>
+	      </td></tr>
+	  <tr>
+	    <td>Senses: <br/><a class="helplink" target="edhelp" href="edhelp.py#senses">help</a></td>
+	    <td><textarea tal:content="python:TALfmtjel(e,'s')" name="sens" wrap="physical" cols="60" rows="8"></textarea></td>
+	    <td>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_pos">pos</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_misc">misc</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_fld">fld</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_dial">dial</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#syn_lsrc">lsrc</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#syn_ginf">ginf</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#syn_restr">restr</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#syn_xref">xref</a><br/>
+	      </td></tr>
+	  <tr tal:condition="e/id">
+	    <td> </td>
+	    <td><input type="checkbox" name="delete" tal:attributes="checked e.ISDELETE"/> This entry should be deleted.  (Please justify in Comments and References boxes.)
+	      &nbsp; <a class="helplink" target="edhelp" href="edhelp.py#delete">help</a>
+	      </td>
+	    <td></td>
+	    </tr>
+	  <tr tal:condition="0"><!-- disabled for now, see IS-143. -->
+	    <td> </td>
+	    <td><input type="checkbox" name="makecopy" tal:attributes="checked makecopy"/> Treat as new entry.
+	      &nbsp; <a class="helplink" target="edhelp" href="edhelp.py#makecopy">help</a>
+	      </td>
+	    <td></td>
+	    </tr>
+	  <tr>
+	    <td>Comments: <br/><a class="helplink" target="edhelp" href="edhelp.py#comments">help</a></td>
+	    <td><textarea name="comment" wrap="physical" cols="60" rows="3"></textarea></td>
+	    <td></td>
+	    </tr>
+	  <tr>
+	    <td>References: <br/><a class="helplink" target="edhelp" href="edhelp.py#references">help</a></td>
+	    <td><textarea name="reference" wrap="physical" cols="60" rows="3"></textarea></td>
+	    <td></td>
+	    </tr>
+	  <tr>
+	    <td>Name: <a class="helplink" target="edhelp" href="edhelp.py#name">help</a></td>
+	    <td><input type="text" name="name" size="30" tal:attributes="value session/fullname"/></td>
+	    <td></td>
+	    </tr>
+	  <tr>
+	    <td>Email: <a class="helplink" target="edhelp" href="edhelp.py#email">help</a></td>
+	    <td><input type="text" name="email" size="30" tal:attributes="value session/email"/></td>
+	    <td></td>
+	    </tr>
+	  <tr>
+	    <td></td>
+	    <td>
+	      <input type="submit" value=" Next "/> &nbsp;
+	      <span tal:condition="is_editor" tal:omit-tag="">
+		&nbsp;&nbsp;
+		Action: <select name="disp">
+		  <option name="disp" value="" selected="1">Submit</option>
+		  <option name="disp" value="a">Approve</option>
+		  <option name="disp" value="r">Reject</option>
+		  </select>
+		<a class="helplink" target="edhelp" href="edhelp.py#action">help</a>
+		</span>
+
+	      <input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
+	      <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
+	      <input type="hidden" name="id" tal:condition="e/id" tal:attributes="value e/id"/>
+	      <input type="hidden" name="stat" tal:condition="e/id" tal:attributes="value e/stat"/>
+	      <span tal:condition="not:session/userid" tal:omit-tag="">
+		<!-- #3 src parameter when existing entry and user is not editor. -->
+		<input type="hidden" tal:condition="e/id" name="src" tal:attributes="value e/src"/>
+		<input type="hidden" name="seq" tal:attributes="value e/seq"/>
+		<input type="hidden" name="srcnote" tal:attributes="value e/srcnote"/>
+		<input type="hidden" name="notes" tal:attributes="value e/notes"/>
+		</span>
+	      </td>
+	    <td></td>
+	    </tr>
+
+	  <span tal:condition="session/userid" tal:omit-tag="">
 	    <tr>
 	      <td colspan="3">
-		Use this form to suggest new JMdictDB entries or changes to existing entries.
-		For detailed help on the info required in the various fields, please
-		  use the "help" links beside each field, or view the
-		  <a href="edhelp.py"> full help file here</a>.
-		<p/>
+		<br/>
+		The following may require changing in rare circumstances...
 		</td>
 	      </tr>
-
-	    <tr>
-	      <td> </td>
-	      <td>
-
-		<!-- Entry block -->
-		<table width="100%">
-
-		  <tr tal:condition="not:e">
-		    <td colspan="4">New Entry</td></tr>
-
-		  <tr tal:condition="e">
-		    <td colspan="2">Status: 
-		      <span tal:replace="python:TALdescr('STAT',e.stat)">status</span>
-		      <span tal:condition="e/unap" class="pend">(Unapproved)</span>
-		      </td>
-		    <td colspan="2">Id:
-		      <span tal:replace="e/id">id</span>
-		      <span tal:condition="e/dfrm">(parent:
-
-		        <span tal:condition="e/dfrm" tal:omit-tag=""> 
-			  <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${e/dfrm}" tal:content="e/dfrm"/>
-			  </span>)
-		        </span>
-		      </td>
-		    </tr>
-		  <tr tal:condition="e">
-		    <td colspan="2">Corpus:
-		      <span tal:content="python:TALabbr('SRC',e.src)">src</span>
-		      </td>
-		    <td>Seq:
-		      <span tal:content="e/seq">seq</span>
-		      </td>
-		    </tr>
-		  <tr tal:condition="e/srcnote">
-		    <td>Src note: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#srcnote">help</a></td>
-		    <td colspan="4" tal:content="e/srcnote">src note</td>
-		    </tr>
-		  <tr tal:condition="e/notes">
-		    <td>Entr note: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#entrnote">help</a></td>
-		    <td colspan="4" tal:content="e/notes">entr note</td>
-		    </tr>
-		  </table>
-
-		</td>
-	      </tr>
-
-	    <tr tal:condition="not:e">
+	    <tr tal:condition="e/id">
 	      <td>Corpus: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#corpus">help</a></td>
-	      <td colspan="2">
+	      <td>
 		<select name="src">
 		  <span tal:repeat="s srcs" tal:omit-tag="">
-		    <option name="src" tal:condition="not:e" tal:attributes="value s/id" tal:content="s/kw"/>
-		    <span tal:condition="e" tal:omit-tag="">
+		    <!-- #4 src parameter when existing entry and user is editor. -->
+		    <option name="src" tal:condition="not:e/id" tal:attributes="value s/id" tal:content="s/kw"/>
+		    <span tal:condition="e/id" tal:omit-tag="">
 		      <option name="src" tal:condition="python: s.id==e.src" selected="1" tal:attributes="value s/id" tal:content="s/kw"/>
 		      <option name="src" tal:condition="python: s.id!=e.src"              tal:attributes="value s/id" tal:content="s/kw"/>
 		      </span>
@@ -88,147 +206,32 @@
 		</td>
 	      </tr>
 	    <tr>
-	      <td>Kanji: <br/><a class="helplink" target="edhelp" href="edhelp.py#kanji">help</a></td>
-	      <td><textarea tal:content="ktxt" name="kanj" wrap="physical" cols="60" rows="3"></textarea></td>
-	      <td>
-		<a class="helplink" target="edhelp" href="edhelp.py#kw_kinf">kinf</a><br/>
-		<a class="helplink" target="edhelp" href="edhelp.py#kw_freq">freq</a> 
-		</td></tr>
+	      <td>Seq: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#seq">help</a></td>
+	      <td tal:condition="not:e/id"><input type="text" name="seq" size="8" tal:attributes="value 'default'"/></td>
+	      <td tal:condition="e/id"><input type="text" name="seq" size="8" tal:attributes="value e/seq"/></td>
+	      </tr>
 	    <tr>
-	      <td>Readings: <br/><a class="helplink" target="edhelp" href="edhelp.py#readings">help</a></td>
-	      <td><textarea tal:content="rtxt" name="rdng" wrap="physical" cols="60" rows="3"></textarea></td>
-	      <td>
-		<a class="helplink" target="edhelp" href="edhelp.py#kw_rinf">rinf</a><br/>
-		<a class="helplink" target="edhelp" href="edhelp.py#kw_freq">freq</a><br/>
-		<a class="helplink" target="edhelp" href="edhelp.py#syn_restr">restr</a>
-		</td></tr>
-	    <tr>
-	      <td>Senses: <br/><a class="helplink" target="edhelp" href="edhelp.py#senses">help</a></td>
-	      <td><textarea tal:content="stxt" name="sens" wrap="physical" cols="60" rows="8"></textarea></td>
-	      <td>
-		<a class="helplink" target="edhelp" href="edhelp.py#kw_pos">pos</a><br/>
-		<a class="helplink" target="edhelp" href="edhelp.py#kw_misc">misc</a><br/>
-		<a class="helplink" target="edhelp" href="edhelp.py#kw_fld">fld</a><br/>
-		<a class="helplink" target="edhelp" href="edhelp.py#kw_dial">dial</a><br/>
-		<a class="helplink" target="edhelp" href="edhelp.py#syn_lsrc">lsrc</a><br/>
-		<a class="helplink" target="edhelp" href="edhelp.py#syn_ginf">ginf</a><br/>
-		<a class="helplink" target="edhelp" href="edhelp.py#syn_restr">restr</a><br/>
-		<a class="helplink" target="edhelp" href="edhelp.py#syn_xref">xref</a><br/>
-		</td></tr>
-	    <tr tal:condition="e">
-	      <td> </td>
-	      <td><input type="checkbox" name="delete" tal:attributes="checked isdelete"/> This entry should be deleted.  (Please justify in Comments and References boxes.)
-		&nbsp; <a class="helplink" target="edhelp" href="edhelp.py#delete">help</a>
+	      <td>Src note: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#srcnote">help</a></td>
+	      <td colspan="3">
+		<input name="srcnote" tal:condition="not:e/id" type="text" size="50"/>
+		<input name="srcnote" tal:condition="e/id" type="text" size="50" tal:attributes="value e/srcnote"/>
 		</td>
-	      <td></td>
 	      </tr>
-	    <tr tal:condition="0"><!-- disabled for now, see IS-143. -->
-	      <td> </td>
-	      <td><input type="checkbox" name="makecopy" tal:attributes="checked makecopy"/> Treat as new entry.
-		&nbsp; <a class="helplink" target="edhelp" href="edhelp.py#makecopy">help</a>
+	    <tr>
+	      <td>Entr note: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#entrnote">help</a></td>
+	      <td colspan="3">
+		<textarea name="notes" tal:condition="not:e/id" wrap="physical" width="100%" cols="60" rows="2"></textarea>
+		<textarea name="notes" tal:condition="e/id" wrap="physical" width="100%" cols="60" rows="2" tal:content="e/notes"></textarea>
 		</td>
-	      <td></td>
 	      </tr>
-	    <tr>
-	      <td>Comments: <br/><a class="helplink" target="edhelp" href="edhelp.py#comments">help</a></td>
-	      <td><textarea name="comment" wrap="physical" cols="60" rows="3"></textarea></td>
-	      <td></td>
-	      </tr>
-	    <tr>
-	      <td>References: <br/><a class="helplink" target="edhelp" href="edhelp.py#references">help</a></td>
-	      <td><textarea name="reference" wrap="physical" cols="60" rows="3"></textarea></td>
-	      <td></td>
-	      </tr>
-	    <tr>
-	      <td>Name: <a class="helplink" target="edhelp" href="edhelp.py#name">help</a></td>
-	      <td><input type="text" name="name" size="30" tal:attributes="value session/fullname"/></td>
-	      <td></td>
-	      </tr>
-	    <tr>
-	      <td>Email: <a class="helplink" target="edhelp" href="edhelp.py#email">help</a></td>
-	      <td><input type="text" name="email" size="30" tal:attributes="value session/email"/></td>
-	      <td></td>
-	      </tr>
-	    <tr>
-	      <td></td>
-	      <td>
-		<input type="submit" value=" Next "/> &nbsp;
-	        <span tal:condition="is_editor" tal:omit-tag="">
-	          &nbsp;&nbsp;
-	          Action: <select name="disp">
-	            <option name="disp" value="" selected="1">Submit</option>
-	            <option name="disp" value="a">Approve</option>
-	            <option name="disp" value="r">Reject</option>
-	            </select>
-		  <a class="helplink" target="edhelp" href="edhelp.py#action">help</a>
-	          </span>
+	    </span>
 
-		<input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
-		<input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
-		<input type="hidden" name="id" tal:condition="e" tal:attributes="value e/id"/>
-		<input type="hidden" name="stat" tal:condition="e" tal:attributes="value e/stat"/>
-		<span tal:condition="not:session/userid" tal:omit-tag="">
-		  <input type="hidden" tal:condition="e" name="src" tal:attributes="value e/src"/>
-		  <input type="hidden" name="seq" tal:attributes="value e/seq"/>
-		  <input type="hidden" name="srcnote" tal:attributes="value e/srcnote"/>
-		  <input type="hidden" name="notes" tal:attributes="value e/notes"/>
-		  </span>
-		</td>
-	      <td></td>
-	      </tr>
-
-	    <span tal:condition="session/userid" tal:omit-tag="">
-	      <tr>
-	        <td colspan="3">
-	          <br/>
-	          The following may require changing in rare circumstances...
-	          </td>
-	        </tr>
-	      <tr tal:condition="e">
-	        <td>Corpus: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#corpus">help</a></td>
-	        <td>
-		  <select name="src">
-		    <span tal:repeat="s srcs" tal:omit-tag="">
-		      <option name="src" tal:condition="not:e" tal:attributes="value s/id" tal:content="s/kw"/>
-		      <span tal:condition="e" tal:omit-tag="">
-		        <option name="src" tal:condition="python: s.id==e.src" selected="1" tal:attributes="value s/id" tal:content="s/kw"/>
-		        <option name="src" tal:condition="python: s.id!=e.src"              tal:attributes="value s/id" tal:content="s/kw"/>
-		        </span>
-		      </span>
-		    </select>
-		  </td>
-	        </tr>
-	      <tr>
-	        <td>Seq: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#seq">help</a></td>
-	        <td tal:condition="not:e"><input type="text" name="seq" size="8" tal:attributes="value 'default'"/></td>
-	        <td tal:condition="e"><input type="text" name="seq" size="8" tal:attributes="value e/seq"/></td>
-	        </tr>
-	      <tr>
-	        <td>Src note: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#srcnote">help</a></td>
-	        <td colspan="3">
-	          <input name="srcnote" tal:condition="not:e" type="text" size="50"/>
-		  <input name="srcnote" tal:condition="e" type="text" size="50" tal:attributes="value e/srcnote"/>
-		  </td>
-	        </tr>
-	      <tr>
-	        <td>Entr note: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#entrnote">help</a></td>
-	        <td colspan="3">
-		  <textarea name="notes" tal:condition="not:e" wrap="physical" width="100%" cols="60" rows="2"></textarea>
-		  <textarea name="notes" tal:condition="e" wrap="physical" width="100%" cols="60" rows="2" tal:content="e/notes"></textarea>
-		  </td>
-	        </tr>
-	      </span>
-
-            </tbody>
-          </table>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </form>
-<span class="notes">
-
-  </span>
-<div metal:use-macro="macros/macros/footer"></div>
+	  </tbody>
+	</table>
+      </form>
+    </span>
+  <span class="notes">
+    </span>
+  <div metal:use-macro="macros/macros/footer"></div>
 </body>
 </html>

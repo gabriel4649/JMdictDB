@@ -138,3 +138,15 @@ AssdTo:	stuart@friix.com
   was wat down, but still a few rebs contained '＆', '、', '／', and 
   full-width alphanumerics.  Email the results to the list.
 
+2009-02-28 13:24:00 stuart
+  Jim Breen on the Edict mailing list says that the '〜' character
+  in his email is not U+FF5E (FULLWIDTH TILDE) but rather what is
+  currently in JMdict XML, U+301C (WAVE DASH), and gives, 
+    http://en.wikipedia.org/wiki/Unicode#Mapping_to_legacy_character_sets 
+  as the reason why.  Actually, the reference given there, 
+    http://std.dkuug.dk/jtc1/sc2/wg2/docs/n2166.doc
+  was a little more informative for me, and my understanding is that
+  the WAVE DASH character is in JIS X 208 and the FULLWIDTH TILDE is
+  not (although it is in JIS X 213.)
+
+  Updated jdb.jstr_classify() for this change.

@@ -1960,24 +1960,20 @@ def jstr_classify (s):
 	the certain types of characters are present in string <s>.
 	The bit settings are given by constants above.
 
-	When testing strings for compatibilty with xml <reb>
-	element or 'rdng' table, can use:
-	  ~jstr_class (text)
-	Strings appropriate for <reb> elements can be tested by
-	
-	  jstr_class (text) & (KANA | SPECIAL)
-
-	See Edict email list post, 2008-06-27,
-	  "Re: [edict-jmdict] jmdict/jmnedict inconsistency"
-	  for details of distinguishing reb text strings.
-
+	See Edict email list posts, 
+	  2008-06-27,"jmdict/jmnedict inconsistency"
+	  2009-02-26,"Tighter rules for reading fields"
+	and followups for details of distinguishing reb text strings,
+	and latter particularly for the rationale for the use of
+	u+301C (WAVE DASH) rather than u+FF5E (FULLWIDTH TILDE)
+	in the JMdict XML file.	
 	"""
 	r = 0
 	for c in s:
 	    n = uord (c)
 	    if    n >= 0x0000 and n <= 0x02FF:     r |= LATIN
 	    elif (n >= 0x3040 and n <= 0x30FF 		       # Hiragana/katakana.
-		       or n == 0xFF5E):		   r |= KANA   # Full-width tilde.
+		       or n == 0x301C):		   r |= KANA   # WAVE DASH char.
 	    elif  n >= 0x3000 and n <= 0x303F: 	   r |= KSYM   # CJK Symbols.
 	    elif (n >= 0x4E00 and n <= 0x9FFF		       # CJK Unified.
 	       or n >= 0xFF00 and n <= 0xFF5F		       # Fullwidth ascii.
@@ -1988,8 +1984,8 @@ def jstr_classify (s):
 def jstr_reb (s):
 	# Return a true value if the string 's' is a valid string
 	# for use in an XML <reb> element or 'rdng' table.
-	# It must consist exclusively of HIRAGANA, KATAKANA, or
-	# the full-width tilde characters.
+	# It must consist exclusively of characters marked as KANA
+	# by jstr_classify.
 
 	if isinstance (s, (str, unicode)):
 	    b = jstr_classify (s)
@@ -2007,6 +2003,10 @@ def jstr_gloss (s):
 	return not (b & ~LATIN)
 
 def jstr_keb (s):
+        # Return a true value if the string 's' is acceptable
+	# for use in a <keb> element.  This is exverything that
+	# is not usable as a reb or a gloss.
+ 
 	if isinstance (s, (str, unicode)):
 	    b = jstr_classify (s)
 	else: b = s
@@ -2291,4 +2291,3 @@ def get_dtd (filename, root="JMdict", encoding="UTF-8"):
 	    txt = f.read().decode(encoding) 
 	    txt %= {'root':root, 'encoding':encoding}
 	return txt
-

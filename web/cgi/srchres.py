@@ -35,8 +35,8 @@ def main( args, opts ):
 	cfg_srch = d2o (cfg['search'])
 	fv = form.getfirst; fl = form.getlist
 	force_srchres = fv('srchres')  # Force display of srchres page even if only one result.
-	sqlp = fv ('sql')
-	soj = fv ('soj')
+	sqlp = (fv ('sql') or '').decode ('utf-8')
+	soj = (fv ('soj') or '').decode ('utf-8')
 	pgoffset = int(fv('p1') or 0)
 	pgtotal = int(fv('pt') or -1)
 	entrs_per_page = min (max (int(fv('ps') or cfg_web.DEF_ENTRIES_PER_PAGE),

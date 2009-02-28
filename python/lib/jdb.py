@@ -1843,7 +1843,7 @@ class Kwds:
 
     def attrs( self ):
 	# Return list of attr name strings for attributes that contain 
-	# non-empty setsa of rows.  Note that is this instance will
+	# non-empty sets of rows.  Note that this instance will
 	# contain every attribute listed in .Tables but some of them
 	# may be empty if they haven't been loaded (because the
 	# corresponding .csv file of table was missing or empty.)
@@ -1975,36 +1975,27 @@ def jstr_classify (s):
 	r = 0
 	for c in s:
 	    n = uord (c)
-	    if   n >= 0x0000 and n <= 0x02FF:     r |= LATIN
-	    elif n >= 0x3040 and n <= 0x30FF:  	  	      # Hiragana/katakana
-		if 1:				  r |= KANA 
-		if (n!=0x309d and n!=0x309e and n!=0x30fd     # ゝ, ゞ, ヽ, ヾ, ー
-		    and n!=0x30fe and n!=0x30fc): r |= RX     # Kana excluding above.
-	    elif n >= 0x3000 and n <= 0x303F: 	  r |= KSYM   # CJK Symbols.
-	    elif (n >= 0x4E00 and n <= 0x9FFF		      # CJK Unified.
-	       or n >= 0xFF00 and n <= 0xFF5F		      # Fullwidth ascii.
-	       or n >= 0x20000 and n <= 0x2FFFF): r |= KANJI  # CJK Unified ExtB+Supl.
-	    else:				  r |= OTHER
+	    if    n >= 0x0000 and n <= 0x02FF:     r |= LATIN
+	    elif (n >= 0x3040 and n <= 0x30FF 		       # Hiragana/katakana.
+		       or n == 0xFF5E):		   r |= KANA   # Full-width tilde.
+	    elif  n >= 0x3000 and n <= 0x303F: 	   r |= KSYM   # CJK Symbols.
+	    elif (n >= 0x4E00 and n <= 0x9FFF		       # CJK Unified.
+	       or n >= 0xFF00 and n <= 0xFF5F		       # Fullwidth ascii.
+	       or n >= 0x20000 and n <= 0x2FFFF):  r |= KANJI  # CJK Unified ExtB+Supl.
+	    else:				   r |= OTHER
 	return r
 
 def jstr_reb (s):
 	# Return a true value if the string 's' is a valid string
 	# for use in an XML <reb> element or 'rdng' table.
-	# It must consist exclusively of HIRAGANA or KATAKANA
-	# characters and have at least one character that is an RX
-	# character.  RX characters are kana characters excluding
-	# a few that can occur in <keb> elements and because they
-	# are a subset of kana characters whenever RX is set KANA
-	# and on of HIRAGANA or KATAKANA will also be set.
+	# It must consist exclusively of HIRAGANA, KATAKANA, or
+	# the full-width tilde characters.
 
 	if isinstance (s, (str, unicode)):
 	    b = jstr_classify (s)
 	else: b = s
-	  # Must have at least one non-kebish kana char.
-	if not b & RX: return False 
-	  # Must not have any characters other than kana 
-	  # and CJK Symbols (to allow punctuation like 。.)
-	return not (b & ~(KANA|RX|KSYM))
+	  # Must not have any characters other than kana.
+	return not (b & ~KANA)
 
 def jstr_gloss (s):
 	# Return a true value if the string 's' consists only

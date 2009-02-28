@@ -126,3 +126,15 @@ AssdTo:	stuart@friix.com
   > 
   > Thus for ＩＣカード, etc. it must be "ＩＣカード [アイシーカード]"
   >[...]
+
+2009-02-27 21:33:00 stuart
+  All the characers above except ～ (FF5E) are in the unicode code
+  blocks, 3040..309F:Hiragana, 30A0..30FF:Katakana.  Emailed response
+  to Jim's mail asking is making the rules to be those two blocks
+  would be better.
+
+  Updated jdb.jstr_classify() and jdb_jstr_reb() to use the rule 
+  3040-30FF+FF5E and parsed latest jmdict, number of misclassifications 
+  was wat down, but still a few rebs contained '＆', '、', '／', and 
+  full-width alphanumerics.  Email the results to the list.
+

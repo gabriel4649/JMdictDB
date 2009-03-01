@@ -97,6 +97,7 @@ CGI_FILES = entr.py \
 	edform.py \
 	edhelp.py \
 	edsubmit.py \
+	srchadv.py \
 	srchform.py \
 	srchres.py 
 WEB_CGI	= $(addprefix $(CGI_DIR)/,$(CGI_FILES))
@@ -308,23 +309,23 @@ web:	webcgi weblib webpylib webtal webcss
 
 webcss: $(WEB_CSS)
 $(WEB_CSS): $(CSS_DIR)/%: web/%
-	cp -p $? $@
+	install -pm 644 $? $@
 
 webcgi: $(WEB_CGI)
 $(WEB_CGI): $(CGI_DIR)/%: web/cgi/%
-	cp -p $? $@
+	install -p -m 755 $? $@
 
 weblib: $(WEB_LIB)
 $(WEB_LIB): $(LIB_DIR)/%: python/lib/%
-	cp -p $? $@
+	install -pm 644 $? $@
 
 webpylib: $(WEB_PYLIB)
 $(WEB_PYLIB): $(LIB_DIR)/pylib/%: python/lib/pylib/%
-	cp -p $? $@
+	install -pm 644 $? $@
 
 webtal: $(WEB_TAL)
 $(WEB_TAL): $(LIB_DIR)/%: python/lib/%
-	cp -p $? $@
+	install -pm 644 $? $@
 
 #------ Other ----------------------------------------------------------
 

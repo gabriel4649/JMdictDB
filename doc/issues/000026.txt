@@ -150,3 +150,8 @@ AssdTo:	stuart@friix.com
   not (although it is in JIS X 213.)
 
   Updated jdb.jstr_classify() for this change.
+
+2009-03-02 07:41 stuart
+  Added reb/keb check to python/exparse.py and put and jp sentences that
+  meet the new reb criteria in the reb (with a warning message) rather
+  than blindly in the keb.  After a reload however, none met the criteria.

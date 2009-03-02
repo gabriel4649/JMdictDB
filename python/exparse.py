@@ -118,8 +118,10 @@ def parse_ex (fin, begin):
 		jtxt, etxt, kwds = parsea (aln)
 		idxlist = parseb (bln, jtxt)
 	    except ParseError, e:
-		msg (e.message); continue
+		msg (e.args[0]); continue
 	    if not idxlist: continue
+	    if not jdb.jstr_keb (jtxt):
+		msg ("'A' line not kanji: %s" % jtxt)
 	    entr = mkentr (jtxt, etxt, kwds)
 	    entr.seq = Seq
 	    entr._sens[0]._xrslv = mkxrslv (idxlist)
@@ -146,7 +148,7 @@ def parseb (bln, jtxt):
 	res = []
 	for n,x in enumerate (parts):
 	    try: res.append (parsebitem (x, n, jtxt))
-	    except ParseError, e: msg (e.message)
+	    except ParseError, e: msg (e.args[0])
 	return res
 
 def parsebitem (s, n, jtxt):
@@ -182,7 +184,8 @@ def mkentr (jtxt, etxt, kwds):
 	  # id number and optionally a note string.
 	kws = [x[0] for x in kwds]
 	sens_note = "; ".join ([x[1] for x in kwds if len(x)>1]) or None
-	e._kanj = [jdb.Obj (txt=jtxt)]
+	if jdb.jstr_reb (jtxt): e._rdng = [jdb.Obj (txt=jtxt)]
+	else: 			e._kanj = [jdb.Obj (txt=jtxt)]
 	e._sens = [jdb.Obj (notes=sens_note,
 		    _gloss=[jdb.Obj (lang=KW.LANG_eng, 
 				     ginf=KW.GINF_equ, txt=etxt)],

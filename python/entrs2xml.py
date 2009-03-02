@@ -39,27 +39,40 @@ def main (args, opts):
 	    if opts.compat == 'jmnedict': opts.root = 'JMnedict'
 	    else: opts.root = 'JMdict'
 
-	  # Choose a dtd to use baseed on the "--compat" option.
-	  # The dtd file is expected to be located somewhere in the
-	  # pythonpath (sys.path) directories. 
-	if opts.compat == 'jmdict': dtd = "dtd-jmdict.xml"
-	elif opts.compat == 'jmnedict': dtd = "dtd-jmnedict.xml"
-	else: dtd = "dtd-jmdict-ex.xml"
-	dir = jdb.find_in_syspath (dtd)
-	dtdfn = dir + "/" + dtd		# Fully qualified dtd file name.
+	outf = None
+	if not opts.nodtd:
+	      # Choose a dtd to use based on the "--compat" option.
+	      # The dtd file is expected to be located somewhere in the
+	      # pythonpath (sys.path) directories. 
+	    if opts.compat == 'jmdict': dtd = "dtd-jmdict.xml"
+	    elif opts.compat == 'jmnedict': dtd = "dtd-jmnedict.xml"
+	    else: dtd = "dtd-jmdict-ex.xml"
+	    dir = jdb.find_in_syspath (dtd)
+	    dtdfn = dir + "/" + dtd		# Fully qualified dtd file name.
 
-	  # jdb.get_dtd() reads the dtd text, and replaces the root
-	  # element name name and encoding with the values supplied 
-	  # in the arguments.
-	dtdtxt= jdb.get_dtd (dtdfn, opts.root, opts.encoding)
-	if len (args) == 0: outf = sys.stdout
-	else: outf = open (args[0], "w")
-	outf.write (dtdtxt.encode (opts.encoding))
+	      # jdb.get_dtd() reads the dtd text, and replaces the root
+	      # element name name and encoding with the values supplied 
+	      # in the arguments.
+	    dtdtxt= jdb.get_dtd (dtdfn, opts.root, opts.encoding)
+	    if len (args) == 0: outf = sys.stdout
+	    else: outf = open (args[0], "w")
+	    outf.write (dtdtxt.encode (opts.encoding))
 
 	  # Turn the "--corpus" option value into a string that can be 
 	  # and'ed into a SQL WHERE clause to restrict the results to 
 	  # the specified corpuses.
 	corp_terms = parse_corpus_opt (opts.corpus, 'e.src')
+
+	    # If the output file was not opened in the dtd section
+	    # above, open it now.  We postpose opening it until the
+	    # last possible moment to avoid creating it and then
+	    # bombing because there was a typo in the input or dtd
+	    # filename, etc.
+	    # FIXME: Should do a "write" function that opens the 
+	    #  file just before writing.
+	if not outf:
+	    if len (args) == 0: outf = sys.stdout
+	    else: outf = open (args[0], "w")
 
 	if opts.begin:
 	      # If a "--begin" sequence number was given, we need to read
@@ -88,7 +101,7 @@ def main (args, opts):
 	      # If no "--begin" option, remove the " AND" from the front of
 	      # the 'corp_terms' string.  Read the first entry (by seq number)
 	      # in the requested corpuses.
-	    cc = corp_terms[4:] if corp_terms else ''
+	    cc = corp_terms[4:] if corp_terms else 'True'
 	    sql = "SELECT id,seq,src FROM entr e WHERE %s ORDER BY src,seq LIMIT 1" % cc
 	    start = time.time()
 	    if debug: print >>sys.stderr, sql
@@ -97,7 +110,7 @@ def main (args, opts):
 
 	lastsrc, lastseq, lastid = rs[0].src, rs[0].seq, rs[0].id  
 	count = opts.count; done = 0; blksize = opts.blocksize; corpuses = set()
-	outf.write ('<%s>\n' % opts.root)
+	if not opts.nodtd: outf.write ('<%s>\n' % opts.root)
 
 	while count is None or count > 0:
 
@@ -165,7 +178,7 @@ def main (args, opts):
 	    done += len (entrs)
 	    if not debug: sys.stderr.write ('.')
 	    else: print >>sys.stderr, "%d entries written" % done
-	outf.writelines ('</%s>\n' % opts.root)
+	if not opts.nodtd: outf.writelines ('</%s>\n' % opts.root)
 	if not debug: sys.stderr.write ('\n')
 	print >>sys.stderr, "Wrote %d entries" % done
 
@@ -265,6 +278,11 @@ Arguments:
             help="""Name to use as the root element in the output XML file. 
 		If 'compat' is None or "jmdict", default is "JMdict",
 		otherwise ('compat' is "jmnedict") default is "JMnedict".""")
+
+	p.add_option ("--nodtd", default=None,
+            action="store_true",
+            help="Do not write a DTD or root element. If this option "
+	        "is given, --root is ignored.")
 
 	p.add_option ("-B", "--blocksize", default=1000,
 	    type="int", metavar="NUM", 

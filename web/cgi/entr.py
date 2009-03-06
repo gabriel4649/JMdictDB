@@ -25,12 +25,14 @@ import sys, cgi
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import cgitbx; cgitbx.enable()
 import jdb, jmcgi
+import fmtxml, fmtjel
 
 def main (args, opts):
 	#print "Content-type: text/html\n"
 	errs = []
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
+	disp = form.getfirst ('disp')
 	if not errs:
 	    entries = jmcgi.get_entrs (cur, form.getlist ('e'),
 					    form.getlist ('q'), errs)
@@ -41,9 +43,23 @@ def main (args, opts):
 		    if hasattr (s, '_xrer'): jdb.augment_xrefs (cur, s._xrer, 1)
 		if hasattr (e, '_snd'): jdb.augment_snds (cur, e._snd)
 	    cur.close()
-	if not errs:
+	    if disp == 'xml':
+		etxts = [fmtxml.entr (e) for e in entries]
+	    elif disp == 'jm':
+		etxts = [fmtxml.entr (e, compat='jmdict') for e in entries]
+	    elif disp == 'jmne':
+		etxts = [fmtxml.entr (e, compat='jmnedict') for e in entries]
+	    elif disp == 'jel':
+		etxts = [fmtjel.entr (e) for e in entries]
+	    elif disp == 'edict':
+		etxts = [fmted.entr (e) for e in entries]
+	    else: 
+		etxts = ['' for e in entries]
 	    jmcgi.htmlprep (entries)
-	    jmcgi.gen_page ('tmpl/entr.tal', macros='tmpl/macros.tal', entries=entries,
+
+	if not errs:
+	    jmcgi.gen_page ('tmpl/entr.tal', macros='tmpl/macros.tal', 
+				entries=zip(entries, etxts),
 				svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
 				parms=parms, output=sys.stdout, this_page='entr.py')
 	else:

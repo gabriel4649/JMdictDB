@@ -49,9 +49,17 @@ script:
     <xsl:text>(P)/</xsl:text>
   </xsl:if>
 
+  <xsl:apply-templates select="ent_seq" />
+
   <xsl:text >
 </xsl:text>
 
+</xsl:template>
+
+<xsl:template match="ent_seq">
+  <xsl:text >EntL</xsl:text>
+  <xsl:value-of select="." />
+  <xsl:text >/</xsl:text>
 </xsl:template>
 
 <xsl:template match="k_ele">

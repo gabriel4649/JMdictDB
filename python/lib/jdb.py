@@ -603,25 +603,35 @@ def add_stagr (sens, rdng):
 def add_stagk (sens, kanj):
 	add_restrobj (sens, 'sens', kanj, 'kanj', '_stagk')
 
-def txt2restr (restrtxts, rdng, kanjs, attr):
+def txt2restr (restrtxts, rdng, kanjs, attr, bad=None):
 	# Converts a list of text strings, 'restrtxts', into a list of
 	# Restr objects and sets the value of the attribute named by 'attr'
 	# on 'rdng' to that list.  Each Restr is also attached to the
-	# restr list, 'attr', on the approriate object in list 'kanjs'.
+	# restr list, 'attr', on the appropriate object in list 'kanjs'.
 	# 
-	# restrtxts -- List texts (that occur in kanjs) of allowed
+	# restrtxts -- List of texts (that occur in kanjs) of allowed
 	#   restrictions.  However, if 'restrtxts' is empty, there
 	#   are no restrictions (all 'kanjs' items are ok.)  If
 	#   'restrtxts' is None, every 'kanjs' ietm is disallowed.  
 	# kanjs -- List of Kanj (or Rdng) objects.
 	# attr -- Name of restr list attribute on Kanj objects ('_restr',
 	#   'stagr', or 'stagk').
+	# bad -- If not none, should be an empty list onto which 
+	#    will be appended any items in restrtxts that are not 
+	#    in kanjs.
 	# Returns: A list of ints giving the 1-based indexes of the 
 	#  kanji objects matching the restr list set on 'rdng'. 
 
 	if attr == '_restr': restr_factory = Restr
 	elif attr == '_stagr': restr_factory = Stagr
 	elif attr == '_stagk': restr_factory = Stagk
+
+	  # Check that all the restrtxts match a kanjs.
+	if bad is not None:
+	    ktxts = [x.txt for x in kanjs]
+	    for x in restrtxts: 
+		if x not in ktxts: bad.append (x)
+
 	restrs = []; nkanjs = []
 	if restrtxts or restrtxts is None:
 	    for n,k in enumerate (kanjs):
@@ -692,7 +702,19 @@ def make_freq_objs (fmap, entr):
 	"""
 	Convert the freq information collected in 'fmap' into Freq
 	objects attached to reading and kanji lists in 'entr._rdng'
-	and 'entr._kanj'.  'fmap' should be defined as:
+	and 'entr._kanj'.  'fmap' should be dict.  Items in 'fmap'
+	will have keys that are a 2-tuple of freq kw number (eg, 
+	4 for "spec") and value number (e.g. 2 if the freq item
+	was "spec2").  The value of each 'fmap' item is a sequence
+	(e.g. list) of length 2, and both of the srquence items are 
+	lists.  The first is a list of all the Rdng objects which
+	have a the freq tag specified by the dict item key.  The 
+	second is a similar list of Kanj objects.
+
+	Often when parsing a textual description of entries (e.g.
+	xml or jel), it will be convenient to define 'fmap' using
+	a collections.defauldict, which will automatically create
+	the lists when needed:
 
 	    fmap = collections.defaultdict (lambda:([list(),list()]))
 
@@ -700,13 +722,14 @@ def make_freq_objs (fmap, entr):
 	they should be added to 'fmap' with something like the following:
 
 	    rlist = fmap[kw_val][1]
-	    if not jdb.first (rlist, lambda x: 
-		x is rdng): rlist.append (rdng)
+	    if not jdb.first (rlist, lambda x:x is rdng): 
+		rlist.append (rdng)
 
 	where 'kw_val' is a 2-tuple of freq keyword id and value, and 
 	'rdng' is a Rdng object to which the freq spec will apply.
-	After all the freq data has been collected for 'entr', Freq
-	objects are created by calling:
+
+	After all the freq data has been collected for an entry, 'entr'
+	Freq objects are created by calling:
 
 	   errs = make_freq_objs (fmap, entr):
 	   id errs: print '\n'.join (errs)
@@ -1951,7 +1974,7 @@ class Tmptbl:
 
 #=======================================================================
 # Bits used in the return value of function jstr_classify() below.
-KANA=1; KANJI=2; KSYM=4; RX=8; LATIN=16; OTHER=32
+KANA=1; KANJI=2; KSYM=4; LATIN=16; OTHER=32
 
 
 def jstr_classify (s):
@@ -1990,6 +2013,7 @@ def jstr_reb (s):
 	if isinstance (s, (str, unicode)):
 	    b = jstr_classify (s)
 	else: b = s
+	if b == 0: return True	# Empty string.
 	  # Must not have any characters other than kana.
 	return not (b & ~KANA)
 
@@ -2000,16 +2024,18 @@ def jstr_gloss (s):
 	if isinstance (s, (str, unicode)):
 	    b = jstr_classify (s)
 	else: b = s
+	if b == 0: return True	# Empty string.
 	return not (b & ~LATIN)
 
 def jstr_keb (s):
         # Return a true value if the string 's' is acceptable
 	# for use in a <keb> element.  This is exverything that
 	# is not usable as a reb or a gloss.
- 
+
 	if isinstance (s, (str, unicode)):
 	    b = jstr_classify (s)
 	else: b = s
+	if b == 0: return True	# Empty string.
 	return not jstr_reb (b) and not jstr_gloss (b)
 
 

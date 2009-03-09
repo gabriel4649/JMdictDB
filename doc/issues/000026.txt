@@ -155,3 +155,9 @@ AssdTo:	stuart@friix.com
   Added reb/keb check to python/exparse.py and put and jp sentences that
   meet the new reb criteria in the reb (with a warning message) rather
   than blindly in the keb.  After a reload however, none met the criteria.
+
+2009-03-09 10:15 stuart
+  python/lib/jdb.py: Make functions jstr_reb(), jstr_keb(), jstr_gloss()
+  return True is the parameter string has a liength of 0.
+  Update the failing tests in python/tests/test_jdb_jstr_classify.py for
+  the "reb" rules change described above.  All jstr_clasify tests pass now.

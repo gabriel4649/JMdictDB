@@ -1,0 +1,62 @@
+﻿<html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
+<!--? Copyright (c) 2009 Stuart McGraw -->
+<!--? $Revision$ $Date$ -->
+
+<!--? ***NOTE***
+      Much of this form is very similar to entr.tal, edconf.tal and edits 
+      made to this form likely also need to be made to edform.tal. -->
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
+  <title>JMdictDB Entries</title>
+</head>
+<body>
+  <div metal:use-macro="macros/macros/login">
+    <h1 metal:fill-slot="title">JMdictDB Entries</h1>
+    </div>
+  <div class="entry" tal:condition="not:entries"> 
+     We're sorry, but the entry(s) you requested are not (or are no longer)
+     available in the database.
+     </div>
+  <span tal:repeat="epair entries" tal:omit-tag="">
+    <span tal:define="global e epair/0" tal:omit-tag=""/>
+    <span tal:define="global etxt epair/1" tal:omit-tag=""/>
+    <div class="entry">
+      <span tal:replace="python:TALabbr('SRC',e.src)">src</span>
+      <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;q=${e/seq}.${e/src}" tal:content="e/seq">seq#</a>
+      <span class="status">
+	<span tal:condition="e/unap" class="pend">
+	  <span tal:content="python:TALdescr('STAT',e.stat)">status</span> pending
+	  </span>
+	<span tal:condition="not:e/unap" tal:content="python:TALdescr('STAT',e.stat)">status</span>
+        <span tal:condition="e/dfrm" tal:omit-tag=""> 
+	  (parent: <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${e/dfrm}" tal:content="e/dfrm"/>)
+	  </span>
+	</span>
+      <span class="pkid" tal:condition="python:e.id&gt;0">{id:<span tal:replace="e/id" tal:omit-tag=""/>}</span>
+      <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${e/id}">normal</a>
+      <a class="displink" tal:attributes="href string:entrtxt.py?svc=${svc}&amp;sid=${sid}&amp;disp=xml;e=${e/id}">xml</a>
+      <a class="displink" tal:attributes="href string:entrtxt.py?svc=${svc}&amp;sid=${sid}&amp;disp=xml;e=${e/id}">jmdict</a>
+      <a class="displink" tal:attributes="href string:entrtxt.py?svc=${svc}&amp;sid=${sid}&amp;disp=xml;e=${e/id}">jmnedict</a>
+      <a class="displink" tal:attributes="href string:entrtxt.py?svc=${svc}&amp;sid=${sid}&amp;disp=xml;e=${e/id}">jel</a>
+
+      <pre tal:content="etxt">text content</pre>
+
+      <form tal:condition="e/EDITABLE" action="edform.py" method="get">
+	<input type="submit" value="Edit"/>
+	<input type="hidden" name="e" tal:attributes="value e/id"/>
+	<input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
+	<input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
+	</form>
+
+      </div>
+    </span>
+  <div metal:use-macro="macros/macros/footer"></div>
+  <div class="debug" tal:condition="dbg">
+    <span tal:repeat="d h2l: dbg">
+      <span tal:replace="d/key">key</span>: <span tal:replace="d/val">value</span><br/>
+      </span>
+    </div>
+  </body>
+</html>

@@ -151,12 +151,12 @@ AssdTo:	stuart@friix.com
 
   Updated jdb.jstr_classify() for this change.
 
-2009-03-02 07:41 stuart
+2009-03-02 07:41:00 stuart
   Added reb/keb check to python/exparse.py and put and jp sentences that
   meet the new reb criteria in the reb (with a warning message) rather
   than blindly in the keb.  After a reload however, none met the criteria.
 
-2009-03-09 10:15 stuart
+2009-03-09 10:15:00 stuart
   python/lib/jdb.py: Make functions jstr_reb(), jstr_keb(), jstr_gloss()
   return True is the parameter string has a liength of 0.
   Update the failing tests in python/tests/test_jdb_jstr_classify.py for

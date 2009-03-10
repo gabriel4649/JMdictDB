@@ -169,6 +169,9 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
 	    pos values when they are the same as in the prevuious 
 	    sense per the JMdict DTD.
 	    If None, an explict pos will be generated in each sense.
+
+	We attempt to produce the elements in the same order as seen
+	in the EDRDG JMdict XML file of 2009-03-01.
 	"""
 	fmt = []
 	fmt.append ('<sense>')
@@ -184,20 +187,23 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
 	xrfs = getattr (s, '_xref', None)
 	if xrfs and genxrefs:
 	    fmt.extend (xrefs (xrfs, (not compat) and src))
+	xrfs = getattr (s, '_xrslv', None)
+	if xrfs and genxrefs:
+	    fmt.extend (xrslvs (xrfs, (not compat) and src))
 
-	fmt.extend (kwds (s, '_fld', 'FLD', 'field'))
 	fmt.extend (kwds (s, '_misc', 'MISC', 'misc'))
 
 	notes = getattr (s, 'notes', None)
 	if notes: fmt.append ('<s_inf>%s</s_inf>' % esc (notes))
 
+	fmt.extend (kwds (s, '_dial', 'DIAL', 'dial'))
+	fmt.extend (kwds (s, '_fld', 'FLD', 'field'))
+
+	for x in s._gloss: fmt.extend (gloss (x, compat))
+
 	lsource = getattr (s, '_lsrc', None)
 	if lsource: 
 	    for x in lsource: fmt.extend (lsrc (x))
-
-	fmt.extend (kwds (s, '_dial', 'DIAL', 'dial'))
-
-	for x in s._gloss: fmt.extend (gloss (x, compat))
 
 	fmt.append ('</sense>')
 	return fmt
@@ -266,7 +272,7 @@ def lsrc (x):
 
 def xrefs (xrefs, src):
 	# Generate xml for xrefs.  If there is an xref to every 
-	# sense of a target entry, the we generate a single 
+	# sense of a target entry, then we generate a single 
 	# xref element without a sense number.  Otherwise we
 	# generate an xref element with sense number for each 
 	# target sense.
@@ -366,6 +372,41 @@ def xref (xref, src):
 
 	attr = (' ' if attrs else '') + ' '.join (attrs)
 	return '<%s%s>%s%%s</%s>' % (tag, attr, target, tag)
+
+def xrslvs (xrslvs, src):
+	# Generate a list of <xref> elements based on the list
+	# Xrslv objects, 'xrlvs'.  If 'compat' is false, extended
+	# xml will be produced which will use <xref> elements with
+	# "type" attributes for all xrefs.
+	# If 'compat' is true, plain <xref> and <ant> elements
+	# compatible to EDRDG JMdict XML will be produced.
+	# Xref items with a type other than "see" or "ant" will
+	# be ignored.
+	# 
+	# xrslvs -- List of unresolved xrefs as Xrslv objects.
+	# src -- Corpus id number of the entry that contains 'xref'.
+	#   If 'src' is true, enhanced XML will be generated.  
+	#   If not, legacy JMdict XML will be generated.
+
+	fmt = []
+	for x in xrslvs:
+	    v = []; elname = "xref"
+	    if src:
+		attrs = ' type="%s"' % KW.XREF[x.typ].kw
+		  # FIXME: Can't generate seq and corp attributes because
+		  #  that info is not available from Xrslv objects. See
+		  #  IS-150.
+	    else:
+		if x.typ == KW.XREF['see'].id: elname = 'xref'
+		elif x.typ == KW.XREF['ant'].id: elname = 'ant'
+		else: continue
+		attrs = ''
+	    if getattr (x, 'ktxt',  None): v.append (x.ktxt)
+	    if getattr (x, 'rtxt',  None): v.append (x.rtxt)
+	    if getattr (x, 'tsens', None): v.append (str(x.tsens))
+	    xreftxt = u'\u30FB'.join (v)	# U+30FB is middot.
+	    fmt.append ("<%s%s>%s</%s>" % (elname, attrs, xreftxt, elname))
+	return fmt
 
 def info (entr, compat=None, genhists=False):
 	fmt = [] 
@@ -498,9 +539,14 @@ def corpus (corpuses):
 	return fmt
 
 
-def entr_diff (eold, enew, n=2): 
-	eoldxml = entr (eold, wantlist=1, implicit_pos=0)
-	enewxml = entr (enew, wantlist=1, implicit_pos=0)
+def entr_diff (eold, enew, n=2):
+	# 'eold' and/or 'enew' can be either Entr objects or
+	# XML strings of Entr objects.
+
+	if isinstance (eold, (str, unicode)): eoldxml = eold.splitlines(False)
+	else: eoldxml = entr (eold, wantlist=1, implicit_pos=0)
+	if isinstance (enew, (str, unicode)): enewxml = enew.splitlines(False)
+	else: enewxml = entr (enew, wantlist=1, implicit_pos=0)
 	  # Generate diff and remove trailing whitespace, including newlines.
 	  # Also, skip the <entry> line since they will always differ.
 	rawdiff = difflib.unified_diff (eoldxml, enewxml, n=n)

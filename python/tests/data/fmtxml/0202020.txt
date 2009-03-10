@@ -1,0 +1,5 @@
+﻿<entry>
+<sense>
+<ant>同じ</ant>
+</sense>
+</entry>

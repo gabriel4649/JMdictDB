@@ -1,0 +1,20 @@
+Title:	edict2.xsl handling of non-English glosses
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2009-03-07 14:32:00 stuart
+  The version of edict2.xsl commited after de814571423c (2009-03-07)
+  works without a DTD, but to make this possible, I removed the 
+  expressions that limited glosses to only english.  The stylesheet
+  relied on the DTD providing a default <xml:lang="eng"> tag to all
+  untagged glosses which it used to limit its selection of glosses.
+
+  Need to either: 
+  (1) modify the code to limit gloss selection to untagged glosses
+  or explicitly "eng" tagged glosses, or, 
+  (2) Adopt a convention for tagging non-english glosses in edict
+  and have the stylesheet generate them appropriately.

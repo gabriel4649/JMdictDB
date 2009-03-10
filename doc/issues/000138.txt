@@ -22,3 +22,10 @@ AssdTo:
   This does not apply to output that preceeds abnormal termination
   of the script such as a Python traceback also it might be better
   to use the logging modules to control this stuff.
+
+2008-03-09 16:16:41 stuat
+  In rev 48b54fd5ff8a-2009-02-25 added a simple exception handler
+  (python/lib/cgitbx.py) to the cgi scripts to dump traceback to 
+  page after getting sick of digging the info out of the web server
+  log file on Unix systems.  Did not use standard Python cgitb
+  module because it is overkill and looks ugly as sin.

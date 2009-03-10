@@ -1,0 +1,23 @@
+Title:	include spec2 in edict P criteria
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2009-03-08 15:46:00 stuart
+  While writing tests for xslfmt.py noticed that Jean-Luc Leger's
+  "to_edict2.xsl" stylesheet produces an Edict "(P)" tag when an
+  entry has any kanji or readings with the freq tag, "spec2".
+  The JMdict XML comments say, "The entries with news1, ichi1, 
+  spec1 and gai1 values are marked with a (P) in the EDICT and
+  EDICT2 files." which I used as my criteria for generating P
+  tags in JMdictDB (c.f. pg/mkviews.sql, function 'is_p'.)
+
+  On reviewing the Edict maillist posts, found post from Jean-Luc
+  Leger, "Documenting the P's", 2007-01-02, and a reply from Jim
+  Breen saying the "spec2" was a sufficient criterium for a P, and
+  giving the reasons why.
+
+  Need to update code to take this into account.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2006,2008 Stuart McGraw 
+#  Copyright (c) 2006-2009 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -25,7 +25,7 @@ import sys, cgi
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import cgitbx; cgitbx.enable()
 import jdb, jmcgi
-import fmtxml, fmtjel
+import fmtxml, fmtjel, xslfmt
 
 def main (args, opts):
 	#print "Content-type: text/html\n"
@@ -51,15 +51,16 @@ def main (args, opts):
 		etxts = [fmtxml.entr (e, compat='jmnedict') for e in entries]
 	    elif disp == 'jel':
 		etxts = [fmtjel.entr (e) for e in entries]
-	    elif disp == 'edict':
-		etxts = [fmted.entr (e) for e in entries]
+	    elif disp == 'ed':
+		etxts = [xslfmt.entr (e) for e in entries]
 	    else: 
 		etxts = ['' for e in entries]
 	    jmcgi.htmlprep (entries)
+	    if disp == 'ed': etxts = [jmcgi.txt2html (x) for x in etxts]
 
 	if not errs:
 	    jmcgi.gen_page ('tmpl/entr.tal', macros='tmpl/macros.tal', 
-				entries=zip(entries, etxts),
+				entries=zip(entries, etxts), disp=disp,
 				svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
 				parms=parms, output=sys.stdout, this_page='entr.py')
 	else:

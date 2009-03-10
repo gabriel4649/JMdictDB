@@ -215,6 +215,11 @@ def safe (s):
 	if re.search (r'^[a-zA-Z_][a-zA-Z_0-9]*$', s): return s
 	raise ValueError ()
 
+def txt2html (s, ):
+	s = cgi.escape (s)
+	s = s.replace ('\n', '<br/>\n')
+	return s
+
 def get_entrs (dbh, elist, qlist, errs, active=None, corpus=None):
 	# Retrieve a set of Entr objects from the database, specified
 	# by their entry id and/or seq numbers.

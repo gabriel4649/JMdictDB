@@ -12,6 +12,7 @@
 .caution	{color: #FF0000}
 .notice		{font-size: 55%; color: #FF0000}
 .notes		{font-size: 75%;}
+.preformat	{margin-left: 2em; white-space: pre-wrap; font-family: monospace}
 
 /* Search results list */
 .results	{background: #E8FFF0; 

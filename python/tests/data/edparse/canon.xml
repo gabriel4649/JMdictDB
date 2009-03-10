@@ -1,0 +1,692 @@
+﻿@b1		# Single kanji, reading, sense, gloss.
+<entry>
+<k_ele>
+<keb>漢字</keb>
+</k_ele>
+<r_ele>
+<reb>かんじ</reb>
+</r_ele>
+<sense>
+<gloss>kanji</gloss>
+</sense>
+</entry>
+
+@b2		# Multiple kanji.
+<entry>
+<k_ele>
+<keb>漢字</keb>
+</k_ele>
+<k_ele>
+<keb>文法</keb>
+</k_ele>
+<r_ele>
+<reb>かんじ</reb>
+</r_ele>
+<sense>
+<gloss>kanji</gloss>
+</sense>
+</entry>
+
+@b3		# Multiple readings.
+<entry>
+<k_ele>
+<keb>漢字</keb>
+</k_ele>
+<r_ele>
+<reb>かんじ</reb>
+</r_ele>
+<r_ele>
+<reb>ぶんぽう</reb>
+</r_ele>
+<sense>
+<gloss>kanji</gloss>
+</sense>
+</entry>
+
+@b4		# Multiple senses.
+<entry>
+<k_ele>
+<keb>漢字</keb>
+</k_ele>
+<r_ele>
+<reb>かんじ</reb>
+</r_ele>
+<sense>
+<gloss>sense1</gloss>
+</sense>
+<sense>
+<gloss>sense 2</gloss>
+</sense>
+<sense>
+<gloss>sense number 3</gloss>
+</sense>
+</entry>
+
+@b5		# Multiple glosses
+<entry>
+<k_ele>
+<keb>漢字</keb>
+</k_ele>
+<r_ele>
+<reb>かんじ</reb>
+</r_ele>
+<sense>
+<gloss>gloss1</gloss>
+<gloss>gloss 2</gloss>
+<gloss>gloss number 3</gloss>
+</sense>
+</entry>
+
+@b6	# Multiple kanji, readings, senses, glosses.
+<entry>
+<k_ele>
+<keb>夕べ</keb>
+</k_ele>
+<k_ele>
+<keb>夕</keb>
+</k_ele>
+<k_ele>
+<keb>昨夜</keb>
+</k_ele>
+<r_ele>
+<reb>ゆうべ</reb>
+</r_ele>
+<r_ele>
+<reb>ゆう</reb>
+</r_ele>
+<r_ele>
+<reb>さくや</reb>
+</r_ele>
+<sense>
+<gloss>sense1 gloss1</gloss>
+</sense>
+<sense>
+<gloss>sense2 gloss1</gloss>
+<gloss>sense2 gloss2</gloss>
+<gloss>sense2 gloss3</gloss>
+</sense>
+<sense>
+<gloss>sense3 gloss1</gloss>
+<gloss>sense3 gloss2</gloss>
+</sense>
+</entry>
+
+#====== Incomplete entries =============
+
+@b101
+<entry>
+<k_ele>
+<keb>漢字</keb>
+</k_ele>
+</entry>
+
+@b102
+<entry>
+<r_ele>
+<reb>かんじ</reb>
+</r_ele>
+</entry>
+
+@b103	# Theis may be a fmtxml error... 
+	# Should there be an empty <sense> element?
+<entry>
+</entry>
+
+@b104
+<entry>
+<sense>
+<gloss>kanji</gloss>
+</sense>
+</entry>
+
+#====== Reading restrictions. ========
+
+@r1 	# One restr.
+<entry>
+<k_ele>
+<keb>夕べ</keb>
+</k_ele>
+<k_ele>
+<keb>夕</keb>
+</k_ele>
+<k_ele>
+<keb>昨夜</keb>
+</k_ele>
+<r_ele>
+<reb>ゆうべ</reb>
+</r_ele>
+<r_ele>
+<reb>ゆう</reb>
+</r_ele>
+<r_ele>
+<reb>さくや</reb>
+<re_restr>昨夜</re_restr>
+</r_ele>
+<sense>
+<gloss>evening</gloss>
+</sense>
+</entry>
+
+@r2 	# Restr on multiple readings.
+<entry>
+<k_ele>
+<keb>夕べ</keb>
+</k_ele>
+<k_ele>
+<keb>夕</keb>
+</k_ele>
+<k_ele>
+<keb>昨夜</keb>
+</k_ele>
+<r_ele>
+<reb>ゆうべ</reb>
+</r_ele>
+<r_ele>
+<reb>ゆう</reb>
+<re_restr>夕</re_restr>
+</r_ele>
+<r_ele>
+<reb>さくや</reb>
+<re_restr>昨夜</re_restr>
+</r_ele>
+<sense>
+<gloss>evening</gloss>
+</sense>
+</entry>
+
+@r3	# One reading with multiple restrs.
+<entry>
+<k_ele>
+<keb>夕べ</keb>
+</k_ele>
+<k_ele>
+<keb>夕</keb>
+</k_ele>
+<k_ele>
+<keb>昨夜</keb>
+</k_ele>
+<k_ele>
+<keb>何か</keb>
+</k_ele>
+<r_ele>
+<reb>ゆうべ</reb>
+<re_restr>夕べ</re_restr>
+<re_restr>夕</re_restr>
+<re_restr>昨夜</re_restr>
+</r_ele>
+<r_ele>
+<reb>ゆう</reb>
+</r_ele>
+<r_ele>
+<reb>さくや</reb>
+</r_ele>
+<sense>
+<gloss>evening</gloss>
+</sense>
+</entry>
+
+@r4	# nokanji
+<entry>
+<k_ele>
+<keb>珈琲</keb>
+</k_ele>
+<r_ele>
+<reb>コーヒー</reb>
+</r_ele>
+<r_ele>
+<reb>こーひー</reb>
+</r_ele>
+<sense>
+<gloss>coffee</gloss>
+</sense>
+</entry>
+
+@r5	# Multiple readings with multiple restrs.
+<entry>
+<k_ele>
+<keb>夕べ</keb>
+</k_ele>
+<k_ele>
+<keb>夕</keb>
+</k_ele>
+<k_ele>
+<keb>昨夜</keb>
+</k_ele>
+<k_ele>
+<keb>何か</keb>
+</k_ele>
+<r_ele>
+<reb>ゆうべ</reb>
+<re_restr>夕べ</re_restr>
+<re_restr>夕</re_restr>
+</r_ele>
+<r_ele>
+<reb>ゆう</reb>
+</r_ele>
+<r_ele>
+<reb>さくや</reb>
+<re_restr>夕べ</re_restr>
+<re_restr>昨夜</re_restr>
+<re_restr>何か</re_restr>
+</r_ele>
+<sense>
+<gloss>evening</gloss>
+</sense>
+</entry>
+
+@r6	# Mix of restr with nokanji
+<entry>
+<k_ele>
+<keb>じゃが芋</keb>
+</k_ele>
+<k_ele>
+<keb>ジャガ芋</keb>
+</k_ele>
+<k_ele>
+<keb>馬鈴薯</keb>
+</k_ele>
+<r_ele>
+<reb>じゃがいも</reb>
+<re_restr>じゃが芋</re_restr>
+<re_restr>馬鈴薯</re_restr>
+</r_ele>
+<r_ele>
+<reb>ジャガいも</reb>
+<re_restr>ジャガ芋</re_restr>
+</r_ele>
+<r_ele>
+<reb>ジャガイモ</reb>
+</r_ele>
+<r_ele>
+<reb>ばれいしょ</reb>
+<re_restr>馬鈴薯</re_restr>
+</r_ele>
+<sense>
+<gloss>potato</gloss>
+</sense>
+</entry>
+
+#====== Rinf/Kinf tags ==============
+
+@kri1
+<entry>
+<k_ele>
+<keb>南瓜</keb>
+</k_ele>
+<r_ele>
+<reb>かぼちゃ</reb>
+</r_ele>
+<r_ele>
+<reb>なんか</reb>
+<re_inf>&ok;</re_inf>
+<re_inf>&gikun;</re_inf>
+</r_ele>
+<sense>
+<gloss>Japanese squash</gloss>
+</sense>
+</entry>
+
+@kri2
+<entry>
+<k_ele>
+<keb>治具</keb>
+<ke_inf>&ateji;</ke_inf>
+</k_ele>
+<k_ele>
+<keb>冶具</keb>
+<ke_inf>&iK;</ke_inf>
+<ke_inf>&ateji;</ke_inf>
+</k_ele>
+<r_ele>
+<reb>じぐ</reb>
+</r_ele>
+<sense>
+<gloss>jig (tool)</gloss>
+</sense>
+</entry>
+
+#====== Freq tests =============
+
+@fq11	# "ichi1" tag transmorgified into (P) in edict2.
+<entry>
+<k_ele>
+<keb>一日</keb>
+<ke_pri>spec1</ke_pri>
+</k_ele>
+<r_ele>
+<reb>ついたち</reb>
+<re_pri>spec1</re_pri>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq12	# "spec1" transmorgified into (P) in edict2.
+<entry>
+<k_ele>
+<keb>一日</keb>
+<ke_pri>spec1</ke_pri>
+</k_ele>
+<r_ele>
+<reb>ついたち</reb>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq13	# "gai1" transmorgified into (P) in edict2.
+<entry>
+<k_ele>
+<keb>一日</keb>
+</k_ele>
+<r_ele>
+<reb>ついたち</reb>
+<re_pri>spec1</re_pri>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq14	# "news1" transmorgified into (P) in edict2.
+<entry>
+<k_ele>
+<keb>一日</keb>
+<ke_pri>spec1</ke_pri>
+</k_ele>
+<r_ele>
+<reb>ついたち</reb>
+<re_pri>spec1</re_pri>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq15	# "ichi1" tag transmorgified into (P) in edict2.
+<entry>
+<k_ele>
+<keb>一日</keb>
+<ke_pri>spec1</ke_pri>
+</k_ele>
+<r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq16	# "ichi1" tag transmorgified into (P) in edict2.
+<entry>
+<r_ele>
+<reb>ついたち</reb>
+<re_pri>spec1</re_pri>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq41	# Multiple kanji, readings; freq1 on only K1,R1.
+<entry>
+<k_ele>
+<keb>一日</keb>
+<ke_pri>spec1</ke_pri>
+</k_ele>
+<k_ele>
+<keb>朔日</keb>
+</k_ele>
+<r_ele>
+<reb>ついたち</reb>
+<re_pri>spec1</re_pri>
+</r_ele>
+<r_ele>
+<reb>さくじつ</reb>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq42	# Multiple kanji, readings; freq1 on only K1.
+<entry>
+<k_ele>
+<keb>一日</keb>
+<ke_pri>spec1</ke_pri>
+</k_ele>
+<k_ele>
+<keb>朔日</keb>
+</k_ele>
+<r_ele>
+<reb>ついたち</reb>
+</r_ele>
+<r_ele>
+<reb>さくじつ</reb>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq43	# Multiple kanji, readings; freq1 on only R1.
+<entry>
+<k_ele>
+<keb>一日</keb>
+</k_ele>
+<k_ele>
+<keb>朔日</keb>
+</k_ele>
+<r_ele>
+<reb>ついたち</reb>
+<re_pri>spec1</re_pri>
+</r_ele>
+<r_ele>
+<reb>さくじつ</reb>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq44	# Multiple kanji, readings; freq1 on  K1,R2.
+<entry>
+<k_ele>
+<keb>一日</keb>
+<ke_pri>spec1</ke_pri>
+</k_ele>
+<k_ele>
+<keb>朔日</keb>
+</k_ele>
+<r_ele>
+<reb>ついたち</reb>
+</r_ele>
+<r_ele>
+<reb>さくじつ</reb>
+<re_pri>spec1</re_pri>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq45	# Multiple kanji, readings; freq1 on  K2,R1.
+<entry>
+<k_ele>
+<keb>一日</keb>
+</k_ele>
+<k_ele>
+<keb>朔日</keb>
+<ke_pri>spec1</ke_pri>
+</k_ele>
+<r_ele>
+<reb>ついたち</reb>
+<re_pri>spec1</re_pri>
+</r_ele>
+<r_ele>
+<reb>さくじつ</reb>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq46	# Multiple kanji, readings; freq1 on K2,R2.
+<entry>
+<k_ele>
+<keb>一日</keb>
+</k_ele>
+<k_ele>
+<keb>朔日</keb>
+<ke_pri>spec1</ke_pri>
+</k_ele>
+<r_ele>
+<reb>ついたち</reb>
+</r_ele>
+<r_ele>
+<reb>さくじつ</reb>
+<re_pri>spec1</re_pri>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq47	# Multiple kanji, readings; freq1 on K2.
+<entry>
+<k_ele>
+<keb>一日</keb>
+</k_ele>
+<k_ele>
+<keb>朔日</keb>
+<ke_pri>spec1</ke_pri>
+</k_ele>
+<r_ele>
+<reb>ついたち</reb>
+</r_ele>
+<r_ele>
+<reb>さくじつ</reb>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq48	# Multiple kanji, readings; freq1 on R2.
+<entry>
+<k_ele>
+<keb>一日</keb>
+</k_ele>
+<k_ele>
+<keb>朔日</keb>
+</k_ele>
+<r_ele>
+<reb>ついたち</reb>
+</r_ele>
+<r_ele>
+<reb>さくじつ</reb>
+<re_pri>spec1</re_pri>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq49	# Multiple kanji, readings; freq1 on K1,K2,R2.
+<entry>
+<k_ele>
+<keb>一日</keb>
+<ke_pri>spec1</ke_pri>
+</k_ele>
+<k_ele>
+<keb>朔日</keb>
+<ke_pri>spec1</ke_pri>
+</k_ele>
+<r_ele>
+<reb>ついたち</reb>
+</r_ele>
+<r_ele>
+<reb>さくじつ</reb>
+<re_pri>spec1</re_pri>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+@fq50	# Multiple kanji, readings; freq1 on K2,R1,R2.
+<entry>
+<k_ele>
+<keb>一日</keb>
+</k_ele>
+<k_ele>
+<keb>朔日</keb>
+<ke_pri>spec1</ke_pri>
+</k_ele>
+<r_ele>
+<reb>ついたち</reb>
+<re_pri>spec1</re_pri>
+</r_ele>
+<r_ele>
+<reb>さくじつ</reb>
+<re_pri>spec1</re_pri>
+</r_ele>
+<sense>
+<gloss>1st day of month</gloss>
+</sense>
+</entry>
+
+#====== senses ==================
+
+@s1		# One pos tag.
+<entry>
+<sense>
+<pos>&n;</pos>
+<gloss>gloss text</gloss>
+</sense>
+</entry>
+
+@s2		# Multiple pos tag.
+<entry>
+<sense>
+<pos>&n;</pos>
+<pos>&vs;</pos>
+<pos>&adj-na;</pos>
+<gloss>gloss text</gloss>
+</sense>
+</entry>
+
+@s21		# All sense tags for checking order.  Sense 
+		#  tag elements in random order to detect 
+		#  (unwanted) dependencies on xml order.
+<entry>
+<k_ele>
+<keb>じゃが芋</keb>
+</k_ele>
+<k_ele>
+<keb>ジャガ芋</keb>
+</k_ele>
+<r_ele>
+<reb>じゃがいも</reb>
+</r_ele>
+<r_ele>
+<reb>ジャガイモ</reb>
+</r_ele>
+<sense>
+<stagk>じゃが芋</stagk>
+<stagr>ジャガイモ</stagr>
+<pos>&n;</pos>
+<pos>&adj-no;</pos>
+<xref>ジャガタラ芋</xref>
+<ant>トマト</ant>
+<misc>&uk;</misc>
+<misc>&obsc;</misc>
+<s_inf>Not a real entry.</s_inf>
+<dial>&ksb;</dial>
+<field>&food;</field>
+<gloss>potato</gloss>
+</sense>
+<sense>
+<gloss>Solanum tuberosum</gloss>
+</sense>
+</entry>

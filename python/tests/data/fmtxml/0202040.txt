@@ -1,0 +1,5 @@
+﻿<entry>
+<sense>
+<xref>同じ・おなじ</xref>
+</sense>
+</entry>

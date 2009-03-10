@@ -1,0 +1,21 @@
+Title:	Support seq/coprpus in unresolved xrefs (Xrslv objects)
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2009-03-09 20:56:00 stuart
+  Currently the <xref> elements in the jmdict-ex.xml DTD 
+  allow for including seq number and corpus information 
+  (via attributes) in addition to the kanji, reading, and
+  sense info in the xref element value.
+  However, if the xref is not imediately resolved to an
+  Xref upon reading, there is no way to preserve this 
+  information in an Xrslv object.
+
+  Also consider: xref order is lost if some xrefs are in
+  the Entr's _xref list and some in its _xrslv list.  
+  Perhaps we should have single _xref list containing both
+  Xref and Xrslv objects?

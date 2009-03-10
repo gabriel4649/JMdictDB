@@ -19,39 +19,36 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-This xslt stylesheet (originally named to_edict2.xsl) will convert
-JMdict XML entries to Edict2 format when used in the following sh
-script:
-
-  sed 's/ENTITY \([^ ]*\) ".*"/ENTITY \1 "\1"/' $1 | \
-  xsltproc edict2.xsl - | \
-  iconv -c -f UTF-8 -t EUC-JP - | \
-  sort > $2
+This xslt stylesheet will convert JMdict_e XML entries to Edict2 format.
+(Caution: unlike verion de814571423c (2009-03-07) of this file, this
+version works correctly only with JMdict XML that contains only English
+language glosses.  
 -->
 
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:output method="text"/>
 
 <xsl:template match="/">
-  <xsl:apply-templates select="JMdict/entry[ent_seq &lt; '9000000']"/>
+  <xsl:apply-templates select="/JMdict/entry"/>
 </xsl:template>
 
 <xsl:template match="entry">
+
   <xsl:apply-templates select="k_ele" />
 
   <xsl:apply-templates select="r_ele" />
 
   <xsl:text > /</xsl:text>
 
-  <xsl:apply-templates select="sense[count(gloss[@xml:lang='eng']) > 0]" />
+  <xsl:apply-templates select="sense" />
 
-  <xsl:if test="count(k_ele/ke_pri[.='ichi1' or .='jdd1' or .='gai1' or .='spec1' or .='news1' or .='spec2']) > 0 or count(r_ele/re_pri[.='ichi1' or .='jdd1' or .='gai1' or .='spec1' or .='news1' or .='spec2']) > 0">
+  <xsl:if test="count(k_ele/ke_pri[.='ichi1' or .='gai1' or .='spec1' or .='news1' or .='spec2']) > 0 or count(r_ele/re_pri[.='ichi1' or .='gai1' or .='spec1' or .='news1' or .='spec2']) > 0">
     <xsl:text>(P)/</xsl:text>
   </xsl:if>
 
   <xsl:apply-templates select="ent_seq" />
 
-  <xsl:text >
+  <xsl:text>
 </xsl:text>
 
 </xsl:template>
@@ -68,7 +65,7 @@ script:
   </xsl:if>
   <xsl:value-of select="keb" />
   <xsl:apply-templates select="ke_inf" />
-  <xsl:if test="last() > 1 and (ke_pri = 'ichi1' or ke_pri = 'jdd1' or ke_pri = 'gai1' or ke_pri = 'spec1' or ke_pri = 'news1' or ke_pri = 'spec2')">
+  <xsl:if test="last() > 1 and (ke_pri = 'ichi1' or ke_pri = 'gai1' or ke_pri = 'spec1' or ke_pri = 'news1' or ke_pri = 'spec2')">
     <xsl:text>(P)</xsl:text>
   </xsl:if>
 </xsl:template>
@@ -89,7 +86,7 @@ script:
   <xsl:value-of select="reb" />
   <xsl:apply-templates select="re_restr" />
   <xsl:apply-templates select="re_inf" />
-  <xsl:if test="last() > 1 and (re_pri = 'ichi1' or re_pri = 'jdd1' or re_pri = 'gai1' or re_pri = 'spec1' or re_pri = 'news1' or re_pri = 'spec2')">
+  <xsl:if test="last() > 1 and (re_pri = 'ichi1' or re_pri = 'gai1' or re_pri = 'spec1' or re_pri = 'news1' or re_pri = 'spec2')">
     <xsl:text>(P)</xsl:text>
   </xsl:if>
 
@@ -141,7 +138,7 @@ script:
   <xsl:apply-templates select="dial" />
   <xsl:apply-templates select="field" />
 
-  <xsl:apply-templates select="gloss[@xml:lang='eng']" />
+  <xsl:apply-templates select="gloss" />
 </xsl:template>
 
 <xsl:template match="pos">

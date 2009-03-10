@@ -156,7 +156,7 @@ class Sens (DbRow):
     def __init__ (s, entr=None, sens=None, notes=None, 
 		     _gloss=None, _pos=None, _misc=None, _fld=None, 
 		     _dial=None, _lsrc=None, _stagr=None, _stagk=None,
-		     _xref=None, _xrer=None, _xunr=None):
+		     _xref=None, _xrer=None, _xrslv=None):
 	DbRow.__init__(s,  (entr,  sens,  notes),
 			  ('entr','sens','notes'))
 	s._gloss = _gloss or []
@@ -169,7 +169,7 @@ class Sens (DbRow):
 	s._stagk = _stagk or []
 	s._xref  = _xref  or []
 	s._xrer  = _xrer  or []
-	s._xunr  = _xunr  or []
+	s._xrslv = _xrslv or []
 
 class Gloss (DbRow):
     def __init__ (s, entr=None, sens=None, gloss=None, lang=None, ginf=None, txt=None):

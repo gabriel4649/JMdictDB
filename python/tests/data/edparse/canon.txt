@@ -1,0 +1,44 @@
+﻿b1: 漢字 [かんじ] /kanji/
+b2: 漢字;文法 [かんじ] /kanji/
+b3: 漢字 [かんじ;ぶんぽう] /kanji/
+b4: 漢字 [かんじ] /(1) sense1/(2) sense 2/(3) sense number 3/
+b5: 漢字 [かんじ] /gloss1/gloss 2/gloss number 3/
+b6: 夕べ;夕;昨夜 [ゆうべ;ゆう;さくや] /(1) sense1 gloss1/(2) sense2 gloss1/sense2 gloss2/sense2 gloss3/(3) sense3 gloss1/sense3 gloss2/
+b101: 漢字 [] /
+b102: かんじ /
+b103:  /
+b104:  /kanji/
+
+r1: 夕べ;夕;昨夜 [ゆうべ;ゆう;さくや(昨夜)] /evening/
+r2: 夕べ;夕;昨夜 [ゆうべ;ゆう(夕);さくや(昨夜)] /evening/
+r3: 夕べ;夕;昨夜;何か [ゆうべ(夕べ;昨夜;夕);ゆう;さくや] /evening/
+r4: 珈琲 [コーヒー;こーひー] /coffee/
+r5: 夕べ;夕;昨夜;何か [ゆうべ(夕べ;夕);ゆう;さくや(昨夜;夕べ;何か)] /evening/
+r6: じゃが芋;ジャガ芋;馬鈴薯 [じゃがいも(じゃが芋;馬鈴薯);ジャガいも(ジャガ芋);ジャガイモ;ばれいしょ(馬鈴薯)] /potato/
+
+kri1: 南瓜 [かぼちゃ;なんか(ok)(gikun)] /Japanese squash/
+kri2: 治具(ateji);冶具(iK)(ateji) [じぐ] /jig (tool)/
+
+fq11: 一日 [ついたち] /1st day of month/(P)/
+fq12: 一日(P) [ついたち] /1st day of month/(P)/
+fq13: 一日 [ついたち(P)] /1st day of month/(P)/
+fq14: 一日(P) [ついたち(P)] /1st day of month/(P)/
+fq15: 一日 /1st day of month/(P)/
+fq16: ついたち /1st day of month/(P)/
+
+fq41: 一日(P);朔日 [ついたち(P);さくじつ] /1st day of month/(P)/
+fq42: 一日(P);朔日 [ついたち;さくじつ] /1st day of month/(P)/
+fq43: 一日;朔日 [ついたち(P);さくじつ] /1st day of month/(P)/
+fq44: 一日(P);朔日 [ついたち;さくじつ(P)] /1st day of month/(P)/
+fq45: 一日;朔日(P) [ついたち(P);さくじつ] /1st day of month/(P)/
+fq46: 一日;朔日(P) [ついたち;さくじつ(P)] /1st day of month/(P)/
+fq47: 一日;朔日(P) [ついたち;さくじつ] /1st day of month/(P)/
+fq48: 一日;朔日 [ついたち;さくじつ(P)] /1st day of month/(P)/
+fq49: 一日(P);朔日(P) [ついたち;さくじつ(P)] /1st day of month/(P)/
+fq50: 一日;朔日(P) [ついたち(P);さくじつ(P)] /1st day of month/(P)/
+
+s1:  /(n) gloss text/
+s2:  /(n,vs,adj-na) gloss text/
+
+# Tag order.
+s21: じゃが芋;ジャガ芋 [じゃがいも;ジャガイモ] /(n,adj-no) (1) (じゃが芋, ジャガイモ only) (Not a real entry.) (See ジャガタラ芋) (ant: トマト) (uk) (obsc) (ksb:) {food} potato/(2) Solanum tuberosum/

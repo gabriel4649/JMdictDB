@@ -1,7 +1,7 @@
 Title:	Speed up "starts" searches.
 Stat:	open
 Disp:	
-Prio:	med
+Prio:	low
 Cats:	dev
 Reqtrs:	
 AssdTo:	stuart@friix.com

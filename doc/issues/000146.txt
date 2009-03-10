@@ -11,8 +11,27 @@ AssdTo:	stuart
   generating files for use in other systems since it is a 
   widely used format.
 
+  An edict formating function in the python api would also
+  be useful for producing entry summary lines in reports and
+  such.
+
+  Another wish list item would be database function that 
+  generated edict text lines which would make edict available 
+  to any app with access to the database.
+
 2009-02-26 11:26:00 stuart
   In email "Re: jmdictdb progress", 2009-02-09 and 2009-02-24, Jim 
   Breen mentions that he has some XSLT written by Jean-Luc Leger that
   will transform jmdict xml into edict.  If that xslt is shareable, 
   it might be the easiet way to generate edict format.
+  However it requires an xslt and operates on a full xml file (with
+  dtd)
+
+2009-03-09 15:27:00 stuart
+  Adding python/lib/xslfmt.py, a function to apply an arbitrary
+  xslt stylesheet to an jmdictdb wml-formatted entry.  By applying
+  python/lib/edict2.xsl (a modified version of Jean-Luc Leger's 
+  to_edict2.xsl stylesheet), edict2 formtted text can be generated
+  from with jmdictdb xml, or a jmdictdb Entr object.
+  Have also started writing a conventional Entr->Edict format
+  function.

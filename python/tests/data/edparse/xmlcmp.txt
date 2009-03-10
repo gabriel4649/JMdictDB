@@ -1,0 +1,31 @@
+﻿# Basic KR/S lexical processing
+b1: 漢字 [かんじ] /kanji/
+b2: 漢字 かんじ /kanji/
+b3: 漢字 [] //
+b4: 漢字 []//
+b5:  かんじ //
+b6:  [かんじ] //
+b7: かんじ//
+b8: [かんじ]//
+b9: /kanji/
+b10: /kanji
+b11: / kanji
+b12: / kanji /
+b13:  / kanji/
+b14:   / kanji/
+
+r1: 漢字;文法 [かんじ] /kanji/
+r2: 漢字 [かんじ;ぶんぽう] /kanji/
+
+x1:  /(See 同じ) gloss/
+x2:  /(See おなじ) gloss/
+x3:  /(See 同じ・おなじ) gloss/
+x4:  /(See 同じ・おなじ・2) gloss/
+x5:  /(See 同じ・2) gloss/
+x6:  /(See おなじ・2) gloss/
+x7:  /(See 位・くらい) gloss/
+x8:  /(See ＧＡＴＴ) gloss/
+x9:  /(See カレーライス) gloss/
+
+
+

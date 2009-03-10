@@ -1,0 +1,26 @@
+﻿q1000230: あかん /(osb:) (int,n) useless/no good/hopeless/
+q1000540: あらわに /(adv) frankly/
+q1043140: ギャロップ;ガロップ /(n) (1) (ギャロップ only) gallop/(2) galop (dance)/
+q1172510: うな丼;鰻丼;うなぎ丼 [うなどん(うな丼;鰻丼);うなぎどんぶり(うなぎ丼;鰻丼)] /(n) bowl of eel and rice (donburi)/
+q1217980: 願わくわ [ねがわくわ(ik)] /(exp) (misspelling of 願わくは;ねがわくは) (See 願わくは) I pray/
+q1244760: 駆け込み(P);駆込み [かけこみ] /(n) last-minute rush/stampede/(P)/
+q1270440: おみ籤(P);御神籤;お神籤 [おみくじ] /(n) (leading to 大吉, 中吉, 小吉, 吉, 末吉, 凶 or 大凶) (uk) written oracle/(P)/
+q1310500: うまく行く(P);上手くいく(P);上手く行く;旨くいく;旨く行く [うまくいく] /(v5k-s) to go smoothly/to turn out well/to do the trick/to have peaceful relations/(P)/
+q1664910: 愚案;愚計 [ぐあん(愚案);ぐけい(愚計)] /(n) foolish plan/one's plan/
+q1956130: 躯;骸;身 [むくろ] /(n) (dead) body/corpse/
+q1985450: あらまし /(adv,n) (1) {comp} outline/gist/abstract/(2) roughly/about/
+q2007200: ありあり /(adj-f,adv-to,on-mim) (uk) distinct/clear/vivid/
+q2087350: お釈迦様;御釈迦様;お釈迦さん [おしゃかさま(お釈迦様;御釈迦様);おしゃかさん] /(n) Buddha/Shakyamuni/
+q2157980: えべっさん;おいべっさん;えびっさん;おべっさん;およべっさん /(n) (えべっさん can be 戎っさん) (See 恵比寿) (col) Ebisu (local dialect forms)/
+
+t014: マグネットバイク /(n) (See エアロバイク) magnetic bike/magnetic exercise bike/trans: magnet bike/
+t015: 闇夜に烏 [やみよにからす] /(exp) (See 闇夜の烏) something indistinct (lit: a crow in a pitch-black night)/
+t016: 雨後の筍;雨後の竹の子 [うごのたけのこ] /(exp) similar things turning up one after another/lit: bamboo shoots after rain/
+t017: 音楽コンクール [おんがくコンクール] /(n) musical competition (fre: concours)/
+t018: 米;米突 [メートル] /(n) (1) (uk) metre (fre:)/meter/(2) (See メーター) meter (i.e. a gauge)/gauge/(P)/
+t019: 浪漫;浪曼 [ろうまん;ロマン(P);ローマン] /(n) (1) romance (i.e. Arthurian romances) (fre: roman)/(2) novel/(3) romance/(P)/
+t020: アイス /(n) (1) ice (eng: ice, ger: Eis)/(2) (See アイスクリーム) (abbr) ice cream/icecream/(P)/
+t021: アイロニー;アイアロニ;イロニー /(n) irony (fre: ironie, ger: Ironie)/
+t022: アスピーテ /(n) Aspite (ger:)/
+t023: アマン /(n) lover (fre: amant, amante)/
+t024: プリプリ;ぷりぷり;ぶりぶり /(adv,n,vs) (1) (on-mim) angrily/in a huff/in anger/(2) high on marijuana/(3) (ぷりぷり, プリプリ only) tender (to chew)/

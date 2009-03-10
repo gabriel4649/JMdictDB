@@ -1,4 +1,4 @@
-﻿\set ON_ERROR_STOP 1
+\set ON_ERROR_STOP 1
 BEGIN;
 
 COPY kwsrc(id,kw,descr,dt,notes,seq,sinc,smin,smax) FROM STDIN;

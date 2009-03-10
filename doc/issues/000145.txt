@@ -15,3 +15,9 @@ AssdTo:	stuart
   Have already started this a few months ago and have some
   basic code and tests.
 
+2009-03-09 15:23:00 stuart
+  Commiting edparse.py, an edict2 parser written from scratch
+  (after review didn't like the code I'd written before).
+  I lot of my understanding of edict2 format came from Jean-
+  Luc Leger's "to_edict2.xsl stylesheet, added to jmdictdb as
+  python/lib/edict2.xsl.

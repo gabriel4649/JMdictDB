@@ -1,4 +1,4 @@
-Title:	Brackets in reading cause parse error
+﻿Title:	Brackets in reading cause jelparse error
 Stat:	open
 Disp:	
 Prio:	high
@@ -8,7 +8,7 @@ AssdTo:	stuart@friix.com
 
 2007-07-28 00:00:00 stuart@friix.com
   The following text (which occurs in one of my mnn17 flash card entries)
-  causes a jbparser parse error when included in the "reading" section of
+  causes a jelparse parse error when included in the "reading" section of
   an edit submission:
     ［おふろに］はいります
   Problem seems to be the brackets which are classified as kanji

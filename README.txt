@@ -144,7 +144,10 @@ fine with earlier or later versions, but this has not been
 verified.
 
   Postgresql [8.2 or 8.3]
-  Python [2.5.2]
+  Python [2.5.2] 
+    Note that Python-2.5 and -2.5.1 have somebugs in the codecs
+    module that will cause some jmdictdb tests to fail.
+  Additional Python packages:
     psycopg2-2.0.5.1 Python-Postgresql connector.
       http://initd.org/projects/psycopg2/
       http://stickpeople.com/projects/python/win-psycopg/ (Windows)
@@ -155,6 +158,8 @@ verified.
       [Python-2.6 and later includes simplejson as module "json".]
     ply-2.5 -- YACC'ish parser generator.
       http://www.dabeaz.com/ply/
+    lxml-2.1.5 -- XML/XSLT library.  Used by xslfmt.py for doing
+      xml->edict2 conversion.
     wxPython-2.8.9.1 -- (Optional) JMdictDB inludes a simple
       GUI interface to the database that is similar to the
       cgi interface.  To run this requires wxPython.

@@ -115,7 +115,8 @@ LIB_FILES = jdb.py \
 	objects.py \
 	serialize.py \
 	tal.py \
-	xmlkw.py
+	xmlkw.py \
+	xslfmt.py
 WEB_LIB	= $(addprefix $(LIB_DIR)/,$(LIB_FILES))
 
 PYLIB_FILES = __init__.py \

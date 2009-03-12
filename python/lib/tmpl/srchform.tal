@@ -8,7 +8,7 @@
 </head>
 <body class="srchfrm">
   <div metal:use-macro="macros/macros/login">
-    <h3 metal:fill-slot="title">JMdictDB Search Form</h3>
+    <h3 metal:fill-slot="title">Search Form</h3>
     </div>
   <form action="srchres.py" name="srchres" tal:attributes="method method">
     <table class="form">

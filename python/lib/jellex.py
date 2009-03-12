@@ -1,4 +1,3 @@
-#/usr/bin/env python
 #######################################################################
 #  This file is part of JMdictDB. 
 #  Copyright (c) 2008 Stuart McGraw 
@@ -128,6 +127,10 @@ class LexSpec:
 
     def t_SNUMLIST_NUMBER (self, t):
 	ur'[0-9\uFF10-\uFF19]+'
+	return t
+
+    def t_SNUMLIST_TEXT (self, t):
+	ur'.'
 	return t
 
 # State: GLOSS

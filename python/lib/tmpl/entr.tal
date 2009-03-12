@@ -13,7 +13,7 @@
 </head>
 <body>
   <div metal:use-macro="macros/macros/login">
-    <h1 metal:fill-slot="title">JMdictDB Entries</h1>
+    <h3 metal:fill-slot="title">JMdictDB Entries</h3>
     </div>
   <div class="entry" tal:condition="not:entries"> 
      We're sorry, but the entry(s) you requested are not (or are no longer)

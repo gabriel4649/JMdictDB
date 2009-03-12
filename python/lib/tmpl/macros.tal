@@ -1,31 +1,42 @@
 <div metal:define-macro="login">
   <table width="100%">
     <tr>
-      <td><h1 metal:define-slot="title">Page head text</h1></td>
-      <td align="right" rowspan="1">
+      <td>
+	<h2>JMdictDB - Japanese Dictionary Database</h2>
+	<h3 metal:define-slot="title">Page head text</h3>
+        </td>
+      <td align="right" rowspan="1" class="login">
 	<form name="entrauth" method="post" tal:attributes="action this_page">
 	  <span tal:repeat="p parms" tal:omit-tag="">
 	    <input type="hidden" tal:attributes="name p/0; value p/1"/>
 	    </span>
-	  <span class="loggedin" tal:condition="session">
+	  <span tal:condition="session">
 	    Logged in: <span tal:replace="session/fullname">editor name</span>
 	    <input name="logout" value="Logout" type="submit"/>
 	    </span>
-          <table class="notloggedin" align="right" tal:condition="not:session">
+          <table align="right" tal:condition="not:session">
 	    <tr>
-	      <td>Editor login<br/><input name="login" value="Login" type="submit"/></td>
-	      <td>Username:<br/>Password:</td>
-	      <td>
-		<input name="username" type="text" size="8"/><br/>
-		<input name="password" type="password" size="8"/></td>
-		<input type="hidden" name="svc" tal:condition='svc' tal:attributes="value svc"/>
+	      <td colspan="3">Login for registered editors</td>
+	    <tr>
+	      <td>Username:</td>
+	      <td><input name="username" type="text" size="8"/></td>
+	      <td rowspan="2"><input name="login" value="Login" type="submit"/></td>
 	      </tr>
-	
+	    <tr>
+	      <td>Password:</td>
+	      <td><input name="password" type="password" size="8"/>
+		  <input type="hidden" name="svc" tal:condition='svc' tal:attributes="value svc"/></td>
+	      </tr>
 	    </table>
 	  </form>
 	</td>
       </tr>
-    <tr>
+    </table>
+  </div>
+
+<div metal:define-macro="footer">
+  <table width="100%">
+    <tr class="navlinks">
       <td>
 	<a tal:attributes="href string:srchform.py?svc=${svc}&amp;sid=${sid}&amp;">
 	  New search</a> /
@@ -42,16 +53,20 @@
 	  </span>
 	</td>
       </tr>
-    </table>
-  </div>
-
-<div metal:define-macro="footer">
-  <table width="100%">
-    <tr tal:condition="cfg/web/CONTACT_EMAIL">
-      <td>
+    <tr><td colspan="2"><hr width="100%"/></td></tr>
+    <tr class="foottxt" tal:condition="cfg/web/CONTACT_EMAIL">
+      <td colspan="2">
 	If you have questions about, problems using, or suggestions
 	for improving this page, please send email to 
 	<a tal:attributes="href string:mailto:${cfg/web/CONTACT_EMAIL}" tal:content="cfg/web/CONTACT_EMAIL">email</a>.
+	</td>
+      </tr>
+    <tr clas="foottxt">
+      <td colspan="2">
+        JMdictDB is an open-source Postgresql database and Python API
+        for managing Japanese dictionary data.  It was developed by 
+        Stuart McGraw.  For more information, see 
+        <a href="http://edrdg.org/~smg/">http://edrdg.org/~smg/</a>. 
 	</td>
       </tr>
     </table>

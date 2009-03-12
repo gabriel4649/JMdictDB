@@ -8,7 +8,7 @@
 </head>
 <body class="srchfrm">
   <div metal:use-macro="macros/macros/login">
-    <h1 metal:fill-slot="title">JMdictDB Search Form</h1>
+    <h3 metal:fill-slot="title">JMdictDB Search Form</h3>
     </div>
   <form action="srchres.py" name="srchres" tal:attributes="method method">
     <table class="form">
@@ -269,6 +269,7 @@
       <a href="http://www.csse.monash.edu.au/~jwb/wwwjdicinf.html#code_tag">this page</a>.</li>
     </ul>
   </span>
+<hr width="100%"/>
 <div metal:use-macro="macros/macros/footer"></div>
 </body>
 </html>

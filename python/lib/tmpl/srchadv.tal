@@ -8,7 +8,7 @@
 </head>
 <body class="srchfrm">
   <div metal:use-macro="macros/macros/login">
-    <h1 metal:fill-slot="title">JMdictDB SQL Search</h1>
+    <h3 metal:fill-slot="title">JMdictDB SQL Search</h3>
     </div>
   <div class="entry" tal:condition="not:adv_srch_allowed">
     Advanced search is not available because you do not have 

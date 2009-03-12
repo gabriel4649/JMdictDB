@@ -13,14 +13,14 @@
 </head>
 <body>
   <div metal:use-macro="macros/macros/login">
-    <h1 metal:fill-slot="title">Confirm Submission</h1>
+    <h3 metal:fill-slot="title">Confirm Submission</h3>
     </div>
     Please check the entry below carefully.  It it is what you wish 
     to submit, click the submit button.  Otherwise, use your brower's
     <b>Back</b> button to return to the Edit page and make corrections.
     If you have having a problem entering the information you want,
     please send email to 
-    <a href="mailto:jmdicthelp@somewhere.org">jmdicthelp@somewhere.org</a>
+    <a tal:attributes="href string:mailto:${cfg/web/CONTACT_EMAIL}" tal:content="cfg/web/CONTACT_EMAIL">email</a>.
   <span tal:repeat="e entries">
     <div class="entry">
       <span class="warnings" tal:condition="chklist">

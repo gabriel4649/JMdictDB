@@ -5,8 +5,10 @@
   <title>JMdict Entry Edit Form</title>
 </head>
 <body class="edform">
+  <span tal:condition="not:e/id" tal:define="global page_title string:Enter a new entry"/>
+  <span tal:condition="e/id" tal:define="global page_title string:Edit an existing entry"/>
   <div metal:use-macro="macros/macros/login">
-    <h1 metal:fill-slot="title">JMdictDB Entry Edit Form</h1>
+    <h3 metal:fill-slot="title">Entry Edit Form</h3>
     </div>
   <span tal:repeat="e entrs" tal:omit-tag="">
     <!--? 
@@ -19,9 +21,17 @@
 	<tbody>
 	  <tr>
 	    <td colspan="3">
-	      Use this form to suggest new JMdictDB entries or changes to existing 
-	      entries.  For detailed help on the info required in the various fields, 
-	      please use the "help" links beside each field, or view the
+	      <span tal:condition="e/id" tal:omit-tag="">
+		<h4>Edit an existing entry</h4>
+	        Make corrections to this entry by changing the infomation in
+		the text boxes below.  
+	        </span>
+	      <span tal:condition="not: e/id" tal:omit-tag="">
+		<h4>Enter a new entry</h4>
+	        Enter a new Japanese dictionary entry using the text boxes below.
+	        </span>
+	      For detailed help on the information and syntax required in the various
+	      fields, please use the "help" links beside each field, or view the
 	      <a href="edhelp.py"> full help file here</a>.
 	      <p/>
 	      </td>
@@ -33,10 +43,6 @@
 
 	      <!-- Entry block -->
 	      <table width="100%">
-
-		<tr tal:condition="not:e/id">
-		  <td colspan="4">New Entry</td></tr>
-
 		<tr tal:condition="e/id">
 		  <td colspan="2">Status: 
 		    <span tal:condition="e/stat" tal:replace="python:TALdescr('STAT',e.stat)">status</span>
@@ -167,6 +173,7 @@
 		  </select>
 		<a class="helplink" target="edhelp" href="edhelp.py#action">help</a>
 		</span>
+	      <input type="Reset" value=" Reset "/> &nbsp;
 
 	      <input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
 	      <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
@@ -232,6 +239,6 @@
     </span>
   <span class="notes">
     </span>
-  <div metal:use-macro="macros/macros/footer"></div>
+  <div metal:use-macro="macros/macros/footer"/>
 </body>
 </html>

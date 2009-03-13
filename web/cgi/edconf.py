@@ -70,8 +70,8 @@ def main (args, opts):
 	  # These are the JEL (JMdict Edit Language) texts which
 	  # we will concatenate into a string that is fed to the
 	  # JEL parser which will create an Entr object.
-	kanj = url_str ('kanj', form)
-	rdng = url_str ('rdng', form)
+	kanj = url_str ('kanj', form).replace('\n', ' ')
+	rdng = url_str ('rdng', form).replace('\n', ' ')
 	sens = url_str ('sens', form)
 	intxt = "\n".join ((kanj, rdng, sens))
 

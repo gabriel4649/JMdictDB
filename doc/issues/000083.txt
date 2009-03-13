@@ -17,3 +17,25 @@ AssdTo:	stuart@friix.com
 
 2007-07-28 00:00:00 stuart@friix.com
   See also task-26: "Kana-kanji determination".
+
+2009-03-13 07:03:00 stuart
+  Jwb adopted specific rule for <reb> and <keb> content, see IS-26.
+  However that does not help this issue because we need to be able
+  to handle entries that violate them, the flash card entry noted
+  above for example.
+
+2009-03-13 07:04:00 stuart
+  Modified jelparse to require that the kanji part of an entry 
+  go entirely in the first lines, the reading part entirely in
+  the second line, and the senses in the third and successive lines.
+  That is, fomerly jelparse accepted KANJI<ws>READINGS<ws>SENSES
+  (where <ws> is whitespace) but now reuires NEWLINES ('\n') in 
+  place of <ws>.  This allows the parser to distinguish kanji and 
+  readings by line position rather than character content.
+
+  Modified python/lib/fmtjel.py to generate jel fmt text accordingly.
+  Modified the test_jelparse tests (mainly the input and expected
+  output data files) accordingly.  Some tests that previously passed
+  (e.g, all input text in a single line) now pass by expecting a
+  SyntaxError.  Changed web/cgi/edform.py to combine the kanji, reading,
+  and sense text box strings accordingly. 

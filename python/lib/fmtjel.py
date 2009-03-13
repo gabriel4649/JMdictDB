@@ -219,9 +219,9 @@ def entr (entr, nohdr=False):
 	k = getattr (entr, '_kanj', [])
 	r = getattr (entr, '_rdng', [])
 	s = getattr (entr, '_sens', [])
-	if k: sects.append (kanjs (k)) 
-	if r: sects.append (rdngs (r, k))
-	if s: sects.append (senss (s, k, r))
+	sects.append (kanjs (k)) 
+	sects.append (rdngs (r, k))
+	sects.append (senss (s, k, r))
 	txt = '\n'.join (sects)
 	return txt
 

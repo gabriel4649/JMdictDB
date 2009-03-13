@@ -1,3 +1,4 @@
-あさひ
+﻿あさひ
+
 [1][n]
   skips-most-stations Jouetsu-line Shinkansen

@@ -1,3 +1,4 @@
+﻿
 あら[ichi1]
 [1][int][fem]
   oh; ah

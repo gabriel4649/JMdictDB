@@ -73,16 +73,16 @@ def p_entr_1(p):
     p[0] = e
 
 def p_preentr_1(p):
-    '''preentr : rdngsect senses'''
-    p[0] = jdb.Entr(_rdng=p[1], _sens=p[2])
+    '''preentr : kanjsect NL rdngsect NL senses'''
+    p[0] = jdb.Entr(_kanj=p[1], _rdng=p[3], _sens=p[5])
 
 def p_preentr_2(p):
-    '''preentr : kanjsect senses'''
-    p[0] = jdb.Entr(_kanj=p[1], _sens=p[2])
+    '''preentr : NL rdngsect NL senses'''
+    p[0] = jdb.Entr(_rdng=p[2], _sens=p[4])
 
 def p_preentr_3(p):
-    '''preentr : kanjsect rdngsect senses'''
-    p[0] = jdb.Entr(_kanj=p[1], _rdng=p[2], _sens=p[3])
+    '''preentr : kanjsect NL NL senses'''
+    p[0] = jdb.Entr(_kanj=p[1], _sens=p[4])
 
 def p_kanjsect_1(p):
     '''kanjsect : kanjitem'''
@@ -93,11 +93,11 @@ def p_kanjsect_2(p):
     p[0] = p[1];  p[0].append (p[3])
 
 def p_kanjitem_1(p):
-    '''kanjitem : KTEXT'''
+    '''kanjitem : krtext'''
     p[0] = jdb.Kanj(txt=p[1])
 
 def p_kanjitem_2(p):
-    '''kanjitem : KTEXT taglists'''
+    '''kanjitem : krtext taglists'''
     kanj = jdb.Kanj(txt=p[1])
     err = bld_kanj (kanj, p[2])
     if err: perror (p, err)
@@ -112,15 +112,23 @@ def p_rdngsect_2(p):
     p[0] = p[1];  p[0].append (p[3])
 
 def p_rdngitem_1(p):
-    '''rdngitem : RTEXT'''
+    '''rdngitem : krtext'''
     p[0] = jdb.Rdng(txt=p[1])
 
 def p_rdngitem_2(p):
-    '''rdngitem : RTEXT taglists'''
+    '''rdngitem : krtext taglists'''
     rdng = jdb.Rdng(txt=p[1])
     err = bld_rdng (rdng, p[2])
     if err: perror (p, err)
     p[0] = rdng
+
+def p_krtext_1(p):
+    '''krtext : KTEXT'''
+    p[0] = p[1]
+
+def p_krtext_2(p):
+    '''krtext : RTEXT'''
+    p[0] = p[1]
 
 def p_senses_1(p):
     '''senses : sense'''

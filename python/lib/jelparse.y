@@ -69,13 +69,13 @@ entr	: preentr
 		  # to using the object.
 		p[0] = e }
 	;
-preentr
-	: rdngsect senses
-		{ p[0] = jdb.Entr(_rdng=p[1], _sens=p[2]) }			
-	| kanjsect senses
-		{ p[0] = jdb.Entr(_kanj=p[1], _sens=p[2]) }			
-	| kanjsect rdngsect senses
-		{ p[0] = jdb.Entr(_kanj=p[1], _rdng=p[2], _sens=p[3]) }
+preentr			
+	: kanjsect NL rdngsect NL senses
+		{ p[0] = jdb.Entr(_kanj=p[1], _rdng=p[3], _sens=p[5]) }
+	| NL rdngsect NL senses
+		{ p[0] = jdb.Entr(_rdng=p[2], _sens=p[4]) }
+	| kanjsect NL NL senses
+		{ p[0] = jdb.Entr(_kanj=p[1], _sens=p[4]) }
 	;
 kanjsect
 	: kanjitem
@@ -84,9 +84,9 @@ kanjsect
 		{ p[0] = p[1];  p[0].append (p[3]) }
 	;
 kanjitem
-	: KTEXT
+	: krtext
 		{ p[0] = jdb.Kanj(txt=p[1]) }
-	| KTEXT taglists
+	| krtext taglists
 		{ kanj = jdb.Kanj(txt=p[1])
 		err = bld_kanj (kanj, p[2])
 		if err: perror (p, err)
@@ -99,13 +99,19 @@ rdngsect
 		{ p[0] = p[1];  p[0].append (p[3]) }			
 	;
 rdngitem
-	: RTEXT
+	: krtext
 		{ p[0] = jdb.Rdng(txt=p[1]) }
-	| RTEXT taglists
+	| krtext taglists
 		{ rdng = jdb.Rdng(txt=p[1])
 		err = bld_rdng (rdng, p[2])
 		if err: perror (p, err)
 		p[0] = rdng }
+	;
+krtext
+	: KTEXT
+		{ p[0] = p[1] }
+	| RTEXT
+		{ p[0] = p[1] }
 	;
 senses
 	: sense

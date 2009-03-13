@@ -109,30 +109,28 @@ class RTpure (unittest.TestCase):
     def test0100010(self): self.check('0100010')  # Basic: 1 kanj, 1 rdng, 1 sens, 1 gloss
     def test0100020(self): self.check('0100020')  # Basic: 1 kanj, 1 sens, 1 gloss
     def test0100030(self): self.check('0100030')  # Basic: 1 rdng, 1 sens, 1 gloss
-    def test0100040(self): self.check('0100040')  # Like 0100010 but all text on one line.
-    def test0100050(self): self.check('0100050')  # Like 0100020 but all text on one line.
-    def test0100060(self): self.check('0100060')  # Like 0100030 but all text on one line.
+    # Following worked up to rev ccc8a44ad8fd-2009-03-12 but are now syntax errors
+	# Like 0100010 but all text on one line.
+    def test0100040(self): self.cherr('0100040',jelparse.ParseError,"Syntax Error")
+	# Like 0100020 but all text on one line.
+    def test0100050(self): self.cherr('0100050',jelparse.ParseError,"Syntax Error")
+	# Like 0100030 but all text on one line.
+    def test0100060(self): self.cherr('0100060',jelparse.ParseError,"Syntax Error")
+        # No rdng or kanj.
+    def test0200010(self): self.cherr('0200010', jelparse.ParseError,"Syntax Error") 
+    def test0200020(self): self.cherr('0200020', jelparse.ParseError,"Syntax Error") 
+
     def check (self, seq): _check (self, seq)
+    def cherr (self, seq, exception, msg): _cherr (self, seq, exception, msg)
 
-class ParseErrors  (unittest.TestCase):
-    def setUp (self):
-	try: Lexer
-	except NameError: globalSetup()
-
-    # No rdng or kanj.
-    def test0200010(self): self.check('0200010', jelparse.ParseError,
-	"Syntax Error") 
-    def test0200020(self): self.check('0200020', jelparse.ParseError,
-	"Unknown keyword: 'z'") 
-
-    def check (self, seq, exception, msg):
+def _cherr (self, seq, exception, msg):
 	global Cur, Lexer, Parser
 	#pdb.set_trace()
 	intxt = unittest_extensions.readfile_utf8 ("data/jelparse/%s.txt" % seq)
         jellex.lexreset (Lexer, intxt)
-	self.assertRaisesMsg (exception, msg, Parser.parse, intxt, lexer=Lexer)
+	_assertRaisesMsg (self, exception, msg, Parser.parse, intxt, lexer=Lexer)
 
-    def assertRaisesMsg (self, exception, message, func, *args, **kwargs):
+def _assertRaisesMsg (self, exception, message, func, *args, **kwargs):
         expected = "Expected %s(%r)," % (exception.__name__, message)
         try:
             func(*args, **kwargs)

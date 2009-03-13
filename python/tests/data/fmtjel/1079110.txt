@@ -1,4 +1,5 @@
-﻿ティッシュペーパー[gai1]
+﻿
+ティッシュペーパー[gai1]
 [1][n]
   [note="not actual \"tissue paper\" in English"]
   (a) tissue; facial tissue(s)

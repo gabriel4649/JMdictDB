@@ -1,3 +1,4 @@
+﻿
 メリヤスシャツ
 [1][n]
   [lsrc=spa:medias,lsrc=por:meias,lsrc=eng:shirt]

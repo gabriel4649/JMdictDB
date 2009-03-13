@@ -1,4 +1,5 @@
-﻿ランプ[gai1]
+﻿
+ランプ[gai1]
 [1][n]
   [lsrc=eng:,lsrc=dut:]
   lamp; light

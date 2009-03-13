@@ -1,4 +1,5 @@
-﻿バイト[gai1,ichi1]
+﻿
+バイト[gai1,ichi1]
 [1][n,vs][abbr]
   [lsrc=ger:Arbeit]
   work (esp. part time or casual)

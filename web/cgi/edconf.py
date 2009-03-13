@@ -81,11 +81,6 @@ def main (args, opts):
 	refs    = url_str ('reference', form)
 	name    = url_str ('name', form)
 	email   = url_str ('email', form)
-	#if not email: errs.append ("Missing email address")
-	#else:
-	#    mo = re.search (r'^[A-Z0-9._%-]+@(?:[A-Z0-9-]+\.)+[A-Z]{2,4}$', email, re.I)
-	#    if not mo:
-	#	errs.append ("Invalid email address: %s" % email)
 
 	  # Parse the entry data.  Problems will be reported
 	  # by messages in 'perrs'.  We do the parse even if 
@@ -93,6 +88,7 @@ def main (args, opts):
 	  # thing to do???) since on the edconf page we want
 	  # to display what the entry was.  The edsubmit page
 	  # will do the actual deletion. 
+
 	entr, perrs = parse (intxt)
 	errs.extend (perrs)
 
@@ -165,6 +161,13 @@ def main (args, opts):
 		dups = find_similar (cur, getattr (entr,'_kanj',[]),
 					getattr (entr,'_rdng',[]), entr.src)
 	        if dups: chklist['dups'] = dups
+		  # FIXME: Should pass list of the kanj/rdng text rather than
+		  #   a pre-joined string so that page can present the list as
+		  #   it wishes.
+		chklist['invkebs'] = ", ".join ([k.txt for k in getattr (entr,'_kanj',[])
+				                       if not jdb.jstr_keb (k.txt)])
+		chklist['invrebs'] = ", ".join ([r.txt for r in getattr (entr,'_rdng',[])
+				                       if not jdb.jstr_reb (r.txt)])
 	    entrs = [entr]
 
 	if not errs:

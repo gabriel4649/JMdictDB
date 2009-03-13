@@ -39,3 +39,14 @@ AssdTo:	stuart@friix.com
   (e.g, all input text in a single line) now pass by expecting a
   SyntaxError.  Changed web/cgi/edform.py to combine the kanji, reading,
   and sense text box strings accordingly. 
+
+2009-03-13 14:28:00 stuart
+  Also fix the test_fmtjel tests.
+  In python/cgi/edconf.py check that the kanji and readings being
+  submitted meet the jwb reb/keb criteria, and if not pass a warning
+  to the edconf page for display, but allow submission even if the
+  criteria is not met. 
+
+  Note that the jelparser will still generate a syntax error if ascii
+  square brackets are used in a kanji or reading.  Use kanji square
+  brackets (U+FF3B, U+FF3D') instead.

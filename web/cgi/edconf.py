@@ -70,17 +70,17 @@ def main (args, opts):
 	  # These are the JEL (JMdict Edit Language) texts which
 	  # we will concatenate into a string that is fed to the
 	  # JEL parser which will create an Entr object.
-	kanj = url_str ('kanj', form) or ''
-	rdng = url_str ('rdng', form) or ''
-	sens = url_str ('sens', form) or ''
+	kanj = url_str ('kanj', form)
+	rdng = url_str ('rdng', form)
+	sens = url_str ('sens', form)
 	intxt = "\n".join ((kanj, rdng, sens))
 
 	  # Get the meta-edit info which will go into the history
 	  # record for this change.
-	comment = url_str ('comment', form)   or ''
-	refs    = url_str ('reference', form) or ''
-	name    = url_str ('name', form)      or ''
-	email   = url_str ('email', form)     or ''
+	comment = url_str ('comment', form)
+	refs    = url_str ('reference', form)
+	name    = url_str ('name', form)
+	email   = url_str ('email', form)
 	#if not email: errs.append ("Missing email address")
 	#else:
 	#    mo = re.search (r'^[A-Z0-9._%-]+@(?:[A-Z0-9-]+\.)+[A-Z]{2,4}$', email, re.I)
@@ -213,8 +213,8 @@ def url_int (name, form, errs):
 	
 def url_str (name, form):
 	v = form.getfirst (name)
-	if v: v = v.decode ('utf-8') 
-	return v
+	if v: v = v.decode ('utf-8').strip(u'\n\r \t\u3000')
+	return v or ''
 
 def copy_snd (fromentr, toentr, replace=False):
 	# Copy the snd items (both Entrsnd and Rdngsnd objects) from

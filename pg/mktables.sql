@@ -154,16 +154,36 @@ CREATE OR REPLACE FUNCTION syncseq() RETURNS VOID AS $syncseq$
     -- (which are used for generation of corpus specific seq numbers.)
     DECLARE cur REFCURSOR; seqname VARCHAR; maxseq INT;
     BEGIN
-	-- Following cursor gets the max value of e.seq for each corpus
-	-- for e.seq values within the range of the associated seq (where
-	-- the range is what was given in kwsrc table.  Since those numbers
-	-- can be changed after the sequence was created, and doing so may
-	-- screwup the operation herein, don't do that!
-	OPEN cur FOR SELECT k.seq, COALESCE(MAX(e.seq),k.smin,1) 
-			FROM entr e JOIN kwsrc k ON k.id=e.src 
-			WHERE e.seq BETWEEN COALESCE(k.smin,1) 
-			    AND COALESCE(k.smax,2147483647)
-			GROUP BY k.seq,k.smin;
+	-- The following cursor gets the max value of entr.seq for each corpus
+	-- for entr.seq values within the range of the associated seq (where
+	-- the range is what was given in kwsrc table .smin and .smax values.  
+	-- [Don't confuse kwsrc.seq (name of the Postgresq1 sequence that
+	-- generates values used for entry seq numbers) with entr.seq (the
+	-- entry sequence numbers themselves).]  Since the kwsrc.smin and
+	-- .smax values can be changed after the sequence was created, and
+	-- doing so may screwup the operation herein, don't do that!  It is 
+	-- also possible that multiple kwsrc's can share a common 'seq' value,
+	-- but have different 'smin' and 'smax' values -- again, don't do that!
+	-- The rather elaborate join below is done to make sure we get a row
+	-- for every kwsrc.seq value, even if there are no entries that
+	-- reference that kwsrc row. 
+
+	OPEN cur FOR 
+	    SELECT ks.sqname, COALESCE(ke.mxseq,ks.smin,1) 
+	    FROM 
+		(SELECT seq AS sqname, MIN(smin) AS smin
+		FROM kwsrc 
+		GROUP BY seq) AS ks
+	    LEFT JOIN	-- Find the max entr.seq number in use, but ignoring
+			-- any that are autside the min/max bounds of the kwsrc's
+			-- sequence.
+		(SELECT k.seq AS sqname, MAX(e.seq) AS mxseq
+		FROM entr e 
+		JOIN kwsrc k ON k.id=e.src 
+		WHERE e.seq BETWEEN COALESCE(k.smin,1)
+		    AND COALESCE(k.smax,9223372036854775807)
+		GROUP BY k.seq,k.smin) AS ke 
+	    ON ke.sqname=ks.sqname;
 	LOOP
 	    FETCH cur INTO seqname, maxseq;
 	    EXIT WHEN NOT FOUND;

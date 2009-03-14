@@ -264,9 +264,7 @@ def chkentr (e, errs):
 def parse (krstext):
 	entr = None; errs = []
 	lexer, tokens = jellex.create_lexer ()
-        parser = jelparse.create_parser (lexer, tokens, module=jelparse,
-					 tabmodule='jelparse_tab',
-					 write_tables=0, optimize=1, debug=1)
+        parser = jelparse.create_parser (lexer, tokens)
         jellex.lexreset (lexer, krstext)
         try: 
 	    entr = parser.parse (krstext, lexer=lexer, tracking=True)

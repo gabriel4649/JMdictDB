@@ -35,3 +35,20 @@ AssdTo:
   target copies it to the cgi lib directory.  All of this 
   together should prevent Ply from needing to regenerate it
   at runtime.
+
+2009-03-13 20:41:00 stuart
+  Re-opened this issue.
+
+  Noticed when running the test_jelparse tests, a parsetab.py
+  file was being created in the tests directory.  Problem was
+  that test_jelparse.py was simply calling jelparse.create_parser()
+  with no special arguments.  web/cgi/edconf.py, which also calls
+  create_parser, does so with several arguments needed to encourge
+  (no way to force) Ply to use the library jelparse_tab files.
+
+  Modified jelparse.create_parser to use these argument values by
+  default if not explicitly overwridden, so that simply calling
+  create_parser() with no args, will use the prebuilt library parse
+  table file.
+
+  Re-closed this issue.

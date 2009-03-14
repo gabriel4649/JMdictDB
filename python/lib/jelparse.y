@@ -884,11 +884,30 @@ def fmt_xitem (xitem):
 	return t + s
 
 def create_parser (lexer, toks, **args):
-	global tokens, JelParser
-	tokens = toks
 	  # Set global JelParser since we need access to it
 	  # from error handling function p_error() and I don't
-	  # know any other way to make it available there. 
+	  # know any other way to make it available there.
+	global tokens, JelParser
+	  # The tokens also have to be global because Ply 
+	  # doesn't believe in user function parameters for
+	  # argument passing.
+	tokens = toks
+
+	  # The following sets default keyword arguments to 
+	  # to Ply's parser factory function.  These are 
+	  # intended to cause it to use the "jelparse_tab.py"
+	  # file that should be in sys.path somewhere (either
+	  # in the development dir's python/lib, or in the 
+	  # web lib dir.) so as to prevent Ply from trying 
+	  # to rebuild it, and worse, writing it like bird
+	  # droppings wherever we happen to be running.
+
+	if 'module'       not in args: args['module']       = sys.modules['jelparse']
+	if 'tabmodule'    not in args: args['tabmodule']    = 'jelparse_tab'
+	if 'write_tables' not in args: args['write_tables'] = 0
+	if 'optimize'     not in args: args['optimize']     = 1 
+	if 'debug'        not in args: args['debug']        = 1
+
 	JelParser = ply.yacc.yacc (**args)
 	JelParser.lexer = lexer	  # Access to lexer needed in error handler.
 	return JelParser

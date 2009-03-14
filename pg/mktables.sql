@@ -161,7 +161,7 @@ CREATE OR REPLACE FUNCTION syncseq() RETURNS VOID AS $syncseq$
 	-- screwup the operation herein, don't do that!
 	OPEN cur FOR SELECT k.seq, COALESCE(MAX(e.seq),k.smin,1) 
 			FROM entr e JOIN kwsrc k ON k.id=e.src 
-			WHERE e.id BETWEEN COALESCE(k.smin,1) 
+			WHERE e.seq BETWEEN COALESCE(k.smin,1) 
 			    AND COALESCE(k.smax,2147483647)
 			GROUP BY k.seq,k.smin;
 	LOOP

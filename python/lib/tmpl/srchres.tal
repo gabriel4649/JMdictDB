@@ -11,7 +11,7 @@
     <h3 metal:fill-slot="title">Search Results</h3>
     </div>
   <div class="results">
-    <form method="get" action="srchres.py" tal:condition="python:p1&lt;pt and len(results)&gt;10">
+    <form action="srchres.py" tal:condition="python:p1&lt;pt and len(results)&gt;10"  tal:attributes="method method">
       <input name="next" value="Next page" type="submit"/> 
       <input type="hidden" name="pt" tal:attributes="value pt"/>
       <input type="hidden" name="p0" tal:attributes="value p0"/>
@@ -21,7 +21,7 @@
       <input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
       <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
       </form>
-    <form method="get" action="entr.py">
+    <form action="entr.py" tal:attributes="method method">
       <span class="caution" tal:condition="not:results">
 	No entries found.
 	</span>
@@ -72,7 +72,7 @@
       <input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
       <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
       </form>
-    <form method="get" action="srchres.py" tal:condition="python:p1&lt;pt and len(results)!=0">
+    <form action="srchres.py" tal:condition="python:p1&lt;pt and len(results)!=0" tal:attributes="method method">
       <input name="next" value="Next page" type="submit"/> 
       <input type="hidden" name="pt"  tal:attributes="value pt"/>
       <input type="hidden" name="p0"  tal:attributes="value p0"/>

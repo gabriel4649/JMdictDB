@@ -34,6 +34,7 @@ def main( args, opts ):
 	cfg_web = d2o (cfg['web'])
 	cfg_srch = d2o (cfg['search'])
 	fv = form.getfirst; fl = form.getlist
+	dbg = fv ('d'); meth = fv ('meth')
 	force_srchres = fv('srchres')  # Force display of srchres page even if only one result.
 	sqlp = (fv ('sql') or '').decode ('utf-8')
 	soj = (fv ('soj') or '').decode ('utf-8')
@@ -126,8 +127,9 @@ def main( args, opts ):
 	    svcstr = ("svc=%s&" % svc) if svc else ''
 	    print "Location: entr.py?%se=%d\n" % (svcstr, rs[0].id)
 	else:
+	    if not meth: meth = 'get' if dbg else 'post'
 	    jmcgi.gen_page ("tmpl/srchres.tal", macros='tmpl/macros.tal', 
-			    results=rs, pt=pgtotal, p0=pgoffset,
+			    results=rs, pt=pgtotal, p0=pgoffset, method=meth,
 			    p1=pgoffset+reccnt, soj=soj, sql=sqlp, parms=parms,
 			    svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
 			    output=sys.stdout, this_page='srchres.py')

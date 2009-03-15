@@ -45,13 +45,15 @@ def main (args, opts):
 	errs = []
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
+	fv = form.getfirst; fl = form.getlist
 	is_editor = jmcgi.is_editor (sess)
-	def_corp = form.getfirst ('c')		# Default corpus for new entries.
-	force_corp = form.getfirst ('f')	# Force default corpus for new entries.
-	active = form.getfirst ('a')		# Limit q entries to active/appr or new..
+	dbg = fv ('d'); meth = fv ('meth')
+	def_corp = fv ('c')	# Default corpus for new entries.
+	force_corp = fv ('f')	# Force default corpus for new entries.
+	active = fv ('a')	# Limit q entries to active/appr or new..
 	if not errs:
-	    elist = form.getlist ('e')	# Entry id numbers.
-	    qlist = form.getlist ('q')  # Seq.corpus identifiers.
+	    elist = fl ('e')	# Entry id numbers.
+	    qlist = fl ('q')	# Seq.corpus identifiers.
 	    if elist or qlist:
 	        entrs = jmcgi.get_entrs (cur, elist, qlist, errs, 
 					 active=active, corpus=def_corp)
@@ -82,10 +84,11 @@ def main (args, opts):
 		    entr.NOCORPOPT = force_corp  
 		    entrs = [entr]
 	if not errs:
+	    if not meth: meth = 'get' if dbg else 'post'
 	    jmcgi.gen_page ('tmpl/edform.tal', macros='tmpl/macros.tal', parms=parms,
-			     entrs=entrs, srcs=srcs, is_editor=is_editor, 
+			     entrs=entrs, srcs=srcs, is_editor=is_editor,
 			     svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
-			     method='get', output=sys.stdout, this_page='edform.py')
+			     method=meth, output=sys.stdout, this_page='edform.py')
 	else:
 	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
 

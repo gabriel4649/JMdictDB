@@ -1642,7 +1642,8 @@ def is_p (entr):
 	return False
 
 #-------------------------------------------------------------------
-# 
+#   The following functions are for accessing entry and reading
+#   audio clips.
 #-------------------------------------------------------------------
 
 class Snds:
@@ -1656,6 +1657,21 @@ class Snds:
 
     def augment_snds (sndrecs):
 	augment_snds (self.cur, sndrecs, self.sels)
+
+def collect_snds (entrs):
+	# Given a list of Entr objects, 'entrs', collect all the
+	# snd's on their Entr and Rdng ._snd lists into a single
+	# list which is returned, typically so the caller can call
+	# augment_snds() on them, for example:
+	#   augment_snds (dbh, collect_snds (entrs))
+	# (The Entr._snd and Rdng._snd lists are not changed.)
+
+	snds = []
+	for e in entrs:
+	   snds.extend (getattr (e, '_snd', []))
+	   for r in getattr (e, '_rdng', []):
+		snds.extend (getattr (r, '_snd', []))
+	return snds
 
 def augment_snds (dbh, snds):
 	# Augment a set of snds with extra information about the 

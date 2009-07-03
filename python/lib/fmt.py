@@ -23,51 +23,41 @@ __version__ = ('$Revision$'[11:-2],
 from collections import defaultdict
 import jdb
 
-def entr (entr):
-	c = getattr (entr, 'chr', None)	# 'c' will be non-None for kanji entries.
-	fmt = "Entry: " + entrhdr (entr)
-	if getattr (entr, 'srcnote', None):
-	    fmt += "\nSrcnote: %s" % entr.srcnote
-	if getattr (entr, 'notes', None):
-	    fmt += "\nNotes: %s" % entr.notes
-	if c:
-	    kanjs = []
-	    ktxt = c.chr
-	else:
-	    kanjs = getattr (entr, '_kanj', [])
-	    ktxt = " ".join([kanj(x) for x in kanjs])
+def entr (entr, wantlist=False):
+	fmt = entrrec (entr)
+	fmt.extend (kanjs (entr))
+	fmt.extend (rdngs (entr))
+	fmt.extend (senss (entr))
+	fmt.extend (char (entr))
+	fmt.extend (audio (entr))
+	fmt.extend (hists (entr))
+	if wantlist: return fmt
+	txt = '\n'.join (fmt)
+	return txt
+
+def kanjs (entr, label="Kanji: "):
+	c = getattr (entr, 'chr', None)
+	if c: return [c]
+	kanjs = getattr (entr, '_kanj', [])
+	ktxt = " ".join([kanj(x) for x in kanjs])
+	if ktxt and label: ktxt = label + ktxt
+	return [ktxt] if ktxt else []
+
+def rdngs (entr, label="Readings: "):
 	rdngs = getattr (entr, '_rdng', [])
+	kanjs = getattr (entr, '_kanj', [])
 	rtxt = " ".join([rdng(x, kanjs) for x in rdngs])
-	if ktxt: fmt += "\nKanji: %s" % ktxt
-	fmt += "\nReading: %s" % rtxt
+	if rtxt and label: rtxt = label + rtxt
+	return [rtxt] if rtxt else []
 
-	  # Print the sense information.
-	emap = {} #dict ([(x.eid, x) for x in entr._erefs])
-
-	for n, s in enumerate (getattr (entr, '_sens', [])):
-	    fmt += "\n%s" % sens (s, kanjs, rdngs, n+1, entr.src)
-
-	grpstxt = grps (entr)
-	if grpstxt: fmt += '\n' + grpstxt
-
-	hdr = False;
-	a = getattr (entr, '_snd', [])
-	if a and not hdr: 
-	    fmt += "\nAudio: ";  hdr = True
-	if a: fmt += snd (a, None)
-	for r in rdngs:
-	    a = getattr (r, '_snd', [])
-	    if a and not hdr:
-		fmt += "\nAudio: ";  hdr = True
-	    if a: fmt += snd (a, r.txt)
-
-	if c: 
-	    fmt += "\n" + chr (c)
-	    fmt += "\n" + cinf (c._cinf)
-	    fmt += "\n" + encodings ([c.chr])
-
-	if hasattr (entr, '_hist'): fmt += hist (entr._hist)
-	fmt += xunrs (entr)
+def senss (entr, label="Senses: "):
+	fmt = []
+	rdngs = getattr (entr, '_rdng', [])
+	kanjs = getattr (entr, '_kanj', [])
+	senss = getattr (entr, '_sens', [])
+	for n, s in enumerate (senss):
+	    fmt.extend (sens (s, kanjs, rdngs, n+1, entr.src))
+	if fmt and label: fmt[0:0] = [label]
 	return fmt
 
 def kanj (k, n=None):
@@ -91,7 +81,7 @@ def rdng (r, k, n=None):
 	return "%s.%s%s%s" % (r.rdng, r.txt, restr, kwds)
 
 def sens (s, kanj, rdng, n=None, entrcorp=None):
-	KW = jdb.KW
+	KW = jdb.KW;  fmt = []
 	  # Part-of-speech, misc keywords, field...
 	pos = ",".join([KW.POS[p.kw].kw for p in getattr (s,'_pos',[])])
 	if pos: pos = "[" + pos + "]"
@@ -111,26 +101,25 @@ def sens (s, kanj, rdng, n=None, entrcorp=None):
 	if hasattr(s,'_dial') and s._dial: 
 	    _dial = ("Dialect:" + ",".join([KW.DIAL[x.kw].kw for x in s._dial])) 
 
-	fmt = "%d. %s" % (getattr(s,'sens',n), ', '.join(
-				[x for x in (stag, pos, misc, fld, _dial, _lsrc) if x]))
-	if hasattr(s,'notes') and s.notes: fmt += "\n  <<%s>>" % s.notes
+	fmt.append ("%d. %s" % (getattr(s,'sens',n), ', '.join(
+				[x for x in (stag, pos, misc, fld, _dial, _lsrc) if x])))
+	if hasattr(s,'notes') and s.notes: fmt.append (u"  \u00AB%s\u00BB" % s.notes)
 
 	  # Now print the glosses...
 	for n, g in enumerate (getattr (s,'_gloss',[])):
-	    fmt += "\n" + gloss (g, n+1)
+	    fmt.append (gloss (g, n+1))
 
 	  # Forward Cross-refs.
-	    
 	if hasattr(s, '_xref'): 
-	    fmt += xrefs (s._xref, "Cross references:", False, entrcorp)
+	    fmt.extend (xrefs (s._xref, "Cross references:", False, entrcorp))
 
 	  # Reverse Cross-refs.
 	if hasattr(s, '_xrer'): 
-	    fmt += xrefs (s._xrer, "Reverse references:", True, entrcorp)
+	    fmt.extend (xrefs (s._xrer, "Reverse references:", True, entrcorp))
 
 	  # Unresolved Cross-refs.
 	if hasattr (s, '_xrslv'):
-	    fmt += xrslvs (s._xrslv, "Unresolved references:")
+	    fmt.extend (xrslvs (s._xrslv, "Unresolved references:"))
 
 	return fmt
 
@@ -141,6 +130,15 @@ def gloss (g, n=None):
 	if g.lang != KW.LANG['eng'].id: kws.append (KW.LANG[g.lang].kw)
 	kwstr = ('[%s] ' % ','.join(kws)) if kws else ''
 	fmt = "  %d. %s%s" % (getattr (g, 'gloss', n), kwstr, g.txt)
+	return fmt
+
+def char (entr):
+	fmt = [] 
+	c = getattr (entr, 'chr', None)
+	if not c: return fmt
+	fmt.extend (chr (c))
+	fmt.extend (cinf (c._cinf))
+	fmt.extend (encodings ([c.chr]))
 	return fmt
 
 def lsrc (x):
@@ -157,7 +155,7 @@ def lsrc (x):
 	return fmt
 
 def xrefs (xrefs, sep=None, rev=False, entrcorp=None):
-	fmtstr = '';  sep_done = False
+	fmt = [];  sep_done = False
 	for x in xrefs:
 
 	    txt = xref (x, rev, entrcorp)
@@ -169,13 +167,13 @@ def xrefs (xrefs, sep=None, rev=False, entrcorp=None):
 	      # cross-refs.
 
 	    if sep and not sep_done: 
-		fmtstr += '\n  ' + sep
+		fmt.append ('  ' + sep)
 		sep_done = True
 
 	      # Print the xref info.
 
-	    fmtstr += '\n    %s' % txt
-	return fmtstr
+	    fmt.append ('    %s' % txt)
+	return fmt
 
 def xref (xref, rev=False, entrcorp=None):
 	KW = jdb.KW
@@ -185,7 +183,7 @@ def xref (xref, rev=False, entrcorp=None):
 	eidtxt = str(getattr (xref, eattr))
 	snum = getattr (xref, sattr)
 	stxt = '[' + str(snum) + ']'
-	glosses = '';  kr = []; seq = ''; corp = None
+	glosses = '';  kr = []; seqtxt = ''; corp = None
 	targ = getattr (xref, 'TARG', None)
 	if targ:
 	    seqtxt = str (targ.seq)
@@ -197,23 +195,23 @@ def xref (xref, rev=False, entrcorp=None):
 	    if len(targ._sens) == 1: stxt = ''
 	    glosses = ' ' + '; '.join([x.txt for x in targ._sens[snum-1]._gloss])
 	t = (KW.XREF[xref.typ].kw).capitalize() + ': '
-	corp = '' if entrcorp == corp else (KW.SRC[corp].kw + ' ')
+	corp = '' if (entrcorp == corp or corp is None) else (KW.SRC[corp].kw + ' ')
 	enum = "%s%s[%s] " % (corp, seqtxt, eidtxt)
 	return t + enum + u'\u30fb'.join(kr) + stxt + glosses
 
 def xrslvs (xr, sep=None):
-	fmtstr = '';  sep_done = False
+	fmt = [];  sep_done = False
 	for x in xr:
 	      # Print a separator line, the first time round the loop.
 	      # The seperator text is passed by the caller because 
 	      # it depends on whether we are doing forward or reverse
 	      # cross-refs.
 	    if sep and not sep_done: 
-		fmtstr += '\n  ' + sep
+		fmt.append ('  ' + sep)
 		sep_done = True
 	      # Print the xref info.
-	    fmtstr += '\n    %s' % xrslv (x)
-	return fmtstr
+	    fmt.append ('    %s' % xrslv (x))
+	return fmt
 
 def xrslv (xr):
 	KW = jdb.KW
@@ -223,25 +221,37 @@ def xrslv (xr):
 	t = (KW.XREF[xr.typ].kw).capitalize() + ': '
 	return t + kr
 
+def audio (entr, label="Audio: "):
+	fmt = [];  hdr = False
+	a = getattr (entr, '_snd', [])
+	if a and label and not hdr: 
+	    fmt.append (label);  hdr = True
+	if a: fmt.append (snd (a, None))
+	for r in getattr (entr, '_rdng', []):
+	    a = getattr (r, '_snd', [])
+	    if a and label and not hdr:
+		fmt.append (label);  hdr = True
+	    if a: fmt.append (snd (a, r.txt))
+	return fmt
+
 def snd (snd_list, rtxt=None):
 	fmt = ", ".join ([str(x.snd) for x in snd_list]) 
 	if rtxt: fmt =  "(%s): %s" (rtxt, fmt)
 	return fmt
 
-def hist (hists):
-	KW = jdb.KW
-	if not hists: return ''
-	fmt = "\nHistory:" 
-	for h in hists:
+def hists (entr, label="History: "):
+	KW = jdb.KW;  fmt = []
+	for n, h in enumerate (getattr (entr, '_hist', [])):
 	    stat = getattr (h, 'stat', '')
 	    if stat: stat = KW.STAT[stat].kw
 	    unap = '*' if getattr (h, 'unap', '') else ''
 	    email =  ("<%s>" % h.email) if h.email else ''
-	    fmt += "\n  %s%s %s %s<%s>" \
-		    % (stat, unap, h.dt, h.name or '', email)
-	    if h.notes: fmt += "\n  Comments:\n" + indent (h.notes, 4)
-	    if h.refs: fmt += "\n  Refs:\n" + indent (h.refs, 4)
-	    if h.diff:  fmt += "\n  Diff:\n" + indent (h.notes, 4)
+	    fmt.append ("%d. %s%s %s %s%s" \
+		    % (n+1, stat, unap, h.dt, h.name or '', email))
+	    if h.notes: fmt.extend (["  Comments:", indent (h.notes, 4)])
+	    if h.refs:  fmt.extend (["  Refs:", indent (h.refs, 4)])
+	    if h.diff:  fmt.extend (["  Diff:", indent (h.notes, 4)])
+	if fmt and label: fmt[0:0] = [label]
 	return fmt
 
 def entrhdr (entr):
@@ -254,7 +264,15 @@ def entrhdr (entr):
 	if stat: stat = KW.STAT[stat].kw
 	unap = '(pend)' if getattr (entr, 'unap', '') else ''
 	idtxt = (" {%s}" % id) if id is not None else ''
-	fmt = "%s %s %s%s%s" % (src, seq, stat, unap, idtxt)
+	txt = "%s %s %s%s%s" % (src, seq, stat, unap, idtxt)
+	return txt
+
+def entrrec (entr, label="Entry: "):
+	fmt = [label + entrhdr (entr)]
+	if entr.srcnote: fmt.append ("SrcNote: " + entr.srcnote)
+	if entr.notes: fmt.append ("Note: " + entr.notes)
+	grpstxt = grps (entr, label="Group(s): ")
+	if grpstxt: fmt.append (grpstxt)
 	return fmt
 
 def indent (s, n):
@@ -319,7 +337,7 @@ def chr (c):
 	if getattr (c, 'grade', None): a.append ("grade: %d" % c.grade)
 	if getattr (c, 'jlpt', None): a.append ("jplt: %d" % c.jlpt)
 	if a: fmt.append ("  " + ', '.join (a))
-	return '\n'.join (fmt)
+	return fmt
 
 def cinf (f):
 	fmt = ['Character info:']
@@ -329,7 +347,7 @@ def cinf (f):
 	    d[r.abbr].append (r)
 	for abbr,rs in sorted (d.items(), key=lambda x:x[0]):
 	    fmt.append ("  %s: %s" % (abbr, ', '.join (x.value for x in rs)))
-	return '\n'.join (fmt)
+	return fmt
 
 def xunrs (e):
 	# Format unresolved xrefs.
@@ -340,13 +358,14 @@ def xunrs (e):
 		k = getattr (x,'ktxt','') or ''; r = getattr (x,'rtxt','') or ''
 		t = k + (u'\u30FB' if k and r else '') + r
 		fmt.append ("    Sense %d: %s %s" % (n+1, KW.XREF[x.typ].kw, t))
-	if fmt: fmt.insert (0, '\n  Unresolved xrefs:')
-	return '\n'.join (fmt)
+	if fmt: fmt.insert (0, '  Unresolved xrefs:')
+	return fmt
 
-def grps (e):
+def grps (e, label="Group(s): "):
 	KW = jdb.KW
-	s = ','.join ([KW.GRP[x.kw].kw for x in getattr (e, '_grp', [])])
-	if s: s = "Group(s): %s" % s
+	s = ','.join (["%s(%s)" % (KW.GRP[x.kw].kw, x.ord)
+			 for x in getattr (e, '_grp', [])])
+	if s and label: s = label + s
 	return s
 
 def encodings (strs):
@@ -354,8 +373,7 @@ def encodings (strs):
 	       '  Unicode: %s' % '; '.join ([ucshex (s) for s in strs])]
 	for enc in ('utf-8', 'iso-2022-jp', 'sjis', 'euc-jp'):
 	    fmt.append ("  %s: %s" % (enc.upper(), '; '.join ([repr (s.encode (enc)) for s in strs])))
-	return '\n'.join (fmt)
+	return fmt
 
 def ucshex (s):
 	 return ' '.join (["%0.4X" % jdb.uord(c) for c in s])
-

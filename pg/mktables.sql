@@ -194,7 +194,7 @@ CREATE OR REPLACE FUNCTION syncseq() RETURNS VOID AS $syncseq$
 
 
 CREATE TABLE entr (
-    id SERIAL NOT NULL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     src SMALLINT NOT NULL,
     stat SMALLINT NOT NULL,
     seq INT NOT NULL CHECK(seq>0),
@@ -235,9 +235,9 @@ CREATE TRIGGER entr_seqdef BEFORE INSERT ON entr
 
 CREATE TABLE rdng (
     entr INT NOT NULL,
-    rdng SMALLINT NOT NULL CHECK(rdng>0),
+    rdng SMALLINT NOT NULL CHECK (rdng>0),
     txt VARCHAR(2048) NOT NULL,
-    PRIMARY KEY(entr,rdng));
+    PRIMARY KEY (entr,rdng));
 --CREATE INDEX rdng_txt ON rdng(txt);
 --CREATE UNIQUE INDEX rdng_txt1 ON rdng(entr,txt);
 --CREATE INDEX rdng_txt2 ON rdng(txt varchar_pattern_ops); --For fast LIKE 'xxx%'
@@ -245,9 +245,9 @@ CREATE TABLE rdng (
 
 CREATE TABLE kanj (
     entr INT NOT NULL,
-    kanj SMALLINT NOT NULL CHECK(kanj>0),
+    kanj SMALLINT NOT NULL CHECK (kanj>0),
     txt VARCHAR(2048) NOT NULL,
-    PRIMARY KEY(entr,kanj));
+    PRIMARY KEY (entr,kanj));
 --CREATE INDEX kanj_txt ON kanj(txt);
 --CREATE UNIQUE INDEX kanj_txt1 ON kanj(entr,txt);
 --CREATE INDEX kanj_txt2 ON kanj(txt varchar_pattern_ops); --For fast LIKE 'xxx%'
@@ -255,19 +255,19 @@ CREATE TABLE kanj (
 
 CREATE TABLE sens (
     entr INT NOT NULL,
-    sens SMALLINT NOT NULL CHECK(sens>0),
+    sens SMALLINT NOT NULL CHECK (sens>0),
     notes TEXT,
-    PRIMARY KEY(entr,sens));
+    PRIMARY KEY (entr,sens));
 --ALTER TABLE sens ADD CONSTRAINT sens_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE gloss (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
-    gloss SMALLINT NOT NULL CHECK(gloss>0),
+    gloss SMALLINT NOT NULL CHECK (gloss>0),
     lang SMALLINT NOT NULL DEFAULT 1,
     ginf SMALLINT NOT NULL DEFAULT 1,
     txt VARCHAR(2048) NOT NULL,
-    PRIMARY KEY(entr,sens,gloss));
+    PRIMARY KEY (entr,sens,gloss));
 --CREATE INDEX gloss_txt ON gloss(txt); 
 --CREATE UNIQUE INDEX gloss_txt1 ON gloss(entr,sens,lang,txt);
 --CREATE INDEX gloss_txt2 ON gloss(lower(txt) varchar_pattern_ops); --For case-insensitive LIKE 'xxx%'
@@ -278,12 +278,12 @@ CREATE TABLE gloss (
 CREATE TABLE xref (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
-    xref SMALLINT NOT NULL CHECK(xref>0),
+    xref SMALLINT NOT NULL CHECK (xref>0),
     typ SMALLINT NOT NULL,
-    xentr INT NOT NULL CHECK(xentr!=entr),
+    xentr INT NOT NULL CHECK (xentr!=entr),
     xsens SMALLINT NOT NULL,
     rdng SMALLINT,
-    kanj SMALLINT CHECK(kanj IS NOT NULL OR rdng IS NOT NULL),
+    kanj SMALLINT CHECK (kanj IS NOT NULL OR rdng IS NOT NULL),
     notes TEXT,
     PRIMARY KEY (entr,sens,xref));
     --## The following index disabled because it is violated by Examples file xrefs.
@@ -297,7 +297,7 @@ CREATE TABLE xref (
 
 CREATE TABLE hist (
     entr INT NOT NULL,
-    hist SMALLINT NOT NULL CHECK(hist>0),
+    hist SMALLINT NOT NULL CHECK (hist>0),
     stat SMALLINT NOT NULL,
     unap BOOLEAN NOT NULL,
     dt TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -307,7 +307,7 @@ CREATE TABLE hist (
     diff TEXT,
     refs TEXT,
     notes TEXT,
-    PRIMARY KEY(entr,hist));
+    PRIMARY KEY (entr,hist));
 --CREATE INDEX hist_dt ON hist(dt);
 --CREATE INDEX hist_email ON hist(email);
 --CREATE INDEX hist_userid ON hist(userid);
@@ -434,7 +434,7 @@ CREATE TABLE grp (
 -------------------------------
 
 CREATE TABLE sndvol (	-- Audio media volume (directory, CD, etc)
-    id SERIAL NOT NULL PRIMARY KEY,	-- Volume id.
+    id SERIAL PRIMARY KEY,		-- Volume id.
     title VARCHAR(50),			-- Volume title (for display).
     loc VARCHAR(500),			-- Volume location (directory name or CD id).
     type SMALLINT NOT NULL,		-- Volume type, 1:file, 2:cd
@@ -445,7 +445,7 @@ CREATE TABLE sndvol (	-- Audio media volume (directory, CD, etc)
 --ALTER TABLE sndvol ADD CONSTRAINT sndvol_corp_fkey FOREIGN KEY(corp) REFERENCES kwsrc(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 CREATE TABLE sndfile (	-- Audio file, track, etc.
-    id SERIAL NOT NULL PRIMARY KEY,	-- File id.
+    id SERIAL PRIMARY KEY,		-- File id.
     vol INT NOT NULL,			-- Volume id (in table sndvol).
     title VARCHAR(50),			-- File title (for display).
     loc VARCHAR(500),			-- File location in vol (filename or track number).
@@ -455,7 +455,7 @@ CREATE TABLE sndfile (	-- Audio file, track, etc.
 --ALTER TABLE sndfile ADD CONSTRAINT sndfile_vol_fkey FOREIGN KEY(vol) REFERENCES sndvol(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 CREATE TABLE snd (	-- Audio sound clip.
-    id SERIAL NOT NULL PRIMARY KEY,	-- Sound id.
+    id SERIAL PRIMARY KEY,		-- Sound id.
     file SMALLINT NOT NULL,		-- File id (in table sndfile).
     strt INT NOT NULL DEFAULT(0),	-- Start of clip in file (10ms units).
     leng INT NOT NULL DEFAULT(0),	-- Length of clip in file (10ms units).
@@ -467,7 +467,7 @@ CREATE TABLE entrsnd (	-- Entry to sound clip map.
     entr INT NOT NULL,		-- Entry id.
     ord SMALLINT NOT NULL,	-- Order in entry.
     snd INT NOT NULL,		-- Sound id.
-    PRIMARY KEY(entr,snd));
+    PRIMARY KEY (entr,snd));
 --CREATE INDEX entrsnd_snd ON entrsnd(snd);
 --ALTER TABLE entrsnd ADD CONSTRAINT entrsnd_entr_fkey FOREIGN KEY(snd) REFERENCES snd(id) ON UPDATE CASCADE ON DELETE CASCADE;
 --ALTER TABLE entrsnd ADD CONSTRAINT entrsnd_entr_fkey1 FOREIGN KEY(entr) REFERENCES entr(id) ON UPDATE CASCADE ON DELETE CASCADE;
@@ -477,7 +477,7 @@ CREATE TABLE rdngsnd (	-- Reading to sound clip map.
     rdng INT NOT NULL,		-- Reading number.
     ord SMALLINT NOT NULL,	-- Order in reading.
     snd INT NOT NULL,		-- Sound id.
-    PRIMARY KEY(entr,rdng,snd));
+    PRIMARY KEY (entr,rdng,snd));
 --CREATE INDEX rdngsnd_snd ON rdngsnd(snd);
 --ALTER TABLE rdngsnd ADD CONSTRAINT rdngsnd_entr_fkey FOREIGN KEY(snd) REFERENCES snd(id) ON UPDATE CASCADE ON DELETE CASCADE;
 --ALTER TABLE rdngsnd ADD CONSTRAINT rdngsnd_entr_fkey1 FOREIGN KEY(entr,rdng) REFERENCES rdng(entr,rdng) ON UPDATE CASCADE ON DELETE CASCADE;
@@ -497,7 +497,7 @@ CREATE TABLE xresolv (
     tsens SMALLINT,		-- Target sense number.
     notes VARCHAR(250),		-- Notes.
     prio BOOLEAN DEFAULT FALSE,	-- True if this is a Tanaka corpus exemplar.
-    PRIMARY KEY(entr,sens,typ,ord),
+    PRIMARY KEY (entr,sens,typ,ord),
     CHECK (rtxt NOTNULL OR ktxt NOTNULL));
 --CREATE INDEX xresolv_rdng ON xresolv(rtxt);
 --CREATE INDEX xresolv_kanj ON xresolv(ktxt);
@@ -508,12 +508,12 @@ CREATE TABLE xresolv (
 --  Kanjidic tables
 -------------------
 
-CREATE TABLE kwcinf(
+CREATE TABLE kwcinf (
     id SMALLINT PRIMARY KEY,
     kw VARCHAR(50) NOT NULL UNIQUE,
     descr VARCHAR(250));
 
-CREATE TABLE rad(
+CREATE TABLE rad (
     num SMALLINT NOT NULL,	-- Radical (bushu) number.
     var SMALLINT NOT NULL,	-- Variant number.
     rchr CHAR(1),		-- Radical character from unicode blocks CJK radicals
@@ -554,8 +554,7 @@ CREATE TABLE kresolv(
     entr INT NOT NULL,
     kw SMALLINT NOT NULL,
     value VARCHAR(50) NOT NULL,
-    PRIMARY KEY(entr,kw,value));
+    PRIMARY KEY (entr,kw,value));
 --ALTER TABLE kresolv ADD CONSTRAINT kresolv_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 -- No FK constraint on 'kw' (to kwcinf) because it may have a value of
 -- 0, meaning 'ucs', which we don't need or want to be a real cinf item.
-

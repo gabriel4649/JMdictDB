@@ -83,8 +83,12 @@ class DbRow (Obj):
     def __cmp__ (self, other):
 	return _compare (self, other)
     def copy (self):
-	c = sel ()
+	c = self.__class__()
 	c.__dict__.update (self.__dict__)
+	return c
+    def new (self):
+	c = self.__class__()
+	c.__init__ ([None]*len(self.__cols__), self.__cols__)
 	return c
 
 def _p (o):

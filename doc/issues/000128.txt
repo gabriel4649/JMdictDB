@@ -34,5 +34,15 @@ AssdTo:
   changeset e3b3244ded86 (2008-10-29).
 
 2008-11-24 12:46:40 sysad
-  To do: pg/mkviews.sql: dupentr function still refers to obsolete
+  To do: 
+
+  * pg/mkviews.sql: dupentr function still refers to obsolete
   table 'audio' rather than replacement tables 'rdngsnd' and 'entrsnd'.
+
+  * entr.cgi: snd preparation is only done on entr._snd, not 
+  _rdng[*]._snd.
+
+  * jdb,augment_snd adds clip info but how to get file, dir info?
+
+  * fmt.py (and toolsthat use it like shentr.py) displays only the
+  clip id number when lising audio clips.

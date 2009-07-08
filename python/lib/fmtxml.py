@@ -532,9 +532,9 @@ def corpus (corpuses):
 	    if getattr (kwo, 'dt',    None): fmt.append ('<co_date>%s</co_date>'   % KW.SRC[c].dt)
 	    if getattr (kwo, 'notes', None): fmt.append ('<co_notes>%s</co_notes>' % esc(KW.SRC[c].notes))
 	    if getattr (kwo, 'seq',   None): fmt.append ('<co_sname>%s</co_sname>' % esc(KW.SRC[c].seq))
-	    if getattr (kwo, 'sinc',  None): fmt.append ('<co_sinc>%s</co_sinc>'   % esc(KW.SRC[c].seq))
-	    if getattr (kwo, 'smin',  None): fmt.append ('<co_smin>%s</co_smin>'   % esc(KW.SRC[c].seq))
-	    if getattr (kwo, 'smax',  None): fmt.append ('<co_smax>%s</co_smax>'   % esc(KW.SRC[c].seq))
+	    if getattr (kwo, 'sinc',  None): fmt.append ('<co_sinc>%d</co_sinc>'   % KW.SRC[c].sinc)
+	    if getattr (kwo, 'smin',  None): fmt.append ('<co_smin>%d</co_smin>'   % KW.SRC[c].smin)
+	    if getattr (kwo, 'smax',  None): fmt.append ('<co_smax>%d</co_smax>'   % KW.SRC[c].smax)
 	    fmt.append ('</corpus>')
 	return fmt
 

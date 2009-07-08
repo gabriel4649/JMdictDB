@@ -129,6 +129,19 @@ def dblastid (dbh, table):
 	rs = dbh.fetchone()
 	return rs[0]
 
+def dbexecsp (cursor, sql, args, savepoint_name="sp"):
+	# Execute a sql statement with a savepoint.  If the statement succeeds,
+	# the savepint is deleted.  If the statement fails, the database state
+	# is rolled back to the savepoint and the failure exception reraised.
+	cursor.execute ("SAVEPOINT %s" % savepoint_name)
+	try:
+	    cursor.execute (sql, args)
+	except jdb.dbapi.Error, e:
+	    cursor.execute ("ROLLBACK TO %s" % savepoint_name)
+	    raise e
+	else:
+	    cursor.execute ("RELEASE %s" % savepoint_name)
+
 def get_query_cost (cur, sql, sql_args=None):
 	# Return Postgresql's idea of the cost of executing the the
 	# given sql statement with the given args.  The cost is a

@@ -295,6 +295,6 @@ class Sndfile (DbRow):
 			  ('id','vol','title','loc','type','notes'))
 
 class Sndvol (DbRow):
-    def __init__ (s, id=None, title=None, loc=None, type=None, notes=None):
-	DbRow.__init__(s, ( id,  title,  loc,  type,  notes),
-			  ('id','title','loc','type','notes'))
+    def __init__ (s, id=None, title=None, loc=None, type=None, idstr=None, corp=None, notes=None):
+	DbRow.__init__(s, ( id,  title,  loc,  type,  idstr,  corp,  notes),
+			  ('id','title','loc','type','idstr','corp','notes'))

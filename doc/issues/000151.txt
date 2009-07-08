@@ -1,0 +1,19 @@
+Title:	Jmparse erroneously processing ampersand chars
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2009-07-04 18:26:00 stuart
+  After a fresh load of jmdict into the database, noticed that
+  entry seq 1206100 has gloss in sense 4:
+
+    > third degree (of the Japanese amp Chinese pentatonic scale)
+
+  The "amp" should have been "&", and is correctly "&amp;" in
+  the input jmdict XML file:
+
+    <gloss>third degree (of the Japanese &amp; Chinese pentatonic scale)</gloss>
+

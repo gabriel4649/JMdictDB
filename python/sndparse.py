@@ -33,7 +33,7 @@ def main (args, opts):
 	workfiles = pgi.initialize (opts.tempdir)
 	snd_iter = jmxml.parse_sndfile (inpf)
 	for obj, typ, lineno in snd_iter:
-	    pgi.wrrow (obj, workfiles[m[typ]])
+	    pgi._wrrow (obj, workfiles[m[typ]])
 	pgi.finalize (workfiles, args[1], delfiles=(not opts.keep), transaction=True)
 
 from optparse import OptionParser, OptionGroup

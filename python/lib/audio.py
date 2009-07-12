@@ -26,6 +26,7 @@ from lrucache import LRUCache
 # We import mciError to make it available from this module to
 # users of Audio, CD since any of those can raise it.
 import mci; from mci.constants import *; from mci import mciError 
+import time
 
 class Cd:
     def __init__ (self, devid):
@@ -71,8 +72,12 @@ class Audio:
 	  # 'start' and 'leng' are in seconds (float ok)
 	devid = self.getFlDevId (dir, fname)
 	flags = wait * MCI_WAIT
-	end = 0
-	if leng != 0: end = (start + leng) * 1000
+	end = 0; pad = 400 #400 mS
+	  # For reasons I don't understand, when I play a segment based on times
+	  # determined by Audacity, the end of the clip is truncated.  'pad' is
+	  # a hack to compensate for this, although I am not currently sure if 
+	  # the problem is with mci, or audacity.
+	if leng != 0: end = (start + leng) * 1000 + pad
 	mci.Play (devid, flags, int(start * 1000), int(end))
 
     def getCdDevId (self):

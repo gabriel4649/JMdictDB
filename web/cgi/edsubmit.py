@@ -142,7 +142,7 @@ def main( args, opts ):
         #raise RuntimeError
 	if not errs:
 	    try: entrs = serialize.unserialize (fv ("entr"))
-	    except StandardEror:
+	    except StandardError:
 		errs.append ("Bad 'entr' parameter, unable to unserialize.")
 	if not errs:
 	    added = []

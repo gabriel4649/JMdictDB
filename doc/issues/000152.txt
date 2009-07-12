@@ -1,4 +1,4 @@
-Title:	mci 
+Title:	Audio clips truncated when played
 Stat:	open
 Disp:	
 Prio:	med
@@ -7,7 +7,7 @@ Reqtrs:
 AssdTo:	stuart
 
 2009-07-11 19:44:00 stuart
-  The function audio.playfile() seems to (someyimes? always?)
+  The function audio.playfile() seems to (sometimes? always?)
   truncate the clip being played.  When I play an audio segment
   from an mp3 file with start and length accurately determined
   with Audacity, the last few hundred milliseconds of the clip
@@ -15,7 +15,7 @@ AssdTo:	stuart
 
   Not sure where the problem is.  Could be endpoint calulations
   in my code (audio.py or mci.py), or the times audacity gives
-  have some offset.  Or possiblt the problem is different mp3
+  have some offset.  Or possibly the problem is different mp3
   decoders used by audacity and microsoft's mci.
 
 2009-07-11 19:51:00 stuart

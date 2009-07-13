@@ -44,6 +44,13 @@ Seq = None
 class ParseError (RuntimeError): pass
 class NotFoundError (RuntimeError): pass
 
+def _ent_repl (mo):
+	# This func is used in re.sub() calls below to replace all
+	# but the standard xml entities with ordinary text strings.
+	orig = mo.group(0)
+	if orig in ('&lt;','&gt;','&amp;','&quot;'): return orig
+	return orig[1:-1]
+
 class JmdictFile:
     # Wrap a standard file object and preprocess the lines being
     # read (expectedly by an XML parser) for three purposes: 
@@ -51,9 +58,11 @@ class JmdictFile:
     #   2. Since the XML parser doesn't seem to be able to extract
     #      the JMdict creation date comment (because it is outside
     #      of the root element), we do it here.
-    #   3. Replace entities with non-entity strings of the same 
-    #      textual value.  It is more convinient to work with the
-    #      entity string values than their expanded text values.
+    #   3. Build a map of the jmdict entities defined in the DTD.
+    #   4. Replace jmdict entities with fixed (i.e. non-entity) 
+    #      text strings of the same value (e.g., "&v5r;" -> "v5r")
+    #      It is more convinient to work with the entity string
+    #      values than their expanded text values.
 
     def __init__(self, source):
 	self.source = source;  self.lineno = 0
@@ -63,7 +72,7 @@ class JmdictFile:
 	if self.lineno == 1: 
 	    if s[:3] == '\xef\xbb\xbf': s = s[3:]
 	    if s[0] == u'\uFEFF': s = s[1:]
-	s = re.sub (r'&([a-zA-Z0-9-]+);', r'\1', s)
+	s = re.sub (r'&[a-zA-Z0-9-]+;', _ent_repl, s)
 	if self.created is None and self.lineno < 400:
 	    mo = re.search (r'<!-- ([a-zA-Z]+) created: (\d{4})-(\d{2})-(\d{2}) -->', s)
 	    if mo:
@@ -82,7 +91,7 @@ def parse_entry (txt, dtd=None):
 	# @returns An list of entry objects. 
 
 	if dtd: txt = dtd + txt
-	else: txt = re.sub ('&([a-zA-Z0-9-]+);', r'\1', txt)
+	else: txt = re.sub ('&[a-zA-Z0-9-]+;', _ent_repl, txt)
 	xo = ElementTree.XML (txt)
 	if xo is None:
 	    print "No parse results"

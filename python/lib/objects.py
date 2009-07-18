@@ -102,8 +102,7 @@ def _p (o):
 	if isinstance (o, dict):
 	    if len(o) == 0: return "{}"
 	    else: return "{...}"
-	else: return o.__class__.__name__
-
+	else: return repr (o)
 class _Nothing: pass
 
 def _compare (self, other):

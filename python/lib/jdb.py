@@ -136,7 +136,7 @@ def dbexecsp (cursor, sql, args, savepoint_name="sp"):
 	cursor.execute ("SAVEPOINT %s" % savepoint_name)
 	try:
 	    cursor.execute (sql, args)
-	except jdb.dbapi.Error, e:
+	except dbapi.Error, e:
 	    cursor.execute ("ROLLBACK TO %s" % savepoint_name)
 	    raise e
 	else:
@@ -460,7 +460,17 @@ def mup (attr, parents, pks, childs, fks, pattr=None):
 	  # parent's list, in attribute 'attr'.
 	for c in childs:
 	    ckey = tuple ([getattr (c, x) for x in fks])
-	    for p in (index[ckey]):
+	      # We prevent KeyErrors by using .get() below so that we can build 
+	      # an Entr object even if some of the constitutent records are
+	      # bad.  That can happen in jmedit.py for example when an Entr
+	      # object is built from records that are only partially complete
+	      # of have been changed so that a foreign key refers to rows that
+	      # are not in the parent row set.
+	      # The downside is that we do not detect unintentionally bad data
+	      # rows -- they simply will not appear in the result object.
+	      # FIXME: why do we skip error checking for the benefit of a 
+	      #   single app?
+	    for p in (index.get (ckey, [])):
 		if attr: getattr (p, attr).append (c)
 	    if pattr: setattr (c, pattr, p)
 

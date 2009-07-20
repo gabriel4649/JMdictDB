@@ -235,6 +235,14 @@
 	        </td>
 	      </tr>
 
+	    <tr><td colspan="2"><hr width="100%"/></td></tr>
+	    <tr>
+	      <td colspan="2"><span class="descriptor">Groups:</span>
+	        <input name="grp" size="60"/>
+		<span class="notes"> (Separate multiple groups with spaces.)</span>
+	        </td>
+	      </tr>
+
 	    </table>
 	  </td>
         </tr>

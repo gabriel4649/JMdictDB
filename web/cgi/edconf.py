@@ -74,6 +74,7 @@ def main (args, opts):
 	rdng = url_str ('rdng', form).replace('\n', ' ')
 	sens = url_str ('sens', form)
 	intxt = "\n".join ((kanj, rdng, sens))
+	grpstxt = url_str ('grp', form)
 
 	  # Get the meta-edit info which will go into the history
 	  # record for this change.
@@ -115,21 +116,23 @@ def main (args, opts):
 		entr.seq = seq;   entr.src = src;   
 		entr.stat = KW.STAT['A'].id
 		entr.notes = notes;  entr.srcnote = srcnote; 
+		entr._grp = jelparse.parse_grp (grpstxt)
 
-	          # Copy (shallowly since we won't be changing the copied
-		  # content) content from the original entry to the new
-		  # entry since JEL currently provides no way to specify
-	          # these items.
+		  # This form and the JEL parser provide no way to change
+		  # some entry attributes such _cinf, _snd, and for non-
+		  # editors, _freq.  We need to copy these items from the
+		  # original entry to the new, edited entry to avoid loosing
+		  # them.  The copy can be shallow since we won't be changing
+		  # the copied content. 
 		if pentr: 
 		    if not jmcgi.is_editor (sess): 
 			jdb.copy_freqs (pentr, entr)
-		    if hasattr (pentr, '_grp'): entr._grp = pentr._grp
 		    if hasattr (pentr, '_cinf'): entr._cinf = pentr._cinf
 		    copy_snd (pentr, entr)
 
 	          # Add sound details so confirm page will look the same as the 
 	          # original entry page.  Otherwise, the confirm page will display
-	          # only the sounf clip id(s).
+	          # only the sound clip id(s).
 	        snds = []
 	        for s in getattr (entr, '_snd', []): snds.append (s)
 	        for r in getattr (entr, '_rdng', []):

@@ -42,7 +42,7 @@
 	    <td>
 
 	      <!-- Entry block -->
-	      <table width="100%">
+	      <table width="100%" border="1">
 		<tr tal:condition="e/id">
 		  <td colspan="2">Status: 
 		    <span tal:condition="e/stat" tal:replace="python:TALdescr('STAT',e.stat)">status</span>
@@ -66,12 +66,13 @@
 		    </td>
 		  </tr>
 		<tr tal:condition="e/srcnote">
-		  <td>Src note: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#srcnote">help</a></td>
-		  <td colspan="4" tal:content="e/srcnote">src note</td>
+		  <td colspan="5">Src note: <span tal:content="e/srcnote">src note</span></td>
 		  </tr>
 		<tr tal:condition="e/notes">
-		  <td>Entr note: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#entrnote">help</a></td>
-		  <td colspan="4" tal:content="e/notes">entr note</td>
+		  <td colspan="5">Entr note: <span tal:content="e/notes">entr note</span></td>
+		  </tr>
+		<tr tal:condition="e/_grp">
+		  <td colspan="5">Groups: <span tal:content="python:TALgrps(e)">groups list</span></td>
 		  </tr>
 		</table>
 
@@ -229,6 +230,13 @@
 	      <td colspan="3">
 		<textarea name="notes" tal:condition="not:e/id" wrap="physical" width="100%" cols="60" rows="2"></textarea>
 		<textarea name="notes" tal:condition="e/id" wrap="physical" width="100%" cols="60" rows="2" tal:content="e/notes"></textarea>
+		</td>
+	      </tr>
+	    <tr>
+	      <td>Groups: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py#groups">help</a></td>
+	      <td colspan="3">
+		<textarea name="grp" tal:condition="not:e/id" wrap="physical" width="100%" cols="60" rows="2"></textarea>
+		<textarea name="grp" tal:condition="e/id" wrap="physical" width="100%" cols="60" rows="2" tal:content="python:TALgrps(e)"></textarea>
 		</td>
 	      </tr>
 	    </span>

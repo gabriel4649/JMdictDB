@@ -901,6 +901,17 @@ def fmt_xitem (xitem):
         s = ('[%s]' % ','.join(slist)) if slist else ''
         return t + s
 
+def parse_grp (grpstr):
+        rv = [];  KWGRP = jdb.KW.GRP
+          # FIXME: Handle grp.notes which is currently ignored.
+        for g in grpstr.split (';'):
+            grp, x, ord = g.strip().partition ('.')
+            if grp.isdigit(): grp = int(grp)
+            grp = KWGRP[grp].id
+            ord = int(ord)
+            rv.append (Grp (kw=grp, ord=ord))
+        return rv
+
 def create_parser (lexer, toks, **args):
           # Set global JelParser since we need access to it
           # from error handling function p_error() and I don't

@@ -24,7 +24,7 @@ __version__ = ('$Revision$'[11:-2],
 import sys, cgi, copy
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import cgitbx; cgitbx.enable()
-import jdb, jmcgi, serialize
+import jdb, jmcgi, serialize, jelparse
 
 def main( args, opts ):
 	errs = []; so = None
@@ -55,7 +55,7 @@ def main( args, opts ):
 	    if tl: so.txts = tl
 	    so.pos   = fl('pos');   so.misc  = fl('misc');  so.fld  = fl('fld')
 	    so.rinf  = fl('rinf');  so.kinf  = fl('kinf');  so.freq = fl('freq')
-	    so.grp   = fl('grp')
+	    so.grp   = grpsparse (fv('grp'))
 	    so.src   = fl('src');   so.stat  = fl('stat');  so.unap = fl('appr')
 	    so.nfval = fv('nfval'); so.nfcmp = fv('nfcmp')
 	    so.gaval = fv('gaval'); so.gacmp = fv('gacmp')
@@ -71,6 +71,11 @@ def main( args, opts ):
 	    so = serialize.js2so (soj)
 
 	elif sqlp:
+	      # 'sqlp' is a SQL statement string that allows an arbitrary search.
+	      # Because it can also do other things such as delete the database,
+	      # it should only be run as a user with read-only access to the
+	      # database and it is the job of jmcgi.adv_srch_allowed() to check
+	      # that.
 	    if not jmcgi.adv_srch_allowed (cfg, sess):
 		err_page (["'sql' parameter is disallowed."])
 	    sql = sqlp.strip()
@@ -78,11 +83,18 @@ def main( args, opts ):
 	    sql_args = []
 
 	if so:
-	    condlist = jmcgi.so2conds (so)
+	    try: condlist = jmcgi.so2conds (so)
+	    except ValueError, e:
+		errs.append (unicode (e))
 	      # FIXME: [IS-115] Following will prevent kanjidic entries from
 	      #  appearing in results.  Obviously hardwiring id=4 is a hack.
-	    condlist.append (('entr e', 'e.src!=4', []))
-	    sql, sql_args = jdb.build_search_sql (condlist)
+	    else:
+	        condlist.append (('entr e', 'e.src!=4', []))
+	        sql, sql_args = jdb.build_search_sql (condlist)
+
+	if errs:
+	    err_page (errs)
+	    return
 
 	orderby = "ORDER BY __wrap__.seq,__wrap__.id"
 	sql2 = "SELECT __wrap__.* FROM esum __wrap__ " \
@@ -150,6 +162,10 @@ def d2o (dict_):
 	    except (ValueError,TypeError): pass
 	    setattr (o, k, v)
 	return o
+
+def grpsparse (grpsstr):
+	if not grpsstr: return []
+	return grpsstr.split()
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()

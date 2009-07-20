@@ -132,6 +132,13 @@ def TALkrtxt (parent,attr,idx):
 	return x[idx-1].txt
 
 @add2builtins
+def TALgrps (parent, sep='; '):
+	  # Return a string representing a list of groups.
+	grps = getattr(parent,'_grp',None)
+	if not grps: return ''
+	return sep.join ([fmtjel.grp (x) for x in grps])
+
+@add2builtins
 def TALfmtjel (entr,what):
 	  # Item is _kanj, _rdng, or _sens list.  Return a jel formatted
 	  # string for the item.  

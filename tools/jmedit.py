@@ -847,6 +847,15 @@ class RecordSet:
 	for c,v in zip (colnames, rs[0]):  setattr (row, c, v)
 	if hasattr (row, 'EDITSTAT'): del row.EDITSTAT
 	if hasattr (row, '_changed'): del row._changed
+
+	  # The following is special handling for tuples that have 
+	  # augmented information attached.
+	  # FIXME: Get this app-specific code out of here.
+	if self.table == 'xref': 
+	    jdb.augment_xrefs  (self.cursor, [row])
+	    jdb.add_xsens_lists ([row])
+	    jdb.mark_seq_xrefs (self.cursor, [row])
+
 	if not nonotify: Notify ('data')
 
     def _dbupd (self, pkvals, changes):
@@ -914,8 +923,8 @@ class Model:
 	  # The following three lines notate the xrefs for the  
 	  # benefit of the textual display.
 	jdb.augment_xrefs  (self.cursor, data['xref'])
-	jdb.add_xsens_lists (data['xref'])
-	jdb.mark_seq_xrefs (self.cursor, data['xref'])
+	#jdb.add_xsens_lists (data['xref'])
+	#jdb.mark_seq_xrefs (self.cursor, data['xref'])
 	self.origentrs = copy.deepcopy (self.entrs)
 	for t in self.tables: 
 	    self.recordsets[t] = RecordSet (self.cursor, t, data[t], self.tables[t].cols)
@@ -1055,7 +1064,8 @@ def setup_tables_descr ():
 
 	    'grp':     Table ('grp', False,
 			      [('entr',   1, wx.grid.GRID_VALUE_NUMBER,   None,   SZ_ID),
-			       ('kw',     2, wx.grid.GRID_VALUE_CHOICE,   'GRP',  SZ_KW+30),
+				# There are too many kwgrp values to make 'kw' a choice box below.
+			       ('kw',     2, wx.grid.GRID_VALUE_TEXT,     None,   SZ_TXT),
 			       ('ord',    0, wx.grid.GRID_VALUE_NUMBER,   None,   SZ_FK),
 			       ('notes',  0, wx.grid.GRID_VALUE_TEXT,     None,   SZ_TXT)]),
 

@@ -135,7 +135,7 @@ def main( args, opts ):
 	try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
 	fv = form.getfirst
-
+	dbg = fv ('d'); meth = fv ('meth')
 	disp = fv ('disp') or ''  # '': User submission, 'a': Approve. 'r': Reject;
 	if not sess and disp:
 	    errs.append ("Only registered editors can approve or reject entries")
@@ -159,8 +159,9 @@ def main( args, opts ):
 		if e: added.append (e)
 	if not errs:
 	    dbh.connection.commit()
+	    if not meth: meth = 'get' if dbg else 'post'
 	    jmcgi.gen_page ("tmpl/submitted.tal", macros='tmpl/macros.tal',
-			    added=added, parms=parms,
+			    added=added, parms=parms, meth=meth,
 			    svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
 			    output=sys.stdout, this_page='edsubmit.py')
 	else: 

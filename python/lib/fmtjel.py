@@ -210,6 +210,12 @@ def lsrc (lsrc):
 	if t: t = '/' + t
 	return 'lsrc=' + lang + t + ':' + (qtxt(lsrc.txt))
 
+def grp (grp):
+	KW = jdb.KW
+	  # FIXME: Handle grp.notes which is currently ignored.
+	ord = '' if grp.ord is None else ("." + str (grp.ord))
+	return KW.GRP[grp.kw].kw + ord
+
 def entr (entr, nohdr=False):
 	# We assume that the caller has called jelfmt::markup_xrefs()
 	# on entr before calling fmt_entr() (because jel_xref() uses

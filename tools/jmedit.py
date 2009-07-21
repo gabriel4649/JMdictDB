@@ -51,7 +51,6 @@ class MainFrame (wx.Frame):
 	panel = xrcres.LoadPanel (self, "PANEL1")
 	self.SetMenuBar (xrcres.LoadMenuBar ("MENU1"))
 	self.display = "norm"
-	self.closing = False
 
 	mitem = lambda name: self.MenuBar.FindItemById(wx.xrc.XRCID(name))
 	self.Bind (wx.EVT_MENU, self.Close, mitem('m_close'))
@@ -93,26 +92,20 @@ class MainFrame (wx.Frame):
 	# close.
 	  # Get a list of open TableFrame windows.
 	opentbls = [child for child in self.GetChildren() if isinstance (child, TableFrame)]
-	print >>sys.stderr, 'open tables: %r' % [x.Name for x in opentbls]
-	if opentbls:
-	    if not self.closing: 
-		  # This is the first attempt to close the main window so
-		  # try to close all the open TableFrames.  It seems that 
-		  # the .Close() calls may return before the window in actually
-		  # closed, so cancel this close event, and schedule a new
-		  # one to occur shortly.
-		for tbl in opentbls: tbl.Close()
-		wx.CallAfter (self.Close)
-		self.closing = True
-	    else:
-		  # This is the second attempt to close and there are still 
-		  # TableFrame windows open so cancel the close.
-		self.closing = False
-	    evt.Veto()
-	    return
+	  # Now close them all.  If one or more failed to close, then
+	  # remember that in 'all_closed'.  The .Close() method will 
+	  # return false if the the close was veto'd, true otherwise.
+	  # This doesn't seem to be in docs; info provided by Robin Dunn 
+	  # in the wxPython mailing list, 2009-07-20.
+	all_closed = True
+	for tbl in opentbls: 
+	    closed = tbl.Close()
+	    if not closed: all_closed = False
 
-	# Check if there are any uncommited changes.
-	if self.unsaved_continue ("exiting"):
+	  # Check if there are any uncommited changes, or if there
+	  # are TableFrame windows still open ('all_closed' is False)
+	  # than cancel our close.
+	if self.unsaved_continue ("exiting") and all_closed:
 	    evt.Skip()	# Continue the normal close process.
 	else: 
 	    evt.Veto()	# Cancel the normal close process.

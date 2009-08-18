@@ -903,6 +903,7 @@ def fmt_xitem (xitem):
 
 def parse_grp (grpstr):
         rv = [];  KWGRP = jdb.KW.GRP
+        if not grpstr.strip(): return rv
           # FIXME: Handle grp.notes which is currently ignored.
         for g in grpstr.split (';'):
             grp, x, ord = g.strip().partition ('.')

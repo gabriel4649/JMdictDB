@@ -32,3 +32,4 @@
 32	nelson_rad	Radical number given in nelson_c.
 33	skip_mis	SKIP code misclassification.
 34	s_h	"""The Kanji Dictionary"" by Spahn and Hadamitzky."
+35	maniette	"Codes from Yves Maniette's ""Les Kanjis dans la tete"" French adaptation of Heisig."

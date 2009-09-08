@@ -482,11 +482,11 @@ def mup (attr, parents, pks, childs, fks, pattr=None):
 	# In some external representations such as JMdict XML, these
 	# resttrictions are given as text strings that list the kanji,
 	# readings, or kanji that the reading, sense, or sense respectively
-	# are limited to, with absense indicating that there are no
+	# are limited to, with absence indicating that there are no
 	# restrictions.  In the case of "restr" (reading-kanji) restrictions
 	# there may also be a "nokanji" flag indicating that there are 
 	# no kanji assocciated with the reading.  (The flag is needed 
-	# since the absense of restr items indicate all kanji are allowable.)
+	# since the absence of restr items indicate all kanji are allowable.)
 	#
 	# In the jdb API, restrictions are represented by lists of Restr
 	# objects attached dually to the lists Rdng._restr,Kanj._restr
@@ -534,11 +534,26 @@ def find_restrs (restrobjs, objlist):
 
 	return [find_restr(x, objlist) for x in restrobjs]
 
+def restrs2txts (rdng, kanjs, attr='_restr'):
+	# Given a Rdng object and a list of Kanj objects from the
+	# same entry, return a list of text strings that give the 
+	# allowed kanji for the reading as determined by the Rdng's
+	# ._restr list.
+	# This is similar to restrs2ext but returns a list of text 
+	# strings rather than a list of Kanj objects.
+
+	restrs = getattr (rdng, attr, [])
+	if not restrs: return restrs
+	if len(restrs) == len(kanjs): return ['no' + 
+		{'_restr':"kanji", '_stagr':"readings", '_stagk':"kanji"}[attr]]
+	return [x.txt for x in restrs2ext_ (restrs, kanjs, attr)]
+
   #FIXME: fix modules using either of the following two functions
   # function to standardize on one of them and remove the other.
 def restrs2ext (rdng, kanjs, attr='_restr'):
 	restrs = getattr (rdng, attr, [])
 	return restrs2ext_ (restrs, kanjs, attr)
+
 def restrs2ext_ (restrs, kanjs, attr='_restr'):
 	# Given a list of Restr objects, 'restr', create a list Kanj
 	# objects taken from 'kanjis' such that each Kanj object's
@@ -1658,10 +1673,24 @@ def is_p (entr):
 	"""
 	for r in getattr (entr, '_rdng', []):
 	    for f in getattr (r, '_freq', []):
-		if f.kw in (1,2,4,7) and f.value == 1: return True
+		if is_pj (r): return True
 	for k in getattr (entr, '_kanj', []):
 	    for f in getattr (k, '_freq', []):
-		if f.kw in (1,2,4,7) and f.value == 1: return True
+		if is_pj (k): return True
+	return False
+
+def is_pj (kr):
+	"""
+	Return True if the Kanj or Rdng object, 'kr', meets the
+	wwwjdic criteria for a "P" (popular) marker.  Currently
+	true if the object has a FREQ tag of "ichi1", "gai1",
+	"news1", "spec1".
+	"""
+	#FIXME: I believe J.B. posted a note to the Edict list 
+	#  saying that spec2 -> P.
+
+	for f in getattr (kr, '_freq', []):
+	    if f.kw in (1,2,4,7) and f.value == 1: return True
 	return False
 
 #-------------------------------------------------------------------
@@ -2316,7 +2345,7 @@ def rmdups (recs, key=None):
 	recs -- A list of objects
 	key -- None, or a one-parameter function that will be
 	  called with objects of 'recs' and is expected to return
-	  an immutable value that identified "same" objects of 
+	  an immutable value that identifies "same" objects of 
 	  'recs'. 
 	Returns: a 2-tuple:
 	  [0] -- List of unique objects in 'recs' (order preserved).

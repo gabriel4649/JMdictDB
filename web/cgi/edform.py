@@ -22,9 +22,10 @@ __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11])
 
 # This page accepts the following url parameters:
-#   e=n -- Zero or more entry id numbers.
-#   q=n -- Zero or more entry seq numbers.
-#   q=n.c -- Zero or more entry seq numbers with corpus.
+#   e=n -- Id number of entry to edit.  May be given multiple times.
+#   q=n -- Seq number of entry to edit.  May be given multiple times.
+#   q=n.c -- Seq number and corpus of entry to edit.  May be given
+#	multiple times.
 #   f=1 -- Do not give non-editor users a choice of corpus for
 #	new entries.  This parameter will be ignored if 'c' not
 #	also given.
@@ -34,7 +35,22 @@ __version__ = ('$Revision$'[11:-2],
 #   a=1 -- Restrict q entries to active/approved, or new, entries.
 #	If not given all entries with a matching seq number will 
 #	be displayed regardless of status or approval state.
-#   Standard parameters: svc, sid.
+#   entr=... -- A serialized entry object that will be used to
+#	initialize the form edit fields.  If it's 'dfrm' attribute
+#	is not None, it must be the entry id of the edit's parent
+#	entry.  If None, it indicates as new entry.  If it's 'stat'
+#	attribute is 4 (D), the "delete" box will be checked.
+#	If this parameter is given, the "e", "q", and "a"
+#	parameters are ignored. 
+#
+#   Standard parameters parsed by jmcgi.parseform(): 
+#	svc -- Postgres service name that identifies database to use.
+#	username -- Username to log in as.  Will do a login and page
+#	   redisplay.
+#	password -- Password to use with above username.
+#	logout -- If given, this parameter will force a logout and
+#	   page redisplay.
+#	sid -- Session id number if already logged in.
 
 import sys, cgi
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
@@ -50,8 +66,13 @@ def main (args, opts):
 	dbg = fv ('d'); meth = fv ('meth')
 	def_corp = fv ('c')	# Default corpus for new entries.
 	force_corp = fv ('f')	# Force default corpus for new entries.
-	active = fv ('a')	# Limit q entries to active/appr or new..
-	if not errs:
+	sentr = fv ("entr")
+	if sentr:
+	    try: entrs = serialize.unserialize ()
+	    except StandardError:
+	        errs.append ("Bad 'entr' parameter, unable to unserialize.")
+	else:
+	    active = fv ('a')	# Limit q entries to active/appr or new.
 	    elist = fl ('e')	# Entry id numbers.
 	    qlist = fl ('q')	# Seq.corpus identifiers.
 	    if elist or qlist:

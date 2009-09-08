@@ -258,9 +258,9 @@ class Cinf (DbRow):
 
 class Chr (DbRow):
     def __init__ (s, entr=None, uni=None, bushu=None, strokes=None, 
-		  freq=None, grade=None):
-	DbRow.__init__(s, ( entr,  uni,  bushu,  strokes,  freq,  grade),
-			  ('entr','uni','bushu','strokes','freq','grade'))
+		  freq=None, grade=None, jlpt=None):
+	DbRow.__init__(s, ( entr,  uni,  bushu,  strokes,  freq,  grade,  jlpt),
+			  ('entr','uni','bushu','strokes','freq','grade','jlpt'))
 
 class Xrslv (DbRow):
     def __init__ (s, entr=None, sens=None, ord=None, typ=None, 

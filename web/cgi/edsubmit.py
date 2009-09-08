@@ -139,7 +139,6 @@ def main( args, opts ):
 	disp = fv ('disp') or ''  # '': User submission, 'a': Approve. 'r': Reject;
 	if not sess and disp:
 	    errs.append ("Only registered editors can approve or reject entries")
-        #raise RuntimeError
 	if not errs:
 	    try: entrs = serialize.unserialize (fv ("entr"))
 	    except StandardError:
@@ -155,7 +154,10 @@ def main( args, opts ):
 	      #  Alternatively an edited version of target may have been 
 	      #  created which wont have our xref pointing to it as it should. 
 	    for entr in entrs:
-		e = submission (dbh, sess, svc, entr, disp, errs)
+		e = submission (dbh, entr, disp, errs, jmcgi.is_editor (sess), 
+				sess.userid if sess else None)
+		  # The value returned by submission() is a 3-tuple consisting 
+		  # of (id, seq, src) for the added entry.
 		if e: added.append (e)
 	if not errs:
 	    dbh.connection.commit()
@@ -166,17 +168,54 @@ def main( args, opts ):
 			    output=sys.stdout, this_page='edsubmit.py')
 	else: 
 	    dbh.connection.rollback()
+	      # FIXME: Turn id numbers in error message "There are other submitted
+	      #   edits..." from approve() into <a href> links.  We can't do that
+	      #   in approve() since that is also called in non-html contexts. 
 	    jmcgi.gen_page ("tmpl/url_errors.tal", output=sys.stdout, errs=errs, svc=svc);
 	dbh.close()
 
-def submission (dbh, sess, svc, entr, disp, errs):
+def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
+	# Add a changed entry, 'entr', to the jmdictdb database accessed 
+	# by the open DBAPI cursor, 'dbh'.
+	#
+	# dbh -- An open DBAPI cursor
+	# entr -- A populated Entr object that defines the entry to
+	#   be added.  See below for description of how some attribute
+	#   control the submission.
+	# disp -- Disposition, one of three string values:
+	#   '' -- Submit as normal user.
+	#   'a' -- Approve this submission.
+	#   'r' -- Reject this submission.
+	# errs -- A list to which an error messages will be appended.
+	# is_editor -- True is this submission is being performed by
+	#   a logged in editor.  Approved or Rejected dispositions will
+	#   fail if this is false.  Its value may be conveniently 
+	#   obtained from jmcgi.is_editor().  False if a normal user.
+	# userid -- The userid if submitter is logged in editor or
+	#   None if not.
+	#
+	# The following attributes in 'entr' control how the entry
+	# is added:
+	#   entr.dfrm -- If None, this is a new submission.  Otherwise,
+	#	it must be the id number of the entry this submission 
+	#	is an edit of.
+	#   entr.stat -- Must be consistent with changes requested. In
+	#	particular, if it is 4 (Delete), changed made in 'entr'
+	#	will be ignored, and the parent entry will be submitted 
+	#	with stat D.
+	#
+	# The following entry attributes need not be set:
+	#   entr.id -- Ignored (reset to None).
+	#   entr.unap -- Ignored (reset based on 'disp').
+
 	KW = jdb.KW
 	oldid = entr.id
 	entr.id = None		# All submissions will produce a new entry.
+	entr.unap = not disp
 	merge_rev = False
 	if not entr.dfrm:	# This is new entry. 
 	    entr.stat = KW.STAT['A'].id
-	    entr.seq = None  # Force addentr() to assign seq number. 
+	    entr.seq = None	# Force addentr() to assign seq number. 
 	    pentr = None	# No parent entr.
 	else:	# Modification of existing entry.
 	      # Get the parent entry and augment the xrefs so when hist diffs are
@@ -199,8 +238,6 @@ def submission (dbh, sess, svc, entr, disp, errs):
 		  # we do not want to make any changes to the entry, even
 		  # if the submitter has done so. 
 		merge_rev = True
-
-	entr.unap = not disp
 
 	  # Merge_hist() will combine the history entry in the submitted
 	  # entry with the all the previous history records in the 
@@ -228,7 +265,7 @@ def submission (dbh, sess, svc, entr, disp, errs):
 	      # If this is a submission buy a non-editor, restore the
 	      # original entry's freq items which non-editors are not
 	      # allowed to change.
-	    if not jmcgi.is_editor (sess):
+	    if not is_editor:
 		if pentr: 
 		    jdb.copy_freqs (pentr, entr, replace=True)
 		  # Note that non-editors can provide freq items on new
@@ -240,7 +277,7 @@ def submission (dbh, sess, svc, entr, disp, errs):
 	      # the unvalidated info from it (name, email, notes, refs)
 	      # and recreate it.
 	    h = entr._hist[-1]
-	    entr = jdb.add_hist (entr, pentr, sess.userid if sess else None, 
+	    entr = jdb.add_hist (entr, pentr, userid, 
 				 h.name, h.email, h.notes, h.refs, merge_rev)
 	    if not entr:
 		errs.append (
@@ -249,17 +286,17 @@ def submission (dbh, sess, svc, entr, disp, errs):
 		    "reenter your changes if they are still applicable.")
 	if not errs:
 	    if not disp:
-		added = submit (dbh, svc, entr, errs)
+		added = submit (dbh, entr, errs)
 	    elif disp == "a":
-		added = approve (dbh, svc, entr, errs)
+		added = approve (dbh, entr, errs)
 	    elif disp == "r":
-		added = reject (dbh, svc, entr, errs)
+		added = reject (dbh, entr, errs)
 	    else:
 		errs.append ("Bad url parameter (disp=%s) % disp")
 	if not errs: return added
 	return None
 
-def submit (dbh, svc, entr, errs):
+def submit (dbh, entr, errs):
 
 	KW = jdb.KW
 	if not entr.dfrm and entr.stat != KW.STAT['A'].id:
@@ -269,7 +306,7 @@ def submit (dbh, svc, entr, errs):
 	res = addentr (dbh, entr)
 	return res
 
-def approve (dbh, svc, entr, errs):
+def approve (dbh, entr, errs):
 
 	KW = jdb.KW
 	dfrmid = entr.dfrm
@@ -297,9 +334,7 @@ def approve (dbh, svc, entr, errs):
 	    sql = "SELECT * FROM find_edit_leaves(%s)"
 	    rs = jdb.dbread (dbh, sql, [edroot])
 	    if len (rs) > 1:
-		t = "<a href=\"entr.py?svc=%s&e=%s\">%s</a>";
-		ta = [t % (svc,x,x) for x in [y for y in [z.id for z in rs] 
-					  if y != dfrmid]]
+		ta = [str(z.id) for z in rs if z.id != dfrmid]
 		errs.append (
 		    "There are other submitted edits (" 
 		    + ", ".join (ta) + ").  They must be " 
@@ -332,7 +367,7 @@ def approve (dbh, svc, entr, errs):
 	dbh.connection.commit()
 	return res
 
-def reject (dbh, svc, entr, errs):
+def reject (dbh, entr, errs):
 	  # Stored procedure 'find_chain_head()' will  follow the
 	  # dfrm chain from entr->{dfrm} back to it's head (the entry
 	  # immediately preceeding a non-chain entry.  A non-chain

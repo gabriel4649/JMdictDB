@@ -36,8 +36,6 @@ def entr (entr, wantlist=False):
 	return txt
 
 def kanjs (entr, label="Kanji: "):
-	c = getattr (entr, 'chr', None)
-	if c: return [c]
 	kanjs = getattr (entr, '_kanj', [])
 	ktxt = " ".join([kanj(x) for x in kanjs])
 	if ktxt and label: ktxt = label + ktxt
@@ -335,7 +333,7 @@ def chr (c):
 	if getattr (c, 'bushu', None): a.append ("radical: %d" % c.strokes)
 	if getattr (c, 'freq', None): a.append ("freq: %d" % c.freq)
 	if getattr (c, 'grade', None): a.append ("grade: %d" % c.grade)
-	if getattr (c, 'jlpt', None): a.append ("jplt: %d" % c.jlpt)
+	if getattr (c, 'jlpt', None): a.append ("jlpt: %d" % c.jlpt)
 	if a: fmt.append ("  " + ', '.join (a))
 	return fmt
 

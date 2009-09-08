@@ -138,22 +138,25 @@ WEB_TAL	= $(addprefix $(LIB_DIR)/tmpl/,$(TAL_FILES))
 
 all:
 	@echo 'You must supply an explicit target with this makefile:'
+	@echo
+	@echo '  newdb -- Initialize an empty jmnew database.'
+	@echo
 	@echo '  data/jmdict.xml -- Get latest jmdict xml file from Monash.'
 	@echo '  data/jmdict.pgi -- Create intermediate file from jmdict.xml file.'
 	@echo '  data/jmdict.dmp -- Create Postgres load file from intermediate file.'
-	@echo '  loadjm -- Initialize database and load jmdict.'
+	@echo '  loadjm -- Load jmdict into existing database jmnew.'
 	@echo
 	@echo '  data/jmnedict.xml -- Get latest jmnedict xml file from Monash.'
 	@echo '  data/jmnedict.pgi -- Create intermediate file from jmdict.xml file.'
 	@echo '  data/jmnedict.dmp -- Create Postgres load file from intermediate file.'
-	@echo '  loadne -- Load jmnedict into the existing database.'
+	@echo '  loadne -- Load jmnedict into existing database jmnew.'
 	@echo
 	@echo '  data/examples.txt -- Get latest Examples file from Monash.'
 	@echo '  data/examples.pgi -- Create intermediate file from examples.xml file.'
 	@echo '  data/examples.dmp -- Create Postgres load file from intermediate file.'
-	@echo '  loadex -- Load examples into the existing database.'
+	@echo '  loadex -- Load examples into the existing database jmnew.'
 	@echo
-	@echo '  loadall -- Initialize database and load jmdict, jmnedict, and examples.'
+	@echo '  loadall -- Initialize database jmnew and load jmdict, jmnedict, examples.'
 	@echo
 	@echo '  activate -- Move installed database to production status.'
 	@echo '  web -- Install cgi and other web files to the appropriate places.'

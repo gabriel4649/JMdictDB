@@ -228,7 +228,7 @@ def parse_spart (txt, entr, fmap):
 		      # of a required explicit kanji or reading P tag.
 		    warn ("P tag in sense, but not in kanji or readings")
 		  # If there is only one reading and/or kanj a P tag on them is
-		  # not required so we assign the coresponding "spec1" tag on
+		  # not required so we assign the corresponding "spec1" tag on
 		  # them here.  (Also assign if multiple kanji/readings since
 		  # warning has been given.)
 		if kanjs: add_spec1 (fmap, kanjs[0], "k")
@@ -241,7 +241,7 @@ def parse_spart (txt, entr, fmap):
 	      # The following regex will match an arbitrary number
 	      # of sequential parenthesised texts, optionally followed
 	      # by one curly-bracketed one, at the start of a text string.
-	      # Note that although most such tags occur  ob the first
+	      # Note that although most such tags occur on the first
 	      # gloss of a sense, that is not a requirement, we will
 	      # apply tags to the current sense regardles of the gloss
 	      # it occurs with.
@@ -263,9 +263,9 @@ def parse_spart (txt, entr, fmap):
 		    for x in front_opts_list:
 			if x.isdigit():  new_sense = True
 		if not new_sense:
-		      # We have a gloss that is not the first of a sense but
-		      # that has parenthesised leading text.  Put the text back
-		      # on the gloss.
+		      # We have a gloss that is not the first of a sense
+		      # but that has parenthesised leading text.  Put the
+		      # text back on the gloss.
 		    gtxt = front_opts_txt + gtxt 
 		    front_opts_list = []
 	    if new_sense:
@@ -315,7 +315,7 @@ def process_sense (tags, glosstxts, snum, prev_pos, kanjs, rdngs):
 	  # tag order, and thus presumes that it is likely Edict2
 	  # files from other than Jim Breen may have been produced
 	  # without much regard to tag order.
-	  # Down side to this is that is is difficult to generate
+	  # Down side to this is that it is difficult to generate
 	  # precise error messages because we are never sure what
 	  # we should be parsing.  It also assumes that tag values
 	  # are unique across all tag types, e.g. there is no "n"

@@ -24,7 +24,7 @@ __version__ = ('$Revision$'[11:-2],
 
 # This program will read a label file produced by Audacity,
 # attempt to find matching sounds already in the database, 
-# and update the strt and leng paramater of the existing 
+# and update the strt and leng parameters of the existing 
 # sounds from data in the label file.
 
 import sys, os.path, codecs

@@ -70,7 +70,7 @@ def main (args, opts):
 	srcdate = parse_xmlfile (args[0], 4, workfiles, Opts.b, Opts.c, langs)
 	srcrec = jdb.Obj (id=4, kw='kanjidic', descr='kanjidic2.xml', 
 		      dt=srcdate, seq='seq_kanjidic')
-	pgi.wrrow (srcrec, workfiles['kwsrc'])
+	pgi.wrcorp (srcrec, workfiles)
 	pgi.finalize (workfiles, Opts.o, not Opts.k)
 	print >>sys.stderr, "\nDone!"
 
@@ -172,7 +172,7 @@ def parse_xmlfile (infn, srcid, workfiles, start, count, langs):
 def do_chr (elem, srcid, langs):
 	global Char
 	# Process a <character> element.  The element has been
-	# parse by the xml ElementTree parse and is in "elem".
+	# parsed by the xml ElementTree parse and is in "elem".
 	# "lineno" is the source file line number.
 
 	chtxt = elem.find('literal').text
@@ -260,6 +260,7 @@ def strokes (x, n, c):
 	    cinf.append ( jdb.Obj (kw=KW.CINF_strokes, value=int(x.text)))
 
 def reading_meaning (rm, rdng, sens, cinf, langs):
+	KW_NANORI = KW.RINF[Xml2db.RINF.get('nanori','nanori')].id
 	for x in rm.findall ('rmgroup'):
 	    r, g, c = rmgroup (x, langs)
 	    rdng.extend (r)
@@ -268,18 +269,37 @@ def reading_meaning (rm, rdng, sens, cinf, langs):
 	rlookup = dict ([(r.txt,r) for r in rdng])
 	  # Get the nanori readings...
 	for x in rm.findall ('nanori'):
-	      # There may be readings nanori readings that are 
-	      # the same as the on/kun readings we've already 
-	      # parsed.  Lookup the nanori reading in the readings
-	      # dict.  If we already have the reading, just add
-	      # the nanori RINF tag to it.  Otherwise create a 
-	      # new reading record.
-	    try: r = rlookup[x.text]
+	      # There may be nanori readings that are the same as
+	      # the on/kun readings we've already parsed.  Lookup
+	      # the nanori reading in the readings dict.  If we
+	      # already have the reading, just add the nanori RINF
+	      # tag to it.  Otherwise create a new reading record.
+	    try: 
+		  # Check if reading has already been seen.
+		r = rlookup[x.text]
+		  # It has.  See if it occured as a nanori reading.
+		wasnanori = False
+		for i in getattr (r, '_inf', []):
+		    if i.kw == KW_NANORI:
+			wasnanori = True;  break
+		  # It occured previously as a nanori reading so this
+		  # instance must be a duplicate.
+		if wasnanori:
+		    warn ('Duplicate nanori reading: "%s"' % x.text)
+		    continue
+		  # At this point, the nanori reading occured previously
+		  # but as a jp-on or jp-kun reading.  'r' is set to
+		  # that previous reading, and we will (below) just
+		  # add a nanori tag to 'r'.  
 	    except KeyError: 
+		  # This nanori reading has not been seen before. 
+		  # Create a new Rdnfg object for it. 
 		r = jdb.Obj (txt=x.text)
 		rdng.append (r)
+		  # Add it to the previously seen readings dict.
+		rlookup[r.txt] = r
 	    if not hasattr (r, '_inf'): r._inf = []
-	    r._inf.append (jdb.Obj (kw=KW.RINF[Xml2db.RINF.get('nanori','nanori')].id))
+	    r._inf.append (jdb.Obj (kw=KW_NANORI))
 	cinf.extend (c)
 
 def rmgroup (rmg, langs=None):
@@ -327,7 +347,12 @@ def dicnum (dic_number, cinf):
 	    val = x.text
 	    if x.get ('m_vol'): 
 		val = "%s.%s.%s" % (x.get ('m_vol'), x.get ('m_page'), x.text)
-	    kw = KW.CINF[Xml2db.CINF.get(drtype,drtype)].id
+	    key = Xml2db.CINF.get(drtype,drtype)
+	    try: 
+		kw = KW.CINF[key].id
+	    except KeyError:
+		warn ('Unknown CINF keyword: "%s"' % key)
+		continue
 	    if (kw,val) in dupchk:
 		warn ('Duplicate dr_type,value pair ignored: %s, %s' % (drtype, val))
 		continue

@@ -1,6 +1,6 @@
 ﻿Title:	Add "jlpt" to cinf table for kanjidic parser
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	low
 Cats:	dev
 Reqtrs:	
@@ -19,3 +19,7 @@ AssdTo:
 2008-06-05 12:08:12 stuart
   Done in the co-committed versions of python/kdparse.py, 
   pg/mktables.sql, lib/fmt.py.
+
+2009-09-07 20:44:00 stuart
+  Most changes done in rev 2008-06-16 f4e4a2469d05. Current
+  rev adds jlpt parm to objects.Chr, fix typo in fmt.chr().

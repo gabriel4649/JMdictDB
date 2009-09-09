@@ -36,7 +36,7 @@ AssdTo:	stuart
   Have also started writing a conventional Entr->Edict format
   function.
 
-2009-09-07 21:05:00
+2009-09-07 21:05:00 stuart
   Added new module, python/lib/edfmt.py that will format edict2
   compatible text output from an entr object.
   This will replace the xslfmt module, but is currently still 

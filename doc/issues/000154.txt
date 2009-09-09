@@ -1,0 +1,28 @@
+Title:	Add new dial keyword, "nab" 
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2009-09-09 15:00:00 stuart
+  Recent parse of jmdict produced log message imforming
+  of addition of new DIAL (dilect) keyword, "nab" for
+  "nagano-ben".  Check of the jmdict.xml file's dtd has
+  it documented there.
+
+2009-09-09 15:15:00 stuart
+  Added line to pg/data/dial.csv:
+
+    11\tnab\tnagano-ben
+
+  Replaced python/lib/dtd-jmdict.xml with copy of dtd 
+  extracted from the 2009-09-09 jmdict.xml file.
+  Added the new <!ENTITY nab> line to python/lib/- 
+    dtd-jmdict-ex.xml
+
+  Added test 192 for new keyword to python/tests/test_jdb_kwds.py.
+  Manually insert the new keyword in the jmdict.kwdial table so 
+  that the above test will pass untill the next database reload.
+

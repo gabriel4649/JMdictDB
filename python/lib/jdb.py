@@ -472,7 +472,7 @@ def mup (attr, parents, pks, childs, fks, pattr=None):
 	      #   single app?
 	    for p in (index.get (ckey, [])):
 		if attr: getattr (p, attr).append (c)
-	    if pattr: setattr (c, pattr, p)
+	        if pattr: setattr (c, pattr, p)
 
 #-------------------------------------------------------------------
 # The following functions deal with restriction lists. 

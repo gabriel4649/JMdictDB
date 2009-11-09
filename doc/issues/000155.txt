@@ -1,0 +1,47 @@
+Title:	chr data being added to non-kanjidic entries 
+Stat:	closed
+Disp:	done
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2009-11-06 12:45:00 stuart
+  When shentr.py is run and produces results for single kanji
+  and that kanji has entries in both jmdict or jmnedict and in 
+  kanjidic, the chr info from the kanjidic entry is also printed
+  in the jmdict/jmnedict entries.  For example:
+
+  > shentr.py --kis g
+  Entry: jmdict 1578760 A {55879}
+  Kanji: 1.g[ichi1,news1,nf09]
+  Readings: 1.‚­‚ê‚È‚¢[news1,nf09] 2.‚×‚É[ichi1] 3.‚±‚¤
+  Senses:
+  1. [n]
+    1. deep red
+    2. crimson
+  2. (‚×‚É only), [n]
+    1. rouge
+    2. lipstick
+  Character 32005:
+    strokes: 9, radical: 9, freq: 1299, grade: 6, jlpt: 2
+  Character info:
+    deroo: 2772
+    four_corner: 2191.0
+    gakken: 927
+    halpern_kkld: 857
+    halpern_njecd: 1277
+    [...]
+
+  The cause is in lib/entrList() which is returning Entr objects
+  with the suprious Chr object attached to all of them rather than
+  just the kanjidic Entr. 
+
+2009-11-06 21:11:00 stuart
+  Problem was incorrect nesting in jdb.mup()
+            for p in (index.get (ckey, [])):
+                if attr: getattr (p, attr).append (c)
+    -       if pattr: setattr (c, pattr, p)
+    +           if pattr: setattr (c, pattr, p)
+
+

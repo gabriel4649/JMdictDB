@@ -306,7 +306,7 @@
       <br/>Examples:
       </dd>
 
-    <dt><a name="comments"></a>Comments:</dt>
+    <dt><a name="comments"></a>Comments</dt>
     <dd>Enter any comments you want the editors to read when
       reviewing this entry.  These comments will be added to the
       historical record of this entry.  This is a free form text
@@ -320,8 +320,11 @@
     of actions taken that affect your submission. 
     <span class="caution">Email notification not implemented yet.</span></dd>
 
+    <dt><br/>The following items will only be visible if you are logged in
+    as an editor.</dt><dd><br/></dd>
+
     <dt><a name="action"></a>Action</dt>
-    <dd>This dropdown box is only available only to logged-in editors.
+    <dd>Dropdown box with the following choices:
     <ul><li>Submit -- Submit the entry as pending, just as a non-logged in
 	sumitter would.
     </li><li>Approve -- The entry will be approved.  The entries that this
@@ -330,8 +333,33 @@
     </li><li>Reject -- The current entry will be marked rejected, and all
     entries it was based on, except the original entry will be deleted.
     The original entry will remain as the active entry.
-    </li></dd>
+    </li></ul></dd>
 
+    <dt><a name="seq_ed"></a>Seq</dt>
+    <dd>Specify an explicit sequence number for this entry.  (Normally
+    this field will be left blank and an edit of an existing entry will
+    keep the same sequence number, a new entry will automatically be
+    assigned the next available sequence number.)</dd>
+
+    <dt><a name="srcnote_ed"></a>Src Note</dt>
+    <dd>Enter a source note.  This should provide additional information
+    useful for indentifying or locating this entry within the corpus.
+    For example, "page 104" or, "sci.lang.japan MessageId:ltb0jenj$jcd$1@ns.src.ricoh.co.jpgt"
+    The text should either be self-describing, or use a consistent
+    format and interpretation for all the srcnotes of a particular 
+    corpus.</dd>
+
+    <dt><a name="entrnote_ed"></a>Entr Note</dt>
+    <dd>Enter an entry note.  This is ad hoc information that applies 
+    to the entry as a whole.  Information specific to a sense (even
+    if there is only one sense) should go in a sense note.</dd>
+
+    <dt><a name="groups_ed"></a>Groups</dt>
+    <dd>Groups that this entry will be assigned to.  Enter group names
+    or group Id numbers separated by semi-colons (";") if more than one.
+    Each group name or id number may optionally be followed by a period
+    (".") and an order number.  If the same group is given more than
+    once only the last occurance will be acted on.</dd>
     </dl>
   </div>
 

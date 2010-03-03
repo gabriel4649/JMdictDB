@@ -89,7 +89,7 @@ def main( args, opts ):
 	      # FIXME: [IS-115] Following will prevent kanjidic entries from
 	      #  appearing in results.  Obviously hardwiring id=4 is a hack.
 	    else:
-	        condlist.append (('entr e', 'e.src!=4', []))
+	        #condlist.append (('entr e', 'e.src!=4', []))
 	        sql, sql_args = jdb.build_search_sql (condlist)
 
 	if errs:

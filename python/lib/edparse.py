@@ -23,8 +23,31 @@ __version__ = ('$Revision$'[11:-2],
 # Parse Edict2 text into an jmdictdb entry object.  Note that 
 # edict2 is not a serialization format: there is information 
 # that is not unambiguously representable in edict2 and will 
-# either lost or misrepresented when and jmdict object is 
-# is formatted to edict2 and then parsed back into an object.
+# either lost or misrepresented when a jmdict object is 
+# formatted to edict2 and then parsed back into an object.
+#
+# Edict2 format:
+# ==============
+# FIXME: following ## lines don't belong here since we deal
+#  only with single, one-entry edict2 text lines.
+## An edict2 format file is a text file with utf-8 encoding. 
+## Each line is a comment line or an entry line.
+## Comment lines start with a "#" character, optionally preceeded
+##   by whitespace, or a line containing only whitespace.
+## Any other lines are assumed to define an entry.
+## Each entry occurs in a single line, there is no way to "continue"
+##   an entry over more than one line.
+# Each entry consists of two fields separated by the first "/"
+#   character that occurs in the line.
+#   1. The entry's kanji and readings.
+#   2. The entry's senses and glosses.
+# The first field contains either readings, or kanji followed 
+#   by whitespace (one or more ascii tab or space, or Japanese
+#   space U+3000) and then by readings (optionally inside square
+#   brackets).  If there is only kanji and no reading, empty
+#   brackets must be given.  Note that this format precludes
+#   having whitespace within the kanji part.
+# [...to be continued...]
 #
 # WARNING -- This module is currently incomplete.
 # TO DO:
@@ -41,10 +64,11 @@ from iso639maps import iso639_1_to_2
 
 Lineno = None
 
-def entr (text):
+def entr (text, simple=False):
 	fmap = collections.defaultdict (lambda:([list(),list()]))
-	krtxt, x, stxt = text.partition ('/')
-	kanjs, rdngs = parse_jppart (krtxt.rstrip(), fmap)
+	#krtxt, x, stxt = text.partition ('/')
+	krtxt, stxt = re.split (ur'[ \t\u3000]*/[ \t\u3000]*', text, 1)
+	kanjs, rdngs = parse_jppart (krtxt, fmap)
 	entr = Entr (_kanj=kanjs, _rdng=rdngs)
 	sens = parse_spart (stxt.lstrip(), entr, fmap)
 	errs = jdb.make_freq_objs (fmap, entr)
@@ -67,9 +91,10 @@ def parse_jppart (krtxt, fmap):
 	# To write an edict2 line that is has kanji but no reading,
 	# use "[]" for the reading.
 
-	ktxt, x, rtxt = krtxt.partition(' ')
-	if not rtxt:
-	    rtxt, ktxt = ktxt, ''
+	#ktxt, x, rtxt = krtxt.partition(' ')
+	parts = re.split(ur'[ \t\u3000]+', krtxt, 1)
+	if len (parts) == 1: ktxt, rtxt = '', parts[0]
+	else: ktxt, rtxt = parts
 	if ktxt: kanjs = parse_krpart (ktxt.strip(), fmap)
 	else: kanjs = []
 	if rtxt: rdngs = parse_krpart (rtxt.strip('[] '), fmap, kanjs)

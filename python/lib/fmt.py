@@ -370,7 +370,9 @@ def encodings (strs):
 	fmt = ['Encodings:',
 	       '  Unicode: %s' % '; '.join ([ucshex (s) for s in strs])]
 	for enc in ('utf-8', 'iso-2022-jp', 'sjis', 'euc-jp'):
-	    fmt.append ("  %s: %s" % (enc.upper(), '; '.join ([repr (s.encode (enc)) for s in strs])))
+	    try:
+	        fmt.append ("  %s: %s" % (enc.upper(), '; '.join ([repr (s.encode (enc)) for s in strs])))
+	    except UnicodeEncodeError: pass
 	return fmt
 
 def ucshex (s):

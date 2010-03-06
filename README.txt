@@ -3,11 +3,8 @@ $Date$
 http://www.edrdg.org/~smg/
 
 The JMdictDB project is an informal project to put the contents 
-of Jim Breen's
-  (http://www.csse.monash.edu.au/~jwb/japanese.html)
-JMdict Japanese-English dictionary data 
-  (http://www.csse.monash.edu.au/~jwb/edict_doc.html)
-into a database, and provide a web-based maintenance system
+of Jim Breen's [*1] JMdict Japanese-English dictionary data [*2] 
+into a database, and provide a web-based maintenance system 
 for it.
 
 Discussion takes place on the edict-jmdict@yahoo.com mailing 
@@ -132,8 +129,8 @@ However, you may wish to install a local copy of this software:
 
 Requirements
 ------------
-The code is developed and tested on Microsoft Windows 2000, 
-Fedora Core 8, and Debian/Linux, with either Apache (on Linux)
+The code is developed and tested on Microsoft Windows XP, 
+Fedora Core 11, and Unbuntu, with either Apache (on Linux)
 or IIS (on MS Windows) as a web server.  The webserver should
 be configured to run Python CGI scripts.
 
@@ -143,27 +140,28 @@ author's development environment -- the software may work
 fine with earlier or later versions, but this has not been 
 verified.
 
-  Postgresql [8.2 or 8.3]
-  Python [2.5.2] 
+  Postgresql [8.4]
+  Python [2.6] 
     Note that Python-2.5 and -2.5.1 have somebugs in the codecs
-    module that will cause some jmdictdb tests to fail.
+    module that will cause some jmdictdb tests to fail.  These 
+    are fixed in Python-2.5.2 and later.
   Additional Python packages:
     psycopg2-2.0.5.1 Python-Postgresql connector.
       http://initd.org/projects/psycopg2/
       http://stickpeople.com/projects/python/win-psycopg/ (Windows)
     simpleTAL-4.1 -- Template file processor.
       http://www.owlfish.com/software/simpleTAL/
-    simplejson-1.8.1 -- JSON en-/de-coder.
-      http://pypi.python.org/pypi/simplejson/1.8.1/
-      [Python-2.6 and later includes simplejson as module "json".]
-    ply-2.5 -- YACC'ish parser generator.
+    ply-3.3 -- YACC'ish parser generator.
       http://www.dabeaz.com/ply/
     lxml-2.1.5 -- XML/XSLT library.  Used by xslfmt.py for doing
       xml->edict2 conversion.
-    wxPython-2.8.9.1 -- (Optional) JMdictDB inludes a simple
+    wxPython-2.8.10.1 -- (Optional) JMdictDB inludes a simple
       GUI interface to the database that is similar to the
       cgi interface.  To run this requires wxPython.
       http://www.wxpython.org/
+    If running on Python-2.5 the simplejson module is needed.
+      It is not need on Python-2.6 and later since Python now 
+      includes simplejson as module "json".
   Apache [2.2] (on Unix/Linux/Windows systems) or
     IIS [5.0] (on MS Windows systems)
   make -- Gnu make is required if you want to use the provided
@@ -173,7 +171,7 @@ verified.
     site.  If not available, you can download the needed 
     files manually.
   iconv -- Not required but very useful when dealing with
-    character enconding conversions that are frequenly required
+    character encoding conversions that are frequenly required
     when working with Japanese language text files.
 
 The principle author has Cygwin (http://cygwin.com) installed on 
@@ -193,14 +191,14 @@ you to use a different username and password.
 Most command line programs supplied by Posgresql, such
 as psql, allow one to specify a user name but not a 
 password; the password will either be interactively 
-prompted for, or read from the user's ~/.pgpass [Note *1] 
+prompted for, or read from the user's ~/.pgpass [*3] 
 file.  Command line tools that are part of the JMdictDB 
 system generally allow a "-p" option for supplying a 
 password.  Using it on a multi-user machine is usually
 a bad idea since another user, using "ps" or other 
 such commands, can view it.  The safest way of supplying 
-passwords is to use a .pgpass file.  See [Note *2] for
-more info.
+passwords is to use a .pgpass file.  See [*4] for more 
+info.
 
 The database is accessed by the JMdictDB system in three
 contexts:
@@ -467,14 +465,19 @@ loaded database to "jmdict".
    corresponding to edform.pl will let you add new entries.
 
 Notes:
-
 [*1] 
+http://www.csse.monash.edu.au/~jwb/japanese.html
+
+[*2] 
+http://www.csse.monash.edu.au/~jwb/edict_doc.html
+
+[*3] 
 On Windows the Postgresql password file is typically in
 "C:\Documents and Settings\<your_windows_user_name>\ -
   Application Data\Postgresql\pgpass.conf".  For obvious
 reasons we will refer simply to "~/.pgpass" in this document.
 
-[*2]
+[*4]
 For more information on usernames, passwords, and the .pgpass
 file, see the Postgresql docs:
   30.13  Client Interfaces / libpq / The Password File

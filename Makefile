@@ -172,8 +172,11 @@ init:
 	-createuser $(PG_HOST) -U $(PG_SUPER) -SDRP $(USER)
 	-createuser $(PG_HOST) -U $(PG_SUPER) -SDRP $(RO_USER)
 	# Don't automatically drop old session database due to risk 
-	# of unintentionally loosing user logins and passwords.
-	#psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'drop database if exists $(DBOLD)'
+	# of unintentionally loosing user logins and passwords.  If
+	# it exists, the subsequent CREATE  DATABASE command will
+	# fail and require the user to manually drop the session
+	# database or otherwise manually correct the situation.
+	#psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'drop database if exists $(DBSESS)'
 	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'create database jmsess'
 	cd pg && psql $(PG_HOST) -U $(USER) -d jmsess -f mksess.sql
 	@echo 'Remember to add jmdictdb editors to the jmsess "users" table.' 
@@ -182,7 +185,7 @@ init:
 
 newdb:
 	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'drop database if exists $(DB)'
-	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c "create database $(DB) owner $(USER) encoding 'utf8'"
+	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c "create database $(DB) owner $(USER) encoding 'utf8' template template0"
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f reload.sql
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
 #

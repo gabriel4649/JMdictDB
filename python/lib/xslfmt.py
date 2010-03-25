@@ -40,7 +40,7 @@ def entr (entr, xslfile=None, xslt=[], want_utf8=False):
 	#   will be taken as a plain filename and searched for on the Python
 	#   search path (sys.path).  Either way, the resulting file is
 	#   will be converted to a lxml .etree.XSLT transform object and
-	#   applied tyhe the xml from 'entr' (if 'entr' was not None.)
+	#   applied the the xml from 'entr' (if 'entr' was not None.)
 	# xslt -- May be None, an empty list, or a list of one item which
 	#   is a lxml.etree.XSLT transform object that will be applied to
 	#   in 'entr' xml.  If an empty list, the xslt file given 'xslfile'

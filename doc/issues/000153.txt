@@ -28,7 +28,13 @@ AssdTo:	stuart
   each corpus.  At a minimum, the jmdict-modified corpus needs its own
   sequence generator.
 
-  See also related IS-143: Inconsistent seq# and dfrm leads to problems. 
+  See also related IS-143: Inconsistent seq# and dfrm leads to problems.
+
+  Another change to consider is if it would be better to use our own table
+  to keep track of seq numbers.  This has the advantage of eliminating
+  a gazillion sequence objects in the database as well as the magic
+  (which is rather imperfect) involved in creating/deleting sequences
+  when rows in kwsrc are added/removed.
 
 2009-07-11 23:02:00 stuart
   For reference, I temporarily fixed the above described situation by;
@@ -50,3 +56,101 @@ AssdTo:	stuart
   3) Reset the 'seq' sequence:
 
      SELECT SETVAL('seq',4034);
+
+2010-02-07 19:46:00 stuart
+  In rev bd6557361529 (2009-02-09) added support for per-corpus sequences
+  but set the seq name to 'seq' for most of my corpuses for compatibility 
+  with exiting data.
+
+  Today while loading new version of JMdict, saved my extra entries as 
+  usual, and manually edited the .xml file to change the value in each
+  <co_sname> element from "seq" to "seq_xxxx" where "xxxx" is the corpus
+  name.  This results in a per-corpus sequence when reloaded.  xml file
+  saved as local-old7-IS153.xml.
+ 
+  After reloading them, ran the following update query to reset the
+  sequence numbers of all existing entries in my personal "extra"
+  corpuses (which have .src values >= 100):
+
+    UPDATE entr SET seq=newseq 
+    FROM
+      (SELECT id, ROW_NUMBER() OVER (PARTITION BY src ORDER BY seq) AS newseq
+      FROM entr WHERE src>=100) AS x 
+    WHERE x.id=entr.id;
+
+    SELECT syncseq();
+
+  Moved jmnew to jmdict, saved the extra entries again -- they now have
+  sequential seq numbers -- to local-old8-IS153.xml. 
+
+2010-03-22 18:09:00 stuart
+ When I tried to load my personal flash card data, I got a lot of
+ errors because they refer to entries by seq number and those have
+ all changed.  Although not part of jmdictdb, I will document how
+ I fixed here, for lack of any better place.
+
+ LESSON FOR FUTURE: when changing anything like this, generate  
+ a mapping table from old values to new values, and save it for 
+ posterity.
+
+ Fortunately, I still have the old database in which the seq
+ number remapping was done in database jmold.  In that database,
+ I reran the select part of the update query used to reset the
+ seq numbers above, but joined to table entr to get the old seq
+ number and write the results out to a file (IS-152-seqmap.csv). 
+ The query was:
+
+  COPY (
+  SELECT e.id,e.src,e.seq,newseq,g.kw as gkw,g.ord as gord
+    FROM entr e
+    JOIN 
+        -- Below is the same query we used originally to
+        -- assign new seq numbers.
+      (SELECT id, ROW_NUMBER() OVER (PARTITION BY src ORDER BY seq) AS newseq
+      FROM entr WHERE src>=100) AS x
+      ON x.id=e.id 
+    LEFT JOIN 
+        -- There can be multiple grp rows per entry; following will limit
+        -- to the one with the smallest kw value. 
+      (SELECT DISTINCT ON (entr) entr, kw, ord FROM grp ORDER BY entr,kw) AS g
+      ON g.entr=e.id
+    WHERE x.id=e.id
+    ORDER BY e.src,e.seq
+    ) TO STDOUT CSV HEADER DELIMITER E'\t';
+ 
+ e.id are the entr.id numbers in jmold and don't have relevance
+ outside that database.  e.src and e.seq are the old seq numbers,
+ newseq are the new sequence numbers (src wasn't changed).  g.kw
+ and g.ord were included in output because for some entries these
+ values are unique and may help validate the results.)
+
+ Import into jmdict:
+
+  CREATE TABLE _seqmap (
+    id INT PRIMARY KEY,
+    src INT NOT NULL,
+    seq INT NOT NULL,
+    newseq INT NOT NULL,
+    gkw INT,
+    gord INT);
+  \copy _seqmap FROM 'IS-153-seqmap.csv' CSV HEADER DELIMITER E'\t'
+
+ Compared a sample of matching entries (via shentr.py) by id 
+ number in jmdict and jmold and verified they were indeed the
+ same, thus validating e.seq (old seq number) and newseq in the
+ IS-153-seqmap.csv file are an accurate mapping. 
+
+ Loading the FC data as done in pg/Makefile is four steps.  We
+ do them manually, updating the seq numbers in _tmpentrmap before
+ running updids.sql:
+ 
+    psql -d jmdict -f mktables.sql
+    psql -d jmdict <data/fcard.dmp
+    psql -d jmdict
+    UPDATE _tmpentrmap SET seq=newseq
+        FROM _seqmap WHERE _seqmap.src=_tmpentrmap.src AND 
+			   _seqmap.seq=_tmpentrmap.seq;
+    psql -d jmdict -f updids.sql
+    psql -d jmdict -f syncseq.sql
+
+ Then do a "make saveall" to get a more easily loadable archive!

@@ -2377,7 +2377,7 @@ def find_in_syspath (fname):
 
 	for d in sys.path: 
 	    if os.access (os.path.join (d, fname), os.R_OK):
-		return d
+		return d or '.'
 	return None
 
 def get_dtd (filename, root="JMdict", encoding="UTF-8"):

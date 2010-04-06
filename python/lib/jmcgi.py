@@ -251,13 +251,13 @@ def get_entrs (dbh, elist, qlist, errs, active=None, corpus=None):
 	    if corpid is None:
 		errs.append ("Bad corpus parameter: %s" % corpus)
 		return []
-        for x in elist:
+        for x in (elist or []):
 	    try: eargs.append (str2eid (x))
 	    except ValueError:
                 errs.append ("Bad url parameter received: " + esc(x))
         if eargs: whr.append ("id IN (" + ','.join(['%s']*len(eargs)) + ")")
 
-        for x in qlist:
+        for x in (qlist or []):
 	    try: args = list (str2seq (x))
 	    except ValueError:
                 errs.append ("Bad parameter received: " + esc(x))

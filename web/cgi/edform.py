@@ -103,7 +103,11 @@ def main (args, opts):
 		    entr.src = defcorpid
 		    entr.ISDELETE = False
 		    entr.NOCORPOPT = force_corp  
-		    entrs = [entr]
+	if not errs:
+	    entr.ktxt = fmtjel.kanjs (entr._kanj)
+	    entr.rtxt = fmtjel.rdngs (entr._rdng, entr._kanj)
+	    entr.stxt = fmtjel.senss (entr._sens, entr._kanj, entr._rdng)
+	    entrs = [entr]
 	if not errs:
 	    if not meth: meth = 'get' if dbg else 'post'
 	    jmcgi.gen_page ('tmpl/edform.tal', macros='tmpl/macros.tal', parms=parms,

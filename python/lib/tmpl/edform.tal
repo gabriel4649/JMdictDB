@@ -12,9 +12,19 @@
     </div>
   <span tal:repeat="e entrs" tal:omit-tag="">
     <!--? 
+    This form requires a modified form of Entr object.  It has three
+    additional attributes: ktxt, rtxt, stxt.  The values of these are
+    JEL formatted text strings that will be used to intialize the Kanji
+    Readings, and Senses boxes on this form.  The native ._kanj, ._rng,
+    and ._sens attributes of the Entr object are ignored.
+ 
     If an entry does not have an id number, is is treated as a new entry.
     It can have other info such as a sense element with PoS list, which
     will set the default text in the appropriate fields.
+
+    We also accept a parameter, "extra" that contains any of the items,
+    "ref", "comments", "name", "email" which are used to initialize the
+    input boxes the the same names.
     -->
     <form action="edconf.py" name="edconf" tal:attributes="method method">
       <table class="form">
@@ -101,14 +111,14 @@
 	    </tr>
 	  <tr>
 	    <td>Kanji: <br/><a class="helplink" target="edhelp" href="edhelp.py#kanji">help</a></td>
-	    <td><textarea tal:content="python:TALfmtjel(e,'k')" name="kanj" wrap="physical" cols="60" rows="3"></textarea></td>
+	    <td><textarea tal:content="e/ktxt" name="kanj" wrap="physical" cols="60" rows="3"></textarea></td>
 	    <td>
 	      <a class="helplink" target="edhelp" href="edhelp.py#kw_kinf">kinf</a><br/>
 	      <a class="helplink" target="edhelp" href="edhelp.py#kw_freq">freq</a> 
 	      </td></tr>
 	  <tr>
 	    <td>Readings: <br/><a class="helplink" target="edhelp" href="edhelp.py#readings">help</a></td>
-	    <td><textarea tal:content="python:TALfmtjel(e,'r')" name="rdng" wrap="physical" cols="60" rows="3"></textarea></td>
+	    <td><textarea tal:content="e/rtxt" name="rdng" wrap="physical" cols="60" rows="3"></textarea></td>
 	    <td>
 	      <a class="helplink" target="edhelp" href="edhelp.py#kw_rinf">rinf</a><br/>
 	      <a class="helplink" target="edhelp" href="edhelp.py#kw_freq">freq</a><br/>
@@ -116,7 +126,7 @@
 	      </td></tr>
 	  <tr>
 	    <td>Senses: <br/><a class="helplink" target="edhelp" href="edhelp.py#senses">help</a></td>
-	    <td><textarea tal:content="python:TALfmtjel(e,'s')" name="sens" wrap="physical" cols="60" rows="8"></textarea></td>
+	    <td><textarea tal:content="e/stxt" name="sens" wrap="physical" cols="60" rows="8"></textarea></td>
 	    <td>
 	      <a class="helplink" target="edhelp" href="edhelp.py#kw_pos">pos</a><br/>
 	      <a class="helplink" target="edhelp" href="edhelp.py#kw_misc">misc</a><br/>
@@ -143,22 +153,22 @@
 	    </tr>
 	  <tr>
 	    <td>Comments: <br/><a class="helplink" target="edhelp" href="edhelp.py#comments">help</a></td>
-	    <td><textarea name="comment" wrap="physical" cols="60" rows="3"></textarea></td>
+	    <td><textarea name="comment" wrap="physical" cols="60" rows="3" tal:content="extra/comment"></textarea></td>
 	    <td></td>
 	    </tr>
 	  <tr>
 	    <td>References: <br/><a class="helplink" target="edhelp" href="edhelp.py#references">help</a></td>
-	    <td><textarea name="reference" wrap="physical" cols="60" rows="3"></textarea></td>
+	    <td><textarea name="reference" wrap="physical" cols="60" rows="3" tal:content="extra/ref"></textarea></td>
 	    <td></td>
 	    </tr>
 	  <tr>
 	    <td>Name: <a class="helplink" target="edhelp" href="edhelp.py#name">help</a></td>
-	    <td><input type="text" name="name" size="30" tal:attributes="value session/fullname"/></td>
+	    <td><input type="text" name="name" size="30" tal:attributes="value extra/name"/></td>
 	    <td></td>
 	    </tr>
 	  <tr>
 	    <td>Email: <a class="helplink" target="edhelp" href="edhelp.py#email">help</a></td>
-	    <td><input type="text" name="email" size="30" tal:attributes="value session/email"/></td>
+	    <td><input type="text" name="email" size="30" tal:attributes="value extra/email"/></td>
 	    <td></td>
 	    </tr>
 	  <tr>

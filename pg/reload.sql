@@ -10,5 +10,6 @@
 \i mktables.sql
 \i loadkw.sql
 \i mkviews.sql
+\i mkviews2.sql
 \i mkperms.sql
 

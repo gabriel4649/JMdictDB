@@ -21,12 +21,6 @@
 \set ON_ERROR_STOP 
 BEGIN;
 
-CREATE AGGREGATE accum ( 
-    SFUNC = ARRAY_APPEND, 
-    BASETYPE = ANYELEMENT, 
-    STYPE = ANYARRAY, 
-    INITCOND = '{}');
-
 -------------------------------------------------------------
 -- The first kanji and reading in an entry are significant
 -- because jmdict xml and some other apps use them as 
@@ -64,20 +58,22 @@ CREATE VIEW is_p AS (
 	    AS p
     FROM entr e);
 
+
 -----------------------------------------------------------
 -- Summarize each entry (one per row) with readings, kanji, 
--- and sense/gloss.  Each of those columns values has the
--- text from each child item concatenated into a single
--- string with items delimited by "; "s.  For the sense
--- column, each aggregated gloss string in contatented
--- with the delimiter " / ".
-------------------------------------------------------------
+-- and sense/gloss.  The rdng and kanj columns contain the
+-- entry's single "headword" items (as given by view hdwds)
+-- The sense column contain gloss strings in contatented
+-- with ';', and grouped into senses concatenated with "/".
+-----------------------------------------------------------
 CREATE OR REPLACE VIEW esum AS (
-    SELECT e.id,e.seq,e.stat,e.src,e.dfrm,e.unap,e.notes,e.srcnote,h.rtxt AS rdng,h.ktxt AS kanj,
-	(SELECT ARRAY_TO_STRING(ACCUM( ss.gtxt ), ' / ') 
+    SELECT e.id,e.seq,e.stat,e.src,e.dfrm,e.unap,e.notes,e.srcnote,
+	h.rtxt AS rdng,
+	h.ktxt AS kanj,
+	(SELECT ARRAY_TO_STRING(ARRAY_AGG( ss.gtxt ), ' / ') 
 	 FROM 
 	    (SELECT 
-		(SELECT ARRAY_TO_STRING(ACCUM(sg.txt), '; ') 
+		(SELECT ARRAY_TO_STRING(ARRAY_AGG(sg.txt), '; ') 
 		FROM (
 		    SELECT g.txt 
 		    FROM gloss g 
@@ -95,10 +91,14 @@ CREATE OR REPLACE VIEW esum AS (
 -- "txt" that contains an aggregation of all the glosses
 -- for that sense concatenated into a single string with
 -- each gloss delimited with the string "; ".
+--
+-- DEPRECATED: use vt_sens* in mkviews2 instead.  Note 
+--  that that view may need to be used in an outer join
+--  unlike this view. 
 ------------------------------------------------------------
 CREATE OR REPLACE VIEW ssum AS (
     SELECT s.entr,s.sens,
-       (SELECT ARRAY_TO_STRING(ACCUM(sg.txt), '; ') 
+       (SELECT ARRAY_TO_STRING(ARRAY_AGG(sg.txt), '; ') 
         FROM (
 	    SELECT g.txt 
 	    FROM gloss g 
@@ -120,7 +120,11 @@ CREATE OR REPLACE VIEW ssum AS (
 ------------------------------------------------------------
 
 CREATE OR REPLACE VIEW essum AS (
-    SELECT e.id, e.seq, e.src, e.stat, s.sens, h.rtxt as rdng, h.ktxt as kanj, s.gloss,
+    SELECT e.id, e.seq, e.src, e.stat, 
+	    s.sens, 
+	    h.rtxt as rdng, 
+	    h.ktxt as kanj, 
+	    s.gloss,
 	   (SELECT COUNT(*) FROM sens WHERE sens.entr=e.id) AS nsens
 	FROM entr e
 	JOIN hdwds h ON h.id=e.id

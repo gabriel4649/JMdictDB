@@ -99,7 +99,9 @@ CGI_FILES = entr.py \
 	edsubmit.py \
 	srchadv.py \
 	srchform.py \
-	srchres.py 
+	srchres.py \
+	jbedit.py \
+	jbedits.py
 WEB_CGI	= $(addprefix $(CGI_DIR)/,$(CGI_FILES))
 
 LIB_FILES = jdb.py \
@@ -133,7 +135,8 @@ TAL_FILES = entr.tal \
 	srchform.tal \
 	srchres.tal \
 	submitted.tal \
-	url_errors.tal
+	url_errors.tal \
+	jbedits.tal
 WEB_TAL	= $(addprefix $(LIB_DIR)/tmpl/,$(TAL_FILES))
 
 all:

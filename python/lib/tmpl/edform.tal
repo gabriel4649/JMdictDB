@@ -24,7 +24,7 @@
 
     We also accept a parameter, "extra" that contains any of the items,
     "ref", "comments", "name", "email" which are used to initialize the
-    input boxes the the same names.
+    input boxes of the same names.
     -->
     <form action="edconf.py" name="edconf" tal:attributes="method method">
       <table class="form">
@@ -59,7 +59,7 @@
 		    <span tal:condition="e/unap" class="pend">(Unapproved)</span>
 		    </td>
 		  <td colspan="2">Id:
-		    <span tal:condition="e/id" tal:replace="e/id">id</span>
+		    <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${e/id}" tal:content="e/id"/>
 		    <span tal:condition="e/dfrm">(parent:
 		      <span tal:condition="e/dfrm" tal:omit-tag=""> 
 			<a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${e/dfrm}" tal:content="e/dfrm"/>
@@ -163,12 +163,12 @@
 	    </tr>
 	  <tr>
 	    <td>Name: <a class="helplink" target="edhelp" href="edhelp.py#name">help</a></td>
-	    <td><input type="text" name="name" size="30" tal:attributes="value extra/name"/></td>
+	    <td><input type="text" name="name" size="30" tal:attributes="value extra/name|session/fullname"/></td>
 	    <td></td>
 	    </tr>
 	  <tr>
 	    <td>Email: <a class="helplink" target="edhelp" href="edhelp.py#email">help</a></td>
-	    <td><input type="text" name="email" size="30" tal:attributes="value extra/email"/></td>
+	    <td><input type="text" name="email" size="30" tal:attributes="value extra/email|session/email"/></td>
 	    <td></td>
 	    </tr>
 	  <tr>

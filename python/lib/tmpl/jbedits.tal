@@ -1,0 +1,37 @@
+<html xmlns:tal="http://www.owlfish.com/simpletal/4.2/">
+<!--? Copyright (c) 2010 Stuart McGraw -->
+<!--? $Revision$ $Date$ -->
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
+  <title>JMdict search results</title>
+</head>
+<body class="srchres">
+  <div metal:use-macro="macros/macros/login">
+    <h3 metal:fill-slot="title">Search Results</h3>
+    </div>
+  <div class="results">
+    Wwwjdic preprocessed submission data in <a href="httpdir" tal:content="filesdir"></a>
+
+    <br/>Log files: 
+    <table>
+      <tr tal:repeat="f logfiles">
+	<td> 
+	  <a tal:attributes="href string:${httpdir}/${f}" tal:content="f"/>
+	  </td>
+	</tr>
+      </table>
+
+    <br/>Editdata files: 
+    <table>
+      <tr tal:repeat="f editfiles">
+	<td> 
+	  <a tal:attributes="href string:jbedit.py?svc=${svc}&amp;sid=${sid}&amp;fn=${f}" tal:content="f"/>
+	  </td>
+	</tr>
+      </table>
+
+    </div>
+  <div metal:use-macro="macros/macros/footer"></div>
+  </body>
+</html>

@@ -49,7 +49,7 @@ def jdecode (jstr):
 	o = struc2obj (r)
 	return o
 
-# The following two function convert certain Python objects
+# The following two functions convert certain Python objects
 # to and from a description format that consists solely of
 # data types supported by JSON.  This allows those certain 
 # objects to be converted to this description format, JSON
@@ -67,7 +67,7 @@ def jdecode (jstr):
 #
 # Representation format
 # A python object is represented by itself, if it is of one 
-# of the scalar types mention above.  If not, ir is represented
+# of the scalar types mention above.  If not, it is represented
 # by a 1-, 2-, or 3-item list.
 #
 #  1. [idn]
@@ -187,12 +187,18 @@ def obj2struc (o, seen=None):
 		      # its representation in a dictionary with the 
 		      # keys naming the object's attributes, and its
 		      # values the representation of the object's 
-		      # attribute values.
+		      # attribute values.  We have to process the
+		      # attributes in a deterministic order because
+		      # if the objects they reference are referenced
+		      # elsewhere, we have to assure that the same
+		      # reference will be seen first during restore
+		      # in struc2obj as was seen first here, since 
+		      # the first reference carries the idn tag.
 
 		    val = dict([(a,obj2struc(v,seen)) 
-				for a,v in o.__dict__.items()])
+				for a,v in sorted (o.__dict__.items())])
 
-		  # Now we can fil out the empty desc list created above
+		  # Now we can fill out the empty desc list created above
 		  # with the actual type and value.
 
 		desc.extend ([typ, val])
@@ -274,12 +280,13 @@ def struc2obj (desc, seen=None):
 	    elif len (desc) == 2: (typ, val) = desc
 	    elif len (desc) == 3: (idn, typ, val) = desc
 	    else: raise ValueError ("Expected length 1, 2, or 3 list")
+
 	    if idn and type(idn) is not int: 
 		raise ValueError ("Id value '%s' is not an int" % idn)
 
 	    if not typ:
 		  # If no 'typ' value, this descriptor is of the form
-		  # [idn] and isa reference to a previously seen object.
+		  # [idn] and is a reference to a previously seen object.
 		  # We expect the find the object in the 'seen' registry.
 		try: o = seen[idn]
 		except KeyError: raise ValueError ("Id value '%s' not found" % idn)
@@ -305,7 +312,7 @@ def struc2obj (desc, seen=None):
 		    cls = getattr (jdb, typ)
 		    o = cls()
 		    if idn: seen[idn] = o
-		    for a,v in val.items():
+		    for a,v in sorted(val.items()):
 			setattr (o, a, struc2obj(v,seen))
 		elif typ == 'datetime':
 		    o = isoformat2datetime (val)

@@ -51,18 +51,16 @@ __version__ = ('$Revision$'[11:-2],
 #
 # WARNING -- This module is currently incomplete.
 # TO DO:
-#	Need to convert xrefs/ants into an _xresolv list a'la jmxml.py.
+#	Need to convert xrefs/ants into an _xresolv list a'la jmxml.py. [done?]
 #	Add check/warning message for non-keb, non-reb compatible strings.
 #	lsource info currently ignored.
 #	Resurect old lit/trans gloss parser and apply here.
-#	
+	
 import sys, re, collections, pdb
 import jdb
 from objects import *
-from jelparse import lookup_tag
+from jelparse import lookup_tag, ParseError
 from iso639maps import iso639_1_to_2
-
-Lineno = None
 
 def entr (text, simple=False):
 	fmap = collections.defaultdict (lambda:([list(),list()]))
@@ -74,7 +72,7 @@ def entr (text, simple=False):
 	errs = jdb.make_freq_objs (fmap, entr)
 	for err in errs:
 	    errtyp, r, k, kw, val = err
-	    warn ("%s freq tag(s) %s%s in %s%s%s" 
+	    raise ParseError ("%s freq tag(s) %s%s in %s%s%s" 
 		  % (errtyp, KW.FREQ[kw].kw, val, k or '',
 		    u'\u30FB' if k and r else '', r or ''))
 	return entr
@@ -103,14 +101,15 @@ def parse_jppart (krtxt, fmap):
 
 def parse_krpart (krtext, fmap, kanjs=None):
 	# Parse the edict2 text section 'krtext', interpreting it as a 
-	# kanji section if 'kanjs' is None or a reading segment is 'kanjs'
-	# is not None.  'fmap' is a dict in which we accumulate freq tags
+	# kanji section if 'kanjs' is None or as a reading segment if
+	# 'kanjs is not None.  
+	# 'fmap' is a dict in which we accumulate freq tags
 	# for later processing.  If we are parsing a reading section, 
 	# the caller needs to supply 'kanjs', a list of Kanj objects
 	# resulting from the earlier parse of the kanji section.  These
 	# are needed to resolve any "restr" items in the readings.
 	#
-	# Whether paring a kanji section or a reading section, the section
+	# Whether parsing a kanji section or a reading section, the section
 	# is expected to consist of number of kanji or reading words
 	# separated by ";".  Each word consists of the kanji or kana text,
 	# followed by zero or more parenthesized expressions.  Each of
@@ -175,7 +174,7 @@ def parse_kritem (text, fmap, kanjs=None):
 	ptag = 'P' in tags
 	if ptag:    
 	    tags.remove ('P')
-	    if 'P' in tags: warn ('Duplicate "P" tag ignored')	
+	    if 'P' in tags: pass #raise ParseError ('Duplicate "P" tag ignored')	
 	if kanjs is None:
 	    krobj = parse_kitem (krtxt, tags, fmap)
 	else:
@@ -186,7 +185,7 @@ def parse_kritem (text, fmap, kanjs=None):
 
 def parse_ritem (rtxt, tags, fmap, kanjs):
 	if not jdb.jstr_reb (rtxt):
-	    warn ('Reading field not kana: "%s".' % rtxt)
+	    raise ParseError ('Reading field not kana: "%s".' % rtxt)
 	rdng = Rdng (txt=rtxt)
 	for tag in tags:
 	    if not tag: continue
@@ -199,13 +198,13 @@ def parse_ritem (rtxt, tags, fmap, kanjs):
 		if   tagtyp == 'RINF': rdng._inf.append (Rinf(kw=tagval)) 
 		elif tagtyp == 'FREQ': fmap[t[1:]][0].append (rdng)
 	    else:
-		warn ('Unknown tag "%s" on reading "%s" ignored' % (tag, rtxt))
+		raise ParseError ('Unknown tag "%s" on reading "%s"' % (tag, rtxt))
 	
 	return rdng 
 
 def parse_kitem (ktxt, tags, fmap):
 	if not jdb.jstr_keb (ktxt):
-	    warn ('Kanji field not kanji: "%s".' % ktxt)
+	    raise ParseError ('Kanji field not kanji: "%s".' % ktxt)
 	kanj = Kanj (txt=ktxt)
 	for tag in tags:
 	    if not tag: continue
@@ -215,7 +214,7 @@ def parse_kitem (ktxt, tags, fmap):
 		if   tagtyp == 'KINF': kanj._inf.append (Kinf(kw=tagval)) 
 		elif tagtyp == 'FREQ': fmap[t[1:]][1].append (kanj)
 	    else:
-		warn ('Unknown tag "%s" on kanji "%s" ignored' % (tag, ktxt))
+		raise ParseError ('Unknown tag "%s" on kanji "%s"' % (tag, ktxt))
 	return kanj 
 
 def parse_restrs (rdng, tag, kanjs):
@@ -223,7 +222,7 @@ def parse_restrs (rdng, tag, kanjs):
 	errs = []
 	jdb.txt2restr (restrtxts, rdng, kanjs, '_restr', errs)
 	for err in  errs:
-	    warn ('Reading restriction "%s" doesn\'t match any kanji' % err)
+	    raise ParseError ('Reading restriction "%s" doesn\'t match any kanji' % err)
 
 def add_spec1 (fmap, krobj, typ):
 	freq = (jdb.KW.FREQ['spec'].id, 1)
@@ -251,7 +250,7 @@ def parse_spart (txt, entr, fmap):
 		      # If there is more than 1 kanji or reading, then at least
 		      # one of them should have a "spec1" tag applied as a result
 		      # of a required explicit kanji or reading P tag.
-		    warn ("P tag in sense, but not in kanji or readings")
+		    raise ParseError ("P tag in sense, but not in kanji or readings")
 		  # If there is only one reading and/or kanj a P tag on them is
 		  # not required so we assign the corresponding "spec1" tag on
 		  # them here.  (Also assign if multiple kanji/readings since
@@ -352,7 +351,7 @@ def process_sense (tags, glosstxts, snum, prev_pos, kanjs, rdngs):
 		  # Don;'t do anything with it other than check
 		  # that is what was expected.  There is no check
 		  # for duplicates.
-		if int (tag) != snum: warn ('Sense number "%s" out of order' % tag)
+		if int (tag) != snum: raise ParseError ('Sense number "%s" out of order' % tag)
 		continue
 	    if tag.lower().startswith ('see') or \
 		  tag.lower().startswith ('ant'): 	# XREF
@@ -376,7 +375,7 @@ def process_sense (tags, glosstxts, snum, prev_pos, kanjs, rdngs):
 		  # to process as sense note or gloss prefix.
 	    if 1:
 		if sens.notes:
-		      # If we already found a sense note, this put this 
+		      # If we already found a sense note, then put this 
 		      # current unidentifiable text back onto the first gloss.
 		      # FIXME? May loose whitespace that was in original line.
 		      # FIXME: If multiple tags are pushed back onto gloses, 
@@ -387,7 +386,7 @@ def process_sense (tags, glosstxts, snum, prev_pos, kanjs, rdngs):
 		      #  comes before stagr/stagk, see/ant, MISC, DIAL, FLD,
 		      #  so if we have seen any of those fields, we can say
 		      #  that we are looking at gloss text now.
-		    #warn ('note="%s", dup="%s"' % (sens.notes, tag))
+		    #raise ParseError ('note="%s", dup="%s"' % (sens.notes, tag))
 		    if len(glosstxts) < 1: glosstxts.append ('')
 		    glosstxts[0] = '(' + tag + ') ' + glosstxts[0] 
 		else: sens.notes = tag.strip()
@@ -410,14 +409,14 @@ def parse_tags (tagtxt, sens, snum):
 	for tag in tags:
 	    tag = tag.strip()
 	    if not tag:
-		warn ("Empty tag in sense %d.", (snum))
+		raise ParseError ("Empty tag in sense %d.", (snum))
 		continue
 	    tagx = tag[:-1] if tag[-1] == ':' else tag
 	    t = lookup_tag (tagx, ['POS','MISC','DIAL','FLD'])
 	    if t:
 		typ, val = t[0]
 		if len (t) > 1:
-		    warn ('Ambiguous tag "%s", interpreting as "%s" but could be "%s"' 
+		    raise ParseError ('Ambiguous tag "%s", interpreting as "%s" but could be "%s"' 
 			  % (tag, typ, '","'.join ([x[0] for x in t[1:]])))
 		if   typ == 'POS':  pos.append  (Pos  (kw=val))
 		elif typ == 'MISC': misc.append (Misc (kw=val))
@@ -430,7 +429,7 @@ def parse_tags (tagtxt, sens, snum):
 		# Don't report failed tag lookups because likely
 		# we are mistakenly processing a sense note or gloss
 		# prefix which will be correctly handled by the caller.  
-		#warn ('Unknown sense tag in sense %d: "%s".' % (snum, tag))
+		#raise ParseError ('Unknown sense tag in sense %d: "%s".' % (snum, tag))
 
 	  # Because of the loosy-goosy edict syntax, if there were
 	  # erroneous tags, we don't know if they were really erroneous
@@ -548,7 +547,7 @@ def extract_lsrc_or_ginf (gtxt):
 	      # is part of the gloss.
 	    try: lsrctuple = parse_lsrc (lang, txt)
 	    except KeyError, e: 
-		warn ('Lsrc keyerror on "%s" in "%s"' % (str(e), ptext))
+		raise ParseError ('Lsrc keyerror on "%s" in "%s"' % (str(e), ptext))
 		return (gtxt, (None, None), [])
 	      # If it parsed ok, add it to the collection.
 	    if lsrctuple: lsrctuples.append (lsrctuple)
@@ -570,13 +569,13 @@ def parse_stags (tag, sens, kanjs, rdngs):
 	    word = word.strip()
 	    if jdb.jstr_reb (word): stagrtxts.append (word)
 	    elif jdb.jstr_keb (word): stagktxts.append (word)
-	    else: warn ('stagx restriction word neither reading or kanji: "%s"' % word)
+	    else: raise ParseError ('stagx restriction word neither reading or kanji: "%s"' % word)
 	errs = []
 	jdb.txt2restr (stagrtxts, sens, rdngs, '_stagr', bad=errs)
-	if errs: warn ('Stagr text not in readings: "%s"' % '","'.join (errs))
+	if errs: raise ParseError ('Stagr text not in readings: "%s"' % '","'.join (errs))
 	errs = []
 	jdb.txt2restr (stagktxts, sens, kanjs, '_stagk', bad=errs)
-	if errs: warn ('Stagk text not in kanji: "%s"' % '","'.join (errs))
+	if errs: raise ParseError ('Stagk text not in kanji: "%s"' % '","'.join (errs))
 	return
 
 def parse_xrefs (txt, sens):
@@ -584,7 +583,7 @@ def parse_xrefs (txt, sens):
 	  # separated from the xref text by either or both colon or spaces.
 	p = re.split (r'^(?:([a-zA-Z]+)(?:[: ]+))', txt)
 	if len(p) != 3: 
-	    warn ('Xref "%s" ignored, bad format' % txt)
+	    raise ParseError ('Xref "%s", bad format' % txt)
 	    return
 	typ, xtxt = p[1:3]
 	xtyp = jdb.KW.XREF[typ.lower()].id
@@ -594,7 +593,7 @@ def parse_xrefs (txt, sens):
 	    if not x: continue
 	    krs = x.split (u'\u30FB')
 	    if len (krs) > 3 or len(krs) == 0:
-		warn ('Xref "%s" ignored, bad format' % x);  continue
+		raise ParseError ('Xref "%s", bad format' % x);  continue
 
 	      # 'krs' has 1, 2, or 3 items.  Using "x" to indicate a non-
 	      # existent item, the valid arrangements if kanji, reading, 
@@ -613,18 +612,18 @@ def parse_xrefs (txt, sens):
 		    if v.isdigit(): tsens = int (v)
 		    elif jdb.jstr_reb (v):
 		        if rtxt:
-			    warn ('Xref "%s" ignored, two reading parts present' % x)
+			    raise ParseError ('Xref "%s", two reading parts present' % x)
 			    break
 			rtxt = v
 		    else:
-			warn ('Xref "%s" ignored, two kanji parts present' % x)
+			raise ParseError ('Xref "%s", two kanji parts present' % x)
 			break
 		else:		# v is S (n==1 must have been R)
 		    if not v.isdigit():
-			warn ('Xref "%s" ignored, "%s" is not a sense number' % (x, v))
+			raise ParseError ('Xref "%s", "%s" is not a sense number' % (x, v))
 			break
 		    if tsens:
-			warn ('Xref "%s" ignored, has two sense numbers' % x)
+			raise ParseError ('Xref "%s", has two sense numbers' % x)
 			break
 		    tsens = int (v)
 	    else:
@@ -632,9 +631,4 @@ def parse_xrefs (txt, sens):
 	if xrsvs:
 	    if not getattr (sens, '_xrslv', None): sens._xrslv = []
 	    sens._xrslv.extend (xrsvs)
-
-def warn (msg):
-	global Lineno
-	if Lineno: msg = str(Lineno) + ": " + msg
-	print >>sys.stderr, msg.encode (sys.stderr.encoding or 'utf-8')
 

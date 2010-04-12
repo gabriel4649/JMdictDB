@@ -44,7 +44,7 @@ def main (args, opts):
 	is_editor = jmcgi.is_editor (sess)
 	dbg = fv ('d'); meth = fv ('meth')
 
-	allfiles = os.listdir (filesdir)
+	allfiles = sorted (os.listdir (filesdir))
 	editfiles = [x for x in allfiles if re.search (r'[0-9]{5}\.dat$', x) ]
 	logfiles = [x for x in allfiles if re.search (r'((ok)|(bad))\.log$', x) ]
 

@@ -59,7 +59,7 @@ AssdTo:	stuart
 
 2010-02-07 19:46:00 stuart
   In rev bd6557361529 (2009-02-09) added support for per-corpus sequences
-  but set the seq name to 'seq' for most of my corpuses for compatibility 
+  but set the seq name to 'seq' for most of my corpora for compatibility 
   with exiting data.
 
   Today while loading new version of JMdict, saved my extra entries as 
@@ -70,7 +70,7 @@ AssdTo:	stuart
  
   After reloading them, ran the following update query to reset the
   sequence numbers of all existing entries in my personal "extra"
-  corpuses (which have .src values >= 100):
+  corpora (which have .src values >= 100):
 
     UPDATE entr SET seq=newseq 
     FROM

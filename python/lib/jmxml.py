@@ -112,14 +112,14 @@ def parse_xmlfile (
 			#   name.  <ent_corp> elements will be looked
 			#   up in this dict.  If not supplied, it is 
 			#   expected that <corpus> elements will occur
-			#   in the XML that define corpuses before they
+			#   in the XML that define corpora before they
 			#   are referenced by <ent_corp> elements.
 	grpdefs=None,   # (dict) A mapping that contains grpdef (aka
 			#   "kwgrp") records indexed by id number and 
 			#   name.  <group> elements will be looked
 			#   up in this dict.  If not supplied, it is 
 			#   expected that <grpdef> elements will occur
-			#   in the XML that define corpuses before they
+			#   in the XML that define corpora before they
 			#   are referenced by <group> elements.
 	toptag=False):	# (bool) Make first item retuned by iterator 
 			#   a string giving the name of the top-level

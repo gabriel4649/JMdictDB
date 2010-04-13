@@ -172,12 +172,12 @@ arguments:  [text | number]...
 	p.add_option ("--seq", "-q", action="append", dest="seq",
 	    help="Find entries with seq number SEQ.")
 	p.add_option ("--corpus", "-s", action="extend", dest="corp",
-	    help=u"Restrict the search to the given corpuses.  Each corpus "
+	    help=u"Restrict the search to the given corpora.  Each corpus "
 		"is specified by its keyword.  If more than one, they must "
 		" be comma separated. If the first comma separated word is "
-		"\"NOT\" rather than a corpus keyword, then all corpuses "
+		"\"NOT\" rather than a corpus keyword, then all corpora "
 		"other than those listed will be searched. Example: "
-		" '%prog -c NOT,examples ...' will search in all corpuses "
+		" '%prog -c NOT,examples ...' will search in all corpora "
 		"other than the \"example\" corpus.  "
 		"Specifying --corpus with --id is not usually useful since "
 		"id numbers uniquely identify an entry regardless of the "

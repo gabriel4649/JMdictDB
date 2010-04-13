@@ -522,9 +522,9 @@ def sndclips (clips):
 	    fmt.append ('</aclip>')
 	return fmt
 
-def corpus (corpuses):
+def corpus (corpora):
 	KW = jdb.KW;  fmt = []
-	for c in corpuses:
+	for c in corpora:
 	    kwo = KW.SRC[c]
 	    fmt.append ('<corpus id="%d">' % kwo.id)
 	    fmt.append ('<co_name>%s</co_name>' % kwo.kw)

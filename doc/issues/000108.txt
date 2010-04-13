@@ -9,7 +9,7 @@ AssdTo:	stuart@friix.com
 2008-03-28 00:00:00 stuart@friix.com
   On the cgi searchform (web/cgi/srchform.cgi, perl/lib/tal/srchform.tal)
   the corpus items checked by default jmdict, and any additionally added
-  corpuses, but not jmnedict, examples, or test.
+  corpora, but not jmnedict, examples, or test.
   
   This is desirable, but accidental.  The first digit of all the checked
   items is 1 (the added corpus items were all given 1xx id numbers) and

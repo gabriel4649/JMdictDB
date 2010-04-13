@@ -29,7 +29,7 @@ __version__ = ('$Revision$'[11:-2],
 # Don't die on errors, make effort to warn, skip bad data, and continue.
 # Stroke counts in separate table?
 # Decompose dic_ref into (numb,vol,ch,pg,other)?  Is this basis for
-#   general locator scheme that can be applied in othe corpuses?
+#   general locator scheme that can be applied in other corpora?
 
 import sys, os
 from xml.etree import cElementTree as ElementTree

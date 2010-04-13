@@ -60,7 +60,7 @@ def main (args, opts):
 
 	  # Turn the "--corpus" option value into a string that can be 
 	  # and'ed into a SQL WHERE clause to restrict the results to 
-	  # the specified corpuses.
+	  # the specified corpora.
 	corp_terms = parse_corpus_opt (opts.corpus, 'e.src')
 
 	    # If the output file was not opened in the dtd section
@@ -80,7 +80,7 @@ def main (args, opts):
 	      # and exit if not found.  Complain if more than one entry 
 	      # with the requested seq number exists.  More than one may be
 	      # found since the same sequence number may exist in different
-	      # corpuses, or in the same corpus if an entry was edited.
+	      # corpora, or in the same corpus if an entry was edited.
 	      # 
 	      # FIXME: no way to select from multiple entries with same seq
 	      #   number.  Might want just the stat="A" entries for example.
@@ -100,7 +100,7 @@ def main (args, opts):
 	else: 
 	      # If no "--begin" option, remove the " AND" from the front of
 	      # the 'corp_terms' string.  Read the first entry (by seq number)
-	      # in the requested corpuses.
+	      # in the requested corpora.
 	    cc = corp_terms[4:] if corp_terms else 'True'
 	    sql = "SELECT id,seq,src FROM entr e WHERE %s ORDER BY src,seq LIMIT 1" % cc
 	    start = time.time()
@@ -109,7 +109,7 @@ def main (args, opts):
 	    if debug: print >>sys.stderr, "Time: %s (init read)" % (time.time()-start)
 
 	lastsrc, lastseq, lastid = rs[0].src, rs[0].seq, rs[0].id  
-	count = opts.count; done = 0; blksize = opts.blocksize; corpuses = set()
+	count = opts.count; done = 0; blksize = opts.blocksize; corpora = set()
 	if not opts.nodtd: outf.write ('<%s>\n' % opts.root)
 
 	while count is None or count > 0:
@@ -156,10 +156,10 @@ def main (args, opts):
 	    start = time.time()
 	    for e in entrs:
 		if not opts.compat:
-		    if e.src not in corpuses:
+		    if e.src not in corpora:
 			txt = '\n'.join (fmtxml.corpus ([e.src]))
 			outf.write (txt.encode (opts.encoding) + "\n")
-			corpuses.add (e.src)
+			corpora.add (e.src)
 		    grp = getattr (e, '_grp', [])
 		    for g in grp:
 			gob = jdb.KW.GRP[g.kw]
@@ -236,7 +236,7 @@ Arguments:
 
 	p.add_option ("-s", "--corpus", default=None,
             help="""Restrict extracted entries to those belonging to the 
-		corpuses defined by this option.  The format is a list of
+		corpora defined by this option.  The format is a list of
 		comma separated specifiers.  Each specifier is either a 
 		corpus id number, corpus name, or a range.  A range is a
 		corpus id number or corpus name followed by a colon, a
@@ -250,19 +250,19 @@ Arguments:
 
 		    -s jmnedict  Restrict to corpus id 2 (jmnedict).
 
-		    -s 3,26,27   Restrict to the corpuses 3, 26, or 27.
+		    -s 3,26,27   Restrict to the corpora 3, 26, or 27.
 
-		    -s 10:13     Restrict to corpuses 10, 11, 12, or 13.
+		    -s 10:13     Restrict to corpora 10, 11, 12, or 13.
 
-		    -s test:	 Restrict to corpuses with an id greater
+		    -s test:	 Restrict to corpora with an id greater
 				 or equal to the id of corpus "test".
 
 		    -s jmdict-examples,test
-				 Restrict to corpuses with id numbers 
+				 Restrict to corpora with id numbers 
 				 between "jmdict" and "examples", or equal 
 				 to the id of corpus "test".
 
-		Default is all corpuses.""")
+		Default is all corpora.""")
 
 	p.add_option ("--compat", default=None,
             help="""If given, must have a value of either 'jmdict' or

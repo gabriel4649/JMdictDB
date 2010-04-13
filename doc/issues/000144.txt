@@ -36,7 +36,7 @@ AssdTo:
 
 2009-02-05 01:31:00 stuart
   For future reference, here is how I added groups for my personally
-  collected extra corpuses.  Plan is to generate a group for each
+  collected extra corpora.  Plan is to generate a group for each
   (src,srcnote) pair.  (Need src in there because some srcnotes,
   e.g. "undefined" occurs in entries from more than one src.)
   Temporarily add a 'src' column to 'kwgrp' table to allow this,

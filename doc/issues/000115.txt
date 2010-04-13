@@ -19,7 +19,7 @@ AssdTo:
     If kanjidic not available in the corpus selections, then
     definately "no".  And definately "no" for pages used for
     the wwwjdic submission system.)
-  * All the above require knowing which corpuses are kanjidic.
+  * All the above require knowing which corpora are kanjidic.
     Don't want to hardwire magic id's or keywords.  Add column
     to kwsrc table?
     [Can we use existance of .chr attribute on entry object?]

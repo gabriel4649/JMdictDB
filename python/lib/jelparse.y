@@ -916,9 +916,9 @@ def create_parser (lexer, toks, **args):
 
 	if 'module'       not in args: args['module']       = sys.modules['jelparse']
 	if 'tabmodule'    not in args: args['tabmodule']    = 'jelparse_tab'
-	if 'write_tables' not in args: args['write_tables'] = 0
+	if 'write_tables' not in args: args['write_tables'] = 1
 	if 'optimize'     not in args: args['optimize']     = 1 
-	if 'debug'        not in args: args['debug']        = 1
+	if 'debug'        not in args: args['debug']        = 0
 
 	JelParser = ply.yacc.yacc (**args)
 	JelParser.lexer = lexer	  # Access to lexer needed in error handler.

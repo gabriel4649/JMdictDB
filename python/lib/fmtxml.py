@@ -191,19 +191,19 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
 	if xrfs and genxrefs:
 	    fmt.extend (xrslvs (xrfs, (not compat) and src))
 
+	fmt.extend (kwds (s, '_fld', 'FLD', 'field'))
 	fmt.extend (kwds (s, '_misc', 'MISC', 'misc'))
 
 	notes = getattr (s, 'notes', None)
 	if notes: fmt.append ('<s_inf>%s</s_inf>' % esc (notes))
 
-	fmt.extend (kwds (s, '_dial', 'DIAL', 'dial'))
-	fmt.extend (kwds (s, '_fld', 'FLD', 'field'))
-
-	for x in s._gloss: fmt.extend (gloss (x, compat))
-
 	lsource = getattr (s, '_lsrc', None)
 	if lsource: 
 	    for x in lsource: fmt.extend (lsrc (x))
+
+	fmt.extend (kwds (s, '_dial', 'DIAL', 'dial'))
+
+	for x in s._gloss: fmt.extend (gloss (x, compat))
 
 	fmt.append ('</sense>')
 	return fmt

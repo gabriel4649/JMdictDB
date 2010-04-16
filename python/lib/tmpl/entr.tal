@@ -233,15 +233,15 @@
 		<td tal:content="string:${h/hist}.">#.</td> 
 		<td class="hhdr" colspan="2" tal:content="string: ${python:TALabbr('STAT',h.stat)}${python:'*' if h.unap else ''} ${h/dt} ${h/name}&lt;${h/email}&gt;">hist-header</td>
 		</tr>
-	      <tr tal:condition="h/notes">
-		<td>&nbsp;</td>
-		<td valign="top">Comments:</td>
-		<td tal:content="h/notes">notes</td>
-	       </tr>
 	      <tr tal:condition="h/refs">
 		<td>&nbsp;</td>
 		<td valign="top">Refs:</td>
 		<td tal:content="h/refs">refs</td>
+	       </tr>
+	      <tr tal:condition="h/notes">
+		<td>&nbsp;</td>
+		<td valign="top">Comments:</td>
+		<td tal:content="h/notes">notes</td>
 	       </tr>
 	      <tr tal:condition="h/diff">
 		<td>&nbsp;</td>

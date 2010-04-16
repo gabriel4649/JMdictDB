@@ -152,13 +152,13 @@
 	    <td></td>
 	    </tr>
 	  <tr>
-	    <td>Comments: <br/><a class="helplink" target="edhelp" href="edhelp.py#comments">help</a></td>
-	    <td><textarea name="comment" wrap="physical" cols="60" rows="3" tal:content="extra/comment"></textarea></td>
+	    <td>References: <br/><a class="helplink" target="edhelp" href="edhelp.py#references">help</a></td>
+	    <td><textarea name="reference" wrap="physical" cols="60" rows="3" tal:content="extra/ref"></textarea></td>
 	    <td></td>
 	    </tr>
 	  <tr>
-	    <td>References: <br/><a class="helplink" target="edhelp" href="edhelp.py#references">help</a></td>
-	    <td><textarea name="reference" wrap="physical" cols="60" rows="3" tal:content="extra/ref"></textarea></td>
+	    <td>Comments: <br/><a class="helplink" target="edhelp" href="edhelp.py#comments">help</a></td>
+	    <td><textarea name="comment" wrap="physical" cols="60" rows="3" tal:content="extra/comment"></textarea></td>
 	    <td></td>
 	    </tr>
 	  <tr>

@@ -104,7 +104,7 @@ def main (args, opts):
 	    cc = corp_terms[4:] if corp_terms else 'True'
 	      # If compat (jmdict or jmnedict), restrict the xml to Active
 	      # entries only.
-	    astat = " AND stat="+str(jdb.KW.STAT['A'].id) if opt.compat else "" 
+	    astat = " AND stat="+str(jdb.KW.STAT['A'].id) if opts.compat else "" 
 	    sql = "SELECT id,seq,src FROM entr e WHERE %s%s ORDER BY src,seq LIMIT 1" % (cc, astat)
 	    start = time.time()
 	    if debug: print >>sys.stderr, sql

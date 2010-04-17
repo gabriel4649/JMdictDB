@@ -99,7 +99,7 @@ def kanj (k):
 	fmt = []
 	fmt.append ('<k_ele>')
 	fmt.append ('<keb>%s</keb>' % k.txt)
-	fmt.extend (kwds (k, '_inf', 'KINF', 'ke_inf'))
+	fmt.extend (kwds (k, '_inf', 'KINF', 'ke_inf', sort=True))
 	fmt.extend (['<ke_pri>%s</ke_pri>' %s 
 		     for s in jdb.freq2txts (getattr (k,'_freq',[]))])
 	fmt.append ('</k_ele>')
@@ -110,7 +110,7 @@ def rdng (r, k, compat):
 	fmt.append ('<r_ele>')
 	fmt.append ('<reb>%s</reb>' % r.txt)
 	fmt.extend (restrs (r, k))
-	fmt.extend (kwds (r, '_inf', 'RINF', 're_inf'))
+	fmt.extend (kwds (r, '_inf', 'RINF', 're_inf', sort=True))
 	fmt.extend (['<re_pri>%s</re_pri>' %s 
 		     for s in jdb.freq2txts (getattr (r,'_freq',[]))])
 	if not compat: fmt.extend (audio (r))
@@ -243,20 +243,13 @@ def gloss (g, compat=None):
 	fmt.append ("<gloss%s>%s</gloss>" % (attr, esc(g.txt)))
 	return fmt
 
-def kwds (parent, attr, domain, elem_name):
+def kwds (parent, attr, domain, elem_name, sort=False):
 	nlist = getattr (parent, attr, [])
 	if not nlist: return nlist
 	kwtab = getattr (XKW, domain)
 	kwlist = ['<%s>&%s;</%s>' % (elem_name, kwtab[x.kw].kw, elem_name)
 		  for x in nlist]
-	return kwlist
-
-def kwds (parent, attr, domain, elem_name):
-	nlist = getattr (parent, attr, [])
-	if not nlist: return nlist
-	kwtab = getattr (XKW, domain)
-	kwlist = ['<%s>&%s;</%s>' % (elem_name, kwtab[x.kw].kw, elem_name)
-		  for x in nlist]
+	if sort: kwlist.sort()
 	return kwlist
 
 def lsrc (x):

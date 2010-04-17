@@ -52,6 +52,7 @@ def kanj (kanj):
 	KW = jdb.KW
 	txt = kanj.txt
 	inf = [KW.KINF[x.kw].kw for x in getattr(kanj,'_inf',[])]
+	inf.sort()
 	freq = jdb.freq2txts (getattr(kanj,'_freq',[]))
 	if inf or freq: txt += '[' + ','.join (inf + freq) + ']'
 	return txt
@@ -64,6 +65,7 @@ def rdng (rdng, kanjs):
 	KW = jdb.KW
 	txt = rdng.txt
 	inf = [KW.RINF[x.kw].kw for x in getattr(rdng,'_inf',[])] 
+	inf.sort()
 	freq = jdb.freq2txts (getattr(rdng,'_freq',[]))
 	if inf or freq: txt += '[' + ','.join (inf + freq) + ']'
 	restrtxt = fmt.restrtxts (getattr(rdng,'_restr',[]), kanjs, '_restr')

@@ -230,7 +230,9 @@ OrderBy = {
 	'kinf':"x.entr,x.kanj,x.ord",	 'rinf':"x.entr,x.rdng,x.ord",
 	'pos':"x.entr,x.sens,x.ord",	 'misc':"x.entr,x.sens,x.ord", 
 	'fld':"x.entr,x.sens,x.ord",	 'dial':"x.entr,x.sens,x.ord", 
-	'lsrc':"x.entr,x.sens,x.ord",	 'xresolv':"x.entr,x.sens,x.typ,x.ord" }
+	'lsrc':"x.entr,x.sens,x.ord",	 'xresolv':"x.entr,x.sens,x.typ,x.ord",
+	'restr':"x.entr,x.rdng,x.kanj",	 
+	'stagk':"x.entr,x.sens,x.kanj",	 'stagr':"x.entr,x.sens,x.rdng" }
 
 def entr_data (dbh, crit, args=None, ord=None, tables=None):
 	#

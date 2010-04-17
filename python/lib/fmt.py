@@ -61,6 +61,7 @@ def senss (entr, label="Senses: "):
 def kanj (k, n=None):
 	KW = jdb.KW
 	kinf = [KW.KINF[x.kw].kw for x in getattr (k,'_inf',[])]
+	kinf.sort()
 	freq = jdb.freq2txts (getattr (k,'_freq',[]))
 	kwds = ",".join (kinf + jdb.rmdups (freq)[0])
 	if kwds: kwds = "[" + kwds + "]"
@@ -73,6 +74,7 @@ def rdng (r, k, n=None):
 	    restr = ','.join (restrtxts (r._restr, k, '_restr'))
 	if restr: restr = "(%s)" % restr
 	rinf = [KW.RINF[x.kw].kw for x in getattr (r,'_inf',[])]
+	rinf.sort()
 	freq = jdb.freq2txts (getattr (r,'_freq',[]))
 	kwds = ",".join (rinf + jdb.rmdups (freq)[0])
 	if kwds: kwds = "[" + kwds + "]"

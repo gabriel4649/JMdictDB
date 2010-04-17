@@ -218,7 +218,7 @@ data/jmdict.xml:
 	mv $(JMDICTFILE) data/jmdict.xml
 
 data/jmdict.pgi: data/jmdict.xml
-	cd python && python jmparse.py $(LANGOPT) -l ../data/jmdict.log -o ../data/jmdict.pgi ../data/jmdict.xml
+	cd python && python jmparse.py $(LANGOPT) -y -l ../data/jmdict.log -o ../data/jmdict.pgi ../data/jmdict.xml
 
 data/jmdict.dmp: data/jmdict.pgi
 	cd python && python jmload.py $(JM_HOST) -u $(USER) -d $(DB) -i 1 -o ../data/jmdict.dmp ../data/jmdict.pgi

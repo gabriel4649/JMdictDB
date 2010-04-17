@@ -325,8 +325,9 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
 	    if tbl == "xrer": 
 		tblx = "xref"; key = "xentr"
 	    else: tblx = tbl
-	    if tblx == "xref": limit = "LIMIT 20"
-	    else: limit = ''
+	    ##if tblx == "xref": limit = "LIMIT 20"
+	    ##else: limit = ''
+	    limit = ''
 	    # FIXME: cls should not be dependent on lexical table name.
 	    # FIXME: rename database table "xresolv" to "xrslv".
 	    if tblx == "xresolv": cls_name = "Xrslv"

@@ -431,14 +431,30 @@ def audit (h, compat=None):
 	fmt = []
 	fmt.append ('<audit>')
 	fmt.append ('<upd_date>%s</upd_date>' % h.dt.date().isoformat())
-	if getattr (h, 'notes', None): fmt.append ('<upd_detl>%s</upd_detl>'   % esc(h.notes))
 	if not compat:
+	    if getattr (h, 'notes', None): fmt.append ('<upd_detl>%s</upd_detl>'   % esc(h.notes))
 	    if getattr (h, 'stat', None):  fmt.append ('<upd_stat>%s</upd_stat>'   % XKW.STAT[h.stat].kw)
 	    if getattr (h, 'unap', None):  fmt.append ('<upd_unap/>')
 	    if getattr (h, 'email', None): fmt.append ('<upd_email>%s</upd_email>' % esc(h.email))
 	    if getattr (h, 'name', None):  fmt.append ('<upd_name>%s</upd_name>'   % esc(h.name))
 	    if getattr (h, 'refs', None):  fmt.append ('<upd_refs>%s</upd_refs>'   % esc(h.refs))
 	    if getattr (h, 'diff', None):  fmt.append ('<upd_diff>%s</upd_diff>'   % esc(h.diff))
+	else:
+	      # When generating JMdict or JMnedict compatible XML, 
+	      # history details (such as hist.note) are considered
+	      # "not for distribution".  We will generate audit elements
+	      # for each hist record, but provide only the date, and
+	      # "Entry created" or "Entry amended".  History records
+	      # added to imported entries should always result in
+	      # "Entry amended".  But the first history record of a
+	      # post-import entry should result in "Entry created".
+	      # Unfortunately we don't know here if an entry is an
+	      # imported entry, or a port-import entry, so we can't
+	      # tell which text to generate for the first history 
+	      # record.  Currently we just use "Entry amended".
+	    if h.notes == "Entry created": note = h.notes
+	    else: note = "Entry amended"
+	    fmt.append ('<upd_detl>%s</upd_detl>' % note)	
 	fmt.append ('</audit>')
 	return fmt
 

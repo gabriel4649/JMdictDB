@@ -24,7 +24,7 @@ __version__ = ('$Revision$'[11:-2],
 # Read entries from database and write to XML file.  Run with 
 # --help option for details.
 
-import sys, time
+import sys, time, pdb
 import jdb, fmt, fmtxml
 
 def main (args, opts):
@@ -102,7 +102,10 @@ def main (args, opts):
 	      # the 'corp_terms' string.  Read the first entry (by seq number)
 	      # in the requested corpora.
 	    cc = corp_terms[4:] if corp_terms else 'True'
-	    sql = "SELECT id,seq,src FROM entr e WHERE %s ORDER BY src,seq LIMIT 1" % cc
+	      # If compat (jmdict or jmnedict), restrict the xml to Active
+	      # entries only.
+	    astat = " AND stat="+str(jdb.KW.STAT['A'].id) if opts.compat else "" 
+	    sql = "SELECT id,seq,src FROM entr e WHERE %s%s ORDER BY src,seq LIMIT 1" % (cc, astat)
 	    start = time.time()
 	    if debug: print >>sys.stderr, sql
 	    rs = jdb.dbread (cur, sql)
@@ -137,7 +140,7 @@ def main (args, opts):
 
 	      # Create a temporary table of id numbers and give that to
 	      # jdb.entrList().  This is an order of magnitude faster than
-	      # giving the abover sql directly to entrList().
+	      # giving the above sql directly to entrList().
 	    if debug: print >>sys.stderr, sql, sql_args
 	    start = time.time()
 	    tmptbl = jdb.entrFind (cur, sql, sql_args)

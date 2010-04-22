@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- $Rev: 000000000000 $ $Date: 0000/00/00 00:00:00 $
 	This DTD is derived from the JMdict DTD version 1.07 (2009-01-21)
 	but is extended to allow for enhanced representational capabilities
@@ -220,7 +220,7 @@
 <!ELEMENT upd_name (#PCDATA)>
 <!ELEMENT upd_email (#PCDATA)>
 <!--                                                                   -->
-<!ELEMENT sense (stagk*, stagr*, pos*, xref*, ant*, field*, misc*, s_inf*, lsource*, dial*, gloss*, example*)>
+<!ELEMENT sense (stagk*, stagr*, pos*, xref*, field*, misc*, s_inf*, lsource*, dial*, gloss*, example*)>
 	<!-- The sense element will record the translational equivalent
 	of the Japanese word, plus other related information. Where there
 	are several distinctly different meanings of the word, multiple
@@ -243,11 +243,6 @@
 <!ATTLIST xref seq CDATA #IMPLIED>
 <!ATTLIST xref corp CDATA #IMPLIED>
 
-<!ELEMENT ant (#PCDATA)*>
-	<!-- This element is used to indicate another entry which is an
-	antonym of the current entry/sense. The content of this element
-	must exactly match that of a keb or reb element in another entry.
-	-->
 <!ELEMENT pos (#PCDATA)>
 	<!-- Part-of-speech information about the entry/sense. Should use 
 	appropriate entity codes. In general where there are multiple senses

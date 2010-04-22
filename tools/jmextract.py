@@ -39,6 +39,7 @@ def main (args, opts):
 	fin = codecs.open (infn, "r", "utf_8_sig")
 	if seqlist:
 	    for seq,entr in jmxml.extract (fin, seqlist, opts.dtd, opts.all):
+	        print >>sys.stderr, seq
 		if opts.dtd and first:
 		    toplev, dtd = seq, entr
 		    print ('\n'.join (dtd)).encode (opts.encoding, 'backslashreplace')
@@ -94,11 +95,10 @@ Usage:
 
 Arguments:
 	filename -- Name of input JMdict or JMnedict xml file.
-	seqnum -- Seq number (or ordinal number in the case of
-	    JMnedict) of an entry to extract.
-	count -- Number of sucessive entries (including 'seq')
-	    to extract."""
-
+	seqnum,count -- Seq number (or ordinal number in the
+	    case of JMnedict) of an entry to extract optionally
+	    followed by a comma and count of sucessive entries
+	    (including 'seq') to extract."""
 
 	v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
 	        + " Rev %s (%s)" % __version__

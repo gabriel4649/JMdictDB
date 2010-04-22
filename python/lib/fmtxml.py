@@ -184,12 +184,22 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
 	    fmt.extend (kwds (s, '_pos', 'POS', 'pos'))
 	    if prev_pos is not None: prev_pos[:] = this_pos
 
+	xr = []
 	xrfs = getattr (s, '_xref', None)
 	if xrfs and genxrefs:
-	    fmt.extend (xrefs (xrfs, (not compat) and src))
+	    xr.extend (xrefs (xrfs, (not compat) and src))
 	xrfs = getattr (s, '_xrslv', None)
 	if xrfs and genxrefs:
-	    fmt.extend (xrslvs (xrfs, (not compat) and src))
+	    xr.extend (xrslvs (xrfs, (not compat) and src))
+	if compat:
+	      # The legacy jmdict dtd requires <xref> elements
+	      # to preceed <ant> elements.  We sort on the second
+	      # character of the xml string which will be "x" for
+	      # "<xref>..." and "a" for "<ant>...".  Python sorts
+	      # are stable so preexisting order within the xref
+	      # and ant groups will be maintained..
+	    xr.sort (key=lambda x:x[1], reverse=True) 
+	fmt.extend (xr)
 
 	fmt.extend (kwds (s, '_fld', 'FLD', 'field'))
 	fmt.extend (kwds (s, '_misc', 'MISC', 'misc'))
@@ -331,7 +341,7 @@ def xref (xref, src):
 
 	xref -- The xref object to be formatted.  The xref must
 	  have an augmented target attribute (as produced by calling
-	  augment_xrefs()), since that infomation is require to 
+	  augment_xrefs()) since that infomation is required to 
 	  generate the kanji and reading texts, and an error will
 	  be raised if not.
 

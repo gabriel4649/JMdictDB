@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-	 # non-ascii used in comments only.
+# -*- coding: utf-8 -*-	 # non-ascii used in comments only.
 #######################################################################
 #  This file is part of JMdictDB. 
 #  Copyright (c) 2006-2009 Stuart McGraw 
@@ -1386,7 +1386,8 @@ def addentr (cur, entr):
 	    for x in getattr (s, '_stagr', []): dbinsert (cur, "stagr", ['entr','sens','rdng'], x)
 	    for x in getattr (s, '_stagk', []): dbinsert (cur, "stagk", ['entr','sens','kanj'], x)
 	    for x in getattr (s, '_xref',  []): dbinsert (cur, "xref",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
-	    for x in getattr (s, '_xrer',  []): dbinsert (cur, "xrer",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
+	    # Don't create xrefs for xrer items -- these mirror the xrefs on the xrer targets.
+	    #for x in getattr (s, '_xrer',  []): dbinsert (cur, "xref",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
 	    for x in getattr (s, '_xrslv', []): dbinsert (cur,"xresolv",['entr','sens','typ','ord','rtxt','ktxt','tsens','notes','prio'], x)
 	for x in getattr (entr, '_snd', []): dbinsert (cur, "entrsnd", ['entr','ord','snd'], x)
 	for x in getattr (entr, '_grp', []): dbinsert (cur, "grp",     ['entr','kw','ord'], x)

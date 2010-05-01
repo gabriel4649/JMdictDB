@@ -66,10 +66,10 @@ class ParseError (Exception):
 def main (args, opts):
 	cursor = jdb.dbOpen (opts.database, **jdb.dbopts(opts))
 	process_file (cursor, args[0], opts.outdir, opts.prefix,
-		      opts.verbose, opts.start, opts.count)
+		      opts.verbose, opts.start, opts.count, opts.force)
 
 def process_file (cursor, inpname, outdir, prefix='', verbose=False,
-		  start_at=1, max_subs=0):
+		  start_at=1, max_subs=0, overwrite=False):
 	# cursor -- An open psycopg2 database cursor to a
 	#	jmdictdb database.
 	# impname -- Name of the input file to process. (str)
@@ -87,6 +87,10 @@ def process_file (cursor, inpname, outdir, prefix='', verbose=False,
 	#	will be ignored.
 	# max_subs -- Maximum number of submissions to process.
 	#	If 0, there is no limit.
+	# overwrite -- If true, output file will be (over-)written
+	# 	if it already exists.  If false, the output file will
+	#       not be overwritten, an error message generated, and
+	#       this input file skipped. 
 
 	in_f = open (inpname, "r")
 	bad_f = open (os.path.join (outdir, prefix+"bad.log"), "a")
@@ -128,7 +132,9 @@ def process_file (cursor, inpname, outdir, prefix='', verbose=False,
 		#print "stxt:", entr.stxt
 		#---
 
-		write_data (entrdata, os.path.join (outdir, out_fn))
+		ovwt = write_data (entrdata, os.path.join (outdir, out_fn), overwrite)
+		if ovwt and verbose:
+		    print "Overwriting output file %s" % out_fn
 	    except ParseError, excep:
 		msg = "Failed on submission %d (line %d): %s" \
 		       % (subnum, linenum, str(excep))
@@ -152,7 +158,7 @@ def write_good (good_f, lines, msg, verbose):
 	print >>good_f, msg
 	print >>good_f, ('\n'.join (lines)).encode (Output_encoding)
 
-def write_data (editdata, fn):
+def write_data (editdata, fn, force=False):
 	# editdata -- A list of 5 elements:
 	#    1. An entry object that will be used to load the edit
 	#	boxes in the edform.tal edit template.
@@ -160,18 +166,26 @@ def write_data (editdata, fn):
 	#	"name", "email" edform.tal text boxes.
 	# fn -- The name (with path) of the filename to write the
 	#	editdata to.
+	# force -- If true, output file will be overwritten if it
+	#       exists.  If not true, an exception will be raised
+	#       if the output file already exists.
+	# 
+	# Returns: True if the output file existed and was overwritten,
+	#       or False otherwise.
 
 	s = serialize.serialize (editdata)
 	  # Dirty and unreliable test to avoid accidentily 
 	  # over-writing an existing file...
 	try: open (fn)
-	except IOError: pass
+	except IOError: ovwt = False
 	else:
 	      #FIXME: this is not really a parse error, is it?
-	    raise ParseError ("File exists, won't overwrite: %s" % fn) 						 
+	    if force: ovwt = True
+	    else: raise ParseError ("File exists, won't overwrite: %s" % fn)		 
 	f = open (fn, "w")
 	f.write (s)
 	f.close()
+	return ovwt
 
 def write_msg (errmsg, lines, err_f=None):
 	print errmsg
@@ -516,7 +530,8 @@ Arguments:  Name of input file containing raw submission data."""
 
 	p.add_option ("-o", "--outdir", default='.',
             help="Path to directory in which to create output files "
-		"including the \"bad\" and \"ok\" log files.")
+		"including the \"bad\" and \"ok\" log files.  Default "
+		"is the current directory.")
 	p.add_option ("-p", "--prefix", default='',
             help="Text that will be used to prefix the files created in OUTDIR.")
 	p.add_option ("-s", "--start", type="int", default=1,
@@ -524,6 +539,10 @@ Arguments:  Name of input file containing raw submission data."""
 		"at submission START.  Default is 1 (skip none).")
 	p.add_option ("-c", "--count", type="int", default=0,
             help="Process at most COUNT submissions.  Default is 0 (no limit).")
+	p.add_option ("-f", "--force", default=False, action="store_true",
+            help="Force the overwriting of the output file if it already exists.  "
+	        "If not given, jbsubs will refuse to overwrite the file, and will "
+		"generate an error message and skip the input file instead.")
 	p.add_option ("-v", "--verbose", default=False, action="store_true",
             help="Print message for each sucessfully parsed submission.")
 

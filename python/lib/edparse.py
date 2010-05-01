@@ -374,7 +374,15 @@ def process_sense (tags, glosstxts, snum, prev_pos, kanjs, rdngs):
 		  # If not all the tags were ok, fallthough to following code 
 		  # to process as sense note or gloss prefix.
 	    if 1:
-		if sens.notes:
+	          # The "1 or ..." bit below disables the extraction of 
+		  # leading parenthesised text into the sense note.
+		  # This is a temporary change until such behavior can
+		  # be parameterized (or refined as noted in the comments
+		  # below re field order), and is to support the need of
+		  # the tools/jbsubs.py script which uses edparse and where
+		  # leading parenthesised text is usually text and rarely
+		  # a note.   
+		if 1 or sens.notes:
 		      # If we already found a sense note, then put this 
 		      # current unidentifiable text back onto the first gloss.
 		      # FIXME? May loose whitespace that was in original line.

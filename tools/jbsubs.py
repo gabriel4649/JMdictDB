@@ -369,11 +369,14 @@ def create_entr (cursor, parsed, subnum):
 
 def reformat (ktxt, rtxt, stxt, entr, subnum):
 	# Given edict2-formatted kanji, reading, and sense
-	# strings, try to parse them into jmdictdb objects, 
+	# strings, try to convert them into jmdictdb objects, 
 	# and then format them back to JEL-formatted strings
-	# which are return.  If unable to parse the input
-	# string, prefixed with "!unparsed!" are returned 
-	# in place of the corresponding JEL-formatted string.
+	# which are returned.  If unable to parse an input
+	# string, return the unparsed string prefixed with
+        # "!unparsed!" instead of the JEL-formatted string.
+        # If matching kanji or reading items exist on 'entr'
+        # have and kinf, rinf, freq, or restrs, those items
+        # are added to the JEL-formated string.
 
 	failed = False;  kanjs = rdngs = senss = None;  fmap = {}
 
@@ -385,21 +388,19 @@ def reformat (ktxt, rtxt, stxt, entr, subnum):
 
 	try: 
 	    kanjs = edparse.parse_krpart (ktxt, fmap) 
-	    jktxt = fmtjel.kanjs (kanjs)
 	except eParseError, excep: 
 	    try: print "submission %d: reformat kanj failed: %s" % (subnum, unicode(excep))
 	    except UnicodeError: "submission %d: reformat kanj failed: (unprintable exception)" % subnum
 
-	if kanjs is not None:
-	    try: 
+	if kanjs is not None:    # kanjs is None if kanji parse failed in
+	    try:                 #  which case we can't parse readings or senses.
 		rdngs = edparse.parse_krpart (rtxt, fmap, kanjs)
-		jrtxt = fmtjel.rdngs (rdngs, kanjs)
 	    except eParseError, excep: 
 		try: print "submission %d: reformat rdng failed: %s" % (subnum, unicode(excep))
 		except UnicodeError: "submission %d: reformat rdng failed: (unprintable exception)" % subnum
 
-	if rdngs is not None:
-	    if entr: 
+        if rdngs is not None:    # rdngs is None if reading parse failed in 
+	    if entr:             #  which case we can't parse senses.
 		  # The wwwjdic submission data does not apparently
 		  # include tags from the orignal entry so we copy 
 		  # them here. 
@@ -408,6 +409,8 @@ def reformat (ktxt, rtxt, stxt, entr, subnum):
 	    try: 
 	        edparse.parse_spart (stxt, e, fmap) 
 	        senss = e._sens
+	        jktxt = fmtjel.kanjs (kanjs)
+                jrtxt = fmtjel.rdngs (rdngs, kanjs)
 	        jstxt = fmtjel.senss (senss, kanjs, rdngs)
 	    except eParseError, excep:
 		try: print "submission %d: reformat sens failed: %s" % (subnum, unicode(excep))
@@ -417,25 +420,26 @@ def reformat (ktxt, rtxt, stxt, entr, subnum):
 
 def copy_tags (rdngs, kanjs, new_rdngs, new_kanjs):
 	# It appears that the wwwjdic forms do not send any info
-	# about the tags (kinf, rinf, or freq) on the kana or kanji
-	# of an amended entry.  This function will attempt to restore
-	# the tags that are on the original entry to the edit entry
-	# to save the reviewer the effort of manually re-adding them.
+	# about the tags (kinf, rinf, or freq) or kr restrictions 
+        # on the kana or kanji of an amended entry.  This function
+        # will attempt to restore the tags that are on the original
+        # entry to the edit entry to save the reviewer the effort of
+        # manually re-adding them.
 	#
 	# CAUTION: this function is not intended for general-purpose
 	# use...see comments below.
 
 	  # Build a lookup dict for reading text -> Rng obj for
 	  #  only Rdng objects that have Freq or Rinf tags.
-	kmap = dict(((k.txt, k) for k in kanjs if k._freq or k._inf))
-
-	  # Same for Kanj objects.
 	rmap = dict(((r.txt, r) for r in rdngs if r._freq or r._inf))
 
-	  # Build a lookup dict for kanji,reading text pairs ->
+	  # Same for Kanj objects.
+	kmap = dict(((k.txt, k) for k in kanjs if k._freq or k._inf))
+
+	  # Build a lookup set for kanji,reading text pairs ->
 	  #  Kanj, Rdng object pairs for only pairs that have
 	  #  a common Restr object on their ._restr lists.
-	krmap = dict(((k.txt, r.txt) 
+	krset = set(((k.txt, r.txt) 
 		  for k, r in itertools.product (kanjs, rdngs)
 		  if has_restr (k, r)))
 
@@ -474,8 +478,8 @@ def copy_tags (rdngs, kanjs, new_rdngs, new_kanjs):
 	  # part of the code *does* create an independent copy,
 	  # and avoids duplication.
 
-	for k, r in itertools.product (kanjs, rdngs):
-	    if (k.txt, r.txt) in krmap: 
+	for k, r in itertools.product (new_kanjs, new_rdngs):
+	    if (k.txt, r.txt) in krset: 
 		if not has_restr (k, r): 
 		    x = jdb.Restr()
 		    k._restr.append (x)
@@ -541,8 +545,9 @@ Arguments:  Name of input file containing raw submission data."""
             help="Process at most COUNT submissions.  Default is 0 (no limit).")
 	p.add_option ("-f", "--force", default=False, action="store_true",
             help="Force the overwriting of the output file if it already exists.  "
-	        "If not given, jbsubs will refuse to overwrite the file, and will "
-		"generate an error message and skip the input file instead.")
+	        "If not given, jbsubs will refuse to overwrite the file, generate "
+		"an error message to that effect and go on to the next submission "
+                "in the input file.")
 	p.add_option ("-v", "--verbose", default=False, action="store_true",
             help="Print message for each sucessfully parsed submission.")
 

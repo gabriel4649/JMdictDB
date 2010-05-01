@@ -136,7 +136,7 @@ def main( args, opts ):
 	      # If there is only one entry, display it rather than a search
 	      # results page.  'force_srchres' allows supressing this behavior
 	      # for debugging.
-	    svcstr = ("svc=%s&" % svc) if svc else ''
+	    svcstr = ("svc=%s&sid=%s&" % (svc,sid)) if svc else ''
 	    print "Location: entr.py?%se=%d\n" % (svcstr, rs[0].id)
 	else:
 	    if not meth: meth = 'get' if dbg else 'post'

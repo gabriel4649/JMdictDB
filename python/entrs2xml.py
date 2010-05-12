@@ -74,6 +74,7 @@ def main (args, opts):
 	    if len (args) == 0: outf = sys.stdout
 	    else: outf = open (args[0], "w")
 
+	whr_act = " AND NOT unap AND stat="+str(jdb.KW.STAT['A'].id) if opts.compat else "" 
 	if opts.begin:
 	      # If a "--begin" sequence number was given, we need to read
 	      # the entr record so we can get the src id number.  Complain
@@ -84,8 +85,8 @@ def main (args, opts):
 	      # 
 	      # FIXME: no way to select from multiple entries with same seq
 	      #   number.  Might want just the stat="A" entries for example.
-	    sql = "SELECT id,seq,src FROM entr e WHERE seq=%s%s ORDER BY src" \
-		    % (int(opts.begin), corp_terms)
+	    sql = "SELECT id,seq,src FROM entr e WHERE seq=%s%s%s ORDER BY src" \
+		    % (int(opts.begin), corp_terms, whr_act)
 	    if debug: print >>sys.stderr, sql
 	    start = time.time()
 	    rs = jdb.dbread (cur, sql)
@@ -104,8 +105,7 @@ def main (args, opts):
 	    cc = corp_terms[4:] if corp_terms else 'True'
 	      # If compat (jmdict or jmnedict), restrict the xml to Active
 	      # entries only.
-	    astat = " AND stat="+str(jdb.KW.STAT['A'].id) if opts.compat else "" 
-	    sql = "SELECT id,seq,src FROM entr e WHERE %s%s ORDER BY src,seq LIMIT 1" % (cc, astat)
+	    sql = "SELECT id,seq,src FROM entr e WHERE %s%s ORDER BY src,seq LIMIT 1" % (cc, whr_act)
 	    start = time.time()
 	    if debug: print >>sys.stderr, sql
 	    rs = jdb.dbread (cur, sql)
@@ -129,7 +129,7 @@ def main (args, opts):
 
 	    whr = "WHERE ((e.src=%%s AND e.seq=%%s AND e.id>=%%s) " \
 			  "OR (e.src=%%s AND e.seq>%%s) " \
-			  "OR e.src>%%s) %s" % (corp_terms)
+			  "OR e.src>%%s) %s%s" % (corp_terms, whr_act)
 	    sql = "SELECT e.id FROM entr e" \
 		  " %s ORDER BY src,seq,id LIMIT %d" \
 		   % (whr, blksize if count is None else min (blksize, count))

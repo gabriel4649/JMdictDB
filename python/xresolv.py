@@ -18,8 +18,8 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110#1301, USA
 #######################################################################
 
-__version__ = ('Revision: 0.0 '[11:-2],
-	       'Date: 0000/00/00 00:00:00 '[7:-11]);
+__version__ = ('$Revision$'[11:-2],
+	       '$Date$'[7:-11]);
 
 # This program creates rows in table "xref" based on the 
 # textual (kanji and kana) xref information saved in table
@@ -60,11 +60,12 @@ def main (args, opts):
 	  # Debugging flags:
 	  #  1 -- Print generated xref records.
 	  #  2 -- Print executed sql.
+	  #  4 -- Print info about read xresolve records.
 	if opts.debug & 0x02: Debug.prtsql = True
 
 	try: dbh = jdb.dbOpen (opts.database, **jdb.dbopts(opts))
 	except jdb.dbapi.OperationalError, e:
-	    print >>sys.stderr, "Error, unable to connect to database, do you need -u or -p?\n", str(e);  
+	    prnt (sys.stderr, "Error, unable to connect to database, do you need -u or -p?\n" % str(e))  
 	    sys.exit(1)
 
 	xref_src = opts.source_corpus or KW.SRC['jmdict'].id
@@ -72,27 +73,32 @@ def main (args, opts):
 
 	krmap = read_krmap (dbh, opts.filename, targ_src)
 
-	#SIG{INT} = \&show_msg_sum_and_exit; 
-	start = 0; blksz = 1000
+	lastpos = [0,0,0,0]; blksz = 1000
 	while 1:
-	    if not opts.noaction and start != 0:
+	    if not opts.noaction and lastpos != [0,0,0,0]:
 		dbh.connection.commit()
 		if opts.verbose: print "Commit" 
-	    ncnt = resolv (dbh, start, blksz, 
-			    xref_src, targ_src, krmap) 
-	    if not ncnt: break 
-	    start += ncnt
+	    lastpos = resolv (dbh, lastpos, blksz, 
+			      xref_src, targ_src, krmap) 
+	    if lastpos is None: break 
 	dbh.close()
 
 #-----------------------------------------------------------------------
 
-def resolv (dbh, start, blksz, xref_src, targ_src, krmap):
+def resolv (dbh, lastpos, blksz, xref_src, targ_src, krmap):
+	e0, s0, t0, o0 = lastpos
 	sql = "SELECT v.*,e.seq FROM xresolv v JOIN entr e ON v.entr=e.id " \
-		        "WHERE e.src=%%s ORDER BY v.entr,v.sens,v.ord " \
-			"OFFSET %s LIMIT %s" % ( start, blksz)
-	rs = jdb.dbread (dbh, sql, [xref_src])
-	if len (rs) == 0: return 0
-
+		        "WHERE e.src=%%s " \
+			  "AND (v.entr>%%s OR (v.entr=%%s " \
+			   "AND (v.sens>%%s OR (v.sens=%%s " \
+			    "AND (v.typ>%%s OR (v.typ=%%s " \
+			     "AND (v.ord>%%s))))))) " \
+			"ORDER BY v.entr,v.sens,v.typ,v.ord " \
+			"LIMIT %s" % blksz
+	rs = jdb.dbread (dbh, sql, [xref_src, e0,e0,s0,s0,t0,t0,o0])
+	if len (rs) == 0: return None
+	if Opts.debug & 0x04: 
+	    print >>sys.stderr, "Read %d xresolv rows" % (len(rs),) 
 	for v in rs:
 	    e = None
 	    if krmap: 
@@ -146,25 +152,27 @@ def resolv (dbh, start, blksz, xref_src, targ_src, krmap):
 
 	    xrefs = mkxrefs (v, e)
 
-	    if opts.verbose and xrefs: print \
-	        "%s resolved to %d xrefs: %s" % (fs(v),len(xrefs),kr(v))
+	    if Opts.verbose and xrefs: prnt (sys.stdout,
+	        "%s resolved to %d xrefs: %s" % (fs(v),len(xrefs),kr(v)))
 
 	      # Write each xref record to the database...
 	    for x in xrefs:
-		if not opts.noaction:
-		    if opts.debug & 0x01: 
-	 		print >>sys.stderr, "not yet"
-			#	"(x.entr,x.sens,x.xref,x.typ,x.xentr"
+		if not Opts.noaction:
+		    if Opts.debug & 0x01: 
+	 		prnt (sys.stderr, "not yet"
+			)#	"(x.entr,x.sens,x.xref,x.typ,x.xentr"
 			#	    .  "x.xsens}," . (x.rdng}||"") . "," . (x.kanj}||"")
-			#	    . ",x.notes})\n"; }
+			#	    . ",x.notes})\n")
 		    jdb.dbinsert (dbh, "xref", 
 			          ["entr","sens","xref","typ","xentr",
 				   "xsens","rdng","kanj","notes"],
 				  x)
-	    dbh.execute ("DELETE FROM xresolv "
-			  "WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s",
-			 (v.entr,v.sens,v.typ,v.ord))
-	return len (rs)
+	    if not Opts.keep:
+	        dbh.execute ("DELETE FROM xresolv "
+			     "WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s",
+			     (v.entr,v.sens,v.typ,v.ord))
+	r = rs[-1]
+	return r.entr, r.sens, r.typ, r.ord
 
 class Memoize:
     def __init__( self, func ):
@@ -353,6 +361,10 @@ def msg (source, msg, arg):
 	    print ("%s %s: %s" % (source,msg,arg)).encode (
 		Opts.encoding or sys.stdout.encoding or getdefaultencoding())
 
+def prnt (f, msg):
+	print >>f, msg.encode (
+		Opts.encoding or sys.stdout.encoding or getdefaultencoding())
+
 #-----------------------------------------------------------------------
 
 from optparse import OptionParser
@@ -390,6 +402,9 @@ Arguments: none"""
 
 	p.add_option ("-f", "--filename", default=None,
 	    help="Name of a file containing kanji/reading to seq# map.")
+
+	p.add_option ("-k", "--keep", default=False, action="store_true",
+	    help="Do not delete unresolved xrefs after they are resolved.")
 
 	p.add_option ("-s", "--source-corpus", default=1,
 	    type="int", metavar="NUM",

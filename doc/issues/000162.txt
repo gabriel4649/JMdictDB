@@ -1,0 +1,64 @@
+Title:	Setup jmtest test database
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-05-22 13:06:00 stuart
+  Now that Jim breen is using the jmdict database on Arakawa
+  for real (see 
+    http://tech.groups.yahoo.com/group/edict-jmdict/message/3716 )
+  we need to point the links on my project page (
+    http://www.edrdg.org/~smg/ )
+  that allowed public experimental access to the jmdict database
+  to somewhere less disruptive, setup access controls to prevent
+  general access to the jmdict db until ready for it, and especially
+  prevent editor access to jmdictdb database via the publically
+  published "test" username.
+
+2010-05-22 13:11:00 stuart
+  Temporarily disable editor access by user "test" since we have no
+  way to restrict it to a particular database.  (Oops, I forgot to
+  think of that need...) 
+  
+    $ psql -d jmsess
+    psql# UPDATE users SET disabled=TRUE WHERE userid='test';
+
+  Next, create a new "jmtest" database for the unwashed heards to 
+  play in, and populate it by copying the current "jmdict" database
+  to it.
+
+    $ psql -U postgres
+    psql# create role jmtestdb login password '***pw1***';
+    psql# create role jmtestdbv login password '***pw2***';
+    $ createdb -E UTF8 -O jmtestdb -T template0 jmtest
+    $ pg_restore -d jmtest jmdict-2010-05-21.dmp
+
+  Added section to lib/config.ini
+
+    [db_jmtest]
+    dbname = jmtest
+    sel_user = jmtestdbv
+    sel_pw = ***pw1***
+    user = jmtestdb
+    pw = ***pw2***
+    session_db = db_session
+
+  and did "make web" to push the changed file to ~/public_html/....
+
+  Have to change the permissions on the objects in jmtest to allow
+  access by the jmtestdb and jmtestdbv usernames:
+  Made temp copy of pg/mkperms.sql (call it xxperms.sql), edited
+  it and changed the pg userids "jmdictdb" and "jmdictdbv" (at the 
+  end of the two lines in the file) to "jmtestdb" and "jmtestdbv" 
+  respectively.  Then ran:
+
+    psql -U postgres -d jmtest -f xxperms.sql
+
+  Can now use the URLs
+    http://www.edrdg.org/~smg/cgi-bin/srchform.py?svc=jmtest
+    http://www.edrdg.org/~smg/cgi-bin/edform.py?svc=jmtest
+  to access the search and edit pages for "jmtest" database.
+  Can successfully edit and submit entries.

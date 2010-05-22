@@ -1,6 +1,6 @@
 Title:	Master file generation
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	wont
 Prio:	high
 Cats:	dev
 Reqtrs:	
@@ -12,3 +12,8 @@ AssdTo:	stuart@friix.com
 
 2007-02-01 00:00:00 stuart@friix.com
   Being worked on by Jim [2007-07-26].
+
+2010-05-21 22:25:00 stuart
+  Per email discussion jwb will do this.
+  See "Re: Dictionary database (Was: Re: possible spam)" from me,
+  2010-03-03.

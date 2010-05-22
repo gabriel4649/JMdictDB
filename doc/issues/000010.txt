@@ -1,6 +1,6 @@
 Title:	Loaded data validation
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	feat
 Reqtrs:	
@@ -41,3 +41,7 @@ AssdTo:	stuart@friix.com
   
   However the test set of 30 entries does not cover some issues
   well (notably xrefs) so this cannot be considered vaidation yet.
+
+2010-05-21 22:43:00 stuart
+  This has largely been done by jwb, suppported by recent changes 
+  to jmdictdb to make xml element order more deterministic.

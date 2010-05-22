@@ -1,7 +1,7 @@
 Title:	Email addr obsfucation
-Stat:	open
-Disp:	
-Prio:	info
+Stat:	closed
+Disp:	done
+Prio:	med
 Cats:	dev
 Reqtrs:	
 AssdTo:	stuart@friix.com
@@ -10,3 +10,8 @@ AssdTo:	stuart@friix.com
   cgi -- Need to obsure email addresses for general display (unobsured on
   conf form ok if none other than submitter/authenticated editors can
   see.)
+
+2010-05-21 22:46:00 stuart
+  Requested by jwb in 2010-05- email -- prerequisite for making the
+  jmdictdb edit pages open to public.
+  Done in changeset 301305240368-2010-05-21. 

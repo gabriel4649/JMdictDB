@@ -1,0 +1,58 @@
+Title:	fmt.py failing when processing reverse references
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-05-01 11:00:00 stuart
+  The reverse xref list for some entries can contain xrefs
+  that contain a kanj index number that refers to the kanj
+  in the original xref target.  fmt.py incorrectly uses this
+  index assuming it refers to the reverse target which is
+  incorrect and results in an exception if there is no
+  kanj item at that index number.
+
+2010-05-01 11:16:00 stuart
+  To reproduce: "shentr.py -q 1002570 -s jmdict" results in
+  following traceback:
+
+  Traceback (most recent call last):
+    File "C:\Program Files\Python\lib\pdb.py", line 1285, in main
+      pdb._runscript(mainpyfile)
+    File "C:\Program Files\Python\lib\pdb.py", line 1204, in _runscript
+      self.run(statement)
+    File "C:\Program Files\Python\lib\bdb.py", line 368, in run
+      exec cmd in globals, locals
+    File "<string>", line 1, in <module>
+    File "shentr.py", line 289, in <module>
+      main (args, opts)
+    File "shentr.py", line 57, in main
+      else:        txt = fmt.entr (e)
+    File "c:\stuart\develop\jdb\jb\python\lib\fmt.py", line 30, in entr
+      fmt.extend (senss (entr))
+    File "c:\stuart\develop\jdb\jb\python\lib\fmt.py", line 57, in senss
+      fmt.extend (sens (s, kanjs, rdngs, n+1, entr.src))
+    File "c:\stuart\develop\jdb\jb\python\lib\fmt.py", line 118, in sens
+      fmt.extend (xrefs (s._xrer, "Reverse references:", True, entrcorp))
+    File "c:\stuart\develop\jdb\jb\python\lib\fmt.py", line 161, in xrefs
+      txt = xref (x, rev, entrcorp)
+    File "c:\stuart\develop\jdb\jb\python\lib\fmt.py", line 192, in xref
+      if i: kr.append (targ._kanj[i-1].txt)
+  IndexError: list index out of range
+
+  Entry 1182940 has the following two xrefs, that are reverse xrefs 
+  on the entry we are trying to format:
+
+  jmdict=# select * from xref where xentr=234;
+   entr  | sens | xref | typ | xentr | xsens | rdng | kanj | notes
+  -------+------+------+-----+-------+-------+------+------+-------
+   17253 |    3 |    1 |   3 |   234 |     1 |      |    3 |
+   17253 |    3 |    2 |   3 |   234 |     2 |      |    3 |
+
+  However, fmt.xref is trying to access kanj #3 on the reverse
+  xref target (entry 1182940 which has only one kanji) when
+  the kanj=3 applies only to the entry being formatted (1002570).
+
+  This problem does not occur in the html, xml, or jel formatting.

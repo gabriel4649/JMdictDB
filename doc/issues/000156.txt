@@ -1,6 +1,6 @@
 Title:	Upgrade jmdictdb code to use Ply-3.x 
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -19,3 +19,7 @@ AssdTo:	stuart
   used the new jelpasrse.py so it seems Ply-3.3 works
   out of the box and no change to the jmdictdb code is 
   needed.
+
+2010-05-21 22:16:00 stuart
+  Have been using ply-3.3 on nara, soga and arakawa
+  without problems.

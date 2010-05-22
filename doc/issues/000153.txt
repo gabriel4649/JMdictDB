@@ -1,6 +1,6 @@
 Title:	Each corpus needs own seq number sequence 
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	

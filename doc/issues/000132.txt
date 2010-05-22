@@ -1,6 +1,6 @@
 Title:	Unicode exception problem 
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	info
 Cats:	dev
 Reqtrs:	
@@ -48,3 +48,9 @@ AssdTo:	stuart@friix.com
   Python so far) have an encoding attribute that the console can 
   display.  When writing to a file (redirected from the dhell) 
   encoding will be None and I want in most cases to wtite utf-8.
+
+2101-05-21 22:50:00 stuart
+  This problem has a simpler solution in Python-2.6: it allows
+  "unicode (e)" where 'e' is an exception instance.
+  Have not looked for all the places where this is aplicable but 
+  will fix them as I come across them.

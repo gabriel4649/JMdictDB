@@ -1,6 +1,6 @@
 Title:	String aggregate "summary" views
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -77,7 +77,7 @@ AssdTo:	stuart
   sense with or without pos, sense with or without notes, ...) the 
   combatorial explosion is unmanagable.
 
-2010-04-08 19:30
+2010-04-08 19:30:00 stuart
   Wrote a set of views based on ksum3 above, all prefixed with "vt_", put
   in mkviews2.sql, and incorpostaed into the jmdictdb creation process.
 

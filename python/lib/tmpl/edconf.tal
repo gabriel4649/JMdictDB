@@ -257,9 +257,20 @@
       <span tal:condition="e/_hist" tal:omit-tag="">History:
 	<table>
 	  <span tal:repeat="h e/_hist">
+	    <span tal:condition="h/email" tal:omit-tag="">
+	      <span tal:condition="session/userid">
+		<span tal:define="global email string:&lt;${h/email}&gt;"/>
+		</span>
+	      <span tal:condition="not:session/userid">
+		<span tal:define="global email string:&lt;...address hidden...&gt;"/>
+		</span>
+	      </span>
+	    <span tal:condition="not:h/email" tal:omit-tag="">
+	      <span tal:define="global email string:"/>
+	      </span>
 	    <tr>
 	      <td tal:content="string:${h/hist}.">#.</td> 
-	      <td class="hhdr" colspan="2" tal:content="string: ${python:TALabbr('STAT',h.stat)}${python:'*' if h.unap else ''} ${h/dt} ${h/name}&lt;${h/email}&gt;">hist-header</td>
+	      <td class="hhdr" colspan="2" tal:content="string: ${python:TALabbr('STAT',h.stat)}${python:'*' if h.unap else ''} ${h/dt} ${h/name} ${email}">hist-header</td>
 	      </tr>
 	    <tr tal:condition="h/refs">
 	      <td>&nbsp;</td>

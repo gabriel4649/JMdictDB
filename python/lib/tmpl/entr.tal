@@ -35,12 +35,14 @@
 	  </span>
 	</span>
       <span class="pkid" tal:condition="python:e.id&gt;0">{id:<span tal:replace="e/id" tal:omit-tag=""/>}</span>
-      <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${e/id}">html</a>
-      <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;disp=xml&amp;e=${e/id}">xml</a>
-      <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;disp=jm&amp;e=${e/id}">jmdict</a>
-      <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;disp=jmne&amp;e=${e/id}">jmnedict</a>
-      <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;disp=jel&amp;e=${e/id}">jel</a>
-      <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;disp=ed&amp;e=${e/id}">edict</a>
+      <span tal:condition="session/userid" tal:omit-tag="">
+        <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${e/id}">html</a>
+        <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;disp=xml&amp;e=${e/id}">xml</a>
+        <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;disp=jm&amp;e=${e/id}">jmdict</a>
+        <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;disp=jmne&amp;e=${e/id}">jmnedict</a>
+        <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;disp=jel&amp;e=${e/id}">jel</a>
+        <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;disp=ed&amp;e=${e/id}">edict</a>
+	</span>
 
       <span tal:condition="not:etxt" tal:omit-tag="">
 	<span tal:condition="e/srcnote" tal:omit-tag="">
@@ -229,9 +231,20 @@
 	<span tal:condition="e/_hist" tal:omit-tag="">History:
 	  <table>
 	    <span tal:repeat="h e/_hist">
+	      <span tal:condition="h/email" tal:omit-tag="">
+		<span tal:condition="session/userid">
+		  <span tal:define="global email string:&lt;${h/email}&gt;"/>
+		  </span>
+	        <span tal:condition="not:session/userid">
+		  <span tal:define="global email string:&lt;...address hidden...&gt;"/>
+		  </span>
+		</span>
+	      <span tal:condition="not:h/email" tal:omit-tag="">
+		<span tal:define="global email string:"/>
+		</span>
 	      <tr>
 		<td tal:content="string:${h/hist}.">#.</td> 
-		<td class="hhdr" colspan="2" tal:content="string: ${python:TALabbr('STAT',h.stat)}${python:'*' if h.unap else ''} ${h/dt} ${h/name}&lt;${h/email}&gt;">hist-header</td>
+		<td class="hhdr" colspan="2" tal:content="string: ${python:TALabbr('STAT',h.stat)}${python:'*' if h.unap else ''} ${h/dt} ${h/name} ${email}">hist-header</td>
 		</tr>
 	      <tr tal:condition="h/refs">
 		<td>&nbsp;</td>

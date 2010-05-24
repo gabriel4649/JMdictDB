@@ -72,6 +72,16 @@
 	    </span>
 	    <br/>
 	  </span>
+	<span class="warnings" tal:condition="python: chklist['nopos']">
+	  <span class="caution">Caution:</span>
+	  One or more senses you gave do not have any PoS (Part-of-Speech,
+	  for example [n], [v5k], etc.) tags.  While your entry will be accepted
+	  as-is, it is very desireable for all senses to have PoS tags.  Note
+	  that tags must be specified on each sense explicitly -- they do not
+	  carry over from the preceeding sense.  If you can provide PoS tags
+	  for all senses, please use your browser's "Back" button to return to
+	  the edit page and do so.
+	  </span>
 	<hr/>
 	</span>
 

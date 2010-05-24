@@ -171,6 +171,8 @@ def main (args, opts):
 				                       if not jdb.jstr_keb (k.txt)])
 		chklist['invrebs'] = ", ".join ([r.txt for r in getattr (entr,'_rdng',[])
 				                       if not jdb.jstr_reb (r.txt)])
+		chklist['nopos'] = ", ".join ([str(n+1) for n,x in enumerate (getattr (entr,'_sens',[]))
+				                       if not x._pos])
 	    entrs = [entr]
 
 	if not errs:

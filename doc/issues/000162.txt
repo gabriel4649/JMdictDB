@@ -33,6 +33,7 @@ AssdTo:	stuart
     $ psql -U postgres
     psql# create role jmtestdb login password '***pw1***';
     psql# create role jmtestdbv login password '***pw2***';
+    $ pg_dump -Fc jmdict >jmdict-2010-05-21.dmp
     $ createdb -E UTF8 -O jmtestdb -T template0 jmtest
     $ pg_restore -d jmtest jmdict-2010-05-21.dmp
 

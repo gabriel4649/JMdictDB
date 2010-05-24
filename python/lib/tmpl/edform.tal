@@ -126,7 +126,7 @@
 	      </td></tr>
 	  <tr>
 	    <td>Senses: <br/><a class="helplink" target="edhelp" href="edhelp.py#senses">help</a></td>
-	    <td><textarea tal:content="e/stxt" name="sens" wrap="physical" cols="60" rows="8"></textarea></td>
+	    <td><textarea tal:content="e/stxt" name="sens" wrap="physical" cols="60" rows="6"></textarea></td>
 	    <td>
 	      <a class="helplink" target="edhelp" href="edhelp.py#kw_pos">pos</a><br/>
 	      <a class="helplink" target="edhelp" href="edhelp.py#kw_misc">misc</a><br/>
@@ -153,12 +153,12 @@
 	    </tr>
 	  <tr>
 	    <td>References: <br/><a class="helplink" target="edhelp" href="edhelp.py#references">help</a></td>
-	    <td><textarea name="reference" wrap="physical" cols="60" rows="3" tal:content="extra/ref"></textarea></td>
+	    <td><textarea name="reference" wrap="physical" cols="60" rows="6" tal:content="extra/ref"></textarea></td>
 	    <td></td>
 	    </tr>
 	  <tr>
 	    <td>Comments: <br/><a class="helplink" target="edhelp" href="edhelp.py#comments">help</a></td>
-	    <td><textarea name="comment" wrap="physical" cols="60" rows="3" tal:content="extra/comment"></textarea></td>
+	    <td><textarea name="comment" wrap="physical" cols="60" rows="6" tal:content="extra/comment"></textarea></td>
 	    <td></td>
 	    </tr>
 	  <tr>

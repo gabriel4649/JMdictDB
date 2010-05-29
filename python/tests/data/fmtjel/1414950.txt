@@ -2,6 +2,7 @@
 おおもじ[ichi1,news2,nf35]；だいもんじ
 [1][n]
   upper case letters; large characters; capital letter
+  [see=小文字]
 [2][n]
   [restr=だいもんじ]
   the (kanji) character "dai" meaning "big"

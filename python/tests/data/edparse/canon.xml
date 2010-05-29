@@ -318,8 +318,8 @@
 </r_ele>
 <r_ele>
 <reb>なんか</reb>
-<re_inf>&ok;</re_inf>
 <re_inf>&gikun;</re_inf>
+<re_inf>&ok;</re_inf>
 </r_ele>
 <sense>
 <gloss>Japanese squash</gloss>
@@ -334,8 +334,8 @@
 </k_ele>
 <k_ele>
 <keb>冶具</keb>
-<ke_inf>&iK;</ke_inf>
 <ke_inf>&ateji;</ke_inf>
+<ke_inf>&iK;</ke_inf>
 </k_ele>
 <r_ele>
 <reb>じぐ</reb>
@@ -679,12 +679,11 @@
 <pos>&adj-no;</pos>
 <xref>ジャガタラ芋</xref>
 <ant>トマト</ant>
+<field>&food;</field>
 <misc>&uk;</misc>
 <misc>&obsc;</misc>
-<s_inf>Not a real entry.</s_inf>
 <dial>&ksb;</dial>
-<field>&food;</field>
-<gloss>potato</gloss>
+<gloss>(Not a real entry.) potato</gloss>
 </sense>
 <sense>
 <gloss>Solanum tuberosum</gloss>

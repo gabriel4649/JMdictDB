@@ -108,11 +108,12 @@ def sens (sens, kanjs, rdngs, nsens):
 	if getattr(sens,'notes',None): note = '[note=' + qtxt(sens.notes) + ']'
 
 	lastginf = -1;  gloss = [];  gtxt = []
-	for g in getattr (sens, '_gloss', []):
+	for n,g in enumerate (getattr (sens, '_gloss', [])):
 	    kws = []
 	    if g.ginf != KW.GINF['equ'].id: kws.append (KW.GINF[g.ginf].kw)
 	    if g.lang != KW.LANG['eng'].id: kws.append (KW.LANG[g.lang].kw)
-	    kwstr = ('\n  [%s] ' % ','.join(kws)) if kws else ''
+	    nl = '' if n==0 else '\n  '
+	    kwstr = ('%s[%s] ' % (nl, ','.join(kws))) if kws else ''
 	    gtxt.append ('%s%s' % (kwstr, escgloss (g.txt)))
 	gloss = ['; '.join (gtxt)]
 	lines = []

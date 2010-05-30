@@ -520,11 +520,17 @@ def sens_tags (sens, gloss, tags):
         KW = jdb.KW 
         errs = []
         for t in tags:
+              # Each tag, t, is a list where t[0] is the tag type (aka
+              # domain) as a string, or None if it is unknown.  There
+              # will be one or more additional items in the list, the
+              # numner depending on what type of tag it is.
             vals = None
             typ = t.pop(0)      # Get the item type.
 
             if typ is None:
-                  # Unknown type, figure it out...
+                  # Unknown domain (that is, user gave a simple unadorned
+                  # tag like [n] rather than [pos=n]) so figure it what
+                  # domain it belongs to...
                   # First, if we can interpret the tag as a sense tag, do so.
                 candidates = lookup_tag (t[0], ('POS','MISC','FLD','DIAL'))
                 if candidates and len(candidates) > 1: 
@@ -539,8 +545,12 @@ def sens_tags (sens, gloss, tags):
             if typ is None:
                 candidates = lookup_tag (t[0], ('GINF','LANG'))
                 if candidates: 
-                      # FIXME: assume kw that is iterpretable as both a GINF
-                      #   kw and a LANG kw (e.g. "lit") is a GINF keyword.
+                      # There is currently only one ambiguity: "lit" may
+                      #  be either GINF "literal" or LANG "Lithuanian".
+                      #  We unilaterally choose the former interpretation
+                      #  as it is much more common than the latter, and 
+                      #  the latter when needed can be specified as 
+                      #  [lang=lit].
                     candidate = candidates[0] 
                     typ, t = candidate
             if typ is None:
@@ -604,6 +614,7 @@ def sens_tags (sens, gloss, tags):
                 else: gloss.ginf = t
 
             elif typ == 'LANG': 
+                t = t[0]        # LANG tags have only one value, the lang code.
                 assert isinstance(t,int)
                 if getattr (gloss, 'lang', None): 
                     errs.append ( 

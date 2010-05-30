@@ -109,6 +109,7 @@ class RTpure (unittest.TestCase):
     def test0100010(self): self.check('0100010')  # Basic: 1 kanj, 1 rdng, 1 sens, 1 gloss
     def test0100020(self): self.check('0100020')  # Basic: 1 kanj, 1 sens, 1 gloss
     def test0100030(self): self.check('0100030')  # Basic: 1 rdng, 1 sens, 1 gloss
+    def test0100040(self): self.check('0100040')  # IS-163.
     # Following worked up to rev ccc8a44ad8fd-2009-03-12 but are now syntax errors
 	# Like 0100010 but all text on one line.
     def test0100040(self): self.cherr('0100040',jelparse.ParseError,"Syntax Error")
@@ -117,6 +118,9 @@ class RTpure (unittest.TestCase):
 	# Like 0100030 but all text on one line.
     def test0100060(self): self.cherr('0100060',jelparse.ParseError,"Syntax Error")
         # No rdng or kanj.
+
+    def test0100070(self): self.check('0100070')  # IS-163.
+    def test0100080(self): self.check('0100080')  # IS-163.
     def test0200010(self): self.cherr('0200010', jelparse.ParseError,"Syntax Error") 
     def test0200020(self): self.cherr('0200020', jelparse.ParseError,"Syntax Error") 
 

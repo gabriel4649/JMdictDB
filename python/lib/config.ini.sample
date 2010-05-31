@@ -53,7 +53,7 @@ ENABLE_SQL_SEARCH = editors
   # inappropriately change database data.
   # If None or False, arbitrary sql won't be accepted by the
   # srchres page and a simpler database security configuration
-  # can be used, but users of the Advanced Search page will get
+  # can be used, but users of the srchsql page will get
   # an error if they try to use it.
 
 MAX_QUERY_COST = 2000000

@@ -97,9 +97,9 @@ CGI_FILES = entr.py \
 	edform.py \
 	edhelp.py \
 	edsubmit.py \
-	srchadv.py \
 	srchform.py \
 	srchres.py \
+	srchsql.py \
 	jbedit.py \
 	jbedits.py
 WEB_CGI	= $(addprefix $(CGI_DIR)/,$(CGI_FILES))
@@ -136,6 +136,7 @@ TAL_FILES = entr.tal \
 	macros.tal \
 	srchform.tal \
 	srchres.tal \
+	srchsql.tal \
 	submitted.tal \
 	url_errors.tal \
 	jbedits.tal

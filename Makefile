@@ -96,6 +96,7 @@ CGI_FILES = entr.py \
 	edconf.py \
 	edform.py \
 	edhelp.py \
+	edhelpq.py \
 	edsubmit.py \
 	srchform.py \
 	srchformq.py \
@@ -134,6 +135,7 @@ TAL_FILES = entr.tal \
 	edconf.tal \
 	edform.tal \
 	edhelp.tal \
+	edhelpq.tal \
 	macros.tal \
 	srchform.tal \
         srchformq.tal \

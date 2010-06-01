@@ -1,5 +1,5 @@
-草冠
-くさかんむり；そうこう
+﻿草冠；艸
+くさかんむり[restr=草冠]；そうこう
 [1][n]
   kanji "grass radical" (radical 140)
 [2][n]

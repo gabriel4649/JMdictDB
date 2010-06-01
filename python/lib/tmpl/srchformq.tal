@@ -19,7 +19,7 @@
 	      <td>
 	        <table class="txtsrch">
 		  <tr>
-		    <td>Text Search: </td>
+		    <td colspan="3" class="descriptor">Search for text: </td>
 		    </tr>
 		  <tr>
 		    <td>Search in</td>
@@ -42,42 +42,22 @@
 			<option value="3">Contains</option>
 			<option value="4">Ends</option>
 			</select>
-		    </td>
+		      </td>
 		    <td><input name="t1"/></td>
-		  </tr>
-	        </table>
-	      </td>
+		    </tr>
+	          </table>
+	        </td>                
+      	      </tr>
 
-	      <td>Search by Seq number:
-	        <table width="40%" class="idsrch">
-		  <tr>
-		    <td>Type:</td>
-		    <td>
-		      <select name="idtyp">
-			<option value="seq">Entry Seq</option>
-			</select>
-		    </td>
-		  </tr>
-		  <tr>
-		    <td>Value:</td>
-		    <td><input name="idval" size="7"/></td>
-		  </tr>
-		  <tr>
-		    <td>
-		      <input name="search" value="Search" type="submit"/>
-		      <input type="hidden" name="svc" tal:condition='svc' tal:attributes="value svc"/>
-		      <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>		      <!-- <input type="hidden" name="srchres" value="1"/> -->
-		    </td>
-		    <td><input type="reset" value="Reset"/></td>
-		  </tr>
-		</table> 
-	      </td>
-	    </tr>
+            <tr>
+	      <td class="descriptor">...or Seq number:
+                <input name="idval" size="7"/>
+                <input name="idtyp" type="hidden" value="seq"/>
+	        </td>
+              </tr>
 
-	    <tr><td colspan="2"> </td></tr>
 	    <tr>
-	      <td colspan="2"><span class="descriptor">Dictionary:</span>
-	        (Only JMdict is currently available.)
+	      <td><span class="descriptor">...in Dictionary:</span>
 		<table class="optgroup">
 		  <tr tal:repeat="r src">
 		    <td tal:repeat="c r">
@@ -87,7 +67,16 @@
 		</table>
               </td>
 	    </tr>
-	  </table>
+
+          <tr>
+            <td>
+       	      <input name="search" value="Search" type="submit"/>
+	      <input type="hidden" name="svc" tal:condition='svc' tal:attributes="value svc"/>
+	      <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>		                 <!-- <input type="hidden" name="srchres" value="1"/> -->
+              <input type="reset" value="Reset"/>
+              </td>
+            </tr>
+  	  </table>
         </table>
        </form>
 
@@ -102,6 +91,8 @@
 	<li>neither kanji nor kana characters: the gloss table is searched.</li>
 	</ul>
       </li>
+    <li>Within the Dictionary section, no boxes checked is the
+      same as all boxes checked.
     </ul>
   </span>
 <hr width="100%"/>

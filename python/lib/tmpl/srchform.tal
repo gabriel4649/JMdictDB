@@ -4,11 +4,11 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
-  <title>JMdictDB search form</title>
+  <title>JMdictDB advanced search form</title>
 </head>
 <body class="srchfrm">
   <div metal:use-macro="macros/macros/login">
-    <h3 metal:fill-slot="title">Search Form</h3>
+    <h3 metal:fill-slot="title">Advanced Search Form</h3>
     </div>
   <form action="srchres.py" name="srchres" tal:attributes="method method">
     <table class="form">
@@ -258,6 +258,8 @@
     <li>Within the attribute sections, all selections are ORed together.
       For example, if both "suf" and "pref" are checked in the PoS section, 
       entries that are either suffixes or prefixes will be found.</li>
+    <li>Within the attribute sections, no boxes checked is generally the
+      same as all boxes checked.
     <li>If "Search In" is Auto, the given text will be searched for according 
       to the characters in the search string.  If the search string contains:
       <ul> 

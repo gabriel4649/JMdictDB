@@ -38,8 +38,10 @@
   <table width="100%">
     <tr class="navlinks">
       <td>
+        <a tal:attributes="href string:srchformq.py?svc=${svc}&amp;sid=${sid}&amp;">
+          Search</a> /
 	<a tal:attributes="href string:srchform.py?svc=${svc}&amp;sid=${sid}&amp;">
-	  New search</a> /
+	  Advanced Search</a> /
 	<a tal:attributes="href string:edform.py?svc=${svc}&amp;sid=${sid}&amp;">
 	  New Entry</a>
         </td>

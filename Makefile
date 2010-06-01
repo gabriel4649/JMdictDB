@@ -98,6 +98,7 @@ CGI_FILES = entr.py \
 	edhelp.py \
 	edsubmit.py \
 	srchform.py \
+	srchformq.py \
 	srchres.py \
 	srchsql.py \
 	jbedit.py \
@@ -135,6 +136,7 @@ TAL_FILES = entr.tal \
 	edhelp.tal \
 	macros.tal \
 	srchform.tal \
+        srchformq.tal \
 	srchres.tal \
 	srchsql.tal \
 	submitted.tal \

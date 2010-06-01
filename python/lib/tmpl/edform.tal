@@ -2,7 +2,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
-  <title>JMdict Entry Edit Form</title>
+  <title>JMdictDB Entry Edit Form</title>
 </head>
 <body class="edform">
   <span tal:condition="not:e/id" tal:define="global page_title string:Enter a new entry"/>
@@ -33,16 +33,18 @@
 	    <td colspan="3">
 	      <span tal:condition="e/id" tal:omit-tag="">
 		<h4>Edit an existing entry</h4>
-	        Make corrections to this entry by changing the infomation in
+	        Make corrections to this entry by changing the information in
 		the text boxes below.  
 	        </span>
 	      <span tal:condition="not: e/id" tal:omit-tag="">
 		<h4>Enter a new entry</h4>
 	        Enter a new Japanese dictionary entry using the text boxes below.
 	        </span>
+	      First-time users should read the <a href="edhelpq.py">quick 
+	      overview</a> before proceeding.
 	      For detailed help on the information and syntax required in the various
 	      fields, please use the "help" links beside each field, or view the
-	      <a href="edhelp.py"> full help file here</a>.
+	      <a href="edhelp.py"> full help file</a>.
 	      <p/>
 	      </td>
 	    </tr>
@@ -113,29 +115,30 @@
 	    <td>Kanji: <br/><a class="helplink" target="edhelp" href="edhelp.py#kanji">help</a></td>
 	    <td><textarea tal:content="e/ktxt" name="kanj" wrap="physical" cols="60" rows="3"></textarea></td>
 	    <td>
-	      <a class="helplink" target="edhelp" href="edhelp.py#kw_kinf">kinf</a><br/>
-	      <a class="helplink" target="edhelp" href="edhelp.py#kw_freq">freq</a> 
+	      Tags Help: <br>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_kinf">kanji info</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_freq">frequency info</a> 
 	      </td></tr>
 	  <tr>
-	    <td>Readings: <br/><a class="helplink" target="edhelp" href="edhelp.py#readings">help</a></td>
+	    <td>Reading(s): <br/><a class="helplink" target="edhelp" href="edhelp.py#readings">help</a></td>
 	    <td><textarea tal:content="e/rtxt" name="rdng" wrap="physical" cols="60" rows="3"></textarea></td>
 	    <td>
-	      <a class="helplink" target="edhelp" href="edhelp.py#kw_rinf">rinf</a><br/>
-	      <a class="helplink" target="edhelp" href="edhelp.py#kw_freq">freq</a><br/>
-	      <a class="helplink" target="edhelp" href="edhelp.py#syn_restr">restr</a>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_rinf">reading info</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_freq">frequency info</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#syn_restr">restrictions</a>
 	      </td></tr>
 	  <tr>
-	    <td>Senses: <br/><a class="helplink" target="edhelp" href="edhelp.py#senses">help</a></td>
+	    <td>Meaning(s): <br/><a class="helplink" target="edhelp" href="edhelp.py#senses">help</a></td>
 	    <td><textarea tal:content="e/stxt" name="sens" wrap="physical" cols="60" rows="6"></textarea></td>
 	    <td>
-	      <a class="helplink" target="edhelp" href="edhelp.py#kw_pos">pos</a><br/>
-	      <a class="helplink" target="edhelp" href="edhelp.py#kw_misc">misc</a><br/>
-	      <a class="helplink" target="edhelp" href="edhelp.py#kw_fld">fld</a><br/>
-	      <a class="helplink" target="edhelp" href="edhelp.py#kw_dial">dial</a><br/>
-	      <a class="helplink" target="edhelp" href="edhelp.py#syn_lsrc">lsrc</a><br/>
-	      <a class="helplink" target="edhelp" href="edhelp.py#syn_ginf">ginf</a><br/>
-	      <a class="helplink" target="edhelp" href="edhelp.py#syn_restr">restr</a><br/>
-	      <a class="helplink" target="edhelp" href="edhelp.py#syn_xref">xref</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_pos">part-of-speech</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_misc">miscellaneous</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_fld">field/domain</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#kw_dial">dialect</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#syn_lsrc">source-language</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#syn_ginf">gloss info</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#syn_restr">restrictions</a><br/>
+	      <a class="helplink" target="edhelp" href="edhelp.py#syn_xref">cross-references</a><br/>
 	      </td></tr>
 	  <tr tal:condition="e/id">
 	    <td> </td>

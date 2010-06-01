@@ -1,0 +1,110 @@
+<html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
+<!--? Copyright (c) 2008 Stuart McGraw -->
+<!--? $Revision$ $Date$ -->
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
+  <title>JMdictDB search form - basic</title>
+</head>
+<body class="srchfrm">
+  <div metal:use-macro="macros/macros/login">
+    <h3 metal:fill-slot="title">Search Form</h3>
+    </div>
+  <form action="srchres.py" name="srchres" tal:attributes="method method">
+    <table width="80%" class="form">
+      <tr>
+	<td>
+	  <table class="top">
+	    <tr>
+	      <td>
+	        <table class="txtsrch">
+		  <tr>
+		    <td>Text Search: </td>
+		    </tr>
+		  <tr>
+		    <td>Search in</td>
+		    <td>Search type</td>
+		    <td>For text</td>
+		    </tr>
+		  <tr>
+		    <td>
+		      <select name="s1">
+			<option value="1" selected="selected">Auto</option>
+			<option value="2">Kanji</option>
+			<option value="3">Reading</option>
+			<option value="4">Gloss</option>
+			</select>
+		      </td>
+		    <td>
+		      <select name="y1">
+			<option value="1" selected="selected">Is</option>
+			<option value="2">Starts</option>
+			<option value="3">Contains</option>
+			<option value="4">Ends</option>
+			</select>
+		    </td>
+		    <td><input name="t1"/></td>
+		  </tr>
+	        </table>
+	      </td>
+
+	      <td>Search by Seq number:
+	        <table width="40%" class="idsrch">
+		  <tr>
+		    <td>Type:</td>
+		    <td>
+		      <select name="idtyp">
+			<option value="seq">Entry Seq</option>
+			</select>
+		    </td>
+		  </tr>
+		  <tr>
+		    <td>Value:</td>
+		    <td><input name="idval" size="7"/></td>
+		  </tr>
+		  <tr>
+		    <td>
+		      <input name="search" value="Search" type="submit"/>
+		      <input type="hidden" name="svc" tal:condition='svc' tal:attributes="value svc"/>
+		      <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>		      <!-- <input type="hidden" name="srchres" value="1"/> -->
+		    </td>
+		    <td><input type="reset" value="Reset"/></td>
+		  </tr>
+		</table> 
+	      </td>
+	    </tr>
+
+	    <tr><td colspan="2"> </td></tr>
+	    <tr>
+	      <td colspan="2"><span class="descriptor">Dictionary:</span>
+	        (Only JMdict is currently available.)
+		<table class="optgroup">
+		  <tr tal:repeat="r src">
+		    <td tal:repeat="c r">
+		      <input name="src" tal:condition="c" tal:attributes="value c/id; checked python:TALdecode(c.id,1,1)" tal:content="c/kw" type="checkbox"/> 
+		    </td>
+		  </tr>
+		</table>
+              </td>
+	    </tr>
+	  </table>
+        </table>
+       </form>
+
+<span class="notes">
+  Notes...
+  <ul>
+    <li>If "Search In" is Auto, the given text will be searched for according 
+      to the characters in the search string.  If the search string contains:
+      <ul> 
+	<li>any kanji characters: the kanji table is searched.</li>
+	<li>kana characters but no kanji: the reading table is searched.</li>
+	<li>neither kanji nor kana characters: the gloss table is searched.</li>
+	</ul>
+      </li>
+    </ul>
+  </span>
+<hr width="100%"/>
+<div metal:use-macro="macros/macros/footer"></div>
+</body>
+</html>

@@ -268,13 +268,11 @@
       You can explicitly specify the table if you want to override this (to search
       for kanji strings that contain a particular kana substring for example.)
       </li>
-    <li>If Freqency of Use criteria are given, an entry will match if the critera
+    <li>If Freqency of Use criteria are given, an entry will match if the criteria
        occur in either the reading FoU or the kanji FoU.</li>
     <li>When criteria are ANDed, they are considered across the entire entry.
-      For example if a gloss string and a PoS atrribute are specified, any entry 
+      For example if a gloss string and a PoS attribute are specified, any entry 
       containing both will returned, even when they occur in different senses.</li>
-    <li>For an explanation of the attribute codes, see 
-      <a href="http://www.csse.monash.edu.au/~jwb/wwwjdicinf.html#code_tag">this page</a>.</li>
     </ul>
   </span>
 <hr width="100%"/>

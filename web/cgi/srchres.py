@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2006,2009 Stuart McGraw 
+#  Copyright (c) 2006-2010 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -53,7 +53,8 @@ def main( args, opts ):
 				     srchin  = fv('s'+str(i)),
 				     srchtyp = fv('y'+str(i)) ))
 	    if tl: so.txts = tl
-	    so.pos   = fl('pos');   so.misc  = fl('misc');  so.fld  = fl('fld')
+	    so.pos   = fl('pos');   so.misc  = fl('misc');  
+	    so.fld   = fl('fld');   so.dial  = fl('dial');
 	    so.rinf  = fl('rinf');  so.kinf  = fl('kinf');  so.freq = fl('freq')
 	    so.grp   = grpsparse (fv('grp'))
 	    so.src   = fl('src');   so.stat  = fl('stat');  so.unap = fl('appr')

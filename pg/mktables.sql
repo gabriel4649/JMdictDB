@@ -285,7 +285,7 @@ CREATE TABLE xref (
     rdng SMALLINT,
     kanj SMALLINT CHECK (kanj IS NOT NULL OR rdng IS NOT NULL),
     notes TEXT,
-    PRIMARY KEY (entr,sens,xref));
+    PRIMARY KEY (entr,sens,xref,xentr,xsens));
     --## The following index disabled because it is violated by Examples file xrefs.
     --CREATE UNIQUE INDEX xref_entr_unq ON xref(entr,sens,typ,xentr,xsens);
 --CREATE INDEX xref_xentr ON xref(xentr,xsens);

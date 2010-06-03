@@ -1,0 +1,82 @@
+Title:	xrefs disappearing from database
+Stat:   open
+Disp:	
+Prio:	crit
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-06-02 20:37:00 stuart 
+  jwb reports via email that cross references are 
+  disappearing from database.  Was able to reproduce
+  by editing an entry that was the target of another
+  entry's xref... the edited entry no longer has a
+  reverse xref to the other entry, and when it is 
+  approved, and it's parent deleted, the deletion 
+  takes the other entry's xref with it.
+
+  One example he gave involved entry seq 1982880 which
+  has two xrefs to senses 1 and 2 of seq 1982890.
+  Editing the latter, and approving it caused the xrefs
+  on the former to disappear.
+
+2010-06-02 21:18:00 stuart
+  One problem appears to be the change made to
+  jdb.add_entr() in hg rev f5aad65a2c47-2010-04-30
+  which disabled writing rev xrefs to database:
+
+  -	    for x in getattr (s, '_xrer',  []): dbinsert (cur, "xrer",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
+  +	    # Don't create xrefs for xrer items -- these mirror the xrefs on the xrer targets.
+  +         #for x in getattr (s, '_xrer',  []): dbinsert (cur, "xref",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
+
+  We cannot simply fail to add these reverse xrefs because
+  these are what will become the current "real" xrefs when
+  the parent entry is deleted and this entry becomes the
+  active entry.  Reenabled the commented out line.
+
+  Second problem is the reverse xrefs are getting lost in
+  web/python/edconf.cgi.  There is a no JEL syntax for reverse
+  xrefs so they are not represented in the entry received 
+  from edform.py.  Nor does edconf.conf copy them from the 
+  parent entry.
+
+  Ideally (I realize too late), rev xrefs would be represented 
+  in edform somehow and be as editable as forward xrefs are.
+  I erroneously perceived them as a sort of shadow xref
+  whose real existence (and place for editing) was on the 
+  main entry, but that is not really right.  A change in 
+  an xref target (change to a sense's meaning that invalidates
+  an xref that points to it), or the reordering of senses 
+  would require the modification of the "other entry's" xref
+  and that should be doable when making the change that 
+  necessitates the xref change -- when editing the target.
+
+  As an iterim fix, will treat them like freq items for 
+  non-editor -- they will not be editable: edconf and 
+  edsubmit will both copy them from from the parent as
+  best they can, by sense number.  If senses are reordered
+  or new senses inserted, then the referencing entry will 
+  need to be edited afterwards to make any corrections. 
+
+2010-06-03 13:40:00 stuart
+  Additional problems found:
+  
+  1. jdb.set_keys() was resetting attributes 'entr' and 'sens' 
+  in the ._xrer list items.  Should reset 'xentr' and 'xsens'. 
+  
+  2. Attempt to add entries with rev xrefs failing on a pk
+  violation because the xref table pk is (entr, sens, xref)
+  and all three will be the same for cloned rev xrefs.
+  Changed pk in pg/mktables.sqk to (entr,sens,xref,xentr,xsens). 
+  To change the xref table in-suto:
+    ALTER TABLE xref DROP CONSTRAINT xref_pkey;
+    ALTER TABLE xref ADD  CONSTRAINT xref_pkey PRIMARY KEY (entr,sens,xref,xentr,xsens);
+
+  After these changes, xrefs are no longer getting "lost" 
+  but now the problem is that the rev xrefs from edited
+  entries appear in the (approved and unchanged) referencing 
+  entry.  E.g., after creating an unapproved edit of 1982890,
+  1982880 now shows 4 xrefs: two to the approved parent
+  entry, and two (seemingly identical except for the "&e="
+  value in the link) xrefs pointing to the new, edited, 
+  unapproved entry.  

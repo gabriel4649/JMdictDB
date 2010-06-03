@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2008 Stuart McGraw 
+#  Copyright (c) 2008-2010 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -119,16 +119,32 @@ def main (args, opts):
 		entr._grp = jelparse.parse_grp (grpstxt)
 
 		  # This form and the JEL parser provide no way to change
-		  # some entry attributes such _cinf, _snd, and for non-
-		  # editors, _freq.  We need to copy these items from the
-		  # original entry to the new, edited entry to avoid loosing
-		  # them.  The copy can be shallow since we won't be changing
-		  # the copied content. 
+		  # some entry attributes such _cinf, _snd, reverse xrefs 
+		  # and for non-editors, _freq.  We need to copy these items
+		  # from the original entry to the new, edited entry to avoid
+		  # loosing them.  The copy can be shallow since we won't be
+		  # changing the copied content. 
 		if pentr: 
 		    if not jmcgi.is_editor (sess): 
 			jdb.copy_freqs (pentr, entr)
 		    if hasattr (pentr, '_cinf'): entr._cinf = pentr._cinf
 		    copy_snd (pentr, entr)
+
+		      # We should be able to adjust reverse references in the
+		      # JEL edit but currently there is no provision for that.
+		      # (see IS-165) so we copy them from the parent entry.
+		      # We cannot ignore them because without them the
+		      # referencing entry will not have any xrefs to us
+		      # when we get added to the database.
+		      # For simplicity, we just copy the reverse xrefs by
+		      # sense number.  This will produce bad results if 
+		      # the submitter has rearranged our senses and will
+		      # require a subsequent manual edit of the referencing
+		      # entry to correct.
+		    for es, ps in zip (entr._sens, pentr._sens):
+                        es._xrer = ps._xrer
+		    xrers = jdb.collect_xrefs ([entr], rev=True)
+		    if xrers: jdb.augment_xrefs (cur, xrers, rev=True)
 
 	          # Add sound details so confirm page will look the same as the 
 	          # original entry page.  Otherwise, the confirm page will display

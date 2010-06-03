@@ -350,7 +350,7 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
 def entr_bld (t):
 	# Put rows from child tables into lists attached to their
 	# parent rows, thus building the object structure that
-	# application programs wil work with.
+	# application programs will work with.
 
 	entr, rdng, kanj, sens, chr = [t.get (x, []) 
 				       for x in ('entr', 'rdng', 'kanj', 'sens', 'chr')]
@@ -1386,8 +1386,7 @@ def addentr (cur, entr):
 	    for x in getattr (s, '_stagr', []): dbinsert (cur, "stagr", ['entr','sens','rdng'], x)
 	    for x in getattr (s, '_stagk', []): dbinsert (cur, "stagk", ['entr','sens','kanj'], x)
 	    for x in getattr (s, '_xref',  []): dbinsert (cur, "xref",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
-	    # Don't create xrefs for xrer items -- these mirror the xrefs on the xrer targets.
-	    #for x in getattr (s, '_xrer',  []): dbinsert (cur, "xref",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
+	    for x in getattr (s, '_xrer',  []): dbinsert (cur, "xref",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
 	    for x in getattr (s, '_xrslv', []): dbinsert (cur,"xresolv",['entr','sens','typ','ord','rtxt','ktxt','tsens','notes','prio'], x)
 	for x in getattr (entr, '_snd', []): dbinsert (cur, "entrsnd", ['entr','ord','snd'], x)
 	for x in getattr (entr, '_grp', []): dbinsert (cur, "grp",     ['entr','kw','ord'], x)
@@ -1432,7 +1431,7 @@ def setkeys (e, id=0):
 	    for x in getattr (s, '_stagk', []): (x.entr, x.sens) = (id, n)
 	    for m,x in enumerate (getattr (s, '_xrslv', [])): (x.entr, x.sens, x.ord) = (id, n, m+1)
 	    for m,x in enumerate (getattr (s, '_xref',  [])): (x.entr, x.sens, x.xref)= (id, n, m+1)
-	    for x in getattr (s, '_xrer',  []): (x.entr, x.sens) = (id, n)
+	    for x in getattr (s, '_xrer',  []): (x.xentr, x.xsens) = (id, n)
 	for n,x in enumerate (getattr (e, '_snd',  [])): (x.entr, x.ord) = (id, n+1)
 	for n,x in enumerate (getattr (e, '_hist', [])): (x.entr,x.hist) = (id, n+1)
 	# Note: do not set grp.ord; order is based on position in grp table, not entr._grp list.

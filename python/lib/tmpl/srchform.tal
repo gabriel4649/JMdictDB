@@ -1,5 +1,5 @@
 <html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
-<!--? Copyright (c) 2008 Stuart McGraw -->
+<!--? Copyright (c) 2008-2010 Stuart McGraw -->
 <!--? $Revision$ $Date$ -->
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -229,6 +229,19 @@
 		  <tr tal:repeat="r fld">
 		    <td tal:repeat="c r">
 		      <input name="fld" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/> 
+		      </td>
+		    </tr>
+	          </table>
+	        </td>
+	      </tr>
+
+	    <tr><td colspan="2"><hr width="100%"/></td></tr>
+	    <tr>
+	      <td colspan="2"><span class="descriptor">Dialect:</span>
+	        <table class="optgroup">
+		  <tr tal:repeat="r dial">
+		    <td tal:repeat="c r">
+		      <input name="dial" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/> 
 		      </td>
 		    </tr>
 	          </table>

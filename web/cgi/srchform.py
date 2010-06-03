@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2006-2009 Stuart McGraw 
+#  Copyright (c) 2006-2010 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -33,6 +33,7 @@ def main( args, opts ):
 	misc = reshape (sorted (jdb.KW.recs('MISC'), key=lambda x:x.kw), 10)
 	stat = reshape (sorted (jdb.KW.recs('STAT'), key=lambda x:x.kw), 10)
 	fld =  reshape (sorted (jdb.KW.recs('FLD'),  key=lambda x:x.kw), 10)
+	dial = reshape (sorted (jdb.KW.recs('DIAL'), key=lambda x:x.kw), 10)
 	kinf = reshape (sorted (jdb.KW.recs('KINF'), key=lambda x:x.kw), 5)
 	  # FIXME: restricting 'rinf' kwds to values less that 100 causes
 	  #  the searchj form not to show the the kanjidic-related ones.
@@ -40,7 +41,7 @@ def main( args, opts ):
 	rinf = reshape (sorted ([x for x in jdb.KW.recs('RINF') if x.id < 100],
 						     key=lambda x:x.kw), 5)
 	  # FIXME: Filter out the kanjidic corpus for now.  Will figure
-	  #  out how to itegrate it later.  This too is obviously a hack.
+	  #  out how to integrate it later.  This too is obviously a hack.
 	corp = reshape (sorted ([x for x in jdb.KW.recs('SRC') if x.kw!='xxkanjidic'] , 
 						     key=lambda x:x.kw), 10)
 	freq = []
@@ -49,7 +50,7 @@ def main( args, opts ):
 
 	jmcgi.gen_page ("tmpl/srchform.tal", macros='tmpl/macros.tal', 
 			pos=pos, misc=misc, stat=stat, src=corp, freq=freq,
-			fld=fld, kinf=kinf, rinf=rinf, parms=parms,
+			fld=fld, kinf=kinf, rinf=rinf, dial=dial, parms=parms,
 			svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
 			method='get', output=sys.stdout, this_page='srchform.py')
 

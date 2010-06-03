@@ -436,7 +436,7 @@ class SearchItems (jdb.Obj):
 
     def __setattr__ (self, name, val):
 	if name not in ('idtyp','idnum','src','txts','pos','misc',
-			'fld','freq','kinf','rinf','grp','stat','unap',
+			'fld','dial','freq','kinf','rinf','grp','stat','unap',
 			'nfval','nfcmp','gaval','gacmp'):
 	    raise AttributeError ("'%s' object has no attribute '%s'" 
 				   % (self.__class__.__name__, name))
@@ -497,6 +497,7 @@ def so2conds (o):
 	  pos -- List of Part of Speech keywords.
 	  misc -- List of Misc (sense) keywords.
 	  fld -- List of Field keywords.
+	  dial -- List of Dialect keywords.
 	  kinf -- List of Kanj Info keywords.
 	  rinf -- List of Reading Info of Speech keywords.
 	  grp -- List of entry group keywords.
@@ -562,6 +563,7 @@ def so2conds (o):
 	conds.extend (_kwcond (o, 'pos',  "pos",    "pos.kw"))
 	conds.extend (_kwcond (o, 'misc', "misc",   "misc.kw"))
 	conds.extend (_kwcond (o, 'fld',  "fld",    "fld.kw"))
+	conds.extend (_kwcond (o, 'dial', "dial",   "dial.kw"))
 	conds.extend (_kwcond (o, 'kinf', "kinf",   "kinf.kw"))
 	conds.extend (_kwcond (o, 'rinf', "rinf",   "rinf.kw"))
 	conds.extend (_kwcond (o, 'grp',  "grp",    "grp.kw"))

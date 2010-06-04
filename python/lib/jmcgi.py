@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2008-2009 Stuart McGraw 
+#  Copyright (c) 2008-2010 Stuart McGraw 
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -17,8 +17,8 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-__version__ = ('$Revision$'[11:-2],
-	       '$Date$'[7:-11]);
+__version__ = ('$Revision: $'[11:-2],
+	       '$Date: $'[7:-11]);
 
 import sys, re, cgi, urllib, os, os.path, random, time
 import jdb, tal, fmt
@@ -414,6 +414,25 @@ def add_unreslvd_flag (entries):
 	    for s in e._sens:
 		if len (getattr (s, '_xunr', [])) > 0:
 		    e.UNRESLVD = True
+
+def add_filtered_xrefs (entries):
+
+	# Generate substitute _xref and _xrer lists and put them in
+	# sense attribute .XREF and .XRER.  These lists are copies of
+	# ._xref and ._xrer but references to unapproved entries are
+	# removed if this entry is an approved entry or the target 
+	# entry status is rejected or deleted.  
+	# The xrefs in ._xref and ._xrer must be augmented xrefs (i.e. 
+	# have had jdb.augment_xrefs() called on the them.) 
+	#
+	# FIXME: have considered not displaying reverse xref if an
+	#  identical forward xref (to same entr/sens) exists.  If
+	#  we want to do that, this is the place. 
+
+	for e in entries:
+	    for s in e._sens:
+		s.XREF = [x for x in s._xref if (e.unap or not x.TARG.unap) and x.TARG.stat==jdb.KW.STAT['A'].id]
+		s.XRER = [x for x in s._xrer if (e.unap or not x.TARG.unap) and x.TARG.stat==jdb.KW.STAT['A'].id]
 
 def fix_diff (entries):
 

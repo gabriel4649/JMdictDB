@@ -80,3 +80,45 @@ AssdTo:	stuart
   entry, and two (seemingly identical except for the "&e="
   value in the link) xrefs pointing to the new, edited, 
   unapproved entry.  
+
+2010-06-04 13:35:00 stuart
+  (Partial?) fix for the multiple xref displasy problem
+  noted above.  Created new function jmcgi.add_filtered_xrefs()
+  that can be called on an entry before passing that entry 
+  to entr.tal for display.  This function will made copies
+  of the xref and reverse xref lists in the entries' senses'
+  .xref and .xrer attributes as nerw attributes ,XREF and
+  .XRER.  These copies be identical to their source lists
+  except some xrefs may be removed.
+
+  Specifically it removes any xref (or rev xref) that points
+  to an unapproved entry *if* the current entry is approved.
+  It also unconditionally removes refs that point to deleted
+  (stat=D) or rejected (stat=R) entries.
+
+  Although possibly confusing, it does not remove refs to
+  unapproved entries if the current entry is also unapproved.
+  This can be rationalized by considering that a submitter or
+  editor should be informed when there are pending changes on
+  a reference target because that may affect decisions about 
+  the reference that this entry has.  It might be a desirable
+  to-do to visually make clearer that the refs are to different
+  versions of the same entry.
+
+  In web/cgi/entr.py we now call jmcgi.add_filtered_xrefs()
+  before generating the web page.  We don't currently call
+  it in web/cgi/edconf.py on the grounds that this must
+  have just been edited (although we do copy ._xref and
+  ._xrer unmodified to .XREF and .XRER because that's what's
+  needed by the TAL template) but failing to call it means
+  that refs to deleted and rejected entries will show up so
+  maybe we should call it. 
+
+  In python/lib/tmpl/entr.py and python/lib/tmpl/enconf.py 
+  we changed references to raw sense reference lists s/_xref
+  and s/_xrer to the filtered lists s/XREF and s/XRER.
+  In theory we could have left edconf.tal alone since edconf.py
+  does not modify the ref lists but a) that might change in
+  future as noted above, and b) edconf.tal and entr.tal are
+  nearly identical and we don't want to introduce any 
+  unecessary differences.

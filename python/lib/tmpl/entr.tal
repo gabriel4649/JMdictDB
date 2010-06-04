@@ -1,5 +1,5 @@
-﻿<html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
-<!--? Copyright (c) 2008 Stuart McGraw -->
+<html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
+<!--? Copyright (c) 2008-2010 Stuart McGraw -->
 <!--? $Revision$ $Date$ -->
 
 <!--? ***NOTE***
@@ -139,11 +139,14 @@
 		  </span>
 		</span>
 
-	      <table class="xrefs" tal:condition="python:TALattror(s,'_xref','_xrer','_xrslv')">
-		<tr tal:condition="s/_xref">
+	      <table class="xrefs" tal:condition="python:TALattror(s,'XREF','XRER','_xrslv')">
+                <!-- s.XREF and s.XRER are identical to s._xref and s._xrer except
+                     some refs (e.g. to unapproved entries) have been removed. They
+                     can be added to an entry by jmcgi.add_filtered_xrefs(). -->
+		<tr tal:condition="s/XREF">
 		  <td colspan="2">Cross references:</td>   
 		  </tr>
-		<tr tal:condition="s/_xref" tal:repeat="x s/_xref">
+		<tr tal:condition="s/XREF" tal:repeat="x s/XREF">
 		  <td>&nbsp;</td>
 		  <td>
 		    <span tal:replace="python:TALabbr('XREF',x.typ)">xref-type</span>:
@@ -169,10 +172,10 @@
 		    <span tal:condition="x/rtxt" tal:replace="x/rtxt">xrslv-rdng</span>
 		    </td>
 		  </tr>
-		<tr tal:condition="s/_xrer">
+		<tr tal:condition="s/XRER">
 		  <td colspan="2">Reverse references:</td>
 		  </tr>
-		<tr tal:condition="s/_xrer" tal:repeat="x s/_xrer">
+		<tr tal:condition="s/XRER" tal:repeat="x s/XRER">
 		  <td>&nbsp;</td>
 		  <td>
 		    <span tal:replace="python:TALabbr('XREF',x.typ)">xref-type</span>:
@@ -267,7 +270,7 @@
 	</span>
 
       <div class="preformat" tal:condition="python: etxt and disp=='ed'">
-	<p/> <!-- Used for edict fprmat only. -->
+	<p/> <!-- Used for edict format only. -->
 	<span tal:content="structure etxt"/>
 	</div>
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2006-2009 Stuart McGraw 
+#  Copyright (c) 2006-2010 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -57,6 +57,7 @@ def main (args, opts):
 		etxts = ['' for e in entries]
 	    jmcgi.htmlprep (entries)
 	    if disp == 'ed': etxts = [jmcgi.txt2html (x) for x in etxts]
+	    jmcgi.add_filtered_xrefs (entries)
 
 	if not errs:
 	    jmcgi.gen_page ('tmpl/entr.tal', macros='tmpl/macros.tal', 

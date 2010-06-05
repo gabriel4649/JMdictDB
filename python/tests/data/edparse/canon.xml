@@ -127,7 +127,7 @@
 </r_ele>
 </entry>
 
-@b103	# Theis may be a fmtxml error... 
+@b103	# This may be a fmtxml error... 
 	# Should there be an empty <sense> element?
 <entry>
 </entry>
@@ -136,6 +136,23 @@
 <entry>
 <sense>
 <gloss>kanji</gloss>
+</sense>
+</entry>
+
+@b200	# Test different whitespace as K-R-S separators.
+	# b201: kanji[\t]reading[\t]sense
+	# b202: kanji[\U3000]reading\U3000sense
+	# b203: kanji reading[\t]sense
+	# b204: kanji[\t]reading[\U3000]sense
+<entry>
+<k_ele>
+<keb>食べる</keb>
+</k_ele>
+<r_ele>
+<reb>たべる</reb>
+</r_ele>
+<sense>
+<gloss>to eat</gloss>
 </sense>
 </entry>
 

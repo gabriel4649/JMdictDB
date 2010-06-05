@@ -65,7 +65,9 @@ from iso639maps import iso639_1_to_2
 def entr (text, simple=False):
 	fmap = collections.defaultdict (lambda:([list(),list()]))
 	#krtxt, x, stxt = text.partition ('/')
-	krtxt, stxt = re.split (ur'[ \t\u3000]*/[ \t\u3000]*', text, 1)
+	try: krtxt, stxt = re.split (ur'[ \t\u3000]*/[ \t\u3000]*', text, 1)
+	except ValueError, e:
+	    raise ValueError ('Missing KR-S separator, "/"')
 	kanjs, rdngs = parse_jppart (krtxt, fmap)
 	entr = Entr (_kanj=kanjs, _rdng=rdngs)
 	sens = parse_spart (stxt.lstrip(), entr, fmap)

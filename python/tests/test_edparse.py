@@ -63,6 +63,10 @@ class Test_canonical (unittest.TestCase):
     def test_b102 (_): dotest (_, 'b102')
     def test_b103 (_): dotest (_, 'b103')
     def test_b104 (_): dotest (_, 'b104')
+    def test_b201 (_): dotest (_, 'b201', 'b200')
+    def test_b202 (_): dotest (_, 'b202', 'b200')
+    def test_b203 (_): dotest (_, 'b203', 'b200')
+    def test_b204 (_): dotest (_, 'b204', 'b200')
 
     def test_r1 (_): dotest (_, 'r1')
     def test_r2 (_): dotest (_, 'r2')
@@ -115,11 +119,11 @@ class Test_misc (unittest.TestCase):
     def test_q2087350 (_): dotest (_, 'q2087350')
     def test_q2157980 (_): dotest (_, 'q2157980')
 
-def dotest (_, testnum):
+def dotest (_, testnum, expnum=None):
 	global Test_xmlcmp_indata, Test_xmlcmp_expdata
 	e = edparse.entr (_.indata[testnum])
 	xml = fmtxml.entr (e, compat="jmdict")
-	expected = _.expdata[testnum]
+	expected = _.expdata[expnum or testnum]
 	diff = fmtxml.entr_diff (expected, xml)
 	if diff:
 	    #msg = "\nExpected: '%s'\nDiff: '%s'" % (expected, diff)

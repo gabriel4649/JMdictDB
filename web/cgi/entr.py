@@ -57,7 +57,7 @@ def main (args, opts):
 		etxts = ['' for e in entries]
 	    jmcgi.htmlprep (entries)
 	    if disp == 'ed': etxts = [jmcgi.txt2html (x) for x in etxts]
-	    jmcgi.add_filtered_xrefs (entries)
+	    jmcgi.add_filtered_xrefs (entries, rem_unap=True)
 
 	if not errs:
 	    jmcgi.gen_page ('tmpl/entr.tal', macros='tmpl/macros.tal', 

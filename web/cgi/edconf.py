@@ -190,6 +190,7 @@ def main (args, opts):
 		chklist['nopos'] = ", ".join ([str(n+1) for n,x in enumerate (getattr (entr,'_sens',[]))
 				                       if not x._pos])
 	    entrs = [entr]
+	    jmcgi.add_filtered_xrefs (entrs, rem_unap=False)
 
 	if not errs:
 	    if not meth: meth = 'get' if dbg else 'post'

@@ -415,13 +415,14 @@ def add_unreslvd_flag (entries):
 		if len (getattr (s, '_xunr', [])) > 0:
 		    e.UNRESLVD = True
 
-def add_filtered_xrefs (entries):
+def add_filtered_xrefs (entries, rem_unap=False):
 
 	# Generate substitute _xref and _xrer lists and put them in
 	# sense attribute .XREF and .XRER.  These lists are copies of
-	# ._xref and ._xrer but references to unapproved entries are
-	# removed if this entry is an approved entry or the target 
-	# entry status is rejected or deleted.  
+	# ._xref and ._xrer but references to deleted or rejected
+	# entries are removed.  Additionally, if 'rem_unap' is true,
+	# references to unapproved entries are also removed *if*
+	# the current entry is approved.
 	# The xrefs in ._xref and ._xrer must be augmented xrefs (i.e. 
 	# have had jdb.augment_xrefs() called on the them.) 
 	#
@@ -429,10 +430,12 @@ def add_filtered_xrefs (entries):
 	#  identical forward xref (to same entr/sens) exists.  If
 	#  we want to do that, this is the place. 
 
+	cond = lambda e,x: (e.unap or not x.TARG.unap or not rem_unap) \
+	       	            and x.TARG.stat==jdb.KW.STAT['A'].id
 	for e in entries:
 	    for s in e._sens:
-		s.XREF = [x for x in s._xref if (e.unap or not x.TARG.unap) and x.TARG.stat==jdb.KW.STAT['A'].id]
-		s.XRER = [x for x in s._xrer if (e.unap or not x.TARG.unap) and x.TARG.stat==jdb.KW.STAT['A'].id]
+		s.XREF = [x for x in s._xref if cond (e, x)]
+		s.XRER = [x for x in s._xrer if cond (e, x)]
 
 def fix_diff (entries):
 

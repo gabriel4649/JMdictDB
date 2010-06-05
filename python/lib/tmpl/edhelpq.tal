@@ -75,7 +75,9 @@
 一結び; ひと結び 【ひとむすび】 (n,vs) knotting
 金肥 【きんぴ; かねごえ】 (n) chemical fertilizer
       </pre></dd></dl>
-    You can enter these multiple versions simply by separating them with a ";".
+    You can enter these multiple versions simply by separating them 
+    with a ";", just as in the extended EDICT format above: 一結び; 
+    ひと結び in the Kanji box or きんぴ; かねごえ in the Readings box.
 	  <p/>
     3. Each of the parts of the dictionary entry can be accompanied by a 
     number of tags, such as the part-of-speech mentioned above. In this system
@@ -91,8 +93,14 @@
     4. The meanings part of the entry will contain or more "senses", i.e. 
     different sets of meanings for the term, as in:
     <dl><dd><pre>識別名 【しきべつめい】 (n) (1) {comp} identifier; (2) {comp} distinguished name</pre></dd></dl>
-    Use "[1]", "[2]", etc. at the start of each sense.
+    Use "[1]", "[2]", etc. at the start of each sense.  So the above 
+    senses would be entered as:
+    <dl><dd><pre>[1][n,comp] identifier [2][n,comp] distinguished name</pre></dd></dl>
 
+    5. Note that the ";" is used for <b>separating</b> kanji forms,
+    readings snd glosses within a sense. Don't use them at the end
+    of the text in a box, or after the last gloss in a sense. That will 
+    cause an error.
     <h3>And In Closing</h3>
 
     The system using [...] to enter tags, notes. cross-references, etc. avoids

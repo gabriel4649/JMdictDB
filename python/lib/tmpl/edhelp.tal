@@ -8,7 +8,7 @@
   </head>
 
 <body>
-  <h2>Contents</h2>
+  <h2>JMdictDB - Japanese Dictionary Database - Help File</h2>
   <a href="#inboxes">Edit Form Input Boxes</a><br/>
   <a href="#insyntax">Tag Syntax</a><br/>
   <a href="#kwabbr">Keyword Abbreviations</a><br/>
@@ -16,29 +16,32 @@
 
 <div class="entry">
   <h2>Overview</h2>
-  JEL (JMdictDB Edit Language) is used to describe JMdictDB entries.
-  It allows one to enter the core information of a JMdict entry in three
-  text boxes (Kanji, Readings, Senses) rather than the dozens of text
-  boxes that would be required if every JMdict field used a separate
-  text box for its entry.  The syntax of JEL is similar to EDICT but
-  with modifications facilitate machine parsing.
+  Entries in the dictionaries held in the JMdictDB database are
+  described using the JMdictDB Edit Language (JEL).
+  It allows one to enter the core information of a JMdict, etc. entry in three
+  text boxes (Kanji/Special Character, Readings, Meanings) rather than the dozens of text
+  boxes that would be required if every dictionary field used a separate
+  text box for its entry.  (For simplicity we will call the first just
+  "Kanji" from now on.) The syntax of JEL is similar to EDICT but
+  with modifications to facilitate machine parsing.
 
   <h3>General Syntax Rules</h3>
 
   The Edit Entry Form consists of a number of text boxes for entering
   information about an entry, but there are three that accept and parse
-  JEL text: the Kanji, Readings, and Senses boxes.  
+  JEL text: the Kanji, Readings, and Meanings boxes.  
       <p/>
-  In the Kanji and Readings boxes, enter the entry's kanji and readings.
-  If the entry has more than one of either, separate them with semicolons.
-  Either ASCII or JP semicolons can be used.  Whitespace (including
+  In the Kanji and Readings boxes, enter the entry's kanji form and readings.
+  If the entry has more than one of either, separate them with semicolons;
+  either ASCII or JIS semicolons can be used.  Whitespace (including
   newlines) will be stripped from the beginning and end of each kanji
-  and reading.
+  and reading. If the Japanese is written only in kana, omit the Kanji part.
       <p/>
-  Enter senses and glosses in the Senses box.  Each sense starts with
+  Enter meanings (aka glosses) in the Meanings box. Glosses are grouped into
+  "senses", i.e. sets of related meanings, and each sense starts with
   a sense number enclosed in square brackets, e.g. <samp>[1]</samp>.  
   This is   followed by one or more glosses.  When there is more than
-  one gloss, they are separated with (ASCII) semicolons.
+  one gloss, they are separated by (ASCII) semicolons.
   If a gloss contains any semicolon (<samp>;</samp>) or left bracket (<samp>[</samp>) 
   characters, they must be escaped with a backslash character (<samp>\</samp>).
   Whitespace (including newlines) is stripped from the beginning and 
@@ -55,21 +58,21 @@
   Tags provide extra information that applies to individual kanji, 
   readings, senses, and glosses.  Tags are enclosed in square brackets:
   <samp>[...]</samp>.  Any number of tags, separated by commas, can be given inside
-  a single pair of square brackets, and muliple sets of square brackets
-  may be used.  E.g., <samp>[n,vs]</samp> and <samp>[n][vs]</samp> will have identical effect.
-  Kanji and reading tags are given after the kanji or reading they apply
-  to (and before the semicolon that preceedes the following kanji or 
+  a single pair of square brackets, and multiple sets of square brackets
+  may be used, for example <samp>[n,vs]</samp> and <samp>[n][vs]</samp> will have identical effect.
+  Kanji part and reading tags are given after the kanji or reading they apply
+  to (and before the semicolon that preceedes the following kanji part or 
   reading.  Sense tags can occurs before or after any gloss and will 
   apply to the entire sense.  Gloss tags may occur before or after the
   gloss they apply to.
       <p/>
-  Tags are gouped into different types.  For example there are a set of
+  Tags are grouped into different types.  For example there is a set of
   part-of-speech (pos) tags having values like <samp>n</samp> (noun), 
   <samp>v5</samp> (go-dan verb), etc., and are used in senses.  The tags
-  in group Kinf provide information about kanji and have values like
+  in the "Kanji info" group provide information about kanji part and have values like
   <samp>ateji</samp> (phonetic reading) and <samp>iK</samp> (word containing
-  irregular kanji usage) and are use (unsurprisingly) with kanji.  
-  Case is sigfificant in tags; <samp>ik</samp> is not the same as <samp>iK</samp>.
+  irregular kanji usage).
+  Case is significant in tags; <samp>ik</samp> is not the same as <samp>iK</samp>.
       <p/>
   See <a href=#insyntax>Tag Syntax</a> for a list of tag groups and where 
   each group may be used.  See <a href="#kwabbr">Keyword abbreviations</a>
@@ -77,21 +80,22 @@
       <p/>
   Some tags take arguments (see *note below) and are given in the form,
   <samp>tag_type=tag_value</samp>.
-  In some cases the tag may be given multuple arguments separated with
+  In some cases the tag may be given multiple arguments separated by
   semicolons: <samp>tag_type=tag_value1;tag_value2;...</samp>.  Some tags can be 
   be given in the form, <samp>tag_type=tag_value</samp>, or just <samp>tag_value</samp>.
   Note that if the first form is used, multiple values are separated with
   semicolons (<samp>tag_type=tag_value1;tag_value2;...</samp>) but in the second
   form multiple values are separated with commas (<samp>tag_value1,tag_value2,...</samp>).
       <p/>
-  When tag values contain characters like spaces, semicolons, commas, etc
+  When tag values contain characters such as spaces, semicolons, commas, etc
   the tag value should be quoted, e.g., <samp>[note="This is; a quoted text"]</samp>.
       <p/>
-  Other tags, "lsrc" for example, have formats specific to them.
+  Other tags, for example "lsrc" which is used to label the source language
+  of a gairaigo, have formats specific to them.
       <p/>
   Specifics on tags, their values, and their use, are given in the 
   <a href="#kanji">Kanji</a>, 
-  <a href="#readings">Readings</a>, <a href="#senses">Senses</a>, and 
+  <a href="#readings">Readings</a>, <a href="#senses">Meanings</a>, and 
   <a href="#insyntax">Tag Syntax</a> sections below.
       <p/>
   *Note: Actually, all tags can be given in the form <samp>tag_type=tag_value</samp>.
@@ -112,7 +116,7 @@
     <dt><a name="stat"></a>Stat</dt>
     <dd>The status of this entry.  
       Every entry has one of three statuses: Active (A), Deleted (D)
-      Rejected (R).  Aditionally, every entry is either Unapproved (the
+      Rejected (R).  Additionally, every entry is either Unapproved (the
       status code is followed by an asterisk, "*"), or Approved (status
       code not followed by asterisk.)  (<a href="#kw_stat">abbrs</a>)
       </dd>
@@ -123,49 +127,41 @@
       people can ignore this value.
       </dd>
 
-    <dt><a name="corpus"></a>Corpus</dt>
-    <dd>The corpus in which the entry exists or (for new entries) should
+    <dt><a name="corpus"></a>Dictionary</dt>
+    <dd>The dictionary in which the entry exists or (for new entries) should
       be entered.  (<a href="#kw_src">abbrs</a>)
       </dd>
 
     <dt><a name="seq"></a>Seq</dt>
     <dd>The sequence number assigned to the entry or (for new entries)
-      the sequence number to assign to it.
+      the sequence number to be assigned to it.
       Normally should not be changed.  If left blank for a new entry,
       the system will automatically assign an appropriate value.
       Only registered editors may set or change this.
       </dd>
 
-    <dt><a name="srcnote"></a>Src note</dt>
-    <dd>Information about the source of this entry.  Required
-      format depends on the specific source.
-      </dd>
-
-    <dt><a name="entrnote"></a>Entr note</dt>
-    <dd>Information about this entry as a whole.  Information 
-      pertaining to any of the meanings of this entry should go 
-      in sense notes in the appropriate sense(s).
-      </dd>
-
-    <dt><a name="kanji"></a>Kanji</dt>
+    <dt><a name="kanji"></a>Kanji/Special Character Part</dt>
     <dd>
-      Enter the kanji used for this word, separated by semicolons (either
-      western or Japanese semicolons are ok).
-      Kinf (<a href="#syn_kinf">syntax</a>, <a href="#kw_kinf">abbrs</a>) and
-      freq (<a href="#syn_freq">syntax</a>, <a href="#kw_freq">abbrs</a>) tags,
+      Enter the kanji form(s) of the word or expression, separated by semicolons (either
+      Western or Japanese semicolons are ok).
+      Kanji information (<a href="#syn_kinf">syntax</a>, 
+      <a href="#kw_kinf">abbrs</a>) and
+      frequency (<a href="#syn_freq">syntax</a>, <a href="#kw_freq">abbrs</a>) tags,
       enclosed in square brackets ([]) may optionally follow any kanji (before the
       semicolon if present.)
-      <ul><li>Every kanji listed must contain at least one kanji character.
+      <ul><li>Every kanji form listed must contain at least one kanji or other
+      non-kana  character. (In this case, the "sokuon" (ー) vowel extension
+      character is regarded as a kana character.)
       </li><li>If the word being entered is written only in kana, leave this
       field blank and enter the kana in the Reading box.
-      </li><li>Kanji should be listed in order of "commonness": the most commonly used
-      kanji first, the most rarely used last.
+      </li><li>Kanji forms should be listed in order of "commonness": the most commonly used
+      kanji  form first, the most rarely used last.
       </li><li>Multiple sets of bracketed tags may be given.
       </li><li>Multiple tags may occur in within a single pair of brackets, separated by commas.
       </li><li>Order of tags is not significant.
       </li><li>Conflicting tags (e.g. nf14 and nf19) may not be applied to the same
       kanji.
-      </li><li>Freq tags are only processed when submitted by registered editors.
+      </li><li>Frequency tags are only processed when submitted by registered editors.
       If you are not registered, you should should note in the Comments section 
       any freq tags you believe should be applied.
       <span class="caution">Registration requirement not implemented yet.</span>
@@ -174,14 +170,15 @@
       </dd>
 
     <dt><a name="readings"></a>Readings</dt>
-    <dd>Enter the readings used for this word, separated by semicolons
-      (either western or Japanese semicolons are ok.
-      Rinf tags (<a href="#syn_rinf">syntax</a>, <a href="#kw_rinf">abbrs</a>),
-      freq tags (<a href="#syn_freq">syntax</a>, <a href="#kw_freq">abbrs</a>), or 
+    <dd>Enter the readings/kana forms used for this word, separated by 
+      semicolons (either Western or Japanese semicolons are ok.)
+      Reading information tags (<a href="#syn_rinf">syntax</a>, 
+      <a href="#kw_rinf">abbrs</a>), frequency tags 
+      (<a href="#syn_freq">syntax</a>, <a href="#kw_freq">abbrs</a>), or 
       restrictions (<a href="#syn_restr">syntax</a>)
-      enclosed in square brackets ([]) may optionally follow any reading (before the
-      semicolon if present.)
-      <ul><li>Readings may not contain any kanji characters.
+      enclosed in square brackets ([]) may optionally follow any reading 
+      (before the semicolon if present.
+      <ul><li>Readings may not contain any non-kana characters.
       </li><li>Readings should be listed in order of "commonness": the
       most commonly used reading first, the most rarely used last.
       </li><li>Multiple sets of bracketed tags may be given.
@@ -189,35 +186,39 @@
       </li><li>Order of tags is not significant.
       </li><li>Conflicting tags (e.g. nf14 and nf19) may not be applied to the same
       reading.
-      </li><li>Freq tags are only processed when submitted by registered editors.  
+      </li><li>Frequency tags are only processed when submitted by registered editors.  
       If you are not registered, you should should note in the Comments section 
-      any freq tags you believe should be applied. 
+      any frequency tags you believe should be applied. 
       <span class="caution">Registration requirement not implemented yet.</span>
-      </li><li>Use a restr tag to indicate when a reading is only used
-      with a subset of the kanji listed in the Kanji box.
-      </li><li>If multiple kanji texts are used in a restr tag, separate them 
-      with a semicolon (ascii or jp).
-      </li><li>If a reading is not used with any kanji, use a "restr=nokanji"
-      yag or equivalently but more simply, just a "nokanji" tag.
+      </li><li>Use a restriction tag to indicate when a reading is only used
+      with a subset of the kanji forms listed in the Kanji box.
+      </li><li>If multiple kanji forms are used in a restriction tag, separate 
+      them with a semicolon (ASCII or JIS).
+      </li><li>If a kana form is not associated with any kanji, 
+      use a "restr=nokanji" tag or equivalently but more simply, just a 
+      "nokanji" tag. (This typically occurs with plant and animal names where
+      the katakana form is not normally associated with the kanji form.)
       </li></ul>
       Examples: のり [gikun,ichi1,news2][nf38] ; ノリ[ichi1,news2,nf38]<br/>
 	じゃがいも [spec1,restr=じゃが芋;馬鈴薯] ； ジャガイモ [nokanji]
       </dd>
 
-    <dt><a name="senses"></a>Senses</dt>
-    <dd>Enter senses, glosses, and their associated tags in the Sense box.
+    <dt><a name="senses"></a>Meanings</dt>
+    <dd>Enter meanings (glosses), and their associated tags in the Meanings box.
+      Group them into senses, i.e. sets of related meanings.
       <ul><li>Each sense starts with a sense number in brackets, e.g., "[1]".
-      </li><li>Sense numbers not significant other than to signify the start
+      </li><li>Sense numbers  are not significant other than to signify 
+      the start
       of a new sense.  When the entry is added to the database, senses
-      will be numbered from 1 in the order they occured in the Sense text box,
-      regardless of the actual sense numbers used. 
+      will be numbered from 1 in the order they occured in the Meanings 
+      text box, regardless of the actual sense numbers used. 
       </li><li>Following the sense number are any number of sense tags, glosses
       and gloss tags, which may be freely intermixed.
       </li><li>Multiple glosses in a sense are separated by semicolons.
       Glosses do not need to be enclosed in quotes. even when they contain
       space characters.  Gloss tags (see below) are considered part of the 
       gloss.  Example: <br/>
-	This is gloss 1 [lit][eng]; [fig] This is gloss 2; This is gloss 3<br/>
+	This is gloss 1 [lit]; [fig] This is gloss 2; This is gloss 3<br/>
       </li><li>If a gloss contains left bracket ([) or semicolon (;) characters,
       those characters must be escaped by preceeding them with a backlslash (\).
       Example: <br/>
@@ -229,18 +230,18 @@
       </li><li>Sense tags are:
 	<ul><li>ant -- An antonym cross-reference (<a href="#syn_xref">syntax</a>)
 	</li><li>dial -- Dialect (<a href="#syn_dial">syntax</a>, <a href="#kw_dial">abbrs</a>)
-	</li><li>expl -- Explanatory translation (<a href="#syn_ginf_expl">syntax</a>)
-	</li><li>fig -- Figurative translation (<a href="#syn_ginf_fig">syntax</a>)
+	<!-- </li><li>expl -- Explanatory translation (<a href="#syn_ginf_expl">syntax</a>)-->
+	<!-- </li><li>fig -- Figurative translation (<a href="#syn_ginf_fig">syntax</a>)-->
 	</li><li>fld -- Domain (<a href="#syn_fld">syntax</a>, <a href="#kw_fld">abbrs</a>)
 	</li><li>lit -- Literal translation (<a href="#syn_ginf_lit">syntax</a>)
 	</li><li>lsrc -- Source word and language (<a href="#syn_lsrc">syntax</a>, <a href="#kw_lang">abbrs</a>)
 	</li><li>misc -- Misc sense tags (<a href="#syn_misc">syntax</a>, <a href="#kw_misc">abbrs</a>)
-	</li><li>note -- Sense notes (<a href="#syn_note">syntax</a>)
+	</li><li>note -- Sense-related notes (<a href="#syn_note">syntax</a>)
 	</li><li>pos -- Grammatical part-of-speech (<a href="#syn_pos">syntax</a>, <a href="#kw_pos">abbrs</a>)
 	</li><li>restr -- Reading and kanji restrictions (<a href="#syn_restr">syntax</a>)
 	</li><li>see -- A "see also" cross reference (<a href="#syn_xref">syntax</a>)
 	</li></ul>
-      </li><li>The syntax of gloss info (or ginf) tags is the same as for sense tags but
+      </li><li>The syntax of gloss information (or ginf) tags is the same as for sense tags but
       ginf tags apply only to the gloss they are adjacent to.  They may
       occur before or after the gloss they apply to.
       </li><li>Ginf tags are:
@@ -249,10 +250,12 @@
 	</li><li>expl -- Explanatory translation (<a href="#syn_ginf_expl">syntax</a>)
 	</li><li>fig -- Figurative translation (<a href="#syn_ginf_fig">syntax</a>)
 	</li><li>lit -- Literal translation (<a href="#syn_ginf_lit">syntax</a>)
-	</li><li>Language -- Any of the three-letter language codes from 
+	</li>
+	<!-- <li>Language -- Any of the three-letter language codes from 
 	  ISO-639-2.  This tag indicate the language of the associated gloss.
 	  If not given, the default is "eng" (english).
-	</li></ul>
+	</li>-->
+	</ul>
       </li><li>Line breaks are not significant: senses do not 
       have to start on new lines, and glosses and tags may extend over
       several lines.
@@ -281,17 +284,20 @@
 	 &nbsp; professional gambler or ruffian; <br/>
 	 &nbsp; yakuza (member) <br/>
       <br/>
-        [1][exp] welcome; [fre] bienvenue! <br/>
+        [1][exp] welcome <br/>
+	<!-- [fre] bienvenue! <br/> -->
 	  [note="greeting used in shops, etc."]<br/>
       <br/>
 
     <dt><a name="delete"></a>Delete</dt>
     <dd>Click this checkbox if you wish the entire entry to be deleted.
-      Please enter comments, references, etc as normal since they will 
-      be preserved in the stub entry used to record deletions, but there
+      Please enter the case for deletion in the Comments and References boxex.
+      These will
+      be preserved in the stub entry used to record deletions. There
       is no point in changing the entry contents. 
       </dd>
 
+<!--
     <dt><a name="makecopy"></a>Delete</dt>
     <dd>When this checkbox is checked, the entry will be submitted
       as a new entry rather than an edit of an existing entry.  This
@@ -299,11 +305,13 @@
       existing entry: edit the similar entry, modify it, check this 
       check box, and submit it.
       </dd>
+-->
 
     <dt><a name="references"></a>References</dt>
     <dd>Enter sources that validate the entry or entry
       changes being made.  This is a free form text field.
-      <br/>Examples:
+      <br/>Examples: Daijirin, 広辞苑, 新和英大辞典第５版 (often
+      abbreviated to "GG5".)
       </dd>
 
     <dt><a name="comments"></a>Comments</dt>
@@ -317,9 +325,15 @@
 
     <dt><a name="email"></a>Email</dt>
     <dd>Your email address.  Required if you want email notification
-    of actions taken that affect your submission. 
+    of actions taken that affect your submission. This will be not be recorded 
+    in the database.
     <span class="caution">Email notification not implemented yet.</span></dd>
+    </dl>
+  </div>
 
+<div class="entry">
+  <h2><a name="inboxes2"/>Editor-only Input Boxes</h2>
+    <dl>
     <dt><br/>The following items will only be visible if you are logged in
     as an editor.</dt><dd><br/></dd>
 
@@ -341,9 +355,20 @@
     keep the same sequence number, a new entry will automatically be
     assigned the next available sequence number.)</dd>
 
+<!--    <dt><a name="srcnote"></a>Src note</dt>
+    <dd>Information about the source of this entry.  Required
+      format depends on the specific source.
+      </dd>
+
+    <dt><a name="entrnote"></a>Entr note</dt>
+    <dd>Information about this entry as a whole.  Information 
+      pertaining to any of the meanings of this entry should go 
+      in sense notes in the appropriate sense(s).
+      </dd>
+-->
     <dt><a name="srcnote_ed"></a>Src Note</dt>
     <dd>Enter a source note.  This should provide additional information
-    useful for indentifying or locating this entry within the corpus.
+    useful for identifying or locating this entry within the corpus.
     For example, "page 104" or, "sci.lang.japan MessageId:ltb0jenj$jcd$1@ns.src.ricoh.co.jpgt"
     The text should either be self-describing, or use a consistent
     format and interpretation for all the srcnotes of a particular 
@@ -585,11 +610,11 @@
 	  occur in the Reading section, or kanji strings that occur in the Kanji
 	  section. <br/>
 	  (4) Restr tags are not allowed in the Kanji section. </br>
-	  (5) Muliple reading or kanji restriction text mat follow the "restr="
-	  part; separate them with ASCII or JP semicolons. </br>
+	  (5) Multiple reading or kanji restriction text mat follow the "restr="
+	  part; separate them with ASCII or JIS semicolons. </br>
 	  (6) The "restr=" part is optional, you can also just put the
 	  kanji or reading restriction text in brackets (separated by 
-	  ASCII or JP commas). </td>
+	  ASCII or JIS commas). </td>
         <td>[惚け、呆け]<br/>[restr=惚け；呆け]<br/>[惚け][restr=呆け]<br/>[nokanji]</td>
 	</tr>
 
@@ -751,7 +776,7 @@
 	  </tr>
 
 	<tr><td colspan="3"><br/></td></tr>
-        <tr><td colspan="3"><a name="kw_xref">Xref -- cross-reference types</a></td></tr>
+        <tr><td colspan="3"><a name="kw_xref">Xref -- cross-reference types (only "ant" and "see" are currently used)</a></td></tr>
 	<tr><td colspan="3"><hr/></td></tr>
 	<tr tal:repeat="kwrec kwhash/XREF">
 	  <td tal:content="kwrec/kw">kw</td>

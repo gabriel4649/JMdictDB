@@ -4,7 +4,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
-  <title>JMdictDB Quick Overview</title>
+  <title>JMdictDB Edform Quick Overview</title>
   </head>
 
 <body>
@@ -101,6 +101,7 @@
     readings snd glosses within a sense. Don't use them at the end
     of the text in a box, or after the last gloss in a sense. That will 
     cause an error.
+
     <h3>And In Closing</h3>
 
     The system using [...] to enter tags, notes. cross-references, etc. avoids

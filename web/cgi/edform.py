@@ -56,8 +56,8 @@ __version__ = ('$Revision$'[11:-2],
 # error page and none of the entries will be available for edit. 
 #
 # Url parameters:
-#   e=n -- Id number of entry to edit.  May be given multiple times.
-#   q=n -- Seq number of entry to edit.  May be given multiple times.
+#   e=<n> -- Id number of entry to edit.  May be given multiple times.
+#   q=<n> -- Seq number of entry to edit.  May be given multiple times.
 #       Each 'q' parameter may result in multiple edit forms if there
 #       are multiple entries of that seq number.  Multiple entries
 #       with the same seq number may occur in different corpora
@@ -65,24 +65,25 @@ __version__ = ('$Revision$'[11:-2],
 #       or because there mutiple entries in different edit states
 #       (use the 'a' parameter to limit to the single active or new
 #       entry.)  
-#   q=n.c -- Seq number and corpus of entry to edit.  May be given
+#   q=<n.c> -- Seq number and corpus of entry to edit.  May be given
 #	multiple times.
+#   c=<c> -- Default corpus for new entries or when searching for 
+#       q entries that don't specify a corpus.  Value may be the
+#	corpus id number, or corpus name.
 #   f=1 -- Do not give non-editor users a choice of corpus for
 #	new entries.  This parameter will be ignored if 'c' not
-#	also given.
-#   c=c -- Default corpus for any q entries.  q entries without 
-#	a corpus will be limited to this corpus.  Value may be  
-#	the corpus id number, or corpus name.
+#	also given.  Existing entries are always treated as though
+#       f=1 is in effect for non-editors.
 #   a=1 -- Restrict q entries to active/approved, or new entries.
 #	If not given all entries with a matching seq number will 
 #	be displayed regardless of status or approval state.
-#   j=str -- A string describing an entry in Edict2 format.
+#   j=<str> -- A string describing an entry in Edict2 format.
 #	If this parameter is given, the "e", "q", and "a"
 #	parameters are ignored. 
-#   entr=... -- A serialized Entr object that will be used to
-#	initialize the form edit fields.  If it's 'dfrm' attribute
-#	is not None, it must be the entry id of the edit's parent
-#	entry.  If None, it indicates a new entry.  If it's 'stat'
+#   entr=<...> -- A serialized Entr object that will be used to
+#	initialize the form edit fields.  If it's 'id' attribute
+#	is None, it will be treated as a new entry, otherwise as
+#	as an edit of existing entry 'id'.  If it's 'stat'
 #	attribute is 4 (D), the "delete" box will be checked.
 #	If this parameter is given, the "e", "q", and "a"
 #	parameters are ignored. 
@@ -110,51 +111,58 @@ def main (args, opts):
 	    is_editor = jmcgi.is_editor (sess)
 	    dbg = fv ('d'); meth = fv ('meth')
 	    def_corp = fv ('c')		# Default corpus for new entries.
+	    defcorpid = None
+	    if def_corp:
+		try: def_corp = int (def_corp)
+		except ValueError: pass
+		try: defcorpid = jdb.KW.SRC[def_corp].id
+		except KeyError: errs.append ("Bad url parameter: c=%s" % def_corp)
 	    force_corp = fv ('f')	# Force default corpus for new entries.
+
 	    for sentr in fl ("entr"):
 	        try: entrs = serialize.unserialize (sentr)
 	        except StandardError, e:
 	            errs.append ("Bad 'entr' value, unable to unserialize: %s" % unicode(e))
-	        else: entrs.append (entr)
+	        else: 
+		    entrs.append (entr)
+
 	    for jentr in fl ('j'):
 	        try: entr = edparse.entr (jentr.decode('utf-8'))
 	        except StandardError, e:
 	            errs.append ("Bad 'j' value, unable to parse: %s" % unicode(e))
-	        else: entrs.append (entr)
+	        else:
+		    entr.src = None
+		    entrs.append (entr)
+
 	    elist, qlist, active = fl('e'), fl('q'), fv('a')
 	    if elist or qlist:
 	        entrs.extend (jmcgi.get_entrs (cur, elist or [], qlist or [], errs, 
 					       active=active, corpus=def_corp) or [])
 	    cur.close()
+
 	if not errs:
 	    srcs = sorted (jdb.KW.recs('SRC'), key=lambda x: x.kw)
 	    #srcs.insert (0, jdb.Obj (id=0, kw='', descr=''))
-	    for entr in entrs:
-		if not is_editor: remove_freqs (entr)
-		entr.ISDELETE = (entr.stat == jdb.KW.STAT['D'].id) or None
-	    if not entrs:    
-		  # This is a new entry.
-		defcorpid = None
-		if def_corp:
-		    try: def_corp = int (def_corp)
-		    except ValueError: pass
-		    try: defcorpid = jdb.KW.SRC[def_corp].id
-		    except KeyError: errs.append ("Bad url parameter: c=%s" % def_corp)
-	        if not errs:
-		      # The following dummy entry will produce the default
-		      # text for new entries: no kanji, no reading, and sense
-		      # text "[1][n]".
-		    entr = jdb.Entr(_sens=[jdb.Sens(_pos=[jdb.Pos(kw=jdb.KW.POS['n'].id)])])
-		      # Provide a default corpus.
-		    entr.src = defcorpid
-		    entr.ISDELETE = False
-		    entr.NOCORPOPT = force_corp
-		    entrs = [entr]  
+	    if not entrs:
+		  # This is a blank new entry.
+		  # The following dummy entry will produce the default
+		  # text for new entries: no kanji, no reading, and sense
+		  # text "[1][n]".
+		entr = jdb.Entr(_sens=[jdb.Sens(_pos=[jdb.Pos(kw=jdb.KW.POS['n'].id)])], src=None)
+		entrs = [entr]
+	    for e in entrs:
+		if not is_editor: remove_freqs (e)
+		e.ISDELETE = (e.stat == jdb.KW.STAT['D'].id) or None
+		  # Provide a default corpus.
+		if not e.src: e.src = defcorpid
+		e.NOCORPOPT = force_corp
+
 	if not errs:
 	    for e in entrs:
 	        e.ktxt = fmtjel.kanjs (e._kanj)
 	        e.rtxt = fmtjel.rdngs (e._rdng, e._kanj)
 	        e.stxt = fmtjel.senss (e._sens, e._kanj, e._rdng)
+
 	if not errs:
 	    if not meth: meth = 'get' if dbg else 'post'
 	    jmcgi.gen_page ('tmpl/edform.tal', macros='tmpl/macros.tal', parms=parms,

@@ -26,7 +26,7 @@ from collections import defaultdict
 import jellex, jdb
 from objects import *
 
-class ParseError (Exception): 
+class ParseError (ValueError): 
     def __init__ (self, msg, loc=None, token=None):
         self.args = (msg,)
         self.loc = loc

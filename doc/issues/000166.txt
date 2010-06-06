@@ -1,0 +1,58 @@
+Title:	"Unprintable ParseError" crash in edform.py.
+Stat:   open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-06-06 09:18:00 stuart 
+  jwb reports via email this morning that edform.py cgi script
+  crashing with traceback on the following url:
+
+    http://www.edrdg.org/~jwb/cgi-bin/edform.py?svc=jmtest&c=1&j=%E7%94%9F%E3%83%87%E3%83%BC%E3%82%BF%20[%EF%BC%9F]%20/raw%20data/
+
+2010-06-06 11:50:00 stuart
+  Traceback is:
+  ~~~~
+  Traceback (most recent call last):
+  File "/home/jwb/public_html/cgi-bin/edform.py", line 181, in <module>
+    main (args, opts)
+  File "/home/jwb/public_html/cgi-bin/edform.py", line 130, in main
+    try: entr = edparse.entr (jentr.decode('utf-8'))
+  File "../lib/edparse.py", line 71, in entr
+    kanjs, rdngs = parse_jppart (krtxt, fmap)
+  File "../lib/edparse.py", line 100, in parse_jppart
+    if rtxt: rdngs = parse_krpart (rtxt.strip('[] '), fmap, kanjs)
+  File "../lib/edparse.py", line 167, in parse_krpart
+    krobj = parse_kritem (kr, fmap, kanjs)
+  File "../lib/edparse.py", line 183, in parse_kritem
+    krobj = parse_ritem (krtxt, tags, fmap, kanjs)
+  File "../lib/edparse.py", line 190, in parse_ritem
+    raise ParseError ('Reading field not kana: "%s".' % rtxt)
+  ParseError: <unprintable ParseError object>
+  ~~~~
+
+  Edparse was raising a ParseError exception because "[？]"
+  (the question mark is a JIS character) is not a valid
+  reading.
+
+  Problem was that edparse.py defines the base class of
+  ParseError as Exception, so that the code in edform.py that
+  was supposed to catch the excetion:
+
+    try: edparse.entr (...)
+    except StandardError, e: ...unicode(e)...
+
+  was not ctaching it because the ParseError is an Exception,
+  and edform.py was trying to catch a StandardError.
+  Changed edparse.py to derive ParseError from ValueError (which
+  is a StandardError).  StandardError is the right thing to use
+  because Exception includes non-error conditions like Warning
+  and StopIteration.
+
+  The same problem occured in the AuthError exception defined
+  in pyhon/lib/jdb.py, and the ParseError exception defined in 
+  tools/jbsubs.py so fixed those too.
+
+  The above edform url now correctly produces an error message page.

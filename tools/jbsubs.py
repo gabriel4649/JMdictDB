@@ -38,7 +38,7 @@ Output_encoding = 'utf-8'
 # FIXME: we import edparse's ParseError.  Can we use that instead
 #  of defining our own? 
 
-class ParseError (Exception):
+class ParseError (ValueError):
     def __init__(self, msg, line=None, linenum=None):
 	self.msg = msg; self.line=line; self.linenum=linenum
     def __str__(self):

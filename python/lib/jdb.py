@@ -33,7 +33,7 @@ from objects import *
 global KW
 Debug = {}
 
-class AuthError (Exception): pass
+class AuthError (StandardError): pass
 
 def dbread (cur, sql, args=None, cols=None, cls=None):
 	# Execute a result returning sql statement(s) and return the 

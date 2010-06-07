@@ -20,25 +20,16 @@
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11])
 
-# Parse Edict2 text into an jmdictdb entry object.  Note that 
+# Parse Edict2 text into an JMdictDB Entr object.  Note that 
 # edict2 is not a serialization format: there is information 
-# that is not unambiguously representable in edict2 and will 
-# either lost or misrepresented when a jmdict object is 
+# in an Entr that is not representable in edict2 and will 
+# either lost or misinterpreted when a Entr object is 
 # formatted to edict2 and then parsed back into an object.
 #
 # Edict2 format:
 # ==============
-# FIXME: following ## lines don't belong here since we deal
-#  only with single, one-entry edict2 text lines.
-## An edict2 format file is a text file with utf-8 encoding. 
-## Each line is a comment line or an entry line.
-## Comment lines start with a "#" character, optionally preceeded
-##   by whitespace, or a line containing only whitespace.
-## Any other lines are assumed to define an entry.
-## Each entry occurs in a single line, there is no way to "continue"
-##   an entry over more than one line.
-# Each entry consists of two fields separated by the first "/"
-#   character that occurs in the line.
+# Each entry is a single line of text and consists of two fields
+# separated by the first "/" character that occurs in the line.
 #   1. The entry's kanji and readings.
 #   2. The entry's senses and glosses.
 # The first field contains either readings, or kanji followed 
@@ -67,7 +58,7 @@ def entr (text, simple=False):
 	#krtxt, x, stxt = text.partition ('/')
 	try: krtxt, stxt = re.split (ur'[ \t\u3000]*/[ \t\u3000]*', text, 1)
 	except ValueError, e:
-	    raise ValueError ('Missing KR-S separator, "/"')
+	    raise ParseError ('Missing KR-S separator, "/"')
 	kanjs, rdngs = parse_jppart (krtxt, fmap)
 	entr = Entr (_kanj=kanjs, _rdng=rdngs)
 	sens = parse_spart (stxt.lstrip(), entr, fmap)
@@ -186,8 +177,14 @@ def parse_kritem (text, fmap, kanjs=None):
 	return krobj
 
 def parse_ritem (rtxt, tags, fmap, kanjs):
-	if not jdb.jstr_reb (rtxt):
-	    raise ParseError ('Reading field not kana: "%s".' % rtxt)
+          # FIXME: Following check disabled because the jdb.jstr__reb()
+	  #  test as cutrrently written is too strict and rejects some
+	  #  texts that should be allowed (see IS-26).  More immediately
+          #  jwb uses edform.py's 'j' option to parse a edict line with 
+	  #  a question mark (not sure if ascii or jis) in the reading
+	  #  field.  
+	#if not jdb.jstr_reb (rtxt):
+	#    raise ParseError ('Reading field not kana: "%s".' % rtxt)
 	rdng = Rdng (txt=rtxt)
 	for tag in tags:
 	    if not tag: continue

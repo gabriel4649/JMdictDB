@@ -1,0 +1,26 @@
+﻿Title:	Additional submission checks in edconf.py
+Stat:   open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-06-09 09:52:00 stuart
+  In email from jwb, 2010-06-07, 
+  (Subject: "Useful check (Fwd: Output from "cron" command)"),
+  he asked about adding to edconf.py checks for unbalanced parenthesis
+  or curly brackets in gloss texts.
+
+  Additionally in 2010-06-08 email (same subject) he suggested also
+  checking gloss texts for tab characters or double space characters
+  and that he also sometimes sees JIS spaces and punctuation characters
+  in glosses.  JIS characters in PoS tags was also mentioned but:
+  1) those should result in a parse error; 2) perhaps they should be
+  detected and quietly converted to ascii in the jel parser.
+
+  Note that stringent checking assumes one can accurately predict what
+  will need to go into an entry: jmdictdb rev a0f1cb04b0d5-2010-06-18
+  removed the kana check on readings because it turned out to be
+  desireable to ignore the documented requirement that readings are
+  kana when processing edict input from the wwwjdic pages.

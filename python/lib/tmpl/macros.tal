@@ -6,7 +6,7 @@
 	<h3 metal:define-slot="title">Page head text</h3>
         </td>
       <td align="right" rowspan="1" class="login">
-	<form name="entrauth" method="get" tal:attributes="action this_page">
+	<form name="entrauth" method="post" tal:attributes="action this_page">
 	  <span tal:repeat="p parms" tal:omit-tag="">
 	    <input type="hidden" tal:attributes="name p/0; value p/1"/>
 	    </span>

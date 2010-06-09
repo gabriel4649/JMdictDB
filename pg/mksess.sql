@@ -35,7 +35,7 @@ CREATE TABLE users (
 CREATE TABLE sessions (
 	id BIGINT PRIMARY KEY,
 	userid VARCHAR(20),
-	ts INT DEFAULT 0);
+	ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP AT TIME ZONE 'UTC';);
 CREATE INDEX sessions_userid ON sessions(userid);
 CREATE INDEX sessions_ts ON sessions(ts);
 ALTER TABLE sessions ADD CONSTRAINT sessions_userid_fkey FOREIGN KEY (userid) REFERENCES users(userid);

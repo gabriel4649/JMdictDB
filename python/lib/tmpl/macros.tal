@@ -6,13 +6,13 @@
 	<h3 metal:define-slot="title">Page head text</h3>
         </td>
       <td align="right" rowspan="1" class="login">
-	<form name="entrauth" method="post" tal:attributes="action this_page">
+	<form name="entrauth" method="get" tal:attributes="action this_page">
 	  <span tal:repeat="p parms" tal:omit-tag="">
 	    <input type="hidden" tal:attributes="name p/0; value p/1"/>
 	    </span>
 	  <span tal:condition="session">
 	    Logged in: <span tal:replace="session/fullname">editor name</span>
-	    <input name="logout" value="Logout" type="submit"/>
+	    <input name="loginout" value="logout" type="submit"/>
 	    </span>
           <table align="right" tal:condition="not:session">
 	    <tr>
@@ -20,7 +20,7 @@
 	    <tr>
 	      <td>Username:</td>
 	      <td><input name="username" type="text" size="8"/></td>
-	      <td rowspan="2"><input name="login" value="Login" type="submit"/></td>
+	      <td rowspan="2"><input name="loginout" value="login" type="submit"/></td>
 	      </tr>
 	    <tr>
 	      <td>Password:</td>

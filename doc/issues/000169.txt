@@ -1,0 +1,59 @@
+﻿Title:	crash in jmcgi when cookie not found
+Stat:   closed
+Disp:	done
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-06-09 21:59:00 stuart
+  jwb repoted via email today that recent code changes to
+  support login session cookies were resulting in crash in
+  jmcgi.get_sid_from_cookie().
+
+2010-06-09 22:04 stuart
+  Relevant text of Jim's email:
+
+  > I tried it out. First I tried the http://edrdg.org/jmdictdb/cgi-bin/jbedits.py
+  > path in, logged in, eveything OK, EXCEPT I can see my password in plain text
+  > in the URL! Never noticed that before. Risky.
+  > 
+  > Then, in another tab, I tried: http://www.edrdg.org/jmdictdb/cgi-bin/srchform.py
+  > expecting it would pick up the sid from the cookie. It crashed:
+  > 
+  > Traceback (most recent call last):
+  >   File "/usr/local/apache2/jmdictdb/cgi-bin/srchform.py", line 67, in <module>
+  >     main (args, opts)
+  >   File "/usr/local/apache2/jmdictdb/cgi-bin/srchform.py", line 30, in main
+  >     form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+  >   File "../lib/jmcgi.py", line 58, in parseform
+  >     sid = get_sid_from_cookie()
+  >   File "../lib/jmcgi.py", line 150, in get_sid_from_cookie
+  >     sid = c[COOKIE_NAME].value
+  > KeyError: 'jmdictdb_sid'
+  > 
+  > I tried deleting the cookie and trying
+  > http://www.edrdg.org/jmdictdb/cgi-bin/srchform.py  directly.
+  > Same outcome.
+  > 
+  > Am I doing anything wrong?
+  > 
+  > I can start up http://edrdg.org/jmdictdb/cgi-bin/jbedits.py in a fresh
+  > tab, and I'm logged in OK, so the cookie is OK
+  > there.
+  
+2010-06-09 22:06 stuart
+  Unable to reproduce the problem but looking at code, 
+  it will occur if there are other cookies in the domain 
+  so that the web server supplies the HTTP_COOKIES env
+  variable, but without a jmdictdb_sid cookie.  I did not
+  reproduce because I don't have any other cookies so I
+  did not get an HTTP_COOKIES variable at all.
+
+  Reason there was no jmdictdb_sid cookie in Jim's case
+  that the domain when cookie was set was www.edrdg.org
+  but when attempting to read was edrdg.org (cookie from
+  first not readable by second I think.)
+
+  Fixed in the code in jmcgi.get_sid_from_cookie() to
+  ignore missing cookie.  

@@ -96,12 +96,13 @@ def get_session (cur, action=None, sid=None, uname=None, pw=None):
 	    return '', None
         if not action:	    	   # Use sid to retrieve session.
 	    sess = dbsession (cur, sid)
-	if action == 'logout':
+	elif action == 'logout':
 	    if sid: dblogout (cur, sid)
 	      # Don't clear 'sid' because its value will be needed 
 	      # by caller to delete cookie.
-	if action == 'login':
+	elif action == 'login':
             sid, sess = dblogin (cur, uname, pw)
+        else: pass    # Ignore invalid 'action' parameter.
 	return sid, sess
 
 def dbsession (cur, sid, noupd=False):
@@ -125,7 +126,7 @@ def dblogin (cur, userid, password):
 		"AND pw=%s AND pw IS NOT NULL AND NOT disabled"
 	rs = jdb.dbread (cur, sql, (userid, password))
 	if len(rs) != 1: 
-	    time.sleep (1);  return None
+	    time.sleep (1);  return '', None
 	sid = random.randint (0, 2**63-1)
         sql = "INSERT INTO sessions(id,userid,ts) VALUES(%s,%s,DEFAULT)"
 	cur.execute (sql, (sid, userid))
@@ -144,12 +145,13 @@ def dblogout (cur, sid):
 	    cur.connection.commit()
 
 def get_sid_from_cookie ():
-        c = Cookie.SimpleCookie()
+        sid = ''
 	if os.environ.has_key ('HTTP_COOKIE'):
+            c = Cookie.SimpleCookie()
             c.load (os.environ['HTTP_COOKIE'])
-            sid = c[COOKIE_NAME].value
-	    return sid
-        return None
+            try: sid = c[COOKIE_NAME].value
+	    except KeyError: pass
+        return sid
 
 def set_sid_cookie (sid, delete=False):
         # Set a cookie on the client machine by writing an http

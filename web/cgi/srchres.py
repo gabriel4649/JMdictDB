@@ -97,10 +97,11 @@ def main( args, opts ):
 	    err_page (errs)
 	    return
 
-	orderby = "ORDER BY __wrap__.seq,__wrap__.id"
+	orderby = "ORDER BY __wrap__.kanj,__wrap__.rdng,__wrap__.seq,__wrap__.id"
+        page = "OFFSET %s LIMIT %s" % (pgoffset, entrs_per_page)
 	sql2 = "SELECT __wrap__.* FROM esum __wrap__ " \
-		 "JOIN (%s) AS __user__ ON __user__.id=__wrap__.id " \
-		 "%s OFFSET %s LIMIT %s" % (sql, orderby, pgoffset, entrs_per_page)
+		 "JOIN (%s) AS __user__ ON __user__.id=__wrap__.id %s %s" \
+		  % (sql, orderby, page)
 	stats['sql']=sql; stats['args']=sql_args; stats['orderby']=orderby
 	if cfg_srch.MAX_QUERY_COST > 0:
 	    try:

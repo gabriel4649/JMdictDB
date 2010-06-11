@@ -37,8 +37,8 @@
 		      </td>
 		    <td>
 		      <select name="y1">
-			<option value="1" selected="selected">Is</option>
-			<option value="2">Starts</option>
+			<option value="1">Is</option>
+			<option value="2" selected="selected">Starts</option>
 			<option value="3">Contains</option>
 			<option value="4">Ends</option>
 			</select>

@@ -1,0 +1,45 @@
+﻿Title:	Create database with japanese collation order
+Stat:   open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-06-11 09:27:00 stuart
+  IS-170 describes changes to the cgi scripts to present
+  search results in lexical order by adding an ORDER BY
+  clause to the query that retrieves the search results.  
+  Upon trying this though the result order was incorrect.
+  Problem is that when a jmdictdb database is created, it
+  uses the locale (and associated collation order) of the 
+  server at the time.
+
+  Need to 1) modify Makefile to create jmdictdb databases 
+  with a japanese collation order, and 2) modify the
+  collation order of the existing jmtest and jmdict data-
+  bases. 
+
+2010-06-11 10:02:00 stuart
+  Modified Makefile to use the common (on linux machines anyway)
+  ja_JP.utf-8 locale.  Modified the README.txt file to describe 
+  how to overide that to use locale "japanese" on Windows.
+
+  Reloaded database on my Fedora 11 test machine, and confirmed
+  sort order from srchres page (after modified per IS-170) seemed
+  as expected.
+
+2010-06-11 13:01:00 stuart
+  Will run following procedure on Arakawa, first substituting
+  "jmtest" for "jmdict" to test before doing on jmdict.
+  ----
+  pg_backup -Fc jmdict >jmdict.dmp
+  psql
+    DELETE DATABASE jmnew;
+    CREATE DATABASE jmnew TEMPLATE template0 ENCODING 'uf8' 
+      LC_COLLATE 'ja_JP.utf8' LC_CTYPE 'ja_JP.utf8';
+  pg_restore -d jmnew jmdict.dmp
+  psql
+    RENAME DATABASE jmdict TO jmold;
+    RENAME DATABASE jmnew TO jmdict;
+  ----

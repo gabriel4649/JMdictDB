@@ -36,6 +36,7 @@ def main (args, opts):
 	if not errs:
 	    entries = jmcgi.get_entrs (cur, form.getlist ('e'),
 					    form.getlist ('q'), errs)
+	    entries.sort (key=lex_sort)
 	if not errs:
 	    for e in entries:
 		for s in e._sens:
@@ -66,6 +67,18 @@ def main (args, opts):
 				parms=parms, output=sys.stdout, this_page='entr.py')
 	else:
 	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
+
+def lex_sort (e):
+	# Sort key function for ordering lists of entries lexically, 
+	# by its first kanji, then first reading, then seq number,
+	# then id number.  This is the same as the sort used in
+	# the search results page.  We won't include gloss because
+	# there are only a couple entries in JMdict where that might
+	# make a difference.
+
+	return (e._kanj[0].txt if e._kanj else ''), \
+	       (e._rdng[0].txt if e._rdng else ''), \
+	       e.seq, e.id
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()

@@ -28,6 +28,13 @@ JMDICTFILE = JMdict_e
 # Language specified using ISO-639-2 3-letter abbreviation.
 #LANGOPT = -g eng
 
+# Locale to use when initializing a new database.  This should
+# be a Japanese locale; if not, sorted Japanese text results will
+# not be ordered correctly.  You may need to change it if the 
+# given locale is not available on your system.  In particular
+# Microsoft Windows users will want to change this to "japanese".
+DBLOCALE = ja_JP.utf8
+
 # Name of database to load new data into.  The new data is loaded
 # into this database first, without changing the in-service
 # production database, for any testing needed.  When the database
@@ -195,7 +202,7 @@ init:
 
 newdb:
 	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'drop database if exists $(DB)'
-	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c "create database $(DB) owner $(USER) encoding 'utf8' template template0"
+	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c "create database $(DB) owner $(USER) template template0 encoding 'utf8' lc_collate '$(DBLOCALE)' lc_ctype '$(DBLOCALE)'"
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f reload.sql
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
 #

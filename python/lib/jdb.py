@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-	 # non-ascii used in comments only.
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2006-2009 Stuart McGraw 
+#  Copyright (c) 2006-2010 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -47,7 +47,7 @@ def dbread (cur, sql, args=None, cols=None, cls=None):
 	# 	column of the results set.  If not given, the dbapi will
 	#       be queried from the column names.
 	# cls -- (optional) A class that will be used for row objects.
-	#	Must be a clas, not a factory function.  If not given,
+	#	Must be a class, not a factory function.  If not given,
 	#	DbRow will be used.
 
 	  # If there are no args, set args (which might be [], or ())
@@ -89,11 +89,11 @@ def dbread (cur, sql, args=None, cols=None, cls=None):
 	return v
 
 def dbinsert (dbh, table, cols, row, wantid=False):
-	# Insert a row into a database table named by $table.
+	# Insert a row into a database table named by 'table'.
 	# coumns that will be used in the INSERT statement are 
-	# given in list @$cols.  The values are given in hash
-	# %$hash which is ecepected to contain keys matching 
-	# the columns listed in @$cols.
+	# given in list 'cols'.  The values are given in object
+	# 'row' which is expected to contain attributes matching 
+	# the columns listed in 'cols'.
 
 	args = None
 	sql = "INSERT INTO %s(%s) VALUES(%s)" \
@@ -177,17 +177,17 @@ def entrList (dbh, crit=None, args=None, ord='', tables=None, ret_tuple=False):
 
 	# Return a list of database objects read from the database.
 	#
-	# $dbh -- An open DBI database handle.
+	# dbh -- An open DBI database handle.
 	#
-	# $crit -- Criteria that specifies the entries to be
-	#   retieved and returned.  Is one of three forms:
+	# crit -- Criteria that specifies the entries to be
+	#   retrieved and returned.  Is one of three forms:
 	#
 	#   1. Tmptbl object returned from a call to Find()
 	#   2. A sql statement that will give a results set
 	#	with one column named "id" containing the entr
 	#	id numbers of the desired entries.  The sql
 	#       may contain parameter markers which will be 
-	#       replaced by items for @$args by the database
+	#       replaced by items for 'args' by the database
 	#	driver.
 	#   3. None.  'args' is expected to contain a list of
 	#       entry id numbers.
@@ -195,17 +195,17 @@ def entrList (dbh, crit=None, args=None, ord='', tables=None, ret_tuple=False):
 	#       markers, each an entr id number of an entry
 	#	to be returned.
 	#
-	# @$args -- (optional) Values that will be bound to any
-	#   parameter markers used in $crit of forms 2 or 3.
+	# args -- (optional) Values that will be bound to any
+	#   parameter markers used in 'crit' of forms 2 or 3.
 	#   Ignored if form 1 given. 
 	#
-	# $ord -- (optional) An ORDER BY specification (without 
+	# ord -- (optional) An ORDER BY specification (without 
 	#   the "ORDER BY" text) used to order the entries in the
 	#   returned list.  When qualifying column names by table,
-	#   the entr table has the alias "x", and the $crit table
+	#   the entr table has the alias "x", and the 'crit' table
 	#   or subselect has the alias "t".
-	#   If using a Tmptbl returned by Find() ($crit form 1),
-	#   $ord is ignored and internally forced to "t.ord".
+	#   If using a Tmptbl returned by Find() ('crit' form 1),
+	#   'ord' is ignored and internally forced to "t.ord".
 
 	t = {}; e = []
 	if args is None: args = []
@@ -236,9 +236,9 @@ OrderBy = {
 
 def entr_data (dbh, crit, args=None, ord=None, tables=None):
 	#
-	# $dbh -- An open database handle. 
+	# dbh -- An open database handle. 
 	#
-	# $crit -- A string that specifies the selection criteria
+	# crit -- A string that specifies the selection criteria
 	#    for the entries that will be returned and is in one
 	#    of the following formats.  
 	#
@@ -256,13 +256,13 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
 	#       named "id" that contains the entry id numbers of 
 	#       the entries to be fetched.  The select statement
 	#	may contain parameter marks which will be bound to
-	#       values from @$args.
+	#       values from 'args'.
 	#
 	#    3. A list of entry id numbers.  'crit' is one or more 
 	#       of a number or parameter markers ("?" or "%s"
 	#	depending on the DBI interface in use) separated
 	#       by commas.  Parameter marks which will be bound to
-	#       values from @$args.
+	#       values from 'args'.
 	#
 	#    4. Select statement (not in parenthesis).  'crit'
 	#       contains space characters and doesn't start with
@@ -271,20 +271,20 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
 	#       named "id" that contains the entry id numbers of 
 	#       the entries to be fetched.  The select statement
 	#	may contain parameter marks which will be bound to
-	#       values from @$args.
+	#       values from 'args'.
 	#
 	#    Formats 1 and 2 above will be joined with a generic
 	#    select to retrieve data from the entry object tables.
 	#    Forms 3 and 4 will be used in a "WHERE ... IN()"
 	#    clause attached the the generic retrieval sql.
 	#    When a large number of results are expected, the
-	#    latter two formats are likely to be more effcient
+	#    latter two formats are likely to be more efficient
 	#    than the former two.
 	#
-	#  @$args -- A list of values that will be bound to
-	#    any paramaters marks in $crit.
+	#  args -- A list of values that will be bound to
+	#    any parameters marks in 'crit'.
 	#
-	#  $ord -- (optional) string giving an ORDER BY clause
+	#  ord -- (optional) string giving an ORDER BY clause
 	#    (without the "ORDER BY" text) that will be used 
 	#    to order the read of the entr rows and thus the 
 	#    order entries are placed in the returned list.
@@ -385,18 +385,18 @@ def entr_bld (t):
 	return entr
 
 def filt (parents, pks, children, fks):
-	# Return a list of all parents (each a hash) in @$parents that
-	# are not matched (in the $pks/$fks sense of lookup()) in
-	# @$children.
+	# Return a list of all parents (each a hash) in 'parents' that
+	# are not matched (in the 'pks'/'fks' sense of lookup()) in
+	# 'children'.
 	# One use of filt() is to invert the restr, stagr, stagk, etc,
 	# lists in order to convert them from the "invalid pair" form
 	# used in the database to the "valid pair" form typically needed
 	# for display (and visa versa).
-	# For example, if $restr contains the restr list for a single
-	# reading, and $kanj is the list of kanji from the same entry,
+	# For example, if 'restr' contains the restr list for a single
+	# reading, and 'kanj' is the list of kanji from the same entry,
 	# then 
-	#        filt ($kanj, ["kanj"], $restr, ["kanj"]);
-	# will return a list of kanj hashes that do not occur in @$restr.
+	#        filt (kanj, ["kanj"], restr, ["kanj"]);
+	# will return a list of kanj hashes that do not occur in 'restr'.
 
 	list = []
 	for p in parents:
@@ -404,17 +404,17 @@ def filt (parents, pks, children, fks):
 	return list
 
 def lookup (parents, pks, child, fks, multpk=False):
-	# @$parents is a list of hashes and %$child a hash.
-	# If $multpk if false, lookup will return the first
-	# element of @$parents that "matches" %$child.  A match
+	# 'parents' is a list of hashes and 'child' a hash.
+	# If 'multpk' if false, lookup will return the first
+	# element of 'parents' that "matches" 'child'.  A match
 	# occurs if the hash values of the parent element identified
-	# by the keys named in list of strings @$pks are "="
-	# respectively to the hash values in %$child corresponding
-	# to the keys listed in list of strings @$fks. 
-	# If $multpk is true, the matching is done the same way but
+	# by the keys named in list of strings 'pks' are "="
+	# respectively to the hash values in 'child' corresponding
+	# to the keys listed in list of strings 'fks'. 
+	# If 'multpk' is true, the matching is done the same way but
 	# a list of matching parents is returned rather than the 
 	# first match.  In either case, an empty list is returned
-	# if no matches for %$child are found in @$parents.
+	# if no matches for 'child' are found in 'parents'.
 
 	results = []
 	for p in parents:
@@ -483,12 +483,12 @@ def mup (attr, parents, pks, childs, fks, pattr=None):
 	# Restriction lists limit readings to specific kanji (restr),
 	# or senses to specific readings (stagr) or kanji (stagk). 
 	# In some external representations such as JMdict XML, these
-	# resttrictions are given as text strings that list the kanji,
+	# restrictions are given as text strings that list the kanji,
 	# readings, or kanji that the reading, sense, or sense respectively
 	# are limited to, with absence indicating that there are no
 	# restrictions.  In the case of "restr" (reading-kanji) restrictions
 	# there may also be a "nokanji" flag indicating that there are 
-	# no kanji assocciated with the reading.  (The flag is needed 
+	# no kanji associated with the reading.  (The flag is needed 
 	# since the absence of restr items indicate all kanji are allowable.)
 	#
 	# In the jdb API, restrictions are represented by lists of Restr
@@ -559,7 +559,7 @@ def restrs2ext (rdng, kanjs, attr='_restr'):
 
 def restrs2ext_ (restrs, kanjs, attr='_restr'):
 	# Given a list of Restr objects, 'restr', create a list Kanj
-	# objects taken from 'kanjis' such that each Kanj object's
+	# objects taken from 'kanjs' such that each Kanj object's
 	# ._restr list contains no Restr objects in 'restrs'.  However,
 	# if 'restrs' is an empty list, return an empty list.  And if 
 	# every Kanj object in 'kanjs' has a ._restr list item that
@@ -747,7 +747,7 @@ def make_freq_objs (fmap, entr):
 	will have keys that are a 2-tuple of freq kw number (eg, 
 	4 for "spec") and value number (e.g. 2 if the freq item
 	was "spec2").  The value of each 'fmap' item is a sequence
-	(e.g. list) of length 2, and both of the srquence items are 
+	(e.g. list) of length 2, and both of the sequence items are 
 	lists.  The first is a list of all the Rdng objects which
 	have a the freq tag specified by the dict item key.  The 
 	second is a similar list of Kanj objects.
@@ -841,7 +841,7 @@ def _freq_bin (r, k, kw, val, freqs, dups, repld):
 	dups -- A dict that will receive freq items that are duplicates
 		of ones selected to go into the database.
 	replcd -- A dict that will receive freq items that are rejected
-		becase they have the same domain but a higher value as
+		because they have the same domain but a higher value as
 		one selected to go into the database.
 	"""
 	key = (getattr (r,'txt',None), getattr (k,'txt',None), kw)
@@ -939,8 +939,8 @@ def print_freqs (fmap): # For debugging...
 	#
 	# "ordinary" (or unqualified) xrefs represent only the info 
 	# stored in the database xref table where each row represents
-	# an xref from an existing enty's sense to another existing
-	# entrys sense.  It will have attributes 'typ' (attribute type
+	# an xref from an existing entry's sense to another existing
+	# entry's sense.  It will have attributes 'typ' (attribute type
 	# id number as defined in table kwxref), 'xentr' (id number of
 	# target entry), 'xsens' (sense number of target sense), and 
 	# optionally 'kanj' (kanj number of the kanji whose text will
@@ -951,8 +951,8 @@ def print_freqs (fmap): # For debugging...
 	# "augmented" xrefs are provide additional information about 
 	# the xref's target entry that are useful when presenting the
 	# xref textually to an end-user.  The additional information
-	# is in the form of an "abreviated" entry object found in the 
-	# xref attribute "TARG".  The entry object is "abreviated" in
+	# is in the form of an "abbreviated" entry object found in the 
+	# xref attribute "TARG".  The entry object is "abbreviated" in
 	# that it contains only data from the rdng, kanj, sens, and
 	# gloss tables, but not from kinfo, lsrc, etc that are not
 	# relevant when providing only a summary of an entry. 
@@ -1032,7 +1032,7 @@ def add_xsens_lists (xrefs, rev=False):
 		p._xsens.append (var)
 
 def mark_seq_xrefs (cur, xrefs):
-	# Go through the list of xrefs and add an '.SEQ' attribute
+	# Go through the list of xrefs and add a '.SEQ' attribute
 	# to any that can be displayed as a seq-type xref, that is
 	# the xref group (common entr, sens, typ, note, values) 
 	# contains xrefs to every active entry of the target's
@@ -1052,7 +1052,7 @@ def mark_seq_xrefs (cur, xrefs):
 	    return
 
 	  # Get a count of all the "active" entries for each (corpus,
-	  # seq-number) pair and put in dict 'seq_count' keyed by (corpous,
+	  # seq-number) pair and put in dict 'seq_count' keyed by (corpus,
 	  # seq) with values being the corresponding counts.
 	seq_counts = {};  args = []
 	for src,seqs in srcseq.items():
@@ -1106,8 +1106,8 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	# Find entries and their senses that match 'ktxt','rtxt','enum'.
 	# and return a list of augmented xref records that points to
 	# them.  If a match is not found (because nothing matches, or
-	# the 'one_entr_only' or 'one_sens_only' criteria are not satified), a ValueError
-	# is raised.
+	# the 'one_entr_only' or 'one_sens_only' criteria are not satisfied),
+	# a ValueError is raised.
 	#
 	# dbh (dbapi cursor) -- Handle to open database connection.
 	# typ (int) -- Type of reference per table kwxref.
@@ -1125,7 +1125,7 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	#   limited to the given corpus, and 'enum' if given will be
 	#   interpreted as a seq number.  If None, 'enum' if given
 	#   will be interpreted as an entry id number, otherwise,
-	#   all entries will be seached for matching ktxt/rtxt.
+	#   all entries will be searched for matching ktxt/rtxt.
 	# one_entr_only (bool) -- Raise error if xref resolves to more
 	#   than one set of entries having the same seq number.  Regard-
 	#   less of this value, it is always an error if 'slist' is given
@@ -1140,12 +1140,12 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	# the parent sense to which the xref will be attached.
 	# 
 	# Prohibited conditions such as resolving to multiple seq sets
-	# when the 'one_entr_only' flag is true, are signalled by raising
+	# when the 'one_entr_only' flag is true, are signaled by raising
 	# a ValueError.  The caller may want to call resolv_xref() within
 	# a "try" block to catch these conditions.
 
 	#FIXME: Use a custom error rather than ValueError to signal 
-	# resolutiuon failure so the caller can distiguish failure
+	# resolution failure so the caller can distinguish failure
 	# to resolve from a parameter error that causes a ValueError.
 	
 	if not rtxt and not ktxt and not enum:
@@ -1211,10 +1211,10 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 
 	xrefs = []
 	for e in entrs:
-	      # All xrefs require an .rtxt and/or.ktxt value with is the
-	      # position (indexd from 1) of a reading or kanji in the target
-	      # entry's reading of kanji lists, of the reading of kanji to 
-	      # to be used when displaying the xref.  'nrdng' anf 'nkanj'
+	      # All xrefs require an .rtxt and/or.ktxt value which is the
+	      # position (indexed from 1) of a reading or kanji in the target
+	      # entry's reading of kanji lists, of the reading or kanji to 
+	      # to be used when displaying the xref.  'nrdng' and 'nkanj'
 	      # will be set to these positions.
 
 	    nrdng = nkanj = None
@@ -1230,7 +1230,7 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 		  #  for the first rdng/kanj.
 		nrdng, nkanj = headword (e)
 
-	      # If the caller did provide expliclir rtxt and/or ktxt strings,
+	      # If the caller did provide explicit rtxt and/or ktxt strings,
 	      # find their position in the entry's rdng or kanj lists.
 	    if rtxt:
 		try: nrdng = [x.txt for x in e._rdng].index (rtxt) + 1
@@ -1259,14 +1259,14 @@ def add_hist (
     email, 	# Submitter's email address.
     notes, 	# Comments for history record.
     refs,	# Reference comments for history record.
-    use_parent): # If false, return 'entr' with updated hist icluding diff.
+    use_parent): # If false, return 'entr' with updated hist including diff.
 		# If true, return 'pentr' (or raise error) with updated
 		# hist and diff=''.  Latter is used when we want to ignore
 		# any changes to the entry made by the submitter, as in when
 		# he/she has requested deletion of the entry.
 	# Attach history info to an entry.  The history added is the
 	# history from entry 'pentr' to which a new history record,
-	# generated from the parameters to fhis function, is appended.
+	# generated from the parameters to this function, is appended.
 	# Any existing hist on the 'entr' is ignored'.  
 	# If 'use_parent' is true, the history list is attached to the
 	# 'pentr' entry object, and that object returned.  If 
@@ -1339,7 +1339,7 @@ def addentr (cur, entr):
 	  # entr table, using a sequence table named in the kwsrc table row
 	  # corresponding to 'src'.
 	dbinsert (cur, "entr", ['src','stat','seq','dfrm','unap','srcnote','notes'], entr)
-	  # Postgres function lastval() will contain the auto-assigned
+	  # Postgresql function lastval() will contain the auto-assigned
 	  # seq number if one was generated.  We need to get the auto-
 	  # assigned id number directly from its sequence.
 	if not getattr (entr, 'seq', None):
@@ -1451,7 +1451,7 @@ def build_search_sql (condlist, disjunct=False, allow_empty=False):
 	# Build a sql statement that will find the id numbers of
 	# all entries matching the conditions given in <condlist>.
 	# Note: This function does not provide for generating
-	# arbitrary SQL statements; it is only intented to support 
+	# arbitrary SQL statements; it is only intended to support 
 	# limited search capabilities that are typically provided 
 	# on a search form.
 	#
@@ -1460,18 +1460,18 @@ def build_search_sql (condlist, disjunct=False, allow_empty=False):
 	#   0: Name of table that contains the field being searched
 	#     on.  The name may optionally be followed by a space and
 	#     an alias name for the table.  It may also optionally be
-	#     preceeded (no space) by an astrisk character to indicate
+	#     preceded (no space) by an asterisk character to indicate
 	#     the table should be joined with a LEFT JOIN rather than
 	#     the default INNER JOIN. 
 	#     Caution: if the table is "entr" it *must* have "e" as an
 	#     alias, since that alias is expected by the final generated
 	#     sql.
-	#   1: Sql snippit that will be AND'd into the WHERE clause.
+	#   1: Sql snippet that will be AND'd into the WHERE clause.
 	#     Field names must be qualified by table.  When looking 
 	#     for a value in a field.  A sql parameter marker ("%s" for
-	#     the postgresql psycopg2 adaptor) may (and should) be used 
+	#     the Postgresql psycopg2 adapter) may (and should) be used 
 	#     where possible to denote an exec-time parameter.  The value
-	#     to be used when the sql is executed is is provided in the
+	#     to be used when the sql is executed is provided in the
 	#     3rd member of the tuple (see #2 next).
 	#   2: A sequence of argument values for any exec-time parameters
 	#     ("%s") used in the second value of the tuple (see #1 above).
@@ -1495,16 +1495,16 @@ def build_search_sql (condlist, disjunct=False, allow_empty=False):
 	# The following check is to reduce the effect of programming 
 	# errors that pass an empty condlist, which in turn will result
 	# in generating sql that will attempt to retrieve every entry
-	# in the database.  It does not garauntee reasonable behavior
+	# in the database.  It does not guarantee reasonable behavior
 	# though: a condlist of [('entr', 'NOT unap', [])] will produce
 	# almost the same results.
 
 	if not allow_empty and not condlist:
 	    raise ValueError ("Empty condlist parameter")
 
-	# $fclause will become the FROM clause of the generated sql.  Since
-	# all queries will require "entr" to be included, we start off with 
-	# that table in the clause.
+	# 'fclause' will become the FROM clause of the generated sql.  Since
+	# all queries will require table "entr" to be included, we start off 
+	# with that table in the clause.
 
 	fclause = 'entr e'
 	regex = re.compile (r'^([*])?(\w+)(\s+(\w+))?$')
@@ -1521,7 +1521,7 @@ def build_search_sql (condlist, disjunct=False, allow_empty=False):
 
 	    if not cond: continue
 
-	    # The table name may be preceeded by a "*" to indicate that
+	    # The table name may be preceded by a "*" to indicate that
 	    # it is to be joined with a LEFT JOIN rather than the usual
 	    # INNER JOIN".  It may also be followed by a space and an 
 	    # alias name.  Unpack these things.
@@ -1575,7 +1575,7 @@ def autocond (srchtext, srchtype, srchin, inv=None, alias_suffix=''):
 	#
 	# srchtype: where to search of 'srchtext' in the txt column.
 	#   1 -- "Is", exact (and case-sensitive) match required.
-	#   2 -- "Starts", 'srchtext' matched a lreading substring
+	#   2 -- "Starts", 'srchtext' matched a leading substring
 	#        of the target string.
 	#   3 -- "Contains", 'srchtext' appears as a substring anywhere
 	#        in the target text.
@@ -1602,7 +1602,7 @@ def autocond (srchtext, srchtype, srchin, inv=None, alias_suffix=''):
 	  # we need to lowercase the search text, and generate a search
 	  # clause in one of the above forms.  
 	  #
-	  # To-do: LIKE 'xxx%' dosn't use index unless the argument value 
+	  # To-do: LIKE 'xxx%' doesn't use index unless the argument value 
 	  # is embedded in the sql (which we don't currently do).  When
 	  # the 'xxx%' is supplied as a separate argument, the query
 	  # planner (runs when the sql is parsed) can't use index because
@@ -1641,9 +1641,9 @@ def kwnorm (kwtyp, kwlist, inv=None):
 	(and the string "NOT"), whichever is shorter.
 
 	Given as list of kw's all from the same domain, see if
-	it is longer than half the length af all kw's in the domain.
-	If so, return the shorter complent of the given list, along
-	with an inversion strin, "NOT", which can be used to build
+	it is longer than half the length of all kw's in the domain.
+	If so, return the shorter complement of the given list, along
+	with an inversion string, "NOT", which can be used to build
 	a short SQL WHERE clause that will produce the same results
 	as the longer given kw list. 
 	"""
@@ -1788,7 +1788,7 @@ class Kwds:
     """
     This class stores data from the jmdictdb kw* tables.  The 
     data in these tables are typically static and small in size,
-    so it is effecient to read them once when an app starts.
+    so it is efficient to read them once when an app starts.
     This class allows the data to be read either from a jmdictdb 
     database, or from kw*.csv files in a directory.  After 
     initialization, an instance will have a set of attributes,
@@ -1836,7 +1836,7 @@ class Kwds:
 	# created and may be loaded later using the methods
 	# loadcsv() or loaddb().  Otherwise 'cursor_or_dirname'
 	# should be an open DBI cursor to a jmdictdb database,
-	# or a string giving the path to a directory containg 
+	# or a string giving the path to a directory containing 
 	# kw table csv files.  In the former case, the instance
 	# will be loaded from the database's kw tables.  In the
 	# latter, from the directory's csv files.  
@@ -1877,7 +1877,7 @@ class Kwds:
 	      # method .add() to store the records in attribute 'attr'.
 	      # If there is a exception (typically because the table
 	      # does not exist or is not readable due to permissions)
-	      # catcj it and add the table name to the 'failed' list. 
+	      # catch it and add the table name to the 'failed' list. 
 	    try: recs = dbread (cursor, "SELECT * FROM %s" % table, ())
 	    except dbapi.ProgrammingError, e: 
 		failed.append (table)
@@ -1918,7 +1918,7 @@ class Kwds:
 	# taken as the 'id', 'kw', and 'descr' values.
 	#
 	# Additionally, every row added results in the creation
-	# of an addtional attribute with a name based on 'attr'
+	# of an additional attribute with a name based on 'attr'
 	# and the row.kw value separated by a "_" and assigned
 	# a value 'row.id'.
 	# For example, if 'attr' is "POS", 'row.id' is 50, and
@@ -1970,7 +1970,7 @@ class Tmptbl:
     def __init__ (self, cursor, tbldef=None, temp=True):
 	"""Create a temporary table in the database.
 
-	cursor -- An open DBAPI cursor that idendifies the data-
+	cursor -- An open DBAPI cursor that identifies the data-
 	    base in which the temporary table will be created.
 	tbldef -- If 'tbldef' is given, it is expected to be a
 	    string that gives the SQL for the table definition
@@ -2100,7 +2100,7 @@ def jstr_gloss (s):
 
 def jstr_keb (s):
         # Return a true value if the string 's' is acceptable
-	# for use in a <keb> element.  This is exverything that
+	# for use in a <keb> element.  This is everything that
 	# is not usable as a reb or a gloss.
 
 	if isinstance (s, (str, unicode)):

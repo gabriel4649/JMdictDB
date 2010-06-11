@@ -21,13 +21,13 @@
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11])
 
-import sys, cgi, copy
+import sys, cgi, copy, time
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import cgitbx; cgitbx.enable()
 import jdb, jmcgi, serialize, jelparse
 
 def main( args, opts ):
-	errs = []; so = None
+	errs = []; so = None; stats = {}
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
 	except Exception, e: errs = [str (e)]
 	if errs: err_page (errs)
@@ -101,12 +101,14 @@ def main( args, opts ):
 	sql2 = "SELECT __wrap__.* FROM esum __wrap__ " \
 		 "JOIN (%s) AS __user__ ON __user__.id=__wrap__.id " \
 		 "%s OFFSET %s LIMIT %s" % (sql, orderby, pgoffset, entrs_per_page)
+	stats['sql']=sql; stats['args']=sql_args; stats['orderby']=orderby
 	if cfg_srch.MAX_QUERY_COST > 0:
 	    try:
 	        cost = jdb.get_query_cost (cur, sql2, sql_args);
 	    except StandardError, e:
 		err_page (["Database error (%s):<pre> %s </pre></body></html>" 
 			   % (e.__class__.__name__, str(e))])
+	    stats['cost']=cost;
 	    if cost > cfg_srch.MAX_QUERY_COST: 
 		err_page (
 		       ["The search request you made will likely take too long to execute. "
@@ -114,11 +116,12 @@ def main( args, opts ):
 			"page and add more criteria to restrict your search more narrowly. "
 			"(The estimated cost was %.1f, max allowed is %d.)" 
 			% (cost, cfg_srch.MAX_QUERY_COST)])
-
+	t0 = time.time()
 	try: rs = jdb.dbread (cur, sql2, sql_args)
 	except Exception, e:		#FIXME, what exception value(s)?
 	    err_page (["Database error (%s):<pre> %s </pre></body></html>" 
 		       % (e.__class__.__name__, str(e))])
+	stats['dbtime'] = time.time() - t0
 	reccnt = len(rs)
 	if pgtotal < 0:
 	    if reccnt >= entrs_per_page:
@@ -145,7 +148,7 @@ def main( args, opts ):
 			    results=rs, pt=pgtotal, p0=pgoffset, method=meth,
 			    p1=pgoffset+reccnt, soj=soj, sql=sqlp, parms=parms,
 			    svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-			    output=sys.stdout, this_page='srchres.py')
+			    stats=stats, output=sys.stdout, this_page='srchres.py')
 
 def err_page (errs):
 	if isinstance (errs, (unicode, str)): errs = [errs]

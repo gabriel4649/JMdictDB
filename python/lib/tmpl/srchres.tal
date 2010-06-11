@@ -84,5 +84,14 @@
       </form>
     </div>
   <div metal:use-macro="macros/macros/footer"></div>
+  <div class="results">
+    <span class="debug">
+      sql = <span tal:replace="stats/sql"/><br/>
+      args = <span tal:replace="stats/args"/><br/>
+      orderby = <span tal:replace="stats/orderby"/><br/>
+      cost = <span tal:replace="stats/cost"/><br/>
+      time = <span tal:replace="stats/dbtime"/><br/>
+      </span>
+    </div>
   </body>
 </html>

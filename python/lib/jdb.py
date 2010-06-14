@@ -693,25 +693,28 @@ def headword (entr):
 	# tags.  Either element of the 2-tuple, but not both,
 	# may be None if a reading of kanji element is not available
 	# or not appropriate.
-	# FIXME: I don't know how to pick headword.  Code below
-	#  is just a guess.
+	# FIXME: I don't know how to pick headword.  Since there is 
+	#  is no mention of "headword" in the JMdict DTD, I am not 
+	#  even sure what a headword is.  Code below is just a guess.
 	rdngs = getattr (entr, '_rdng', [])
 	kanjs = getattr (entr, '_kanj', [])
-	if not rdngs: return kanjs[0], None
-	if not kanjs: return rdngs[0], None
+	if not rdngs and not kanjs: 
+	    raise ValueError ("Entry has no readings and no kanji")
+	if not rdngs: return None, 1
+	if not kanjs: return 1, None
 
 	  # If the first reading is "nokanji", return only it.
 	if rdngs and len(getattr (rdngs[0], '_restr', [])) \
 		  == len(getattr (entr, '_kanj', [])):
-	    return rdngs[0], None
+	    return 1, None
 
 	  # If first sense is 'uk', return only first reading.
 	uk = KW.MISC['uk'].id in [x.kw for x in 
 		getattr (getattr (entr, '_sens', [None])[0], '_misc', [])]
 	if uk:
 	    stagr = getattr (entr._sens[0], '_stagr', [])
-	    for r in rdngs:
-		if not isin (r, stagr): return (r, None)
+	    for n, r in enumerate (rdngs):
+		if not isin (r, stagr): return n+1, None
 
 	  # Otherwise return the first reading-kanji pair allowed
 	  # by restrs, ordering by kanji before selection.
@@ -1112,9 +1115,11 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	# dbh (dbapi cursor) -- Handle to open database connection.
 	# typ (int) -- Type of reference per table kwxref.
 	# rtxt (string or None) -- Cross-ref target(s) must have this
-	#   reading text.
+	#   reading text.  May be None if 'ktxt' is non-None, or if
+	#   'enum' is non-None.
 	# ktxt (string or None) -- Cross-ref target(s) must have this
-	#   kanji text.
+	#   kanji text.  May be None if 'rtxt' is non-None, or if
+	#   'enum' is non-None.
 	# slist (list of ints or None) -- Resolved xrefs will be limited
 	#   to these target senses.  A Value Error is raised in a sense
 	#   is given in 'slist' that does not exist in target entry.

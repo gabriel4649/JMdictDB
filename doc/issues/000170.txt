@@ -1,6 +1,6 @@
 ﻿Title:	lexically sorted search results
-Stat:   open
-Disp:	
+Stat:   closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -49,4 +49,6 @@ AssdTo:	stuart
   an entry that exactly matches.  That is, if one searches for
   kanji text starting with 食, the entry 植物油 (which was 
   found because it has an alternate kanji of 食物油) will 
-  sort in front of 食 because 植 is less than 食.
+  sort in front of 食 because 植 is less than 食.  The degree
+  this is seen as a problem and what to do about it if so,
+  will be addressed in a future IS.

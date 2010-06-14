@@ -1,6 +1,6 @@
 ﻿Title:	Create database with japanese collation order
-Stat:   open
-Disp:	
+Stat:   closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -30,16 +30,28 @@ AssdTo:	stuart
   as expected.
 
 2010-06-11 13:01:00 stuart
-  Will run following procedure on Arakawa, first substituting
-  "jmtest" for "jmdict" to test before doing on jmdict.
+  Will run following procedure on Arakawa.
   ----
-  pg_backup -Fc jmdict >jmdict.dmp
-  psql
-    DELETE DATABASE jmnew;
-    CREATE DATABASE jmnew TEMPLATE template0 ENCODING 'uf8' 
+  pg_dump -Fc jmtest >jmtest.dmp
+  psql -U postgres
+    DROP DATABASE jmnew;
+    CREATE DATABASE jmnew TEMPLATE template0 ENCODING 'utf8' 
       LC_COLLATE 'ja_JP.utf8' LC_CTYPE 'ja_JP.utf8';
-  pg_restore -d jmnew jmdict.dmp
-  psql
-    RENAME DATABASE jmdict TO jmold;
-    RENAME DATABASE jmnew TO jmdict;
+  pg_restore -d jmnew jmtest.dmp
+  psql -U postgres
+    DROP DATABASE jmold;
+    ALTER DATABASE jmtest RENAME TO jmold;
+    ALTER DATABASE jmnew  RENAME TO jmtest;
   ----
+
+2010-06-14 11:49:00 stuart
+  First attempts to change database collation order to ja_JP.utf8
+  on 2010-06-12 resulted in an error that the locale was unknown.
+  And doing a "locale -a" indeed listed only C and POSIX.  After
+  some mail exchanges with William Maton (sys admin for Arakawa)
+  it turned out that on Ubuntu, locales are not supplied in a package
+  as on Fedora, but rather a root user creates them as needed using
+  the locale-gen command ("locale-gen ja_JP.utf8 utf8" in this case.)
+  After that was done, "locale -a" showed the japanese locale, and
+  the procedure noted above was successfully executed.  Have not
+  changed jmdict yet, but will follow same procedure.

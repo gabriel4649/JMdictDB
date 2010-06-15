@@ -591,7 +591,7 @@ def sens_tags (sens, gloss, tags):
                 wasei   = t[2] and 'w' in t[2]
                 partial = t[2] and 'p' in t[2]
                 append (sens, '_lsrc', 
-                        jdb.Lsrc(txt=t[0], lang=(t[1] or lang_en), 
+                        jdb.Lsrc(txt=t[0] or '', lang=(t[1] or lang_en), 
                                 part=partial, wasei=wasei))
 
             elif typ == 'note': 

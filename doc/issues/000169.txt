@@ -11,7 +11,7 @@ AssdTo:	stuart
   support login session cookies were resulting in crash in
   jmcgi.get_sid_from_cookie().
 
-2010-06-09 22:04 stuart
+2010-06-09 22:04:00 stuart
   Relevant text of Jim's email:
 
   > I tried it out. First I tried the http://edrdg.org/jmdictdb/cgi-bin/jbedits.py
@@ -42,7 +42,7 @@ AssdTo:	stuart
   > tab, and I'm logged in OK, so the cookie is OK
   > there.
   
-2010-06-09 22:06 stuart
+2010-06-09 22:06:00 stuart
   Unable to reproduce the problem but looking at code, 
   it will occur if there are other cookies in the domain 
   so that the web server supplies the HTTP_COOKIES env

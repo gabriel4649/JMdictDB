@@ -12,7 +12,7 @@ AssdTo:	stuart
   is accepted by edconf.py page, but fails on submission
   with a traceback.
 
-2010-06-15 07:24:00:00 stuart
+2010-06-15 07:24:00 stuart
   Email from jwb:
   > Odd one today. Trying to add (re-instate)
   > an lsrc tag to  1142040. It was there originally,

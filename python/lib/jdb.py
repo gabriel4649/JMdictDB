@@ -2265,6 +2265,8 @@ def cfgOpen (cfgname):
 	    fname = cfgname
 	else:
             dir = find_in_syspath (cfgname)
+	    if not dir: 
+		raise IOError (2, 'File not found on sys.path', cfgname)	    
 	    fname = os.path.join (dir, cfgname)
         cfg = pylib.config.Config (fname)
 	cfg.__filename__ = fname

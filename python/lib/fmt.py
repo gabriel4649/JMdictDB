@@ -250,7 +250,7 @@ def hists (entr, label="History: "):
 		    % (n+1, stat, unap, h.dt, h.name or '', email))
 	    if h.notes: fmt.extend (["  Comments:", indent (h.notes, 4)])
 	    if h.refs:  fmt.extend (["  Refs:", indent (h.refs, 4)])
-	    if h.diff:  fmt.extend (["  Diff:", indent (h.notes, 4)])
+	    if h.diff:  fmt.extend (["  Diff:", indent (h.diff, 4)])
 	if fmt and label: fmt[0:0] = [label]
 	return fmt
 

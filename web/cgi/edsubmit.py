@@ -256,7 +256,7 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	if entr.stat==KW.STAT['D'].id and not getattr (entr, 'dfrm', None):
 	    errs.append ("Delete requested but entry is new (has no 'dfrm' value.)")
 
-	if disp == 'a' and has_xrslv (entr):
+	if disp == 'a' and has_xrslv (entr) and entr.stat==KW.STAT['A'].id:
 	    errs.append ("Can't approve because entry has unresolved xrefs")
 
 	if not errs:

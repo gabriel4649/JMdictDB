@@ -21,7 +21,6 @@
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11])
 
-
 import sys, cgi, re, os, json, itertools
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import cgitbx; cgitbx.enable()
@@ -32,8 +31,7 @@ Enc = 'utf-8'
 def main (args, opts):
 	errs = []
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except Exception, e: errs = [str (e)]
-	if errs: err_page (errs)
+	except StandardError, e: jmcgi.err_page ([unicode (e)])
 
 	  # The filesystem path of the directory containing editdata files.
 	filesdir = cfg['web']['EDITDATA_DIR']
@@ -60,11 +58,7 @@ def main (args, opts):
 	jmcgi.gen_page ('tmpl/edform.tal', macros='tmpl/macros.tal', parms=parms,
 			entrs=[e], extra=extra, srcs=srcs, is_editor=is_editor,
 			svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
-			 method=meth, output=sys.stdout, this_page='jbedit.py')
-
-def err_page (errs):
-	jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
-	sys.exit()
+			method=meth, output=sys.stdout, this_page='jbedit.py')
 
 def read_editdata (cursor, fullname):
 	# Read the edit data in file "fullname" and convert it into 

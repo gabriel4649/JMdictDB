@@ -21,7 +21,6 @@
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11])
 
-
 import sys, cgi, re, os
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import cgitbx; cgitbx.enable()
@@ -32,8 +31,7 @@ Enc = 'utf-8'
 def main (args, opts):
 	errs = []
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except Exception, e: errs = [unicode (e)]
-	if errs: err_page (errs)
+	except StandardError, e: jmcccgi.err_page ([unicode(e)])
 
 	  # The filesystem path of the directory containing editdata files.
 	filesdir = cfg['web']['EDITDATA_DIR']
@@ -54,10 +52,6 @@ def main (args, opts):
 			 editfiles=editfiles, logfiles=logfiles,
 			 svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
 			 method=meth, output=sys.stdout, this_page='jbedits.py')
-
-def err_page (errs):
-	jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
-	sys.exit()
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()

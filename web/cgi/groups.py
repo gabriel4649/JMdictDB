@@ -29,10 +29,8 @@ import jdb, jmcgi
 def main( args, opts ):
 	errs = []
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except Exception, e: errs = [str (e)]
-	if errs:
-	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
-	    return 
+	except StandardError, e: jmcgi.gen_page ([unicode(e)])
+
 	fv = form.getfirst; fl = form.getlist
 	orderby = "k.id,s.kw,e.src"
 	sql = "SELECT k.id, k.kw, k.descr, s.kw AS corpus, count(*) AS cnt " \

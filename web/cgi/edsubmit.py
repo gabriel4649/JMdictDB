@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2008 Stuart McGraw 
+#  Copyright (c) 2008-2010 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -131,48 +131,46 @@ import cgitbx; cgitbx.enable()
 import jdb, jmcgi, fmtxml, serialize
 
 def main( args, opts ):
-	errs = []
+	errs = []; dbh = svc = None
 	try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
-	except Exception, e: errs = [str (e)]
+	except StandardError, e: jmcgi.err_page ([unicode (e)])
+
 	fv = form.getfirst
 	dbg = fv ('d'); meth = fv ('meth')
 	disp = fv ('disp') or ''  # '': User submission, 'a': Approve. 'r': Reject;
 	if not sess and disp:
 	    errs.append ("Only registered editors can approve or reject entries")
-	if not errs:
-	    try: entrs = serialize.unserialize (fv ("entr"))
-	    except StandardError:
-		errs.append ("Bad 'entr' parameter, unable to unserialize.")
-	if not errs:
-	    added = []
-	    dbh.connection.commit()
-	    dbh.execute ("START TRANSACTION ISOLATION LEVEL SERIALIZABLE");
-	      # FIXME: we unserialize the entr's xref's as they were resolved
-	      #  by the edconf.py page.  Should we check them again here? 
-	      #  If target entry was deleted in meantime, attempt to add 
-	      #  our entr to db will fail with obscure foreign key error. 
-	      #  Alternatively an edited version of target may have been 
-	      #  created which wont have our xref pointing to it as it should. 
-	    for entr in entrs:
-		e = submission (dbh, entr, disp, errs, jmcgi.is_editor (sess), 
-				sess.userid if sess else None)
-		  # The value returned by submission() is a 3-tuple consisting 
-		  # of (id, seq, src) for the added entry.
-		if e: added.append (e)
-	if not errs:
-	    dbh.connection.commit()
-	    if not meth: meth = 'get' if dbg else 'post'
-	    jmcgi.gen_page ("tmpl/submitted.tal", macros='tmpl/macros.tal',
-			    added=added, parms=parms, meth=meth,
-			    svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
-			    output=sys.stdout, this_page='edsubmit.py')
-	else: 
+	if errs: jmcgi._err_page (errs)
+	try: entrs = serialize.unserialize (fv ("entr"))
+	except StandardError:
+	    jmcccgi.err_page (["Bad 'entr' parameter, unable to unserialize."])
+
+	added = []
+	dbh.connection.commit()
+	dbh.execute ("START TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+	  # FIXME: we unserialize the entr's xref's as they were resolved
+	  #  by the edconf.py page.  Should we check them again here? 
+	  #  If target entry was deleted in meantime, attempt to add 
+	  #  our entr to db will fail with obscure foreign key error. 
+	  #  Alternatively an edited version of target may have been 
+	  #  created which wont have our xref pointing to it as it should. 
+	for entr in entrs:
+	    e = submission (dbh, entr, disp, errs, jmcgi.is_editor (sess), 
+			    sess.userid if sess else None)
+	      # The value returned by submission() is a 3-tuple consisting 
+	      # of (id, seq, src) for the added entry.
+	    if e: added.append (e)
+
+	if errs: 
 	    dbh.connection.rollback()
-	      # FIXME: Turn id numbers in error message "There are other submitted
-	      #   edits..." from approve() into <a href> links.  We can't do that
-	      #   in approve() since that is also called in non-html contexts. 
-	    jmcgi.gen_page ("tmpl/url_errors.tal", output=sys.stdout, errs=errs, svc=svc);
-	dbh.close()
+	    jmcgi.err_page (errs)
+
+	dbh.connection.commit()
+	if not meth: meth = 'get' if dbg else 'post'
+	jmcgi.gen_page ("tmpl/submitted.tal", macros='tmpl/macros.tal',
+			added=added, parms=parms, meth=meth,
+			svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
+			output=sys.stdout, this_page='edsubmit.py')
 
 def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	# Add a changed entry, 'entr', to the jmdictdb database accessed 

@@ -29,7 +29,8 @@ import jdb, jmcgi, jelparse, jellex, serialize
 def main (args, opts):
 	errs = []; chklist = {}
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except Exception, e: errs = [str (e)]
+	except StandardError, e: jmcgi.err_page ([unicode (e)])
+
 	fv = form.getfirst; fl = form.getlist
 	dbg = fv ('d'); meth = fv ('meth')
 	KW = jdb.KW
@@ -83,6 +84,9 @@ def main (args, opts):
 	name    = url_str ('name', form)
 	email   = url_str ('email', form)
 
+
+	if errs: jmcgi.err_page (errs)
+
 	  # Parse the entry data.  Problems will be reported
 	  # by messages in 'perrs'.  We do the parse even if 
 	  # the request is to delete the entry (is this right
@@ -92,117 +96,119 @@ def main (args, opts):
 
 	entr, perrs = parse (intxt)
 	errs.extend (perrs)
+	if errs or not entr: 
+	    if not entr and not errs: errs.append ("Unable to create an entry.")
+	    jmcgi.err_page (errs)
 
-	if entr and not errs:
-	    entr.dfrm = eid;
-	    entr.unap = not disp
+	entr.dfrm = eid;
+	entr.unap = not disp
 
-	    if delete:
-		  # Ignore any content changes made by the submitter by 
-		  # restoring original values to the new entry.
-	        entr.seq = pentr.seq;	entr.src = pentr.src;
-		entr.stat = KW.STAT['D'].id
-		entr.notes = pentr.notes;  entr.srcnote = pentr.srcnote; 
-		entr._kanj = getattr (pentr, '_kanj', []); 
-		entr._rdng = getattr (pentr, '_rdng', []); 
-		entr._sens = getattr (pentr, '_sens', []); 
-		entr._snd  = getattr (pentr, '_snd',  []); 
-		entr._grp  = getattr (pentr, '_grp',  []); 
-		entr._cinf = getattr (pentr, '_cinf', []); 
-	    else:
-	          # Migrate the entr details to the new entr object
-	          # which to this point has only the kanj/rdng/sens
-	          # info provided by jbparser.  
-		entr.seq = seq;   entr.src = src;   
-		entr.stat = KW.STAT['A'].id
-		entr.notes = notes;  entr.srcnote = srcnote; 
-		entr._grp = jelparse.parse_grp (grpstxt)
+	if delete:
+	      # Ignore any content changes made by the submitter by 
+	      # restoring original values to the new entry.
+	    entr.seq = pentr.seq;	entr.src = pentr.src;
+	    entr.stat = KW.STAT['D'].id
+	    entr.notes = pentr.notes;  entr.srcnote = pentr.srcnote; 
+	    entr._kanj = getattr (pentr, '_kanj', []); 
+	    entr._rdng = getattr (pentr, '_rdng', []); 
+	    entr._sens = getattr (pentr, '_sens', []); 
+	    entr._snd  = getattr (pentr, '_snd',  []); 
+	    entr._grp  = getattr (pentr, '_grp',  []); 
+	    entr._cinf = getattr (pentr, '_cinf', []); 
+	else:
+	      # Migrate the entr details to the new entr object
+	      # which to this point has only the kanj/rdng/sens
+	      # info provided by jbparser.  
+	    entr.seq = seq;   entr.src = src;   
+	    entr.stat = KW.STAT['A'].id
+	    entr.notes = notes;  entr.srcnote = srcnote; 
+	    entr._grp = jelparse.parse_grp (grpstxt)
 
-		  # This form and the JEL parser provide no way to change
-		  # some entry attributes such _cinf, _snd, reverse xrefs 
-		  # and for non-editors, _freq.  We need to copy these items
-		  # from the original entry to the new, edited entry to avoid
-		  # loosing them.  The copy can be shallow since we won't be
-		  # changing the copied content. 
-		if pentr: 
-		    if not jmcgi.is_editor (sess): 
-			jdb.copy_freqs (pentr, entr)
-		    if hasattr (pentr, '_cinf'): entr._cinf = pentr._cinf
-		    copy_snd (pentr, entr)
+	      # This form and the JEL parser provide no way to change
+	      # some entry attributes such _cinf, _snd, reverse xrefs 
+	      # and for non-editors, _freq.  We need to copy these items
+	      # from the original entry to the new, edited entry to avoid
+	      # loosing them.  The copy can be shallow since we won't be
+	      # changing the copied content. 
+	    if pentr: 
+		if not jmcgi.is_editor (sess): 
+		    jdb.copy_freqs (pentr, entr)
+		if hasattr (pentr, '_cinf'): entr._cinf = pentr._cinf
+		copy_snd (pentr, entr)
 
-		      # We should be able to adjust reverse references in the
-		      # JEL edit but currently there is no provision for that.
-		      # (see IS-165) so we copy them from the parent entry.
-		      # We cannot ignore them because without them the
-		      # referencing entry will not have any xrefs to us
-		      # when we get added to the database.
-		      # For simplicity, we just copy the reverse xrefs by
-		      # sense number.  This will produce bad results if 
-		      # the submitter has rearranged our senses and will
-		      # require a subsequent manual edit of the referencing
-		      # entry to correct.
-		    for es, ps in zip (entr._sens, pentr._sens):
-                        es._xrer = ps._xrer
-		    xrers = jdb.collect_xrefs ([entr], rev=True)
-		    if xrers: jdb.augment_xrefs (cur, xrers, rev=True)
+		  # We should be able to adjust reverse references in the
+		  # JEL edit but currently there is no provision for that.
+		  # (see IS-165) so we copy them from the parent entry.
+		  # We cannot ignore them because without them the
+		  # referencing entry will not have any xrefs to us
+		  # when we get added to the database.
+		  # For simplicity, we just copy the reverse xrefs by
+		  # sense number.  This will produce bad results if 
+		  # the submitter has rearranged our senses and will
+		  # require a subsequent manual edit of the referencing
+		  # entry to correct.
+		for es, ps in zip (entr._sens, pentr._sens):
+		    es._xrer = ps._xrer
+		xrers = jdb.collect_xrefs ([entr], rev=True)
+		if xrers: jdb.augment_xrefs (cur, xrers, rev=True)
 
-	          # Add sound details so confirm page will look the same as the 
-	          # original entry page.  Otherwise, the confirm page will display
-	          # only the sound clip id(s).
-	        snds = []
-	        for s in getattr (entr, '_snd', []): snds.append (s)
-	        for r in getattr (entr, '_rdng', []):
-		    for s in getattr (r, '_snd', []): snds.append (s)
-	        if snds: jdb.augment_snds (cur, snds)
+	      # Add sound details so confirm page will look the same as the 
+	      # original entry page.  Otherwise, the confirm page will display
+	      # only the sound clip id(s).
+	    snds = []
+	    for s in getattr (entr, '_snd', []): snds.append (s)
+	    for r in getattr (entr, '_rdng', []):
+		for s in getattr (r, '_snd', []): snds.append (s)
+	    if snds: jdb.augment_snds (cur, snds)
 
-	          # If any xrefs were given, resolve them to actual entries
-	          # here since that is the form used to store them in the 
-	          # database.  If any are unresolvable, an approriate error 
-	          # is saved and will reported later.
+	      # If any xrefs were given, resolve them to actual entries
+	      # here since that is the form used to store them in the 
+	      # database.  If any are unresolvable, an approriate error 
+	      # is saved and will reported later.
 
-	        rslv_errs = jelparse.resolv_xrefs (cur, entr)
-	        if rslv_errs: chklist['xrslv'] = rslv_errs
+	    rslv_errs = jelparse.resolv_xrefs (cur, entr)
+	    if rslv_errs: chklist['xrslv'] = rslv_errs
 
-	if entr and not errs:
-	      # Append a new hist record details this edit.
-	    if not hasattr (entr, '_hist'): entr._hist = []
-	    entr = jdb.add_hist (entr, pentr, sess.userid if sess else None, 
-				 name, email, comment, refs, 
-				 entr.stat==KW.STAT['D'].id)
-	    chkentr (entr, errs)
+	if errs: jmcgi.err_page (errs)
 
-	      # If this is a new entry, look for other entries that
-	      # have the same kanji or reading.  These will be shown
-	      # as cautions at the top of the confirmation form in
-	      # hopes of reducing submissions of words already in 
-	      # the database.
-	    if not eid and not delete:
-		dups = find_similar (cur, getattr (entr,'_kanj',[]),
-					getattr (entr,'_rdng',[]), entr.src)
-	        if dups: chklist['dups'] = dups
-		  # FIXME: Should pass list of the kanj/rdng text rather than
-		  #   a pre-joined string so that page can present the list as
-		  #   it wishes.
-		chklist['invkebs'] = ", ".join ([k.txt for k in getattr (entr,'_kanj',[])
-				                       if not jdb.jstr_keb (k.txt)])
-		chklist['invrebs'] = ", ".join ([r.txt for r in getattr (entr,'_rdng',[])
-				                       if not jdb.jstr_reb (r.txt)])
-		chklist['nopos'] = ", ".join ([str(n+1) for n,x in enumerate (getattr (entr,'_sens',[]))
-				                       if not x._pos])
+	  # Append a new hist record details this edit.
+	if not hasattr (entr, '_hist'): entr._hist = []
+	entr = jdb.add_hist (entr, pentr, sess.userid if sess else None, 
+			     name, email, comment, refs, 
+			     entr.stat==KW.STAT['D'].id)
+	chkentr (entr, errs)
+
+	  # If this is a new entry, look for other entries that
+	  # have the same kanji or reading.  These will be shown
+	  # as cautions at the top of the confirmation form in
+	  # hopes of reducing submissions of words already in 
+	  # the database.
+	if not eid and not delete:
+	    dups = find_similar (cur, getattr (entr,'_kanj',[]),
+				    getattr (entr,'_rdng',[]), entr.src)
+	    if dups: chklist['dups'] = dups
+	      # FIXME: Should pass list of the kanj/rdng text rather than
+	      #   a pre-joined string so that page can present the list as
+	      #   it wishes.
+	    chklist['invkebs'] = ", ".join ([k.txt for k in getattr (entr,'_kanj',[])
+						   if not jdb.jstr_keb (k.txt)])
+	    chklist['invrebs'] = ", ".join ([r.txt for r in getattr (entr,'_rdng',[])
+						   if not jdb.jstr_reb (r.txt)])
+	    chklist['nopos'] = ", ".join ([str(n+1) for n,x in enumerate (getattr (entr,'_sens',[]))
+						   if not x._pos])
 	    entrs = [entr]
 	    jmcgi.add_filtered_xrefs (entrs, rem_unap=False)
 
-	if not errs:
-	    if not meth: meth = 'get' if dbg else 'post'
-	    serialized = serialize.serialize (entrs)
-	    jmcgi.htmlprep (entrs)
-	    jmcgi.gen_page ("tmpl/edconf.tal", macros='tmpl/macros.tal',
-			    entries=entrs, serialized=serialized,
-			    chklist=chklist, disp=disp, parms=parms,
-			    svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
-			    method=meth, output=sys.stdout, this_page='edconf.py')
-	else: jmcgi.gen_page ("tmpl/url_errors.tal", output=sys.stdout, errs=errs)
-	cur.close() 
+	if errs: jmcgi.err_page (errs)
+
+	if not meth: meth = 'get' if dbg else 'post'
+	serialized = serialize.serialize (entrs)
+	jmcgi.htmlprep (entrs)
+	jmcgi.gen_page ("tmpl/edconf.tal", macros='tmpl/macros.tal',
+			entries=entrs, serialized=serialized,
+			chklist=chklist, disp=disp, parms=parms,
+			svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
+			method=meth, output=sys.stdout, this_page='edconf.py')
 
 def find_similar (dbh, kanj, rdng, src):
 	# Find all entries that have a kanj in the set @$kanj,

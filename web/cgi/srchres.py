@@ -29,8 +29,8 @@ import jdb, jmcgi, serialize, jelparse
 def main( args, opts ):
 	errs = []; so = None; stats = {}
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except Exception, e: errs = [str (e)]
-	if errs: err_page (errs)
+	except StandardError, e: jmcgi.err_page ([unicode (e)])
+
 	cfg_web = d2o (cfg['web'])
 	cfg_srch = d2o (cfg['search'])
 	fv = form.getfirst; fl = form.getlist
@@ -78,7 +78,7 @@ def main( args, opts ):
 	      # database and it is the job of jmcgi.adv_srch_allowed() to check
 	      # that.
 	    if not jmcgi.adv_srch_allowed (cfg, sess):
-		err_page (["'sql' parameter is disallowed."])
+		jmcgi.err_page (["'sql' parameter is disallowed."])
 	    sql = sqlp.strip()
 	    if sql.endswith (';'): sql = sql[:-1]
 	    sql_args = []
@@ -93,9 +93,7 @@ def main( args, opts ):
 	        #condlist.append (('entr e', 'e.src!=4', []))
 	        sql, sql_args = jdb.build_search_sql (condlist)
 
-	if errs:
-	    err_page (errs)
-	    return
+	if errs: jmcgi.err_page (errs)
 
 	orderby = "ORDER BY __wrap__.kanj,__wrap__.rdng,__wrap__.seq,__wrap__.id"
         page = "OFFSET %s LIMIT %s" % (pgoffset, entrs_per_page)
@@ -107,11 +105,11 @@ def main( args, opts ):
 	    try:
 	        cost = jdb.get_query_cost (cur, sql2, sql_args);
 	    except StandardError, e:
-		err_page (["Database error (%s):<pre> %s </pre></body></html>" 
+		jmcgi.err_page (["Database error (%s):<pre> %s </pre></body></html>" 
 			   % (e.__class__.__name__, str(e))])
 	    stats['cost']=cost;
 	    if cost > cfg_srch.MAX_QUERY_COST: 
-		err_page (
+		jmccgi.err_page (
 		       ["The search request you made will likely take too long to execute. "
 			"Please use your browser's \"back\" button to return to the search "
 			"page and add more criteria to restrict your search more narrowly. "
@@ -120,7 +118,7 @@ def main( args, opts ):
 	t0 = time.time()
 	try: rs = jdb.dbread (cur, sql2, sql_args)
 	except Exception, e:		#FIXME, what exception value(s)?
-	    err_page (["Database error (%s):<pre> %s </pre></body></html>" 
+	    jmccgi.err_page (["Database error (%s):<pre> %s </pre></body></html>" 
 		       % (e.__class__.__name__, str(e))])
 	stats['dbtime'] = time.time() - t0
 	reccnt = len(rs)
@@ -150,11 +148,6 @@ def main( args, opts ):
 			    p1=pgoffset+reccnt, soj=soj, sql=sqlp, parms=parms,
 			    svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
 			    stats=stats, output=sys.stdout, this_page='srchres.py')
-
-def err_page (errs):
-	if isinstance (errs, (unicode, str)): errs = [errs]
-	jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
-	sys.exit()
 
 def d2o (dict_):
 	# Copy the key/value items in a dict to attributes on an 

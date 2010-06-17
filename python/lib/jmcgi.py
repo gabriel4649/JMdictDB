@@ -362,6 +362,11 @@ def gen_page (tmpl, output=None, macros=None, **kwds):
 	if output: print >>output, html.encode ('utf-8')
 	return html
 
+def err_page (errs):
+        if isinstance (errs, (unicode, str)): errs = [errs]
+	gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
+	sys.exit()
+
 def htmlprep (entries):
 	"""\
 	Prepare a list of entries for display with an html template  

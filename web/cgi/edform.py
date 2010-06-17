@@ -105,72 +105,73 @@ import jdb, jmcgi, fmtjel, serialize, edparse
 def main (args, opts):
 	errs = []; entrs =[]
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except Exception, e: errs = [unicode (e)]
-	if not errs:
-	    fv = form.getfirst; fl = form.getlist
-	    is_editor = jmcgi.is_editor (sess)
-	    dbg = fv ('d'); meth = fv ('meth')
-	    def_corp = fv ('c')		# Default corpus for new entries.
-	    defcorpid = None
-	    if def_corp:
-		try: def_corp = int (def_corp)
-		except ValueError: pass
-		try: defcorpid = jdb.KW.SRC[def_corp].id
-		except KeyError: errs.append ("Bad url parameter: c=%s" % def_corp)
-	    force_corp = fv ('f')	# Force default corpus for new entries.
+	except StandardError, e: errs = jmcgi.err_page ([unicode (e)])
 
-	    for sentr in fl ("entr"):
-	        try: entrs = serialize.unserialize (sentr)
-	        except StandardError, e:
-	            errs.append ("Bad 'entr' value, unable to unserialize: %s" % unicode(e))
-	        else: 
-		    entrs.append (entr)
+	fv = form.getfirst; fl = form.getlist
+	is_editor = jmcgi.is_editor (sess)
+	dbg = fv ('d'); meth = fv ('meth')
+	def_corp = fv ('c')		# Default corpus for new entries.
+	defcorpid = None
+	if def_corp:
+	    try: def_corp = int (def_corp)
+	    except ValueError: pass
+	    try: defcorpid = jdb.KW.SRC[def_corp].id
+	    except KeyError: errs.append ("Bad url parameter: c=%s" % def_corp)
+	force_corp = fv ('f')	# Force default corpus for new entries.
 
-	    for jentr in fl ('j'):
-	        try: entr = edparse.entr (jentr.decode('utf-8'))
-	        except StandardError, e:
-	            errs.append ("Bad 'j' value, unable to parse: %s" % unicode(e))
-	        else:
-		    entr.src = None
-		    entrs.append (entr)
+	for sentr in fl ("entr"):
+	    try: entrs = serialize.unserialize (sentr)
+	    except StandardError, e:
+		errs.append ("Bad 'entr' value, unable to unserialize: %s" % unicode(e))
+	    else: 
+		entrs.append (entr)
 
-	    elist, qlist, active = fl('e'), fl('q'), fv('a')
-	    if elist or qlist:
-	        entrs.extend (jmcgi.get_entrs (cur, elist or [], qlist or [], errs, 
-					       active=active, corpus=def_corp) or [])
-	    cur.close()
+	for jentr in fl ('j'):
+	    try: entr = edparse.entr (jentr.decode('utf-8'))
+	    except StandardError, e:
+		errs.append ("Bad 'j' value, unable to parse: %s" % unicode(e))
+	    else:
+		entr.src = None
+		entrs.append (entr)
 
-	if not errs:
-	    srcs = sorted (jdb.KW.recs('SRC'), key=lambda x: x.kw)
-	    #srcs.insert (0, jdb.Obj (id=0, kw='', descr=''))
-	    if not entrs:
-		  # This is a blank new entry.
-		  # The following dummy entry will produce the default
-		  # text for new entries: no kanji, no reading, and sense
-		  # text "[1][n]".
-		entr = jdb.Entr(_sens=[jdb.Sens(_pos=[jdb.Pos(kw=jdb.KW.POS['n'].id)])], src=None)
-		entrs = [entr]
-	    for e in entrs:
-		if not is_editor: remove_freqs (e)
-		e.ISDELETE = (e.stat == jdb.KW.STAT['D'].id) or None
-		  # Provide a default corpus.
-		if not e.src: e.src = defcorpid
-		e.NOCORPOPT = force_corp
+	elist, qlist, active = fl('e'), fl('q'), fv('a')
+	if elist or qlist:
+	    entrs.extend (jmcgi.get_entrs (cur, elist or [], qlist or [], errs, 
+					   active=active, corpus=def_corp) or [])
+	cur.close()
 
-	if not errs:
-	    for e in entrs:
-	        e.ktxt = fmtjel.kanjs (e._kanj)
-	        e.rtxt = fmtjel.rdngs (e._rdng, e._kanj)
-	        e.stxt = fmtjel.senss (e._sens, e._kanj, e._rdng)
+	if errs: jmcgi.err_page (errs)
 
-	if not errs:
-	    if not meth: meth = 'get' if dbg else 'post'
-	    jmcgi.gen_page ('tmpl/edform.tal', macros='tmpl/macros.tal', parms=parms,
-			     entrs=entrs, srcs=srcs, is_editor=is_editor,
-			     svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
-			     method=meth, output=sys.stdout, this_page='edform.py')
-	else:
-	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
+	srcs = sorted (jdb.KW.recs('SRC'), key=lambda x: x.kw)
+	#srcs.insert (0, jdb.Obj (id=0, kw='', descr=''))
+	if not entrs:
+	      # This is a blank new entry.
+	      # The following dummy entry will produce the default
+	      # text for new entries: no kanji, no reading, and sense
+	      # text "[1][n]".
+	    entr = jdb.Entr(_sens=[jdb.Sens(_pos=[jdb.Pos(kw=jdb.KW.POS['n'].id)])], src=None)
+	    entrs = [entr]
+	for e in entrs:
+	    if not is_editor: remove_freqs (e)
+	    e.ISDELETE = (e.stat == jdb.KW.STAT['D'].id) or None
+	      # Provide a default corpus.
+	    if not e.src: e.src = defcorpid
+	    e.NOCORPOPT = force_corp
+
+	if errs: jmccgi.err_page (errs)
+
+	for e in entrs:
+	    e.ktxt = fmtjel.kanjs (e._kanj)
+	    e.rtxt = fmtjel.rdngs (e._rdng, e._kanj)
+	    e.stxt = fmtjel.senss (e._sens, e._kanj, e._rdng)
+
+	if errs: jmcgi.err_page (errs)
+
+	if not meth: meth = 'get' if dbg else 'post'
+	jmcgi.gen_page ('tmpl/edform.tal', macros='tmpl/macros.tal', parms=parms,
+			 entrs=entrs, srcs=srcs, is_editor=is_editor,
+			 svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
+			 method=meth, output=sys.stdout, this_page='edform.py')
 
 def remove_freqs (entr):
 	for r in getattr (entr, '_rdng', []): r._freq = []

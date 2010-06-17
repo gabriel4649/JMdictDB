@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2008 Stuart McGraw 
+#  Copyright (c) 2008-2010 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -27,10 +27,8 @@ import cgitbx; cgitbx.enable()
 import jdb, jmcgi
 
 def main (args, opts):
-	form = cgi.FieldStorage()
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except Exception, e: 
-	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=[str (e)])
+	except StandardError, e: jmcgi.err_page ([unicode (e)])
 	jmcgi.gen_page ("tmpl/edhelpq.tal", macros='tmpl/macros.tal', 
 			svc=svc, output=sys.stdout)
 

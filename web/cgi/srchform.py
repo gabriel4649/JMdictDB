@@ -27,7 +27,9 @@ import cgitbx; cgitbx.enable()
 import jdb, jmcgi
 
 def main( args, opts ):
-	form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+	except StandardError, e: jmcgi.err_page ([unicode (e)])
+
 	qs = jmcgi.form2qs (form)
 	pos =  reshape (sorted (jdb.KW.recs('POS'),  key=lambda x:x.kw), 10)
 	misc = reshape (sorted (jdb.KW.recs('MISC'), key=lambda x:x.kw), 10)

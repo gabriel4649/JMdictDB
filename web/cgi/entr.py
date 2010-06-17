@@ -31,42 +31,42 @@ def main (args, opts):
 	#print "Content-type: text/html\n"
 	errs = []
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except Exception, e: errs = [str (e)]
-	disp = form.getfirst ('disp')
-	if not errs:
-	    entries = jmcgi.get_entrs (cur, form.getlist ('e'),
-					    form.getlist ('q'), errs)
-	    entries.sort (key=lex_sort)
-	if not errs:
-	    for e in entries:
-		for s in e._sens:
-		    if hasattr (s, '_xref'): jdb.augment_xrefs (cur, s._xref)
-		    if hasattr (s, '_xrer'): jdb.augment_xrefs (cur, s._xrer, 1)
-		if hasattr (e, '_snd'): jdb.augment_snds (cur, e._snd)
-	    cur.close()
-	    if disp == 'xml':
-		etxts = [fmtxml.entr (e) for e in entries]
-	    elif disp == 'jm':
-		etxts = [fmtxml.entr (e, compat='jmdict') for e in entries]
-	    elif disp == 'jmne':
-		etxts = [fmtxml.entr (e, compat='jmnedict') for e in entries]
-	    elif disp == 'jel':
-		etxts = [fmtjel.entr (e) for e in entries]
-	    elif disp == 'ed':
-		etxts = [xslfmt.entr (e) for e in entries]
-	    else: 
-		etxts = ['' for e in entries]
-	    jmcgi.htmlprep (entries)
-	    if disp == 'ed': etxts = [jmcgi.txt2html (x) for x in etxts]
-	    jmcgi.add_filtered_xrefs (entries, rem_unap=True)
+	except StandardError, e: jmcgi.err_page ([unicode (e)])
 
-	if not errs:
-	    jmcgi.gen_page ('tmpl/entr.tal', macros='tmpl/macros.tal', 
-				entries=zip(entries, etxts), disp=disp,
-				svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
-				parms=parms, output=sys.stdout, this_page='entr.py')
-	else:
-	    jmcgi.gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
+	entries = jmcgi.get_entrs (cur, form.getlist ('e'),
+					form.getlist ('q'), errs)
+	if errs: jmcgi.err_page (errs)
+
+	entries.sort (key=lex_sort)
+	for e in entries:
+	    for s in e._sens:
+		if hasattr (s, '_xref'): jdb.augment_xrefs (cur, s._xref)
+		if hasattr (s, '_xrer'): jdb.augment_xrefs (cur, s._xrer, 1)
+	    if hasattr (e, '_snd'): jdb.augment_snds (cur, e._snd)
+	cur.close()
+	disp = form.getfirst ('disp')
+	if disp == 'xml':
+	    etxts = [fmtxml.entr (e) for e in entries]
+	elif disp == 'jm':
+	    etxts = [fmtxml.entr (e, compat='jmdict') for e in entries]
+	elif disp == 'jmne':
+	    etxts = [fmtxml.entr (e, compat='jmnedict') for e in entries]
+	elif disp == 'jel':
+	    etxts = [fmtjel.entr (e) for e in entries]
+	elif disp == 'ed':
+	    etxts = [xslfmt.entr (e) for e in entries]
+	else: 
+	    etxts = ['' for e in entries]
+	jmcgi.htmlprep (entries)
+	if disp == 'ed': etxts = [jmcgi.txt2html (x) for x in etxts]
+	jmcgi.add_filtered_xrefs (entries, rem_unap=True)
+
+	if errs: jmcgi.err_page (errs)
+
+	jmcgi.gen_page ('tmpl/entr.tal', macros='tmpl/macros.tal', 
+			entries=zip(entries, etxts), disp=disp,
+			svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
+			parms=parms, output=sys.stdout, this_page='entr.py')
 
 def lex_sort (e):
 	# Sort key function for ordering lists of entries lexically, 
@@ -75,6 +75,11 @@ def lex_sort (e):
 	# the search results page.  We won't include gloss because
 	# there are only a couple entries in JMdict where that might
 	# make a difference.
+	#
+	# FIXME: The Sort in srchres.py is done in database using the 
+	#  database locale (typically ja_JP.utf8 if JMdictDB installed
+	#  according to instructins).  I do not know if Python string
+	#  sorts are locale-aware or not.
 
 	return (e._kanj[0].txt if e._kanj else ''), \
 	       (e._rdng[0].txt if e._rdng else ''), \

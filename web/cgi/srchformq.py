@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2006-2009 Stuart McGraw 
+#  Copyright (c) 2006-2010 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -27,7 +27,9 @@ import cgitbx; cgitbx.enable()
 import jdb, jmcgi
 
 def main( args, opts ):
-	form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+	except StandardEerror, e: jmcgi.err_page ([unicode (e)])
+
 	qs = jmcgi.form2qs (form)
 	corp = reshape (sorted ([x for x in jdb.KW.recs('SRC') if x.kw!='xxkanjidic'] , 
 			        key=lambda x:x.kw), 10)

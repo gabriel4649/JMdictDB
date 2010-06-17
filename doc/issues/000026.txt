@@ -175,7 +175,7 @@ AssdTo:	stuart@friix.com
   The Postgresql regex expression "r.txt !~ E'^[ぁ-ヾ～]+$'" will identify
   a reb-compatible rdng text string.
 
-2010-06-06 14:04 stuart
+2010-06-06 14:04:00 stuart
   In python/lib/edparse.py, parse_ritem(), disabled a test
   for jdb.jstr_reb() because jwb calls edparse (via cgi/edform.py's
   'j' option) with a reading of a "?" (or maybe that is a JIS 

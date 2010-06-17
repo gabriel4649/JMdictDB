@@ -1,6 +1,6 @@
-Title:	"Unprintable ParseError" crash in edform.py.
-Stat:   open
-Disp:	
+﻿Title:	"Unprintable ParseError" crash in edform.py.
+Stat:   closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	
@@ -39,7 +39,7 @@ AssdTo:	stuart
 
   Problem was that edparse.py defines the base class of
   ParseError as Exception, so that the code in edform.py that
-  was supposed to catch the excetion:
+  was supposed to catch the exception:
 
     try: edparse.entr (...)
     except StandardError, e: ...unicode(e)...

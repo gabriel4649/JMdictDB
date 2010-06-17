@@ -1,6 +1,6 @@
 Title:	Circular lists
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	low
 Cats:	dev
 Reqtrs:	
@@ -38,3 +38,6 @@ AssdTo:	stuart@friix.com
   json.py unserializes whatever it so it should not be a problem 
   if nothing else creates circular refs.
 
+2010-06-16 22:29:00 stuart
+  Closing this since in a couple years of working with the code, 
+  I have not noticed an cases of circular references.

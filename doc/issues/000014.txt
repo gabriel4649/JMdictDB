@@ -1,6 +1,6 @@
 Title:	Query time variation
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	moot
 Prio:	low
 Cats:	bug
 Reqtrs:	
@@ -11,3 +11,8 @@ AssdTo:	stuart@friix.com
   select stements.  This takes anwhere from .8 to 30s on my (slow)
   development machine.  I don't understand this almost order-of-magnitutde
   variation.  Need to determine what's going on and find remedy.
+
+2010-06-16 22:37:00 stuart
+  This issue was opened when the app code was in Perl.  I have not 
+  noticed any extreme performance variations in recent versions of 
+  Python code and Postgresql, so will close this. 

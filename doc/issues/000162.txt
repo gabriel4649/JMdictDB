@@ -1,13 +1,13 @@
 Title:	Setup jmtest test database
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	
 AssdTo:	stuart
 
 2010-05-22 13:06:00 stuart
-  Now that Jim breen is using the jmdict database on Arakawa
+  Now that Jim Breen is using the jmdict database on Arakawa
   for real (see 
     http://tech.groups.yahoo.com/group/edict-jmdict/message/3716 )
   we need to point the links on my project page (

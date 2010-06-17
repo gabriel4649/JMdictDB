@@ -1,6 +1,6 @@
 Title:	xrefs disappearing from database
-Stat:   open
-Disp:	
+Stat:   closed
+Disp:	done
 Prio:	crit
 Cats:	dev
 Reqtrs:	
@@ -122,3 +122,7 @@ AssdTo:	stuart
   future as noted above, and b) edconf.tal and entr.tal are
   nearly identical and we don't want to introduce any 
   unecessary differences.
+
+2010-06-16 22:56:00 stuart
+  Fixed in changesets b8a41eef87cc-2010-06-03, 
+  8850731ccc08-2010-06-04 and 2a2c0c9a193c-2010-06-04.

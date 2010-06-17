@@ -24,3 +24,9 @@ AssdTo:	stuart
   removed the kana check on readings because it turned out to be
   desireable to ignore the documented requirement that readings are
   kana when processing edict input from the wwwjdic pages.
+
+  See also IS-33 for database checking after submission.
+
+2010-06-16 20:16:00 stuart
+  jwb mentioned another problem seen today -- an (invisible?) ^M
+  character that occured in the gloss of a user's submission.

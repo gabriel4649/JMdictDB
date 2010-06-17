@@ -1,13 +1,23 @@
-Title:	DB maintenance
+Title:	DB maintenance job
 Stat:	open
 Disp:	
-Prio:	low
+Prio:	high
 Cats:	dev
 Reqtrs:	
-AssdTo:	stuart@friix.com
+AssdTo:	stuart
 
 2007-02-01 00:00:00 stuart@friix.com
   database -- write maintenance scripts to check for things that are hard
   to write contraints for: do all senses have at least one gloss?  do all
   (jmdict) entries have at least one sense and reading?, Are
   rdng,kanj,sens,gloss ord numbers consecutive?
+  Does each set of src/seq entries have at most one active approved entry?
+
+  It may be useful to duplicate some of the input checking requested in
+  IS-168 on database entries in case any sneak in by other routes.
+
+  Need a cron job to delete D and R entries after some period of time.
+
+2010-06-16 22:08:00 stuart
+  JMdictDB being used for live updates by Jim Breen now, which means
+  this issue is now much higher priority.

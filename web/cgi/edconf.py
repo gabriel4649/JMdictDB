@@ -196,14 +196,13 @@ def main (args, opts):
 						   if not jdb.jstr_reb (r.txt)])
 	    chklist['nopos'] = ", ".join ([str(n+1) for n,x in enumerate (getattr (entr,'_sens',[]))
 						   if not x._pos])
-	    entrs = [entr]
-	    jmcgi.add_filtered_xrefs (entrs, rem_unap=False)
-
 	if errs: jmcgi.err_page (errs)
-
-	if not meth: meth = 'get' if dbg else 'post'
+	entrs = [entr]
+	jmcgi.add_filtered_xrefs (entrs, rem_unap=False)
 	serialized = serialize.serialize (entrs)
 	jmcgi.htmlprep (entrs)
+
+	if not meth: meth = 'get' if dbg else 'post'
 	jmcgi.gen_page ("tmpl/edconf.tal", macros='tmpl/macros.tal',
 			entries=entrs, serialized=serialized,
 			chklist=chklist, disp=disp, parms=parms,

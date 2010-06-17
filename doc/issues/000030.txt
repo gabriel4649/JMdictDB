@@ -1,6 +1,6 @@
 Title:	XML parse other checks
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -15,3 +15,11 @@ AssdTo:	stuart@friix.com
 2008-04-24 21:46:32 sysad
   Added duplicate kanji and reading text checks in jmparse.py.
   Added check that keb is kanji and reb is reading in jmparse.py.
+
+2010-06-16 22:19:00 stuart
+  Closing this issue since the xml parser has been stable for quite a
+  while now.
+
+  Some related issues:
+    IS-33:  DB maintenance job
+    IS-168: Additional submission checks in edconf.py  

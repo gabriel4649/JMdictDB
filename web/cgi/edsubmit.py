@@ -143,7 +143,7 @@ def main( args, opts ):
 	if errs: jmcgi._err_page (errs)
 	try: entrs = serialize.unserialize (fv ("entr"))
 	except StandardError:
-	    jmcccgi.err_page (["Bad 'entr' parameter, unable to unserialize."])
+	    jmcgi.err_page (["Bad 'entr' parameter, unable to unserialize."])
 
 	added = []
 	dbh.connection.commit()

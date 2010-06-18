@@ -158,7 +158,7 @@ def main (args, opts):
 	    if not e.src: e.src = defcorpid
 	    e.NOCORPOPT = force_corp
 
-	if errs: jmccgi.err_page (errs)
+	if errs: jmcgi.err_page (errs)
 
 	for e in entrs:
 	    e.ktxt = fmtjel.kanjs (e._kanj)

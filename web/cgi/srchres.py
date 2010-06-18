@@ -109,7 +109,7 @@ def main( args, opts ):
 			   % (e.__class__.__name__, str(e))])
 	    stats['cost']=cost;
 	    if cost > cfg_srch.MAX_QUERY_COST: 
-		jmccgi.err_page (
+		jmcgi.err_page (
 		       ["The search request you made will likely take too long to execute. "
 			"Please use your browser's \"back\" button to return to the search "
 			"page and add more criteria to restrict your search more narrowly. "
@@ -118,7 +118,7 @@ def main( args, opts ):
 	t0 = time.time()
 	try: rs = jdb.dbread (cur, sql2, sql_args)
 	except Exception, e:		#FIXME, what exception value(s)?
-	    jmccgi.err_page (["Database error (%s):<pre> %s </pre></body></html>" 
+	    jmcgi.err_page (["Database error (%s):<pre> %s </pre></body></html>" 
 		       % (e.__class__.__name__, str(e))])
 	stats['dbtime'] = time.time() - t0
 	reccnt = len(rs)

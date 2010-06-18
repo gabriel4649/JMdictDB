@@ -1,6 +1,6 @@
 Title:	fmt.py failing when processing reverse references
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	
@@ -56,3 +56,6 @@ AssdTo:	stuart
   the kanj=3 applies only to the entry being formatted (1002570).
 
   This problem does not occur in the html, xml, or jel formatting.
+
+2010-06-17 17:29:00 stuart
+  Fixed in python/lib/fmt.py.

@@ -188,10 +188,19 @@ def xref (xref, rev=False, entrcorp=None):
 	if targ:
 	    seqtxt = str (targ.seq)
 	    corp = targ.src
-	    i = getattr (xref, 'kanj', None)
-	    if i: kr.append (targ._kanj[i-1].txt)
-	    i = getattr (xref, 'rdng', None)
-	    if i: kr.append (targ._rdng[i-1].txt)
+	    if not rev:
+	          # If this is a normal (forward) xref, display
+		  # the kanji and reading given in the xref.
+		i = getattr (xref, 'kanj', None)
+		if i: kr.append (targ._kanj[i-1].txt)
+		i = getattr (xref, 'rdng', None)
+		if i: kr.append (targ._rdng[i-1].txt)
+	    else:
+	          # This is a reverse xref so we don't know what
+		  # kanji and reading to use when displaying the
+		  # xref's target.  So just use the first of each.
+	        if targ._kanj: kr.append (targ._kanj[0].txt)
+	        if targ._rdng: kr.append (targ._rdng[0].txt)
 	    if len(targ._sens) == 1: stxt = ''
 	    glosses = ' ' + '; '.join([x.txt for x in targ._sens[snum-1]._gloss])
 	t = (KW.XREF[xref.typ].kw).capitalize() + ': '

@@ -1,5 +1,5 @@
 <html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
-<!--? Copyright (c) 2008 Stuart McGraw -->
+<!--? Copyright (c) 2008-2010 Stuart McGraw -->
 <!--? $Revision$ $Date$ -->
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -25,12 +25,19 @@
       <span class="caution" tal:condition="not:results">
 	No entries found.
 	</span>
-      <span class="count" tal:condition="results">
-        <span tal:replace="pt"/> matching entries found.
-	<span tal:condition="python:p1&lt;pt or p0&gt;0" tal:omit-tag="">
-	  Showing entries <span tal:replace="python:p0+1"/>
-	  to <span tal:replace="p1"/>.
+      <span tal:condition="results" tal:omit-tag="">
+        <span class="count">
+ 	  <span tal:replace="pt"/> matching entries found.
+	  <span tal:condition="python:p1&lt;pt or p0&gt;0" tal:omit-tag="">
+	    Showing entries <span tal:replace="python:p0+1"/>
+	    to <span tal:replace="p1"/>.
+	    </span>
 	  </span>
+	<span class="notes">
+	  <br/>Only the first kanji and reading fields are shown for each entry.
+	  Click seq number link to display full entry, or use the checkboxes and
+          Display... button to view multiple entries.
+          </span>
 	</span>
       <span tal:condition="python:len(results)&gt;10">
 	<br/>
@@ -51,7 +58,7 @@
 	  <td><input type="checkbox" name="e" tal:attributes="value r/id"/></td>
 	  <td class="seq">
 	    <span tal:replace="python:TALabbr('SRC',r.src)"/>
-	    <span tal:replace="r/seq"/>
+	    <a tal:content="r/seq" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${r/id}"/>
 	    </td>
 	  <td>
 	    <span tal:condition="not:r/unap" tal:replace="python:TALabbr('STAT',r.stat)"/>

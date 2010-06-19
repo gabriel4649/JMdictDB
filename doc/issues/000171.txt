@@ -1,6 +1,6 @@
-﻿Title:	Create database with japanese collation order
-Stat:   closed
-Disp:	done
+﻿Title:	Create jmtest database with japanese collation order
+Stat:   open
+Disp:	
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -31,7 +31,10 @@ AssdTo:	stuart
 
 2010-06-11 13:01:00 stuart
   Will run following procedure on Arakawa.
-  ----
+
+  **** WARNING -- following procedure incorrect, see note
+  **** 2010-06-19 below.
+  
   pg_dump -Fc jmtest >jmtest.dmp
   psql -U postgres
     DROP DATABASE jmnew;
@@ -55,3 +58,73 @@ AssdTo:	stuart
   After that was done, "locale -a" showed the japanese locale, and
   the procedure noted above was successfully executed.  Have not
   changed jmdict yet, but will follow same procedure.
+
+2010-06-18: 23:08:00 stuart
+  Reopened this issue after noting problems with the jmtest database
+  on Arakawa.  Specifically, when I try to create a new entry, I 
+  get a traceback:
+  ----
+    Traceback (most recent call last):
+      File "/home/smg/public_html/cgi-bin/edsubmit.py", line 416, in <module>
+	main (args, opts)
+      File "/home/smg/public_html/cgi-bin/edsubmit.py", line 159, in main
+	sess.userid if sess else None)
+      File "/home/smg/public_html/cgi-bin/edsubmit.py", line 287, in submission
+	added = submit (dbh, entr, errs)
+      File "/home/smg/public_html/cgi-bin/edsubmit.py", line 304, in submit
+	res = addentr (dbh, entr)
+      File "/home/smg/public_html/cgi-bin/edsubmit.py", line 396, in addentr
+	res = jdb.addentr (dbh, entr)
+      File "../lib/jdb.py", line 1346, in addentr
+	dbinsert (cur, "entr", ['src','stat','seq','dfrm','unap','srcnote','notes'], entr)
+      File "../lib/jdb.py", line 120, in dbinsert
+	raise e
+    ProgrammingError: permission denied for sequence seq_jmdict
+    CONTEXT:  PL/pgSQL function "entr_seqdef" line 14 at assignment
+  ----
+
+  Jwb reports that operations on the jmdict database seem ok.
+  Compared permissions on objects in the jmtest database with
+  those in the jmdict database -- they were identical.   
+  But that is a problem -- the jmtest database is accessed by
+  user jmtestdb, not user jmdictdb.  
+
+  Reloaded jmtest using the corrected procedure in next note.
+
+2010-06-19 01:01:00 stuart
+  Ran following procedure on Arakawa to create a jmtest database
+  that is a copy of jmdict database but with ja_JP.utf8 collation.
+  This procedure corrects the permissions problems notes above.
+  ----
+  pg_dump -Fc jmdict >jmtest.dmp
+  psql -U postgres
+    DROP DATABASE jmnew;
+    CREATE DATABASE jmnew OWNER jmtestdb
+      TEMPLATE template0 ENCODING 'utf8' 
+      LC_COLLATE 'ja_JP.utf8' LC_CTYPE 'ja_JP.utf8';
+  pg_restore -U jmtestdb -O -d jmnew jmtest.dmp
+  psql -U postgres
+    DROP DATABASE jmold;
+    ALTER DATABASE jmtest RENAME TO jmold;
+    ALTER DATABASE jmnew  RENAME TO jmtest;
+
+  -O in the pg_restore results in the restored database objects
+  being owned by user pg_restore connnects as (jmtestdb) rather
+  than the ordiginal owner from jmdict (jmdictdb.)
+
+  During the pg_restore, got messages like:
+    pg_restore: WARNING:  no privileges could be revoked for "public"
+    pg_restore: WARNING:  no privileges could be revoked for "public"
+    pg_restore: WARNING:  no privileges were granted for "public"
+    pg_restore: WARNING:  no privileges were granted for "public"
+
+  Reset the permissions on all database objects by editing
+  a temporary copy of pg/mkperms.sql to first:
+  1) Grant permissions to users jmtestdb and jmtestdbv (these
+   the user names specified in python/lib/config.ini to use 
+   for jmtest database access.)
+  and then
+  2) Revoke permissions for users jmdictdb and jmdictdbv.
+
+  Have to do (1) above even though jmtestdb owns objects
+  because owner doesn't necessarily have access permissions.

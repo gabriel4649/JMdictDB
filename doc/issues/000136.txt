@@ -1,6 +1,6 @@
 ﻿Title:	Change JEL xref separator from slash to dot
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -43,3 +43,8 @@ AssdTo:
   
   Options are to return to using slash in jitems, or parse xref
   and restr separately (or something else?)
+
+2010-06-20 21:09:00 stuart
+  Closed this issue because the requested task (use middot instead 
+  of slash in xrefs) was done.  The restr problem is in new issue
+  IS-177.

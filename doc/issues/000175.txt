@@ -1,0 +1,20 @@
+﻿Title:	Logging out on entr.py page produces error
+Stat:   open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-06-19 19:45:00 stuart
+  When viewing an entry on the entr.py when logged in as
+  editor, I clicked the logout button and received the 
+  jmdictdb error page which said,
+
+  We're sorry but your page request could not be processed
+  due to the following error(s):
+    * No valid entry or seq numbers given.
+
+  The logout did take effect as I was able to go back to
+  the entry page, which still displayed as "logged in", do
+  a refresh, and now the page showed me as logged out.

@@ -1,0 +1,68 @@
+﻿Title:	Allow middot character in JEL restr texts
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2010-06-20 21:01:00 stuart
+  In IS-136, the JEL grammer for 'jitem' was changed to use
+  a middot character as the separator character between K and 
+  R elements so that xrefs (which are parsed as 'jitems')
+  would have a similar syntax to that used in the JMdict XML
+  which also use a middot character.  See IS-136 for details.
+  But because the 'jitem' syntax is K.R, it won't parse a
+  restr text that is R.R ot K.K, or R.R.R.  But we need to
+  be ables to express those restrintions, so have to find 
+  some way to fix.  Jim Breen ran into and reported the 
+  problem today.
+
+2010-06-21 09:17:00 stuart
+  One option (mentioned in IS-136) was to go back to using
+  "／" as a K/R separator character.  But that has same 
+  problem... there could be (and are) entries that include 
+  that character in their kanji or reading text.  For example
+
+    jmdict 2387130 Active {id:132602}
+    文字数／インチ
+    【もじすううインチ】
+      1. [n] {computer terminology}
+       ▶ CPI
+       ▶ Character Per Inch    
+
+  And it is also found in Examples entries.
+  Perhaps an ascii slash (or other ascii character) could be
+  used?
+
+2010-06-22 15:42:00 stuart
+  An alternative is to use the existing (although broken) 
+  provision for double quoting values in tags.  If we fixed
+  that so it works for "see=" and "restr=" tags, then we could
+  simply do
+
+    [restr="アジア・太平洋戦争"]
+  or
+    [see="アジア・太平洋戦争"・"アジア・たいへいようせんそう"]
+
+  Problem: double quoted text is tokenized as QTEXT but for
+  restrictions and xrefs (*1) we need to know if a japanese
+  text string classifies as kanji or kana.
+  Solutions: 
+    Classify QTEXT when we tokenize it (QTEXT, KQTEXT, and
+      RQTEXT?  hmmm...)
+    Classify QTEXT when we parse it.
+    Classify QTEXT when we use it (in the parser just before 
+     we call the functions that create Restr or Xref objects.)
+    Modify the utilty functions that create the Restr or Xref
+     objects not to need to know if their argument is kanji
+     or kana text.  When creating a Restr object, the text will
+     be found in the object's Rdng list or in its Kanj list.
+     Do we really need so say which we expect and complain 
+     if we're wrong?   For Xref we can either classify the
+     string in the function, or search the database first for
+     a kanji match and if nothing found, then a reading match.
+
+  (*1) We only need to make kanji/reading determination for
+  xrefs if only one text string is given; if two are given
+  then the first is kanji and the second is reading. 

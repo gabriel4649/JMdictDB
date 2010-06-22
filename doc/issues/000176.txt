@@ -1,0 +1,88 @@
+﻿Title:	Rework database access controls
+Stat:   open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-06-20 15:57:00 stuart
+  After the permissions problem described in IS-171, I
+  would like to review and simplify the 
+
+  Requirements:
+  * Web pages will access database using credentials 
+    stored in config.ini
+  * config.ini defines "services" that collect together a
+    database (host, dbname, port) and two pairs of login
+    credentials (pg username and password), one for full
+    access, one for read-only access.
+  * Login credentials used for one database (e.g. jmtest
+    on arakawa) should not be usable for any other database.
+
+  Currently, I have a tool, tools\mkperms.py that reads
+  files defining tables and other jmdictdb database objects
+  (pg/mktables.sql, pg/mkviews.sql, etc) and creates a 
+  sql script that will do a GRANT command for those 
+  objects.  This turned out to be problematic because:
+  * If object ownership is set properly, no need to grant
+    priovs to owner.
+  * Hard to remember to regenerate mkperms.sql when new 
+    objects are added from a new sql file (example: a number
+    of new views defined in mkviews2.sql were missed because
+    I forgot to add mkviews2.sql to mkperms.py's arguments
+    when mkviews2.sql was created.)
+  * Some objects (like the corpus seq number sequences) are
+    created dynamically and so don't get included in the 
+    list of objects in mkperms.sql. 
+
+  Proposal:
+
+  1 CREATE DATABASE jmdict OWNER jmdictdb ...;
+  2 REVOKE CONNECT ON DATABASE jmdict FROM public;
+  3 REVOKE INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER
+     ON <tablenames,seqs, views> FROM jmdictrdbv;
+  4 GRANT CONNECT ON DATABASE jmdict TO jmdictdbv;
+  5 Add users working on database and who are not a superuser 
+     to role "jmdictdb".
+
+  Step one, along with doing any object creation in jmdict as 
+  user jmdictdb, will give access privs to the jmdictdb user.
+  Step 2 will limit access to jmdictdb.  I believe if you can't
+  connect, all access is prevented.
+  Step 4 allows read-only user jmdictdbv to connect, but since 
+  all objects are in schema "public", this allows jmdictdbv to 
+  modify any of them.  Step 3 removed all "change" privileges 
+  from database objects.  This step will actually be implemented
+  by a Pg/PSQL function that will read the system tables to find
+  all tables, sequences and views.
+
+  In-situ changes to jmdictdb database's: 
+    <TBD>
+
+  Function to grant or revoke privileges.
+  ----
+  CREATE OR REPLACE FUNCTION pg_grant (
+       action TEXT,	-- Either 'GRANT' or 'REVOKE'.
+       rolenm TEXT, 	-- Name of role to grant to or revoke from.
+       privnm TEXT, 	-- Privilege to grant or revoke.
+       objpat TEXT,	-- A "like" pattern that objects must match.
+       schemanm TEXT)	-- Name of schema in which to look for objects.
+       RETURNS INTEGER AS $$
+    DECLARE obj RECORD; num INTEGER:=0; actionp TEXT:=' TO ';
+    BEGIN
+        IF action = 'REVOKE' THEN actionp := ' FROM '; END IF;
+	FOR obj IN 
+	    SELECT relname 
+	    FROM pg_class c
+	    JOIN pg_namespace ns ON c.relnamespace = ns.oid 
+	    WHERE relkind in ('r','v','S') 
+	        AND nspname = schemanm 
+                AND relname LIKE objpat
+	    LOOP
+	    EXECUTE action || ' ' || privnm || ' ON ' || obj.relname || actionp || rolenm;
+	    num := num + 1;
+	    END LOOP;
+        RETURN num;
+        END;
+    $$ LANGUAGE plpgsql;

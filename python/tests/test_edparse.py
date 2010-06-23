@@ -96,6 +96,8 @@ class Test_canonical (unittest.TestCase):
     def test_s1 (_): dotest (_, 's1')
     def test_s2 (_): dotest (_, 's2')
     def test_s21 (_): dotest (_, 's21')
+    def test_s22 (_): dotest (_, 's21')
+    def test_s23 (_): dotest (_, 's21')
 
 class Test_misc (unittest.TestCase):
     # These are tests from an earlier unfinished attempt at

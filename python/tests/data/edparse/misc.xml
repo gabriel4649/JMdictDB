@@ -1,12 +1,17 @@
 ﻿@q1000230:
 <entry>
+<ent_seq>1000230</ent_seq>
+<k_ele>
+<keb>明かん</keb>
+</k_ele>
 <r_ele>
 <reb>あかん</reb>
 </r_ele>
 <sense>
 <pos>&int;</pos>
 <pos>&n;</pos>
-<dial>&osb;</dial>
+<misc>&uk;</misc>
+<dial>&ksb;</dial>
 <gloss>useless</gloss>
 <gloss>no good</gloss>
 <gloss>hopeless</gloss>
@@ -15,17 +20,30 @@
 
 @q1000540:
 <entry>
+<ent_seq>1000540</ent_seq>
+<k_ele>
+<keb>露に</keb>
+</k_ele>
+<k_ele>
+<keb>露わに</keb>
+</k_ele>
 <r_ele>
 <reb>あらわに</reb>
 </r_ele>
 <sense>
 <pos>&adv;</pos>
+<misc>&uk;</misc>
+<gloss>openly</gloss>
+<gloss>publicly</gloss>
 <gloss>frankly</gloss>
+<gloss>expressly</gloss>
+<gloss>overtly</gloss>
 </sense>
 </entry>
 
 @q1043140:
 <entry>
+<ent_seq>1043140</ent_seq>
 <r_ele>
 <reb>ギャロップ</reb>
 </r_ele>
@@ -44,6 +62,7 @@
 
 @q1172510:
 <entry>
+<ent_seq>1172510</ent_seq>
 <k_ele>
 <keb>うな丼</keb>
 </k_ele>
@@ -71,6 +90,7 @@
 
 @q1217980:
 <entry>
+<ent_seq>1217980</ent_seq>
 <k_ele>
 <keb>願わくわ</keb>
 </k_ele>
@@ -87,6 +107,7 @@
 
 @q1244760:
 <entry>
+<ent_seq>1244760</ent_seq>
 <k_ele>
 <keb>駆け込み</keb>
 <ke_pri>spec1</ke_pri>
@@ -106,6 +127,7 @@
 
 @q1270440:
 <entry>
+<ent_seq>1270440</ent_seq>
 <k_ele>
 <keb>おみ籤</keb>
 <ke_pri>spec1</ke_pri>
@@ -125,8 +147,10 @@
 <gloss>(leading to 大吉, 中吉, 小吉, 吉, 末吉, 凶 or 大凶) written oracle</gloss>
 </sense>
 </entry>
+
 @q1310500:
 <entry>
+<ent_seq>1310500</ent_seq>
 <k_ele>
 <keb>うまく行く</keb>
 <ke_pri>spec1</ke_pri>
@@ -158,6 +182,7 @@
 
 @q1664910:
 <entry>
+<ent_seq>1664910</ent_seq>
 <k_ele>
 <keb>愚案</keb>
 </k_ele>
@@ -181,6 +206,7 @@
 
 @q1956130:
 <entry>
+<ent_seq>1956130</ent_seq>
 <k_ele>
 <keb>躯</keb>
 </k_ele>
@@ -202,13 +228,13 @@
 
 @q1985450:
 <entry>
+<ent_seq>1985450</ent_seq>
 <r_ele>
 <reb>あらまし</reb>
 </r_ele>
 <sense>
 <pos>&adv;</pos>
 <pos>&n;</pos>
-<field>&comp;</field>
 <gloss>outline</gloss>
 <gloss>gist</gloss>
 <gloss>abstract</gloss>
@@ -221,6 +247,7 @@
 
 @q2007200:
 <entry>
+<ent_seq>2007200</ent_seq>
 <r_ele>
 <reb>ありあり</reb>
 </r_ele>
@@ -228,7 +255,6 @@
 <pos>&adj-f;</pos>
 <pos>&adv-to;</pos>
 <misc>&on-mim;</misc>
-<misc>&uk;</misc>
 <gloss>distinct</gloss>
 <gloss>clear</gloss>
 <gloss>vivid</gloss>
@@ -237,6 +263,7 @@
 
 @q2087350:
 <entry>
+<ent_seq>2087350</ent_seq>
 <k_ele>
 <keb>お釈迦様</keb>
 </k_ele>
@@ -263,6 +290,7 @@
 
 @q2157980:
 <entry>
+<ent_seq>2157980</ent_seq>
 <r_ele>
 <reb>えべっさん</reb>
 </r_ele>

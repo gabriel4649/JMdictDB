@@ -46,3 +46,6 @@ s2:  /(n,vs,adj-na) gloss text/
 
 # Tag order.
 s21: じゃが芋;ジャガ芋 [じゃがいも;ジャガイモ] /(n,adj-no) (1) (じゃが芋, ジャガイモ only) (Not a real entry.) (See ジャガタラ芋) (ant: トマト) (uk) (obsc) (ksb:) {food} potato/(2) Solanum tuberosum/
+s22: じゃが芋;ジャガ芋 [じゃがいも;ジャガイモ] /(n,adj-no) (1) (じゃが芋, ジャガイモ only) (uk) (obsc) (ksb:) {food} (Not a real entry.) (See ジャガタラ芋) (ant: トマト) potato/(2) Solanum tuberosum/
+s23: じゃが芋;ジャガ芋 [じゃがいも;ジャガイモ] /(1) (uk) (ksb:) (obsc) {food} (See ジャガタラ芋) (n,adj-no) (じゃが芋, ジャガイモ only) (Not a real entry.) (ant: トマト) potato/(2) Solanum tuberosum/
+

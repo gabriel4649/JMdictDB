@@ -234,6 +234,8 @@ def parse_spart (txt, entr, fmap):
 	kanjs = getattr (entr, '_kanj', [])
 	rdngs = getattr (entr, '_rdng', [])
 	gtxts = txt.split('/')
+	if gtxts[-1] == '': gtxts.pop()
+	else: pass #raise ParseError ('No trailing "/" on last gloss')
 	senslist = []
 	for n, gtxt in enumerate (gtxts):
 	    new_sense = (n == 0)
@@ -257,8 +259,11 @@ def parse_spart (txt, entr, fmap):
 		if kanjs: add_spec1 (fmap, kanjs[0], "k")
 		if rdngs: add_spec1 (fmap, rdngs[0], "r")
 		continue
-	    elif gtxt.startswith ('EntrL'):
-		entr.seq = int (gtxt[5:])
+	    mo = re.match (r'^EntL([0-9]+)', gtxt)
+	    if mo:
+	        if n == len(gtxts) - 1: entr.seq = int (mo.group(1))
+		else: raise ParseError (
+		          "SEQ number pseuo-gloss '%s' in wrong place, %r" % (gtxt, (n, len(gtxts))))
 	 	continue
 
 	      # The following regex will match an arbitrary number
@@ -319,30 +324,26 @@ def parse_senses (senslist, kanjs, rdngs):
 def process_sense (tags, glosstxts, snum, prev_pos, kanjs, rdngs):
 	sens = Sens()
 	  # Tags may be (in the order listed):
-	  #	POS
-	  #	sense_num
-	  #	STAG
-	  #	see, ant
-	  #	MISC
-	  #	DIAL
-	  #	FLD (I think this comes last (and this edict code
-	  # 	      assumes so) but I don't see any entries in the
-	  #	      Breen Edict2 file with both DIAL and FLD so
-	  #	      can't tell for sure.)
+	  #     After       Before
+	  #     ~2010-06-22 ~2010-06-22
+	  #     ----------- -----------
+	  #	POS  	    POS
+	  #	sense_num   sense_num
+	  #	STAG	    s_inf
+	  #	MISC        STAG
+	  #	FLD         see, ant
+	  #	DIAL        MISC
+	  #	s_inf       DIAL
+	  #	see, ant    FLD
+	  #     gloss       gloss
+          #     lsrc        lsrc
+          #     (P)         (P)
 	  #
-	  # FIXME? The tag parsing code below does not assume that
-	  # different tyopes of tags come in any particular order.
-	  # That is, it will be equally happy with "(n)(uk)" or
-	  # "(uk)(n)", or "(uk,n)".  It is this way because the 
-	  # author is not aware of any documentation of an expected
-	  # tag order, and thus presumes that it is likely Edict2
-	  # files from other than Jim Breen may have been produced
-	  # without much regard to tag order.
-	  # Down side to this is that it is difficult to generate
-	  # precise error messages because we are never sure what
-	  # we should be parsing.  It also assumes that tag values
-	  # are unique across all tag types, e.g. there is no "n"
-	  # tag in both the POS and MISC domains.
+	  # DON'T FIXME:
+	  # Earlier rev of this file commented that we could use 
+	  # tag order to resolve ambiguities (in some cases) and
+	  # provide better error messages.  However the 2010-06-22
+	  # change of tag order makes such a change less appealing.
 
 	for tag in tags:
 	      # Classify the type of tag...
@@ -393,6 +394,12 @@ def process_sense (tags, glosstxts, snum, prev_pos, kanjs, rdngs):
 		      #  comes before stagr/stagk, see/ant, MISC, DIAL, FLD,
 		      #  so if we have seen any of those fields, we can say
 		      #  that we are looking at gloss text now.
+		      #  UPDATE: Around 2010-06-22, jwb changed the order
+		      #  of the tags in the EDRDG Edict2 file.
+		      #  The new order, announced on the edict-jmdict list 
+		      #  is: POS, sense number, restrictions, e,g, (XXX only),
+		      #  misc, field/domain, sense_inf/note, xref/see, xref/ant,
+		      #  gloss, lsrc stuff, (P) if not on the kanji/kana. 
 		    #raise ParseError ('note="%s", dup="%s"' % (sens.notes, tag))
 		    if len(glosstxts) < 1: glosstxts.append ('')
 		    glosstxts[0] = '(' + tag + ') ' + glosstxts[0] 

@@ -71,9 +71,9 @@ def main (args, opts):
 	  # These are the JEL (JMdict Edit Language) texts which
 	  # we will concatenate into a string that is fed to the
 	  # JEL parser which will create an Entr object.
-	kanj = url_str ('kanj', form).replace('\n', ' ')
-	rdng = url_str ('rdng', form).replace('\n', ' ')
-	sens = url_str ('sens', form)
+	kanj = (stripws (url_str ('kanj', form))).strip()
+	rdng = (stripws (url_str ('rdng', form))).strip()
+	sens = (compws (url_str ('sens', form))).strip()
 	intxt = "\n".join ((kanj, rdng, sens))
 	grpstxt = url_str ('grp', form)
 
@@ -106,15 +106,15 @@ def main (args, opts):
 	if delete:
 	      # Ignore any content changes made by the submitter by 
 	      # restoring original values to the new entry.
-	    entr.seq = pentr.seq;	entr.src = pentr.src;
+	    entr.seq = pentr.seq;  entr.src = pentr.src;
 	    entr.stat = KW.STAT['D'].id
 	    entr.notes = pentr.notes;  entr.srcnote = pentr.srcnote; 
-	    entr._kanj = getattr (pentr, '_kanj', []); 
-	    entr._rdng = getattr (pentr, '_rdng', []); 
-	    entr._sens = getattr (pentr, '_sens', []); 
-	    entr._snd  = getattr (pentr, '_snd',  []); 
-	    entr._grp  = getattr (pentr, '_grp',  []); 
-	    entr._cinf = getattr (pentr, '_cinf', []); 
+	    entr._kanj = getattr (pentr, '_kanj', [])
+	    entr._rdng = getattr (pentr, '_rdng', [])
+	    entr._sens = getattr (pentr, '_sens', [])
+	    entr._snd  = getattr (pentr, '_snd',  []) 
+	    entr._grp  = getattr (pentr, '_grp',  []) 
+	    entr._cinf = getattr (pentr, '_cinf', []) 
 	else:
 	      # Migrate the entr details to the new entr object
 	      # which to this point has only the kanj/rdng/sens
@@ -300,6 +300,13 @@ def parse (krstext):
 	    else: msg = "%s\n<pre>\n%s\n</pre>" % (e.args[0], e.loc)
 	    errs.append (msg)
 	return entr, errs
+
+Transtbl = {ord(' '):None, ord('\t'):None, ord('\r'):None, ord('\n'):None, }
+def stripws (s):
+	return s.translate (Transtbl)
+
+def compws (s):
+	return ' '.join (s.split())
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()

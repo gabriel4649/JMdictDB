@@ -420,34 +420,35 @@
 <div class="entry">
   <h2><a name="insyntax"/>Tag Syntax</h2>
 
-  <table style="text-align:left;vertical-align:top" border="1" cellpadding="2" cellspacing="2">
+  <table class="syntable">
     <tbody>
       <tr>
-	<td>Tag group</td>
-	<td>Tag</td>
-	<td>Description</td>
-	<td>Where used</td>
-	<td>Format</td>
-	<td>Examples</td>
+	<th class="syntable">Tag group</th>
+	<th class="syntable">Tag</th>
+	<th class="syntable">Description</th>
+	<th class="syntable">Where used</th>
+	<th class="syntable">Format</th>
+	<th class="syntable">Examples</th>
 	</tr>
 
       <tr>
-        <td><a name="syn_dial"/>dial</td>
-	<td><a href="#kw_dial">kwds</a></td>
-        <td>Dialect</td>
-        <td>Senses</td>
-        <td>
+        <td class="syntable"><a name="syn_dial"/>dial</td>
+	<td class="syntable"><a href="#kw_dial">kwds</a></td>
+        <td class="syntable">Dialect</td>
+        <td class="syntable">Senses</td>
+        <td class="syntable">
 	  [dial=<span style="font-style: italic;"><a href="#kw_dial">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_dial">kw</a></span>]</td>
-        <td>[ksb] [dial=ksb]</td>
+        <td class="syntable">[ksb] [dial=ksb]</td>
         </tr>
 
       <tr>
-        <td><a name="syn_ginf"/>ginf</td>
-        <td><a name="syn_ginf_equ"/>equ</td>
-        <td>Equivalent translation</td>
-        <td>Senses (applies to gloss)</td>
-        <td>
+        <td class="syntable"><a name="syn_ginf"/>
+          ginf <a href="#kw_ginf">(kwds)</a></td>
+        <td class="syntable"><a name="syn_ginf_equ"/>equ</td>
+        <td class="syntable">Equivalent translation</td>
+        <td class="syntable">Senses (applies to gloss)</td>
+        <td class="syntable">
 	  [equ] <span style="font-style: italic;">the
 	  equivalent text</span>...<br/>
 	  (1) Since "equ" is the default translation type for 
@@ -455,90 +456,90 @@
 	  (2) The tag can placed at either the beginning or end
 	  of the gloss text.
 	  </td>
-        <td>&nbsp;</td>
+        <td class="syntable">&nbsp;</td>
 	</tr>
 
       <tr>
-        <td>&nbsp;</td>
-        <td><a name="syn_ginf_expl"/>expl</td>
-        <td>Explanatory translation</td>
-        <td>Senses (applies to gloss)</td>
-        <td>
+        <td class="syntable">&nbsp;</td>
+        <td class="syntable"><a name="syn_ginf_expl"/>expl</td>
+        <td class="syntable">Explanatory translation</td>
+        <td class="syntable">Senses (applies to gloss)</td>
+        <td class="syntable">
 	  [expl] <span style="font-style: italic;">the
 	  explanatory text</span>...<br/>
 	  (1) The tag can placed at either the beginning or end
 	  of the gloss text.
 	  </td>
-        <td>&nbsp;</td>
+        <td class="syntable">&nbsp;</td>
 	</tr>
 
       <tr>
-        <td>&nbsp;</td>
-        <td><a name="syn_ginf_fig"/>fig</td>
-        <td>Figurative translation</td>
-        <td>Senses (applies to gloss)</td>
-        <td>
+        <td class="syntable">&nbsp;</td>
+        <td class="syntable"><a name="syn_ginf_fig"/>fig</td>
+        <td class="syntable">Figurative translation</td>
+        <td class="syntable">Senses (applies to gloss)</td>
+        <td class="syntable">
 	  [fig] <span style="font-style: italic;">the
 	  figurative text</span>...<br/>
 	  (1) The tag can placed at either the beginning or end
 	  of the gloss text.
 	  </td>
-        <td>&nbsp;</td>
+        <td class="syntable">&nbsp;</td>
 	</tr>
 
       <tr>
-        <td>&nbsp;</td>
-        <td><a name="syn_ginf_lit"/>lit</td>
-        <td>Literal translation</td>
-        <td>Senses (applies to gloss)</td>
-        <td>
+        <td class="syntable">&nbsp;</td>
+        <td class="syntable"><a name="syn_ginf_lit"/>lit</td>
+        <td class="syntable">Literal translation</td>
+        <td class="syntable">Senses (applies to gloss)</td>
+        <td class="syntable">
 	  [lit] <span style="font-style: italic;">the
 	  literal text...</span>]<br/>
 	  (1) The tag can placed at either the beginning or end
 	  of the gloss text.
 	  </td>
-        <td>[lit] even monkeys fall from trees</td>
+        <td class="syntable">[lit] even monkeys fall from trees</td>
 	</tr>
 
       <tr>
-        <td><a name="syn_fld"/>fld</td>
-	<td><a href="#kw_fld">kwds</a></td>
-        <td>Domain, aka field-of-application tags</td>
-        <td>Senses</td>
-        <td>
+        <td class="syntable"><a name="syn_fld"/>fld</td>
+	<td class="syntable"><a href="#kw_fld">kwds</a></td>
+        <td class="syntable">Domain, aka field-of-application tags</td>
+        <td class="syntable">Senses</td>
+        <td class="syntable">
 	  [fld=<span style="font-style: italic;"><a href="#kw_fld">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_fld">kw</a></span>]</td>
-        <td>[food]<br/>[fld=mil]</td>
+        <td class="syntable">[food]<br/>[fld=mil]</td>
 	</tr>
 
       <tr>
-        <td><a name="syn_freq"></a>freq</td>
-	<td><a href="#kw_freq">kwds</a></td>
-        <td>Frequency-of-use codes</td>
-        <td>Kanji, Readings</td>
-        <td>
+        <td class="syntable"><a name="syn_freq"></a>freq</td>
+	<td class="syntable"><a href="#kw_freq">kwds</a></td>
+        <td class="syntable">Frequency-of-use codes</td>
+        <td class="syntable">Kanji, Readings</td>
+        <td class="syntable">
 	  [freq=<span style="font-style: italic;"><a href="#kw_freq">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_freq">kw</a></span>]</td>
-        <td>[ichi1]<br/>[freq=ichi1]<br/>[news1,nf8]</td>
+        <td class="syntable">[ichi1]<br/>[freq=ichi1]<br/>[news1,nf8]</td>
       </tr>
 
       <tr>
-        <td><a name="syn_kinf"></a>kinf</td>
-	<td><a href="#kw_kinf">kwds</a></td>
-        <td>Kanji information</td>
-        <td>Kanji</td>
-        <td>
+        <td class="syntable"><a name="syn_kinf"></a>kinf</td>
+	<td class="syntable"><a href="#kw_kinf">kwds</a></td>
+        <td class="syntable">Kanji information</td>
+        <td class="syntable">Kanji</td>
+        <td class="syntable">
 	  [kinf=<span style="font-style: italic;"><a href="#kw_kinf">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_kinf">kw</a></span>]</td>
-        <td>[ateji]<br/>[kinf=ik]</td>
+        <td class="syntable">[ateji]<br/>[kinf=ik]</td>
 	</tr>
 
       <tr>
-        <td><a name="syn_lang"></a>lang</td>
-	<td><a href="#kw_kinf">kwds</a></td>
-        <td>Language</td>
-        <td>Senses (applies to gloss)</td>
-        <td>
+        <td class="syntable"><a name="syn_lang"></a>lang</td>
+	<td class="syntable"><a href="#kw_kinf">kwds</a></td>
+        <td class="syntable">Language</td>
+        <td class="syntable">Senses (applies to gloss)</td>
+        <td class="syntable">
 	  [xxx] <span style="font-style: italic;">gloss
 	  text...</span>]<br/>
 	  (1) Specifies the language of the associated gloss.
@@ -548,15 +549,15 @@
 	  of the gloss text. <br/>
 	  (3) If not given, default is "eng" (english).
 	  </td>
-        <td>[eng] welcome!; [fre] bienvenue! </td>
+        <td class="syntable">[eng] welcome!; [fre] bienvenue! </td>
 	</tr>
 
       <tr>
-        <td><a name="syn_lsrc"></a>lsrc</td>
-	<td>lsrc</td>
-        <td>Source language and word.</td>
-        <td>Senses</td>
-        <td>
+        <td class="syntable"><a name="syn_lsrc"></a>lsrc</td>
+	<td class="syntable">lsrc</td>
+        <td class="syntable">Source language and word.</td>
+        <td class="syntable">Senses</td>
+        <td class="syntable">
 	  lsrc=<span style="font-style: italic;"><a href="#kw_lang">lng</a></span>/<span style="font-style: italic;">wp</span>:<span style="font-style: italic;">text</span>]<br/>
 	  (1) "lng" is an optional three-letter language code from ISO-639-2. 
 	  See <a href="#kw_lang">language keywords</a> for a full list. 
@@ -568,63 +569,63 @@
 	  (3) "text" is optional.  If given it must be enclosed in quotes (") 
 	  if it contains spaces or commas.  Otherwise quotes are not needed.
 	  </td>
-        <td>[lsrc=por:]<br/>[lsrc=ger:Arbeit]<br/>[lsrc=eng/w:"eye mate"]<br/>
+        <td class="syntable">[lsrc=por:]<br/>[lsrc=ger:Arbeit]<br/>[lsrc=eng/w:"eye mate"]<br/>
 	  [lsrc=w:outerior]</br>[lsrc=ice]</td>
 	</tr>
 
       <tr>
-        <td><a name="syn_misc"></a>misc</td>
-	<td><a href="#kw_misc">kwds</a></td>
-        <td>Miscellaneous sense information</td>
-        <td>Senses</td>
-        <td>
+        <td class="syntable"><a name="syn_misc"></a>misc</td>
+	<td class="syntable"><a href="#kw_misc">kwds</a></td>
+        <td class="syntable">Miscellaneous sense information</td>
+        <td class="syntable">Senses</td>
+        <td class="syntable">
 	  [misc=<span style="font-style: italic;"><a href="#kw_misc">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_misc">kw</a></span>]</td>
-        <td>[sl,derog]<br/>[misc=uk]</td>
+        <td class="syntable">[sl,derog]<br/>[misc=uk]</td>
 	</tr>
 
       <tr>
-        <td><a name="syn_note"></a>note</td>
-	<td>note</td>
-        <td>Ad-hoc sense information.</td>
-        <td>Senses</td>
-        <td>
+        <td class="syntable"><a name="syn_note"></a>note</td>
+	<td class="syntable">note</td>
+        <td class="syntable">Ad-hoc sense information.</td>
+        <td class="syntable">Senses</td>
+        <td class="syntable">
 	  [note="<span style="font-style: italic;">the
 	  note text...</span>"]<br/>
 	  (1) The text must be enclosed in quotes (") if it contains
 	  spaces or commas.  Otherwise quotes are not needed.
 	  </td>
-        <td>[note="misspelling of こんにちは"]</td>
+        <td class="syntable">[note="misspelling of こんにちは"]</td>
 	</tr>
 
       <tr>
-        <td><a name="syn_pos"></a>pos</td>
-	<td><a href="#kw_pos">kwds</a></td>
-        <td>Part-of-speech information</td>
-        <td>Senses</td>
-        <td>
+        <td class="syntable"><a name="syn_pos"></a>pos</td>
+	<td class="syntable"><a href="#kw_pos">kwds</a></td>
+        <td class="syntable">Part-of-speech information</td>
+        <td class="syntable">Senses</td>
+        <td class="syntable">
 	  [pos=<span style="font-style: italic;"><a href="#kw_pos">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_pos">kw</a></span>]</td>
-        <td>[n,vs]<br/>[pos=n,pos=adj-na]</td>
+        <td class="syntable">[n,vs]<br/>[pos=n,pos=adj-na]</td>
 	</tr>
 
       <tr>
-        <td><a name="syn_rinf"></a>rinf</td>
-	<td><a href="#kw_rinf">kwds</a></td>
-        <td>Reading information</td>
-        <td>Readings</td>
-        <td>
+        <td class="syntable"><a name="syn_rinf"></a>rinf</td>
+	<td class="syntable"><a href="#kw_rinf">kwds</a></td>
+        <td class="syntable">Reading information</td>
+        <td class="syntable">Readings</td>
+        <td class="syntable">
 	  [rinf=<span style="font-style: italic;"><a href="#kw_rinf">kw</a></span>]
 	  or just [<span style="font-style: italic;"><a href="#kw_rinf">kw</a></span>]</td>
-        <td>[ok]<br/>[rinf=ik]</td>
+        <td class="syntable">[ok]<br/>[rinf=ik]</td>
 	</tr>
 
       <tr>
-        <td><a name="syn_restr"></a>restr</td>
-	<td>restr</td>
-        <td>Reading and sense restrictions.</td>
-        <td>Readings, Senses</td>
-        <td>
+        <td class="syntable"><a name="syn_restr"></a>restr</td>
+	<td class="syntable">restr</td>
+        <td class="syntable">Reading and sense restrictions.</td>
+        <td class="syntable">Readings, Senses</td>
+        <td class="syntable">
 	  [<span style="font-style: italic;">XX</span>,<span style="font-style: italic;">XX</span>,...]<br/>
 	  [restr=<span style="font-style: italic;">XX</span>;<span style="font-style: italic;">XX</span>;...]<br/>
 	  [restr=nokanji]<br/>
@@ -644,18 +645,18 @@
 	  (6) The "restr=" part is optional, you can also just put the
 	  kanji or reading restriction text in brackets (separated by 
 	  ASCII or JIS commas). </td>
-        <td>[惚け、呆け]<br/>[restr=惚け；呆け]<br/>[惚け][restr=呆け]<br/>[nokanji]</td>
+        <td class="syntable">[惚け、呆け]<br/>[restr=惚け；呆け]<br/>[惚け][restr=呆け]<br/>[nokanji]</td>
 	</tr>
 
       <tr>
-        <td><a name="syn_xref"/>
+        <td class="syntable"><a name="syn_xref"/>
 	  <a name="syn_see"/>
 	  <a name="syn_ant"/>
 	  xref</td>
-	<td>see, ant</td>
-        <td>Cross-reference</td>
-        <td>Senses</td>
-        <td>
+	<td class="syntable">see, ant</td>
+        <td class="syntable">Cross-reference</td>
+        <td class="syntable">Senses</td>
+        <td class="syntable">
 	  [see=<span style="font-style: italic;">SEQ KK・RR</span>[<span style="font-style: italic;">sense-nums</span>]]<br/>
 	  [ant=<span style="font-style: italic;">SEQ KK・RR</span>[<span style="font-style: italic;">sense-nums</span>]]<br/>
 	  <br/>
@@ -680,7 +681,7 @@
 	    given, separated by commas.
 	  </td>
 
-        <td>[see=涼しい・すずしい[1]]<br/>
+        <td class="syntable">[see=涼しい・すずしい[1]]<br/>
 	    [ant=暑い[1,2]]</br>
 	    [see=1006830 その[1]]<br/>
 	  </td>
@@ -692,9 +693,9 @@
 
 <!-- RINF KINF FREQ MISC POS FLD DIAL LANG GINF SRC STAT XREF -->
 <div class="entry">
-  <h2><a name="kwabbr"/>Keyword abbreviations</h2>
+  <h2><a name="kwtable"/>Keyword abbreviations</h2>
 
-    <table class="entr">
+    <table class="kwtable">
 	<tr><td colspan="3"><br/></td></tr>
         <tr><td colspan="3"><a name="kw_rinf">Rinf -- reading info</a></td></tr>
 	<tr><td colspan="3"><hr/></td></tr>
@@ -805,7 +806,9 @@
 	  </tr>
 
 	<tr><td colspan="3"><br/></td></tr>
-        <tr><td colspan="3"><a name="kw_xref">Xref -- cross-reference types (only "ant" and "see" are currently used in JMdict)</a></td></tr>
+        <tr><td colspan="3"><a name="kw_xref">Xref -- cross-reference types
+          <br/><span class="status">Note that only "ant" and "see" are currently used in JMdict.</span>
+          </a></td></tr>
 	<tr><td colspan="3"><hr/></td></tr>
 	<tr tal:repeat="kwrec kwhash/XREF">
 	  <td tal:content="kwrec/kw">kw</td>

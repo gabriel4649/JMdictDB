@@ -303,10 +303,14 @@ def parse (krstext):
 
 Transtbl = {ord(' '):None, ord('\t'):None, ord('\r'):None, ord('\n'):None, }
 def stripws (s):
-	return s.translate (Transtbl)
+	if s is None: return u''
+	  # Make sure 's' is a uncode string; .translate() will
+	  # bomb if is is a str string.
+	return (unicode(s)).translate (Transtbl)
 
 def compws (s):
-	return ' '.join (s.split())
+	if s is None: return u''
+	return u' '.join (s.split())
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()

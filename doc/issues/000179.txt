@@ -1,0 +1,41 @@
+﻿Title:	Edform help links broken
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2010-06-23 08:56:00 stuart
+  When I click a help link on the Arakawa test edit form page,
+  I get a parameters error page that says: 
+
+    Error
+    We're sorry but your page request could not be processed
+      due to the following error(s):
+      * db_jmdict
+
+  Bad message (but that's a separate issue) but it means that 
+  parseform() was unable to open the jmdict database.  Reason
+  is that I recently removed access to jmdict database from the 
+  test pages.  
+
+  Problem is that the help page needs access to the database
+  because it has to read things like the keywords tables, but
+  it gets no "svc" parameter so it tries to open database jmdict
+  by default.
+
+  Need to fix the links in the TAL file so that the current 
+  svc parameter (and sid, although that is not currently needed)
+  is also passed.
+
+2010-06-24 12:51:00 stuart
+  Changed links like:
+
+    <a class="helplink" target="edhelp"
+      href="edhelp.py#corpus">help</a>
+
+  to
+
+    <a class="helplink"
+      tal:attributes="href string:edhelp.py?svc=${svc}&amp;#corpus">

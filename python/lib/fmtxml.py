@@ -312,6 +312,12 @@ def xrefs (xrefs, src):
 	    except AttributeError:
 		raise AttributeError ("xref missing TARG attribute.  Did you forget to call augmented_xrefs()?")
 
+	      # If generating JMdict-compatible XML, don't generate
+	      # xrefs to entries that are unapproved or whose status
+	      # is not active (i.e. deleted or rejected.)
+	    if not src and (targ.unap or targ.stat != jdb.KW.STAT['A'].id):
+		continue
+
 	      # Format the xref into xml text.
 	    fmtdxref = xref (x, src)
 

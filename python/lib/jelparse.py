@@ -219,7 +219,7 @@ def p_tagitem_4(p):
 
 def p_tagitem_5(p):
     '''tagitem : TEXT EQL TEXT'''
-    p[0] = [tag_eql_text (p[1], p[3])]
+    p[0] = [tag_eql_text (p, p[1], p[3])]
 
 def p_tagitem_6(p):
     '''tagitem : TEXT EQL TEXT COLON'''
@@ -291,7 +291,7 @@ def p_tagitem_9(p):
                 taglist.append (['RESTR', txt, None])
         else: 
               # This must be a tag=QTEXT contruct.
-            taglist.append (tag_eql_text (tag, txt))
+            taglist.append (tag_eql_text (p, tag, txt))
     p[0] = taglist
 
 def p_atext_1(p):
@@ -457,7 +457,7 @@ def errloc (errpos):
                 errpos = -1     # Ignore errpos on subsequent loops.
         return out
 
-def tag_eql_text (tag, text):
+def tag_eql_text (p, tag, text):
         # Process a tag=text syntax contructs as they are parsed. 
         # We extract this activity into a function since, in the
         # "tagitem" section, we do it both for the TEXT=TEXT rule,

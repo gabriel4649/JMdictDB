@@ -225,7 +225,7 @@ tagitem		/* Semantic value depends of the tag type:
 	| TEXT EQL TEXT		/* typ=tag,note=xxx,lsrc=txt,restr=nokanji
 				   Note that 'TEXT EQL QTEXT' is subsumed in
 				   'TEXT EQL jrefs' below.' */
-		{ p[0] = [tag_eql_text (p[1], p[3])] } 
+		{ p[0] = [tag_eql_text (p, p[1], p[3])] } 
 
 	| TEXT EQL TEXT COLON	/* lsrc=xx: ('xx' is language code.) */
 		{ KW = jdb.KW 
@@ -298,7 +298,7 @@ tagitem		/* Semantic value depends of the tag type:
 			    taglist.append (['RESTR', txt, None])
 		    else: 
 		          # This must be a tag=QTEXT contruct.
-		        taglist.append (tag_eql_text (tag, txt))
+		        taglist.append (tag_eql_text (p, tag, txt))
 		p[0] = taglist
 		}
 	;
@@ -454,7 +454,7 @@ def errloc (errpos):
 		errpos = -1	# Ignore errpos on subsequent loops.
 	return out
 
-def tag_eql_text (tag, text):
+def tag_eql_text (p, tag, text):
 	# Process a tag=text syntax contructs as they are parsed. 
 	# We extract this activity into a function since, in the
 	# "tagitem" section, we do it both for the TEXT=TEXT rule,

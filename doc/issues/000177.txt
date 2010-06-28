@@ -119,3 +119,12 @@ AssdTo:
   searches when resolving xrefs.
   I guess the main difficultly would be that errors would be
   detected far later leading to less specific error messages.
+
+2010-06-28 15:17:00 stuart
+  Test fmtjel.Test_general.test1329750 fails on Arakawa because 
+  it expects a [lit] gloss but jwb built the JMdict database
+  with literal parsing off, so there is no [lit] gloss but the
+  preceeding gloss contains the text "... (lit:...)"
+ 
+
+

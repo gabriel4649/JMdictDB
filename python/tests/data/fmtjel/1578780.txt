@@ -1,12 +1,12 @@
-﻿紅葉[ichi1,nf16,news1,ichi1]；黄葉
-こうよう[ichi1,nf16,news1]；もみじ[ichi1]
+﻿紅葉[ichi1,news1,nf16]；黄葉
+こうよう[ichi1,news1,nf16]；もみじ[ichi1]
 [1][n,vs]
   autumn colours; fall colors; leaves changing color (colour)
 [2][n,vs]
-  [restr=nokanji]
+  [restr=紅葉; こうよう]
   leaves turning red; red leaves
 [3][n,vs]
-  [restr=nokanji]
+  [restr=黄葉; こうよう]
   leaves turning yellow; yellow leaves
 [4][n]
   [restr=もみじ]

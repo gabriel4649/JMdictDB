@@ -1104,7 +1104,7 @@ def mark_seq_xrefs (cur, xrefs):
 		    marked[key1][key2][key3] = x.SEQ = True
 
 def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None, 
-		 one_entr_only=True, one_sens_only=False):
+		 one_entr_only=True, one_sens_only=False, krdetect=False):
 
 	# Find entries and their senses that match 'ktxt','rtxt','enum'.
 	# and return a list of augmented xref records that points to
@@ -1155,6 +1155,16 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
 	
 	if not rtxt and not ktxt and not enum:
 	    raise ValueError ("No rtxt, ktxt, or enum value, need at least one.")
+
+	  # If there is only one of 'ktxt', 'rtxt', and if 'krdetect' is true,
+	  # we take it that whichever of 'ktxt', 'rtxt' was given could be
+	  # be either kanji or reading and we will test and reassign correctly
+	  # to 'ktxt' or 'rtxt' according to the result.
+	if krdetect and (ktxt or rtxt) and not (ktxt and rtxt):
+	    if ktxt and not jstr_keb (ktxt): ktxt, rtxt = rtxt, ktxt
+	    if rtxt and     jstr_keb (rtxt): ktxt, rtxt = rtxt, ktxt
+
+	  # Build a string for use in error messages.
 	krtxt = (ktxt or '') + (u'\u30fb' if ktxt and rtxt else '') + (rtxt or '')
 
 	  # Build a SQL statement that will find all entries

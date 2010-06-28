@@ -34,6 +34,11 @@ class ParseError (ValueError):
 
 %}
 %%
+		/* CAUTION.  Note that the Ply parser processes Python
+		 * comments and requires parens and quotes to be balanced,
+		 * even in comments.  Thus english contractions or possesives
+		 * are written with two apostrophes (e.g. "don''t") below.
+		*/ 
 entr	: preentr
 		{ p.lexer.begin('INITIAL')
 		e = p[1]
@@ -185,52 +190,49 @@ taglist
 	;
 tags
 	: tagitem
-		{ p[0] = [p[1]] }
+		{ p[0] = p[1] }
 	| tags COMMA tagitem
 		{ p[0] = p[1]
-		p[0].append (p[3]) }
+		p[0].extend (p[3]) }
 	;
-tagitem
+tagitem		/* Semantic value depends of the tag type:
+		# unknown tag type: [[None, text]]
+		# pos, misc, dial, fld, lang, ginf: [[tag, id]]
+		# lsrc:  [['lsrc', text, lang.id, wp-flags]]
+		# note:  [['note', text, lang.id]]
+		# restr: [['RESTR', rtxt, ktxt], ...]
+		# xref:  [['XREF', xtyp, rtxt, ktxt, slist, seq, corp], ...] */
+
 	: KTEXT 
-		{ p[0] = ['RESTR', [[None, p[1], None, None, None]]] }
+		{ p[0] = [['RESTR', None, p[1]]] }
 	| RTEXT
-		{ p[0] = ['RESTR', [[p[1], None, None, None, None]]] }
-	| TEXT			    /* Simple keyword tag (including "nokanji"). */
+		{ p[0] = [['RESTR', p[1], None]] }
+	| TEXT			/* Simple keyword tag (including "nokanji"). */
 		{ if p[1] == 'nokanji':
-		    p[0] = ['RESTR', [['nokanji', None, None, None, None]]]
+		    p[0] = [['RESTR', 'nokanji', None]]
 		else:
 		    x = lookup_tag (p[1])
 		    if not x: perror (p, "Unknown keyword: '%s'" % p[1])
-		    else: p[0] = [None, p[1]] }
+		    else: p[0] = [[None, p[1]]] }
+        | QTEXT
+		{ # FIXME: why isn''t a QTEXT already cleaned up by jellex?
+		txt = jellex.qcleanup (p[1][1:-1])
+		  # FIXME: we should check for ascii text here and treat
+		  #  that as TEXT above.
+		if jdb.jstr_keb (txt): p[0] = [['RESTR', None, txt]]
+		else: 		       p[0] = [['RESTR', txt, None]] }
 
-	| TEXT EQL TEXT /* typ=tag,note=xxx,lsrc=txt,restr=nokanji */
-		{ KW = jdb.KW
-		if p[1] in ["note","lsrc","restr"]:
-		    if p[1] == "restr":
-			if p[3] != "nokanji":
-			    perror (p, "Bad restr value (expected \"nokanji\"): '%s'" % p[3])
-			p[0] = ["RESTR", [["nokanji", None, None, None, None]]]
-		    else: p[0] = [p[1], p[3], 1, None]
-		else:
-		    x = lookup_tag (p[3], p[1])
-		    if x and len(x) > 1:
-			raise ValueError ("Unexpected return value from lookup_tag()")
-		    if x is None: perror (p, "Unknown keyword type '%s'" % p[1])
-		    elif not x:   perror (p, "Unknown %s keyword '%s'" % (p[1],p[3]))
-		    else:         p[0] = x[0] } 
+	| TEXT EQL TEXT		/* typ=tag,note=xxx,lsrc=txt,restr=nokanji
+				   Note that 'TEXT EQL QTEXT' is subsumed in
+				   'TEXT EQL jrefs' below.' */
+		{ p[0] = [tag_eql_text (p[1], p[3])] } 
 
-	| TEXT EQL QTEXT	    /* note=xxx, lsrc=txt */
-		{ KW = jdb.KW 
-		if p[1] in ["note","lsrc"]:
-		    p[0] = [p[1], jellex.qcleanup (p[3][1:-1]), 1, None] 
-		else: perror (p, "Unknown keyword: '%s'" % p[1]) } 
-
-	| TEXT EQL TEXT COLON	    /* lsrc=xx: ('xx' is language code.) */
+	| TEXT EQL TEXT COLON	/* lsrc=xx: ('xx' is language code.) */
 		{ KW = jdb.KW 
 		if p[1] != "lsrc": perror (p, "Keyword must be \"lsrc\"")
 		la = KW.LANG.get(p[3])
 		if not la: perror (p, "Unrecognised language '%s'" % p[3])
-		p[0] = ["lsrc", None, la.id, None] }
+		p[0] = [["lsrc", None, la.id, None]] }
 
 	| TEXT EQL TEXT COLON atext  /* lsrc=lng:text, lsrc=w:text */
 		{ KW = jdb.KW 
@@ -243,7 +245,7 @@ tagitem
 			else: lsrc_flags = p[3]
 		    else: lang = la.id
 		else: perror (p, "Keyword not \"lsrc\", \"lit\", or \"expl\"")
-		p[0] = ["lsrc", p[5], lang, lsrc_flags] }
+		p[0] = [["lsrc", p[5], lang, lsrc_flags]] }
  
 	| TEXT EQL TEXT SLASH TEXT COLON atext /* lsrc=lng/wp:text */
 		{ KW = jdb.KW 
@@ -253,27 +255,51 @@ tagitem
 		if p[5] not in ('w','p','wp','pw'):
 		    perror (p, "Bad lsrc flags '%s', must be 'w' (wasei), "
 				"'p' (partial),or both" % p[5])
-		p[0] = ["lsrc", p[7], la.id, p[5]] }
+		p[0] = [["lsrc", p[7], la.id, p[5]]] }
  
-	| TEXT EQL xrefs   /* xref=q.k.r[n1,n2,..], restr=k;k;.. (restr, stagr,stagk) */
-		{ # 'xrefs' represents both xrefs and restrs, is list of 5-tuples:
-		  #   0 -- reading text
-		  #   1 -- kanji text
-		  #   2 -- sense number list
-		  #   3 -- number (entry, seq, or None)
-		  #   4 -- corpus (str:corp kw, "":current corp, None:entry id) 
-		KW = jdb.KW 
-		if p[1] == 'restr': 
-		    p[0] = ['RESTR', p[3]]
-		elif p[1] in [x.kw for x in KW.recs('XREF')]:
-		      # FIXME: instead of using XREF kw''s directly, do we want to
-		      #  change to an lsrc syntax like, "xref=cf:..." (possibly
-		      #  keeping "see" and "ant" as direct keywords)?
-		    p[0] = ['XREF', KW.XREF[p[1]].id, p[3]]
-		else: 
-		      # FIXME: msg is misleading, we also except other
-		      #  xref keywords.
-		    perror (p, 'Bad keyword, expected one of "restr", "see", or "ant"')
+	| TEXT EQL jrefs   	/* This rule is used for the following input syntax:
+				     xref=q.k.r[n1,n2,..],
+				     restr=k;k;.. (restr, stagr,stagk), 
+				     lsrc=qtxt, note=qtxt,
+				     and any other tag=QTEXT items. 
+				*/
+		{ tag = p[1];  taglist = [];  tagtype = 'XREF';  KW = jdb.KW
+		for jref in p[3]:
+		    dotlist, slist, seq, corpus = jref
+		    if tag in [x.kw for x in KW.recs('XREF')]:
+		          # FIXME: instead of using XREF kw''s directly, do we want to
+		          #  change to an lsrc syntax like, "xref=cf:..." 
+		          #  (possibly keeping "see" and "ant" as direct keywords)?
+		        if len (dotlist) == 1: 
+			    if jdb.jstr_keb (dotlist[0]): 
+				taglist.append (['XREF', tag, None, dotlist[0], slist, seq, corpus])
+			    else:
+				taglist.append (['XREF', tag, dotlist[0], None, slist, seq, corpus])
+			elif len (dotlist) == 2: 
+			    taglist.append (['XREF', tag, dotlist[1], dotlist[0], slist, seq, corpus])
+			elif len(dotlist) == 0:
+			    taglist.append (['XREF', tag, None, None, slist, seq, corpus])
+		        else: perror ("No more than on kanji and one reading string can be given in an xref.")
+			continue
+		      # The full 'jref' syntax is only used by xrefs (above)
+		      # so if we get here, complain if the 'jref' item has 
+		      # any xref-specific elements.
+		    if seq or corpus or slist: 
+		        perror ("Seq number, corpus, or a sense list can only be given with xref tags")
+		      # Xrefs are also the only contruct that uses the middot character
+		      # syntactically.  Since we don''t have an xref, then the midots are 
+		      # just characters in the text, so put the original text string back
+		      # together. 
+		    txt = u'\u30FB'.join (dotlist)
+		    if tag == 'restr': 
+			if jdb.jstr_keb (txt): 
+			    taglist.append (['RESTR', None, txt])
+			else:
+			    taglist.append (['RESTR', txt, None])
+		    else: 
+		          # This must be a tag=QTEXT contruct.
+		        taglist.append (tag_eql_text (tag, txt))
+		p[0] = taglist
 		}
 	;
 atext
@@ -282,47 +308,50 @@ atext
 	| QTEXT
 		{ p[0] = jellex.qcleanup (p[1][1:-1]) }
 	;
-xrefs
-	: xref
+jrefs
+	: jref
 		{ p[0] = [p[1]] }
-	| xrefs SEMI xref
-		{ p[0] = p[1]
-		p[0].append (p[3]) }
+	| jrefs SEMI jref
+		{ p[0] = p[1];  p[0].append (p[3]) }
 	;
-xref		/* Return 5-seq:
-		 * 0: Reading text or None.
-		 * 1: Kanji text or None.
-		 * 2: List of sense numbers or None.
-		 * 3: Xref seq or entry number.
-		 * 4: Xref corpus name, '', or None.
+jref		/* Return 4-seq:
+		 * 0: A 'dotlist' or None.
+		 * 1: List of sense numbers or None.
+		 * 2: Xref seq or entry number.
+		 * 3: Xref corpus name, '', or None.
 		 */
 	: xrefnum
-		{ p[0] = [None,None,None] + p[1] }
+		{ p[0] = [[],[]] + p[1] }
 	| xrefnum slist
-		{ p[0] = [None,None,p[2]] + p[1] }
+		{ p[0] = [[],p[2]] + p[1] }
 	| xrefnum DOT jitem
 		{ p[0] = p[3] + p[1] }
 	| jitem
 		{ p[0] = p[1] + [None,''] }
 	;
-jitem
-	: jtext
-		{ p[0] = p[1] }
-	| jtext slist
-		{ p[0] = p[1]
-		p[0][2] = p[2] }
+jitem		/* 'jitem' value is a list of length 2.
+		   [0]: None, or a 'dotlist' which is a list of jtext items.
+		   [1]: None, or a list of sense numbers.
+		*/
+	: dotlist
+		{ p[0] = [p[1], None] }
+	| dotlist slist
+		{ p[0] = [p[1], p[2]] }
 	;
-jtext		/* Return 3-seq:
-		 * 0: Reading text or None.
-		 * 1: Kanji text or None.
-		 * 2: Always None (place holder).
-		 */
+dotlist
+	: jtext 
+	        { p[0] = [p[1]] }
+	| dotlist DOT jtext 
+	        { p[0] = p[1];  p[0].append (p[3]) }
+	;
+
+jtext
 	: KTEXT
-		{ p[0] = [None, p[1], None] }
+		{ p[0] = p[1] }
 	| RTEXT
-		{ p[0] = [p[1], None, None] }
-	| KTEXT DOT RTEXT
-		{ p[0] = [p[3], p[1], None] }
+		{ p[0] = p[1] }
+	| QTEXT
+		{ p[0] = jellex.qcleanup (p[1][1:-1]) }
 	;
 xrefnum		/* Return 2-seq:
 		 * 0: Value (integer) of xref seq or entry number.
@@ -363,7 +392,6 @@ def perror (t_or_p, msg="Syntax Error", loc=True):
 	# 't_or_p' is either a YaccProduction (if called from 
 	# jelparse code), a LexToken (if called by Ply), or None
 	# (if called by Ply at end-of-text).
-	#pdb.set_trace()
 	if loc:
 	    errpos = -1
 	    if t_or_p is None: errpos = None
@@ -425,6 +453,28 @@ def errloc (errpos):
 		out.append ((' ' * (errcol+adj)) + '^')
 		errpos = -1	# Ignore errpos on subsequent loops.
 	return out
+
+def tag_eql_text (tag, text):
+	# Process a tag=text syntax contructs as they are parsed. 
+	# We extract this activity into a function since, in the
+	# "tagitem" section, we do it both for the TEXT=TEXT rule,
+	# and TEXT=QTEXT (which is a possible condition in the
+	# TEXT=jrefs rule.)
+
+	if tag in ["note","lsrc","restr"]:
+	    if tag == "restr":
+		if text != "nokanji":
+		    perror (p, "Bad restr value (expected \"nokanji\"): '%s'" % p[3])
+		r = ["RESTR", "nokanji", None]
+	    else: r = [tag, text, 1, None]
+	else:
+	    x = lookup_tag (text, tag)
+	    if x and len(x) > 1:
+		raise ValueError ("Unexpected return value from lookup_tag()")
+	    if x is None: perror (p, "Unknown keyword type '%s'" % tag)
+	    elif not x:   perror (p, "Unknown %s keyword '%s'" % (tag,text))
+	    else:         r = x[0]
+	return r
 
 def lookup_tag (tag, typs=None):
 	# Lookup 'tag' (given as a string) in the keyword tables
@@ -549,7 +599,7 @@ def sens_tags (sens, gloss, tags):
 	        append (sens, "_"+typ.lower(), o)
 
 	    elif typ == 'RESTR':
-		# We can't create real @{_stagk} or @{_stagr} lists here
+		# We can't create real _stagk or _stagr lists here
 		# because the readings and kanji we are given by the user
 		# are allowed ones, but we need to store disallowed ones. 
 		# To get the disallowed ones, we need access to all the
@@ -559,15 +609,14 @@ def sens_tags (sens, gloss, tags):
 		# full entry is built and we have access to the entry's
 		# readings and kanji.
 
-		for xitem in t[0]:
-		    rtxt,ktxt,slist,num,corp = xitem
-		    #if num or corp:
-		    if ((rtxt and ktxt) or (not rtxt and not ktxt)): 
-			errs.append ("Sense restrictions must have a "
-				     "reading or kanji (but not both): "
-			 	     + fmt_xitem (xitem))
-		    if ktxt: append (sens, '_STAGK', ktxt)
-		    if rtxt: append (sens, '_STAGR', rtxt)
+		rtxt,ktxt = t
+		#if num or corp:
+		if ((rtxt and ktxt) or (not rtxt and not ktxt)): 
+		    errs.append ("Sense restrictions must have a "
+				 "reading or kanji (but not both): "
+			 	 + fmt_xitem (t))
+		if ktxt: append (sens, '_STAGK', ktxt)
+		if rtxt: append (sens, '_STAGR', rtxt)
 
 	    elif typ == 'lsrc':  
 		wasei   = t[2] and 'w' in t[2]
@@ -582,11 +631,9 @@ def sens_tags (sens, gloss, tags):
 		sens.notes = t[0]
 
 	    elif typ == 'XREF':
-		xtyp = t[0]
-		for xitem in t[1]:
-		    kw = KW.XREF[xtyp].id
-		    xitem.insert (0, kw)
-		    append (sens, '_XREF', xitem)
+		kw = KW.XREF[t[0]].id
+		t[0] = kw
+		append (sens, '_XREF', t)
 
 	    elif typ == 'GINF':
 		assert isinstance(t,int)
@@ -637,28 +684,25 @@ def bld_rdng (r, taglist=[]):
 		# just save the allowed kanji as given, and will convert it
 		# after the full entry is built and we have all the info we
 		# need.
-		for xitem in t[0]:
+		#for xitem in t[0]:
 		      # An xitem represents a reference to another entry
 		      # or other info within an entry, in textual form.  It
 		      # is used for xrefs and restr info.  It is a 5-seq
 		      # with the following values:
 		      #   [0] -- Reading text
 		      #   [1] -- Kanji text
-		      #   [2] -- A sequence of sense numbers.
-		      #   [3] -- An entry or seq number.
-		      #   [4] -- Corpus name or id number, "",  or None.
 		      # For a reading restr, it is expected to contain only 
 		      # a kanji text.
-		    rtxt,ktxt,slist,num,corp = xitem
-		    if rtxt == "nokanji": 
-			nokanj = True
-			r._NOKANJI = 1
-			continue
-		    if rtxt or not ktxt or slist or num or corp:
-			errs.append ("Reading restrictions must be kanji only: "
+		rtxt,ktxt = t
+		if rtxt == "nokanji": 
+		    nokanj = True
+		    r._NOKANJI = 1
+		    continue
+		if rtxt:
+		    errs.append ("Reading restrictions must be kanji only: "
 				      + fmt_xitem (xitem))
-		    append (r, "_RESTR", ktxt)
-		if hasattr (r,'_RESTR') and nokanj:
+		append (r, "_RESTR", ktxt)
+	        if hasattr (r,'_RESTR') and nokanj:
 		    errs.append ("Can't use both kanji and \"nokanji\" in 'restr' tags")
 	    elif typ: 
 		errs.append ("Cannot use '%s' tag in a reading" % typ)
@@ -750,7 +794,7 @@ def mk_restrs (listkey, rdngs, kanjs):
 		nomatch = [x for x in restrtxt if x not in ktxts]
 		if nomatch:
 		    if   listkey == "_RESTR": not_found_in = "kanji"
-		    elif listkey == "_STAGR": not_found_in = "readngs"
+		    elif listkey == "_STAGR": not_found_in = "readings"
 		    elif listkey == "_STAGK": not_found_in = "kanji"
 		    errs.append ("restr value(s) '" + 
 			    "','".join (nomatch) + 
@@ -776,7 +820,7 @@ def resolv_xrefs (
 		 corpus 'entr.src', otherwise it is the name or id
 		 number of a corpus in which to try resolving the
 		 xref. 
-	At least one of [3], [4], or [1] must be non-None.\
+	At least one of [1], [2], or [4] must be non-None.\
 	"""
 	errs = []
 	for s in getattr (entr, '_sens', []):
@@ -882,7 +926,8 @@ def toint (s):
 def fmt_xitem (xitem):
 	typ = None
 	if len (xitem) == 6: typ = xitem.pop (0)
-	rtxt, ktxt, slist, num, corp = xitem
+	if len (xitem) == 5: rtxt, ktxt, slist, num, corp = xitem
+	else: rtxt, ktxt, slist, num, corp = xitem + [[], None, None]
 	k = ktxt or '';  r = rtxt or '';  n = num or ''
 	if num:
 	    if corp: c = ' ' + corp
@@ -928,7 +973,7 @@ def create_parser (lexer, toks, **args):
 	if 'module'       not in args: args['module']       = sys.modules['jelparse']
 	if 'tabmodule'    not in args: args['tabmodule']    = 'jelparse_tab'
 	if 'write_tables' not in args: args['write_tables'] = 1
-	if 'optimize'     not in args: args['optimize']     = 1 
+	if 'optimize'     not in args: args['optimize']     = 0 
 	if 'debug'        not in args: args['debug']        = 0
 
 	JelParser = ply.yacc.yacc (**args)

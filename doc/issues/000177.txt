@@ -66,3 +66,56 @@ AssdTo:
   (*1) We only need to make kanji/reading determination for
   xrefs if only one text string is given; if two are given
   then the first is kanji and the second is reading. 
+
+2010-06-25 15:45:00 stuart
+  Modified jelparse to accept QTEXT in addition to KTEXT and
+  RTEXT in productions 'tagitem' and 'jtext' (which is used
+  "TEXT EQL jrefs" part of 'tagitem'.  We do a kanji/kana
+  classification on the qtext at that point 
+
+  Also flattened the lists that 'tagitem' returns (actually
+  it returns a list of such flattened lists because xrefs
+  and restrs can produce multiple items) because I couldn't
+  figure out what was supposed to be returned.  Corresponding
+  changes made in bld_rdng() and sens_tags().
+
+  Also change fmtjel.py to print restr values in double
+  quotes if the value includes any special characters.
+  Print stagr and stagk restrictions with an explicit "restr="
+  (as before) but print restr (reading) restr restrictions 
+  without the "restr=" (because reading text is much longer
+  so let's not add any unecessary length.)
+
+  Changed fmtjel.py to print restrs, then freq etc.  (Was
+  previously in other order.) 
+
+  Updated jelfmt tests for above changes.
+
+  Also updated python/lib/tal/edhelp.tal to mention need to
+  use double quotes for dotted kanji or readings, and python/-
+  lib/fmtjel.py to put double quotes around kr text if it
+  contains special characters.
+
+2010-06-27 22:28:00 stuart
+  Added some jelparse restr xref tests. In order to do this more
+  conveniently, revised unitttest_extensions.readfile_utf8()
+  to read multiple sets of test data and expected results data 
+  from a single file.  
+
+2010-06-27 22:29:00 stuart
+  The following will be subjects of new Issues, but wanted to
+  note them here for now...
+
+  To do:
+  * There is no point in jellex doing a kanji/kana classify; it
+  could return a JTEXT items which we would treat as a QTEXT.
+  Only other place distinction is made is main kanji and reading
+  texts but we could classify at that point instead of in the
+  lexer.
+
+  * Longer term, do we need to classify the text at all (beyond
+  JTEXT)?  Restrs can search both _rdng and _kanj lists and there
+  will be a match in one or the other.  We could also do two 
+  searches when resolving xrefs.
+  I guess the main difficultly would be that errors would be
+  detected far later leading to less specific error messages.

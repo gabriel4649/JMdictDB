@@ -1,5 +1,5 @@
 ﻿惚け[ichi1]；呆け[ichi1]
-ぼけ[ichi1]；ボケ[restr=nokanji]
+ぼけ[ichi1]；ボケ[nokanji]
 [1][n,suf][uk]
   idiot; fool; touched in the head (from); out of it (from); space case
 [2][n,suf]

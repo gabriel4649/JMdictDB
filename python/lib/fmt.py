@@ -295,7 +295,7 @@ def kr (ktxt, rtxt):
 	elif rtxt: txt = rtxt
 	return txt
 
-def restrtxts (restrs, kanjs, attr):
+def restrtxts (restrs, kanjs, attr, quote_func=lambda x:x):
 
 	"""Return list of 'kanj.txt' strings of those 'kanj' items
 	without a matching item in 'restrs'.  "Maching" means two
@@ -305,6 +305,10 @@ def restrtxts (restrs, kanjs, attr):
 	in 'kanj' has a matching item in 'restrs', a one-item list is
         returned containing the string 'noXXX' where XXX is a derived
 	from the value of 'key'.
+
+        Each restr item will be passed to function 'quote_func' and 
+        the string returned from that function is actually uwed top
+        build the return list.
 
 	This function is convenient for getting restriction text from
 	an entry for display.  Assuming 'entr' is a jdb entry with a 
@@ -335,7 +339,7 @@ def restrtxts (restrs, kanjs, attr):
 	if not restrs: return []
 	if len(restrs) == len(kanjs): return ['no' + 
 		{'_restr':"kanji", '_stagr':"readings", '_stagk':"kanji"}[attr]]
-	return [x.txt for x in jdb.restrs2ext_ (restrs, kanjs, attr)]
+	return [quote_func(x.txt) for x in jdb.restrs2ext_ (restrs, kanjs, attr)]
 
 def chr (c):
 	fmt = []; a = []

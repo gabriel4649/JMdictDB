@@ -1,5 +1,5 @@
 ﻿町[ichi1,news1,nf02]；街
-まち[ichi1,news1,nf02]；ちょう[restr=町]
+まち[ichi1,news1,nf02]；ちょう[町]
 [1][n]
   town; block; neighbourhood; neighborhood
 [2][n]

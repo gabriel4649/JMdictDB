@@ -1,4 +1,4 @@
 治具[ateji]；冶具[ateji,iK]
-じぐ；ジグ[restr=nokanji]
+じぐ；ジグ[nokanji]
 [1][n][uk]
   jig (tool)

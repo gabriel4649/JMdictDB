@@ -1,4 +1,4 @@
 ＨＤＤＶＤ；ＨＤ・ＤＶＤ
-エッチディーディーブイディー[restr=ＨＤＤＶＤ]；エッチディー・ディーブイディー[restr=ＨＤ・ＤＶＤ]
+エッチディーディーブイディー[ＨＤＤＶＤ]；エッチディー・ディーブイディー["ＨＤ・ＤＶＤ"]
 [1][n]
   high-definition digital versatile disc (HD DVD, high-definition DVD)

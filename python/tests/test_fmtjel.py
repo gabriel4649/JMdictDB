@@ -1,10 +1,10 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
-import sys, unittest, pdb
+import sys, unittest, codecs, os.path, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')
-import jdb
+import jdb, fmtjel, jmxml, xmlkw
 from objects import *
-import fmtjel
+import unittest_extensions
 
 __unittest = 1
 Cur = None
@@ -63,10 +63,10 @@ class Test_general (unittest.TestCase):
     def test1098650(self): self.check(1098650)	# dotted reb, kanji xref.
     def test1099200(self): self.check(1099200)	# mult rdng w dots, kanj xref.
     def test1140360(self): self.check(1140360)	# xref w kanj/katakana.
-    #1 def test1578780(self): self.check(1578780)	# dotted pair (K.R) in stagk.
-    #3 def test2038530(self): self.check(2038530)	# dotted keb w dotted restr.
+    def test1578780(self): self.check(1578780)	# dotted pair (K.R) in stagk.
+    #2 def test2038530(self): self.check(2038530)	# dotted keb w dotted restr.
     def test2107800(self): self.check(2107800)	# double-dotted reb.
-    #2 def test2159530(self): self.check(2159530)	# wide ascii kanj w dot and restr.
+    #3 def test2159530(self): self.check(2159530)	# wide ascii kanj w dot and restr.
     def test1106120(self): self.check(1106120)	# semicolon in gloss.
     def test1329750(self): self.check(1329750)	# literal gloss.
 
@@ -106,7 +106,7 @@ class Test_restr (unittest.TestCase):
 	expect = 'jmdict 1000010 A {100}\n\n\n'
 	jeltxt = fmtjel.entr (e1)
 	_.assertEqual (expect, jeltxt)
-    def test_002(_): 
+    def test_002(_):
 	e1 = Entr (id=100, src=1, seq=1000010, stat=2, unap=False)
 	e1._kanj = [Kanj(txt=u'手紙',), Kanj(txt=u'切手')]
 	e1._rdng = [Rdng(txt=u'てがみ'), Rdng(txt=u'あとで'), Rdng(txt=u'きって')]
@@ -116,10 +116,34 @@ class Test_restr (unittest.TestCase):
 	r = Restr(); e1._rdng[2]._restr.append (r); e1._kanj[1]._restr.append(r)
 	expect =  'jmdict 1000010 A {100}\n' \
 		  '手紙；切手\n' \
-		  'てがみ[restr=手紙]；あとで[restr=切手]；きって[restr=nokanji]\n' \
+		  'てがみ[手紙]；あとで[切手]；きって[nokanji]\n' \
 		  .decode('utf-8')
 	jeltxt = fmtjel.entr (e1)
 	msg = "\nA:\n%s\nB:\n%s" % (expect, jeltxt)
 	_.assertEqual (expect, jeltxt, msg)
+
+class Test_extra (unittest.TestCase):
+    def setUp (_): 
+        globalSetup()
+	XKW = xmlkw.make (jdb.KW)
+        jmxml.XKW = XKW	   # FIXME: gross
+    def test_x00001(_): dotest (_, 'x00001')	# dotted restrs in quotes.
+
+
+def dotest (_, testid, xmlfn=None, jelfn=None, dir='data/fmtjel', enc='utf_8_sig'):
+	if xmlfn is None: xmlfn = os.path.join (dir, testid + '.xml')
+	if jelfn is None: jelfn = os.path.join (dir, testid + '.jel')
+	expected = readfile (jelfn, enc)
+	xmlu = readfile (xmlfn, enc)
+	xml8 = xmlu.encode ('utf-8')
+	elist = jmxml.parse_entry (xml8)
+	got = fmtjel.entr (elist[0], nohdr=True)
+	msg = "\nExpected:\n%s\nGot:\n%s" % (expected, got)
+	_.assertEqual (expected, got, msg)
+	
+def readfile (filename, enc):
+	with codecs.open (filename, 'r', enc) as f:
+	    contents = f.read()
+	return contents.strip()
 
 if __name__ == '__main__': unittest.main()

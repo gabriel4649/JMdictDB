@@ -1,4 +1,4 @@
 ﻿若布[ichi1]；和布[ichi1]；稚海藻；裙蔕菜
-わかめ[ichi1]；ワカメ[restr=nokanji]
+わかめ[ichi1]；ワカメ[nokanji]
 [1][n][uk]
   wakame (species of edible brown seaweed, Undaria pinnatifida)

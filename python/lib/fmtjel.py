@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2006,2008 Stuart McGraw 
+#  Copyright (c) 2006-2010 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -25,16 +25,16 @@ import jdb, fmt
 from collections import defaultdict
 
 MIDDOT = u'\u30FB'
+  # The following characters are recognised as special
+  # in the TAGLIST state in jellex.py.
+SPECIALS = ur'[ :;,.#/=\[\]\u3000\uFF1B\u3001\uFF0F\u30FB]'
 
 def qtxt (txt):
-	# Enclose txt in quotes if it contains any 
-	# non-alphanumeric characters other than "_" or "-". 
-	  # Escape existing quotes.
-	if txt: 
-	    if re.search (r'[^a-zA-Z0-9_-]', txt): 
-	 	txt = txt.replace ('"', '\\"')
-		txt = '\"' + txt + '\"' 
-	else: txt = ''	# If we got a None.
+	# Enclose txt in quotes if it contains any special 
+	# characters.
+	if not txt: return '' 
+	if re.search (SPECIALS, txt):
+	   txt = '"' + txt.replace ('"', '\\"') + '"'
 	return txt
 
 def escgloss (txt):
@@ -64,12 +64,15 @@ def rdngs (rdngs, kanjs):
 def rdng (rdng, kanjs):
 	KW = jdb.KW
 	txt = rdng.txt
+	restrtxt = fmt.restrtxts (getattr(rdng,'_restr',[]),
+		   		  kanjs, '_restr', qtxt)
+	  # Join restrs with "," if they are alone, but with
+	  # ";" if in a list prefixed with "restr=".
+	if restrtxt: txt += '[' + ','.join(restrtxt) + ']' 
 	inf = [KW.RINF[x.kw].kw for x in getattr(rdng,'_inf',[])] 
 	inf.sort()
 	freq = jdb.freq2txts (getattr(rdng,'_freq',[]))
 	if inf or freq: txt += '[' + ','.join (inf + freq) + ']'
-	restrtxt = fmt.restrtxts (getattr(rdng,'_restr',[]), kanjs, '_restr')
-	if restrtxt: txt += '[restr=' + ';'.join(restrtxt) + ']' 
 	return txt
 
 def senss (senss, kanjs, rdngs):
@@ -96,13 +99,15 @@ def sens (sens, kanjs, rdngs, nsens):
 					  if getattr (x, 'SEQ', None) is not False
 					     and getattr (x, '_xsens', None)!=[]]
 	_xrslv = ['[' + xrslv (x) + ']' for x in getattr (sens, '_xrslv', [])]
-
+   
 	kwds  = iif (pos,  '[' + ','.join (pos)  + ']', '')
 	kwds += iif (misc, '[' + ','.join (misc) + ']', '')
 	kwds += iif (fld,  '[' + ','.join (fld)  + ']', '')
 	dial  = iif (dial, '[' + ','.join(dial)  + ']', '')
 	restr = stagk + stagr
-	restr = iif (restr, '[restr=' + '; '.join (restr) + ']', '')
+	  # Join restrs with "," if they are alone, but with
+	  # ";" if in a list prefixed with "restr=".
+	restr = iif (restr, '[restr=' + '; '.join (qtxt(x) for x in restr) + ']', '')
 	_lsrc = iif (_lsrc, '[' + ','.join (_lsrc) + ']', '')
 	note  = ''
 	if getattr(sens,'notes',None): note = '[note=' + qtxt(sens.notes) + ']'
@@ -189,7 +194,7 @@ def fmt_xref_kr (xref):
 	else:
 	    kt = getattr (xref, 'ktxt', '') or ''
 	    rt = getattr (xref, 'rtxt', '') or ''
-	txt = kt + (MIDDOT if kt and rt else '') + rt + ts
+	txt = qtxt(kt) + (MIDDOT if kt and rt else '') + qtxt(rt) + ts
 	return txt
 
 def xrslv (xr):

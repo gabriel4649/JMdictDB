@@ -1,5 +1,5 @@
 ﻿じゃが芋[spec1]；ジャガ芋[gai2,ichi1]；馬鈴薯
-じゃがいも[spec1][restr=じゃが芋;馬鈴薯]；ジャガいも[gai2,ichi1][restr=ジャガ芋]；ジャガイモ[restr=nokanji]；ばれいしょ[spec1][restr=馬鈴薯]
+じゃがいも[じゃが芋,馬鈴薯][spec1]；ジャガいも[ジャガ芋][gai2,ichi1]；ジャガイモ[nokanji]；ばれいしょ[馬鈴薯][spec1]
 [1][n][uk]
   potato (Solanum tuberosum)
   [see=2194060・ジャガタラ芋[1]]

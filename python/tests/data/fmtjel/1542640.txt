@@ -1,5 +1,5 @@
 ﻿夕べ[news1,nf18]；夕[news1,nf02]；昨夜[ichi1,news1,nf21]
-ゆうべ[news1,nf18]；ゆう[news1,nf02][restr=夕]；さくや[ichi1,news1,nf21][restr=昨夜]
+ゆうべ[news1,nf18]；ゆう[夕][news1,nf02]；さくや[昨夜][ichi1,news1,nf21]
 [1][n-adv,n-t]
   [restr=夕べ; 夕]
   evening

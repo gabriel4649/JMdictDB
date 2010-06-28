@@ -1,4 +1,5 @@
-import sys, os, os.path, unittest, time, subprocess, tempfile, shutil, difflib, re
+import sys, os, os.path, unittest, time, subprocess, tempfile, \
+       shutil, difflib, re, pdb
 
 class TextTestRunner (unittest.TextTestRunner):
     """
@@ -123,12 +124,42 @@ def runcmd (wkdir, cmdln):
 	if rc != 0: raise RuntimeError (stderr)
 	return stdout, stderr
 
-def readfile_utf8 (fname):
-	f = open (fname)
-	txt = f.read().decode ('utf-8')
-	f.close()
-	if txt[0] == u'\uFEFF': txt = txt[1:]
-	return txt
+def readfile_utf8 (fname, enc='utf-8', secsep=None, rmcomments=False):
+	# Read file named 'fname' and return its contents as either a
+	# string (if 'secsep' is None), or, (if 'secsep' is not None)
+	# a dict of strings, where each dict key is a section label,
+	# and each value, a text a string for that section on the file.
+	# A line in the file that matches regex pattern 'secsep' separates
+	# sections.  If 'secsep' has a subgroup, it will be used for the
+	# label.  Otherwise, the section number (starting at 0) will be
+	# used for the label.
+	# If 'rmcomments' is true, comment and blank lines not be 
+	# included in the output text strings.
+
+	results = {}; current_txts = []; secnum = 0; label=0
+	def save (results, label, current_txts):
+	    if label in results: raise ValueError ("Duplicate test '%s'" % label)
+	    ln = ''.join (current_txts)
+	    results[label] = ln
+	    return [], secnum + 1
+ 
+	with open (fname) as f:
+	    for lnnum, ln in enumerate (f):
+		ln = ln.decode (enc)
+	        if lnnum == 0 and ln[0] == u'\uFEFF': ln = ln[1:]
+		mo = re.match (secsep, ln) if secsep else None
+		if mo:
+		    if current_txts:
+		        current_txts, secnum = save (results, label, current_txts)
+		    try: label = mo.group(1)
+		    except StandardError: label = secnum
+		    continue
+		  # Note that blank lines are NOT comments.
+	        if rmcomments and re.match (r'\s*#', ln): continue
+		current_txts.append (ln)
+	save (results, label, current_txts)
+	if secsep is None: return results[0]
+ 	return results
 
 def mk_temp_dir (in_dir=".", keep=False):
 	dirname = tempfile.mkdtemp ("tmp", dir=in_dir)

@@ -1,5 +1,5 @@
 ﻿叩き[spec1]；三和土；敲き
-たたき[spec1]；タタキ[spec1][restr=nokanji]
+たたき[spec1]；タタキ[nokanji][spec1]
 [1][n][uk]
   [restr=叩き; 敲き]
   mince (minced meat or fish)

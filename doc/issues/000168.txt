@@ -30,3 +30,10 @@ AssdTo:	stuart
 2010-06-16 20:16:00 stuart
   jwb mentioned another problem seen today -- an (invisible?) ^M
   character that occured in the gloss of a user's submission.
+  [Rev 2010-06-24-d244f825aafb should quietly strip things like 
+  this before it needs to be checked for.]
+
+2010-06-28 08:59:00 stuart
+  Should check that the K.R[s] values given in an xref are not
+  disallowed by restr/stagr/stagk restrictions.
+

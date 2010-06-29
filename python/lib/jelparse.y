@@ -315,9 +315,9 @@ jrefs
 		{ p[0] = p[1];  p[0].append (p[3]) }
 	;
 jref		/* Return 4-seq:
-		 * 0: A 'dotlist' or None.
-		 * 1: List of sense numbers or None.
-		 * 2: Xref seq or entry number.
+		 * 0: A 'dotlist' or [].
+		 * 1: List of sense numbers or [].
+		 * 2: Xref seq or entry number or None.
 		 * 3: Xref corpus name, '', or None.
 		 */
 	: xrefnum
@@ -973,10 +973,9 @@ def create_parser (lexer, toks, **args):
 	if 'module'       not in args: args['module']       = sys.modules['jelparse']
 	if 'tabmodule'    not in args: args['tabmodule']    = 'jelparse_tab'
 	if 'write_tables' not in args: args['write_tables'] = 1
-	if 'optimize'     not in args: args['optimize']     = 0 
+	if 'optimize'     not in args: args['optimize']     = 1 
 	if 'debug'        not in args: args['debug']        = 0
 
 	JelParser = ply.yacc.yacc (**args)
 	JelParser.lexer = lexer	  # Access to lexer needed in error handler.
 	return JelParser
-

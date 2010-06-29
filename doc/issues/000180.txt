@@ -1,0 +1,25 @@
+Title:	edconf.py crash when copying freqs.
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2010-06-28 20:22:00 stuart
+  To reproduce:
+  Ass a non-editor, edit seq number 1198180 and click Next.  Result
+  is traceback:
+  ----
+  Traceback (most recent call last):
+    File "/home/smg/public_html/cgi-bin/edconf.py", line 317, in <module>
+      main (args, opts)
+    File "/home/smg/public_html/cgi-bin/edconf.py", line 135, in main
+      jdb.copy_freqs (pentr, entr)
+    File "../lib/jdb.py", line 880, in copy_freqs
+      idx = freq_map (fromentr)
+    File "../lib/jdb.py", line 912, in freq_map
+      if idx[f]:
+  KeyError: Freq(kanj=3, rdng=None, value=34, entr=18750, kw=5)
+  ----
+  This does not happen when logged in as editor.

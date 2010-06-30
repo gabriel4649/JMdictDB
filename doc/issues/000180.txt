@@ -1,6 +1,6 @@
 Title:	edconf.py crash when copying freqs.
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	
@@ -23,3 +23,13 @@ AssdTo:
   KeyError: Freq(kanj=3, rdng=None, value=34, entr=18750, kw=5)
   ----
   This does not happen when logged in as editor.
+
+2010-06-30 09:34:00 stuart
+  Problem was in jdb.copy_freqs():
+
+  	  if idx[f]: ...
+          else: ...
+
+  If f is not in idx, a KeyError is raise, rather than the 
+  else statment being executed as we wanted.  Changed the 
+  "idx[f]" to "idx.get(f)".

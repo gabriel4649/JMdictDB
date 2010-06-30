@@ -909,7 +909,7 @@ def freq_map (entr):
 		idx[f] = [r, n, None, None]
 	for n, k in enumerate (getattr (entr, '_kanj', [])):
 	    for f in getattr (k, '_freq', []):
-		if idx[f]: 
+		if idx.get (f): 
 		    v = idx[f];  v[2:4] = [k, n]
 		else: idx[f] = [None, None, k, n]
 	return idx

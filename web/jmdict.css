@@ -13,6 +13,7 @@
 .notice		{font-size: 55%; color: #FF0000}
 .notes		{font-size: 75%;}
 .preformat	{margin-left: 2em; white-space: pre-wrap; font-family: monospace}
+.hist,.histtab	{border-style: solid; border-width: thin; font-size: 75%}
 
 /* Search results list */
 .results	{background: #E8FFF0; 

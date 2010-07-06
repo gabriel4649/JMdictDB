@@ -284,44 +284,46 @@
 	  </table>
 	</span>
 
-      <span tal:condition="e/_hist" tal:omit-tag="">History:
-	<table>
-	  <span tal:repeat="h e/_hist">
-	    <span tal:condition="h/email" tal:omit-tag="">
-	      <span tal:condition="session/userid">
-		<span tal:define="global email string:&lt;${h/email}&gt;"/>
+	<br/>
+	<div class="hist" tal:condition="e/_hist">History:
+	  <table>
+           <tbody class="histtab">
+	    <span tal:repeat="h e/_hist">
+	      <span tal:condition="h/email" tal:omit-tag="">
+		<span tal:condition="session/userid">
+		  <span tal:define="global email string:&lt;${h/email}&gt;"/>
+		  </span>
+	        <span tal:condition="not:session/userid">
+		  <span tal:define="global email string:&lt;...address hidden...&gt;"/>
+		  </span>
 		</span>
-	      <span tal:condition="not:session/userid">
-		<span tal:define="global email string:&lt;...address hidden...&gt;"/>
+	      <span tal:condition="not:h/email" tal:omit-tag="">
+		<span tal:define="global email string:"/>
 		</span>
+	      <tr>
+		<td tal:content="string:${h/hist}.">#.</td> 
+		<td class="hhdr" colspan="2" tal:content="string: ${python:TALabbr('STAT',h.stat)}${python:'*' if h.unap else ''} ${h/dt} ${h/name} ${email}">hist-header</td>
+		</tr>
+	      <tr tal:condition="h/refs">
+		<td>&nbsp;</td>
+		<td valign="top">Refs:</td>
+		<td tal:content="h/refs">refs</td>
+	       </tr>
+	      <tr tal:condition="h/notes">
+		<td>&nbsp;</td>
+		<td valign="top">Comments:</td>
+		<td tal:content="h/notes">notes</td>
+	       </tr>
+	      <tr tal:condition="h/diff">
+		<td>&nbsp;</td>
+		<td valign="top">Diff:</td>
+		<td tal:content="structure h/diff">diff</td>
+	       </tr>
 	      </span>
-	    <span tal:condition="not:h/email" tal:omit-tag="">
-	      <span tal:define="global email string:"/>
-	      </span>
-	    <tr>
-	      <td tal:content="string:${h/hist}.">#.</td> 
-	      <td class="hhdr" colspan="2" tal:content="string: ${python:TALabbr('STAT',h.stat)}${python:'*' if h.unap else ''} ${h/dt} ${h/name} ${email}">hist-header</td>
-	      </tr>
-	    <tr tal:condition="h/refs">
-	      <td>&nbsp;</td>
-	      <td valign="top">Refs:</td>
-	      <td tal:content="h/refs">refs</td>
-	     </tr>
-	    <tr tal:condition="h/notes">
-	      <td>&nbsp;</td>
-	      <td valign="top">Comments:</td>
-	      <td tal:content="h/notes">notes</td>
-	     </tr>
-	    <tr tal:condition="h/diff">
-	      <td>&nbsp;</td>
-	      <td valign="top">Diff:</td>
-	      <td tal:content="structure h/diff">diff</td>
-	     </tr>
-	    </span>
-	  </table>
-	</span>
+             </tbody>
+	    </table>
+	  </div>
 
-      <hr/>
       <form action="edsubmit.py" tal:attributes="method method">
 	<input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
 	<input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>

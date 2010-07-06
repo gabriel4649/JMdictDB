@@ -16,8 +16,7 @@
     <h3 metal:fill-slot="title">Entries</h3>
     </div>
   <div class="entry" tal:condition="not:entries"> 
-     We're sorry, but the entry(s) you requested are not (or are no longer)
-     available in the database.
+     Entries not found.
      </div>
   <span tal:repeat="epair entries" tal:omit-tag="">
     <span tal:define="global e    epair/0" tal:omit-tag=""/>
@@ -230,9 +229,28 @@
 	      </span>
 	    </table>
 	  </span>
+        </span>
 
-	<span tal:condition="e/_hist" tal:omit-tag="">History:
+      <span class="preformat" tal:condition="python: etxt and disp=='ed'">
+	<!-- Used for edict format only. -->
+	<span tal:content="etxt"/>
+	</span>
+
+      <span class="preformat" tal:condition="python: etxt and disp!='ed'">
+	<pre tal:content="etxt"/>
+	</span>
+
+      <form tal:condition="e/EDITABLE" action="edform.py" method="get">
+	<input type="submit" value="Edit"/>
+	<input type="hidden" name="e" tal:attributes="value e/id"/>
+	<input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
+	<input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
+	</form>
+
+      <span tal:condition="not:etxt" tal:omit-tag="">
+	<div class="hist" tal:condition="e/_hist">History:
 	  <table>
+           <tbody class="histtab">
 	    <span tal:repeat="h e/_hist">
 	      <span tal:condition="h/email" tal:omit-tag="">
 		<span tal:condition="session/userid">
@@ -265,25 +283,10 @@
 		<td tal:content="structure h/diff">diff</td>
 	       </tr>
 	      </span>
+             </tbody>
 	    </table>
-	  </span>
+	  </div>
 	</span>
-
-      <div class="preformat" tal:condition="python: etxt and disp=='ed'">
-	<p/> <!-- Used for edict format only. -->
-	<span tal:content="structure etxt"/>
-	</div>
-
-      <div class="preformat" tal:condition="python: etxt and disp!='ed'">
-	<pre tal:content="etxt"/>
-	</div>
-
-      <form tal:condition="e/EDITABLE" action="edform.py" method="get">
-	<input type="submit" value="Edit"/>
-	<input type="hidden" name="e" tal:attributes="value e/id"/>
-	<input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
-	<input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
-	</form>
 
       </div>
     </span>

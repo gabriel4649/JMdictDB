@@ -110,8 +110,8 @@ CGI_FILES = entr.py \
 	srchres.py \
 	srchsql.py \
 	jbedit.py \
-	jbedits.py
-        updates.py
+	jbedits.py \
+	updates.py
 WEB_CGI	= $(addprefix $(CGI_DIR)/,$(CGI_FILES))
 
 LIB_FILES = jdb.py \

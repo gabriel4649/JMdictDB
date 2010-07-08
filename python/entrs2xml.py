@@ -170,7 +170,8 @@ def main (args, opts):
 			    gob.written = True
 			    txt = '\n'.join (fmtxml.grpdef (gob))
 			    outf.write (txt.encode (opts.encoding) + "\n")
-		txt = fmtxml.entr (e, compat=opts.compat, genhists=True)
+		txt = fmtxml.entr (e, compat=opts.compat, genhists=True,
+				   last_imported=opts.last_imported)
 		outf.write (txt.encode (opts.encoding) + "\n")
 	    if debug: print >>sys.stderr, "Time: %s (fmt)" % (time.time()-start)
 
@@ -276,6 +277,17 @@ Arguments:
 		the database is reloaded from the XML.
 		Without this option, an extended DTD is used that will 
 		preserve all information in the database entries.""")
+
+	p.add_option ("--last-imported", default=None, type=int,
+            help="""This option is ignored unless the --compat=jmdict
+		option is given.  Value must be a number that gives the
+		highest sequence number that was loaded from the JMdict
+		XML file in the corpus being processed.  When writing
+		jmdict compatible XML, entries with higher seq numbers
+		will given audit element lists starting with an "entry
+		created" one.  Entries with lower seq numbers will be 
+		given an "entry created" if that's the text of the first
+		history comment, or "entry amended" otherwise.""")
 
 	p.add_option ("-r", "--root", 
             help="""Name to use as the root element in the output XML file. 

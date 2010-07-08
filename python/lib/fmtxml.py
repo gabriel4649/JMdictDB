@@ -32,7 +32,7 @@ global XKW, KW
 XKW = None
 
 def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
-		implicit_pos=True):
+		implicit_pos=True, last_imported=None):
 	'''
 	Generate an XML description of entry 'entr'.
 	Parameters:
@@ -63,6 +63,12 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
 		entry boundries.  This is the rule used in the 
 		Monash JMdict XML file.  If false, each sense will 
 		be generated with <pos> elements explictly expressed.
+	  last_imported -- This parameter is ignored unless 'compat'
+		is non-None.  In that case, 'last_imported' gives the
+		sequence number of the last entry imported from a 
+		jmdict or jmnedict xml file and controls whether the
+		first history record in an entry results in a "entry
+		created" or "entry amended" xml audit element.
 	'''
 	  #FIXME: Need to generate an kwid->xml-entity mapping
 	  # idependent of the KW table.  See comments in jmxml.py
@@ -79,7 +85,7 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
 	rdngs = getattr (entr, '_rdng', [])
 	for r in rdngs: fmt.extend (rdng (r, kanjs, compat))
 
-	fmt.extend (info (entr, compat, genhists))
+	fmt.extend (info (entr, compat, genhists, last_imported=last_imported))
 
 	senss = getattr (entr, '_sens', [])
 	if compat == 'jmnedict':
@@ -417,22 +423,23 @@ def xrslvs (xrslvs, src):
 	    fmt.append ("<%s%s>%s</%s>" % (elname, attrs, xreftxt, elname))
 	return fmt
 
-def info (entr, compat=None, genhists=False):
-	fmt = [] 
+def info (entr, compat=None, genhists=False, last_imported=None):
+	fmt = []
 	if not compat:
 	    x = getattr (entr, 'srcnote', None)
 	    if x: fmt.append ('<srcnote>%s</srcnote>' % esc(entr.srcnote))
 	    x = getattr (entr, 'notes', None)
 	    if x: fmt.append ('<notes>%s</notes>' % esc(entr.notes))
 	if genhists:
-	    for x in getattr (entr, '_hist', []):
-		fmt.extend (audit (x, compat))
+	    for n, x in enumerate (getattr (entr, '_hist', [])):
+		fmt.extend (audit (x, compat, force_created=
+				   (n==0 and entr.seq>last_imported)))
 	if fmt: 
 	    fmt.insert (0, '<info>')
 	    fmt.append ('</info>')
 	return fmt
 
-def audit (h, compat=None):
+def audit (h, compat=None, force_created=False):
 	global XKW
 	fmt = []
 	fmt.append ('<audit>')
@@ -450,15 +457,16 @@ def audit (h, compat=None):
 	      # history details (such as hist.note) are considered
 	      # "not for distribution".  We will generate audit elements
 	      # for each hist record, but provide only the date, and
-	      # "Entry created" or "Entry amended".  History records
+	      # "entry created" or "entry amended".  History records
 	      # added to imported entries should always result in
-	      # "Entry amended".  But the first history record of a
-	      # post-import entry should result in "Entry created".
-	      # Unfortunately we don't know here if an entry is an
-	      # imported entry, or a port-import entry, so we can't
-	      # tell which text to generate for the first history 
-	      # record.  Currently we just use "Entry amended".
-	    if h.notes == "Entry created": note = h.notes
+	      # "entry amended" except if the first record says
+	      # "entry created".  The first history record on post-
+	      # import entries should always be "entry created".  
+	      # Catch is we can't tell from an entry itself whether
+	      # it is an imported entry, or was created post-import,
+	      # so we rely on the caller to set 'force_created' to
+	      # true for the first hist record in post-import entries.
+	    if force_created or h.notes == "Entry created": note = "Entry created"
 	    else: note = "Entry amended"
 	    fmt.append ('<upd_detl>%s</upd_detl>' % note)	
 	fmt.append ('</audit>')

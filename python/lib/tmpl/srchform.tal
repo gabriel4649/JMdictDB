@@ -99,7 +99,7 @@
 		    <td><input name="idval" size="7"/></td>
 		    </tr>
 		  <tr>
-		    <td class="notice" colspan="2">Search by Id or Seq number superceeds all other criteria (except Corpus for Seq number).</td>
+		    <td class="notice" colspan="2">Search by Id or Seq number supersedes all other criteria (except Corpus for Seq number).</td>
 		    </tr>
 		  <tr>
 		    <td>
@@ -116,6 +116,7 @@
 	    <tr><td colspan="2"> </td></tr>
 	    <tr>
 	      <td colspan="2"><span class="descriptor">Corpus:</span>
+                <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_src">help</a>
 		<table class="optgroup">
 		  <tr tal:repeat="r src">
 		    <td tal:repeat="c r">
@@ -129,6 +130,7 @@
 	    <tr><td colspan="2"><hr width="100%"/></td></tr>
 	    <tr>
 	      <td valign="top"><span class="descriptor">Status:</span>
+                <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_stat">help</a>
 		<table class="optgroup">
 		  <tr tal:repeat="r stat">
 		    <td tal:repeat="c r"> 
@@ -149,7 +151,8 @@
 
 	    <tr><td colspan="2"><hr width="100%"/></td></tr>
 	    <tr>
-	      <td colspan="2"><span class="descriptor">Frequency of use:</span><br/>
+	      <td colspan="2"><span class="descriptor">Frequency of use:</span>
+                <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_freq">help</a><br/>
 	        <span tal:repeat="z freq" class="optgroup">
 		  <input name="freq" tal:attributes="value z" tal:content="z" type="checkbox"/> 
 	          </span> 
@@ -176,6 +179,7 @@
 	    <tr><td colspan="2"><hr width="100%"/></td></tr>
 	    <tr>
 	      <td><span class="descriptor">Kanji info:</span>
+                <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_kinf">help</a>
 		<table class="optgroup">
 		  <tr tal:repeat="r kinf">
 		    <td tal:repeat="c r">
@@ -186,6 +190,7 @@
 		</td>
 
 	      <td><span class="descriptor">Reading info:</span>
+                <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_rinf">help</a>
 		<table class="optgroup">
 		  <tr tal:repeat="r rinf">
 		    <td tal:repeat="c r">
@@ -199,6 +204,7 @@
 	    <tr><td colspan="2"><hr width="100%"/></td></tr>
 	    <tr>
 	      <td colspan="2"><span class="descriptor">Part-of-speech attributes:</span>
+                <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_pos">help</a>
 	        <table class="optgroup">
 		  <tr tal:repeat="r pos">
 		    <td tal:repeat="c r"> 
@@ -212,6 +218,7 @@
 	    <tr><td colspan="2"><hr width="100%"/></td></tr>
 	    <tr>
 	      <td colspan="2"><span class="descriptor">Misc attributes:</span>
+                <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_misc">help</a>
 	        <table class="optgroup">
 		  <tr tal:repeat="r misc">
 		    <td tal:repeat="c r"> 
@@ -225,6 +232,7 @@
 	    <tr><td colspan="2"><hr width="100%"/></td></tr>
 	    <tr>
 	      <td colspan="2"><span class="descriptor">Field:</span>
+                <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_fld">help</a>
 	        <table class="optgroup">
 		  <tr tal:repeat="r fld">
 		    <td tal:repeat="c r">
@@ -238,6 +246,7 @@
 	    <tr><td colspan="2"><hr width="100%"/></td></tr>
 	    <tr>
 	      <td colspan="2"><span class="descriptor">Dialect:</span>
+                <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_dial">help</a>
 	        <table class="optgroup">
 		  <tr tal:repeat="r dial">
 		    <td tal:repeat="c r">
@@ -265,7 +274,7 @@
 <span class="notes">
   Notes...
   <ul>
-    <li>ID search superceeds all other criteria.  If you want to search by 
+    <li>ID search supersedes all other criteria.  If you want to search by 
       any of the other criteria, make sure the Value text box is empty.</li>
     <li>The text search rows and other sections are ANDed together.</li> 
     <li>Within the attribute sections, all selections are ORed together.

@@ -11,13 +11,13 @@
     <h3 metal:fill-slot="title">Search Form</h3>
     </div>
   <form action="srchres.py" name="srchres" tal:attributes="method method">
-    <table width="80%" class="form">
+    <table class="form" width="100%">
       <tr>
 	<td>
-	  <table class="top">
+	  <table class="top" width="100%">
 	    <tr>
 	      <td>
-	        <table class="txtsrch">
+	        <table class="txtsrch" width="100%">
 		  <tr>
 		    <td colspan="3" class="descriptor">Search for text: </td>
 		    </tr>
@@ -43,21 +43,15 @@
 			<option value="4">Ends</option>
 			</select>
 		      </td>
-		    <td><input name="t1"/></td>
+		    <td width="100%"><input name="t1"/></td>
 		    </tr>
 	          </table>
 	        </td>                
       	      </tr>
 
-            <tr>
-	      <td class="descriptor">...or Seq number:
-                <input name="idval" size="7"/>
-                <input name="idtyp" type="hidden" value="seq"/>
-	        </td>
-              </tr>
-
 	    <tr>
 	      <td><span class="descriptor">...in Dictionary:</span>
+                <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_src">help</a>
 		<table class="optgroup">
 		  <tr tal:repeat="r src">
 		    <td tal:repeat="c r">

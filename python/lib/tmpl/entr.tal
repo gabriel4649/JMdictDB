@@ -16,7 +16,7 @@
     <h3 metal:fill-slot="title">Entries</h3>
     </div>
   <div class="entry" tal:condition="not:entries"> 
-     Entries not found.
+     No entries found.
      </div>
   <span tal:repeat="epair entries" tal:omit-tag="">
     <span tal:define="global e    epair/0" tal:omit-tag=""/>

@@ -116,7 +116,13 @@ def sens (sens, kanjs, rdngs, nsens):
 	for n,g in enumerate (getattr (sens, '_gloss', [])):
 	    kws = []
 	    if g.ginf != KW.GINF['equ'].id: kws.append (KW.GINF[g.ginf].kw)
-	    if g.lang != KW.LANG['eng'].id: kws.append (KW.LANG[g.lang].kw)
+	    if g.lang != KW.LANG['eng'].id:
+		if g.lang == KW.LANG['lit'].id:
+		      # Lithuanian language tag needs an explicit "lang=" 
+		      # tag to disabiguate from a ginf lit ("literal") tag.
+		    kws.append ("lang="+KW.LANG[g.lang].kw)
+		else: 
+		    kws.append (KW.LANG[g.lang].kw)
 	    nl = '' if n==0 else '\n  '
 	    kwstr = ('%s[%s] ' % (nl, ','.join(kws))) if kws else ''
 	    gtxt.append ('%s%s' % (kwstr, escgloss (g.txt)))

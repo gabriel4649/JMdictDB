@@ -1,0 +1,53 @@
+Title:	jelparse failing with lang tag
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2010-07-12 12:30:00 stuart
+  Jwb reports that when he tries to specify a lang tag 
+  on a gloss when creating a new entry, he gets a crash
+  in jelparse.
+
+2010-07-12 12:33:00 stuart
+  Email from jwb:
+  > Are you able to look at entry 1134830.
+  > 
+  > Jim Rose has added " [por] República de Moçambique"
+  > which is translating into JMdict as
+  > "<gloss xml:lang="por">República de Moçambique</gloss>"
+  > 
+  > When I try and edit an entry with that pattern, or put one
+  > in myself, I get:
+  > 
+  > Traceback (most recent call last):
+  >   File "/usr/local/apache2/jmdictdb/cgi-bin/edconf.py", line 317, in <module>
+  >     main (args, opts)
+  >   File "/usr/local/apache2/jmdictdb/cgi-bin/edconf.py", line 97, in main
+  >     entr, perrs = parse (intxt)
+  >   File "/usr/local/apache2/jmdictdb/cgi-bin/edconf.py", line 297, in parse
+  >     entr = parser.parse (krstext, lexer=lexer, tracking=True)
+  >   File "/usr/local/lib/python2.6/site-packages/ply/yacc.py", line 263, in parse
+  >     return self.parseopt(input,lexer,debug,tracking,tokenfunc)
+  >   File "/usr/local/lib/python2.6/site-packages/ply/yacc.py", line 710,
+  > in parseopt
+  >     p.callable(pslice)
+  >   File "../lib/jelparse.py", line 144, in p_sense_1
+  >     err = bld_sens (sens, p[2])
+  >   File "../lib/jelparse.py", line 546, in bld_sens
+  >     if tags: errs.extend (sens_tags (sens, gloss, tags))
+  >   File "../lib/jelparse.py", line 649, in sens_tags
+  >     t = t[0]        # LANG tags have only one value, the lang code.
+  > TypeError: 'int' object is unsubscriptable
+
+2010-07-12 12:34:00
+  Seems that there were no tests for gloss language.  Added
+  some in python/tests/data/ginf.txt (will expand later to 
+  include other gloss tags) and problem occurs in those tests.
+
+  Fixed in jelparse.y, tests now pass except test0320040 which
+  fails because fmtjel.py fails to add the needed disabiguating
+  "lang=" tag when generating a "lit" (Lithuanian) language tag.
+  Will fix that separately in a subsequent changeset.

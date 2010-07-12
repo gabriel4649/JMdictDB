@@ -584,7 +584,7 @@ def sens_tags (sens, gloss, tags):
 		      #  the latter when needed can be specified as 
 		      #  [lang=lit].
 		    candidate = candidates[0] 
-		    typ, t = candidate
+		    typ = candidate[0];  t = [candidate[1]]
 	    if typ is None:
 		errs.append ("Unknown tag '%s'" % t)
 		continue
@@ -636,7 +636,7 @@ def sens_tags (sens, gloss, tags):
 		append (sens, '_XREF', t)
 
 	    elif typ == 'GINF':
-		assert isinstance(t,int)
+	        t = t[0]	# GINF tags have only one value, the ginf code.
 		if getattr (gloss, 'ginf', None): 
 		    errs.append ( 
 		        "Warning, duplicate GINF tag '%s' ignored\n" % KW.GINF[t].kw)

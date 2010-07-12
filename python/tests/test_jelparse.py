@@ -163,6 +163,17 @@ class Xref (unittest.TestCase):
 
 # 0310090 fails, xref senses in sorted order rather than order given.
 
+class Ginf (unittest.TestCase):
+    def setUp (_): 
+	globalSetup()
+	_.data = loadData ('data/jelparse/ginf.txt', r'# ([0-9]{7}[a-zA-Z0-9_]+)')
+
+    def test0320010(_): check2(_,'0320010')
+    def test0320020(_): check2(_,'0320020')
+    def test0320030(_): check2(_,'0320030')
+    def test0320040(_): check2(_,'0320040')
+    def test0320050(_): check2(_,'0320050')
+    def test0320060(_): check2(_,'0320060')
 
 def cherr (self, seq, exception, msg):
 	global Cur, Lexer, Parser

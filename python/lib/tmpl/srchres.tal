@@ -91,7 +91,7 @@
       </form>
     </div>
   <div metal:use-macro="macros/macros/footer"></div>
-  <div class="results">
+  <div class="results" tal:condition="debug">
     <span class="debug">
       sql = <span tal:replace="stats/sql"/><br/>
       args = <span tal:replace="stats/args"/><br/>

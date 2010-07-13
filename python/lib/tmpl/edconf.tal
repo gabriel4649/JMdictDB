@@ -226,7 +226,7 @@
 		  </td>
 		</tr>
 	      <tr tal:condition="s/XRER">
-		<td colspan="2">Reverse references:</td>
+		<td colspan="2">References to this sense:</td>
 		</tr>
 	      <tr tal:condition="s/XRER" tal:repeat="x s/XRER">
 		<td>&nbsp;</td>
@@ -302,7 +302,13 @@
 		</span>
 	      <tr>
 		<td tal:content="string:${h/hist}.">#.</td> 
-		<td class="hhdr" colspan="2" tal:content="string: ${python:TALabbr('STAT',h.stat)}${python:'*' if h.unap else ''} ${h/dt} ${h/name} ${email}">hist-header</td>
+		<td tal:content="string:${h/hist}.">#.</td> 
+		<td class="hhdr" colspan="2">
+		  <span tal:content="string: ${python:TALabbr('STAT',h.stat)}${python:'*' if h.unap else ''}"/>
+		  <span tal:content="h/dt">timestamp</span>&nbsp;
+		  <span class="submitter_name" tal:content="h/name">name</span>
+		  <span tal:content="email">email</span>
+		  </td>
 		</tr>
 	      <tr tal:condition="h/refs">
 		<td>&nbsp;</td>

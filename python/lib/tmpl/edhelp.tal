@@ -343,7 +343,7 @@
 
     <dt><a name="delete"></a>Delete</dt>
     <dd>Click this checkbox if you wish the entire entry to be deleted.
-      Please enter the case for deletion in the Comments and References boxex.
+      Please enter the case for deletion in the Comments and References boxes.
       These will
       be preserved in the stub entry used to record deletions. There
       is no point in changing the entry content and any such changes
@@ -362,7 +362,8 @@
 
     <dt><a name="references"></a>References</dt>
     <dd>Enter sources that validate the entry or entry
-      changes being made.  This is a free form text field.
+      changes being made.  This is a free form text field
+      and can include example text using the entry.
       <br/>Examples: Daijirin, 広辞苑, 新和英大辞典第５版 (often
       abbreviated to "GG5".)
       </dd>

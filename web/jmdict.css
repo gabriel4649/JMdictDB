@@ -1,4 +1,3 @@
-
 /* Entry display */
 .entry		{font-family: arial; font-size: 100%; background: #E8FFF0; 
 		 border-style: solid; border-width: thin; 
@@ -13,7 +12,9 @@
 .notice		{font-size: 55%; color: #FF0000}
 .notes		{font-size: 75%;}
 .preformat	{margin-left: 2em; white-space: pre-wrap; font-family: monospace}
-.hist,.histtab	{border-style: solid; border-width: thin; font-size: 75%}
+.hist,.histtab	{border-style: solid; border-width: thin; border-color: #A0A0A0; 
+		 padding: 5px; font-size: 75%}
+.submitter_name {font-weight: 700}
 
 /* Search results list */
 .results	{background: #E8FFF0; 
@@ -43,4 +44,3 @@ td.syntable     {vertical-align:top; border: 1px solid black;
 .navlinks	{font-size: 75%}
 .foottxt	{font-size: 75%}
 .hlogin		{font-size: 75%}
-

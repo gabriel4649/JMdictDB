@@ -315,6 +315,9 @@
           [lit] will be interpreted as the gloss translation tag, "literal".
           (<a href="#kw_lang">abbr</a>)
 	</li></ul>
+      </li><li>When you add a cross reference using a [see=] or [ant=] tag, the
+        cross reference will also appear in the referenced entry under the heading,
+        "References to this sense".
       </li></ul>
       Examples:<br/>
 	[1][n,vs] cherry blossom viewing; flower viewing <br/>
@@ -703,7 +706,11 @@
 	    given, separated by commas.<br/>
           (6) To make an cross reference to a kanji or reading entry 
 	    that contains a "・" character, put the kanji or reading in
-            double quotes. 
+            double quotes. <br/>
+          (7) When an entry is displayed, it will list cross references
+            in other entries that refer to this one under the heading
+            "References to this sense".  Change these by editing the
+            other entry.
 	  </td>
         <td class="syntable">
           [see=涼しい・すずしい[1]]<br/>

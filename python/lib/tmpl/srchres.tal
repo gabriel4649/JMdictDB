@@ -34,9 +34,11 @@
 	    </span>
 	  </span>
 	<span class="notes">
-	  <br/>Only the first kanji and reading fields are shown for each entry.
-	  Click seq number link to display full entry, or use the checkboxes and
-          Display... button to view multiple entries.
+	  <br/>
+          Only limited information is shown for each entry. 
+	  To view the full entries, click the sequence number link
+          or use the checkboxes and the Display button.
+	  See additional notes at bottom of page.
           </span>
 	</span>
       <span tal:condition="python:len(results)&gt;10">
@@ -90,6 +92,29 @@
       <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
       </form>
     </div>
+  <span class="notes">
+    <br/>Notes...
+    <ul>
+      <li>Only the first kanji and first reading are shown for each entry.
+      </li><li>Results are sorted by kanji, then reading, then sequence 
+	number, then entry id number (which is not shown).
+      </li><li>The "Seqnum" column lists the dictionary name, and the sequence
+        number of each entry.  Note that there may be multiple entries with
+        the same dictionary and sequence number that represent different edits
+	of the same base entry.
+      </li><li>The "S" column shows the status of the entry: 
+	A: active, D: deleted, R: rejected.
+	If followed by an astrisk (*), the entry is unapproved and is
+	waiting for approval by an editor.
+      </li><li>
+	The "P" column indicates an entry that is marked as P (popular)
+	in EDICT.
+      </li><li>The "Gloss" column lists all glosses in all senses of the 
+	entry with senses being separated with a "/" character, and glosses
+        within a sense separated with a ";" character.
+      </li></ul>
+      <hr/>
+    </span>
   <div metal:use-macro="macros/macros/footer"></div>
   <div class="results" tal:condition="debug">
     <span class="debug">

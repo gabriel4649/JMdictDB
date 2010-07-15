@@ -202,6 +202,8 @@
 		<input type="hidden" name="srcnote" tal:attributes="value e/srcnote"/>
 		<input type="hidden" name="notes" tal:attributes="value e/notes"/>
 		</span>
+		<br/><span class="notes">
+                  Clicking <b>Next</b> will show you a confirmation page from which you can submit your changes.</span>
 	      </td>
 	    <td></td>
 	    </tr>

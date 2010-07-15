@@ -15,12 +15,14 @@
   <div metal:use-macro="macros/macros/login">
     <h3 metal:fill-slot="title">Confirm Submission</h3>
     </div>
-    Please check the entry below carefully.  It it is what you wish 
-    to submit, click the submit button.  Otherwise, use your brower's
+
+    Please check the entry below carefully.  If it is what you wish 
+    to submit, click the Submit button.  Otherwise, use your brower's
     <b>Back</b> button to return to the Edit page and make corrections.
     If you have having a problem entering the information you want,
     please send email to 
     <a tal:attributes="href string:mailto:${cfg/web/CONTACT_EMAIL}" tal:content="cfg/web/CONTACT_EMAIL">email</a>.
+    <p class="caution">Your entry has not yet been submitted.</p>
   <span tal:repeat="e entries">
     <div class="entry">
       <span class="warnings" tal:condition="chklist">
@@ -301,7 +303,6 @@
 		<span tal:define="global email string:"/>
 		</span>
 	      <tr>
-		<td tal:content="string:${h/hist}.">#.</td> 
 		<td tal:content="string:${h/hist}.">#.</td> 
 		<td class="hhdr" colspan="2">
 		  <span tal:content="string: ${python:TALabbr('STAT',h.stat)}${python:'*' if h.unap else ''}"/>

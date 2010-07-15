@@ -1,4 +1,4 @@
-     <html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
+    <html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
 <!--? Copyright (c) 2008-2010 Stuart McGraw -->
 <!--? $Revision$ $Date$ -->
 <head>
@@ -76,7 +76,7 @@
       <p/>
   Tags are grouped into different types.  For example there is a set of
   part-of-speech (pos) tags having values like <samp>n</samp> (noun), 
-  <samp>v5</samp> (go-dan verb), etc., and are used in senses.  The tags
+  <samp>v5u</samp> (Godan verb), etc., and are used in senses.  The tags
   in the "Kanji info" group provide information about kanji parts and have
   values like <samp>ateji</samp> (phonetic reading) and <samp>iK</samp>
   (word containing irregular kanji usage).
@@ -114,7 +114,7 @@
   <a href="#insyntax">Tag Syntax</a> sections below.
       <p/>
   *Note: Actually, all tags can be given in the form <samp>tag_type=tag_value</samp>.
-  <samp>v5</samp> is exactly equivalent to <samp>pos=v5</samp>.  The short
+  <samp>v5u</samp> is exactly equivalent to <samp>pos=v5u</samp>.  The short
   form is usually more convenient, but the longer form may sometimes
   be needed to avoid misinterpretations.  For example, <samp>lit</samp>
   can be the value of a gloss tag (literal gloss) or a language (Lithuanian).

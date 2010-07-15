@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Rev: 000000000000 $ $Date: 0000/00/00 00:00:00 $
 	This DTD is derived from the JMdict DTD version 1.07 (2009-01-21)
 	but is extended to allow for enhanced representational capabilities
 	to support JMdictDB entries.  Changes include:
@@ -332,7 +331,6 @@ various information fields.
 <!ENTITY adj-pn "pre-noun adjectival (rentaishi)">
 <!ENTITY adj-t "`taru' adjective">
 <!ENTITY adj-f "noun or verb acting prenominally">
-<!ENTITY adj "former adjective classification (being removed)">
 <!ENTITY adv "adverb (fukushi)">
 <!ENTITY adv-to "adverb taking the `to' particle">
 <!ENTITY arch "archaism">
@@ -397,7 +395,6 @@ various information fields.
 <!ENTITY v2a-s "Nidan verb with 'u' ending (archaic)">
 <!ENTITY v4h "Yondan verb with `hu/fu' ending (archaic)">
 <!ENTITY v4r "Yondan verb with `ru' ending (archaic)">
-<!ENTITY v5 "Godan verb (not completely classified)">
 <!ENTITY v5aru "Godan verb - -aru special class">
 <!ENTITY v5b "Godan verb with `bu' ending">
 <!ENTITY v5g "Godan verb with `gu' ending">

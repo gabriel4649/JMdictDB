@@ -172,9 +172,9 @@
 		    <span tal:replace="python:TALabbr('XREF',x.typ)">xref-type</span>:
 		    <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${x/entr}" tal:content="x/TARG/seq">seq-num</a>
 		    <span tal:condition="x/TARG/_kanj" tal:replace="x/TARG/_kanj/0/txt">xref-kanj</span>
-		    <span tal:condition="python:TALattrand(x/TARG,'_kanj','_rdng')" tal:omit-tag="">【</span>
+		    <span tal:condition="python:TALattrand(x.TARG,'_kanj','_rdng')" tal:omit-tag="">【</span>
 		    <span tal:condition="x/TARG/_rdng" tal:replace="x/TARG/_rdng/0/txt">xref-rdng</span>
-		    <span tal:condition="python:TALattrand(x/TARG,'_kanj','_rdng')" tal:omit-tag="">】</span>
+		    <span tal:condition="python:TALattrand(x.TARG,'_kanj','_rdng')" tal:omit-tag="">】</span>
 		    <span tal:replace="x/sens">s#</span
 		    >.<span tal:replace="python:TALtxts(x.TARG._sens[x.sens-1],'_gloss')"></span>
 		    <span tal:condition="x/notes" replace="x/notes">xref-note</span>

@@ -109,7 +109,7 @@ def main (args, opts):
 
 	fv = form.getfirst; fl = form.getlist
 	is_editor = jmcgi.is_editor (sess)
-	dbg = fv ('d'); meth = fv ('meth')
+	dbg = fv ('dbg'); meth = fv ('meth')
 	def_corp = fv ('c')		# Default corpus for new entries.
 	defcorpid = None
 	if def_corp:
@@ -169,7 +169,7 @@ def main (args, opts):
 
 	if not meth: meth = 'get' if dbg else 'post'
 	jmcgi.gen_page ('tmpl/edform.tal', macros='tmpl/macros.tal', parms=parms,
-			 entrs=entrs, srcs=srcs, is_editor=is_editor,
+			 entrs=entrs, srcs=srcs, is_editor=is_editor, dbg=dbg,
 			 svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
 			 method=meth, output=sys.stdout, this_page='edform.py')
 

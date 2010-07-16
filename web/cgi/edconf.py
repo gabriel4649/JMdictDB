@@ -32,7 +32,7 @@ def main (args, opts):
 	except StandardError, e: jmcgi.err_page ([unicode (e)])
 
 	fv = form.getfirst; fl = form.getlist
-	dbg = fv ('d'); meth = fv ('meth')
+	dbg = fv ('dbg'); meth = fv ('meth')
 	KW = jdb.KW
 
 	  # 'eid' will be an integer if we are editing an existing 
@@ -205,7 +205,7 @@ def main (args, opts):
 	if not meth: meth = 'get' if dbg else 'post'
 	jmcgi.gen_page ("tmpl/edconf.tal", macros='tmpl/macros.tal',
 			entries=entrs, serialized=serialized,
-			chklist=chklist, disp=disp, parms=parms,
+			chklist=chklist, disp=disp, parms=parms, dbg=dbg,
 			svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
 			method=meth, output=sys.stdout, this_page='edconf.py')
 

@@ -1,0 +1,53 @@
+Title:	Edited entried disappearing after submission.
+Stat:	open
+Disp:	
+Prio:	crit
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2010-07-15 14:12:00 stuart
+  Several users (Paul Blay, Rene Malenfant, Scott) reported that
+  they had submitted an edited entry, but when they looked for
+  it later, they could not find it.  Rene reported that his edit 
+  was lost and replaced by an approval edit by Jim Breen (see
+  jmdict seq# 2557510, hist #4).
+
+2010-07-15 23:44:00 stuart
+  Indentified a reproducible problem that is consistent with 
+  the scenario reported by Rene.   In two web browsers windows,
+  A and B:
+
+  A: Create a new entry, E1, and submit
+  B: Edit that entry E1 for approval producing E2, but wait
+      at the confirmation page.
+  A: Edit the new entry E1 and submit it producing E3.
+  B: Submit (with approval) E2.
+
+  Searching for all entries of the submissions' seq number shows
+  only E2, E3 has disappeared.
+
+  Problem was in edsubmit.py which was supposed to notice the 
+  appearance of E3 but failed to do so due to bad logic near
+  line 335.
+
+  From the old comments:
+  # Second, find all tree leaves.  These are the current 
+  # pending edits.  If there is only one, it must be ours.
+  # If there are more than one, then they need to be rejected
+  # before the current entry can be approved.
+
+  The "if there is one it must be ours" was not true.
+
+  From the new comments:
+  # Second, find all tree leaves.  These are the current
+  # pending edits.  If there is more than one, or if there
+  # is one but it is not our entry's parent (i.e ==entr.dfrm), 
+  # then there are other pending edits, 
+
+  Changes to other files are mostly to allow passing a url debug
+  parameter I needed to track down the problem.
+
+  Changed the default Submit/Approve/Reject choice on the edit
+  form (edform.py) from Submit to Approve per an email discussion
+  a week or two ago with jwb.

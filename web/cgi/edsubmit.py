@@ -125,7 +125,7 @@
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
-import sys, cgi, datetime
+import sys, os, datetime
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import cgitbx; cgitbx.enable()
 import jdb, jmcgi, fmtxml, serialize
@@ -136,17 +136,17 @@ def main( args, opts ):
 	except StandardError, e: jmcgi.err_page ([unicode (e)])
 
 	fv = form.getfirst
-	dbg = fv ('d'); meth = fv ('meth')
+	dbg = fv ('d'); meth = fv ('meth');  dbg = fv('dbg')
 	disp = fv ('disp') or ''  # '': User submission, 'a': Approve. 'r': Reject;
 	if not sess and disp:
 	    errs.append ("Only registered editors can approve or reject entries")
-	if errs: jmcgi._err_page (errs)
+	if errs: jmcgi.err_page (errs)
 	try: entrs = serialize.unserialize (fv ("entr"))
 	except StandardError:
 	    jmcgi.err_page (["Bad 'entr' parameter, unable to unserialize."])
 
 	added = []
-	dbh.connection.commit()
+	dbh.connection.rollback()
 	dbh.execute ("START TRANSACTION ISOLATION LEVEL SERIALIZABLE");
 	  # FIXME: we unserialize the entr's xref's as they were resolved
 	  #  by the edconf.py page.  Should we check them again here? 
@@ -155,6 +155,12 @@ def main( args, opts ):
 	  #  Alternatively an edited version of target may have been 
 	  #  created which wont have our xref pointing to it as it should. 
 	for entr in entrs:
+	      # FIXME: submission() can raise a psycopg2 
+	      # TransactionRollbackError if there is a serialization
+	      # error resulting from a concurrent update.  Detecting
+	      # such a condition is why run with serializable isolation
+	      # level.  We need to trap it and present some sensible
+	      # error message.
 	    e = submission (dbh, entr, disp, errs, jmcgi.is_editor (sess), 
 			    sess.userid if sess else None)
 	      # The value returned by submission() is a 3-tuple consisting 
@@ -165,10 +171,11 @@ def main( args, opts ):
 	    dbh.connection.rollback()
 	    jmcgi.err_page (errs)
 
-	dbh.connection.commit()
+	if dbg: dbh.connection.rollback()
+	else: dbh.connection.commit()
 	if not meth: meth = 'get' if dbg else 'post'
 	jmcgi.gen_page ("tmpl/submitted.tal", macros='tmpl/macros.tal',
-			added=added, parms=parms, meth=meth,
+			added=added, parms=parms, meth=meth, dbg=dbg,
 			svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
 			output=sys.stdout, this_page='edsubmit.py')
 
@@ -292,6 +299,8 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	    else:
 		errs.append ("Bad url parameter (disp=%s) % disp")
 	if not errs: return added
+	  # Note that changes have not been committed yet, caller is
+	  # expected to do that.
 	return None
 
 def submit (dbh, entr, errs):
@@ -326,13 +335,15 @@ def approve (dbh, entr, errs):
 		    "reenter your changes if they are still applicable.")
 
 	      # Second, find all tree leaves.  These are the current 
-	      # pending edits.  If there is only one, it must be ours.
-	      # If there are more than one, then they need to be rejected
-	      # before the current entry can be approved. 
+	      # pending edits.  If there is more than one, or if there
+	      # is one but it is not our entry's parent (i.e ==entr.dfrm), 
+	      # then there are other pending edits, and the editor needs
+	      # to either explicitly reject them before this entry can be
+	      # approved, or abandon this entry. 
 	    sql = "SELECT * FROM find_edit_leaves(%s)"
 	    rs = jdb.dbread (dbh, sql, [edroot])
-	    if len (rs) > 1:
-		ta = [str(z.id) for z in rs if z.id != dfrmid]
+	    if len (rs) > 1 or (len(rs)==1 and rs[0].id!=dfrmid):
+		ta = ["id="+str(z.id) for z in rs if z.id != dfrmid]
 		errs.append (
 		    "There are other submitted edits (" 
 		    + ", ".join (ta) + ").  They must be " 
@@ -360,9 +371,6 @@ def approve (dbh, entr, errs):
 	  # specified with "on delete cascade", deleting the root entry
 	  # will also delete all it's children. 
 	if edroot: delentr (dbh, edroot)
-	  # If we managed to do everything above without errors then
-	  # we can commit the changes and we're done.
-	dbh.connection.commit()
 	return res
 
 def reject (dbh, entr, errs):
@@ -387,7 +395,6 @@ def reject (dbh, entr, errs):
 	entr.unap = False
 	res = addentr (dbh, entr)
 	delentr (dbh, chhead)
-	dbh.connection.commit()
 	return res
 
 def addentr (dbh, entr):

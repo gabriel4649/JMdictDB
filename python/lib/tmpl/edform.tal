@@ -183,8 +183,8 @@
 	      <span tal:condition="is_editor" tal:omit-tag="">
 		&nbsp;&nbsp;
 		Action: <select name="disp">
-		  <option name="disp" value="" selected="1">Submit</option>
-		  <option name="disp" value="a">Approve</option>
+		  <option name="disp" value="">Submit</option>
+		  <option name="disp" value="a" selected="1">Approve</option>
 		  <option name="disp" value="r">Reject</option>
 		  </select>
 		<a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#action">help</a>
@@ -195,6 +195,7 @@
 	      <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
 	      <input type="hidden" name="id" tal:condition="e/id" tal:attributes="value e/id"/>
 	      <input type="hidden" name="stat" tal:condition="e/id" tal:attributes="value e/stat"/>
+	      <input type="hidden" name="dbg" tal:condition="dbg" tal:attributes="value dbg"/>
 	      <span tal:condition="not:session/userid" tal:omit-tag="">
 		<!-- #3 src parameter when existing entry and user is not editor. -->
 		<input type="hidden" tal:condition="e/id" name="src" tal:attributes="value e/src"/>

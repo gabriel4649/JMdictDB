@@ -335,6 +335,7 @@
 	<input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
 	<input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
 	<input type="hidden" name="entr" tal:attributes="value serialized"/>
+	<input type="hidden" name="dbg" tal:attributes="value dbg"/>
 	<input type="Submit" value="Submit"/> 
 	<span class="caution" tal:condition="disp">
 	  &nbsp;&nbsp;

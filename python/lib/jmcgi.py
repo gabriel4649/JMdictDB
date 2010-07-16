@@ -47,19 +47,25 @@ def parseform (readonly=False):
 
 	form = cgi.FieldStorage()
 	svc = form.getfirst ('svc') or def_svc
+	usid = form.getfirst ('sid')
 	try: svc = safe (svc)
 	except ValueError: errs.append ('svc=' + svc)
 	if not errs: cur = jdb.dbOpenSvc (cfg, svc)
 	if errs: raise ValueError (';'.join (errs))
 	host = jdb._extract_hostname (cur.connection)
 
-	  # Handle login, logout, and session identification...
-	action = form.getfirst ('loginout') # Will be None, "login" or "logout"
-	sid = get_sid_from_cookie()
+	  # Authentication...
 	scur = jdb.dbOpenSvc (cfg, svc, session=True, nokw=True)
-	uname, pw = form.getfirst('username'), form.getfirst('password')
-	sid, sess = get_session (scur, action, sid, uname, pw)
-	if sid: set_sid_cookie (sid, delete=(action=="logout"))
+	if not usid:  
+	      # Normal login, logout, and session identification using cookies...
+	    action = form.getfirst ('loginout') # Will be None, "login" or "logout"
+	    sid = get_sid_from_cookie()
+	    uname, pw = form.getfirst('username'), form.getfirst('password')
+	    sid, sess = get_session (scur, action, sid, uname, pw)
+	    if sid: set_sid_cookie (sid, delete=(action=="logout"))
+	else:
+              # If a URL sid was given, use it (useful for debugging). 
+	    sid, sess = get_session (scur, sid=usid)
 	scur.connection.close()
 
 	  # Collect the form parameters.  Caller is expected to pass

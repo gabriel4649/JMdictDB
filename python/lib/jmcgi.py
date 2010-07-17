@@ -47,25 +47,22 @@ def parseform (readonly=False):
 
 	form = cgi.FieldStorage()
 	svc = form.getfirst ('svc') or def_svc
-	usid = form.getfirst ('sid')
+	usid = form.getfirst ('sid') or ''    # No SID is "", not None.
 	try: svc = safe (svc)
 	except ValueError: errs.append ('svc=' + svc)
 	if not errs: cur = jdb.dbOpenSvc (cfg, svc)
 	if errs: raise ValueError (';'.join (errs))
 	host = jdb._extract_hostname (cur.connection)
 
-	  # Authentication...
+	  # Login, logout, and session identification...
 	scur = jdb.dbOpenSvc (cfg, svc, session=True, nokw=True)
-	if not usid:  
-	      # Normal login, logout, and session identification using cookies...
-	    action = form.getfirst ('loginout') # Will be None, "login" or "logout"
-	    sid = get_sid_from_cookie()
-	    uname, pw = form.getfirst('username'), form.getfirst('password')
-	    sid, sess = get_session (scur, action, sid, uname, pw)
-	    if sid: set_sid_cookie (sid, delete=(action=="logout"))
-	else:
-              # If a URL sid was given, use it (useful for debugging). 
-	    sid, sess = get_session (scur, sid=usid)
+	action = form.getfirst ('loginout') # Will be None, "login" or "logout"
+	if usid: sid = usid		  # Use sid from url if available.
+	else: sid = get_sid_from_cookie() # If not, try cookie.
+	uname = form.getfirst('username') or ''
+	pw = form.getfirst('password') or ''
+	sid, sess = get_session (scur, action, sid, uname, pw)
+	if sid: set_sid_cookie (sid, delete=(action=="logout"))
 	scur.connection.close()
 
 	  # Collect the form parameters.  Caller is expected to pass
@@ -80,7 +77,7 @@ def parseform (readonly=False):
 	return form, svc, host, cur, sid, sess, parms, cfg
 
 COOKIE_NAME = 'jmdictdb_sid'
-SESSION_TIMEOUT = '1 hour'
+SESSION_TIMEOUT = '18 hour'
 
 def get_session (cur, action=None, sid=None, uname=None, pw=None):
         # Do the authentication action specified by 'action':
@@ -107,48 +104,93 @@ def get_session (cur, action=None, sid=None, uname=None, pw=None):
 	      # Don't clear 'sid' because its value will be needed 
 	      # by caller to delete cookie.
 	elif action == 'login':
+	    if not re.match (r'^[a-zA-Z0-9_]+$', uname): return '', None
+	    if not re.match (r'^[a-zA-Z0-9_]+$', pw): return '', None
             sid, sess = dblogin (cur, uname, pw)
         else: pass    # Ignore invalid 'action' parameter.
 	return sid, sess
 
-def dbsession (cur, sid, noupd=False):
-        # Return the session associated with 'sid' or None.
+def dbsession (cur, sid):
+        # Return the session identified by 'sid' or None.
+	# As a side effect, if we have a sucessful login we
+	# delete all expired session records in the session
+	# table.  This will hopefully avoid the need for a
+	# cron job to prune expired entries. 
 
-	sql = "SELECT s.*,u.fullname,u.email " \
-	      "FROM sessions s JOIN users u ON u.userid=s.userid " \
-	      "WHERE id=%%s AND (NOW()-ts)<'%s'::INTERVAL" \
-	      % SESSION_TIMEOUT
-	rs = jdb.dbread (cur, sql, (sid,))
-	if len (rs) != 1: return None
-	sess = rs[0]
-	if not noupd:
-	    sql = "UPDATE sessions SET ts=DEFAULT WHERE id=%s"
-	    cur.execute (sql, (sid,))
-	    cur.connection.commit()
+	sid = str (sid)
+	  # FIXME: we should log non-digit strings so we find
+	  #  out where they come from and fix at the source.
+	if not sid.isdigit(): return ''
+	sess = db_validate_sid (cur, sid)
+	if not sess: return None
+	db_del_old_sessions (cur)
+	db_update_sid_ts (cur, sid)
 	return sess
 
 def dblogin (cur, userid, password):
-	sql = "SELECT userid FROM users WHERE userid=%s " \
-		"AND pw=%s AND pw IS NOT NULL AND NOT disabled"
+	# Login by authenticating the userid/password pair.
+	# and getting a session record which is returned with
+	# the session id.  If 'userid' has an active session
+	# already, it (the most recent one if more than one) 
+	# is returned.  If not, a new session is created.
+	# Reusing existing sessions help prevent the proliferation
+	# of sessions that was occuring previously.
+
+	  # Check userid, password validity.
+	sql = "SELECT userid FROM users WHERE userid=%s AND pw=%s "\
+		"AND pw IS NOT NULL AND NOT disabled "
 	rs = jdb.dbread (cur, sql, (userid, password))
-	if len(rs) != 1: 
+	if not rs: 
 	    time.sleep (1);  return '', None
+
+	  # Look for an existing session (the most recent if more than one).
+	sql = "SELECT s.id,s.userid,s.ts,u.fullname,u.email" \
+	      " FROM sessions s JOIN users u ON u.userid=s.userid" \
+	      " WHERE u.userid=%%s AND (NOW()-ts)<'%s'::INTERVAL" \
+	      " ORDER BY ts DESC LIMIT 1" % SESSION_TIMEOUT
+	rs = jdb.dbread (cur, sql, (userid,))
+	if len (rs) == 1: 
+	    sid = rs[0][0]
+	      # Update the session timestamp to 'now'.
+	    db_update_sid_ts (cur, sid)
+	    return sid, rs[0]
+
+	  # No existing session found, create a new session.
 	sid = random.randint (0, 2**63-1)
         sql = "INSERT INTO sessions(id,userid,ts) VALUES(%s,%s,DEFAULT)"
 	cur.execute (sql, (sid, userid))
 	cur.connection.commit()
-	sess = dbsession (cur, sid, noupd=True)
+	sess = db_validate_sid (cur, sid)
 	return sid, sess
 
 def dblogout (cur, sid):
-        if sid:
-	      # Delete the 'sid' record from the sessions table.
-	      # We also use this oppertunity to delete any other
-	      # expired sessions. 
-	    sql = "DELETE FROM sessions WHERE id=%%s OR (NOW()-ts)>'%s'::INTERVAL" \
-	          % SESSION_TIMEOUT
-	    cur.execute (sql, (sid,))
-	    cur.connection.commit()
+	if not sid: return
+	sql = "DELETE FROM sessions WHERE id=%s"
+	cur.execute (sql, (sid,))
+	cur.connection.commit()
+
+def db_validate_sid (cur, sid):
+	# Check that 'sid' is an existing session and if so
+	# return a session record.  Otherwise return None.
+	sql = "SELECT s.id,s.userid,s.ts,u.fullname,u.email" \
+	      " FROM sessions s JOIN users u ON u.userid=s.userid" \
+	      " WHERE id=%%s AND (NOW()-ts)<'%s'::INTERVAL" \
+	       % SESSION_TIMEOUT
+	rs = jdb.dbread (cur, sql, (sid,))
+	if len (rs) == 0: return None
+	return rs[0]
+
+def db_update_sid_ts (cur, sid):
+	# Update the last-used timestamp for 'sid'.
+	sql = "UPDATE sessions SET ts=DEFAULT WHERE id=%s"
+	cur.execute (sql, (sid,))
+	cur.connection.commit()
+
+def db_del_old_sessions (cur):
+	# Delete all sessions that are expired, for all users.
+        sql = "DELETE FROM sessions WHERE (NOW()-ts)>'%s'::INTERVAL" \
+	       % SESSION_TIMEOUT
+	cur.execute (sql)
 
 def get_sid_from_cookie ():
         sid = ''

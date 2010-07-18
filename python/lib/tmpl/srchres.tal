@@ -104,7 +104,7 @@
 	of the same base entry.
       </li><li>The "S" column shows the status of the entry: 
 	A: active, D: deleted, R: rejected.
-	If followed by an astrisk (*), the entry is unapproved and is
+	If followed by an asterisk (*), the entry is unapproved and is
 	waiting for approval by an editor.
       </li><li>
 	The "P" column indicates an entry that is marked as P (popular)

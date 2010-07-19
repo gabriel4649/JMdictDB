@@ -1,0 +1,25 @@
+Title:	Display edit leaf entries rather than all
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	idea
+Reqtrs:	
+AssdTo:	
+
+2010-07-19 11:17:00 stuart
+  When displaying entries for a given src/seq number, we display
+  the entire edit tree of entries.  But much of the info in the 
+  non-leaf entries is redundent.
+  Perhaps we could display only leaf entries, and add a link or 
+  button in the history entries to get to the full entry display
+  of non-leaf entries?  (I made this suggestion on jmdict_editors
+  list on 2010-07-17, "Multiple amendments on the same submissions/-
+  output page".)  This coud be done eiher server-side or, using
+  some javascript, client-side by hiding the redundent entries.
+
+2010-07-17 11:34:00 stuart
+  Question: how will this interact with search when the search
+  results include a non-leaf entry, not not the coresponding
+  leaf entry?  Or maybe the idea is only for when we have 
+  something like a "entr.py?q=nnnnnnn" page?  Probably needs
+  to be different page than entr.py.

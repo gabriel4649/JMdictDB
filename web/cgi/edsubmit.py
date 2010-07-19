@@ -185,8 +185,8 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	#
 	# dbh -- An open DBAPI cursor
 	# entr -- A populated Entr object that defines the entry to
-	#   be added.  See below for description of how some attribute
-	#   control the submission.
+	#   be added.  See below for description of how some its
+	#   attributes control the submission.
 	# disp -- Disposition, one of three string values:
 	#   '' -- Submit as normal user.
 	#   'a' -- Approve this submission.
@@ -199,15 +199,28 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	# userid -- The userid if submitter is logged in editor or
 	#   None if not.
 	#
-	# The following attributes in 'entr' control how the entry
-	# is added:
+	# Note that we never modify existing database entries other
+	# than to sometimes completetly erase them.  Submissions 
+	# of all three types (submit, approve, reject) *always* 
+	# result in the creation of a new entry object in the database.
+	# The new entry will be created by writing 'entr' to the
+	# database.  The following attributes in 'entr' are relevant:
+	#
 	#   entr.dfrm -- If None, this is a new submission.  Otherwise,
 	#	it must be the id number of the entry this submission 
 	#	is an edit of.
 	#   entr.stat -- Must be consistent with changes requested. In
 	#	particular, if it is 4 (Delete), changed made in 'entr'
-	#	will be ignored, and the parent entry will be submitted 
-	#	with stat D.
+	#	will be ignored, and a copy of the parent entry will be
+	#	submitted with stat D.
+	#   entr.src -- Required to be set, new entry will copy.
+	#       # FIXME: prohibit non-editors from making src 
+	#       #  different than parent?
+	#   entr.seq -- If set, will be copied.  If not set, submission
+	#       will get a new seq number but this untested and very 
+	#       likely to break something.
+	#       # FIXME: prohibit non-editors from making seq number 
+	#       #  different than parent, or non-null if no parent?
 	#
 	# The following entry attributes need not be set:
 	#   entr.id -- Ignored (reset to None).
@@ -215,10 +228,10 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 
 	KW = jdb.KW
 	oldid = entr.id
-	entr.id = None		# All submissions will produce a new entry.
-	entr.unap = not disp
-	merge_rev = False
-	if not entr.dfrm:	# This is new entry. 
+	entr.id = None		# Submissions, approvals and rejections will
+	entr.unap = not disp	#   always produce a new db entry object so
+	merge_rev = False	#   nuke any id number.
+	if not entr.dfrm:	# This is a submission of a new entry. 
 	    entr.stat = KW.STAT['A'].id
 	    entr.seq = None	# Force addentr() to assign seq number. 
 	    pentr = None	# No parent entr.
@@ -227,6 +240,9 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	      # generated, they will show xref details.
 	    pentr, raw = jdb.entrList (dbh, None, [entr.dfrm], ret_tuple=True)
 	    if len (pentr) != 1: 
+		  # The parent entry disappearred between the time our
+		  # user got the Confirmation screen, and she clicked the
+		  # Submit button.
 		errs.append (
 		    "The entry you are editing has been deleted or changed " 
 		    "by someone else.  Please check the current entry and " 
@@ -267,7 +283,7 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	    errs.append ("Can't approve because entry has unresolved xrefs")
 
 	if not errs:
-	      # If this is a submission buy a non-editor, restore the
+	      # If this is a submission by a non-editor, restore the
 	      # original entry's freq items which non-editors are not
 	      # allowed to change.
 	    if not is_editor:
@@ -282,13 +298,11 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	      # the unvalidated info from it (name, email, notes, refs)
 	      # and recreate it.
 	    h = entr._hist[-1]
+	      # When we get here, if merge_rev is true, pentr will also be
+	      # true.  If we are wrong, add_hist() will throw an exception
+	      # but will never return a None, so no need to check return val.
 	    entr = jdb.add_hist (entr, pentr, userid, 
 				 h.name, h.email, h.notes, h.refs, merge_rev)
-	    if not entr:
-		errs.append (
-		    "The entry you are editing has been changed by " 
-		    "someone else.  Please check the current entry and " 
-		    "reenter your changes if they are still applicable.")
 	if not errs:
 	    if not disp:
 		added = submit (dbh, entr, errs)

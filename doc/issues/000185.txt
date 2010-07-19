@@ -1,0 +1,37 @@
+Title:	All forms the pass sid must use post.
+Stat:	open
+Disp:	
+Prio:	crit
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2010-07-17 17:55:00 stuart
+  Paul Blay posted a url to a entr.py page by cut-and-paste:
+  http://www.edrdg.org/jmdictdb/cgi-bin/entr.py?svc=jmdict&sid=4405220254011143696&q=6.99
+  Anyone who opens this url will get Paul's session.  The problem 
+  is aggrevated by both the increase in session timeout, and the 
+  reuse of a single session, both changes made in the previous
+  revision.
+
+  Need to make sure that any forms or generated urls either use
+  post method, or don't pass the sid parameter. 
+  
+2010-07-17 20:12:00 stuart
+  Fine, but what about links that contain an sid (each page has 
+  dozens of them)?
+
+  Possible options...
+
+  Don't pass sid in links at all.  Only people not using cookies
+  will have a problem and the problem will be loss of logged-in
+  status when following links, but not when following process workflow
+  linked by buttons.  
+
+  Added a propogated param that says not to use cookies; use sid
+  in url only if not using cookies.  Non-cookie users responsible 
+  for stripping the uid value before posting links.
+
+  I intend to add ip address logging fo other reasons.  Could use 
+  for authentication by logging ip addr at session creation and
+  require it to be the same when validating sid.  

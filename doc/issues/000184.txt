@@ -1,4 +1,4 @@
-Title:	Edited entried disappearing after submission.
+Title:	Edited entries disappearing after submission.
 Stat:	open
 Disp:	
 Prio:	crit
@@ -51,3 +51,20 @@ AssdTo:
   Changed the default Submit/Approve/Reject choice on the edit
   form (edform.py) from Submit to Approve per an email discussion
   a week or two ago with jwb.
+
+2010-07-22 14:36:00 stuart
+  Rewrote large portion of web/cgi/edsubmit.py.
+
+  Added logging.  Logging file is written to the cgi working
+  directory with name "jmdictdb.log".  It must exist and be 
+  writable by the apache user.  If it can't be opened or 
+  written, it wil be silently ignored.
+
+  Replaced the 'children'* and 'find_'* function in the 
+  database with two new functions: get_subtree and get_edroot.
+  These allow reading the entr rows for all entries in an
+  edit set, and we do the tree construction and analysis 
+  in the application.
+
+  Simplified the code significantly and fixed error messages
+  to be more accurate.

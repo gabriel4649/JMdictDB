@@ -24,7 +24,6 @@
 #	current entry was derived from.
 #   unap -- Indicates the current entry is not "approved"
 #   stat -- Has value corresponding to one of the kwstat kw's:
-#	N -- New entry
 #	A -- Active entry
 #	D -- Deleted entry
 #	R -- Rejected entry
@@ -100,27 +99,30 @@
 # Concurrency:
 # ------------
 # A long time may pass between when an entry is read for
-# editing by edform.pl and when it is submitted by edsubmit.pl.
-# During this time another user may submit other edits of the
-# same entry, or of one its parents.   
+# editing by edform.py and when it is submitted by edsubmit.py.
+# During this time anoher user may submit other edits of the
+# same entry, or of one of its parents.   
 # An editor may approve or reject edits resulting in the 
 # disappearance of the edited entry's parents.
-# This situation is detected in merge_hist() when it tries 
-# to merge the history records from the parent entry.
+# This situation is detected in submission() when it tries 
+# read the parent entry and finds it gone.
 # Like other systems that permit concurrent editing (e.g.
-# CVS) we report an edit conflict and require the user
-# to resolve conflicts manually by reediting the entry.
+# CVS) we create two separate "forks" of an entry two people
+# change the same base entry.  Unlike CVS-like systems, we
+# don't attempt to automatically merge them together again, 
+# relying instead on editors to do that manually.
 # 
 # It is also possible that the edit tree could change while
-# edsubmit.pl is running: between the time it is checked for
-# changes but before the edited entry is  written or previous
+# edsubmit.py is running: between the time it is checked for
+# changes but before the edited entry is written or previous
 # entries deleted.  This is guarded against by doing the
 # checks and updates inside a transaction run with "serializable"
-# isolation.  The database state within the tranaction is
+# isolation.  The database state within the transaction is
 # garaunteed not to change, and if someone else makes a 
 # conflicting change outside the transaction, the transaction
-# will fail with an error.  [However, this is not implemented
-#  yet].)
+# will fail with an error.  (However, this situation in not
+# yet handled gracefully in the code -- so the result will
+# be an unhandled exception and traceback.)
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
@@ -130,14 +132,23 @@ sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import cgitbx; cgitbx.enable()
 import jdb, jmcgi, fmtxml, serialize
 
+class BranchesError (ValueError): pass
+class NonLeafError (ValueError): pass
+class IsApprovedError (ValueError): pass
+
 def main( args, opts ):
 	errs = []; dbh = svc = None
+	logw ("main(): Starting submit.py", pre='\n')
 	try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
-	except StandardError, e: jmcgi.err_page ([unicode (e)])
+	except ValueError, e: jmcgi.err_page ([unicode (e)])
+
+	logw ("main(): parseform done: userid=%s, sid=%s" 
+	  % (sess and sess.userid, sess and sess.id))
 
 	fv = form.getfirst
-	dbg = fv ('d'); meth = fv ('meth');  dbg = fv('dbg')
-	disp = fv ('disp') or ''  # '': User submission, 'a': Approve. 'r': Reject;
+	meth = fv ('meth');  dbg = fv('dbg')
+	  # disp values: '': User submission, 'a': Approve. 'r': Reject;
+	disp = fv ('disp') or ''
 	if not sess and disp:
 	    errs.append ("Only registered editors can approve or reject entries")
 	if errs: jmcgi.err_page (errs)
@@ -146,6 +157,12 @@ def main( args, opts ):
 	    jmcgi.err_page (["Bad 'entr' parameter, unable to unserialize."])
 
 	added = []
+	  # Clear any possible transactions begun elsewhere (e.g. by the 
+	  # keyword table read in jdb.dbOpen()).  Failure to do this will
+	  # cause the following START TRANSACTON command to fail with:
+	  #  InternalError: SET TRANSACTION ISOLATION LEVEL must be
+	  #  called before any query
+	logw ("main(): starting transaction")
 	dbh.connection.rollback()
 	dbh.execute ("START TRANSACTION ISOLATION LEVEL SERIALIZABLE");
 	  # FIXME: we unserialize the entr's xref's as they were resolved
@@ -168,16 +185,22 @@ def main( args, opts ):
 	    if e: added.append (e)
 
 	if errs: 
+            logw ("main(): rolling back transaction due to errors")
 	    dbh.connection.rollback()
 	    jmcgi.err_page (errs)
 
-	if dbg: dbh.connection.rollback()
-	else: dbh.connection.commit()
+	if dbg: 
+	    logw ("main(): rolling back transaction in dbg mode")
+	    dbh.connection.rollback()
+	else:
+	    logw ("main(): doing commit") 
+	    dbh.connection.commit()
 	if not meth: meth = 'get' if dbg else 'post'
 	jmcgi.gen_page ("tmpl/submitted.tal", macros='tmpl/macros.tal',
 			added=added, parms=parms, meth=meth, dbg=dbg,
 			svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
 			output=sys.stdout, this_page='edsubmit.py')
+	logw ("main(): thank you page sent")
 
 def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	# Add a changed entry, 'entr', to the jmdictdb database accessed 
@@ -185,8 +208,8 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	#
 	# dbh -- An open DBAPI cursor
 	# entr -- A populated Entr object that defines the entry to
-	#   be added.  See below for description of how some its
-	#   attributes control the submission.
+	#   be added.  See below for description of how some of its
+	#   attributes affect the submission.
 	# disp -- Disposition, one of three string values:
 	#   '' -- Submit as normal user.
 	#   'a' -- Approve this submission.
@@ -210,23 +233,28 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	#	it must be the id number of the entry this submission 
 	#	is an edit of.
 	#   entr.stat -- Must be consistent with changes requested. In
-	#	particular, if it is 4 (Delete), changed made in 'entr'
+	#	particular, if it is 4 (Delete), changes made in 'entr'
 	#	will be ignored, and a copy of the parent entry will be
 	#	submitted with stat D.
 	#   entr.src -- Required to be set, new entry will copy.
-	#       # FIXME: prohibit non-editors from making src 
-	#       #  different than parent?
+	#	# FIXME: prohibit non-editors from making src 
+	#	#  different than parent?
 	#   entr.seq -- If set, will be copied.  If not set, submission
-	#       will get a new seq number but this untested and very 
-	#       likely to break something.
-	#       # FIXME: prohibit non-editors from making seq number 
-	#       #  different than parent, or non-null if no parent?
+	#	will get a new seq number but this untested and very 
+	#	likely to break something.
+	#	# FIXME: prohibit non-editors from making seq number 
+	#	#  different than parent, or non-null if no parent?
 	#
 	# The following entry attributes need not be set:
 	#   entr.id -- Ignored (reset to None).
 	#   entr.unap -- Ignored (reset based on 'disp').
 
 	KW = jdb.KW
+	logw (("submission (disp=%s, is_editor=%s, userid=%s, entry id=%s,\n" 
+	        + " "*36 + "parent=%s, stat=%s, unap=%s, seq=%s, src=%s)")
+              % (disp, is_editor, userid, entr.id, entr.dfrm, entr.stat, 
+		 entr.unap, entr.seq, entr.src))
+	logw ("submission(): seqset: %s" % logseq (dbh, entr.seq, entr.src))
 	oldid = entr.id
 	entr.id = None		# Submissions, approvals and rejections will
 	entr.unap = not disp	#   always produce a new db entry object so
@@ -235,18 +263,28 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	    entr.stat = KW.STAT['A'].id
 	    entr.seq = None	# Force addentr() to assign seq number. 
 	    pentr = None	# No parent entr.
+	    edtree = None
 	else:	# Modification of existing entry.
+	    edroot = get_edroot (dbh, entr.dfrm)
+	    edtree = get_subtree (dbh, edroot)
 	      # Get the parent entry and augment the xrefs so when hist diffs are
 	      # generated, they will show xref details.
+	    logw ("submission(): reading parent entry %d" % entr.dfrm)
 	    pentr, raw = jdb.entrList (dbh, None, [entr.dfrm], ret_tuple=True)
-	    if len (pentr) != 1: 
-		  # The parent entry disappearred between the time our
-		  # user got the Confirmation screen, and she clicked the
-		  # Submit button.
+	    if len (pentr) != 1:
+		logw ("submission(): missing parent %d" % entr.dfrm)
+		  # The editset may have changed between the time our user
+		  # displayed the Confirmation screen and they clicked the
+		  # Submit button.  Changes involving unapproved edits result
+		  # in the addition of entries and don't alter the preexisting
+		  # tree shape.  Approvals of edits, deletes or rejects may
+		  # affect our subtree and if so will always manifest themselves
+		  # as the disappearance of our parent entry.
 		errs.append (
-		    "The entry you are editing has been deleted or changed " 
-		    "by someone else.  Please check the current entry and " 
-		    "reenter your changes if they are still applicable.")
+		    "The entry you are editing no loger exists because it "
+		    "was approved, deleted or rejected.  "
+		    "Please search for entry '%s' seq# %s and reenter your changes "
+		    "if they are still applicable." % (KW.SRC[ent.src].kw, entr.seq))
 		return
 	    pentr = pentr[0]
 	    jdb.augment_xrefs (dbh, raw['xref'])
@@ -277,9 +315,11 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	  # Before calling merge_hist() check for a condition that would
 	  # cause merge_hist() to fail.
 	if entr.stat==KW.STAT['D'].id and not getattr (entr, 'dfrm', None):
-	    errs.append ("Delete requested but entry is new (has no 'dfrm' value.)")
+	    logw ("submission(): delete of new entry error")
+	    errs.append ("Delete requested but this is a new entry.")
 
 	if disp == 'a' and has_xrslv (entr) and entr.stat==KW.STAT['A'].id:
+	    logw ("submission(): unresolved xrefs error")
 	    errs.append ("Can't approve because entry has unresolved xrefs")
 
 	if not errs:
@@ -288,6 +328,7 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	      # allowed to change.
 	    if not is_editor:
 		if pentr: 
+		    logw ("submission(): copying freqs from parent")
 		    jdb.copy_freqs (pentr, entr, replace=True)
 		  # Note that non-editors can provide freq items on new
 		  # entries.  We expect an editor to vet this when approving.
@@ -301,109 +342,96 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	      # When we get here, if merge_rev is true, pentr will also be
 	      # true.  If we are wrong, add_hist() will throw an exception
 	      # but will never return a None, so no need to check return val.
+	    logw ("submission(): adding hist for '%s', merge=%s" % (h.name, merge_rev))
 	    entr = jdb.add_hist (entr, pentr, userid, 
 				 h.name, h.email, h.notes, h.refs, merge_rev)
 	if not errs:
 	    if not disp:
-		added = submit (dbh, entr, errs)
+		added = submit (dbh, entr, edtree, errs)
 	    elif disp == "a":
-		added = approve (dbh, entr, errs)
+		added = approve (dbh, entr, edtree, errs)
 	    elif disp == "r":
-		added = reject (dbh, entr, errs)
+		added = reject (dbh, entr, edtree, errs, None)
 	    else:
-		errs.append ("Bad url parameter (disp=%s) % disp")
+		logw ("submission(): Bad url parameter (disp=%s)" % disp)
+		errs.append ("Bad url parameter (disp=%s)" % disp)
+	logw ("submission(): seqset: %s" % logseq (dbh, entr.seq, entr.src))
 	if not errs: return added
 	  # Note that changes have not been committed yet, caller is
 	  # expected to do that.
 	return None
 
-def submit (dbh, entr, errs):
-
+def submit (dbh, entr, edtree, errs):
 	KW = jdb.KW
+	logw ("submit(): submitting entry with parent id %s" % entr.dfrm)
 	if not entr.dfrm and entr.stat != KW.STAT['A'].id:
+	    logw ("submit(): bad url param exit")
 	    errs.append ("Bad url parameter, no dfrm");  return
 	if entr.stat == jdb.KW.STAT['R'].id: 
+	    logw ("submit(): bad stat=R exit")
 	    errs.append ("Bad url parameter, stat=R");  return
 	res = addentr (dbh, entr)
 	return res
 
-def approve (dbh, entr, errs):
-
+def approve (dbh, entr, edtree, errs):
 	KW = jdb.KW
-	dfrmid = entr.dfrm
-	edroot = None
-	if dfrmid:
-	      # Since $dfrmid is not undef, this is an edit of an
-	      # existing entry.  We need to make sure there is a
-	      # single edit chain back to the root entry, i.e., 
-	      # there are no other pending edits which would get
-	      # discarded if we blindly apply our edit.
-	      # First, make sure the edit tree root still exists.  
- 	    sql = "SELECT * FROM find_edit_root(%s)"
-	    rs = jdb.dbread (dbh, sql, [dfrmid])
-	    edroot = rs[0].id
-	    if not edroot:
-		errs.append (
-		    "The entry you are editing has been changed by " 
-		    "someone else.  Please check the current entry and " 
-		    "reenter your changes if they are still applicable.")
-
-	      # Second, find all tree leaves.  These are the current 
-	      # pending edits.  If there is more than one, or if there
-	      # is one but it is not our entry's parent (i.e ==entr.dfrm), 
-	      # then there are other pending edits, and the editor needs
-	      # to either explicitly reject them before this entry can be
-	      # approved, or abandon this entry. 
-	    sql = "SELECT * FROM find_edit_leaves(%s)"
-	    rs = jdb.dbread (dbh, sql, [edroot])
-	    if len (rs) > 1 or (len(rs)==1 and rs[0].id!=dfrmid):
-		ta = ["id="+str(z.id) for z in rs if z.id != dfrmid]
-		errs.append (
-		    "There are other submitted edits (" 
-		    + ", ".join (ta) + ").  They must be " 
-		    "rejected before your edit can be approved.")
-		return
-
-	      # We may not find even our own edit if someone else rejected 
-	      # the edit we are working on.
-	    elif len (rs) < 1:
-		errs.append (
-		    "The entry you are editing has been changed by " 
-		    "someone else.  Please check the current entry and " 
-		    "reenter your changes if they are still applicable.")
-		return
+	logw ("approve(): approving entr id %s" % entr.dfrm)
 	  # Check stat.  May be A or D, but not R.
 	if entr.stat == KW.STAT['R'].id:
+	    logw ("approve(): stat=R exit")
 	    errs.append ("Bad url parameter, stat=R"); return 
 
-	  # The entr value for an approved, root entry and write it to
-	  # the database..
+	dfrmid = entr.dfrm
+	edroot = edtree[0].id
+	if dfrmid:
+	      # Since 'dfrmid' has a value, this is an edit of an
+	      # existing entry.  Check that there is a single edit
+	      # chain back to the root entry.
+	    try: approve_ok (edtree, dfrmid)
+	    except NonLeafError, e:
+		logw ("approve(): NonLeafError")
+		errs.append ("Edits have been made to this entry.  "\
+		    "You need to reject those edits before you can approve this entry.  "\
+		    "The id numbers are: %s"\
+		    % ', '.join ("id="+str(x) for x in leafsn([e.args[0]])))
+		return
+	    except BranchesError, e:
+		logw ("approve(): BranchesError")
+		errs.append ("There are other edits pending on some of "\
+		    "the predecessor entries of this one, and this "\
+		    "entry cannot be approved until those are rejected."\
+		    "The id numbers are: %s"\
+		    % ', '.join ("id="+str(x) for x in leafsn(e.args[0])))
+		return
+	  # Write the approved entry to the database...  
 	entr.dfrm = None
 	entr.unap = False
 	res = addentr (dbh, entr)
-	  # Delete the old root if any.  Because the dfrm foreign key is
-	  # specified with "on delete cascade", deleting the root entry
-	  # will also delete all it's children. 
+	  # ...and delete the old root if any.  Because the dfrm foreign 
+	  # key is specified with "on delete cascade", deleting the root 
+	  # entry will also delete all it's children. 
 	if edroot: delentr (dbh, edroot)
 	return res
 
-def reject (dbh, entr, errs):
-	  # Stored procedure 'find_chain_head()' will  follow the
-	  # dfrm chain from entr->{dfrm} back to it's head (the entry
-	  # immediately preceeding a non-chain entry.  A non-chain
-	  # entry is one with a NULL dfrm value or referenced (via
-	  # dfrm) by more than one other entry. 
-
+def reject (dbh, entr, edtree, errs, rejcnt=None):
 	KW = jdb.KW
-	sql = "SELECT id FROM find_chain_head (%d)" % entr.dfrm;
-	rs = jdb.dbread (dbh, sql)
-	chhead = rs[0].id
-	if not chhead:
-	    errs.append (
-		"The entry you are editing has been changed by "
-		"someone else.  Please check the current entry and " 
-		"reenter your changes if they are still applicable.")
+	logw ("reject(): rejecting entry id %s, rejcnt=%s" % (entr.dfrm, rejcnt))
+	try: rejs = rejectable (edtree, entr.dfrm)
+	except NonLeafError, e:
+	    logw ("reject(): NonLeafError")
+	    errs.append ("Edits have been made to this entry.  "\
+		    "To reject entries, you must reject the version(s) most recently edited, "\
+		    "which are: %s"\
+		    % ', '.join ("id="+str(x) for x in leafsn([e.args[0]])))
 	    return
+	except IsApprovedError, e:
+	    logw ("reject(): IsApprovedrror")
+	    errs.append ("You can only reject unapproved entries.")
+	    return
+	if not rejcnt or rejcnt > len(rejs): rejcnt = len(rejs)
+	chhead = (rejs[-rejcnt]).id
+	logw ("reject(): rejs=%r, rejcnt=%d, chhead=%d" 
+		% ([x.id for x in rejs], -rejcnt, chhead))
 	entr.stat = KW.STAT['R'].id
 	entr.dfrm = None
 	entr.unap = False
@@ -414,7 +442,11 @@ def reject (dbh, entr, errs):
 def addentr (dbh, entr):
 	entr._hist[-1].unap = entr.unap
 	entr._hist[-1].stat = entr.stat
+	logw ("addentr(): adding entry to database")
+        logw ("addentr(): %d hists, last hist is %s [%s] %s" % (len(entr._hist),
+	      entr._hist[-1].dt, entr._hist[-1].userid, entr._hist[-1].name))
 	res = jdb.addentr (dbh, entr)
+	logw ("addentr(): entry id=%s, seq=%s, src=%s added to database" % res)
 	return res
 
 def delentr (dbh, id):
@@ -424,6 +456,7 @@ def delentr (dbh, id):
 	# but leaving the entr and hist records, use database 
 	# function delentr.  'dbh' is an open dbapi cursor object.
 
+	logw ("delentr(): deleting entry id %s from database" % id)
 	sql = "DELETE FROM entr WHERE id=%s";
 	dbh.execute (sql, (id,))
 
@@ -431,6 +464,165 @@ def has_xrslv (entr):
 	for s in entr._sens:
 	    if getattr (s, '_xrslv', None): return True
 	return False
+
+def approve_ok (edtree, id):
+	# edtree -- A (root,dict) 2-tuple as returned by get_subtree().
+	# id -- (int) An id number of an entr row in 'edtree'.
+	# Returns: None
+	#
+	# An entry is approvable if:
+	# 1. It is a leaf in the edit tree. 
+	#    We can't approve a non-leaf node because that would
+	#    require changing the dfrm links of following nodes
+	#    (rule is that we only add or erase entries; we don't
+	#    change existing ones) and even if we did that, the
+	#    history records of the following nodes would no
+	#    longer be correct.
+	# 2. There are no edit branches on the path back to the 
+ 	#    root node, i.e. we have a single linear string of
+	#    edits.  All other edits in the tree are erased when 
+	#    we approve this one.  The approved entry carries 
+	#    the history of all earlier entries on its path, but
+	#    not any history from other branches.  We require 
+	#    those branches be explicitly rejected (removing 
+	#    them from our tree) first so that history is not
+	#    unknowingly discarded and to be sure approver is
+	#    aware of them.
+	#
+	#    If the given entry is not approvable, an error is raised.
+
+	root, d = edtree;  erow = d[id];  branches = []
+	if erow._dfrm: raise NonLeafError (erow)
+	while erow != root:
+	    last = erow
+	    erow = d[erow.dfrm]
+	    if len(erow._dfrm) > 1:
+		branches.extend ([x for x in erow._dfrm if x!=last])
+	if branches: raise BranchesError (branches)
+	return
+
+def rejectable (edtree, id):
+	# edtree -- A (root,dict) 2-tuple as returned by get_subtree().
+	# id -- (int) An id number of an entr row in 'edtree'.
+	#
+	# Returns: A list of rows in 'edtree' starting at row 'id'
+	# and moving back towards the root via the 'dfrm' references
+	# until one of the following conditions obtain:
+	# * An entry is reached that is referenced by more than one
+	#   other entry.  (This is an entry that has two or more 
+	#   direct edits.)
+	# * An entry that is not "unapproved".
+	# The entry that terminated the search is not included  
+	# in the list.
+	# If the entry row designated by 'id' is not a leaf node,
+	# or is approved, an error is raised.
+
+	root, d = edtree;  erow = d[id]
+	if erow._dfrm: raise NonLeafError (erow)
+	if not erow.unap: raise IsApprovedError (erow)
+	erows = []
+	while 1:
+	    erows.append (erow)
+	    if not erow.dfrm: break
+	    erow = d[erow.dfrm]
+	    if not erow.unap or len(erow._dfrm)>1: break
+	erows.reverse()
+	return erows
+
+def get_edroot (dbh, id):
+	# Given the id number of an 'entr' row, return the id
+	# of the root of the edit tree it is part of.  The 
+	# edit tree on an entry is that set of entries from
+	# which the first entry can be reached by following
+	# 'dfrm' links.
+ 
+	if id is None: raise ValueError (id)
+	sql = "SELECT * FROM get_edroot(%s)"
+	rs = jdb.dbread (dbh, sql, [id])
+	if not rs: return None
+	return rs[0][0]
+
+def get_subtree (dbh, id):
+	# Read the "entr" table row for entry with id 'id'
+	# and all the rows with a 'dfrm' attribute that points
+	# to that row, and all the rows with 'dfrm' attributes
+	# that point to any of thoses rows, and so on recursively.
+	# That is, we read all the rows in the edit sub-tree
+	# below (leaf-ward) and including row 'id'.  If 'id'
+	# denotes an edit root row, then we will read the 
+	# entire edit tree.
+	#
+	# After reading the rows, they are linked together in a 
+	# tree structure that mirrors that in the database by
+	# adding an attribute, '._dfrm' tO each row which is set
+	# to a list of rows that have 'dfrm' values equal to the
+	# id number of the ._dfrm row.
+	#
+	# Return a 2-tuple of:
+	# 1. The entr row with id 'id' (which is the root of
+	#    the subtree.
+	# 2. A dict of (id, entr row) key value pairs allows 
+	#    quick lookup of a row by 'id'..
+
+	if id is None: raise ValueError (id)
+	root = None
+	sql = "SELECT * FROM get_subtree(%s)"
+	rs = jdb.dbread (dbh, sql, [id])
+	d = dict ((r.id,r) for r in rs)
+	for r in rs: r._dfrm = []
+	for r in rs:
+	    if r.dfrm: 
+		d[r.dfrm]._dfrm.append (r) 
+	    else:
+		if root: raise ValueError ("get_subtree: Multiple roots returned by get_subtree")
+		root = r 
+	return root, d
+
+def leafs (erow):
+	# erow -- An entry row with a '_dfrm' attribute such
+	#        produced by get_subtree().
+	# Returns: A list of entry nodes that are leaf entries 
+	#        for the subtree rooted at 'erow'.
+	v = []
+	if not erow._dfrm: return [erow]
+	for x in erow._dfrm: v.extend (leafs (x))
+	return v
+
+def leafsn (erows):
+	# Given a list of entr rows, 'erows', find the 
+	# leaf entries of all of them and return a sorted
+	# list of their id numbers (without duplicates).
+	lst = set()
+	for e in erows:
+	    lst.update (x.id for x in leafs (e))
+	return sorted (list (lst))
+
+def logw (msg, pre=''):
+	#return   # Uncomment me to disable logging.
+	if isinstance (msg, unicode): msg = msg.encode ('utf-8')
+	try: pid = os.getpid()
+        except OSError: pid = ''
+	ts = datetime.datetime.now().isoformat(' ')
+	try:
+	    logf = open ("./jmdictdb.log", "a")
+	    print >>logf, "%s%s [%s]: %s" % (pre, ts, pid, msg)
+	    logf.close()
+	except StandardError: pass
+
+def logseq (cur, seq, src):
+	# Return a list of the id,dfrm pairs (plus stat and unap) for 
+	# all entries in a src/seq set.  We format the list into a text
+	# string for the caller to print.  By looking at this someome
+	# can figure out the shape of the edit tree (assuming that it
+	# is entirely in the src/seq set).
+	sql = "SELECT id,dfrm,stat,unap FROM entr WHERE seq=%s AND src=%s ORDER by id"
+	cur.execute (sql, (seq,src))
+	rs = cur.fetchall()
+	return ','.join ([str(r) for r in rs])
+
+def err_page (errs):
+	logw ("going to error page. Errors:\n%s" % '\n'.join (errs))
+        jmcgi.err_page (errs)	
 
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()

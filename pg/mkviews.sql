@@ -321,152 +321,43 @@ CREATE OR REPLACE FUNCTION delentr(entrid int) RETURNS void AS $$
     $$ LANGUAGE plpgsql;
 
 -------------------------------------------------------------
--- Following two functions deal with finding the edit set
--- (i.e. entries linked to an entry through entr.dfrm, either
--- directly or indirectly).  They are not intended for
--- external use but are used interally by the 'find_*' 
--- functions that follow below.
+-- 
 -------------------------------------------------------------
-CREATE OR REPLACE FUNCTION children (tblname TEXT) RETURNS VOID AS $$
-    DECLARE
-	level INT := 0; rowcount INT;
+
+CREATE OR REPLACE FUNCTION get_subtree (eid INT) RETURNS SETOF entr AS $$
+    -- Return the set of entr rows that reference the row with id
+    -- 'eid' via 'dfrm', and all the row that reference those rows
+    -- and...recursively.  Currently, if there is a cycle in the 
+    -- dfrm references, this function will fail to terminate.
+    -- FIXME: Detect cycles and abort.  
     BEGIN
-	LOOP
-	    EXECUTE 'INSERT INTO '||tblname||'(id,root,dfrm,lvl) (
-	        SELECT e.id,t.root,e.dfrm,t.lvl+1 FROM entr e JOIN '||tblname||' t ON e.dfrm=t.id WHERE t.lvl='||level||')';
-	    GET DIAGNOSTICS rowcount = ROW_COUNT;
-	    --raise notice 'rowcount=%, level=%', rowcount, level;
-	    EXIT WHEN rowcount = 0;
-	    IF level>=99 THEN RAISE EXCEPTION 'Iteration limit exceeded'; END IF;
-	    level := level + 1;
-	    END LOOP;
+	RETURN QUERY
+	    WITH RECURSIVE wt(id) AS (
+                SELECT id FROM entr WHERE id=eid
+                UNION
+                SELECT entr.id
+                FROM wt, entr WHERE wt.id=entr.dfrm)
+	    SELECT entr.*
+	    FROM wt
+	    JOIN entr ON entr.id=wt.id;
 	RETURN;
     END; $$ LANGUAGE 'plpgsql';
 
-CREATE OR REPLACE FUNCTION childrentbl (eid INT,tblname TEXT) RETURNS TEXT AS $$
-    -- Create a temporary table named 'tblname' populated with
-    -- information about entry 'eid' and all it's children (i.e.
-    -- entries linked by directly or recursively though column
-    -- 'dfrm').  Each row represents an entry and has the following
-    -- attributes:
-    --
-    --    id:   Id number of entry.
-    --    root: Id number of entry at tree root, i.e. 'eid'.
-    --    dfrm: 'dfrm' value of entry.
-    --    lvl:  Distance (in number 'dfrm' links) of entry from root.
-
-    DECLARE
-	tbl TEXT;
-    BEGIN
-	IF tblname IS NULL THEN tbl:='_tmpchld'; ELSE tbl:=tblname; END IF;
-	EXECUTE 'DROP TABLE IF EXISTS '||tbl;
-	EXECUTE 'CREATE TEMPORARY TABLE '||tbl||'(id INT, root INT, dfrm INT, lvl INT)';
-	EXECUTE 'INSERT INTO '||tbl||'(id,root,dfrm,lvl) '||
-		 '(SELECT id,id,dfrm,0 FROM entr WHERE id='||eid||')';
-	PERFORM children (tbl);
-	RETURN tbl;
-    END; $$ LANGUAGE 'plpgsql';
-
-CREATE TYPE editset AS (id INT, root INT, dfrm INT, lvl INT);
-  -- A type matching the tmptbl structure above, useful as a return 
-  -- type for functions that return tmptbl rows.
-
--------------------------------------------------------------
--- The following functions (with names prefixed with "find_")
--- are used for getting information about the "edit set" for
--- a given entry.  An "edit set" is a set of entries (or
--- alternately rows in table 'entr') that are linked (possibly
--- recursively) though attribute 'dfrm'.  The 'dfrm' attribute
--- organizes the rows in the set as a tree, rooted at the given
--- entry.
--------------------------------------------------------------
-
-CREATE OR REPLACE FUNCTION find_edit_set (eid INT) RETURNS SETOF editset AS $$
-    -- Return the full edit set that contains 'eid'.  
-    -- Each row in the edit set identifies a row in table 'entr' that
-    -- is linked (directly or indirectly) to other rows in the set via
-    -- the .dfrm attribute, and organised as a tree.  The returned rows
-    -- are of type "editset" defined above as:
-    --    id INT,   -- Id number of entry.
-    --    root INT, -- Id number of entry at tree root.
-    --    dfrm INT, -- 'dfrm' value of entry.  Will be NULL for the root row.
-    --    lvl INT); -- Distance (in number 'dfrm' links) of entry from root.
-
-    DECLARE rootentr entr%ROWTYPE; tmptbl TEXT := '_tmpchld'; r editset%ROWTYPE; 
-    BEGIN
-	rootentr := find_edit_root (eid);
-	IF rootentr.id IS NOT NULL THEN
-	    PERFORM childrentbl (rootentr.id, tmptbl);
-	    -- Following doesn't work...
-	    --EXECUTE 'RETURN QUERY SELECT id,root,dfrm,lvl FROM '||tmptbl;
-	    -- So use an explicit loop instead...
-	    FOR r IN EXECUTE 'SELECT id,root,dfrm,lvl FROM '||tmptbl LOOP
-		RETURN NEXT r;
-		END LOOP;
-	    EXECUTE 'DROP TABLE '||tmptbl;
-	    END IF;
-	RETURN;
-    END; $$ LANGUAGE 'plpgsql';
-
-CREATE OR REPLACE FUNCTION find_edit_leaves (eid INT) RETURNS SETOF entr AS $$
-    -- Starting at entry 'eid', find and return the set of entries
-    -- linked (recursively) to entry 'eid' though foreign key 'dfrm'
-    -- that have no other entries referencing them.  That is, viewing
-    -- the set of entr rows linked by 'dfrm' as a tree rooted at 'eid',
-    -- thr entr rows returned by this function are the "leaf" nodes
-    -- of the tree.
-
-    DECLARE r RECORD; tmptbl TEXT := '_tmpchld';
-    BEGIN
-	PERFORM childrentbl (eid, tmptbl);
-	FOR r IN EXECUTE 
-		'SELECT e.* FROM entr e JOIN '||tmptbl||' x ON x.id=e.id '|| 
-		'WHERE NOT EXISTS (SELECT * FROM entr e2 WHERE e2.dfrm=x.id)' LOOP
-	    RETURN NEXT r;
-	    END LOOP;
-	EXECUTE 'DROP TABLE '||tmptbl;
-	RETURN;
-    END; $$ LANGUAGE 'plpgsql';
-
-CREATE OR REPLACE FUNCTION find_edit_root (eid INT) RETURNS entr AS $$
+CREATE OR REPLACE FUNCTION get_edroot (eid INT) RETURNS SETOF int AS $$
     -- Starting at entry 'eid', follow the chain of 'dfrm' foreign
     -- keys until a entr row is found that has a NULL 'dfrm' value,
     -- and return that row (which may be the row with id of 'eid').
     -- If there is no row with an id of 'eid', a NULL row (one with
     -- every attribute set to NULL) is returned. 
-
-    DECLARE r entr%ROWTYPE; dfrm INT := eid;
     BEGIN
-        LOOP
-            SELECT INTO r e.* FROM entr e WHERE e.id=dfrm;
-            EXIT WHEN NOT FOUND OR r.dfrm IS NULL;
-	    dfrm := r.dfrm;
-            END LOOP;
-        RETURN r;
-    END; $$ LANGUAGE 'plpgsql';
-
-CREATE OR REPLACE FUNCTION find_chain_head (eid INT) RETURNS entr AS $$
-    -- Starting at entry 'eid', follow the chain of 'dfrm' foreign
-    -- keys until either:
-    --   1. -- An entry is found with a NULL dfrm key.
-    --   2. -- An entry is found that has more than one 'dfrm' entry
-    --         referencing it.
-    -- Returns the entr row of the entry immediately preceeding the
-    -- found entry above.  If there is no such preceeding row, we
-    -- return a row with every attribute set to NULL.
-
-    DECLARE r entr%ROWTYPE; p entr%ROWTYPE;
-    BEGIN
-        r.id := -1;
-        r.dfrm := eid;
-        LOOP
-            SELECT INTO r e.* FROM entr e 
-              WHERE e.id=r.dfrm AND NOT EXISTS 
-                (SELECT * FROM entr e2 WHERE e2.dfrm=e.id AND e2.id!=r.id);
-            EXIT WHEN NOT FOUND OR r.dfrm IS NULL;
-	    p := r;
-            END LOOP;
-        RETURN p;
+	RETURN QUERY
+	    WITH RECURSIVE wt(id,dfrm) AS (
+                SELECT id,dfrm FROM entr WHERE id=eid
+                UNION
+                SELECT entr.id,entr.dfrm
+                FROM wt, entr WHERE wt.dfrm=entr.id)
+	    SELECT id FROM wt WHERE dfrm IS NULL;
+	RETURN;
     END; $$ LANGUAGE 'plpgsql';
 
 CREATE OR REPLACE VIEW vsnd AS (

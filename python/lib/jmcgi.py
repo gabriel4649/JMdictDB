@@ -57,12 +57,15 @@ def parseform (readonly=False):
 	  # Login, logout, and session identification...
 	scur = jdb.dbOpenSvc (cfg, svc, session=True, nokw=True)
 	action = form.getfirst ('loginout') # Will be None, "login" or "logout"
-	if usid: sid = usid		  # Use sid from url if available.
-	else: sid = get_sid_from_cookie() # If not, try cookie.
+	sid = get_sid_from_cookie() or '' 
+	sid_from_cookie = False
+	if sid: sid_from_cookie = True
+	if usid: sid = usid	# Use sid from url if available.
 	uname = form.getfirst('username') or ''
 	pw = form.getfirst('password') or ''
 	sid, sess = get_session (scur, action, sid, uname, pw)
 	if sid: set_sid_cookie (sid, delete=(action=="logout"))
+	if sid_from_cookie: sid=''
 	scur.connection.close()
 
 	  # Collect the form parameters.  Caller is expected to pass
@@ -77,7 +80,7 @@ def parseform (readonly=False):
 	return form, svc, host, cur, sid, sess, parms, cfg
 
 COOKIE_NAME = 'jmdictdb_sid'
-SESSION_TIMEOUT = '18 hour'
+SESSION_TIMEOUT = '2 hour'
 
 def get_session (cur, action=None, sid=None, uname=None, pw=None):
         # Do the authentication action specified by 'action':
@@ -165,7 +168,14 @@ def dblogin (cur, userid, password):
 
 def dblogout (cur, sid):
 	if not sid: return
-	sql = "DELETE FROM sessions WHERE id=%s"
+	  # Make logout delete all users sessions so that
+	  #  a logout will remedy a disclosed sid.  Of course
+	  #  this means a logout in one winow of one machine 
+	  #  will affect every other login session.
+	sql = "DELETE FROM sessions WHERE id IN"\
+	      "(SELECT s2.id FROM sessions s1"\
+	      " JOIN sessions s2 ON s1.userid=s2.userid"\
+	      " WHERE s1.id=%s)"
 	cur.execute (sql, (sid,))
 	cur.connection.commit()
 

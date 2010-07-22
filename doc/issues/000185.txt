@@ -1,4 +1,4 @@
-Title:	All forms the pass sid must use post.
+Title:	sid value in url allows impersonation
 Stat:	open
 Disp:	
 Prio:	crit
@@ -32,6 +32,78 @@ AssdTo:
   in url only if not using cookies.  Non-cookie users responsible 
   for stripping the uid value before posting links.
 
-  I intend to add ip address logging fo other reasons.  Could use 
+  I intend to add ip address logging for other reasons.  Could use 
   for authentication by logging ip addr at session creation and
   require it to be the same when validating sid.  
+
+2010-07-22 09:13:00 stuart
+  Modified python/lib/jmcgi.py:
+
+  * Only put the sid in urls if the sid came 
+  from a url.  If it was from cookie don't put in url.
+
+  * When logging out, delete *all* sessions owned by the logging
+  out user.
+
+  * When logging in, look for an existing sid for the user and
+  reuse it rather than always creating a new one.  (Note: we
+  could enforce one-user-one-sid in the jmsess schema.)
+
+  * Shorten timeout back to 2 hours.
+
+  Following is draft of message I will post to edit_editors list
+
+  > On 07/17/2010 03:16 PM, René Malenfant wrote:
+  >> Clicking on Paul's link, I've found something else that's a bit
+  >> troubling.  (Not sure if I can post images here, but I'll give it a go.)
+  >> 
+  >> I'm now logged in as Paul, and---at least until this session times
+  >> out---I can do whatever I want, masquerading as him.
+  > 
+  > I've made several changes to try and address this but it is a
+  > problem that seems to have no good general solution (see for
+  > example the comments in 
+  >   http://discuss.fogcreek.com/joelonsoftware/default.asp?cmd=show&ixPost=63841
+  > 
+  > 1. When a page is opened, the cgi code will look first for an 
+  > sid in the url.  (This is to allow debugging and operation in 
+  > cookieless environments.)  If if finds none there it will look 
+  > for it in a cookie.  If found in the url, the sid values will 
+  > be propagated to successive pages in the urls.  If from a cookie,
+  > the sid will not be put in urls.
+  > 
+  > This will keep the sid out of urls for cookie users [*1], but
+  > those not using cookies will need to keep in mind that the sid
+  > is like a password and must be removed from urls before publishing
+  > them.
+  > 
+  > 2. Logins are now global -- you should have only one session 
+  > id at any point in time and that sid will be used no matter 
+  > where you log in from.  If you log in from your office machine,
+  > go home and log in from your home machine, both machines will 
+  > use the same sid.  When you logout on either machine you will
+  > be logged out on the other as well.  So if you are worried that
+  > you may have published an sid value, simply logout to invalidate
+  > it.
+  > 
+  > 3. Timeout of both the sid cookie and the session on the server
+  > is 2 hours, but the clock is reset on each page access.
+  > 
+  > Code is running on the Arakawa JMdictDB testbed at
+  > Search  	  http://www.edrdg.org/~smg/cgi-bin/srchformq.py?svc=jmtest
+  > Adv Search	  http://www.edrdg.org/~smg/cgi-bin/srchform.py?svc=jmtest
+  > New Entry	  http://www.edrdg.org/~smg/cgi-bin/edform.py?svc=jmtest
+  > 
+  > Finally I'll repeat here what I've said to Jim in the past.
+  > The current login code was never meant to be more than a place 
+  > holder until I could find a Python library to do this in a 
+  > more professional way.  However, my searching, which has not
+  > been particularly intense, has not yet turned up anything
+  > suitable.  (I found Michael Ford's package but was put off
+  > by the fact it is bigger than the entire JMdictDB package.
+  > Everything else I've seen so far seems to be part of a large 
+  > web framework.   But I'm still looking.)
+  >
+  > [*1] There have been a couple times I think I've seen an
+  > sid in the url even though I was using cookies -- I will 
+  > try to track these down as I see them or they are reported.

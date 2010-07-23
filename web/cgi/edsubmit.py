@@ -131,6 +131,7 @@ import sys, os, datetime
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import cgitbx; cgitbx.enable()
 import jdb, jmcgi, fmtxml, serialize
+from jmcgi import logw
 
 class BranchesError (ValueError): pass
 class NonLeafError (ValueError): pass
@@ -138,7 +139,7 @@ class IsApprovedError (ValueError): pass
 
 def main( args, opts ):
 	errs = []; dbh = svc = None
-	logw ("main(): Starting submit.py", pre='\n')
+	logw ("Starting submit.py", pre='\n')
 	try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
 	except ValueError, e: jmcgi.err_page ([unicode (e)])
 
@@ -596,18 +597,6 @@ def leafsn (erows):
 	for e in erows:
 	    lst.update (x.id for x in leafs (e))
 	return sorted (list (lst))
-
-def logw (msg, pre=''):
-	#return   # Uncomment me to disable logging.
-	if isinstance (msg, unicode): msg = msg.encode ('utf-8')
-	try: pid = os.getpid()
-        except OSError: pid = ''
-	ts = datetime.datetime.now().isoformat(' ')
-	try:
-	    logf = open ("./jmdictdb.log", "a")
-	    print >>logf, "%s%s [%s]: %s" % (pre, ts, pid, msg)
-	    logf.close()
-	except StandardError: pass
 
 def logseq (cur, seq, src):
 	# Return a list of the id,dfrm pairs (plus stat and unap) for 

@@ -20,7 +20,7 @@
 __version__ = ('$Revision: $'[11:-2],
 	       '$Date: $'[7:-11]);
 
-import sys, re, cgi, urllib, os, os.path, random, time, Cookie
+import sys, re, cgi, urllib, os, os.path, random, time, Cookie, datetime
 import jdb, tal, fmt
 
 def parseform (readonly=False):
@@ -40,6 +40,7 @@ def parseform (readonly=False):
 	cfg (Config inst.) -- Config object from reading config.ini.
 	"""
 
+	#logw ("parseform called in %s" % sys.modules['__main__'].__file__)
 	errs=[]; sess=None; sid=''; cur=None; svc=None
 	cfg = jdb.cfgOpen ('config.ini')
 	def_svc = cfg['web'].get ('DEFAULT_SVC', 'jmdict')
@@ -61,9 +62,11 @@ def parseform (readonly=False):
 	sid_from_cookie = False
 	if sid: sid_from_cookie = True
 	if usid: sid = usid	# Use sid from url if available.
+	#logw ("parseform(): sid=%s, from_cookie=%s, action=%s" % (sid, sid_from_cookie, action))
 	uname = form.getfirst('username') or ''
 	pw = form.getfirst('password') or ''
 	sid, sess = get_session (scur, action, sid, uname, pw)
+	#logw ("parseform(): %s session, sid=%s" % ("got" if sess else "no", sid))
 	if sid: set_sid_cookie (sid, delete=(action=="logout"))
 	if sid_from_cookie: sid=''
 	scur.connection.close()
@@ -424,6 +427,18 @@ def err_page (errs):
         if isinstance (errs, (unicode, str)): errs = [errs]
 	gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
 	sys.exit()
+
+def logw (msg, pre=''):
+	#return   # Uncomment me to disable logging.
+	if isinstance (msg, unicode): msg = msg.encode ('utf-8')
+	try: pid = os.getpid()
+        except OSError: pid = ''
+	ts = datetime.datetime.now().isoformat(' ')
+	try:
+	    logf = open ("./jmdictdb.log", "a")
+	    print >>logf, "%s%s [%s]: %s" % (pre, ts, pid, msg)
+	    logf.close()
+	except StandardError: pass
 
 def htmlprep (entries):
 	"""\

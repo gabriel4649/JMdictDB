@@ -383,7 +383,6 @@ def approve (dbh, entr, edtree, errs):
 	    errs.append ("Bad url parameter, stat=R"); return 
 
 	dfrmid = entr.dfrm
-	edroot = edtree[0].id
 	if dfrmid:
 	      # Since 'dfrmid' has a value, this is an edit of an
 	      # existing entry.  Check that there is a single edit
@@ -410,13 +409,18 @@ def approve (dbh, entr, edtree, errs):
 	res = addentr (dbh, entr)
 	  # ...and delete the old root if any.  Because the dfrm foreign 
 	  # key is specified with "on delete cascade", deleting the root 
-	  # entry will also delete all it's children. 
-	if edroot: delentr (dbh, edroot)
+	  # entry will also delete all it's children. edtree[0].id is
+	  # the id number of the edit root.
+	if edtree: delentr (dbh, edtree[0].id)
 	return res
 
 def reject (dbh, entr, edtree, errs, rejcnt=None):
 	KW = jdb.KW
 	logw ("reject(): rejecting entry id %s, rejcnt=%s" % (entr.dfrm, rejcnt))
+	  # rejectable() returns a list entr rows on the path to the edit
+	  # edit root, starting with the one closest to the root, and ending
+	  # with our entry's parent, that can be rejected.  If this is a new
+	  # entry, 'rejs' will be set to [].
 	try: rejs = rejectable (edtree, entr.dfrm)
 	except NonLeafError, e:
 	    logw ("reject(): NonLeafError")
@@ -430,14 +434,14 @@ def reject (dbh, entr, edtree, errs, rejcnt=None):
 	    errs.append ("You can only reject unapproved entries.")
 	    return
 	if not rejcnt or rejcnt > len(rejs): rejcnt = len(rejs)
-	chhead = (rejs[-rejcnt]).id
+	chhead = (rejs[-rejcnt]).id if rejcnt else None
 	logw ("reject(): rejs=%r, rejcnt=%d, chhead=%d" 
 		% ([x.id for x in rejs], -rejcnt, chhead))
 	entr.stat = KW.STAT['R'].id
 	entr.dfrm = None
 	entr.unap = False
 	res = addentr (dbh, entr)
-	delentr (dbh, chhead)
+	if chhead: delentr (dbh, chhead)
 	return res
 
 def addentr (dbh, entr):
@@ -492,6 +496,9 @@ def approve_ok (edtree, id):
 	#
 	#    If the given entry is not approvable, an error is raised.
 
+	if not edtree: 
+	    logw ("approve_ok(): edtree is none, returning")
+	    return
 	root, d = edtree;  erow = d[id];  branches = []
 	if erow._dfrm: raise NonLeafError (erow)
 	while erow != root:
@@ -518,6 +525,9 @@ def rejectable (edtree, id):
 	# If the entry row designated by 'id' is not a leaf node,
 	# or is approved, an error is raised.
 
+	if not edtree: 
+	    logw ("rejectable(): edtree is none, returning")
+	    return []
 	root, d = edtree;  erow = d[id]
 	if erow._dfrm: raise NonLeafError (erow)
 	if not erow.unap: raise IsApprovedError (erow)

@@ -59,7 +59,7 @@ AssdTo:	stuart
   the procedure noted above was successfully executed.  Have not
   changed jmdict yet, but will follow same procedure.
 
-2010-06-18: 23:08:00 stuart
+2010-06-18 23:08:00 stuart
   Reopened this issue after noting problems with the jmtest database
   on Arakawa.  Specifically, when I try to create a new entry, I 
   get a traceback:

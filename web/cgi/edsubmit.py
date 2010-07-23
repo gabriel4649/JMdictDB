@@ -143,8 +143,7 @@ def main( args, opts ):
 	try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
 	except ValueError, e: jmcgi.err_page ([unicode (e)])
 
-	logw ("main(): parseform done: userid=%s, sid=%s" 
-	  % (sess and sess.userid, sess and sess.id))
+	logw ("main(): parseform done: userid=%s, sid=%s" % (sess and sess.userid, sess and sess.id))
 
 	fv = form.getfirst
 	meth = fv ('meth');  dbg = fv('dbg')
@@ -255,6 +254,9 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	        + " "*36 + "parent=%s, stat=%s, unap=%s, seq=%s, src=%s)")
               % (disp, is_editor, userid, entr.id, entr.dfrm, entr.stat, 
 		 entr.unap, entr.seq, entr.src))
+	logw ("submission(): entry text: %s %s" 
+	      % ((';'.join (k.txt for k in entr._kanj)).encode('utf-8'), 
+		 (';'.join (r.txt for r in entr._rdng)).encode('utf-8')))
 	logw ("submission(): seqset: %s" % logseq (dbh, entr.seq, entr.src))
 	oldid = entr.id
 	entr.id = None		# Submissions, approvals and rejections will
@@ -343,7 +345,7 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	      # When we get here, if merge_rev is true, pentr will also be
 	      # true.  If we are wrong, add_hist() will throw an exception
 	      # but will never return a None, so no need to check return val.
-	    logw ("submission(): adding hist for '%s', merge=%s" % (h.name, merge_rev))
+	    logw ("submission(): adding hist for '%s', merge=%s" % (h.name.encode('utf-8'), merge_rev))
 	    entr = jdb.add_hist (entr, pentr, userid, 
 				 h.name, h.email, h.notes, h.refs, merge_rev)
 	if not errs:

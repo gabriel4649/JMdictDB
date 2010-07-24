@@ -1,6 +1,6 @@
 Title:	Editor search page
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	dupl
 Prio:	low
 Cats:	dev
 Reqtrs:	
@@ -9,3 +9,6 @@ AssdTo:	stuart@friix.com
 2007-02-01 00:00:00 stuart@friix.com
   Search by various history criteria: status / submitter / submitted date
   / text in comments / etc.
+
+2010-07-23 14:09:00 stuart
+  Superceded by IS-187.

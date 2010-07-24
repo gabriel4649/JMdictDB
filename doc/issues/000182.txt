@@ -1,4 +1,4 @@
-Title:	jelparse failing with lang tag
+﻿Title:	jelparse failing with lang tag
 Stat:	closed
 Disp:	done
 Prio:	med
@@ -42,7 +42,7 @@ AssdTo:
   >     t = t[0]        # LANG tags have only one value, the lang code.
   > TypeError: 'int' object is unsubscriptable
 
-2010-07-12 12:34:00
+2010-07-12 12:34:00 stuart
   Seems that there were no tests for gloss language.  Added
   some in python/tests/data/ginf.txt (will expand later to 
   include other gloss tags) and problem occurs in those tests.

@@ -1,6 +1,6 @@
 ﻿Title:	Error when xref given by seq number
-Stat:   open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	

@@ -1,0 +1,15 @@
+Title:	Add search by submitter to advanced search form
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2010-07-23 14:03:00 stuart
+  The was requested by Jeroen Hoekm on the edict list, 2010-06-19
+  and was also part of IS-4 (which is superceded by this IS).
+
+  Besides submitter search, would also like search by comment
+  date (or date range), and string/pattern in comments or references.
+  

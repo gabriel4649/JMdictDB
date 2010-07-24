@@ -12,22 +12,22 @@ AssdTo:
   16 lines due to four problems.
 
 2010-06-23 08:57:00 stuart
-    54 Kanji field not kanji: "・".
-    55 Kanji field not kanji: "・".
-    68 Kanji field not kanji: "〜".
-    71 Kanji field not kanji: "×".
-    1326 P tag in sense, but not in kanji or readings
-    27347 stagx restriction word neither reading or kanji: "wearing"
-    38357 P tag in sense, but not in kanji or readings
-    38358 P tag in sense, but not in kanji or readings
-    38378 P tag in sense, but not in kanji or readings
-    52071 Xref "anti-war", bad format
-    54205 P tag in sense, but not in kanji or readings
-    69929 P tag in sense, but not in kanji or readings
-    109666 Kanji field not kanji: "・".
-    113190 P tag in sense, but not in kanji or readings
-    127455 P tag in sense, but not in kanji or readings
-    131390 P tag in sense, but not in kanji or readings
+  54 Kanji field not kanji: "・".
+  55 Kanji field not kanji: "・".
+  68 Kanji field not kanji: "〜".
+  71 Kanji field not kanji: "×".
+  1326 P tag in sense, but not in kanji or readings
+  27347 stagx restriction word neither reading or kanji: "wearing"
+  38357 P tag in sense, but not in kanji or readings
+  38358 P tag in sense, but not in kanji or readings
+  38378 P tag in sense, but not in kanji or readings
+  52071 Xref "anti-war", bad format
+  54205 P tag in sense, but not in kanji or readings
+  69929 P tag in sense, but not in kanji or readings
+  109666 Kanji field not kanji: "・".
+  113190 P tag in sense, but not in kanji or readings
+  127455 P tag in sense, but not in kanji or readings
+  131390 P tag in sense, but not in kanji or readings
 
   Line 27347 is 
     パンツ一丁 [パンツいっちょう] /(n) (wearing only) one pair of underpants/EntL2266560X/

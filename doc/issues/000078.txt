@@ -21,3 +21,8 @@ AssdTo:	stuart@friix.com
   are different and data is no longer static.  Should rename it to
   "corpus"
   or something.
+
+2010-07-23 13:41:00 stuart
+  Jwb argues for call corpora aka src, "dictionaries" in email to me
+  2010-05-27 06:56.
+

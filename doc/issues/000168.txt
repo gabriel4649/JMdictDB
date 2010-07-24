@@ -26,6 +26,7 @@ AssdTo:	stuart
   kana when processing edict input from the wwwjdic pages.
 
   See also IS-33 for database checking after submission.
+  See also IS-190 for implementing per-corpus warning and rejections.
 
 2010-06-16 20:16:00 stuart
   jwb mentioned another problem seen today -- an (invisible?) ^M
@@ -37,3 +38,12 @@ AssdTo:	stuart
   Should check that the K.R[s] values given in an xref are not
   disallowed by restr/stagr/stagk restrictions.
 
+2010-07-23 22:27:00 stuart
+  In list email today, jwb again mentioned desire for checking for 
+  jis semi-colons.  Also mentioned (in support of Scott and Paul
+  Blay) that entries with out PoS should be rejected, not warned
+  about as is currently done.  Opened IS-190 to document the 
+  implementation of per-corpus warnings and rejections.  IS-168
+  will continue to document restrictions that are univerally 
+  (all corpora) applicable and can thus be hardwired into the 
+  code. 

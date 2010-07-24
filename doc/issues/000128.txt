@@ -1,7 +1,7 @@
 Title:	Finish support for audio clips.
 Stat:	open
 Disp:	
-Prio:	high
+Prio:	med
 Cats:	dev
 Reqtrs:	
 AssdTo:	

@@ -1,7 +1,7 @@
 ﻿Title:	Brackets in reading cause jelparse error
 Stat:	open
 Disp:	
-Prio:	high
+Prio:	med
 Cats:	bug
 Reqtrs:	
 AssdTo:	stuart@friix.com

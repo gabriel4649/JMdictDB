@@ -437,7 +437,7 @@ def reject (dbh, entr, edtree, errs, rejcnt=None):
 	    return
 	if not rejcnt or rejcnt > len(rejs): rejcnt = len(rejs)
 	chhead = (rejs[-rejcnt]).id if rejcnt else None
-	logw ("reject(): rejs=%r, rejcnt=%d, chhead=%d" 
+	logw ("reject(): rejs=%r, rejcnt=%d, chhead=%s" 
 		% ([x.id for x in rejs], -rejcnt, chhead))
 	entr.stat = KW.STAT['R'].id
 	entr.dfrm = None

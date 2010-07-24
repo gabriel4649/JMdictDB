@@ -1,4 +1,4 @@
-Title:	sid value in url allows impersonation
+﻿Title:	sid value in url allows impersonation
 Stat:	open
 Disp:	
 Prio:	crit
@@ -32,9 +32,9 @@ AssdTo:
   in url only if not using cookies.  Non-cookie users responsible 
   for stripping the uid value before posting links.
 
-  I intend to add ip address logging for other reasons.  Could use 
-  for authentication by logging ip addr at session creation and
-  require it to be the same when validating sid.  
+  I intend to add ip address logging for other reasons (IS-188).  
+  Could use for authentication by logging ip addr at session creation
+  and require it to be the same when validating sid.  
 
 2010-07-22 09:13:00 stuart
   Modified python/lib/jmcgi.py:

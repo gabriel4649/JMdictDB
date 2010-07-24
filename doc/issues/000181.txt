@@ -1,6 +1,6 @@
 Title:	"created" or "amended" in generated xml audit elements
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -61,3 +61,6 @@ AssdTo:
   Need to record in the database the fact an entry was imported
   when it's imported which will alieveate the need to for the
   --last-import option.
+
+2010-07-23 13:55:00 stuart
+  Done in rev 2010-07-07-ac345b5a7b8d.

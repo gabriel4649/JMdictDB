@@ -1,6 +1,6 @@
 ﻿Title:	Allow middot character in JEL restr texts
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	

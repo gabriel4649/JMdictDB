@@ -1,6 +1,6 @@
 Title:	TAL whitespace
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	inact
 Prio:	low
 Cats:	dev
 Reqtrs:	
@@ -22,3 +22,8 @@ AssdTo:	stuart@friix.com
     <xxx>foo</xxx
     ><yyy>:</yyy>
   See the lsrc section of perl/lib/tal/entr.tal-1.12 for example.
+
+2010-07-23 13:46:00 stuart
+  Closing this because it seems unlikely I will ever go though
+  all the TAL files to examine and correct any of these whitespace
+  issues.  Will plan on fixing these as encountered and needed.

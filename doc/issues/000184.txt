@@ -68,3 +68,8 @@ AssdTo:
 
   Simplified the code significantly and fixed error messages
   to be more accurate.
+
+2010-07-23 13:51:00 stuart
+  Fixed (I hope) in csets 2010-07-22-aa139266e759 and 
+  2010-07-16-44cb4f473db1.  Will leave this IS open a little
+  longer to see if any more problems occur. 

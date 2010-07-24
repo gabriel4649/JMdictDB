@@ -1,0 +1,25 @@
+Title:	Replacement for dicsubs pages
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	
+
+2010-07-23 14:23:00 stuart
+  Currently there is an web/cgi/updates.py page that reuses the 
+  entr.tal template and shows the submissions for a given date.
+  However  it would be nice to have a page like 
+    http://www.csse.monash.edu.au/~jwb/dicsubs/
+  that allows looking through past months and years,
+
+  Jwb put together a page that gives submissions for recent 
+  dates:
+    http://www.edrdg.org/jmdictdb/databaseupdates.html
+  but it is maintained by a cron job and is html so lacks the 
+  standard JMdictDB header/footer.  It will also become too
+  "thick" after it accumulates a couple months of history.
+
+  Should also consider not showing full entries but just a sumary
+  list like Search Results page (with additional info like date-time
+  and submitter.)

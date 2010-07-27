@@ -176,27 +176,11 @@ def main (args, opts):
 	entr = jdb.add_hist (entr, pentr, sess.userid if sess else None, 
 			     name, email, comment, refs, 
 			     entr.stat==KW.STAT['D'].id)
-	chkentr (entr, errs)
+	if not delete: 
+	    check_for_errors (entr, errs)
+	    if errs: jmcgi.err_page (errs)
+	    check_for_warnings (cur, entr, chklist)
 
-	  # If this is a new entry, look for other entries that
-	  # have the same kanji or reading.  These will be shown
-	  # as cautions at the top of the confirmation form in
-	  # hopes of reducing submissions of words already in 
-	  # the database.
-	if not eid and not delete:
-	    dups = find_similar (cur, getattr (entr,'_kanj',[]),
-				    getattr (entr,'_rdng',[]), entr.src)
-	    if dups: chklist['dups'] = dups
-	      # FIXME: Should pass list of the kanj/rdng text rather than
-	      #   a pre-joined string so that page can present the list as
-	      #   it wishes.
-	    chklist['invkebs'] = ", ".join ([k.txt for k in getattr (entr,'_kanj',[])
-						   if not jdb.jstr_keb (k.txt)])
-	    chklist['invrebs'] = ", ".join ([r.txt for r in getattr (entr,'_rdng',[])
-						   if not jdb.jstr_reb (r.txt)])
-	    chklist['nopos'] = ", ".join ([str(n+1) for n,x in enumerate (getattr (entr,'_sens',[]))
-						   if not x._pos])
-	if errs: jmcgi.err_page (errs)
 	entrs = [entr]
 	jmcgi.add_filtered_xrefs (entrs, rem_unap=False)
 	serialized = serialize.serialize (entrs)
@@ -208,6 +192,62 @@ def main (args, opts):
 			chklist=chklist, disp=disp, parms=parms, dbg=dbg,
 			svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 
 			method=meth, output=sys.stdout, this_page='edconf.py')
+
+def check_for_errors (e, errs):
+	# Do some validation of the entry.  This is nowhere near complete 
+	# Yhe database integrity rules will in principle catch all serious
+	# problems but catching db errors and back translating them to a
+	# user-actionable message is difficult so we try to catch the obvious
+	# stuff here.
+
+	if not getattr (e,'src',None):
+	    errs.append ("No Corpus specified.  Please select the corpus "
+			 "that this entry will be added to.")
+	
+	if not getattr (e,'_rdng',None) and not getattr (e,'_kanj'):
+	    errs.append ("Both the Kanji and Reading boxes are empty.  "
+			 "You must provide at least one of them.")
+	if not getattr (e,'_sens',None):
+	    errs.append ("No senses given.  You must provide at least one sense.")
+	for n, s in enumerate (e._sens):
+	    if not getattr (s, '_gloss'):
+		errs.append ("Sense %d has no glosses.  Every sense must have at least "\
+			     "one regular gloss, or a [lit=...] or [expl=...] tag." % (n+1))
+	    ## FIXME: Can't be sure that jmdict is "jmdict". IS-190 is the real fix.
+	    ## FIXME: If this PoS check is implemented here, it should also be
+	    ##   implemented in edsumit.py since checks here can be gotten around. 
+	    if not getattr (s, '_pos') and e.src==jdb.KW.SRC['jmdict'].id:
+	    	errs.append ("Sense %d has no PoS (part-of-speech) tag.  "\
+	    		     "Every sense must have at least one." % (n+1))
+
+def check_for_warnings (cur, entr, chklist):
+	  # Look for other entries that have the same kanji or reading.
+	  # These will be shown as cautions at the top of the confirmation
+	  # form in hopes of reducing submissions of words already in 
+	  # the database.
+	dups = find_similar (cur, getattr (entr,'_kanj',[]),
+				  getattr (entr,'_rdng',[]), entr.src)
+	if dups: chklist['dups'] = dups
+	  # FIXME: Should pass list of the kanj/rdng text rather than
+	  #   a pre-joined string so that page can present the list as
+	  #   it wishes.
+	chklist['invkebs'] = ", ".join (k.txt for k in getattr (entr,'_kanj',[])
+						if not jdb.jstr_keb (k.txt))
+	chklist['invrebs'] = ", ".join (r.txt for r in getattr (entr,'_rdng',[])
+						if not jdb.jstr_reb (r.txt))
+	chklist['nopos']   = ", ".join (str(n+1) for n,x in enumerate (getattr (entr,'_sens',[]))
+						if not x._pos)
+	chklist['jpgloss'] = ", ".join ("%d.%d: %s"%(n+1,m+1,'"'+'", "'.join(re.findall(ur'[\uFF01-\uFF5D]', g.txt))+'"') 
+						for n,s in enumerate (getattr (entr,'_sens',[]))
+						  for m,g in enumerate (getattr (s, '_gloss',[]))
+							# Change text in edconf.tal if charset changed.
+						    if re.findall(ur'[\uFF01-\uFF5D]', g.txt))
+	  # Remove any empty warnings so that if there are no warnings, 
+	  # 'chklist' itself will be empty and no warning span element
+	  # will be produced by the template (which otherwise will 
+	  # contain a <hr/> even if there are no other warnings.)
+	for k in chklist.keys(): 
+	    if not chklist[k]: del chklist[k]
 
 def find_similar (dbh, kanj, rdng, src):
 	# Find all entries that have a kanj in the set @$kanj,
@@ -232,20 +272,6 @@ def find_similar (dbh, kanj, rdng, src):
 	rs = jdb.dbread (dbh, sql, args)
 	return rs
 
-def url_int (name, form, errs):
-	v = form.getfirst (name)
-	if not v: return v
-	try: n = int (v)
-	except ValueError: 
-	      # FIXME: escape v
-	    errs.append ("name=" + v)
-	return n
-	
-def url_str (name, form):
-	v = form.getfirst (name)
-	if v: v = v.decode ('utf-8').strip(u'\n\r \t\u3000')
-	return v or ''
-
 def copy_snd (fromentr, toentr, replace=False):
 	# Copy the snd items (both Entrsnd and Rdngsnd objects) from
 	# 'fromentr' to 'toentr'.  
@@ -268,26 +294,6 @@ def copy_snd (fromentr, toentr, replace=False):
 				   getattr (fromentr,'_rdng',[])):
 		 if hasattr (rfrom, '_snd'): rto._snd.extend (rfrom._snd)
 
-def chkentr (e, errs):
-	# Do some validation of the entry.  This is nowhere near complete 
-	# Yhe database integrity rules will in principle catch all serious
-	# problems but catching db errors and back translating them to a
-	# user-actionable message is difficult so we try to catch the obvious
-	# stuff here.
-
-	if not getattr (e,'src',None):
-	    errs.append ("No Corpus specified.  Please select the corpus "
-			 "that this entry will be added to.")
-	if not getattr (e,'_rdng',None) and not getattr (e,'_kanj'):
-	    errs.append ("Both the Kanji and Reading boxes are empty.  "
-			 "You must provide at least one of them.")
-	if not getattr (e,'_sens',None):
-	    errs.append ("No senses given.  You must provide at least one sense.")
-	for n, s in enumerate (e._sens):
-	    if not getattr (s, '_gloss'):
-		errs.append ("Sense %d has no glosses.  Every sense must have at least "
-			     "one regular gloss, or a [lit=...] or [expl=...] tag." % n)
-
 def parse (krstext):
 	entr = None; errs = []
 	lexer, tokens = jellex.create_lexer ()
@@ -300,6 +306,20 @@ def parse (krstext):
 	    else: msg = "%s\n<pre>\n%s\n</pre>" % (e.args[0], e.loc)
 	    errs.append (msg)
 	return entr, errs
+
+def url_int (name, form, errs):
+	v = form.getfirst (name)
+	if not v: return v
+	try: n = int (v)
+	except ValueError: 
+	      # FIXME: escape v
+	    errs.append ("name=" + v)
+	return n
+	
+def url_str (name, form):
+	v = form.getfirst (name)
+	if v: v = v.decode ('utf-8').strip(u'\n\r \t\u3000')
+	return v or ''
 
 Transtbl = {ord(' '):None, ord('\t'):None, ord('\r'):None, ord('\n'):None, }
 def stripws (s):

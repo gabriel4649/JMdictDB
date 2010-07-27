@@ -47,3 +47,27 @@ AssdTo:	stuart
   will continue to document restrictions that are univerally 
   (all corpora) applicable and can thus be hardwired into the 
   code. 
+
+2010-07-26 12:30:00 stuart
+  edconf.py check_for_errors() asumes src==1 is jmdict corpus
+  although code is currently commented out.
+
+2010-07-26 20:29:00 stuart
+  Added warning check for any JIS fullwidth ascii-like characters
+  (range U+FF01-U+FF5D).  Deliberately excluded U+FF5E (fullwidth
+  tilde) because I have many glosses locally that include that.
+ 
+  Also add code in check_for_errors() that will reject entries that
+  have any senses without PoS'.  Code is commented out because it
+  is corpus dependent -- applies only to jmdict -- but jwb can
+  uncomment it for EDRDG if desired.  IS-190 will provide a better
+  way of getting this functionality.
+
+  Formerly and intentionally, warnings were only displayed on new 
+  entries.  However several editors complained that they miss problems
+  like no PoS or JIS ascii-lookalike characters in glosses.  So
+  now, warning conditions are checked for on every submission.
+
+  Formerly the horixzontal rule that separated the warnings from
+  the entry was always displayed, even when there were no warnings.
+  That has been fixed.

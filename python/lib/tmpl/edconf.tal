@@ -26,7 +26,7 @@
   <span tal:repeat="e entries">
     <div class="entry">
       <span class="warnings" tal:condition="chklist">
-	<span class="warnings" tal:condition="chklist/dups">
+	<p class="warnings" tal:condition="chklist/dups">
 	  <span class="caution">Caution:</span>
 	  The following existing entries contain kanji or readings
 	  that exist in your proposed entry.  Before submitting your
@@ -42,8 +42,8 @@
 	      <span tal:content="c/gloss" tal:omit-tag="">gloss</span>
 	      </li>
 	    </ol>
-	  </span>
-	<span class="warnings" tal:condition="chklist/xrslv">
+	  </p>
+	<p class="warnings" tal:condition="chklist/xrslv">
 	  <span class="caution">Caution:</span>
 	  Your entry contains some xrefs that were not resolvable to other
 	  entries in this corpus, either because no entries matched the seq
@@ -59,8 +59,8 @@
 	      <span tal:replace="x">message</span>
 	      </li>
 	    </ol>
-	  </span>
-	<span class="warnings" tal:condition="python: chklist['invkebs'] or chklist['invrebs']">
+	  </p>
+	<p class="warnings" tal:condition="chklist/invkebs|chklist/invrebs">
 	  <span class="caution">Caution:</span>
 	  The following kanji or readings you gave do not meet the criteria for
 	  &lt;reb&gt; or &lt;keb&gt; fields in JMdict.  If you submit this entry
@@ -73,8 +73,8 @@
 	    <span tal:replace="chklist/invrebs"/><br/>
 	    </span>
 	    <br/>
-	  </span>
-	<span class="warnings" tal:condition="python: chklist['nopos']">
+	  </p>
+	<p class="warnings" tal:condition="chklist/nopos">
 	  <span class="caution">Caution:</span>
 	  One or more senses you gave do not have any PoS (Part-of-Speech,
 	  for example [n], [v5k], etc.) tags.  While your entry will be accepted
@@ -83,7 +83,17 @@
 	  carry over from the preceeding sense.  If you can provide PoS tags
 	  for all senses, please use your browser's "Back" button to return to
 	  the edit page and do so.
-	  </span>
+	  </p>
+	<p class="warnings" tal:condition="chklist/jpgloss">
+	  <span class="caution">Caution:</span>
+	  The following (sense.gloss) numbers identify glosses that contain
+	  one or more JIS "fullwidth" character(s).  Please replace them with
+	  ordinary (ASCII) characters.  In particular, please note that a JIS
+	  semicolon (；) will not be interpreted as a gloss separator.
+	  <p/>&nbsp;&nbsp;Sense.gloss: <span tal:repeat="x chklist/jpgloss">
+	    <span tal:replace="x">(sense.gloss)</span>
+	    </span>
+	  </p>
 	<hr/>
 	</span>
 

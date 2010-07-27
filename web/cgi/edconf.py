@@ -216,9 +216,9 @@ def check_for_errors (e, errs):
 	    ## FIXME: Can't be sure that jmdict is "jmdict". IS-190 is the real fix.
 	    ## FIXME: If this PoS check is implemented here, it should also be
 	    ##   implemented in edsumit.py since checks here can be gotten around. 
-	    if not getattr (s, '_pos') and e.src==jdb.KW.SRC['jmdict'].id:
-	    	errs.append ("Sense %d has no PoS (part-of-speech) tag.  "\
-	    		     "Every sense must have at least one." % (n+1))
+	    #if not getattr (s, '_pos') and e.src==jdb.KW.SRC['jmdict'].id:
+	    #	errs.append ("Sense %d has no PoS (part-of-speech) tag.  "\
+	    #		     "Every sense must have at least one." % (n+1))
 
 def check_for_warnings (cur, entr, chklist):
 	  # Look for other entries that have the same kanji or reading.

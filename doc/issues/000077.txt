@@ -17,3 +17,14 @@ AssdTo:	stuart@friix.com
   programs make use of that coding though.
   kwpos -- Uses 3xx value keywords for extra PoS types used by
   experimental verb inflection stuff.
+
+  See also 
+  IS-168 - Additional submission checks in edconf.py
+  for places where corpus dependent code is hardwaired.
+
+2010-07-25 09:50:00 stuart
+  Code contains hardwired kw values:
+  --
+  dbcheck tool hardwires entr.src values.
+  web/cgi/srchres.py: has a fixme for "e.src!=4".
+  web/cgi/srchform.py: filters kanjidic by name, rinf by <100.

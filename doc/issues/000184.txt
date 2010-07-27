@@ -73,3 +73,14 @@ AssdTo:
   Fixed (I hope) in csets 2010-07-22-aa139266e759 and 
   2010-07-16-44cb4f473db1.  Will leave this IS open a little
   longer to see if any more problems occur. 
+
+2010-07-24 21:25:00 stuart
+  Email from Paul Blay to the editors list a few minutes ago
+  said he'd had another diappearance of an edit to entry 刺突.
+  A search shows that entry is 2561400, submitted by Brandon
+  Kentel, 2010-07-24 11:32:41 and approved by Rene Malenfant
+  2010-07-25 01:07:57. 
+  Since 07-22, edsubmit has been instrumented to write a log 
+  file.  Searched that file for seq=2561400 and found only 
+  two entries corresponding to the entry's history, nothing 
+  from Paul.

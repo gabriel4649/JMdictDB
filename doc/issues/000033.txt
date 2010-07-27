@@ -24,47 +24,47 @@ AssdTo:	stuart
 
 2010-07-23 12:41:00 stuart
   Here are some queries that can be used:
+  <snipped since corrected tested queries now available.> 
 
-  -----------------------------------------------------------------------
-  -- Although unapproved entries may have or not have
-  -- a 'dfrm' value, approved entries should never have
-  -- a 'dfrm' value.
-  SELECT e.id
-  FROM entr e
-  WHERE NOT e.unap AND e.dfrm IS NOT NULL;
-  -----------------------------------------------------------------------
-  -- More that one "A" (approved and active) entry is a seqset.
-  SELECT src, seq
-  FROM entr e
-  WHERE (NOT dfrm OR unap) AND stat=2
-  GROUP BY src, seq
-  HAVING count(*)>1;
-  -----------------------------------------------------------------------  
-  -- Mixed corpora or seq# in editset.
-  SELECT e1.id, e2.id
-  FROM entr e1
-  JOIN entr e2 ON e2.dfrm=e1.id
-  WHERE e1.src!=e2.src OR e1.seq!=e2.seq;
-  -----------------------------------------------------------------------
-  -- Look for dfrm cycles.
-  WITH RECURSIVE wt (id, dfrm, depth, path, cycle) AS (
-        SELECT e.id, e.dfrm, 1, ARRAY[e.id], false
-        FROM entr e
-          UNION ALL
-        SELECT e.id, e.dfrm, wt.depth+1, path||e.id, e.id=ANY(path)
-        FROM entr e, wt
-        WHERE e.id = wt.dfrm AND NOT cycle)
-  SELECT * FROM wt WHERE cycle;
-  -----------------------------------------------------------------------
-  -- Find "deleted" entries due for expungement.  Change
-  -- the "e.stat=4" to "e.stat=6" for "rejected" entries.
-  SELECT e.id, MAX(h.dt)
-  FROM entr e
-  JOIN hist h ON h.entr=e.id
-  WHERE e.stat=4 AND NOT e.unap
-      -- Exclude entries that other entries point to;
-      -- if not the other entries will also be deleted.
-    AND NOT EXISTS (SELECT 1 FROM entr WHERE dfrm=e.id)
-  GROUP BY e.id
-  HAVING MAX(dt)<(CURRENT_TIMESTAMP AT TIME ZONE 'utc'-'30 days'::INTERVAL);
-  -----------------------------------------------------------------------
+2010-07-26 20:19:00 stuart
+  Wrote two scripts, cccheck.py and reaper.py, which are not yet
+  in the mercurial repo.  Send copies to jwb last night.  Besides
+  local testing, I ran on Arakawa's jmdict database and behavior 
+  was as expected.
+
+  check.py runs several checks on the database data (15 currently
+  although that number will grow I'm sure).  The messages in
+  the source code describes them.  It changes nothing and takes
+  only a few seconds so it is safe to run anytime.  The output
+  in not pretty, mostly lists of entry ids (not seq#s) for entries 
+  that have problems.  (Seems like that's ok because some of the 
+  structural problems likely will require poking around with psql 
+  to diagnose and fix, and one would hope for no output most of
+  the time.)  Running it with --help will give more details.
+  It is intended to be run from a cron job setup to mail output
+  to someone.
+
+  reaper.py is intended to be run from a cron job nightly or weekly
+  or whatever.  It will look for deleted or rejected entries --age
+  days (default 30) old or older and delete them after writing them
+  in xml form to a log file that can be archived.  To play with it
+  interactively, give it the -n option which will prevent it from 
+  making any changes to the database.  It also has a --help option.
+
+  These need to be run in a cron job so jwb and wfm need to set 
+  up.  Waiting for feedback.
+
+2010-07-26 21:16:00 stuart
+  To-do: 
+
+  Add option to limit checks to one (or a set of) corpus.  Maybe 
+  use the --corpus option code from entrs2xml.py.  Remove the 
+  corpus exclusions current wired into the sql.
+
+  Add option to list available tests and test number so can figure
+  out what test to run without looking at code.
+
+  Separate the checks into two catagories: structural and content.
+
+  Change the JIS gloss test to match current warnings in edconf.py:
+  any character in range u+ff01 - u+ff5d.

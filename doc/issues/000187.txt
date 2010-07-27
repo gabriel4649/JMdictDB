@@ -1,7 +1,7 @@
 Title:	Add search by submitter to advanced search form
 Stat:	open
 Disp:	
-Prio:	med
+Prio:	high
 Cats:	dev
 Reqtrs:	
 AssdTo:	

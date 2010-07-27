@@ -1,7 +1,7 @@
 Title:	Replacement for dicsubs pages
 Stat:	open
 Disp:	
-Prio:	med
+Prio:	high
 Cats:	dev
 Reqtrs:	
 AssdTo:	

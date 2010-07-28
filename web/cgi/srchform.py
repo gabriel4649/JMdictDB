@@ -31,19 +31,22 @@ def main( args, opts ):
 	except StandardError, e: jmcgi.err_page ([unicode (e)])
 
 	qs = jmcgi.form2qs (form)
+	  # reshapes()'s last argument is the maximum number of checkboxes
+	  # to put on a line, and is ajusted empirically to make the total
+	  # widths for all the sections approximately equal. 
 	pos =  reshape (sorted (jdb.KW.recs('POS'),  key=lambda x:x.kw), 10)
-	misc = reshape (sorted (jdb.KW.recs('MISC'), key=lambda x:x.kw), 10)
+	misc = reshape (sorted (jdb.KW.recs('MISC'), key=lambda x:x.kw), 8)
 	stat = reshape (sorted (jdb.KW.recs('STAT'), key=lambda x:x.kw), 10)
 	fld =  reshape (sorted (jdb.KW.recs('FLD'),  key=lambda x:x.kw), 10)
-	dial = reshape (sorted (jdb.KW.recs('DIAL'), key=lambda x:x.kw), 10)
+	dial = reshape (sorted (jdb.KW.recs('DIAL'), key=lambda x:x.kw), 12)
 	kinf = reshape (sorted (jdb.KW.recs('KINF'), key=lambda x:x.kw), 5)
 	  # FIXME: restricting 'rinf' kwds to values less that 100 causes
 	  #  the searchj form not to show the the kanjidic-related ones.
-	  #  This is really too hackish. 
+	  #  This is really too hackish.  See IS-190 for fix.
 	rinf = reshape (sorted ([x for x in jdb.KW.recs('RINF') if x.id < 100],
 						     key=lambda x:x.kw), 5)
 	  # FIXME: Filter out the kanjidic corpus for now.  Will figure
-	  #  out how to integrate it later.  This too is obviously a hack.
+	  #  out how to integrate it later.  This too is pre- IS-190 hack.
 	corp = reshape (sorted ([x for x in jdb.KW.recs('SRC') if x.kw!='xxkanjidic'] , 
 						     key=lambda x:x.kw), 10)
 	freq = []

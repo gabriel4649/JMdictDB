@@ -20,6 +20,7 @@
       <input type="hidden" name="sql" tal:condition="sql" tal:attributes="value sql"/>
       <input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
       <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
+      <input type="hidden" name="dbg" tal:condition="dbg" tal:attributes="value dbg"/>
       </form>
     <form action="entr.py" tal:attributes="method method">
       <span class="caution" tal:condition="not:results">
@@ -116,7 +117,7 @@
       <hr/>
     </span>
   <div metal:use-macro="macros/macros/footer"></div>
-  <div class="results" tal:condition="debug">
+  <div class="results" tal:condition="dbg">
     <span class="debug">
       sql = <span tal:replace="stats/sql"/><br/>
       args = <span tal:replace="stats/args"/><br/>

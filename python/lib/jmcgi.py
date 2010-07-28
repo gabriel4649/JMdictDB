@@ -20,7 +20,7 @@
 __version__ = ('$Revision: $'[11:-2],
 	       '$Date: $'[7:-11]);
 
-import sys, re, cgi, urllib, os, os.path, random, time, Cookie, datetime
+import sys, re, cgi, urllib, os, os.path, random, time, Cookie, datetime, time
 import jdb, tal, fmt
 
 def parseform (readonly=False):
@@ -593,7 +593,7 @@ class SearchItems (jdb.Obj):
     def __setattr__ (self, name, val):
 	if name not in ('idtyp','idnum','src','txts','pos','misc',
 			'fld','dial','freq','kinf','rinf','grp','stat','unap',
-			'nfval','nfcmp','gaval','gacmp'):
+			'nfval','nfcmp','gaval','gacmp','ts','smtr', 'mt'):
 	    raise AttributeError ("'%s' object has no attribute '%s'" 
 				   % (self.__class__.__name__, name))
 	self.__dict__[name] = val
@@ -663,8 +663,17 @@ def so2conds (o):
 		Note that an entry matches if there is either a 
 		matching kanj freq or a matching rdng freq.  There
 		is no provision to specify just one or the other.
+	  ts -- History min and max time limits as a 2-tuple.  Each
+		time value is either None or number of seconds from 
+		the epoch as returned by time.localtime() et.al.
+	  smtr -- 2-tuple of name to match with hist.name, and bool
+		indicating a wildcard match is desired.
+	  mt -- History record match type as an int:
+		  0: match any hist record
+		  1: match only first hist record
+		 -1: match only last hist record
 
-	Since it is easy to mistype attrubute names, the classes
+	Since it is easy to mistype attribute names, the classes
 	jdb.SearchItems can be used to create an object to pass
 	to so2conds.  It checks attribute names and will raise an
 	AttributeError in an unrecognised one is used.  
@@ -731,6 +740,9 @@ def so2conds (o):
 				 getattr (o, 'nfcmp', None),
 				 getattr (o, 'gaval', None),
 				 getattr (o, 'gacmp', None)))
+	conds.extend (_histcond (getattr (o, 'ts',    None),
+				 getattr (o, 'smtr',  None),
+				 getattr (o, 'mt',    None)))
 	return conds
 
 def _txcond (t, n):
@@ -759,6 +771,23 @@ def _boolcond (o, attr, tbl, col, true_state):
 	if vals[0] != true_state: inv = 'NOT '
 	cond = tbl, (inv + col), []
 	return [cond]
+
+def _histcond (ts, smtr, mt):
+	conds = []
+	if ts and (ts[0] or ts[1]):
+	      # ts[0] and[1] are 9-tuples of ints that correspond  
+	      # to time.struct_time objects.  We convert them to
+	      # datetime.datetime objects.
+	    if ts[0]: conds.append (('hist', "dt>=%s", [datetime.datetime.fromtimestamp(int(ts[0]))]))
+	    if ts[1]: conds.append (('hist', "dt<=%s", [datetime.datetime.fromtimestamp(int(ts[1]))]))
+	if smtr and smtr[0]: 
+	    name, wc = smtr
+	    if not wc: conds.append (('hist', "lower(name)=lower(%s)", [name]))
+	    else: conds.append (('hist', "name ILIKE %s", [wc2like (name)]))
+	if mt:
+	    if int(mt) ==  1: conds.append (('hist', "hist=1", []))
+	    if int(mt) == -1: conds.append (('hist', "hist=(SELECT COUNT(*) FROM hist WHERE hist.entr=e.id)", []))
+	return conds
 
 def _freqcond (freq, nfval, nfcmp, gaval, gacmp):
 	# Create a pair of 3-tuples (build_search_sql() "conditions")
@@ -858,4 +887,22 @@ def _freqcond (freq, nfval, nfcmp, gaval, gacmp):
 	# be given in one constion triple rather than in each. 
 
 	return [("freq",whr,[])]
+
+def utt (d):
+	# Convert a simple string-to-string mapping into
+	# the form required by <unicode>.translate().
+	return dict ((ord(k), unicode(v)) for k,v in d.items())
+
+Wc_trans = utt({'*':'%', '?':'_', '%':'\\%', '_':'\\_'})
+def wc2like (s):
+	# Convert a string with wildcard characters '*' and '?' to SQL
+	# "like" operator characters, "%" and "_", being careful of
+	# escape "\" characters.
+	s1 = unicode (s)
+        s1 = s1.replace ('\\*', '\x01')
+	s1 = s1.replace ('\\?', '\x02')
+	s1 = s1.translate (Wc_trans)
+	s1 = s1.replace ('\x01', '*')
+	s1 = s1.replace ('\x02', '?')
+	return s1
 

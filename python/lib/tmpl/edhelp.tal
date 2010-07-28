@@ -378,12 +378,13 @@
       field.</dd>
 
     <dt><a name="name"></a>Name</dt>
-    <dd>Your full name.</dd>
+    <dd>Your full name.  Consistently using the same name will allow 
+    to easily search for your submissions later.</dd>
 
     <dt><a name="email"></a>Email</dt>
     <dd>Your email address.  Required if you want email notification
-    of actions taken that affect your submission. This will not be publically
-    disclosed.
+    of actions taken that affect your submission. This will not be 
+    publically disclosed.
     <span class="caution">Email notification not implemented yet.</span></dd>
     </dl>
   </div>

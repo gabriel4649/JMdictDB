@@ -12,4 +12,13 @@ AssdTo:
 
   Besides submitter search, would also like search by comment
   date (or date range), and string/pattern in comments or references.
-  
+
+2010-07-27 17:18:00 stuart
+  Added section to python/lib/tmpl/srchform.tal to allow exact or
+  wildcard search on submitter name, lower and upper bound dates,
+  and selection of any, first or last history records.
+  web/cgi/srchres.py and python/lib/jmcgi.py (function so2conds()):
+  handle new 'smtr', 'ts' and 'mt' parameters from srchform.tal. 
+
+  Have not implemented search in comments or refs yet.
+

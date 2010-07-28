@@ -11,6 +11,10 @@
     <h3 metal:fill-slot="title">Advanced Search Form</h3>
     </div>
   <form action="srchres.py" name="srchres" tal:attributes="method method">
+    <input type="hidden" name="svc" tal:condition='svc' tal:attributes="value svc"/>
+    <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
+    <input type="hidden" name="dbg" tal:condition="dbg" tal:attributes="value dbg"/>
+    <!-- <input type="hidden" name="srchres" value="1"/> -->
     <table class="form">
       <tr>
 	<td>
@@ -104,8 +108,6 @@
 		  <tr>
 		    <td>
 		      <input name="search" value="Search" type="submit"/>
-		      <input type="hidden" name="svc" tal:condition='svc' tal:attributes="value svc"/>
-		      <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>		      <!-- <input type="hidden" name="srchres" value="1"/> -->
 		      </td>
 		    <td><input type="reset" value="Reset"/></td>
 		    </tr>
@@ -259,9 +261,58 @@
 
 	    <tr><td colspan="2"><hr width="100%"/></td></tr>
 	    <tr>
+	      <td colspan="2"><span class="descriptor">History:</span></td>
+	      </tr>
+	    <tr>
+	      <td colspan="2">
+		<table>
+		  <tr>
+	            <td>Submitter: </td>
+		    <td><input name="smtr" size="16"/></td>
+		    <td colspan="3">
+		      <input type=radio name="smtrm" value="0" checked="checked">Exact match</input>
+		      <input type=radio name="smtrm" value="1">Wildcard match</input>
+		      </td>
+	            </tr>
+	          <tr>
+	            <td>From: </td>
+		    <td><input name="ts0" size="16"/></td>
+	            <td>&nbsp;&nbsp;To: </td>
+		    <td><input name="ts1" size="16"/></td>
+		    </tr>
+		  <tr>
+		    <td colspan="4">
+		      Which history record? 
+		      <input type=radio name="mt" value="0" checked="checked">Any</input>
+		      <input type=radio name="mt" value="1">First</input>
+		      <input type=radio name="mt" value="-1">Last</input>
+		      </td>
+		    </tr>
+		  </table>
+	        </td>
+	      </tr>
+	    <tr>
+	      <td colspan="2"><span class="Notes">
+		"From" and "To" format is YYYY/MM/DD hh:mm. 
+                "hh:mm" is optional and if not given, 00:00 will be used.
+	        All dates and times are UTC.</span>
+	        </td>
+	      </tr>
+
+	    <tr><td colspan="2"><hr width="100%"/></td></tr>
+	    <tr>
 	      <td colspan="2"><span class="descriptor">Groups:</span>
 	        <input name="grp" size="60"/>
 		<span class="notes"> (Separate multiple groups with spaces.)</span>
+	        </td>
+	      </tr>
+
+	    <tr><td colspan="2"><hr width="100%"/></td></tr>
+	    <tr>
+	      <td colspan="2">
+		<input name="search" value="Search" type="submit"/>
+		&nbsp;&nbsp;
+		<input type="reset" value="Reset"/>
 	        </td>
 	      </tr>
 
@@ -297,6 +348,11 @@
     <li>When criteria are ANDed, they are considered across the entire entry.
       For example if a gloss string and a PoS attribute are specified, any entry 
       containing both will returned, even when they occur in different senses.</li>
+    <li>Text searches (including Submitter Name) are case-insensitive.</li>
+    <li>When "Wildcard" is selected for Submitter Name, "?" will match any
+      single character, and "*" will match any substring of zero or more
+      characters.  To treat a "*" or "?" as themselvers, precede them with 
+      a backslash ("\") character.</li>
     </ul>
   </span>
 <hr width="100%"/>

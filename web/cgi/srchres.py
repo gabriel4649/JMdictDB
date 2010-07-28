@@ -62,7 +62,7 @@ def main( args, opts ):
 	    so.gaval = fv('gaval'); so.gacmp = fv('gacmp')
 	      #FIXME? use selection boxes for dates?  Or a JS calendar control?
 	    so.ts = dateparse (fv('ts0'), errs), dateparse (fv('ts1'), errs)
-	    so.smtr = fv('smtr'), fv('smtrm')
+	    so.smtr = (fv('smtr') or '').decode('utf-8'), fv('smtrm')
 	    so.mt = fv('mt')
 	      # Pack up all the search criteria in a json string that will 
 	      # be given to the srchres form, which will in turn give it back

@@ -199,11 +199,20 @@ def check_for_errors (e, errs):
 	# problems but catching db errors and back translating them to a
 	# user-actionable message is difficult so we try to catch the obvious
 	# stuff here.
+	# Note that every check done here should also be done in edsubmit.py
+	# because an entry can be submitted to edsubmit.py without using this
+	# form.
 
 	if not getattr (e,'src',None):
 	    errs.append ("No Corpus specified.  Please select the corpus "
 			 "that this entry will be added to.")
-	
+
+	## FIXME: IS-190.
+	#if not getattr (entr, '_rdng', None) \
+	#        and entr.src==jdb.KW.SRC['jmdict'].id: 
+	#    errs.append ("No readings were entered for this entry.  "\
+	#		  "All JMdict entries require a reading.")
+
 	if not getattr (e,'_rdng',None) and not getattr (e,'_kanj'):
 	    errs.append ("Both the Kanji and Reading boxes are empty.  "
 			 "You must provide at least one of them.")
@@ -214,8 +223,6 @@ def check_for_errors (e, errs):
 		errs.append ("Sense %d has no glosses.  Every sense must have at least "\
 			     "one regular gloss, or a [lit=...] or [expl=...] tag." % (n+1))
 	    ## FIXME: Can't be sure that jmdict is "jmdict". IS-190 is the real fix.
-	    ## FIXME: If this PoS check is implemented here, it should also be
-	    ##   implemented in edsumit.py since checks here can be gotten around. 
 	    #if not getattr (s, '_pos') and e.src==jdb.KW.SRC['jmdict'].id:
 	    #	errs.append ("Sense %d has no PoS (part-of-speech) tag.  "\
 	    #		     "Every sense must have at least one." % (n+1))
@@ -228,6 +235,12 @@ def check_for_warnings (cur, entr, chklist):
 	dups = find_similar (cur, getattr (entr,'_kanj',[]),
 				  getattr (entr,'_rdng',[]), entr.src)
 	if dups: chklist['dups'] = dups
+
+	  # FIXME: IS-190.
+	if not getattr (entr, '_rdng', None) \
+	        and entr.src==jdb.KW.SRC['jmdict'].id: 
+	    chklist['norebs'] = True
+
 	  # FIXME: Should pass list of the kanj/rdng text rather than
 	  #   a pre-joined string so that page can present the list as
 	  #   it wishes.
@@ -235,8 +248,10 @@ def check_for_warnings (cur, entr, chklist):
 						if not jdb.jstr_keb (k.txt))
 	chklist['invrebs'] = ", ".join (r.txt for r in getattr (entr,'_rdng',[])
 						if not jdb.jstr_reb (r.txt))
-	chklist['nopos']   = ", ".join (str(n+1) for n,x in enumerate (getattr (entr,'_sens',[]))
-						if not x._pos)
+	  # FIXME: IS-190.
+	if entr.src==jdb.KW.SRC['jmdict'].id:
+	    chklist['nopos']   = ", ".join (str(n+1) for n,x in enumerate (getattr (entr,'_sens',[]))
+						       if not x._pos)
 	chklist['jpgloss'] = ", ".join ("%d.%d: %s"%(n+1,m+1,'"'+'", "'.join(re.findall(ur'[\uFF01-\uFF5D]', g.txt))+'"') 
 						for n,s in enumerate (getattr (entr,'_sens',[]))
 						  for m,g in enumerate (getattr (s, '_gloss',[]))

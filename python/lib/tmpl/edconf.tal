@@ -60,29 +60,26 @@
 	      </li>
 	    </ol>
 	  </p>
-	<p class="warnings" tal:condition="chklist/invkebs|chklist/invrebs">
+	<p class="warnings" tal:condition="chklist/invkebs">
 	  <span class="caution">Caution:</span>
-	  The following kanji or readings you gave do not meet the criteria for
-	  &lt;reb&gt; or &lt;keb&gt; fields in JMdict.  If you submit this entry
-	  anyway, you may not be able to find the entry later by searching for
-	  one of the these kanji or readings.<p/>
-	  <span tal:condition="chklist/invkebs">Kanji: 
-	    <span tal:replace="chklist/invkebs"/><br/>
-	    </span>
-	  <span tal:condition="chklist/invrebs">Readings: 
-	    <span tal:replace="chklist/invrebs"/><br/>
-	    </span>
-	    <br/>
+	  The following kanji are not valid:
+	  <span tal:replace="chklist/invkebs"/>
+	  </p>
+	<p class="warnings" tal:condition="chklist/invrebs">
+	  <span class="caution">Caution:</span>
+	  The following readings are not valid:
+	  <span tal:replace="chklist/invrebs"/>
+	  </p>
+	<p class="warnings" tal:condition="chklist/norebs">
+	  <span class="caution">Caution:</span>
+	  No readings were given.  At least one reading is required.<p/>
 	  </p>
 	<p class="warnings" tal:condition="chklist/nopos">
 	  <span class="caution">Caution:</span>
 	  One or more senses you gave do not have any PoS (Part-of-Speech,
-	  for example [n], [v5k], etc.) tags.  While your entry will be accepted
-	  as-is, it is very desireable for all senses to have PoS tags.  Note
-	  that tags must be specified on each sense explicitly -- they do not
-	  carry over from the preceeding sense.  If you can provide PoS tags
-	  for all senses, please use your browser's "Back" button to return to
-	  the edit page and do so.
+	  for example [n], [v5k], etc.) tags.  Note that PoS tags must be
+	  specified on each sense explicitly -- they do not
+	  carry over from the preceeding sense.
 	  </p>
 	<p class="warnings" tal:condition="chklist/jpgloss">
 	  <span class="caution">Caution:</span>

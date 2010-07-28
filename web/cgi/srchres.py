@@ -61,7 +61,7 @@ def main( args, opts ):
 	    so.nfval = fv('nfval'); so.nfcmp = fv('nfcmp')
 	    so.gaval = fv('gaval'); so.gacmp = fv('gacmp')
 	      #FIXME? use selection boxes for dates?  Or a JS calendar control?
-	    so.ts = dateparse (fv('ts0'), errs), dateparse (fv('ts1'), errs)
+	    so.ts = dateparse (fv('ts0'), 0, errs), dateparse (fv('ts1'), 1, errs)
 	    so.smtr = (fv('smtr') or '').decode('utf-8'), fv('smtrm')
 	    so.mt = fv('mt')
 	      # Pack up all the search criteria in a json string that will 
@@ -169,24 +169,20 @@ def grpsparse (grpsstr):
 	if not grpsstr: return []
 	return grpsstr.split()
 
-def dateparse (dstr, errs): 
+def dateparse (dstr, upper, errs): 
 	if not dstr: return None 
 	dstr = dstr.strip();  dt = None
 	if not dstr: return None 
+	  # Add a time if it wasn't given.
+	if len(dstr) < 11: dstr += " 23:59" if upper else " 00:00"
 	  # Note: we use time.strptime() to parse because it returns 
 	  # struct easily converted into a 9-tuple, which in turn is 
 	  # easily JSONized, unlike a datetime.datetime object. 
-	  # FIXME: quick'n dirty way to parse the date.  Should find
-	  #  or write our own parser.
-	try: dt = time.strptime (dstr, "%Y/%m/%d")
+	try: dt = time.strptime (dstr, "%Y/%m/%d %H:%M")
 	except ValueError:
-	    try: dt = time.strptime (dstr, "%Y-%m-%d")
+	    try: dt = time.strptime (dstr, "%Y-%m-%d %H:%M")
 	    except ValueError: 
-		try: dt = time.strptime (dstr, "%Y/%m/%d %H:%M")
-		except ValueError: 
-		    try: dt = time.strptime (dstr, "%Y-%m-%d %H:%M")
-		    except ValueError: 
-			errs.append ("Unable to parse date/time string '%s'." % cgi.escape(dstr))
+		errs.append ("Unable to parse date/time string '%s'." % cgi.escape(dstr))
 	if dt: return time.mktime (dt)
 	return None
 

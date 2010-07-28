@@ -294,7 +294,8 @@
 	    <tr>
 	      <td colspan="2"><span class="Notes">
 		"From" and "To" format is YYYY/MM/DD hh:mm. 
-                "hh:mm" is optional and if not given, 00:00 will be used.
+                "hh:mm" is optional and if not given, 00:00 will be used "From" 
+	        and 23:59 for "To".
 	        All dates and times are UTC.</span>
 	        </td>
 	      </tr>

@@ -528,12 +528,12 @@ def add_editable_flag (entries):
 	# in the TAL templates.  This sets a boolean EDITABLE flag on 
 	# each entry that says whether or not an "Edit" button should
 	# be shown for the entry.  All unapproved entries, and approved
-	# new or active entries are editable.  Approved deleted and
-	# approved rejected entries aren't. 
+	# active or deleted entries are editable.  Rejected entries aren't. 
 
 	KW = jdb.KW
 	for e in entries:
-	    e.EDITABLE = e.unap or (e.stat == KW.STAT['A'].id)
+	    e.EDITABLE = e.unap or (e.stat == KW.STAT['A'].id)\
+				or (e.stat == KW.STAT['D'].id)
 
 def add_unreslvd_flag (entries):
 

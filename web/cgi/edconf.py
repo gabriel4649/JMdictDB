@@ -179,7 +179,8 @@ def main (args, opts):
 	if not delete: 
 	    check_for_errors (entr, errs)
 	    if errs: jmcgi.err_page (errs)
-	    check_for_warnings (cur, entr, chklist)
+	    pseq = pentr.seq if pentr else None
+	    check_for_warnings (cur, entr, pseq, chklist)
 
 	entrs = [entr]
 	jmcgi.add_filtered_xrefs (entrs, rem_unap=False)
@@ -227,13 +228,16 @@ def check_for_errors (e, errs):
 	    #	errs.append ("Sense %d has no PoS (part-of-speech) tag.  "\
 	    #		     "Every sense must have at least one." % (n+1))
 
-def check_for_warnings (cur, entr, chklist):
+def check_for_warnings (cur, entr, parent_seq, chklist):
 	  # Look for other entries that have the same kanji or reading.
 	  # These will be shown as cautions at the top of the confirmation
 	  # form in hopes of reducing submissions of words already in 
 	  # the database.
+	  # 'parent_seq' is used by find_similar() to exclude other entries
+	  # with the same seq# from being flagged as having duplicate kanji
+	  # or readings.
 	dups = find_similar (cur, getattr (entr,'_kanj',[]),
-				  getattr (entr,'_rdng',[]), entr.src)
+				  getattr (entr,'_rdng',[]), entr.src, parent_seq)
 	if dups: chklist['dups'] = dups
 
 	  # FIXME: IS-190.
@@ -264,7 +268,7 @@ def check_for_warnings (cur, entr, chklist):
 	for k in chklist.keys(): 
 	    if not chklist[k]: del chklist[k]
 
-def find_similar (dbh, kanj, rdng, src):
+def find_similar (dbh, kanj, rdng, src, excl_seq=None):
 	# Find all entries that have a kanj in the set @$kanj,
 	# or a reading in the set @$rdng, and return a list of
 	# esum view records of such entries.  Either $kanj or
@@ -274,12 +278,12 @@ def find_similar (dbh, kanj, rdng, src):
 	
 	rwhr = " OR ".join (["txt=%s"] * len(rdng))
 	kwhr = " OR ".join (["txt=%s"] * len(kanj))
-	args = [src]
+	args = [src, excl_seq]
 	args.extend ([x.txt for x in rdng+kanj])
 
 	sql = "SELECT DISTINCT e.* " \
 		+ "FROM esum e " \
-		+ "WHERE e.src=%s AND e.stat<4 AND e.id IN (" \
+		+ "WHERE e.src=%s AND e.stat<4 AND seq!=%s AND e.id IN (" \
   		+ (("SELECT entr FROM rdng WHERE %s " % rwhr)    if rwhr          else "") \
 		+ ("UNION "                                      if rwhr and kwhr else "") \
 		+ (("SELECT entr FROM kanj WHERE %s " % kwhr)    if kwhr          else "") \

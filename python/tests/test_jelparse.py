@@ -174,6 +174,9 @@ class Ginf (unittest.TestCase):
     def test0320040(_): check2(_,'0320040')
     def test0320050(_): check2(_,'0320050')
     def test0320060(_): check2(_,'0320060')
+    def test0320310(_): check2(_,'0320310')
+    def test0320320(_): check2(_,'0320320')
+    def test0320330(_): check2(_,'0320330')
 
 def cherr (self, seq, exception, msg):
 	global Cur, Lexer, Parser

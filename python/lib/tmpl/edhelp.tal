@@ -271,6 +271,7 @@
       those characters must be escaped by preceeding them with a backlslash (\).
       Example: <br/>
 	<samp>This is a single gloss\; even though it contains a semicolon</samp>
+      Note that right brackets (]) are not escaped.
       </li><li>Sense tags are enclosed in square brackets.  Multiple tags may
       occur in within a single pair of brackets, separated by commas.  Sense
       tag apply to the entire sense, no matter where they appear textully in

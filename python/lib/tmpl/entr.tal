@@ -267,17 +267,17 @@
 	      <tr tal:condition="h/refs">
 		<td>&nbsp;</td>
 		<td valign="top">Refs:</td>
-		<td tal:content="h/refs">refs</td>
+		<td><pre class="preformat" tal:content="h/refs">refs</pre></td>
 	       </tr>
 	      <tr tal:condition="h/notes">
 		<td>&nbsp;</td>
 		<td valign="top">Comments:</td>
-		<td tal:content="h/notes">notes</td>
+		<td><pre class="preformat" tal:content="h/notes">notes</pre></td>
 	       </tr>
 	      <tr tal:condition="h/diff">
 		<td>&nbsp;</td>
 		<td valign="top">Diff:</td>
-		<td tal:content="structure h/diff">diff</td>
+		<td><pre class="preformat" tal:content="h/diff">diff</pre></td>
 	       </tr>
 	      </span>
              </tbody>

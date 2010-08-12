@@ -702,8 +702,7 @@ def bld_rdng (r, taglist=[]):
                     r._NOKANJI = 1
                     continue
                 if rtxt:
-                    errs.append ("Reading restrictions must be kanji only: "
-                                      + fmt_xitem (xitem))
+                    errs.append ("Reading restrictions must be kanji only: " + rtxt)
                 append (r, "_RESTR", ktxt)
                 if hasattr (r,'_RESTR') and nokanj:
                     errs.append ("Can't use both kanji and \"nokanji\" in 'restr' tags")

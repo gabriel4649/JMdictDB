@@ -97,11 +97,9 @@ AssdTo:	stuart
   This procedure corrects the permissions problems notes above.
   ----
   pg_dump -Fc jmdict >jmtest.dmp
-  psql -U postgres
-    DROP DATABASE jmnew;
-    CREATE DATABASE jmnew OWNER jmtestdb
-      TEMPLATE template0 ENCODING 'utf8' 
-      LC_COLLATE 'ja_JP.utf8' LC_CTYPE 'ja_JP.utf8';
+  dropdb jmnew
+  createdb -E utf8 -T template0 -O jmtestdb -l ja_JP.utf8 jmnew
+  psql -d jmnew -c "CREATE LANGUAGE 'plpgsql'"
   pg_restore -U jmtestdb -O -d jmnew jmtest.dmp
   psql -U postgres
     DROP DATABASE jmold;

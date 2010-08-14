@@ -57,8 +57,8 @@ class Test_restr2ext (unittest.TestCase):
 class Text_txt2restr (unittest.TestCase):
     def setUp (_):
 	_.e = Entr (
-		_rdng=[Rdng(txt='Ç†'),Rdng(txt='Ç¢')],
-		_kanj=[Kanj(txt='àü'),Kanj(txt='ãè'),Kanj(txt='âI')],
+		_rdng=[Rdng(txt='„ÅÇ'),Rdng(txt='„ÅÑ')],
+		_kanj=[Kanj(txt='‰∫ú'),Kanj(txt='Â±Ö'),Kanj(txt='ËøÇ')],
 		_sens=[Sens(_gloss=[Gloss(txt='A')]),Sens(_gloss=[Gloss(txt="B")])])
     def test001 (_):
 	rtxts = []
@@ -73,7 +73,7 @@ class Text_txt2restr (unittest.TestCase):
 	for k in _.e._kanj: _.assertEqual ([], k._restr)
 	_.assertEqual ([], retval) 
     def test011 (_):
-	rtxts = ['àü']
+	rtxts = ['‰∫ú']
 	retval = jdb.txt2restr (rtxts, _.e._rdng[0], _.e._kanj, '_restr')
 	for expect, r in zip ([2,0],   _.e._rdng): _.assertEqual (expect, len(r._restr))
 	for expect, k in zip ([0,1,1], _.e._kanj): _.assertEqual (expect, len(k._restr))
@@ -94,7 +94,7 @@ class Text_txt2restr (unittest.TestCase):
 	_.assertEqual (_.e._rdng[0]._restr[2], _.e._kanj[2]._restr[0])
 	_.assertEqual ([1,2,3], retval) 
     def test013 (_):
-	rtxts = ['àü']
+	rtxts = ['‰∫ú']
 	retval = jdb.txt2restr (rtxts, _.e._sens[0], _.e._kanj, '_stagk')
 	for expect, s in zip ([2,0],   _.e._sens): _.assertEqual (expect, len(s._stagk))
 	for expect, k in zip ([0,1,1], _.e._kanj): _.assertEqual (expect, len(k._stagk))
@@ -104,7 +104,7 @@ class Text_txt2restr (unittest.TestCase):
 	_.assertEqual (_.e._sens[0]._stagk[1], _.e._kanj[2]._stagk[0])
 	_.assertEqual ([2,3], retval) 
     def test014 (_):
-	rtxts = ['Ç†']
+	rtxts = ['„ÅÇ']
 	retval = jdb.txt2restr (rtxts, _.e._sens[0], _.e._rdng, '_stagr')
 	for expect, s in zip ([1,0], _.e._sens): _.assertEqual (expect, len(s._stagr))
 	for expect, r in zip ([0,1], _.e._rdng): _.assertEqual (expect, len(r._stagr))
@@ -114,8 +114,3 @@ class Text_txt2restr (unittest.TestCase):
 	_.assertEqual ([2], retval) 
 
 if __name__ == '__main__': unittest.main()
-
-
-
-
-

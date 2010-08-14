@@ -2069,25 +2069,30 @@ def jstr_classify (s):
 	the certain types of characters are present in string <s>.
 	The bit settings are given by constants above.
 
-	See Edict email list posts, 
+	See IS-26 and Edict email list posts, 
 	  2008-06-27,"jmdict/jmnedict inconsistency"
 	  2009-02-26,"Tighter rules for reading fields"
 	and followups for details of distinguishing reb text strings,
 	and latter particularly for the rationale for the use of
 	u+301C (WAVE DASH) rather than u+FF5E (FULLWIDTH TILDE)
 	in the JMdict XML file.	
-	"""
+	  2010-08-14, "keb vs reb (again)" for the justification for 
+	treating KATAKANA MIDDLE DOT (U+30FB) as a keb rather than 
+        reb character."""
+
 	r = 0
 	for c in s:
 	    n = uord (c)
-	    if    n >= 0x0000 and n <= 0x02FF:     r |= LATIN
-	    elif (n >= 0x3040 and n <= 0x30FF 		       # Hiragana/katakana.
-		       or n == 0x301C):		   r |= KANA   # WAVE DASH char.
-	    elif  n >= 0x3000 and n <= 0x303F: 	   r |= KSYM   # CJK Symbols.
-	    elif (n >= 0x4E00 and n <= 0x9FFF		       # CJK Unified.
-	       or n >= 0xFF00 and n <= 0xFF5F		       # Fullwidth ascii.
-	       or n >= 0x20000 and n <= 0x2FFFF):  r |= KANJI  # CJK Unified ExtB+Supl.
-	    else:				   r |= OTHER
+	    if    n >= 0x0000 and n <= 0x02FF:       r |= LATIN
+	    elif (n >= 0x3040 and n <= 0x30FF			# Hiragana/katakana
+	          and n != 0x30FB				#  but not MIDDOT
+	          or n == 0x301C):		     r |= KANA	#  or WAVE DASH char.
+	    elif (n >= 0x3000 and n <= 0x303F			# CJK Symbols
+		  or n == 0x30FB):		     r |= KSYM	#  or MIDDOT.
+	    elif (n >= 0x4E00 and n <= 0x9FFF			# CJK Unified.
+	          or n >= 0xFF00 and n <= 0xFF5F		# Fullwidth ascii.
+	          or n >= 0x20000 and n <= 0x2FFFF): r |= KANJI	# CJK Unified ExtB+Supl.
+	    else:				     r |= OTHER
 	return r
 
 def jstr_reb (s):
@@ -2100,29 +2105,41 @@ def jstr_reb (s):
 	    b = jstr_classify (s)
 	else: b = s
 	if b == 0: return True	# Empty string.
-	  # Must not have any characters other than kana.
-	return not (b & ~KANA)
+	  # Must not have any characters other than kana and ksyms
+	  # and must have at least one kana.  (Following expression
+	  # also used in jstr_keb(); if changed here, change there 
+	  # too.)
+	return (b & KANA) and not (b & ~(KANA | KSYM))
 
 def jstr_gloss (s):
 	# Return a true value if the string 's' consists only
 	# of LATIN characters.
+	# FIXME: this won't work in a multi-lingual corpus when we
+	#  may have cryllic, or korean, or chinese, etc, glosses.
 
 	if isinstance (s, (str, unicode)):
 	    b = jstr_classify (s)
 	else: b = s
 	if b == 0: return True	# Empty string.
+	  # Must be exclusively latin characters.
 	return not (b & ~LATIN)
 
 def jstr_keb (s):
         # Return a true value if the string 's' is acceptable
-	# for use in a <keb> element.  This is everything that
+	# for use in a <keb> element.  This is any string that
 	# is not usable as a reb or a gloss.
 
 	if isinstance (s, (str, unicode)):
 	    b = jstr_classify (s)
 	else: b = s
 	if b == 0: return True	# Empty string.
-	return not jstr_reb (b) and not jstr_gloss (b)
+	  # Any string that does not qualify as a gloss or a 
+	  # reb.  (Expression below intentionally not simplified 
+	  # to facilitate visual verification.)
+	return not ( 
+	         (not (b & ~LATIN)) 	# gloss
+                 or 
+	         ((b & KANA) and not (b & ~(KANA | KSYM)))) #reb
 
 
 #=======================================================================

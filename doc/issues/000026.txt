@@ -1,6 +1,6 @@
 ﻿Title:	Kana-kanji determination
-Stat:	closed
-Disp:	done
+Stat:	open
+Disp:	
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -180,3 +180,35 @@ AssdTo:	stuart@friix.com
   for jdb.jstr_reb() because jwb calls edparse (via cgi/edform.py's
   'j' option) with a reading of a "?" (or maybe that is a JIS 
   question mark.)
+
+2010-08-13 22:50:00 stuart
+  Reopened this IS because in 2010-08-11 private email, Jean-Luc
+  Leger reported that he was unable to create a reading restr
+  to kanji "・" because the jelparse rejects it as non-kanji.
+  "・" is the kanji in entry 2529240 (and also 2529250 and 
+  1424310.)
+
+  In Note 2008-06-30 17:19:00, I note jwb proposal of the set
+  hitagana + katakana + as reb, with any strings not including
+  any other characters as going in keb.  I subsequently proposed 
+  on the edict list extending that to the full unicode HIRAGANA
+  AND KANAKANA blocks that would also include KATAKANA-MIDDOT, 
+  which was accepted by jwb at the time and acknowlaged implicitly 
+  in the reference in Note 2009-02-26 08:34:00 which included the 
+  middot in the reb character set. 
+
+  Posted a note to the edict list asking for clarification on the 
+  status of middot character.
+
+2010-08-14 14:48:00 stuart
+  * Changed jdb.py:jstr_classify() to classify middot character as 
+    a KSYM rather than KANA character.
+  * Change jstr_reb() to return true if string contains at least one
+    kana character and nothing except kana or ksym characters.
+    (formerly was kana characters only but that included middot.)
+  * jstr_gloss() to remains a latin-only string.
+    jstr_keb() remains any string that does not fit jstr_reb() or
+    jstr_gloss() although the logic is done in jstr_keb() rather
+    that calling those two functions.
+  test_jdb_jstr_classify.py adjusted to match the new behavior.
+

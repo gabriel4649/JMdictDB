@@ -219,8 +219,7 @@ def lsrc (lsrc):
 	p = '';  w = ''
 	if lsrc.part: p = 'p'
 	if lsrc.wasei: w = 'w'
-	if p and w: t = p + ',' + w
-	else: t = p or w
+	t = p + w
 	if t: t = '/' + t
 	return 'lsrc=' + lang + t + ':' + (qtxt(lsrc.txt))
 

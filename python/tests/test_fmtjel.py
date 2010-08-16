@@ -2,7 +2,7 @@
 
 import sys, unittest, codecs, os.path, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')
-import jdb, fmtjel, jmxml, xmlkw
+import jdb, fmtjel, jmxml, xmlkw, jelparse, jellex
 from objects import *
 import unittest_extensions
 
@@ -14,12 +14,15 @@ def main():
 	unittest.main()
 
 def globalSetup ():
-	global Cur, KW
-	try:
-	    import dbauth; kwargs = dbauth.auth
+	global Cur, KW, Lexer, Parser
+	if Cur: return False
+	try: import dbauth; kwargs = dbauth.auth
 	except ImportError: kwargs = {}
 	Cur = jdb.dbOpen ('jmdict', **kwargs)
 	KW = jdb.KW
+        Lexer, tokens = jellex.create_lexer ()
+        Parser = jelparse.create_parser (Lexer, tokens)
+	return True
 
 class Test_general (unittest.TestCase):
     def setUp (self): globalSetup ()
@@ -129,6 +132,55 @@ class Test_extra (unittest.TestCase):
         jmxml.XKW = XKW	   # FIXME: gross
     def test_x00001(_): dotest (_, 'x00001')	# dotted restrs in quotes.
 
+class Base (unittest.TestCase):
+    def setUp (_): 
+	globalSetup()
+	_.data = loadData ('data/fmtjel/base.txt', r'# ([0-9]{7}[a-zA-Z0-9_]+)')
+
+    def test0000010(_): check2(_,'0000010')	# lsrc wasei
+    def test0000020(_): check2(_,'0000020')	# lsrc partial
+    def test0000030(_): check2(_,'0000030')	# lsrc wasei,partial
+    def test0000040(_): check2(_,'0000040')	# lsrc wasei,partial
+
+
+def check2 (_, test, exp=None):
+	intxt = _.data[test + '_data']
+	try: exptxt = (_.data[test + '_expect']).strip('\n')
+	except KeyError: exptxt = intxt.strip('\n')
+	outtxt = roundtrip (Cur, intxt).strip('\n')
+	_.assert_ (8 <= len (outtxt))    # Sanity check for non-empty entry.
+	msg = "\nExpected:\n%s\nGot:\n%s" % (exptxt, outtxt)
+	_.assertEqual (outtxt, exptxt, msg)
+
+def roundtrip (cur, intxt):
+        jellex.lexreset (Lexer, intxt)
+        entr = Parser.parse (intxt, lexer=Lexer)
+	entr.src = 1
+        jelparse.resolv_xrefs (cur, entr)
+	for s in entr._sens: jdb.augment_xrefs (cur, getattr (s, '_xref', []))
+	for s in entr._sens: jdb.add_xsens_lists (getattr (s, '_xref', []))
+	for s in entr._sens: jdb.mark_seq_xrefs (cur, getattr (s, '_xref', []))
+        outtxt = fmtjel.entr (entr, nohdr=True)
+	return outtxt
+
+def loadData (filename, secsep, last=[None,None]):
+	# Read test data file 'filename' caching its data and returning
+	# cached data on subsequent consecutive calls with same filename.
+	if last[0] != filename:
+	    last[1] = unittest_extensions.readfile_utf8 (filename,
+			 rmcomments=True, secsep=secsep)
+	    last[0] = filename
+	return last[1]
+
+
+def loadData (filename, secsep, last=[None,None]):
+	# Read test data file 'filename' caching its data and returning
+	# cached data on subsequent consecutive calls with same filename.
+	if last[0] != filename:
+	    last[1] = unittest_extensions.readfile_utf8 (filename,
+			 rmcomments=True, secsep=secsep)
+	    last[0] = filename
+	return last[1]
 
 def dotest (_, testid, xmlfn=None, jelfn=None, dir='data/fmtjel', enc='utf_8_sig'):
 	if xmlfn is None: xmlfn = os.path.join (dir, testid + '.xml')

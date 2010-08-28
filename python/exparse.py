@@ -53,6 +53,8 @@ Seq = None
 Lnnum = None
 Opts = None
 
+# The following is used to map tags that occur in square brackets
+# immediately preceeding the #ID field to MISC id numbers.
 EX2ID = {
 	'aphorism'		: [82],
 	'bible'			: [83,"Biblical"],
@@ -67,7 +69,8 @@ EX2ID = {
 	'quotation'		: [83],
 	'bible quote'		: [83,"Biblical"],
 	'from song lyrics'	: [83,"Song lyrics"],
-	'senryuu'		: [83,"Senryuu"],}
+	'senryuu'		: [83,"Senryuu"],
+        'xxx'			: [1],}
 
 class ParseError (StandardError): pass
 
@@ -98,20 +101,27 @@ def main (args, opts):
 	if not opts.noaction: pgi.finalize (tmpfiles, opts.output, not opts.keep)
 
 def parse_ex (fin, begin):
-
-	# Process the Examples file.  
-	# $begin -- Line number at which to begin processing.  Everythig
-	#    before that is skipped.
-	# Number of example pairs to process.  Program will terminate
-	#    after this many have been done.
+	# This is a generator function that will process one (A and B) pair
+	# of lines from open file object 'fin' each time it is called.
+	#
+	# fin -- An open Examples file. 
+	# begin -- Line number at which to begin processing.  Lines 
+	#    before that are skipped.
 
 	for aln, bln in fin:
 	    global Lnnum, Seq
 	    if fin.lineno < begin: continue
 	    Lnnum = fin.lineno
-	    mo = re.search (r'(\s*#\s*ID\s*=\s*(\d+)\s*)$', aln)
+	    mo = re.search (r'(\s*#\s*ID\s*=\s*(\d+)_(\d+)\s*)$', aln)
 	    if mo:
-		aln = aln[:mo.start(1)]; Seq = int (mo.group(2))
+		aln = aln[:mo.start(1)]
+		  # The ID number is of the form "nnnn_mmmm" where "nnnn" is the
+		  # Tatoeba English sentence id number, and "mmmm" is the Japanese
+		  # id number.  Generate a seq number by combining them.
+		  # FIXME: the following assumes that the english sentence id
+		  #  number will never be greater than 1E6, which is probably
+		  #  not wise given that some are already in the 400K range. 
+		Seq = int (mo.group(2)) * 1000000 + int (mo.group(3))
 	    else: 
 		msg ("No ID number found"); continue
 	    try: 
@@ -120,8 +130,6 @@ def parse_ex (fin, begin):
 	    except ParseError, e:
 		msg (e.args[0]); continue
 	    if not idxlist: continue
-	    if not jdb.jstr_keb (jtxt):
-		msg ("'A' line not kanji: %s" % jtxt)
 	    entr = mkentr (jtxt, etxt, kwds)
 	    entr.seq = Seq
 	    entr._sens[0]._xrslv = mkxrslv (idxlist)
@@ -261,8 +269,9 @@ def parse_cmdline ():
 	u = \
 """\n\t%prog [options] [filename]
 
-%prog will read a jmdict XML file such as JMdict or JMnedict and
-create a file that can be subsequently loaded into a jmdict Postgresql 
+%prog will read a file containing Tanaka corpus example sentence pairs
+(as described at http://www.edrdg.org/wiki/index.php/Tanaka_Corpus) and
+create a data file that can be subsequently loaded into a jmdict Postgresql 
 database (usually after pre-processing by jmload.pl).
 
 Arguments: 
@@ -351,7 +360,7 @@ Arguments:
             dest="tempdir", metavar="DIRPATH",
             help="Directory in which to create temporary files.")
 
-	p.add_option ("-e", "--encoding", default=None,
+	p.add_option ("-e", "--encoding", default='utf-8',
             type="str", dest="encoding", 
             help="Encoding for error and logfile messages (typically "
 		"\"sjis\", \"utf8\", or \"euc-jp\").  This does not "

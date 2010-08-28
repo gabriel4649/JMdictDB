@@ -101,8 +101,8 @@ CREATE TABLE kwsrc (
     notes VARCHAR(255),
     seq VARCHAR(20) NOT NULL,	-- Name of sequence to create for entr.seq default values.
     sinc SMALLINT,		-- Sequence INCREMENT value used when creating seq.
-    smin INT,			-- Sequence MINVALUE value used when creating seq.
-    smax INT);			-- Sequence MAXVALUE value used when creating seq.
+    smin BIGINT,		-- Sequence MINVALUE value used when creating seq.
+    smax BIGINT);		-- Sequence MAXVALUE value used when creating seq.
 
 CREATE OR REPLACE FUNCTION kwsrc_updseq() RETURNS trigger AS $kwsrc_updseq$
     -- Create a sequence for entr.seq numbers whenever a new
@@ -152,7 +152,7 @@ CREATE TRIGGER kwsrc_updseq AFTER INSERT OR UPDATE OR DELETE ON kwsrc
 CREATE OR REPLACE FUNCTION syncseq() RETURNS VOID AS $syncseq$
     -- Syncronises all the sequences specified in table 'kwsrc'
     -- (which are used for generation of corpus specific seq numbers.)
-    DECLARE cur REFCURSOR; seqname VARCHAR; maxseq INT;
+    DECLARE cur REFCURSOR; seqname VARCHAR; maxseq BIGINT;
     BEGIN
 	-- The following cursor gets the max value of entr.seq for each corpus
 	-- for entr.seq values within the range of the associated seq (where
@@ -197,7 +197,7 @@ CREATE TABLE entr (
     id SERIAL PRIMARY KEY,
     src SMALLINT NOT NULL,
     stat SMALLINT NOT NULL,
-    seq INT NOT NULL CHECK(seq>0),
+    seq BIGINT NOT NULL CHECK(seq>0),
     dfrm INT,
     unap BOOLEAN NOT NULL,
     srcnote VARCHAR(255) NULL,

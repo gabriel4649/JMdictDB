@@ -1,0 +1,51 @@
+Title:	Entr.seq column to bigint, exparse.py fix for new format.
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-08-28 10:02:00 stuart
+  Loaded a new version of the examples file (aka Tatoeba, aka 
+  Tanaka corpus) into the database but no entries were loaded,
+  no log file entries were produced.  Problem was that the format
+  of the "#ID=nnnn" fields has changed to "#ID=nnnn_mmmm" where
+  nnnn and mmmm are the Tatoeba english and japanese sentence 
+  id numbers respectively.  
+  (See http://www.edrdg.org/wiki/index.php/Tanaka_Corpus)
+  Since none of the sentences matched the acceptance pattern, 
+  all were skipped, and skipped sentences are only reported by 
+  exparse.py if the -v option in used (which Makefile didn't.) 
+
+2010-08-28 10:34:00 stuart
+  Will try generating a seq number for the "examples" corpus
+  using nnnn * 1000000 + mmmm.  Hopefully this will also address
+  IS-157, "Id numbers on examples file not unique".
+  The above formula is somewhat problamatic since it assumes
+  sentence id numbers will not exceed 999999, a questionable
+  assumption since some of the ids are already in the 400K range.
+
+  Modified python/exparse.py to use above formula.  However this
+  means that some seq numbers migh exceed the range of a Postgresql
+  INT datatype. 
+  Wrote patches/003_01.sql to change type of entr.seq column
+  from INT to BIGINT.  Also have to change datatype of variable
+  'maxseq' in function syncseq.  Made corresponding changes to
+  DDL statementss in pg/mktables.sql. In that file I also changed
+  datatype of kwsrc.smin and kwsrc.smax to BIGINT but did not do
+  that in the patch.
+
+  In exparse.py:
+  Added "XXX" to list of tags since Tatoeba seems
+  to use that to denote an "x-rated" sentence.
+  Removed the printing a warning message for non-kanji Japanese  
+  sentence.  Not sure why that was ever there, many sentences are
+  kana.
+
+  Finally, I added -v to the exparse.py command line in Makefile to
+  get warnings about skipped lines.  After a sucessful import now,
+  there only two:
+
+    Seq 399467148252 (line 126200): Unknown 'A' line note: 'Title of book chapter'
+    Seq 409927409926 (line 300132): "B" line parse error in item 6: '呉れる{くれて}|'

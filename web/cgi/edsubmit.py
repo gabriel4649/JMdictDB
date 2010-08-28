@@ -129,7 +129,7 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, os, datetime
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import cgitbx; cgitbx.enable()
+import cgitbx
 import jdb, jmcgi, fmtxml, serialize
 from jmcgi import logw
 
@@ -138,6 +138,7 @@ class NonLeafError (ValueError): pass
 class IsApprovedError (ValueError): pass
 
 def main( args, opts ):
+	cgitbx.enable()
 	errs = []; dbh = svc = None
 	logw ("Starting submit.py", pre='\n')
 	try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
@@ -244,10 +245,23 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	#	likely to break something.
 	#	# FIXME: prohibit non-editors from making seq number 
 	#	#  different than parent, or non-null if no parent?
-	#
+	#   entr.hist -- The last hist item on the entry will supply
+	#       the comment, email and name fields to newly constructed
+	#       comment that will replace it in the database.  The time-
+	#       stamp and diff are regenerated and the userid field is 
+	#       set from our userid parameter.
+	#       # FIXME: should pass history record explicity so that
+	#       #  we can be sure if the caller is or is not supplying
+	#       #  one.  That will make it easier to use this function
+	#       #  from other programs. 
 	# The following entry attributes need not be set:
 	#   entr.id -- Ignored (reset to None).
 	#   entr.unap -- Ignored (reset based on 'disp').
+	# Additionally, if 'is_editor' is false, the rdng._freq and
+	# kanj._freq items will be copied from the parent entr rather
+	# than using the ones supplied  on 'entr'.  See jdb.copy_freqs()
+	# for details about how the copy works when the rdng's or kanj's
+	# differ between the parent and 'entr'. 
 
 	KW = jdb.KW
 	logw (("submission (disp=%s, is_editor=%s, userid=%s, entry id=%s,\n" 

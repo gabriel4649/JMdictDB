@@ -1,6 +1,6 @@
 Title:	Edited entries disappearing after submission.
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	crit
 Cats:	dev
 Reqtrs:	
@@ -84,3 +84,6 @@ AssdTo:
   file.  Searched that file for seq=2561400 and found only 
   two entries corresponding to the entry's history, nothing 
   from Paul.
+
+2010-08-28 19:10:00 stuart
+  No further problems noted.  Closing.

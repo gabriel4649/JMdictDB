@@ -1,6 +1,6 @@
 Title:	Add search by submitter to advanced search form
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	
@@ -20,5 +20,8 @@ AssdTo:
   web/cgi/srchres.py and python/lib/jmcgi.py (function so2conds()):
   handle new 'smtr', 'ts' and 'mt' parameters from srchform.tal. 
 
-  Have not implemented search in comments or refs yet.
+  Have not implemented search in comments or refs yet.  Will save that
+  for some future time.
 
+2010-08-28 19:13:00 stuart
+  Done in changeset 2010-07-27-476e9c240fe8.

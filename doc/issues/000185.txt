@@ -1,6 +1,6 @@
 ﻿Title:	sid value in url allows impersonation
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	crit
 Cats:	dev
 Reqtrs:	
@@ -107,3 +107,6 @@ AssdTo:
   > [*1] There have been a couple times I think I've seen an
   > sid in the url even though I was using cookies -- I will 
   > try to track these down as I see them or they are reported.
+
+2010-08-28 19:09:00 stuart
+  No further problems noted.  Closing.

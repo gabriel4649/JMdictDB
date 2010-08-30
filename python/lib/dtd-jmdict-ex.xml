@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-	This DTD is derived from the JMdict DTD version 1.07 (2009-01-21)
+<!--	This DTD is derived from the JMdict DTD version 1.07 (2009-01-21)
 	but is extended to allow for enhanced representational capabilities
 	to support JMdictDB entries.  Changes include:
 	  <grpdef> new elements to define entry groups.

@@ -1,118 +1,56 @@
 -- This patch will change the type of column entr.seq 
 -- from INT to BIGINT in order to support new synthetic
 -- Tatoeba sequence numbers. See IS-192 for more details.
- 
+--
+-- After running this, you must execute pg/mkviews.sql 
+-- and pg/mkviews2.sql.
+
 \set ON_ERROR_STOP 
 BEGIN;
 
-ALTER TABLE entr ADD COLUMN seq2 BIGINT;
-UPDATE entr SET seq2=seq;
-ALTER TABLE entr DROP COLUMN seq CASCADE;
-ALTER TABLE entr RENAME seq2 TO seq;
+-- mkviews.sql
+DROP VIEW IF EXISTS hdwds CASCADE;
+DROP VIEW IF EXISTS is_p CASCADE;
+DROP VIEW IF EXISTS esum CASCADE;
+DROP VIEW IF EXISTS ssum CASCADE;
+DROP VIEW IF EXISTS essum CASCADE;
+DROP VIEW IF EXISTS item_cnts CASCADE;
+DROP VIEW IF EXISTS rk_validity CASCADE;
+DROP VIEW IF EXISTS re_nokanji CASCADE;
+DROP VIEW IF EXISTS rk_valid CASCADE;
+DROP VIEW IF EXISTS sr_valid CASCADE;
+DROP VIEW IF EXISTS sk_valid CASCADE;
+DROP VIEW IF EXISTS xrefhw CASCADE;
+DROP VIEW IF EXISTS pkfreq CASCADE;
+DROP VIEW IF EXISTS prfreq CASCADE;
+DROP FUNCTION IF EXISTS dupentr(INT);
+DROP FUNCTION IF EXISTS delentr(INT);
+DROP FUNCTION IF EXISTS get_subtree (INT);
+DROP FUNCTION IF EXISTS get_edroot (INT);
+DROP VIEW IF EXISTS vsnd CASCADE;
 
--- Recreate the views dropped as a result of dropping the 
--- "seq" column above with CASCADE.
+-- mkviews2.sql
+DROP VIEW IF EXISTS vt_kinf CASCADE;
+DROP VIEW IF EXISTS vt_rinf CASCADE;
+DROP VIEW IF EXISTS vt_kanj CASCADE;
+DROP VIEW IF EXISTS vt_kanj2 CASCADE;
+DROP VIEW IF EXISTS vt_rdng CASCADE;
+DROP VIEW IF EXISTS vt_rdng2 CASCADE;
+DROP VIEW IF EXISTS vt_gloss CASCADE;
+DROP VIEW IF EXISTS vt_gloss2 CASCADE;
+DROP VIEW IF EXISTS vt_pos CASCADE;
+DROP VIEW IF EXISTS vt_misc CASCADE;
+DROP VIEW IF EXISTS vt_sens CASCADE;
+DROP VIEW IF EXISTS vt_sens2 CASCADE;
+DROP VIEW IF EXISTS vt_sens3 CASCADE;
+DROP VIEW IF EXISTS vt_entr CASCADE;
+DROP VIEW IF EXISTS vt_entr3 CASCADE;
 
-CREATE OR REPLACE VIEW hdwds AS (
-    SELECT e.*,r.txt AS rtxt,k.txt AS ktxt
-    FROM entr e
-    LEFT JOIN rdng r ON r.entr=e.id
-    LEFT JOIN kanj k ON k.entr=e.id
-    WHERE (r.rdng=1 OR r.rdng IS NULL)
-      AND (k.kanj=1 OR k.kanj IS NULL));
+ALTER TABLE entr ALTER COLUMN seq TYPE BIGINT;
+ALTER TABLE kwsrc ALTER COLUMN smin TYPE BIGINT;
+ALTER TABLE kwsrc ALTER COLUMN smax TYPE BIGINT;
 
-CREATE VIEW is_p AS (
-    SELECT e.*,
-	    EXISTS (
-		SELECT * FROM freq f
-       		WHERE f.entr=e.id AND
-		  -- ichi1, gai1, jdd1, spec1
-		  ((f.kw IN (1,2,3,4) AND f.value=1)))
-	    AS p
-    FROM entr e);
-
-CREATE OR REPLACE VIEW esum AS (
-    SELECT e.id,e.seq,e.stat,e.src,e.dfrm,e.unap,e.notes,e.srcnote,
-	h.rtxt AS rdng,
-	h.ktxt AS kanj,
-	(SELECT ARRAY_TO_STRING(ARRAY_AGG( ss.gtxt ), ' / ') 
-	 FROM 
-	    (SELECT 
-		(SELECT ARRAY_TO_STRING(ARRAY_AGG(sg.txt), '; ') 
-		FROM (
-		    SELECT g.txt 
-		    FROM gloss g 
-		    WHERE g.sens=s.sens AND g.entr=s.entr 
-		    ORDER BY g.gloss) AS sg
-		ORDER BY entr,sens) AS gtxt
-	    FROM sens s WHERE s.entr=e.id ORDER BY s.sens) AS ss) AS gloss,
-	(SELECT COUNT(*) FROM sens WHERE sens.entr=e.id) AS nsens,
-	(SELECT p FROM is_p WHERE is_p.id=e.id) AS p
-    FROM entr e
-    JOIN hdwds h on h.id=e.id);
-
-CREATE OR REPLACE VIEW essum AS (
-    SELECT e.id, e.seq, e.src, e.stat, 
-	    s.sens, 
-	    h.rtxt as rdng, 
-	    h.ktxt as kanj, 
-	    s.gloss,
-	   (SELECT COUNT(*) FROM sens WHERE sens.entr=e.id) AS nsens
-	FROM entr e
-	JOIN hdwds h ON h.id=e.id
-        JOIN ssum s ON s.entr=e.id);
-
-CREATE VIEW item_cnts AS (
-    SELECT 
-	e.id,e.seq,
-	(SELECT COUNT(*) FROM rdng r WHERE r.entr=e.id) as nrdng,
-	(SELECT COUNT(*) FROM kanj k WHERE k.entr=e.id) as nkanj,
-	(SELECT COUNT(*) FROM sens s WHERE s.entr=e.id) as nsens
-    FROM entr e);
-
-CREATE VIEW rk_validity AS (
-    SELECT e.id AS id,e.seq AS seq,
-	r.rdng AS rdng,r.txt AS rtxt,k.kanj AS kanj,k.txt AS ktxt,
-	CASE WHEN z.kanj IS NOT NULL THEN 'X' END AS valid
-    FROM ((entr e
-    LEFT JOIN rdng r ON r.entr=e.id)
-    LEFT JOIN kanj k ON k.entr=e.id)
-    LEFT JOIN restr z ON z.entr=e.id AND r.rdng=z.rdng AND k.kanj=z.kanj);
-
-CREATE VIEW re_nokanji AS (
-    SELECT e.id,e.seq,r.rdng,r.txt
-    FROM entr e 
-    JOIN rdng r ON r.entr=e.id 
-    JOIN restr z ON z.entr=r.entr AND z.rdng=r.rdng
-    GROUP BY e.id,e.seq,r.rdng,r.txt
-    HAVING COUNT(z.kanj)=(SELECT COUNT(*) FROM kanj k WHERE k.entr=e.id));
-
-CREATE OR REPLACE VIEW vt_entr AS (
-    SELECT e.*,
-        r.rtxt,
-        k.ktxt,
-        s.stxt,
-        (SELECT COUNT(*) FROM sens WHERE sens.entr=e.id) AS nsens,
-        (SELECT p FROM is_p WHERE is_p.id=e.id) AS p
-    FROM entr e
-    LEFT JOIN vt_rdng r ON r.entr=e.id
-    LEFT JOIN vt_kanj k ON k.entr=e.id
-    LEFT JOIN vt_sens s ON s.entr=e.id);
-
-CREATE OR REPLACE VIEW vt_entr3 AS (
-    SELECT e.*,
-        r.rtxt,
-        k.ktxt,
-        s.stxt,
-        (SELECT COUNT(*) FROM sens WHERE sens.entr=e.id) AS nsens,
-        (SELECT p FROM is_p WHERE is_p.id=e.id) AS p
-    FROM entr e
-    LEFT JOIN vt_rdng2 r ON r.entr=e.id
-    LEFT JOIN vt_kanj2 k ON k.entr=e.id
-    LEFT JOIN vt_sens3 s ON s.entr=e.id);
-
--- Following function also requires update due to datatype change...
-
+-- Following is copy/paste from pg/mktables.sql.
 CREATE OR REPLACE FUNCTION syncseq() RETURNS VOID AS $syncseq$
     -- Syncronises all the sequences specified in table 'kwsrc'
     -- (which are used for generation of corpus specific seq numbers.)
@@ -157,3 +95,7 @@ CREATE OR REPLACE FUNCTION syncseq() RETURNS VOID AS $syncseq$
     $syncseq$ LANGUAGE plpgsql;
 
 COMMIT;
+
+-- Now run mkviews.sql and mkviews2.sql to recreate all the
+-- views dropped above.
+

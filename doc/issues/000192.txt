@@ -22,7 +22,7 @@ AssdTo:	stuart
   Will try generating a seq number for the "examples" corpus
   using nnnn * 1000000 + mmmm.  Hopefully this will also address
   IS-157, "Id numbers on examples file not unique".
-  The above formula is somewhat problamatic since it assumes
+  The above formula is somewhat problematic since it assumes
   sentence id numbers will not exceed 999999, a questionable
   assumption since some of the ids are already in the 400K range.
 
@@ -49,3 +49,78 @@ AssdTo:	stuart
 
     Seq 399467148252 (line 126200): Unknown 'A' line note: 'Title of book chapter'
     Seq 409927409926 (line 300132): "B" line parse error in item 6: '呉れる{くれて}|'
+
+2010-08-30 03:18:00 stuart
+  When I tried to submit an edited entry, I got an error which I was
+  able to reproduce by running "select * from get_subtree(1039299)"
+  in psql
+
+  | ERROR: structure of query does not match function result type
+  | SQL state: 42804
+  | Detail: Number of returned columns (8) does not match expected column count (9).
+  | Context: PL/pgSQL function "get_subtree" line 6 at RETURN QUERY
+
+  There seem to be several problems:
+  1.  "\d entr" now shows the 'seq' column as the last column in the
+    entr table.  This messes up views that do a 'select entr.* from...".
+  2. I tried to recreate those views using an explicit column list
+    but get_subtree() still failing as above.
+
+  Did a rewrite of the patch: this time we create a new "_entr" table
+  copy the old "entr" table data into it, delete the old "entr" table,
+  and rename "_entr" to "entr".  Have to recreate the contraints and 
+  indexes, and well as all the objects that are deleted (by CASCADE)
+  when "entr" is deleted.
+
+  But this turned out to have problems too -- the new table ends up
+  with the SERIAL sequence named "entr_id_seq1" because the original
+  tables's sequence was not renamed.
+
+2010-08-30 11:54:00 stuart
+  Rereading PG docs, I discovered the ALTER TABLE ... TYPE ... command. 
+
+  For reference here is the complete procedure I used to update my
+  local jmdict instance from a dump of Arakawa's jmdict database:
+  ---------------------------------
+  set -e
+  #psql -U postgres -c 'RENAME DATABASE jmdict TO jmold'
+  dropdb jmdict
+  createdb -E utf8 -T template0 -O jmdictdb -l ja_JP.utf8 jmdict
+    # jmdict-20100827.dmp below is a dump of the EDRDG jmdict database.
+  pg_restore -U jmdictdb -O -d jmdict data/jmdict-20100827.dmp
+  psql -U jmdictdb -d jmdict -f patches/003_01.sql
+  psql -U jmdictdb -d jmdict -f pg/mkviews.sql
+  psql -U jmdictdb -d jmdict -f pg/mkviews2.sql
+    # Note: the above three commands are packaged in patches/003_01.sh
+  make DB=jmdict loadne
+  make DB=jmdict loadex
+  ---------------------------------
+
+  Patch 003_01.sql is like:
+  ---------------------------------
+  \set ON_ERROR_STOP 
+  BEGIN;
+  DROP VIEW IF EXISTS hdwds CASCADE;
+  DROP VIEW IF EXISTS is_p CASCADE;
+  [...drop every additional view/function in mkviews.sql...]
+  
+  DROP VIEW IF EXISTS vt_kinf CASCADE;
+  DROP VIEW IF EXISTS vt_rinf CASCADE;
+  [...drop every additional view/function in mkviews2.sql...]
+
+  ALTER TABLE entr ALTER COLUMN seq TYPE BIGINT;
+  ALTER TABLE kwsrc ALTER COLUMN smin TYPE BIGINT;
+  ALTER TABLE kwsrc ALTER COLUMN smax TYPE BIGINT;
+
+  CREATE OR REPLACE FUNCTION syncseq() RETURNS VOID AS $syncseq$
+  [...syncseq function copied from mktables.sql.  It was changed 
+   to use a BIGINT instead of INT for an internal variable that 
+   holds sequence numbers, so needs to be recreated...]
+
+  COMMIT;
+  -------------------------------
+
+2010-08-31 00:08:00 stuart
+  To do: (get jwb to) apply the 003_01.sh patch to the EDRDG
+  jmdict database after a suitable period of running it locally.
+

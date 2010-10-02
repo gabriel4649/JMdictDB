@@ -1,4 +1,4 @@
-#!/usr/env python
+#!/usr/bin/env python
 #
 # This program allows direct editing of the database tables
 # that constitute an entry.

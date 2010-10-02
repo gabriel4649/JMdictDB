@@ -1,0 +1,17 @@
+Title:	fmtjel.py not quoting restr strings
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-08-14 23:32:00 stuart
+  When an entry has a restr value such as "モン・クメール語派"
+　that would have to be quoted in JEL (because of the middot
+  character), fmtjel.py goes not generate any quotes.  This 
+  means that if such an entry is edited, it will will result
+  in a syntax error even is the entry is submitted unchanged.
+  Reported by jwb in editors list email, 2010-09-14. 
+  Of course analogous problems may exist with stagr and stagk
+  restrictions.

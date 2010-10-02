@@ -316,7 +316,7 @@ def xrefs (xrefs, src):
 	      # the number of senses, which we also need.
 	    try: targ = x.TARG
 	    except AttributeError:
-		raise AttributeError ("xref missing TARG attribute.  Did you forget to call augmented_xrefs()?")
+		raise AttributeError ("xref missing TARG attribute.  Did you forget to call augment_xrefs()?")
 
 	      # If generating JMdict-compatible XML, don't generate
 	      # xrefs to entries that are unapproved or whose status

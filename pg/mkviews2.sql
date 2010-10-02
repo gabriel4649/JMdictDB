@@ -199,7 +199,7 @@ CREATE OR REPLACE VIEW vt_misc AS (
         FROM (
 	    SELECT kw.kw AS txt 
 	    FROM misc m3 
-	    JOIN kwpos kw ON kw.id=m3.kw
+	    JOIN kwmisc kw ON kw.id=m3.kw
 	    WHERE m3.entr=m.entr and m3.sens=m.sens
 	    ORDER BY m3.ord) AS m2
         ) AS mtxt

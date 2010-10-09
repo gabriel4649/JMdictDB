@@ -23,7 +23,7 @@ __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
 from lrucache import LRUCache
-import time, pdb
+import time, os.path, pdb
 
 import mci; from mci.constants import *; 
   # We import mciError to make it available from this module to
@@ -81,6 +81,10 @@ class Audio:
 	  # the problem is with mci, or audacity.
 	if leng != 0: end = (start + leng) * 1000 + pad
 	mci.Play (devid, flags, int(start * 1000), int(end))
+
+    def play (self, fname, strt, leng):
+	d, f = os.path.split (fname)
+	self.playfile (d, f, strt, leng)
 
     def getCdDevId (self):
 	if ("cdaudio",) in self.devCache: devid = self.devCache[cd]

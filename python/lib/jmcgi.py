@@ -402,7 +402,7 @@ def get_entrs (dbh, elist, qlist, errs, active=None, corpus=None):
 	    jdb.mark_seq_xrefs (dbh, raw['xref'])
  	return entries
 
-def gen_page (tmpl, output=None, macros=None, **kwds):
+def gen_page (tmpl, output=None, macros=None, xml=False, **kwds):
 	httphdrs = kwds.get ('HTTP', None)
 	if not httphdrs: 
 	    if not kwds.get ('NoHTTP', None):
@@ -417,9 +417,9 @@ def gen_page (tmpl, output=None, macros=None, **kwds):
 	if not tmpldir: 
 	    raise IOError ("File or directory '%s' not found in sys.path" % tmpl)
 	if macros:
-	    macros = tal.mktemplate (tmpldir + '/' + macros)
+	    macros = tal.mktemplate (tmpldir + '/' + macros, xml=xml)
 	    kwds['macros'] = macros
-	html += tal.fmt_simpletal (tmpldir + '/' + tmpl, **kwds)
+	html += tal.fmt_simpletal (tmpldir + '/' + tmpl, xml=xml, **kwds)
 	if output: print >>output, html.encode ('utf-8')
 	return html
 

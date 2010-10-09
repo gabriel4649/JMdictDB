@@ -14,7 +14,8 @@ __Version__ = map (lambda x:(x.split())[1],
 	("$Revision$","$Date$"))
 
 from ctypes import *
-from ctypes.wintypes import *
+try: from ctypes.wintypes import *
+except ValueError: raise ImportError ('mci module not available')
 import exceptions
 from constants import *
 

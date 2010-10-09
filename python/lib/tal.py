@@ -26,8 +26,13 @@ import jdb, fmtjel
 
 logging.basicConfig (level=logging.WARNING, stream=sys.stderr)
 
-# Should following function be moved into SimpleTalHelper.py?
-def fmt_simpletal (tmplfn, **kwds):
+#FIXME: Should following function be moved into SimpleTalHelper.py?
+
+def fmt_simpletal (tmplfn, xml=False, **kwds):
+	# tmplfn -- Filename of the template file to use.
+	# xml -- false: generate HTML template.
+	#        true: generate XML template.
+	# kwds -- Rest of keyword args will be passed to serialize(). 
 
 	  # When the SimpleTal evaluator processes a template it
 	  # appears to use the parameter KW when evaluating TALES 
@@ -43,16 +48,20 @@ def fmt_simpletal (tmplfn, **kwds):
 	try: KW = jdb.KW
 	except AttributeError: KW = None
 
-	tmpl = mktemplate (tmplfn)
+	tmpl = mktemplate (tmplfn, xml=xml)
 	txt = serialize (tmpl, **kwds)
 	txt = txt.decode ('utf-8')
 	if txt.startswith (u'\ufeff') or txt.startswith (u'\ufffe'):
 	    txt = txt[1:]
 	return txt
 
-def mktemplate (tmplFilename, encoding='utf-8'):
-	tmplFile = file(tmplFilename)
-	tmpl = simpleTAL.compileHTMLTemplate (tmplFile,inputEncoding=encoding)
+def mktemplate (tmplFilename, xml=False, encoding='utf-8'):
+	tmplFile = file (tmplFilename)
+	if xml:
+	    tmpl = simpleTAL.compileXMLTemplate (tmplFile)
+	else:
+	    tmpl = simpleTAL.compileHTMLTemplate (tmplFile,
+						  inputEncoding=encoding)
 	tmplFile.close()
 	return tmpl
 

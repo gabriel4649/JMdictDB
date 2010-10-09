@@ -23,10 +23,12 @@ __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 
 from lrucache import LRUCache
-# We import mciError to make it available from this module to
-# users of Audio, CD since any of those can raise it.
-import mci; from mci.constants import *; from mci import mciError 
-import time
+import time, pdb
+
+import mci; from mci.constants import *; 
+  # We import mciError to make it available from this module to
+  # users of Audio, CD since any of those can raise it.
+from mci import mciError 
 
 class Cd:
     def __init__ (self, devid):

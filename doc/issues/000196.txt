@@ -1,0 +1,19 @@
+Title:	Add new PoS, "vs-c".
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-11-17 19:03:00 stuart
+  Jwb added new PoS to the active JMdictDB instance DB and DTD 
+  on Arakawa.  Need to make the change in the HG repo as well
+  (before the next push to Arakawa.)
+
+  In the edict-editors list on 2010-10-13, jwb wrote:
+  > > OK, I have added "vs-c" to the DTD and tables here. I'll now
+  > > amend the entries René listed.
+  > I also had to add it to the "kwpos" table in the database. Once
+  > that was done, the JEL parser allowed it through. It also pops up
+  > on the search menu as one of the POSs that can be clicked. Cool.

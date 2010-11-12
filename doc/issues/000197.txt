@@ -1,0 +1,13 @@
+Title:	Add sense id numbers
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-11-17 19:05:00 stuart
+  Add sense id numbers to database schema and requisite 
+  changes in code.  See edict list discussion, "<xref> tags without
+  a destination or with too many destinations", 2010-10-28 thru
+  2010-11-04.

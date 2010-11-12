@@ -1,0 +1,12 @@
+Title:	Exclude rej/del entries in xresolv.py
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-11-17 19:01:00 stuart
+  Add option to xresolv.py to exclude skip processing xrefs
+  of rejected or deleted entries.
+  See edict-editors list, "Unresolved xrefs", 2010-11-17.

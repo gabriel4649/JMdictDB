@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2008 Stuart McGraw 
+#  Copyright (c) 2008,2010 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -23,8 +23,9 @@ __version__ = ('$Revision$'[11:-2],
 
 # This program creates rows in table "xref" based on the 
 # textual (kanji and kana) xref information saved in table
-# "xresolv" by the programs jmparse.pl and exparse.pl when
-# loading the database from a corpus file.
+# "xresolv".  xresolv contains "unresolved" xrefs -- that
+# is, xrefs defined only by a kanji/kana text(s) which for
+# which there may be zero or multiple target entries..
 #
 # Each xresolv row contains the entr id and sens number 
 # of the entry that contained the xref, the type of xref,
@@ -87,7 +88,12 @@ def main (args, opts):
 
 def resolv (dbh, lastpos, blksz, xref_src, targ_src, krmap):
 	e0, s0, t0, o0 = lastpos
-	sql = "SELECT v.*,e.seq FROM xresolv v JOIN entr e ON v.entr=e.id " \
+	  # Following sql will read 'blksz' xresolv rows, starting
+	  # at 'lastpos' (which is given as a 4-tuple of xresolv.entr,
+	  # .sens, .typ and .ord).  Note that the result set must be
+	  # ordered on exactly this same set of values in order to 
+	  # step through them block-wise.
+	sql = "SELECT v.*,e.seq,e.stat,e.unap FROM xresolv v JOIN entr e ON v.entr=e.id " \
 		        "WHERE e.src=%%s " \
 			  "AND (v.entr>%%s OR (v.entr=%%s " \
 			   "AND (v.sens>%%s OR (v.sens=%%s " \
@@ -100,6 +106,16 @@ def resolv (dbh, lastpos, blksz, xref_src, targ_src, krmap):
 	if Opts.debug & 0x04: 
 	    print >>sys.stderr, "Read %d xresolv rows" % (len(rs),) 
 	for v in rs:
+
+	      # Skip this xref if the "ignore-nonactive" option was 
+	      # given and the entry is not active (i.e. is deleted or
+	      # rejected) or is unapproved.  Unapproved entries will
+	      # be checked during approval submission and unresolved 
+	      # xrefs in rejected/deleted entries are often moot. 
+
+	    if Opts.ignore_nonactive and \
+		(v.stat != jdb.KW.STAT['A'].id or v.unap): continue
+
 	    e = None
 	    if krmap: 
 
@@ -389,8 +405,8 @@ Arguments: none"""
 
 	p.add_option ("-n", "--noaction", default=False,
 	    action="store_true",
-	    help="Resolve xrefs and generate log file but don't write "
-	        "to database.")
+	    help="Resolve xrefs and generate log file but don't make "
+	        "any changes to database. (This implies --keep.)")
 
 	p.add_option ("-v", "--verbose", default=False,
 	    action="store_true",
@@ -405,6 +421,11 @@ Arguments: none"""
 
 	p.add_option ("-k", "--keep", default=False, action="store_true",
 	    help="Do not delete unresolved xrefs after they are resolved.")
+
+	p.add_option ("-i", "--ignore-nonactive", default=False,
+	    action="store_true",
+	    help="Ignore unresolved xrefs belonging to entries with a"
+		"status of deleted or rejected or which are unapproved ")  
 
 	p.add_option ("-s", "--source-corpus", default=1,
 	    type="int", metavar="NUM",

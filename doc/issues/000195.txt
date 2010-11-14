@@ -1,12 +1,20 @@
 Title:	Exclude rej/del entries in xresolv.py
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	
 AssdTo:	stuart
 
-2010-11-17 19:01:00 stuart
+2010-11-11 19:01:00 stuart
   Add option to xresolv.py to exclude skip processing xrefs
   of rejected or deleted entries.
   See edict-editors list, "Unresolved xrefs", 2010-11-17.
+
+2010-11-13 22:03:00 stuart
+  Added -i (--ignore-nonactive) option to xresolv.py that will
+  skip entries that are deleted, rejected, or unapproved.  
+  Rational for the latter is that any unresolvable xrefs will
+  be resloved or warned about at approval time so there is no
+  point worrying about them prematurely.  Also, one can rerun 
+  xresolve.py at any time.

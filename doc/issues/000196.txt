@@ -6,7 +6,7 @@ Cats:	dev
 Reqtrs:	
 AssdTo:	stuart
 
-2010-11-17 19:03:00 stuart
+2010-11-11 19:03:00 stuart
   Jwb added new PoS to the active JMdictDB instance DB and DTD 
   on Arakawa.  Need to make the change in the HG repo as well
   (before the next push to Arakawa.)

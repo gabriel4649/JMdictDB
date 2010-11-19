@@ -1,6 +1,6 @@
-Title:	Add new PoS, "vs-c".
-Stat:	open
-Disp:	
+Title:	Add new PoS "vs-c" and some other dtd updates.
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -17,3 +17,18 @@ AssdTo:	stuart
   > I also had to add it to the "kwpos" table in the database. Once
   > that was done, the JEL parser allowed it through. It also pops up
   > on the search menu as one of the POSs that can be clicked. Cool.
+
+2010-11-19 14:51;00 stuart
+  Added "62  vs-c  su verb - precursor to the modern suru" to
+  pg/data/kwpos.csv.
+  Added to python/lib/dtd-jmdict.xml and dtd-jmdict-ex.xml
+
+  Also made some additional updates based on changes made by jwb
+  to the edrdg dtd:
+
+  Added entity "proverb" to dtds.  Missing entity pointed out by
+  Ben Bullock on edict list ("JMdict_e: &proverb; entity causing
+  parsing problems", 2010-10-25).
+
+  Updated description of gikun in dtd's and kwrinf.csv.
+

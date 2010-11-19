@@ -286,7 +286,7 @@ various information fields.
 <!ENTITY fem "female term or language">
 <!ENTITY food "food term">
 <!ENTITY geom "geometry term">
-<!ENTITY gikun "gikun (meaning) reading">
+<!ENTITY gikun "gikun (meaning as reading) or jukujikun (special kanji reading)">
 <!ENTITY hon "honorific or respectful (sonkeigo) language">
 <!ENTITY hum "humble (kenjougo) language">
 <!ENTITY iK "word containing irregular kanji usage">
@@ -316,6 +316,7 @@ various information fields.
 <!ENTITY poet "poetical term">
 <!ENTITY pol "polite (teineigo) language">
 <!ENTITY pref "prefix">
+<!ENTITY proverb "proverb">
 <!ENTITY prt "particle">
 <!ENTITY physics "physics terminology">
 <!ENTITY rare "rare">
@@ -349,6 +350,7 @@ various information fields.
 <!ENTITY vn "irregular nu verb">
 <!ENTITY vr "irregular ru verb, plain form ends with -ri">
 <!ENTITY vs "noun or participle which takes the aux. verb suru">
+<!ENTITY vs-c "su verb - precursor to the modern suru">
 <!ENTITY vs-s "suru verb - special class">
 <!ENTITY vs-i "suru verb - irregular">
 <!ENTITY kyb "Kyoto-ben">

@@ -1,0 +1,34 @@
+Title:	edconf.py crash when deleting entry with rev xrefs
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-11-15 21:44:00 stuart
+ Email from jwb:
+ > There is something up with entry 1863370 (女と交わる).
+ > 
+ > It has no xrefs, and is not the target of another xref, but we
+ > can't delete it. We get:
+ > 
+ > Traceback (most recent call last):
+ >   File "/usr/local/apache2/jmdictdb/cgi-bin/edconf.py", line 356, in <module>
+ >     main (args, opts)
+ >   File "/usr/local/apache2/jmdictdb/cgi-bin/edconf.py", line 186, in main
+ >     jmcgi.add_filtered_xrefs (entrs, rem_unap=False)
+ >   File "../lib/jmcgi.py", line 571, in add_filtered_xrefs
+ >     s.XRER = [x for x in s._xrer if cond (e, x)]
+ >   File "../lib/jmcgi.py", line 566, in <lambda>
+ >     cond = lambda e,x: (e.unap or not x.TARG.unap or not rem_unap) \
+ > AttributeError: 'Xref' object has no attribute 'TARG'
+
+2010-11-15 21:49:00 stuart
+ Problem is that there are actually two xrefs to the above undeletable
+ entry from entries q=2594650 (女と交わる) and q=2594630 (男と交わる) but they
+ aren't shown on 1863370's web page because those two entries are rejected.
+ However, the path for delete in edconf.py does not call jdb.augment_xrefs()
+ of the reverse xrefs.
+ 
+

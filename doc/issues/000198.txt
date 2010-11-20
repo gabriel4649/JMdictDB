@@ -1,6 +1,6 @@
 Title:	edconf.py crash when deleting entry with rev xrefs
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	
@@ -29,6 +29,11 @@ AssdTo:	stuart
  entry from entries q=2594650 (女と交わる) and q=2594630 (男と交わる) but they
  aren't shown on 1863370's web page because those two entries are rejected.
  However, the path for delete in edconf.py does not call jdb.augment_xrefs()
- of the reverse xrefs.
- 
+ on the reverse xrefs.  Note the fundamental problem is deleting an entry
+ with any reverse xrefs -- that they are not visible in this case just 
+ obfuscates the problem. 
+
+2010-11-19 18:49;00 stuart
+ Fix was to call jdb.augment_xrefs() of the reverse xrefs on the parent entry.
+
 

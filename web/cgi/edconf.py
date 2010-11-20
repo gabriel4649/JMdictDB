@@ -47,6 +47,8 @@ def main (args, opts):
 		pentr = pentr[0]
 		xrefs = jdb.collect_xrefs ([pentr])
 		if xrefs: jdb.augment_xrefs (cur, xrefs)
+		xrers = jdb.collect_xrefs ([pentr], rev=True)
+		if xrers: jdb.augment_xrefs (cur, xrers, rev=True)
 
 	  # Desired disposition: 'a':approve, 'r':reject, undef:submit.
 	disp = url_str ('disp', form)

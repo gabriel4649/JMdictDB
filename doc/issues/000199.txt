@@ -1,0 +1,99 @@
+Title:	Patch 003 failed on Arakawa.
+Stat:	critical
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2010-11-15 23:18:00 stuart
+ When jwb applied the 003 patch on Arakawa (see pvt email, 
+ "JMdictDB updates", 2010-11-20) it failed with two errors.
+
+2010-11-15 23:24:00 stuart
+ Email from jwb:
+ > Below is the list of messages from running 003_01.sh
+ > 
+ > BEGIN
+ > psql:003_01.sql:12: NOTICE:  drop cascades to 2 other objects
+ > DETAIL:  drop cascades to view essum
+ > drop cascades to view esum
+ > DROP VIEW
+ > psql:003_01.sql:13: NOTICE:  drop cascades to 2 other objects
+ > DETAIL:  drop cascades to view vt_entr
+ > drop cascades to view vt_entr3
+ > DROP VIEW
+ > psql:003_01.sql:14: NOTICE:  view "esum" does not exist, skipping
+ > DROP VIEW
+ > DROP VIEW
+ > psql:003_01.sql:16: NOTICE:  view "essum" does not exist, skipping
+ > DROP VIEW
+ > DROP VIEW
+ > DROP VIEW
+ > DROP VIEW
+ > DROP VIEW
+ > psql:003_01.sql:21: NOTICE:  drop cascades to view xrefhw
+ > DROP VIEW
+ > DROP VIEW
+ > psql:003_01.sql:23: NOTICE:  view "xrefhw" does not exist, skipping
+ > DROP VIEW
+ > DROP VIEW
+ > DROP VIEW
+ > DROP VIEW
+ > DROP FUNCTION
+ > DROP FUNCTION
+ > psql:003_01.sql:28: ERROR:  must be owner of function get_subtree
+ > BEGIN
+ > CREATE VIEW
+ > psql:../pg/mkviews.sql:59: ERROR:  relation "is_p" already exists
+ > SET
+ > BEGIN
+ > CREATE VIEW
+ > CREATE VIEW
+ > CREATE VIEW
+ > CREATE VIEW
+ > CREATE VIEW
+ > CREATE VIEW
+ > CREATE VIEW
+ > CREATE VIEW
+ > CREATE VIEW
+ > CREATE VIEW
+ > CREATE VIEW
+ > CREATE VIEW
+ > CREATE VIEW
+ > COMMIT
+
+ Note that the first error in in 003_01.sql, the second
+ in 003_02.sql.  003_0-3.sql ran ok.  (Note to self: from 
+ now on put everything in a single file / single transaction
+ if possible.)
+
+ psql's \df+ output too noisy to see functions' owner easily 
+ so got SQL with the -E option, edited to removed source code 
+ and description, and reran:
+
+ Schema |     Name     | Result data type | Argument data types |  Type   | Volatility |  Owner   | Language 
+ -------+--------------+------------------+---------------------+---------+------------+----------+----------
+ public | delentr      | void             | entrid integer      | normal  | volatile   | jmdictdb | plpgsql
+ public | dupentr      | integer          | entrid integer      | normal  | volatile   | jmdictdb | plpgsql
+ public | entr_seqdef  | trigger          |                     | trigger | volatile   | jmdictdb | plpgsql
+ public | get_edroot   | SETOF integer    | eid integer         | normal  | volatile   | jwb      | plpgsql
+ public | get_subtree  | SETOF entr       | eid integer         | normal  | volatile   | jwb      | plpgsql
+ public | kwsrc_updseq | trigger          |                     | trigger | volatile   | jmdictdb | plpgsql
+ public | syncseq      | void             |                     | normal  | volatile   | jmdictdb | plpgsql
+
+ Updated the two "jwb" funtions with:
+  alter function get_edroot(int) owner to jmdictdb;
+  alter function get_subtree(int) owner to jmdictdb;
+
+ Running \d in psql shows all other objects are correctly owned
+ by user "jmdictdb".
+
+ The second problem is due(?) to pg/mkviews.sql defining view
+ "is_p" as "create view ..." rather than "create or replace
+ view ...".  Updated pg/mkviews.sql to fix that and several
+ other views with the same problem.
+
+ The third patch of the set is idempotent so all three can
+ simply be rerun.
+

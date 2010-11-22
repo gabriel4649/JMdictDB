@@ -5,9 +5,9 @@ _tabversion = '3.2'
 
 _lr_method = 'LALR'
 
-_lr_signature = '\xcf1 n$\xa9\xcf\x9fJ\xa1\xcfr\xbbUwz'
+_lr_signature = '\x95g\xa2q)4\x92\x1e\x87\xf7C\x87\x08\xa5\xc7z'
     
-_lr_action_items = {'RTEXT':([0,2,13,15,16,18,34,36,62,68,69,],[1,1,24,1,1,1,24,54,54,54,54,]),'NL':([0,1,3,6,7,8,9,10,11,12,14,15,19,20,28,29,33,35,],[2,-14,-7,-13,15,-5,-9,17,-11,-8,-24,27,-12,-25,38,-6,-10,-26,]),'SEMI':([1,3,6,7,8,9,10,11,12,14,19,20,28,29,33,35,40,41,43,45,46,48,49,50,51,52,53,54,55,57,58,60,65,66,67,70,71,74,79,80,82,],[-14,-7,-13,16,-5,-9,18,-11,-8,-24,-12,-25,18,-6,-10,-26,-18,-20,59,-40,-42,-45,-52,-53,-46,-50,69,-51,-48,-21,-22,-43,-55,-54,-47,-23,-19,-44,-49,-41,-56,]),'TEXT':([13,34,36,50,63,64,83,],[23,23,47,65,75,78,75,]),'COLON':([47,78,],[63,83,]),'BRKTR':([21,22,23,24,25,26,44,45,46,47,48,49,50,51,52,53,54,55,60,63,65,66,67,72,73,74,75,76,77,79,80,82,84,85,],[-27,35,-31,-30,-29,-32,-28,-40,-42,-33,-45,-52,-53,-46,-50,-37,-51,-48,-43,-34,-55,-54,-47,82,-57,-44,-38,-39,-35,-49,-41,-56,-58,-36,]),'NUMBER':([36,61,69,81,],[50,73,50,84,]),'GTEXT':([14,20,32,35,42,59,],[-24,-25,41,-26,58,41,]),'KTEXT':([0,2,13,15,16,18,34,36,62,68,69,],[6,6,25,6,6,6,25,52,52,52,52,]),'COMMA':([21,22,23,24,25,26,44,45,46,47,48,49,50,51,52,53,54,55,60,63,65,66,67,72,73,74,75,76,77,79,80,82,84,85,],[-27,34,-31,-30,-29,-32,-28,-40,-42,-33,-45,-52,-53,-46,-50,-37,-51,-48,-43,-34,-55,-54,-47,81,-57,-44,-38,-39,-35,-49,-41,-56,-58,-36,]),'EQL':([23,],[36,]),'SLASH':([47,],[64,]),'QTEXT':([13,34,36,62,63,68,69,83,],[26,26,49,49,76,49,49,76,]),'HASH':([50,],[66,]),'SNUM':([14,17,20,27,30,31,35,37,38,39,40,41,43,56,57,58,70,71,],[-24,32,-25,32,32,-15,-26,32,32,-16,-18,-20,-17,32,-21,-22,-23,-19,]),'BRKTL':([1,3,6,11,12,14,19,20,32,35,41,42,46,49,50,51,52,54,55,57,58,59,65,66,70,79,],[-14,13,-13,13,13,-24,13,-25,13,-26,13,13,61,-52,-53,61,-50,-51,-48,13,13,13,-55,-54,13,-49,]),'DOT':([46,49,50,51,52,54,55,65,66,79,],[62,-52,-53,68,-50,-51,-48,-55,-54,-49,]),'$end':([4,5,14,20,30,31,35,37,39,40,41,43,56,57,58,70,71,],[-1,0,-24,-25,-3,-15,-26,-4,-16,-18,-20,-17,-2,-21,-22,-23,-19,]),}
+_lr_action_items = {'RTEXT':([0,2,13,15,16,18,34,36,62,68,69,],[1,1,24,1,1,1,24,54,54,54,54,]),'NL':([0,1,3,6,7,8,9,10,11,12,14,15,19,20,28,29,33,35,],[2,-14,-7,-13,15,-5,-9,17,-11,-8,-24,27,-12,-25,38,-6,-10,-26,]),'SEMI':([1,3,6,7,8,9,10,11,12,14,19,20,28,29,33,35,40,41,43,45,46,48,49,50,51,52,53,54,55,57,58,60,65,66,67,70,71,74,79,80,82,],[-14,-7,-13,16,-5,-9,18,-11,-8,-24,-12,-25,18,-6,-10,-26,-18,-20,59,-41,-43,-46,-53,-54,-47,-51,69,-52,-49,-21,-22,-44,-56,-55,-48,-23,-19,-45,-50,-42,-57,]),'TEXT':([13,34,36,50,63,64,83,],[23,23,47,65,75,78,75,]),'COLON':([47,78,],[63,83,]),'BRKTR':([21,22,23,24,25,26,44,45,46,47,48,49,50,51,52,53,54,55,60,63,65,66,67,72,73,74,75,76,77,79,80,82,83,84,85,],[-27,35,-31,-30,-29,-32,-28,-41,-43,-33,-46,-53,-54,-47,-51,-38,-52,-49,-44,-34,-56,-55,-48,82,-58,-45,-39,-40,-35,-50,-42,-57,-36,-59,-37,]),'NUMBER':([36,61,69,81,],[50,73,50,84,]),'GTEXT':([14,20,32,35,42,59,],[-24,-25,41,-26,58,41,]),'KTEXT':([0,2,13,15,16,18,34,36,62,68,69,],[6,6,25,6,6,6,25,52,52,52,52,]),'COMMA':([21,22,23,24,25,26,44,45,46,47,48,49,50,51,52,53,54,55,60,63,65,66,67,72,73,74,75,76,77,79,80,82,83,84,85,],[-27,34,-31,-30,-29,-32,-28,-41,-43,-33,-46,-53,-54,-47,-51,-38,-52,-49,-44,-34,-56,-55,-48,81,-58,-45,-39,-40,-35,-50,-42,-57,-36,-59,-37,]),'EQL':([23,],[36,]),'SLASH':([47,],[64,]),'QTEXT':([13,34,36,62,63,68,69,83,],[26,26,49,49,76,49,49,76,]),'HASH':([50,],[66,]),'SNUM':([14,17,20,27,30,31,35,37,38,39,40,41,43,56,57,58,70,71,],[-24,32,-25,32,32,-15,-26,32,32,-16,-18,-20,-17,32,-21,-22,-23,-19,]),'BRKTL':([1,3,6,11,12,14,19,20,32,35,41,42,46,49,50,51,52,54,55,57,58,59,65,66,70,79,],[-14,13,-13,13,13,-24,13,-25,13,-26,13,13,61,-53,-54,61,-51,-52,-49,13,13,13,-56,-55,13,-50,]),'DOT':([46,49,50,51,52,54,55,65,66,79,],[62,-53,-54,68,-51,-52,-49,-56,-55,-50,]),'$end':([4,5,14,20,30,31,35,37,39,40,41,43,56,57,58,70,71,],[-1,0,-24,-25,-3,-15,-26,-4,-16,-18,-20,-17,-2,-21,-22,-23,-19,]),}
 
 _lr_action = { }
 for _k, _v in _lr_action_items.items():
@@ -61,27 +61,28 @@ _lr_productions = [
   ('tagitem -> TEXT EQL TEXT','tagitem',3,'p_tagitem_5','/home/stuart/jdb/jb/python/lib/jelparse.py',221),
   ('tagitem -> TEXT EQL TEXT COLON','tagitem',4,'p_tagitem_6','/home/stuart/jdb/jb/python/lib/jelparse.py',225),
   ('tagitem -> TEXT EQL TEXT COLON atext','tagitem',5,'p_tagitem_7','/home/stuart/jdb/jb/python/lib/jelparse.py',233),
-  ('tagitem -> TEXT EQL TEXT SLASH TEXT COLON atext','tagitem',7,'p_tagitem_8','/home/stuart/jdb/jb/python/lib/jelparse.py',247),
-  ('tagitem -> TEXT EQL jrefs','tagitem',3,'p_tagitem_9','/home/stuart/jdb/jb/python/lib/jelparse.py',258),
-  ('atext -> TEXT','atext',1,'p_atext_1','/home/stuart/jdb/jb/python/lib/jelparse.py',298),
-  ('atext -> QTEXT','atext',1,'p_atext_2','/home/stuart/jdb/jb/python/lib/jelparse.py',302),
-  ('jrefs -> jref','jrefs',1,'p_jrefs_1','/home/stuart/jdb/jb/python/lib/jelparse.py',306),
-  ('jrefs -> jrefs SEMI jref','jrefs',3,'p_jrefs_2','/home/stuart/jdb/jb/python/lib/jelparse.py',310),
-  ('jref -> xrefnum','jref',1,'p_jref_1','/home/stuart/jdb/jb/python/lib/jelparse.py',314),
-  ('jref -> xrefnum slist','jref',2,'p_jref_2','/home/stuart/jdb/jb/python/lib/jelparse.py',318),
-  ('jref -> xrefnum DOT jitem','jref',3,'p_jref_3','/home/stuart/jdb/jb/python/lib/jelparse.py',322),
-  ('jref -> jitem','jref',1,'p_jref_4','/home/stuart/jdb/jb/python/lib/jelparse.py',326),
-  ('jitem -> dotlist','jitem',1,'p_jitem_1','/home/stuart/jdb/jb/python/lib/jelparse.py',330),
-  ('jitem -> dotlist slist','jitem',2,'p_jitem_2','/home/stuart/jdb/jb/python/lib/jelparse.py',334),
-  ('dotlist -> jtext','dotlist',1,'p_dotlist_1','/home/stuart/jdb/jb/python/lib/jelparse.py',338),
-  ('dotlist -> dotlist DOT jtext','dotlist',3,'p_dotlist_2','/home/stuart/jdb/jb/python/lib/jelparse.py',342),
-  ('jtext -> KTEXT','jtext',1,'p_jtext_1','/home/stuart/jdb/jb/python/lib/jelparse.py',346),
-  ('jtext -> RTEXT','jtext',1,'p_jtext_2','/home/stuart/jdb/jb/python/lib/jelparse.py',350),
-  ('jtext -> QTEXT','jtext',1,'p_jtext_3','/home/stuart/jdb/jb/python/lib/jelparse.py',354),
-  ('xrefnum -> NUMBER','xrefnum',1,'p_xrefnum_1','/home/stuart/jdb/jb/python/lib/jelparse.py',358),
-  ('xrefnum -> NUMBER HASH','xrefnum',2,'p_xrefnum_2','/home/stuart/jdb/jb/python/lib/jelparse.py',362),
-  ('xrefnum -> NUMBER TEXT','xrefnum',2,'p_xrefnum_3','/home/stuart/jdb/jb/python/lib/jelparse.py',366),
-  ('slist -> BRKTL snums BRKTR','slist',3,'p_slist_1','/home/stuart/jdb/jb/python/lib/jelparse.py',370),
-  ('snums -> NUMBER','snums',1,'p_snums_1','/home/stuart/jdb/jb/python/lib/jelparse.py',374),
-  ('snums -> snums COMMA NUMBER','snums',3,'p_snums_2','/home/stuart/jdb/jb/python/lib/jelparse.py',381),
+  ('tagitem -> TEXT EQL TEXT SLASH TEXT COLON','tagitem',6,'p_tagitem_8','/home/stuart/jdb/jb/python/lib/jelparse.py',247),
+  ('tagitem -> TEXT EQL TEXT SLASH TEXT COLON atext','tagitem',7,'p_tagitem_9','/home/stuart/jdb/jb/python/lib/jelparse.py',258),
+  ('tagitem -> TEXT EQL jrefs','tagitem',3,'p_tagitem_10','/home/stuart/jdb/jb/python/lib/jelparse.py',269),
+  ('atext -> TEXT','atext',1,'p_atext_1','/home/stuart/jdb/jb/python/lib/jelparse.py',309),
+  ('atext -> QTEXT','atext',1,'p_atext_2','/home/stuart/jdb/jb/python/lib/jelparse.py',313),
+  ('jrefs -> jref','jrefs',1,'p_jrefs_1','/home/stuart/jdb/jb/python/lib/jelparse.py',317),
+  ('jrefs -> jrefs SEMI jref','jrefs',3,'p_jrefs_2','/home/stuart/jdb/jb/python/lib/jelparse.py',321),
+  ('jref -> xrefnum','jref',1,'p_jref_1','/home/stuart/jdb/jb/python/lib/jelparse.py',325),
+  ('jref -> xrefnum slist','jref',2,'p_jref_2','/home/stuart/jdb/jb/python/lib/jelparse.py',329),
+  ('jref -> xrefnum DOT jitem','jref',3,'p_jref_3','/home/stuart/jdb/jb/python/lib/jelparse.py',333),
+  ('jref -> jitem','jref',1,'p_jref_4','/home/stuart/jdb/jb/python/lib/jelparse.py',337),
+  ('jitem -> dotlist','jitem',1,'p_jitem_1','/home/stuart/jdb/jb/python/lib/jelparse.py',341),
+  ('jitem -> dotlist slist','jitem',2,'p_jitem_2','/home/stuart/jdb/jb/python/lib/jelparse.py',345),
+  ('dotlist -> jtext','dotlist',1,'p_dotlist_1','/home/stuart/jdb/jb/python/lib/jelparse.py',349),
+  ('dotlist -> dotlist DOT jtext','dotlist',3,'p_dotlist_2','/home/stuart/jdb/jb/python/lib/jelparse.py',353),
+  ('jtext -> KTEXT','jtext',1,'p_jtext_1','/home/stuart/jdb/jb/python/lib/jelparse.py',357),
+  ('jtext -> RTEXT','jtext',1,'p_jtext_2','/home/stuart/jdb/jb/python/lib/jelparse.py',361),
+  ('jtext -> QTEXT','jtext',1,'p_jtext_3','/home/stuart/jdb/jb/python/lib/jelparse.py',365),
+  ('xrefnum -> NUMBER','xrefnum',1,'p_xrefnum_1','/home/stuart/jdb/jb/python/lib/jelparse.py',369),
+  ('xrefnum -> NUMBER HASH','xrefnum',2,'p_xrefnum_2','/home/stuart/jdb/jb/python/lib/jelparse.py',373),
+  ('xrefnum -> NUMBER TEXT','xrefnum',2,'p_xrefnum_3','/home/stuart/jdb/jb/python/lib/jelparse.py',377),
+  ('slist -> BRKTL snums BRKTR','slist',3,'p_slist_1','/home/stuart/jdb/jb/python/lib/jelparse.py',381),
+  ('snums -> NUMBER','snums',1,'p_snums_1','/home/stuart/jdb/jb/python/lib/jelparse.py',385),
+  ('snums -> snums COMMA NUMBER','snums',3,'p_snums_2','/home/stuart/jdb/jb/python/lib/jelparse.py',392),
 ]

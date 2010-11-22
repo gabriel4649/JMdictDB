@@ -247,6 +247,16 @@ tagitem		/* Semantic value depends of the tag type:
 		else: perror (p, "Keyword not \"lsrc\", \"lit\", or \"expl\"")
 		p[0] = [["lsrc", p[5], lang, lsrc_flags]] }
  
+	| TEXT EQL TEXT SLASH TEXT COLON	/* lsrc=lng/wp: */
+		{ KW = jdb.KW 
+		if p[1] != "lsrc": perror (p, "Keyword not \"lsrc\"")
+		la = KW.LANG.get(p[3])
+		if not la: perror (p, "Unrecognised language '%s'" % p[3])
+		if p[5] not in ('w','p','wp','pw'):
+		    perror (p, "Bad lsrc flags '%s', must be 'w' (wasei), "
+				"'p' (partial),or both" % p[5])
+		p[0] = [["lsrc", '', la.id, p[5]]] }
+ 
 	| TEXT EQL TEXT SLASH TEXT COLON atext /* lsrc=lng/wp:text */
 		{ KW = jdb.KW 
 		if p[1] != "lsrc": perror (p, "Keyword not \"lsrc\"")

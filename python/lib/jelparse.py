@@ -244,6 +244,17 @@ def p_tagitem_7(p):
     p[0] = [["lsrc", p[5], lang, lsrc_flags]]
 
 def p_tagitem_8(p):
+    '''tagitem : TEXT EQL TEXT SLASH TEXT COLON'''
+    KW = jdb.KW 
+    if p[1] != "lsrc": perror (p, "Keyword not \"lsrc\"")
+    la = KW.LANG.get(p[3])
+    if not la: perror (p, "Unrecognised language '%s'" % p[3])
+    if p[5] not in ('w','p','wp','pw'):
+        perror (p, "Bad lsrc flags '%s', must be 'w' (wasei), "
+                    "'p' (partial),or both" % p[5])
+    p[0] = [["lsrc", '', la.id, p[5]]]
+
+def p_tagitem_9(p):
     '''tagitem : TEXT EQL TEXT SLASH TEXT COLON atext'''
     KW = jdb.KW 
     if p[1] != "lsrc": perror (p, "Keyword not \"lsrc\"")
@@ -254,7 +265,7 @@ def p_tagitem_8(p):
                     "'p' (partial),or both" % p[5])
     p[0] = [["lsrc", p[7], la.id, p[5]]]
 
-def p_tagitem_9(p):
+def p_tagitem_10(p):
     '''tagitem : TEXT EQL jrefs'''
     tag = p[1];  taglist = [];  tagtype = 'XREF';  KW = jdb.KW
     for jref in p[3]:

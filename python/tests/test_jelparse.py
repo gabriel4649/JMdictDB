@@ -179,6 +179,21 @@ class Ginf (unittest.TestCase):
     def test0320320(_): check2(_,'0320320')
     def test0320330(_): check2(_,'0320330')
 
+class Lsrc (unittest.TestCase):
+    def setUp (_): 
+	globalSetup()
+	_.data = loadData ('data/jelparse/lsrc.txt', r'# ([0-9]{7}[a-zA-Z0-9_]+)')
+
+    def test0330010(_): check2(_,'0330010')
+    def test0330020(_): check2(_,'0330020')
+    def test0330030(_): check2(_,'0330030')
+    def test0330040(_): check2(_,'0330040')
+    def test0330050(_): check2(_,'0330050')
+    def test0330051(_): check2(_,'0330051')
+    def test0330060(_): check2(_,'0330060')
+    def test0330070(_): check2(_,'0330070')
+    def test0330080(_): check2(_,'0330080')
+
 def cherr (self, seq, exception, msg):
 	global Cur, Lexer, Parser
 	intxt = unittest_extensions.readfile_utf8 ("data/jelparse/%s.txt" % seq)

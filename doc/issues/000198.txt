@@ -33,7 +33,5 @@ AssdTo:	stuart
  with any reverse xrefs -- that they are not visible in this case just 
  obfuscates the problem. 
 
-2010-11-19 18:49;00 stuart
+2010-11-19 18:49:00 stuart
  Fix was to call jdb.augment_xrefs() of the reverse xrefs on the parent entry.
-
-

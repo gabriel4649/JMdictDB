@@ -18,7 +18,7 @@ AssdTo:	stuart
   > that was done, the JEL parser allowed it through. It also pops up
   > on the search menu as one of the POSs that can be clicked. Cool.
 
-2010-11-19 14:51;00 stuart
+2010-11-19 14:51:00 stuart
   Added "62  vs-c  su verb - precursor to the modern suru" to
   pg/data/kwpos.csv.
   Added to python/lib/dtd-jmdict.xml and dtd-jmdict-ex.xml
@@ -31,4 +31,3 @@ AssdTo:	stuart
   parsing problems", 2010-10-25).
 
   Updated description of gikun in dtd's and kwrinf.csv.
-

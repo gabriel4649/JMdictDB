@@ -48,7 +48,7 @@ CREATE OR REPLACE VIEW hdwds AS (
 --
 -- See also views pkfreq and prfreq below.
 -------------------------------------------------------------
-CREATE VIEW is_p AS (
+CREATE OR REPLACE VIEW is_p AS (
     SELECT e.*,
 	    EXISTS (
 		SELECT * FROM freq f
@@ -134,7 +134,7 @@ CREATE OR REPLACE VIEW essum AS (
 -- For every entry, give the number of associated reading,
 -- kanji, and sense items.
 ----------------------------------------------------------
-CREATE VIEW item_cnts AS (
+CREATE OR REPLACE VIEW item_cnts AS (
     SELECT 
 	e.id,e.seq,
 	(SELECT COUNT(*) FROM rdng r WHERE r.entr=e.id) as nrdng,
@@ -147,7 +147,7 @@ CREATE VIEW item_cnts AS (
 -- kanji, and an indicator whether of not that combination
 -- is valid ('X' in column 'valid' means invalid).
 ------------------------------------------------------------
-CREATE VIEW rk_validity AS (
+CREATE OR REPLACE VIEW rk_validity AS (
     SELECT e.id AS id,e.seq AS seq,
 	r.rdng AS rdng,r.txt AS rtxt,k.kanj AS kanj,k.txt AS ktxt,
 	CASE WHEN z.kanj IS NOT NULL THEN 'X' END AS valid
@@ -160,7 +160,7 @@ CREATE VIEW rk_validity AS (
 -- List all readings that should be marked "re_nokanji" 
 -- in jmdict.xml.
 ------------------------------------------------------------
-CREATE VIEW re_nokanji AS (
+CREATE OR REPLACE VIEW re_nokanji AS (
     SELECT e.id,e.seq,r.rdng,r.txt
     FROM entr e 
     JOIN rdng r ON r.entr=e.id 
@@ -221,7 +221,7 @@ CREATE OR REPLACE VIEW xrefhw AS (
 --
 -- See also is_p above.
 -------------------------------------------------------------
-CREATE VIEW pkfreq AS (
+CREATE OR REPLACE VIEW pkfreq AS (
     SELECT k.*, EXISTS (
         SELECT * FROM freq f
           WHERE f.entr=k.entr AND f.kanj=k.kanj AND
@@ -229,7 +229,7 @@ CREATE VIEW pkfreq AS (
             ((f.kw IN (1,2,3,4) AND f.value=1))) AS p 
     FROM kanj k);
  
-CREATE VIEW prfreq AS (
+CREATE OR REPLACE VIEW prfreq AS (
     SELECT r.*, EXISTS (
         SELECT * FROM freq f
           WHERE f.entr=r.entr AND f.rdng=r.rdng AND

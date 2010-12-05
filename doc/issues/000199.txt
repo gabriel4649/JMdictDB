@@ -1,6 +1,6 @@
 Title:	Patch 003 failed on Arakawa.
-Stat:	critical
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	dev
 Reqtrs:	
@@ -64,7 +64,7 @@ AssdTo:	stuart
  > COMMIT
 
  Note that the first error in in 003_01.sql, the second
- in 003_02.sql.  003_0-3.sql ran ok.  (Note to self: from 
+ in 003_02.sql.  003_03.sql ran ok.  (Note to self: from 
  now on put everything in a single file / single transaction
  if possible.)
 
@@ -96,4 +96,7 @@ AssdTo:	stuart
 
  The third patch of the set is idempotent so all three can
  simply be rerun.
+
+2010-11-22 22:45:00 stuart
+ jwb ran all updates sucessfully.
 

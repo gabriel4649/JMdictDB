@@ -271,21 +271,25 @@ def check_for_warnings (cur, entr, parent_seq, chklist):
 	    if not chklist[k]: del chklist[k]
 
 def find_similar (dbh, kanj, rdng, src, excl_seq=None):
-	# Find all entries that have a kanj in the set @$kanj,
-	# or a reading in the set @$rdng, and return a list of
-	# esum view records of such entries.  Either $kanj or
-	# $rdng, but not both, may be undefined or empty.
-	# If $src is given, search will be limited to entries
-	# with that entr.src id number.
+	# Find all entries that have a kanj in the list of text
+	# strings, 'kanj', or a reading in the list of text strings, 
+	# 'rdng', and return a list of esum view records of such
+	# entries.  Either 'kanj' or 'rdng', but not both, may empty.
+	# If 'src' is given, search will be limited to entries with
+	# that entr.src id number.  Entries with a seq number of
+	# 'excl_seq' (which may be None) will be excluded.
 	
 	rwhr = " OR ".join (["txt=%s"] * len(rdng))
 	kwhr = " OR ".join (["txt=%s"] * len(kanj))
-	args = [src, excl_seq]
+	args = [src]
+	if excl_seq is not None: args.append (excl_seq)
 	args.extend ([x.txt for x in rdng+kanj])
 
 	sql = "SELECT DISTINCT e.* " \
 		+ "FROM esum e " \
-		+ "WHERE e.src=%s AND e.stat<4 AND seq!=%s AND e.id IN (" \
+		+ "WHERE e.src=%s AND e.stat<4 " \
+		+ ("" if excl_seq is None else "AND seq!=%s ") \
+		+ "AND e.id IN (" \
   		+ (("SELECT entr FROM rdng WHERE %s " % rwhr)    if rwhr          else "") \
 		+ ("UNION "                                      if rwhr and kwhr else "") \
 		+ (("SELECT entr FROM kanj WHERE %s " % kwhr)    if kwhr          else "") \

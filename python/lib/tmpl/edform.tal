@@ -144,7 +144,7 @@
 	      </td></tr>
 	  <tr tal:condition="e/id">
 	    <td> </td>
-	    <td><input type="checkbox" name="delete" tal:attributes="checked e.ISDELETE"/> This entry should be deleted.  (Please justify in Comments and References boxes.)
+	    <td><input type="checkbox" name="delete" tal:attributes="checked e/ISDELETE"/> This entry should be deleted.  (Please justify in Comments and References boxes.)
 	      &nbsp; <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#delete">help</a>
 	      </td>
 	    <td></td>

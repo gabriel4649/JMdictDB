@@ -43,21 +43,21 @@ CREATE OR REPLACE VIEW hdwds AS (
 -- additional boolean column, "p" that if true indicates
 -- the entry meets the wwwjdic criteria for a "P" marking: 
 -- has a reading or a kanji with a freq tag of "ichi1", 
--- "gai1", "spec1", or "news1" as documented at
+-- "gai1", "news1" or "spec<anything>" as documented at
 --   http://www.csse.monash.edu.au/~jwb/edict_doc.html#IREF05
---
+-- (That ref specifies only "spec1" but per IS-149, "spec2" 
+-- is also included.)
 -- See also views pkfreq and prfreq below.
 -------------------------------------------------------------
 CREATE OR REPLACE VIEW is_p AS (
     SELECT e.*,
-	    EXISTS (
-		SELECT * FROM freq f
-       		WHERE f.entr=e.id AND
-		  -- ichi1, gai1, jdd1, spec1
-		  ((f.kw IN (1,2,3,4) AND f.value=1)))
-	    AS p
+        EXISTS (
+            SELECT * FROM freq f
+            WHERE f.entr=e.id
+              -- ichi1, gai1, news1, or specX
+              AND ((f.kw IN (1,2,7) AND f.value=1)
+                OR f.kw=4)) AS p
     FROM entr e);
-
 
 -----------------------------------------------------------
 -- Summarize each entry (one per row) with readings, kanji, 

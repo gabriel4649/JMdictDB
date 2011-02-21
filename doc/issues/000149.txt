@@ -1,6 +1,6 @@
 Title:	include spec2 in edict P criteria
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -21,3 +21,13 @@ AssdTo:	stuart
   giving the reasons why.
 
   Need to update code to take this into account.
+
+2011-02-20 20:33:00 stuart
+  Jim Breen confirmed on the edict-editors list today ("P tags")
+  that 'spec2' should be included in the P criteria.  Also said
+  the that current spec2 tags will eventually be changed to spec1
+  or removed resulting in the elimination of spec2.
+
+  Updated sql view 'is_p' to include 'spec2'.  Also fixed another 
+  problem, see IS-201 for details including construction and 
+  application of patch.

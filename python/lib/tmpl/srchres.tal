@@ -108,7 +108,7 @@
 	If followed by an asterisk (*), the entry is unapproved and is
 	waiting for approval by an editor.
       </li><li>
-	The "P" column indicates an entry that is marked as P (popular)
+	The "P" column indicates an entry that is marked as P (priority)
 	in EDICT.
       </li><li>The "Gloss" column lists all glosses in all senses of the 
 	entry with senses being separated with a "/" character, and glosses

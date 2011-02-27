@@ -61,5 +61,5 @@ AssdTo:	stuart
 2011-02-20 21:32:00 stuart
  Add the revised view above in patches/005_01.sql.
 
-12011-02-20 21:56;00 stuart
+2011-02-20 21:56:00 stuart
  Changed text "popular" to "priority" in python/lib/tmpl/srchres.ta.l

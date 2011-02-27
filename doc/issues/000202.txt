@@ -54,3 +54,16 @@ AssdTo:	stuart
  shows additional entry 1058757 which turns out to be a rejected entry
  that references reading #2 of the edit entry.
 
+2011-02-26 21:17:00 stuart
+ Although the problem manifests in edsumbit.py, its genisis is in 
+ edconf.py where the reverese xref (_xrer) lists are copied from the
+ parent entry to the new edited entry.
+ Added a filter there to strip out any reverse xrefs that have reading
+ or kanj numbers greater than the readngs or kanj available in the target
+ entry.
+
+ Note there is another problem unaddressed yet: xrefs reference target
+ readings and kanji by ordinal position so that when readigns or kanji
+ are reordered or deleted, the xref target reading or kanji will "shift"
+ to a possibly unintended one.
+

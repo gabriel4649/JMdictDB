@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2008-2010 Stuart McGraw 
+#  Copyright (c) 2008-2011 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -43,12 +43,7 @@ def main (args, opts):
 	    pentr = jdb.entrList (cur, None, [eid])
 	      # FIXME: Need a better message with more explanation.
 	    if not pentr: errs.append ("The entry you are editing has been deleted.")
-	    else: 
-		pentr = pentr[0]
-		xrefs = jdb.collect_xrefs ([pentr])
-		if xrefs: jdb.augment_xrefs (cur, xrefs)
-		xrers = jdb.collect_xrefs ([pentr], rev=True)
-		if xrers: jdb.augment_xrefs (cur, xrers, rev=True)
+	    else: pentr = pentr[0]
 
 	  # Desired disposition: 'a':approve, 'r':reject, undef:submit.
 	disp = url_str ('disp', form)
@@ -85,7 +80,6 @@ def main (args, opts):
 	refs    = url_str ('reference', form)
 	name    = url_str ('name', form)
 	email   = url_str ('email', form)
-
 
 	if errs: jmcgi.err_page (errs)
 
@@ -138,6 +132,11 @@ def main (args, opts):
 		if hasattr (pentr, '_cinf'): entr._cinf = pentr._cinf
 		copy_snd (pentr, entr)
 
+		  # The entry's xref's need to be augmented so we can
+		  # show their details on th confirmation page.
+		xrefs = jdb.collect_xrefs ([pentr])
+		if xrefs: jdb.augment_xrefs (cur, xrefs)
+
 		  # We should be able to adjust reverse references in the
 		  # JEL edit but currently there is no provision for that.
 		  # (see IS-165) so we copy them from the parent entry.
@@ -148,11 +147,27 @@ def main (args, opts):
 		  # sense number.  This will produce bad results if 
 		  # the submitter has rearranged our senses and will
 		  # require a subsequent manual edit of the referencing
-		  # entry to correct.
+		  # entry to correct.  
 		for es, ps in zip (entr._sens, pentr._sens):
 		    es._xrer = ps._xrer
 		xrers = jdb.collect_xrefs ([entr], rev=True)
 		if xrers: jdb.augment_xrefs (cur, xrers, rev=True)
+		  # The new, edited entry may have had readings or kanji
+		  # deleted and it could be that some other entry's xref
+		  # referenced that readign or kanji.  Go through the 
+		  # reverse xref lists and remove and erv xrefs that
+		  # refer to a reading or kanji no longer on our entry.
+		  # FIXME: If the readings or kanji were rearranged,
+		  #  the reverse xref may no longer point to the same 
+		  #  reading or kanji text that it did in the parent entry.
+		for es in entr._sens:
+		      # Create a new _xrer that does not contain any rev xrefs
+		      # that have a rdng or kanj number bigger than the number
+		      # if readings or kanji in the target.  Note that the numbers
+		      # have an origin of 1, not 0 like python indexes.
+		    es._xrer = [x for x in es._xrer
+				if (x.rdng is None or x.rdng <= len(x.TARG._rdng))
+				  and (x.kanj is None or x.kanj <= len(x.TARG._kanj))]
 
 	      # Add sound details so confirm page will look the same as the 
 	      # original entry page.  Otherwise, the confirm page will display

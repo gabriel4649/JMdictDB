@@ -1,0 +1,16 @@
+Title:	Can add xref to rejected entry
+Stat:	open
+Disp:	
+Prio:	low
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart
+
+2011-02-26 22:03:00 stuart
+ When creating or editing an entry, it is possible to add
+ an xref to an entry (by seq# for example) to an entry that
+ is rejected.  On the confirmation page, it appears as an
+ unresolved cross ref with no text:
+
+   Unresolved cross references
+    see:

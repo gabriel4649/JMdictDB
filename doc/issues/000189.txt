@@ -23,3 +23,7 @@ AssdTo:
   Should also consider not showing full entries but just a sumary
   list like Search Results page (with additional info like date-time
   and submitter.)
+
+2011-02-26 10:31:00 stuart
+  Some discussion about this in the edict-editors thread, 
+  "Tracking submissions", 2011-02-17 (both before and after that date).

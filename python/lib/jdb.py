@@ -441,7 +441,7 @@ def mup (attr, parents, pks, childs, fks, pattr=None):
 	# child item attributes named in list 'fks'. 
 	#
 	# The child is "assigned" to the parent by adding it to the
-	# list in the parent's attribute 'attr', if attr in not None.
+	# list in the parent's attribute 'attr', if attr is not None.
 	# Alternatively (or in addition) the parent will be "assigned"
 	# to each matching child by setting the child's attribute named
 	# by pattr, to the parent, if 'pattr' is not None.

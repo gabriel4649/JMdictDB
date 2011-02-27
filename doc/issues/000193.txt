@@ -1,4 +1,4 @@
-Title:	Move edsubmity.py's submit function into module
+Title:	Move edsubmit.py's submit function into module
 Stat:	open
 Disp:	
 Prio:	med

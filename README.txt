@@ -358,14 +358,14 @@ loaded database to "jmdict".
    To load JMdict only, run make thrice with the
    targets:
 
-	make newdb
+	make jmnew
 	make loadjm
 	make activate
 
    If you are running on Microsoft Windows and did not 
    modify DBLOCALE in the Makefile (see step 4), use 
 
-        make newdb DBLOCALE=japanese
+        make jmnew DBLOCALE=japanese
    or 
         make loadall DBLOCALE=japanese
 
@@ -373,7 +373,7 @@ loaded database to "jmdict".
 
    Some of the more significant Makefile targets are:
 
-   newdb:
+   jmnew:
 	Create a new database named "jmnew" with all
 	tables needed and ready to load data into.
 

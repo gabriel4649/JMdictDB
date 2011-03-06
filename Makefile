@@ -157,7 +157,8 @@ WEB_TAL	= $(addprefix $(LIB_DIR)/tmpl/,$(TAL_FILES))
 all:
 	@echo 'You must supply an explicit target with this makefile:'
 	@echo
-	@echo '  newdb -- Initialize an empty jmnew database.'
+	@echo '  newdb -- Create a blank jmnew database.'
+	@echo '  jmnew -- Create a jmnew database with jmdictdb objects.'
 	@echo
 	@echo '  data/jmdict.xml -- Get latest jmdict xml file from Monash.'
 	@echo '  data/jmdict.pgi -- Create intermediate file from jmdict.xml file.'
@@ -199,14 +200,23 @@ init:
 	cd pg && psql $(PG_HOST) -U $(USER) -d jmsess -f mksess.sql
 	@echo 'Remember to add jmdictdb editors to the jmsess "users" table.' 
 
-#------ Create a new database for loading -------------------------------
+#------ Create a blank jmnew database ----------------------------------
+# 
+# This may be useful when loading a dump of a jmdictdb database, e.g:
+#   make newdb                       # Create blank jmnew database 
+#   pg_restore -O jmdictdb -d jmnew  # Restore the dump into jmnew.
+#   make activate                    # Rename jmnew to jmdict.
 
 newdb:
 	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'drop database if exists $(DB)'
 	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c "create database $(DB) owner $(USER) template template0 encoding 'utf8' lc_collate '$(DBLOCALE)' lc_ctype '$(DBLOCALE)'"
+
+#------ Create a new jmnew database with empty jmdictdb objects --------
+
+jmnew: newdb
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f reload.sql
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
-#
+
 #------ Move installation database to active ----------------------------
 
 activate:
@@ -313,7 +323,7 @@ loadkd: data/kanjidic2.dmp
 # the number of entries may be different in the freshly loaded jmdict
 # set, invalidating the starting id numbers in the other .dmp files.
 
-loadall: newdb data/jmdict.dmp data/jmnedict.pgi data/examples.pgi 
+loadall: jmnew data/jmdict.dmp data/jmnedict.pgi data/examples.pgi 
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/jmdict.dmp
 

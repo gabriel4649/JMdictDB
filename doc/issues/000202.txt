@@ -1,6 +1,6 @@
 Title:	Unable to delete reading due to xref
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	high
 Cats:	bug
 Reqtrs:	
@@ -66,4 +66,9 @@ AssdTo:	stuart
  readings and kanji by ordinal position so that when readigns or kanji
  are reordered or deleted, the xref target reading or kanji will "shift"
  to a possibly unintended one.
+
+2011-03-06 10:50:00 stuart
+ Fix made above broke action of deleting an entry with xrefs.
+ See IS-204.
+
 

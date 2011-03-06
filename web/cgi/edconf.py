@@ -110,7 +110,15 @@ def main (args, opts):
 	    entr._sens = getattr (pentr, '_sens', [])
 	    entr._snd  = getattr (pentr, '_snd',  []) 
 	    entr._grp  = getattr (pentr, '_grp',  []) 
-	    entr._cinf = getattr (pentr, '_cinf', []) 
+	    entr._cinf = getattr (pentr, '_cinf', [])
+	      # To display the xrefs and reverse xrefs in html, they 
+	      # need to be augmented with additional info about their
+	      # targets,. 
+	    xrefs = jdb.collect_xrefs ([pentr])
+	    if xrefs: jdb.augment_xrefs (cur, xrefs)
+	    xrers = jdb.collect_xrefs ([entr], rev=True)
+	    if xrers: jdb.augment_xrefs (cur, xrers, rev=True)
+
 	else:
 	      # Migrate the entr details to the new entr object
 	      # which to this point has only the kanj/rdng/sens
@@ -172,6 +180,9 @@ def main (args, opts):
 	      # Add sound details so confirm page will look the same as the 
 	      # original entry page.  Otherwise, the confirm page will display
 	      # only the sound clip id(s).
+	      #FIXME? Should the following snd augmentation stuff be outdented
+	      # one level so that it is done in both the delete and non-delete
+	      # paths?  
 	    snds = []
 	    for s in getattr (entr, '_snd', []): snds.append (s)
 	    for r in getattr (entr, '_rdng', []):

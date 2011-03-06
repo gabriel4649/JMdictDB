@@ -1,0 +1,58 @@
+Title:	edconf.py crash when deleting entry
+Stat:	closed
+Disp:	done
+Prio:	high
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart
+
+2011-03-06 07:03:00 stuart
+ jwb reports on jmdict-editors list
+ > Something is up with 2563780. It can't be flagged for
+ > deletion. Nothing is xreffed to it, and it has an xref in
+ > it. I can't see anything exceptional about it.
+ > The error is "AttributeError: 'Xref' object has no attribute 'TARG'".
+
+2011-03-06 07:22:00 stuart
+ Per what is becoming standard practice, copied active database 
+ to my machine:
+
+  <On Arakawa>
+  pg_dump -Fc jmdict >jmdict.dmp
+  <On my machine>
+  cd jmdictdb
+  scp xxxxxx@edrdg.org/jmdict.dmp data  # Copy dump file.
+  make newdb				# Make a jmnew db instance.
+  pg_restore -d jmnew data/jmdict.dmp   # Restore to it.
+  make activate .			# Renme jmnew to jmdict.
+
+  (Note the "make" command above require jmdictdb Makefile with
+  changes made this morning.)
+
+  Try to delete entry q2563780 (id1059377), get traceback:
+
+  Traceback (most recent call last):
+  File "/home/stuart/jdb/jb/web/cgi/edconf.py", line 377, in <module>
+    main (args, opts)
+  File "/home/stuart/jdb/jb/web/cgi/edconf.py", line 203, in main
+    jmcgi.add_filtered_xrefs (entrs, rem_unap=False)
+  File "/home/stuart/jdb/jb/python/lib/jmcgi.py", line 570, in add_filtered_xrefs
+    s.XREF = [x for x in s._xref if cond (e, x)]
+  File "/home/stuart/jdb/jb/python/lib/jmcgi.py", line 566, in <lambda>
+    cond = lambda e,x: (e.unap or not x.TARG.unap or not rem_unap) \
+  AttributeError: 'Xref' object has no attribute 'TARG'
+
+ Sett &dbg=1 in the url to get the full parameter list in the url
+ and then run edconf.py with the "-m pdb" option (debugger) and
+ with the url string as the command line arguments, e.g.,
+   python -m pdb edconf.py 'http://soga/jmdict/cgi/edconf.py?kanj=%E4%B8%80...
+ 
+ Problem turns out to be that in the fix made in IS-202, I moved the
+ code that augments the xrefs (i.e. adds attribute TARG) from a  point
+ prior to the "delete"-"non-delete" flow split, into the "non-delete" 
+ branch (since the that fix requires using a different  set of rev xrefs)
+ neglecting to realize that left the xrefs un-augmented in the "delete"
+ branch. 
+
+
+

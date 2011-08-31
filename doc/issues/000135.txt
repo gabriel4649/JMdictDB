@@ -1,4 +1,4 @@
-﻿Title:	Xref to full entries
+﻿Title:	Allow Xrefs to entire entry rather than entry/sense 
 Stat:	open
 Disp:	
 Prio:	med

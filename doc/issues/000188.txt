@@ -13,3 +13,6 @@ AssdTo:
 
   It may help is cases of vandalism and could help in
   authentication (IS-185).
+
+2011-08-17 21:28:00 stuart
+  See also IS-206, "Submission kill switch".

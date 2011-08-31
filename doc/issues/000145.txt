@@ -1,4 +1,4 @@
-Title:	Edict import
+Title:	Bulk edict import
 Stat:	open
 Disp:	
 Prio:	med
@@ -21,3 +21,7 @@ AssdTo:	stuart
   I lot of my understanding of edict2 format came from Jean-
   Luc Leger's "to_edict2.xsl stylesheet, added to jmdictdb as
   python/lib/edict2.xsl.
+
+2011-08-27 22:07:00 stuart
+  See also jmdict-editors list discussion, '"Bulk" entry input',
+  2011-06-06, and '"Bulk" entry input (revisited)", 2011-07-21.

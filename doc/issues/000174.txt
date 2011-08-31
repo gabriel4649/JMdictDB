@@ -1,4 +1,4 @@
-﻿Title:	Exceptions with unicode text produce unreadable error message.
+﻿Title:	Exceptions with unicode text produce unreadable message.
 Stat:   open
 Disp:	
 Prio:	med

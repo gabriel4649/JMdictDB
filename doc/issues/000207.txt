@@ -1,0 +1,127 @@
+Title:	xrefs disappear in simultaneous edits
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2011-08-27 21:38:00 stuart
+ Reported by jwb, private email ("Vanishing xref"), 2011-04-26.
+ Problem occurs when a submitter adds (or edits) two different
+ entries in two different browser windows simultaneously, and 
+ adds and xref in each to the other.
+
+2011-08-27 21:40:00 stuart
+ Quoting from my email response to jwb:
+
+   > Yes, I was able to reproduce the problem.  It happens when one
+   > edits two entries simultaneously (in two browser pages), adds an
+   > xref to the other in each then submits them both. 
+   > 
+   > Consider first what happens when one adds the mutual xrefs by
+   > sequentially editing and submitting the two entries (which works
+   > properly).  [You'll need to view this message with a fixed-width
+   > font.]
+   > 
+   > After editing Entry 1 to add an xref to Entry 2, and submitting
+   > it, the database looks like:
+   > 
+   >    ---------                                     ---------
+   >   | Entry 1 |                                   | Entry 2 |
+   >   |  orig   |                    .------------->|  orig   |
+   >    ---------                    /                ---------
+   >                                /
+   >                               /
+   >    ---------                 / 
+   >   | Entry 1 |     ------    /  
+   >   | edited  |--->| Xref |--'  
+   >    ---------      ------      
+   > 
+   > Now, when Entry 2 is edited, the first thing done is to make a 
+   > copy of Entry 2 to which the edits will be made.  The copy includes
+   > any xrefs to or from Entry 2 resulting in:
+   > 
+   >    ---------                                      ---------
+   >   | Entry 1 |                                    | Entry 2 |
+   >   |  orig   |                     .------------->|  orig   |
+   >    ---------                     /                ---------
+   >                                 /
+   >                                /                  ---------
+   >    ---------                  /                  | Entry 2 |
+   >   | Entry 1 |     ------     /                   |  to be  |
+   >   | edited  |---->| Xref |--'                    | edited  |
+   >    --------- .     ------                   .-->  ---------
+   >               `-->| Xref |-----------------'   
+   >                    ------
+   >                  
+   > 
+   > Then Entry 2 is edited (we add an xref to Entry 1) and submit it.
+   > Because two versions of Entry 1 exist, the xref we added results
+   > in two Xref objects pointing to both versions of Entry 1.
+   > 
+   >    ---------                                     ---------
+   >   | Entry 1 |                                   | Entry 2 |
+   >   |  orig   |<-------------.     .------------->|  orig   |
+   >    ---------                \   /                ---------
+   >                              \ /
+   >                               X       ------        ---------
+   >    ---------  <------------. / `-----| Xref |<-----| Entry 2 |
+   >   | Entry 1 |     ------    X         ------       | edited  |
+   >   | edited  |--->| Xref |--' `-------| Xref |<-----|         |
+   >    --------- .    ------              ------  .-->  ---------
+   >               `->| Xref |--------------------'   
+   >                   ------
+   > 
+   > Now, the edited versions of Entry 1 and Entry 2 are approved.  This 
+   > results in the original versions being deleted, along with any Xrefs
+   > to or from them, leaving:
+   > 
+   > 
+   >   [Entry 1 orig and its xrefs gone]    [Entry 2 orig and its xrefs gone]     >
+   > 
+   >                                                     ---------
+   >    ---------  <------------.                       | Entry 2 |
+   >   | Entry 1 |               \         ------       | apprvd  |
+   >   | apprvd  |                `-------| Xref |<-----|         |
+   >    --------- .    ------              ------  .-->  ---------
+   >               `->| Xref |--------------------'   
+   >                   ------
+   > 
+   > Which is what we wanted and expected.
+   > 
+   > Now to the problem.  When Nils edited both entries simultaneously
+   > in two windows (a perfectly normal and intuitive thing to do), only
+   > the original entries existed the database, so Xrefs are created 
+   > only to the original versions after the submit.  Thus, after he 
+   > submitted both entries, the database looked like:
+   > 
+   >    ---------                                     ---------
+   >   | Entry 1 |                                   | Entry 2 |
+   >   |  orig   |<-------------.     .------------->|  orig   |
+   >    ---------                \   /                ---------
+   >                              \ /
+   >                               X
+   >    ---------                 / \                  ---------
+   >   | Entry 1 |     ------    /   \     ------     | Entry 2 |
+   >   | edited  |--->| Xref |--'     '---| Xref |<---| edited  |
+   >    ---------      ------              ------      ---------
+   > 
+   > 
+   > When Entry 1 and Entry 2 are approved, just as above, the original
+   > entries are deleted along with any xrefs to or from them which
+   > in the case, deleted the only xrefs, leaving the approved entries 
+   > with none:
+   > 
+   > 
+   >   [Entry 1 orig and its xrefs gone]    [Entry 2 orig and its xrefs gone]     >
+   > 
+   >    ---------                                      ---------
+   >   | Entry 1 |                                    | Entry 2 |
+   >   | apprvd  |                                    | apprvd  |
+   >    ---------                                      ---------
+   > 
+   > 
+   > Unfortunately I have no immediate ideas about how to fix this, and
+   > will need to ponder it some,.
+

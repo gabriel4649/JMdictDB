@@ -1,0 +1,21 @@
+Title:	submission check for duplicate reading
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2011-08-27 20:48:00 stuart
+ Private email from jwb, cc'd responce to Nils Roland Barth
+ <jdict.nbarth@xoxy.net>, who requested a check at submission
+ time for duplicate reading:
+
+  >> On the JMdictDB entry,
+  >> if you accidentally include the same reading twice,
+  >> could this be checked and flagged at the confirmation screen?
+  >> It currently isn’t flagged, but then when you try to submit,
+  >> it fails and you get a cryptic error screen (entry already
+  >> exists etc.).
+
+ I suppose same would apply to kanji.

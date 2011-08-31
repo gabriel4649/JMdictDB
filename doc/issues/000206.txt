@@ -1,0 +1,20 @@
+Title:	submission kill switch
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2011-08-27 21:16:00 stuart
+ On 2011-05-19, rene.malenfant@gmail.com suggested via private
+ mail the idea of a submission kill switch.  When activated for
+ a specific submitter, it would redirect to a page that said
+ (tactfully) the submitter had been temporarily banned, with
+ instructions on how to find out why, get access restored.
+
+2011-08-27 21:20:00 stuart
+ Since there is no user authentication except for editors (the
+ "user" field is a voluntarily entered ad-hoc text string) so
+ the only practical way is to block by IP address.
+ Thus, a prerequisite for this request is IS-188.

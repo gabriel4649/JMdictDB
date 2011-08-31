@@ -1,0 +1,73 @@
+Title:	dup key error (freq table) when kanji removed 
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart
+
+2011-08-29 11:07:00 stuart
+ Email from Nils Roland Barth<jdict.nbarth@xoxy.net> reports 
+ problem trying to remove the first (夏期) kanji from entry
+ 1589900:
+   夏期 [ ichi1] ； 夏季 [ ichi1,news1,nf13]
+  【 かき [ ichi1,news1,nf13] ； なつき ( 夏季 ) 】
+    1. 	[n,adj-no]
+      ▶ summer season
+
+ > Traceback (most recent call last):
+ >   File "/usr/local/apache2/jmdictdb/cgi-bin/edsubmit.py",
+ > line 644, in <module>
+ >     main (args, opts)
+ >   File "/usr/local/apache2/jmdictdb/cgi-bin/edsubmit.py",
+ > line 183, in main
+ >     sess.userid if sess else None)
+ >   File "/usr/local/apache2/jmdictdb/cgi-bin/edsubmit.py",
+ > line 367, in submission
+ >     added = submit (dbh, entr, edtree, errs)
+ >   File "/usr/local/apache2/jmdictdb/cgi-bin/edsubmit.py",
+ > line 390, in submit
+ >     res = addentr (dbh, entr)
+ >   File "/usr/local/apache2/jmdictdb/cgi-bin/edsubmit.py",
+ > line 469, in addentr
+ >     res = jdb.addentr (dbh, entr)
+ >   File "../lib/jdb.py", line 1389, in addentr
+ >     for x in getattr (r, '_freq',  []): dbinsert (cur,
+ > "freq",  ['entr','rdng','kanj','kw','value'], x)
+ >   File "../lib/jdb.py", line 120, in dbinsert
+ >     raise e
+ > IntegrityError: duplicate key value violates unique
+ > constraint "freq_entr_key"
+ > DETAIL:  Key (entr, rdng, kanj, kw)=(1075060, 1, 1, 1)
+ > already exists.
+
+2011-08-29 12:22:00 stuart
+ When I try to reproduce problem in local database (loaded
+ with a rather old version of jmdict), I get a different
+ error that occurs when attempting to display confirmation
+ page:
+
+ > Traceback (most recent call last):
+ >   File "/home/stuart/jdb/jb/web/cgi/edconf.py", line 388, in <module>
+ >     main (args, opts)
+ >   File "/home/stuart/jdb/jb/web/cgi/edconf.py", line 139, in main
+ >     jdb.copy_freqs (pentr, entr)
+ >   File "../../python/lib/jdb.py", line 893, in copy_freqs
+ >     try: k2._freq.append (f)
+ > UnboundLocalError: local variable 'k2' referenced before assignment
+
+ On Arakawa, with copy of current database in jmtest, I get
+ same error Nils reported, which happens when edit is submitted
+ (i.e. confirmation page was displayed ok.)
+
+ Restore copy of current database locally
+ $ cd jmdictdb
+ $ make newdb
+ $ pg_restore -O -U jmdictdb -d jmnew data/jmdict-20110829.dmp 
+
+ Still get conf page error.  Push my current local dev version to
+ Arakawa (everything was up to date) and on Arakawa diffed dev cgi
+ and lib files to the running verions in /usr/local/apache2/jmdictdb/
+ and found no significant differences.  Have no explanation for why
+ the same edit with same data and same code produces different errors
+ on different machines.

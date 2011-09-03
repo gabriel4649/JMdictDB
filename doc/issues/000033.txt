@@ -1,7 +1,7 @@
 Title:	DB maintenance job
 Stat:	open
 Disp:	
-Prio:	high
+Prio:	med
 Cats:	dev
 Reqtrs:	
 AssdTo:	stuart

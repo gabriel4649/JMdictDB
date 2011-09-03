@@ -346,7 +346,7 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 	    if not is_editor:
 		if pentr: 
 		    logw ("submission(): copying freqs from parent")
-		    jdb.copy_freqs (pentr, entr, replace=True)
+		    jdb.copy_freqs (pentr, entr)
 		  # Note that non-editors can provide freq items on new
 		  # entries.  We expect an editor to vet this when approving.
 

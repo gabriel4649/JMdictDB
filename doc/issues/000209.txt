@@ -71,3 +71,82 @@ AssdTo:	stuart
  and found no significant differences.  Have no explanation for why
  the same edit with same data and same code produces different errors
  on different machines.
+
+2011-08-30 22:07:00 stuart
+ Debugged on Arakawa.  Stepping through jdb.copy_freqs() code
+ shows that it:
+  1) Moves Freq items from parent to new entry based
+     on _rdng or _kanj list index; that is, Freq items 
+     on ._kanj[0] are moved to same index kanji, regardless
+     of what the kanj text is.  This is (IIRC) by design.
+  2) Failure to reset variable inside loop combined with
+     ignoring of index errors results, in the current case
+     of a parent with two kanji and the new entry with one, 
+     of Freq from both kanji on the parent being added to 
+     two the single kanji on the new entry.  Since there 
+     were Freq(kw=1, value=1) items on both kanji of parent, 
+     they result in duplicate Freq items on the new entry 
+     single kanji that the db rejects when the write attempt
+     is made.
+
+2011-09-01 23:54:00 stuart
+ Looked at code (python/lib/jdb.py:copy_freqs()); it copies
+ freq items from parent to new entry based on index, so that
+ if the reading or kanji lists are permutated or leading items
+ removed, freq items can be copied to the "wrong" reading or
+ kanji.  Did a complete rewrite of this code and match the the
+ parent and edited entry reading/kanji based on their text
+ values rather than position.
+
+ Also deleted the "replace" parameter since in both call sites
+ in web/cgi/edconf.py, edsubmit.py, it looks like "replace"
+ should be the mode used.  (Was in latter but not in former.)
+
+2011-09-02 16:53:00 stuart
+ There are two ways to handle a Freq object that is associtated
+ with a reading/kanji pair as described in the following note
+ (subj: "handling freq items in non-editor submissions") posted
+ to the editors list today:
+
+ > A decision made before the submission system was 
+ > deployed was that non-editors would not be allowed
+ > to edit freq tags (ichi1, nf14, etc).  To implement
+ > this, I ignore any freq tags on an edited entry 
+ > and copy the original freq tags from the parent 
+ > entry to the edited entry when the edit is submitted.
+ > 
+ > Freq tags can apply to a reading alone, a kanji 
+ > alone or to a reading/kanji pair.
+ > 
+ > My question is what to do if the reading or kanji in
+ > such a pair is removed in the new entry.  Should the 
+ > freq tag that had been applied to the pair now be
+ > applied to the sole remaining kanji or reading?  Or
+ > should it be deleted entirely?
+ > 
+ > For example, if the entry:
+ > 
+ >    kanji [ichi1]
+ >    reading [ichi1]
+ > 
+ > is edited and the kanji removed, should the new entry be 
+ > 
+ >    reading [ichi1]
+ > 
+ > or just
+ > 
+ >    reading
+
+ jwb responded that he stronly preferred the "reading [ichi1]"
+ answer.  Jean-Luc Léger also responded that he'd like to see
+ "reading" with a notification that freq tags were changed in
+ this when editor subsuquently edits for approval.
+
+ Since internet was down for a day before I was able to post
+ question, I guessed (wrongly) answer would be "reading" (ie
+ delete the entire freq object if half of it goes away) and
+ wrote code to that effect.  
+
+ Will checkin this code for future reference, then change to jwb's
+ preferred option.
+

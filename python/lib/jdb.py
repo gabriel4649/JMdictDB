@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-	 # non-ascii used in comments only.
 #######################################################################
 #  This file is part of JMdictDB. 
-#  Copyright (c) 2006-2010 Stuart McGraw 
+#  Copyright (c) 2006-2011 Stuart McGraw 
 # 
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published 
@@ -866,58 +866,92 @@ def freq2txts (freqs):
 	    if fstr not in flist: flist.append (fstr)
 	return sorted (flist)
 
-def copy_freqs (fromentr, toentr, replace=False):
-	# Copy the freq items from 'fromentr' to 'toentr'.  
-	# 'fmap' Is a mapping as returned by freq_map() and has nothing
-	# to do with the 'fmap' parameter in make_freq_objs() above.
-	# If 'replace' is false, the copied freqs will be appended
-	# to any freqs already on 'toentr'.  If true, all existing
-	# freqs on 'toentr' will be deleted before copying the freqs.
-	# CAUTION: The Freq objects themselves are not duplicated, the 
-	#  same objects are referred to from both the 'fromentr' and
-	#  the 'toentr'.
+def copy_freqs (old_entr, new_entr):
+        # Copy the freq objects on the _rdng and ._kanj lists of
+        # Entr object 'old_entr', to Entr object 'new_entr'.  Any
+        # preexisting freq items in 'new_entr' are removed.
+        #
+        # Reading and kanji items are matched between the old
+        # and new entries based in their .txt attribute, not
+        # their indexed position.  For Freq object with both a
+        # reading and kanji parent, both must also exist on the 
+        # new parent to be copied -- the Freq object is not copied
+        # if only one exists in the new entry.
+        #
+        # Duplicate freq objects (ones with the same 'kw' and 'value'
+        # values as an existing one on the same 'new_entr' Rdng/Kanj
+        # pair) are not copied.
+        #
+        # Currently copying is by reference; that is, the Freq objects
+        # that end up in 'new_entr' are refernces to the corresponding
+        # Freq object in 'old_entr', i.e, they are shared.
 
-	idx = freq_map (fromentr)
-	if replace:
-	    for r in getattr (toentr, '_rdng', []): r._freq = []
-	    for k in getattr (toentr, '_kanj', []): k._freq = []
-	for f, (r, nr, k, nk) in idx.items():
-	    if r: 
-		try: r2 = toentr._rdng[nr]
-		except (AttributeError, IndexError): pass
-		try: r2._freq.append (f)
-		except AttributeError: r2._freq = [f]
-	    if k: 
-		try: k2 = toentr._kanj[nk]
-		except (AttributeError, IndexError): pass
-		try: k2._freq.append (f)
-		except AttributeError: k2._freq = [f]
+        finv = freq_inv (old_entr)
+       	rmap = dict(((r.txt, r) for r in new_entr._rdng))
+	kmap = dict(((k.txt, k) for k in new_entr._kanj))
+        dupl = set()  # Used for checking for duplicates.
+        for r in new_entr._rdng: r._freq = []
+        for k in new_entr._kanj: k._freq = []
+        for f, (r, k) in finv.items():
+            rnew = knew = None
+            if r:
+                rnew = rmap.get (r.txt)
+                if not rnew: continue   # Can't find a matching reading.
+            if k:
+                knew = kmap.get (k.txt)
+                if not knew: continue   # Can't find a matching kanji.
+            signature = rnew, knew, f.kw, f.value
+            if signature in dupl: continue
+            dupl.add (signature)
+              # Because there is currently no need for the copied Freq
+              # object in 'new_entr' to be distinct from the corresponding
+              # ones in 'old_entr', we simply reference the latter from 
+              # the former.  If distinct objects are needed, the comments
+              # below show it is easy to arrange that. 
+            if rnew: rnew._freq.append (f) # (Freq (kw=f.kw, value=f.value))
+            if knew: knew._freq.append (f) # (Freq (kw=f.kw, value=f.value))
 
-def freq_map (entr):
-	# Create a mapping with keys being all the Freq objects in an
-	# entry (both reading and kanji), and each value being a 4-seq
-	# consisting of the reading, rdng index, kanji, and kanji index
-	# where the Freq object was found.  This function assumes that
-	# a given Freq item will not appear more than once in any given
-	# Rdng or Kanj ._freq list. 
-	# Note that the mapping returned by this function has nothing
-	# to do with the 'fmap' parameter in make_freq_objs() above.
+def freq_inv (entr):
+        # Return a dict having keys consisting of all the
+        # Freq objects in the Entr, and the value of each key
+        # a 2-seq where the first item is the Rdng object
+        # on whose ._freq list the Freq object apppears (or
+        # None), and the second item is the Kanj object on 
+        # whose ._freq list the the Freq object appears (or
+        # None).  That is, the returned map provides an
+        # inversion of the normal k,r -> f access path to
+        # f -> k,r.
+        #
+        # For example, given the following entry:
+        #   夏期 [ ichi1] ； 夏季 [ ichi1,news1,nf13]
+          #   【 かき [ ichi1,news1,nf13] ； なつき ( 夏季 ) 】
+        # the dict returned by freq_inv() would look like:
+        #  {Freq(kw=ichi,value=1): [entr._rdng[0], entr._kanj[0]],
+        #   Freq(kw=ichi,value=1): [entr._rdng[0], entr._kanj[1]],
+        #   Freq(kw=news,value=1): [entr._rdng[0], entr._kanj[1]],
+        #   Freq(kw=nf, value=13): [entr._rdng[0], entr._kanj[1]]}
+        # The freq objects in the returned dict are references 
+        # to the actual freq objects in the entry, they are not
+        # copies.
 
-	idx = {}
-	for n, r in enumerate (getattr (entr, '_rdng', [])):
-	    for f in getattr (r, '_freq', []):
-		idx[f] = [r, n, None, None]
-	for n, k in enumerate (getattr (entr, '_kanj', [])):
-	    for f in getattr (k, '_freq', []):
-		if idx.get (f): 
-		    v = idx[f];  v[2:4] = [k, n]
-		else: idx[f] = [None, None, k, n]
-	return idx
-
-def print_freqs (fmap): # For debugging...
-	# 'fmap' Is a mapping as returned by freq_map().
-	for f, (r, nr, k, nk) in fmap.items():
-	    print "%s: %s%s: rdng %s, kanj %s" % (id(f),KW.FREQ[f.kw].kw, f.value, nr, nk)
+        b = {}
+          # The assert statements below check that each freq
+          # object is on the ._freq list list of no more than
+          # one reading and no more than one kanji.  No check 
+          # is done for duplicate Freq objects (i.e. two different
+          # Freq objject ion the same reading and/or kanji but
+          # having the same 'kw' and 'value' attributes.) 
+        for r in entr._rdng:
+            for f in r._freq:
+                assert f not in b
+                b[f] = [r, None]
+        for k in entr._kanj:
+            for f in k._freq:
+                if f in b:
+                    assert b[f][1] is None 
+                    b[f][1] = k
+                else: b[f] = [None, k]
+        return b
 
 #-------------------------------------------------------------------
 # The following four functions deal with xrefs. 

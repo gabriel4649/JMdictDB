@@ -256,6 +256,23 @@ def check_for_errors (e, errs):
 	    #	errs.append ("Sense %d has no PoS (part-of-speech) tag.  "\
 	    #		     "Every sense must have at least one." % (n+1))
 
+          # Check for duplicate reading, kanji or gloss text (IS-205).
+        nodups, dups = jdb.rmdups (e._rdng, lambda x: x.txt)
+        if dups: errs.append ("Duplicate readings were given."
+                              "  Please remove the extra readings: %s"
+                              % ", ".join (x.txt for x in dups))
+        nodups, dups = jdb.rmdups (e._kanj, lambda x: x.txt)
+        if dups: errs.append ("Duplicate kanji were given."
+                              "  Please remove the extra kanji: %s"
+                              % ", ".join (x.txt for x in dups))
+        for n, s in enumerate (e._sens):
+              # Note that duplicate glosses are per sense and per langauge;
+              # duplicates with different languages are ok.
+            nodups, dups = jdb.rmdups (s._gloss, lambda x: (x.lang,x.txt))
+            if dups: errs.append ("Duplicate gloss were given in sense %d."
+                              "  Please remove the extra gloss: %s"
+                              % (n+1, ", ".join (x.txt for x in dups)))
+
 def check_for_warnings (cur, entr, parent_seq, chklist):
 	  # Look for other entries that have the same kanji or reading.
 	  # These will be shown as cautions at the top of the confirmation

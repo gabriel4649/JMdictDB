@@ -54,7 +54,7 @@ class Test_jdb_copy_freqs (unittest.TestCase):
         p._rdng[0]._freq = [_.ichi2]
         p._kanj[0]._freq = [_.ichi2]
         jdb.copy_freqs (p, e)
-        _.assertFreqOnLists (_.ichi2,  e._rdng[0], e._kanj[0])
+        assertFreqOnLists (_, _.ichi2,  e._rdng[0], e._kanj[0])
         _.assertEqual (1, len(e._rdng[0]._freq))
         _.assertEqual (1, len(e._kanj[0]._freq))
 
@@ -64,7 +64,7 @@ class Test_jdb_copy_freqs (unittest.TestCase):
         e = deepcopy (p)
         p._rdng[0]._freq = [_.ichi2]
         jdb.copy_freqs (p, e)
-        _.assertFreqOnLists (_.ichi2,  e._rdng[0])
+        assertFreqOnLists (_, _.ichi2,  e._rdng[0])
         _.assertEqual (1, len(e._rdng[0]._freq))
         _.assertEqual (0, len(e._kanj[0]._freq))
  
@@ -74,7 +74,7 @@ class Test_jdb_copy_freqs (unittest.TestCase):
         e = deepcopy (p)
         p._kanj[0]._freq = [_.ichi2]
         jdb.copy_freqs (p, e)
-        _.assertFreqOnLists (_.ichi2,  e._kanj[0])
+        assertFreqOnLists (_, _.ichi2,  e._kanj[0])
         _.assertEqual (0, len(e._rdng[0]._freq))
         _.assertEqual (1, len(e._kanj[0]._freq))
  
@@ -90,12 +90,12 @@ class Test_jdb_copy_freqs (unittest.TestCase):
         p._rdng[2]._freq.append (_.ichi2)
         p._kanj[2]._freq.append (_.ichi2a)
         jdb.copy_freqs (p, e)
-        _.assertFreqOnLists (_.ichi1,  e._rdng[1], e._kanj[0])
-        _.assertFreqOnLists (_.gai1,   e._rdng[1], e._kanj[2])
-        _.assertFreqOnLists (_.nf16,   e._rdng[2], e._kanj[0])
-        _.assertFreqOnLists (_.nf17,   e._rdng[2], e._kanj[2])
-        _.assertFreqOnLists (_.ichi2,  e._rdng[2], None)
-        _.assertFreqOnLists (_.ichi2a, e._kanj[2], None)
+        assertFreqOnLists (_, _.ichi1,  e._rdng[1], e._kanj[0])
+        assertFreqOnLists (_, _.gai1,   e._rdng[1], e._kanj[2])
+        assertFreqOnLists (_, _.nf16,   e._rdng[2], e._kanj[0])
+        assertFreqOnLists (_, _.nf17,   e._rdng[2], e._kanj[2])
+        assertFreqOnLists (_, _.ichi2,  e._rdng[2], None)
+        assertFreqOnLists (_, _.ichi2a, e._kanj[2], None)
         _.assertEqual (0, len (e._rdng[0]._freq))
         _.assertEqual (2, len (e._rdng[1]._freq))
         _.assertEqual (3, len (e._rdng[2]._freq))
@@ -103,7 +103,44 @@ class Test_jdb_copy_freqs (unittest.TestCase):
         _.assertEqual (0, len (e._kanj[1]._freq))
         _.assertEqual (3, len (e._kanj[2]._freq))
 
-    # To do: implent tests that check the duplicate elimination 
+    def test_0150(_):
+          # Check the senario noted in IS-209, note "2011-09-03 07:02:00"
+        p = Entr(_rdng=[Rdng(txt=u'の')],
+                 _kanj=[Kanj(txt=u'野'), Kanj(txt=u'埜')])
+        e = deepcopy (p)
+        p._rdng[0]._freq.append (_.ichi2);  p._kanj[0]._freq.append (_.ichi2)
+        p._rdng[0]._freq.append (_.ichi2a); p._kanj[1]._freq.append (_.ichi2a)
+        del e._kanj[1]  # Delete the second kanji.
+        jdb.copy_freqs (p, e)
+          # The ichi2a tag should be gone from rdng[0].
+        assertFreqOnLists (_, _.ichi2, e._rdng[0], e._kanj[0], 1, 1)
+
+    def test_0160(_):
+          # Same as test_0150 except reading and kanji swapped.
+        p = Entr(_rdng=[Rdng(txt=u'の'), Rdng(txt=u'や')],
+                 _kanj=[Kanj(txt=u'野')])
+        e = deepcopy (p)
+        p._rdng[0]._freq.append (_.ichi2);  p._kanj[0]._freq.append (_.ichi2)
+        p._rdng[1]._freq.append (_.ichi2a); p._kanj[0]._freq.append (_.ichi2a)
+        del e._rdng[1]  # Delete the second reading.
+        jdb.copy_freqs (p, e)
+          # The ichi2a tag should be gone from kanj[0].
+        assertFreqOnLists (_, _.ichi2, e._rdng[0], e._kanj[0], 1, 1)
+
+    def test_0170(_):
+          # Same as test_0160 except but different tags.
+        p = Entr(_rdng=[Rdng(txt=u'の'), Rdng(txt=u'や')],
+                 _kanj=[Kanj(txt=u'野')])
+        e = deepcopy (p)
+        p._rdng[0]._freq.append (_.ichi2);  p._kanj[0]._freq.append (_.ichi2)
+        p._rdng[1]._freq.append (_.ichi1); p._kanj[0]._freq.append (_.ichi1)
+        del e._rdng[1]  # Delete the second reading.
+        jdb.copy_freqs (p, e)
+          # The ichi1 tag should remain on kanj[0].
+        assertFreqOnLists (_, _.ichi2, e._rdng[0], e._kanj[0], 1, 2)
+        assertFreqOnLists (_, _.ichi1, e._kanj[0])
+
+    # To do: implement tests that check the duplicate elimination 
     # functionality in jdb.copy_freqs().
 
     # To do: implement tests that permute the reading and kanji
@@ -124,17 +161,86 @@ class Test_jdb_copy_freqs (unittest.TestCase):
         jdb.copy_freqs (p, e)
           # The r0/k1 freq (ichi1b) should have been moved to r0/k0.
           # The r0/k0 freq (ichi1a) should be gone with the old k0.
-        _.assertFreqOnLists (ichi1b, e._rdng[0], e._kanj[0])
-        _.assertFreqOnLists (news1,  e._rdng[0], e._kanj[0])
-        _.assertFreqOnLists (nf13,   e._rdng[0], e._kanj[0])
+        assertFreqOnLists (_, ichi1b, e._rdng[0], e._kanj[0])
+        assertFreqOnLists (_, news1,  e._rdng[0], e._kanj[0])
+        assertFreqOnLists (_, nf13,   e._rdng[0], e._kanj[0])
         _.assertEqual (3, len (e._rdng[0]._freq))
         _.assertEqual (3, len (e._kanj[0]._freq))
         _.assertEqual (0, len (e._rdng[1]._freq))
+            
+class Test_jdb_del_superfulous_freqs (unittest.TestCase):
+    def setUp(_):
+          # Create some freq objects for use in tests.
+        _.ichi1  = Freq (kw=1, value=1)
+        _.ichi2  = Freq (kw=1, value=2)
+        _.gai1   = Freq (kw=2, value=1)
+        _.nf17   = Freq (kw=5, value=17)
+        _.nf16   = Freq (kw=5, value=16)
+        _.ichi2a = Freq (kw=1, value=2)
+    def test_0010(_):
+          # Can we call it without a crash?
+        jdb.del_superfluous_freqs ({})
+    def test_0020(_):
+        r1 = Rdng(_freq=[_.ichi1])
+        k1 = Kanj(_freq=[_.ichi1])
+        d = {(r1,k1,_.ichi1.kw,_.ichi1.value): _.ichi1}
+        jdb.del_superfluous_freqs (d)
+          # The ichi1 should remain on both r1 and k1.
+        assertFreqOnLists (_, _.ichi1, r1, k1, 1, 1) 
+    def test_0030(_):
+        r1 = Rdng(_freq=[_.ichi2a])
+        k1 = Kanj(_freq=[])
+        d = {(r1,None,_.ichi2a.kw,_.ichi2a.value): _.ichi2a}
+        jdb.del_superfluous_freqs (d)
+          # The ichi2a should remain on r1.
+        assertFreqOnLists (_, _.ichi2a, r1, None, 1) 
+    def test_0040(_):
+        r1 = Rdng(_freq=[_.ichi2, _.ichi2a])
+        k1 = Kanj(_freq=[_.ichi2])
+        d = {(r1,None,_.ichi2a.kw,_.ichi2a.value): _.ichi2a,
+             (r1,k1,  _.ichi2.kw, _.ichi2.value):  _.ichi2,}
+        jdb.del_superfluous_freqs (d)
+          # The ichi2a should have been removed from r1.
+        assertFreqOnLists (_, _.ichi2, r1, k1, 1, 1) 
+    def test_0050(_):
+        r1 = Rdng(_freq=[])
+        k1 = Kanj(_freq=[_.ichi2a])
+        d = {(None,k1,_.ichi2a.kw,_.ichi2a.value): _.ichi2a}
+        jdb.del_superfluous_freqs (d)
+          # The ichi2a should remain on k1.
+        assertFreqOnLists (_, _.ichi2a, k1, None, 1) 
+    def test_0060(_):
+        r1 = Rdng(_freq=[_.ichi2])
+        k1 = Kanj(_freq=[_.ichi2a, _.ichi2])
+        d = {(None,k1,_.ichi2a.kw,_.ichi2a.value): _.ichi2a,
+             (r1,  k1,_.ichi2.kw, _.ichi2.value):  _.ichi2,}
+        jdb.del_superfluous_freqs (d)
+          # The ichi2a should have been removed from k1.
+        assertFreqOnLists (_, _.ichi2, r1, k1, 1, 1) 
+    def test_0070(_):
+        r1 = Rdng(_freq=[_.ichi2, _.ichi1])
+        k1 = Kanj(_freq=[_.ichi2])
+        d = {(r1,None,_.ichi1.kw, _.ichi1.value): _.ichi1,
+             (r1,  k1,_.ichi2.kw, _.ichi2.value): _.ichi2,}
+        jdb.del_superfluous_freqs (d)
+          # Both freqs should remain because they have different values.
+        assertFreqOnLists (_, _.ichi2, r1, k1, 2, 1) 
+        assertFreqOnLists (_, _.ichi1, r1) 
+    def test_0080(_):
+        r1 = Rdng(_freq=[_.ichi2])
+        k1 = Kanj(_freq=[_.ichi1, _.ichi2])
+        d = {(None,k1,_.ichi1.kw, _.ichi1.value): _.ichi1,
+             (r1,  k1,_.ichi2.kw, _.ichi2.value): _.ichi2,}
+        jdb.del_superfluous_freqs (d)
+          # Both freqs should remain because they have different values.
+        assertFreqOnLists (_, _.ichi2, r1, k1, 1, 2) 
+        assertFreqOnLists (_, _.ichi1, k1) 
 
-    #================================================================
-    # Support functions...
+        
+#================================================================
+# Support functions...
 
-    def assertFreqOnLists (_, eqfreq, rk1, rk2=None):
+def assertFreqOnLists (_, eqfreq, rk1, rk2=None, len1=None, len2=None):
         # Check that a Freq object equal to 'exfreq' is present
         # on the ._freq lists of Rdng or Kanj objects 'rk1' and 
         # 'rk2' (or just 'rk1' if 'rk2' is None).  Also check
@@ -150,12 +256,21 @@ class Test_jdb_copy_freqs (unittest.TestCase):
         # a ValueError exception is raised.
         # 
         # This function is used check that expected Freq objects
-        # are present in the given Rdng/Kanj objects.  Caller should
-        # also check the lengths of the ._freq lists to ensure that
-        # only the checked Freq objects are present.
+        # are present in the given Rdng/Kanj objects.  
+        # 
+        # Additionally, len1 or len2 can be given to check the length
+        # of the the rk1._freq and rk2._freq lists respectively.  If
+        # assertFreqOnLists() is called for every expected Freq object
+        # on the list(s) then checking the length(s) in one of those 
+        # calls will ensure there are nothing but the expected Freq
+        # objects present (possibly excepting duplicates).
  
         flist1 = rk1._freq
         flist2 = rk2._freq if rk2 else None
+        if len1 is not None:
+            _.assertEqual (len1, len (flist1))
+        if len2 is not None and flist2 is not None:
+             _.assertEqual (len2, len (flist2))
         if flist2 is None: flist2 = [None]
         found = None
         for f1, f2 in itertools.product (flist1, flist2):
@@ -167,7 +282,7 @@ class Test_jdb_copy_freqs (unittest.TestCase):
                 if found: raise ValueError ("Multiple pairs found")
                 found = f1, f2
         _.assertIsNotNone (found)
-            
+
 
 if __name__ == '__main__': unittest.main()
 

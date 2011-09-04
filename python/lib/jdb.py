@@ -867,16 +867,16 @@ def freq2txts (freqs):
 	return sorted (flist)
 
 def copy_freqs (old_entr, new_entr):
-        # Copy the freq objects on the _rdng and ._kanj lists of
+        # Copy the freq objects on the ._rdng and ._kanj lists of
         # Entr object 'old_entr', to Entr object 'new_entr'.  Any
         # preexisting freq items in 'new_entr' are removed.
         #
         # Reading and kanji items are matched between the old
         # and new entries based in their .txt attribute, not
-        # their indexed position.  For Freq object with both a
-        # reading and kanji parent, both must also exist on the 
-        # new parent to be copied -- the Freq object is not copied
-        # if only one exists in the new entry.
+        # their indexed position.  If only a matching reading
+        # (or a matching kanji) is found for a Freq object that
+        # has both on 'old_entr', the Freq object will be added
+        # to the list of the found object only.   
         #
         # Duplicate freq objects (ones with the same 'kw' and 'value'
         # values as an existing one on the same 'new_entr' Rdng/Kanj
@@ -886,30 +886,93 @@ def copy_freqs (old_entr, new_entr):
         # that end up in 'new_entr' are refernces to the corresponding
         # Freq object in 'old_entr', i.e, they are shared.
 
+        dupl = _copy_freqs (old_entr, new_entr)
+        del_superfluous_freqs (dupl)
+
+def _copy_freqs (old_entr, new_entr):
+          # Invert the freq structure: 'finv' will be a map keyed by
+          # every Freq object in 'old_entr' and each value the (Rdng,
+          # Kanj) pair the Freq object is in the ._freq list of (or
+          # (Rdng,None) or (None,Kanj) if the Freq object is in the
+          # ._freq list of only a Rdng or Kanj object rather than a
+          #  pair).
         finv = freq_inv (old_entr)
+          # Create lookup dicts to map reading (or kanji) text 
+          # the Rdng (or Kanj) objects having that text.
        	rmap = dict(((r.txt, r) for r in new_entr._rdng))
 	kmap = dict(((k.txt, k) for k in new_entr._kanj))
-        dupl = set()  # Used for checking for duplicates.
+        dupl = {}  # Used for checking for duplicates.
+          # Erase any existing freq tags in 'new_entr's readings or kanji.
         for r in new_entr._rdng: r._freq = []
         for k in new_entr._kanj: k._freq = []
+          # All of 'old_entr's Freq objects are keys in 'finv'.  The 
+          # value of each 'finv' item is the Rdng object or Kang object
+          # the Freq is attached to.  Get each Freq object and its
+          # Rng and Kanj objects, and locate the corresponding reading
+          # or kanji (by text) on 'new_entr' and attach the Freq object
+          # there. 
         for f, (r, k) in finv.items():
-            rnew = knew = None
-            if r:
-                rnew = rmap.get (r.txt)
-                if not rnew: continue   # Can't find a matching reading.
-            if k:
-                knew = kmap.get (k.txt)
-                if not knew: continue   # Can't find a matching kanji.
+            rnew = rmap.get (r.txt) if r else None
+            knew = kmap.get (k.txt) if k else None
+              # Don't add the two Freq with the same (kw,value) to
+              # a particular (rnew,knew) reading/kanji combination.
+              # This does not prevent the addition of "superfluous"
+              # freq tags (see del_superfluous_freqs() below for 
+              # definition of "superfluous").
             signature = rnew, knew, f.kw, f.value
             if signature in dupl: continue
-            dupl.add (signature)
               # Because there is currently no need for the copied Freq
               # object in 'new_entr' to be distinct from the corresponding
               # ones in 'old_entr', we simply reference the latter from 
-              # the former.  If distinct objects are needed, the comments
-              # below show it is easy to arrange that. 
-            if rnew: rnew._freq.append (f) # (Freq (kw=f.kw, value=f.value))
-            if knew: knew._freq.append (f) # (Freq (kw=f.kw, value=f.value))
+              # the former.  If distinct objects are needed, uncomment
+              # the next line. 
+            #f = Freq (kw=f.kw, value=f.value)
+            dupl[signature] = f
+            if rnew: rnew._freq.append (f)
+            if knew: knew._freq.append (f)
+        return dupl  # Can be used by caller to remove superfluous freqs.
+
+def del_superfluous_freqs (dupl):
+        # Remove superfluous Freq tags from an entry.
+        # A superfluous tag is a freq object on a Rdng or Kanj that is
+        # not referenced any other Kanj or Rdng, but which has the
+        # same value (kw and value attributes) that another Freq object
+        # on the same Rdng or Kanj that is refernced by some other Kanj
+        # or Rdng.  For example:
+        #    ichi1a = Freq (kw=<ichi>, value=1)
+        #    ichi1b = Freq (kw=<ichi>, value=1)
+        #    entr._rdng[n]._freq.append (ichi1a)
+        #    entr._kanj[m]._freq.append (ichi1a)
+        #    entr._rdng[n]._freq.append (ichi1b)
+        # rdng[n] has two "ichi1" tags, one also referenced by kanj[m]
+        # (ichi1a) and referenced by rdng[n] alone.  The latter is
+        # superfluous because it will not be shown in any displays
+        # (rdng[n] will already be tagged "ichi1" by virtue of the
+        # ichi1a object) and if the object is serialized to XML or JEL
+        # and recreated, the superfluous object will not be recreated. 
+        # To avoid cuttering up the database with such unnecessary
+        # objects, this function will delete them.
+        #
+        # 'dupl' is a dict that is created internally by jdb.copy_freqs().
+        # Each key is a 4-tuple, (rndg,kanj,kw,val) that is the "signature"
+        # of a Freq object: 
+        #   rdng -- the Rdng object in whose ._freq list the Freq object is,
+        #   kanj -- the Kanj object in whose ._freq list the Freq object is,
+        #   kw -- the value of the Freq object's .kw attribute.
+        #   val -- the value of the Freq object's .value attribute.
+        # The value of each dict item is the Freq object itself.
+
+        for (rdng,kanj,kw,val),freq in dupl.items():
+            if not rdng or not kanj: 
+                continue        # Skip any freq items that aren't on both
+                                #  a reading and a kanji.
+              # For each that has a reading and kanji parent, see if there
+              # also exists an equi-valued freq object on the only the same
+              # reading, or only on the same kanji and if so, delete it. 
+            if (rdng,None,kw,val) in dupl: 
+                del_item_by_ident (rdng._freq, dupl[(rdng,None,kw,val)])
+            if (None,kanj,kw,val) in dupl: 
+                del_item_by_ident (kanj._freq, dupl[(None,kanj,kw,val)])
 
 def freq_inv (entr):
         # Return a dict having keys consisting of all the
@@ -2400,6 +2463,20 @@ def isin (object, seq):
 	Returns False otherwise.  'object' may be None."""
 
 	return _sentinal is not first (seq, lambda x: x is object, _sentinal)
+
+def del_item_by_ident (list, item):
+        """Remove first occurance of 'item' from 'list'.  'item'
+        is identified in 'list' by an "is" comparison rather
+        than the usual "==" comparison."""
+
+        for i in range (len (list)):
+              # We can't use list.index() or the like to find
+              # 'f' in 'list' because such method use equality
+              # comparisions and we need 'is' to be sure we 
+              # identify the right object.
+            if item is list[i]: 
+                del list[i]
+                break
 
 def unique (key, dupchk):
 	""" 

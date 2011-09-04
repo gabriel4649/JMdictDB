@@ -1,6 +1,6 @@
 Title:	dup key error (freq table) when kanji removed 
-Stat:	open
-Disp:	
+Stat:	done
+Disp:	closed
 Prio:	high
 Cats:	bug
 Reqtrs:	
@@ -103,7 +103,7 @@ AssdTo:	stuart
  should be the mode used.  (Was in latter but not in former.)
 
 2011-09-02 16:53:00 stuart
- There are two ways to handle a Freq object that is associtated
+ There are two ways to handle a Freq object that is associated
  with a reading/kanji pair as described in the following note
  (subj: "handling freq items in non-editor submissions") posted
  to the editors list today:
@@ -137,16 +137,79 @@ AssdTo:	stuart
  > 
  >    reading
 
- jwb responded that he stronly preferred the "reading [ichi1]"
+ jwb responded that he strongly preferred the "reading [ichi1]"
  answer.  Jean-Luc Léger also responded that he'd like to see
  "reading" with a notification that freq tags were changed in
  this when editor subsuquently edits for approval.
 
- Since internet was down for a day before I was able to post
- question, I guessed (wrongly) answer would be "reading" (ie
- delete the entire freq object if half of it goes away) and
+ My internet was down for a day before I was able to post
+ question and I had guessed (wrongly) answer would be "reading"
+ (ie delete the entire freq object if half of it goes away) and
  wrote code to that effect.  
 
  Will checkin this code for future reference, then change to jwb's
  preferred option.
+
+2011-09-02 20:15;00 stuart
+ Checked in the above code as changeset 1009:856c73279635.
+
+2011-09-03 07:02:00 stuart
+ Changes the deletion sematics to that requested by jwb.
+
+ There is a potential problem.  Suppose a freq tag, say "ichi1"
+ applied to a reading/kanji pair, say Rdng1 and Kanj1, and
+ also to that reading and a seconfd kanji (Rdng1/Kanj2)
+ The representation in database and at runtime would
+ schematically look like:
+
+       Kanji1 ---+ +--- Rdng1 ---+ +--- Kanji2
+                 | |             | |
+                 v v             v v
+                Freq1           Freq2   
+                ichi1           ichi1
+
+ Because duplicate freq values are not displayed the above 
+ will be shown (and edited) as
+ 
+    Kanji1 [ichi1]; kanji2 [ichi1]
+    Rdng1 [ichi1]
+
+ If Kanji2 is deleted the result will be
+
+       Kanji1 ---+ +--- Rdng1 ---+ 
+                 | |             | 
+                 v v             v 
+                Freq1           Freq2   
+                ichi1           ichi1
+
+ This is not problem for the database, but all of the UIs 
+ (XML, JEL, etc) will ignore the reading-only tag because it
+ has the same value (ichi1) as the other tag.  The above is
+ output in JEL as:
+
+    Kanji1 [ichi1]
+    Rdng1 [ichi1]
+
+ which exactly the same output as would be produced if Freq2
+ were not present.  There is no way to express the two tags
+ above in XML or JEL.  Thus, if such an arrangement is 
+ serialized and read back in, Freq2 will be lost.  Since such
+ tags seem to have no useful purpose, I added new function, 
+ jdb.del_superfluous_freqs() to delete any that result when
+ copying freq objects to a new entry.  Of course, if the two
+ tags have different values,
+
+       Kanji1 ---+ +--- Rdng1 ---+ 
+                 | |             | 
+                 v v             v 
+                Freq1           Freq2   
+                ichi1           spec1
+
+ then both are representable in XML and JEL and we don't delete the
+ reading-only tag.
+
+2011-09-03 21:45:00 stuart
+ With the new jdb.copy_freq function, I am able to successfully 
+ submit entry 1589900 after making the change (delete first kanji)
+ that caused the failure originally reported.
 

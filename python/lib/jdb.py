@@ -915,10 +915,13 @@ def _copy_freqs (old_entr, new_entr):
             rnew = rmap.get (r.txt) if r else None
             knew = kmap.get (k.txt) if k else None
               # Don't add the two Freq with the same (kw,value) to
-              # a particular (rnew,knew) reading/kanji combination.
+              # a particular (rnew,knew) reading/kanji combination
+              # by recording each added freq in 'dupl' and checking
+              # 'dupl' before adding.
               # This does not prevent the addition of "superfluous"
-              # freq tags (see del_superfluous_freqs() below for 
-              # definition of "superfluous").
+              # freq tags, although the 'dupl' dict is also used
+              # later to remove them.  See del_superfluous_freqs()
+              # below for definition of "superfluous").
             signature = rnew, knew, f.kw, f.value
             if signature in dupl: continue
               # Because there is currently no need for the copied Freq

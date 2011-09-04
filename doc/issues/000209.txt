@@ -150,7 +150,7 @@ AssdTo:	stuart
  Will checkin this code for future reference, then change to jwb's
  preferred option.
 
-2011-09-02 20:15;00 stuart
+2011-09-02 20:15:00 stuart
  Checked in the above code as changeset 1009:856c73279635.
 
 2011-09-03 07:02:00 stuart
@@ -212,4 +212,3 @@ AssdTo:	stuart
  With the new jdb.copy_freq function, I am able to successfully 
  submit entry 1589900 after making the change (delete first kanji)
  that caused the failure originally reported.
-

@@ -1,0 +1,53 @@
+Title:	Edform tab order and initial focus 
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	
+Reqtrs:	
+AssdTo:	stuart
+
+2011-10-26 16:36:00 stuart
+ In email to edict list,  For discussion
+ see the edict email list, 2011-09-07, "Entry Edit Form: Usability
+ improvements", Nils Barth suggested changed the tabindex order of
+ the fields in the edit entry form and setting the initial focus
+ in order to speed up entry for ferquent contributors.  There was
+ some preceeding discussion between me, Nils and Jwb in private
+ email.  Not complaints or alternatives were raised in the edict
+ list so I will implement.
+
+2011-10-26 16:37:00 stuart
+ Added tabindex attributes to the input fields, buttons and links
+ in python/lib/tmpl/edform.tal and macros.tal.  The login fields are
+ in macros.tal and are used on many pages.  I retain flexibility in
+ tabindex numbers for other pages, I assigned the three items in the
+ login aread tabindex numbers between 900 and 999.
+ 
+ Was unable to get the focus code to work.
+ Used 
+
+   [...in <head> section...]
+   <script  type="text/javascript">
+     <!--
+     function sf(){document.edform.kanj.focus();}
+     -->
+     </script>
+   ...
+   </head>
+   <body class="edform" onLoad="inifocus()">
+     ...
+     <textarea id="kanj" name="kanj" ...>
+
+ but had two problems:
+ 1) The comment tokens were turned into &lt; and &gt; whrn the template
+  was expanded.
+ 2) Even when the comment tokens were removed, focus was not in the
+  kanji box when the form is opened.
+
+ Will commit the tab order change, continue to look at the focus
+ problem.
+
+
+
+
+ 

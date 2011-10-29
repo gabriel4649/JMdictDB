@@ -3,7 +3,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
   <title>JMdictDB Entry Edit Form</title>
-</head>
+  </head>
 <body class="edform">
   <span tal:condition="not:e/id" tal:define="global page_title string:Enter a new entry"/>
   <span tal:condition="e/id" tal:define="global page_title string:Edit an existing entry"/>
@@ -11,7 +11,7 @@
     <h3 metal:fill-slot="title">Entry Edit Form</h3>
     </div>
   <span tal:repeat="e entrs" tal:omit-tag="">
-    <!--? 
+    <comment tal:condition="0"> 
     This form requires a modified form of Entr object.  It has three
     additional attributes: ktxt, rtxt, stxt.  The values of these are
     JEL formatted text strings that will be used to intialize the Kanji
@@ -25,7 +25,16 @@
     We also accept a parameter, "extra" that contains any of the items,
     "ref", "comments", "name", "email" which are used to initialize the
     input boxes of the same names.
-    -->
+
+    Tab order is set to traverse the main text boxes first (1200-1219)
+    advanced (editor-only) text boxes (1220-1239), submission buttons
+    (1240-1249), tag help links (1250-1269), text input help links
+    (1270-1289), everything else.  Tabindex numbers are above 1000
+    because the login controls, which are defined in a different file 
+    and are used by all pages, use the range 990-999.  For discussion
+    see the edict email list, 2011-09-07, "Entry Edit Form: Usability
+    improvements".
+    </comment>
     <form action="edconf.py" name="edconf" tal:attributes="method method">
       <table class="form">
 	<tbody>
@@ -41,11 +50,11 @@
 	        Enter a new Japanese dictionary entry using the text boxes below.
 	        </span>
 	      First-time users should read the 
-	      <a tal:attributes="href string:edhelpq.py?svc=${svc}&amp;sid=${sid}">
+	      <a tal:attributes="href string:edhelpq.py?svc=${svc}&amp;sid=${sid}" tabindex="1271">
 	      quick overview</a> before proceeding.
 	      For detailed help on the information and syntax required in the various
 	      fields, please use the "help" links beside each field, or view the
-	      <a tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}"> 
+	      <a tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}" tabindex="1272"> 
               full help file</a>.
 	      <p/>
 	      </td>
@@ -94,10 +103,10 @@
 	    </tr>
 
 	  <tr tal:condition="not:e/id">
-	    <td>Corpus: <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#corpus">help</a></td>
+	    <td>Corpus: <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#corpus" tabindex="1273">help</a></td>
 	    <td colspan="2">
 	      <!-- #1 src parameter when new entry and user is editor (or non-ed w corp option). -->
-	      <select name="src" tal:condition="python:not e.NOCORPOPT or is_editor or not e.src">
+	      <select name="src" tabindex="1201" tal:condition="python:not e.NOCORPOPT or is_editor or not e.src">
 		<option tal:condition="not:e/src" tal:attributes="name string:src;value string:0" tal:content=" "/>
 		<span tal:repeat="s srcs" tal:omit-tag="">
 		  <span tal:omit-tag="">
@@ -114,82 +123,81 @@
 	      </td>
 	    </tr>
 	  <tr>
-	    <td>Kanji: <br/><a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kanji">help</a></td>
-	    <td><textarea tal:content="e/ktxt" name="kanj" wrap="physical" cols="60" rows="3"></textarea></td>
+	    <td>Kanji: <br/><a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kanji" tabindex="1274">help</a></td>
+	    <td><textarea tal:content="e/ktxt" id="kanj" name="kanj" wrap="physical" cols="60" rows="3" tabindex="1202"></textarea></td>
 	    <td>
 	      Tags Help: <br>
-	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_kinf">kanji info</a><br/>
-	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_freq">frequency info</a> 
+	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_kinf" tabindex="1253">kanji info</a><br/>
+	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_freq" tabindex="1254">frequency info</a> 
 	      </td></tr>
 	  <tr>
-	    <td>Reading(s): <br/><a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#readings">help</a></td>
-	    <td><textarea tal:content="e/rtxt" name="rdng" wrap="physical" cols="60" rows="3"></textarea></td>
+	    <td>Reading(s): <br/><a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#readings" tabindex="1275">help</a></td>
+	    <td><textarea tal:content="e/rtxt" name="rdng" wrap="physical" cols="60" rows="3" tabindex="1203"></textarea></td>
 	    <td>
-	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_rinf">reading info</a><br/>
-	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_freq">frequency info</a><br/>
-	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#syn_restr">restrictions</a>
+	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_rinf" tabindex="1255">reading info</a><br/>
+	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_freq" tabindex="1256">frequency info</a><br/>
+	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#syn_restr" tabindex="1257">restrictions</a>
 	      </td></tr>
 	  <tr>
-	    <td>Meaning(s): <br/><a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#senses">help</a></td>
-	    <td><textarea tal:content="e/stxt" name="sens" wrap="physical" cols="60" rows="6"></textarea></td>
+	    <td>Meaning(s): <br/><a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#senses" tabindex="1276">help</a></td>
+	    <td><textarea tal:content="e/stxt" name="sens" wrap="physical" cols="60" rows="6" tabindex="1204"></textarea></td>
 	    <td>
-	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_pos">part-of-speech</a><br/>
-	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_misc">miscellaneous</a><br/>
-	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_fld">field/domain</a><br/>
-	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_dial">dialect</a><br/>
-	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#syn_lsrc">source-language</a><br/>
-	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#syn_ginf">gloss info</a><br/>
-	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#syn_restr">restrictions</a><br/>
-	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#syn_xref">cross-references</a><br/>
+	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_pos" tabindex="1258">part-of-speech</a><br/>
+	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_misc" tabindex="1259">miscellaneous</a><br/>
+	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_fld" tabindex="1260">field/domain</a><br/>
+	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_dial" tabindex="1261">dialect</a><br/>
+	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#syn_lsrc" tabindex="1262">source-language</a><br/>
+	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#syn_ginf" tabindex="1263">gloss info</a><br/>
+	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#syn_restr" tabindex="1264">restrictions</a><br/>
+	      <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#syn_xref" tabindex="1265">cross-references</a><br/>
 	      </td></tr>
 	  <tr tal:condition="e/id">
 	    <td> </td>
 	    <td><input type="checkbox" name="delete" tal:attributes="checked e/ISDELETE"/> This entry should be deleted.  (Please justify in Comments and References boxes.)
-	      &nbsp; <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#delete">help</a>
+	      &nbsp; <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#delete" tabindex="1277">help</a>
 	      </td>
 	    <td></td>
 	    </tr>
 	  <tr tal:condition="0"><!-- disabled for now, see IS-143. -->
 	    <td> </td>
 	    <td><input type="checkbox" name="makecopy" tal:attributes="checked makecopy"/> Treat as new entry.
-	      &nbsp; <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#makecopy">help</a>
+	      &nbsp; <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#makecopy" tabindex="1278">help</a>
 	      </td>
 	    <td></td>
 	    </tr>
 	  <tr>
-	    <td>References: <br/><a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#references">help</a></td>
-	    <td><textarea name="reference" wrap="physical" cols="60" rows="6" tal:content="extra/ref"></textarea></td>
+	    <td>References: <br/><a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#references" tabindex="1279">help</a></td>
+	    <td><textarea name="reference" wrap="physical" cols="60" rows="6" tal:content="extra/ref" tabindex="1205"></textarea></td>
 	    <td></td>
 	    </tr>
 	  <tr>
-	    <td>Comments: <br/><a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#comments">help</a></td>
-	    <td><textarea name="comment" wrap="physical" cols="60" rows="6" tal:content="extra/comment"></textarea></td>
+	    <td>Comments: <br/><a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#comments" tabindex="1280">help</a></td>
+	    <td><textarea name="comment" wrap="physical" cols="60" rows="6" tal:content="extra/comment" tabindex="1206"></textarea></td>
 	    <td></td>
 	    </tr>
 	  <tr>
-	    <td>Name: <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#name">help</a></td>
-	    <td><input type="text" name="name" size="30" tal:attributes="value extra/name|session/fullname"/></td>
+	    <td>Name: <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#name" tabindex="1281">help</a></td>
+	    <td><input type="text" name="name" size="30" tal:attributes="value extra/name|session/fullname" tabindex="1207"/></td>
 	    <td></td>
 	    </tr>
 	  <tr>
-	    <td>Email: <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#email">help</a></td>
-	    <td><input type="text" name="email" size="30" tal:attributes="value extra/email|session/email"/></td>
+	    <td>Email: <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#email" tabindex="1282">help</a></td>
+	    <td><input type="text" name="email" size="30" tal:attributes="value extra/email|session/email" tabindex="1208"/></td>
 	    <td></td>
 	    </tr>
 	  <tr>
 	    <td></td>
 	    <td>
-	      <input type="submit" value=" Next "/> &nbsp;
+	      <input type="submit" value=" Next " tabindex="1242"/> &nbsp;
 	      <span tal:condition="is_editor" tal:omit-tag="">
 		&nbsp;&nbsp;
-		Action: <select name="disp">
+		Action: <select name="disp" tabindex="1241">
 		  <option name="disp" value="">Submit</option>
 		  <option name="disp" value="a" selected="1">Approve</option>
 		  <option name="disp" value="r">Reject</option>
 		  </select>
-		<a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#action">help</a>
+		<a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#action" tabindex="1283">help</a>
 		</span>
-	      <input type="Reset" value=" Reset "/> &nbsp;
 
 	      <input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
 	      <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
@@ -217,9 +225,9 @@
 		</td>
 	      </tr>
 	    <tr tal:condition="e/id">
-	      <td>Corpus: <a class="helplink" target="edhelp" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#corpus">help</a></td>
+	      <td>Corpus: <a class="helplink" target="edhelp" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#corpus" tabindex="1284">help</a></td>
 	      <td>
-		<select name="src">
+		<select name="src" tabindex="1220">
 		  <span tal:repeat="s srcs" tal:omit-tag="">
 		    <!-- #4 src parameter when existing entry and user is editor. -->
 		    <option name="src" tal:condition="not:e/id" tal:attributes="value s/id" tal:content="s/kw"/>
@@ -232,29 +240,29 @@
 		</td>
 	      </tr>
 	    <tr>
-	      <td>Seq: <a class="helplink" target="edhelp" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#seq">help</a></td>
-	      <td tal:condition="not:e/id"><input type="text" name="seq" size="8" tal:attributes="value 'default'"/></td>
+	      <td>Seq: <a class="helplink" target="edhelp" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#seq" tabindex="1285">help</a></td>
+	      <td tal:condition="not:e/id"><input type="text" name="seq" size="8" tal:attributes="value 'default'" tabindex="1221"/></td>
 	      <td tal:condition="e/id"><input type="text" name="seq" size="8" tal:attributes="value e/seq"/></td>
 	      </tr>
 	    <tr>
-	      <td>Src note: <a class="helplink" target="edhelp" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#srcnote">help</a></td>
+	      <td>Src note: <a class="helplink" target="edhelp" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#srcnote" tabindex="1286">help</a></td>
 	      <td colspan="3">
-		<input name="srcnote" tal:condition="not:e/id" type="text" size="50"/>
-		<input name="srcnote" tal:condition="e/id" type="text" size="50" tal:attributes="value e/srcnote"/>
+		<input name="srcnote" tal:condition="not:e/id" type="text" size="50" tabindex="1222"/>
+		<input name="srcnote" tal:condition="e/id" type="text" size="50" tal:attributes="value e/srcnote" tabindex="1223"/>
 		</td>
 	      </tr>
 	    <tr>
-	      <td>Entr note: <a class="helplink" target="edhelp" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#entrnote">help</a></td>
+	      <td>Entr note: <a class="helplink" target="edhelp" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#entrnote" tabindex="1287">help</a></td>
 	      <td colspan="3">
-		<textarea name="notes" tal:condition="not:e/id" wrap="physical" width="100%" cols="60" rows="2"></textarea>
-		<textarea name="notes" tal:condition="e/id" wrap="physical" width="100%" cols="60" rows="2" tal:content="e/notes"></textarea>
+		<textarea name="notes" tal:condition="not:e/id" wrap="physical" width="100%" cols="60" rows="2" tabindex="1224"></textarea>
+		<textarea name="notes" tal:condition="e/id" wrap="physical" width="100%" cols="60" rows="2" tal:content="e/notes" tabindex="1225"></textarea>
 		</td>
 	      </tr>
 	    <tr>
-	      <td>Groups: <a class="helplink" target="edhelp" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#groups">help</a></td>
+	      <td>Groups: <a class="helplink" target="edhelp" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#groups" tabindex="1288">help</a></td>
 	      <td colspan="3">
-		<textarea name="grp" tal:condition="not:e/id" wrap="physical" width="100%" cols="60" rows="2"></textarea>
-		<textarea name="grp" tal:condition="e/id" wrap="physical" width="100%" cols="60" rows="2" tal:content="python:TALgrps(e)"></textarea>
+		<textarea name="grp" tal:condition="not:e/id" wrap="physical" width="100%" cols="60" rows="2" tabindex="1226"></textarea>
+		<textarea name="grp" tal:condition="e/id" wrap="physical" width="100%" cols="60" rows="2" tal:content="python:TALgrps(e)" tabindex="1227"></textarea>
 		</td>
 	      </tr>
 	    </span>

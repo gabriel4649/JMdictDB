@@ -29,12 +29,12 @@
 		  <td colspan="3">Login for registered editors</td>
 		<tr>
 		  <td>Username:</td>
-		  <td><input name="username" type="text" size="8"/></td>
-		  <td rowspan="2"><input name="loginout" value="login" type="submit"/></td>
+		  <td><input name="username" type="text" size="8" tabindex="991"/></td>
+		  <td rowspan="2"><input name="loginout" value="login" type="submit" tabindex="993"/></td>
 		  </tr>
 		<tr>
 		  <td>Password:</td>
-		  <td><input name="password" type="password" size="8"/>
+		  <td><input name="password" type="password" size="8" tabindex="992"/>
 		      <input type="hidden" name="svc" tal:condition='svc' tal:attributes="value svc"/></td>
 		  </tr>
                 </tbody>

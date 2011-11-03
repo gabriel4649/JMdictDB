@@ -3,8 +3,12 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
   <title>JMdictDB Entry Edit Form</title>
+  <script type="text/javascript" tal:content="structure string: <!-- 
+    function sf(){document.getElementById('kanj').focus();}
+    -->" >
+    </script>
   </head>
-<body class="edform">
+<body class="edform" onload="sf()">
   <span tal:condition="not:e/id" tal:define="global page_title string:Enter a new entry"/>
   <span tal:condition="e/id" tal:define="global page_title string:Edit an existing entry"/>
   <div metal:use-macro="macros/macros/login">

@@ -5,8 +5,12 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
   <title>JMdictDB advanced search form</title>
+  <script type="text/javascript" tal:content="structure string: <!-- 
+    function sf(){document.getElementById('t1').focus();}
+    -->" >
+    </script>
 </head>
-<body class="srchfrm">
+<body class="srchfrm" onload="sf()">
   <div metal:use-macro="macros/macros/login">
     <h3 metal:fill-slot="title">Advanced Search Form</h3>
     </div>
@@ -44,7 +48,7 @@
 			<option value="4">Ends</option>
 			</select>
 		      </td>
-		    <td><input name="t1"/></td>
+		    <td><input name="t1" id="t1"/></td>
 		    </tr>
 		  <tr>
 		    <td>

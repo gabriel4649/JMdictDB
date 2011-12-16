@@ -74,9 +74,20 @@ __version__ = ('$Revision$'[11:-2],
 #	new entries.  This parameter will be ignored if 'c' not
 #	also given.  Existing entries are always treated as though
 #       f=1 is in effect for non-editors.
-#   a=1 -- Restrict q entries to active/approved, or new entries.
+#   a -- If given the value 1 or 2, will limit entries displayed
+#       in the edit form as described below.  If 'a' not given
+#       all entries that match the other criteria will be displayed
+#       including possibly deleted, rejected, and unapproved entries.
+#   a=1 -- Restrict entries to active/approved, or new entries.
 #	If not given all entries with a matching seq number will 
 #	be displayed regardless of status or approval state.
+#   a=2 -- Restrict all entries to one per each seq number that 
+#	occurs in the results.  that entry will be the most recently
+#	edited (chronologically, based on history records) entry
+#	if one exists, or the active/approved entry fr the seq
+#	number.  Note that this option may result in user suprise
+#	in that the latest entry may be on a different branch than
+#       an earlier entry and will show no sign of the earlier entry.  
 #   j=<str> -- A string describing an entry in Edict2 format.
 #	If this parameter is given, the "e", "q", and "a"
 #	parameters are ignored. 
@@ -119,14 +130,16 @@ def main (args, opts):
 	    except KeyError: errs.append ("Bad url parameter: c=%s" % def_corp)
 	force_corp = fv ('f')	# Force default corpus for new entries.
 
-	for sentr in fl ("entr"):
+	sentrs = fl ("entr")
+	for sentr in sentrs:
 	    try: entrs = serialize.unserialize (sentr)
 	    except StandardError, e:
 		errs.append ("Bad 'entr' value, unable to unserialize: %s" % unicode(e))
 	    else: 
 		entrs.append (entr)
 
-	for jentr in fl ('j'):
+	jentrs = fl ('j')
+	for jentr in jentrs:
 	    try: entr = edparse.entr (jentr.decode('utf-8'))
 	    except StandardError, e:
 		errs.append ("Bad 'j' value, unable to parse: %s" % unicode(e))
@@ -140,6 +153,12 @@ def main (args, opts):
 					   active=active, corpus=def_corp) or [])
 	cur.close()
 
+	if (elist or qlist or jentrs or sentrs) and not entrs:
+	      # The caller explictly specified and entry to edit but we
+	      # didn't find it (or them).  Rather than treating this as
+	      # though no entries were given and displaying a blank edit
+	      # form, show an error message. 
+	    errs.append ("No matching entries were found") 
 	if errs: jmcgi.err_page (errs)
 
 	srcs = sorted (jdb.KW.recs('SRC'), key=lambda x: x.kw)

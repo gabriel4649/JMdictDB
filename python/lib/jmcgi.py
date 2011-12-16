@@ -350,9 +350,14 @@ def get_entrs (dbh, elist, qlist, errs, active=None, corpus=None):
 	#	which is either the corpus id number or the corpus name.
 	# errs -- Must be a list (or other append()able object) to 
 	#	which any error messages will be appended.
-	# active -- If True, only active/approved or new/(unapproved)
-	#	entries will be retrieved.  Otherwise all entries meeting
-	#	the entry-id, seq, or seq-corpus criteria will be 
+	# active -- If 1, only active/approved or new/(unapproved)
+	#	entries will be retrieved. 
+	#       If 2, at most one entry will be returned for each seq number
+	#       in the results and that entry will be the most recently edited
+	#	(chronologically based on history records) entry if one exists
+	#       of the approved active entry.
+	#	If active is any other value or not present, all entries
+	#	meeting the entry-id, seq, or seq-corpus criteria will be 
 	#	retrieved.
 	# corpus -- If not none, this is a corpus id number or name 
 	#	and will apply to any seq numbers without an explicit 
@@ -386,14 +391,37 @@ def get_entrs (dbh, elist, qlist, errs, active=None, corpus=None):
 		    whr.append ("seq=%s"); qargs.append (args[0])
         if not whr: errs.append ("No valid entry or seq numbers given.")
         if errs: return None
-	whr2 = ''
-	if active: 
+	whr2 = ''; distinct = ''; hjoin = ''; order = ''
+	try: active = int (active)
+	except (ValueError, TypeError): pass
+	if active == 1: 
 	      # Following will restrict returned rows to active/approved
-	      # or new (stat=A, dfrm=NULL).
+	      # (stat=A and not unap) or new (dfrm is NULL), that is, the
+	      # result set will not include any stat=D or stat=R results.
 	    whr2 = " AND stat=%s AND (NOT unap OR dfrm IS NULL)"
 	    xargs.append (jdb.KW.STAT['A'].id)
-
-        sql = "SELECT e.id FROM entr e WHERE (" + " OR ".join (whr) + ")" + whr2
+	elif active == 2:
+	      # Restrict returned rows to active (no stat=D or stat=R results)
+	      # and most recent edit as determined by the history records (if any).  
+	      # In no event will more than one entry per seq number be returned.
+	      # Note that this will necessarily return the edit from only one
+	      # branch when multiple branches exist which may result in surprise
+	      # for a user when the returned entry shows no signs of a recent
+	      # edit known to have been made.
+	      # Example of generated sql:
+	      # SELECT DISTINCT ON (e.seq) e.id FROM entr e LEFT JOIN hist h ON h.entr=e.id
+              #  WHERE e.seq=2626330 and e.stat=2 ORDER BY e.seq,h.dt DESC NULLS LAST;
+	    whr2 = " AND e.stat=%s" 
+	    xargs.append (jdb.KW.STAT['A'].id)
+	    distinct = " DISTINCT ON (e.seq)"
+	    hjoin = " LEFT JOIN hist h ON h.entr=e.id"
+	      # "NULLS LAST" is needed below because some entries (e.g., entries
+	      # imported when JMdictDB is first initialized and never edited)
+	      # may not have history records which will result in 'dt' values of
+	      # NULL; we want those entries last.
+	    order = " ORDER BY e.seq,h.dt DESC NULLS LAST"
+        sql = "SELECT" + distinct + " e.id FROM entr e " \
+		 + hjoin + " WHERE (" + " OR ".join (whr) + ")" + whr2 + order
         entries, raw = jdb.entrList (dbh, sql, eargs+qargs+xargs, ret_tuple=True)
         if entries: 
 	    jdb.augment_xrefs (dbh, raw['xref'])

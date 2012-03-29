@@ -1,0 +1,18 @@
+Title:	Add new dial keyword, "hob" 
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	jwb
+
+2012-03-29 15:00:00 jwb
+	Added new DIAL (dialect) keyword, "hob" for Hokkaido-ben.
+  	Added line to pg/data/kwdial.csv:
+
+    12\thob\tHokkaido-ben
+
+  Added the new <!ENTITY hob> line to python/lib/-dtd-jmdict-ex.xml
+  and python/lib/dtd-jmdict.xml
+
+  Added test 194 for new keyword to python/tests/test_jdb_kwds.py.

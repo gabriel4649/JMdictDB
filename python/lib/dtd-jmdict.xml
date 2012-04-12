@@ -327,8 +327,8 @@ various information fields.
 <!ENTITY uk "word usually written using kana alone">
 <!ENTITY v1 "Ichidan verb">
 <!ENTITY v2a-s "Nidan verb with 'u' ending (archaic)">
-<!ENTITY v4h "Yondan verb with `hu/fu' ending (archaic)">
-<!ENTITY v4r "Yondan verb with `ru' ending (archaic)">
+<!ENTITY v4h "Yodan verb with `hu/fu' ending (archaic)">
+<!ENTITY v4r "Yodan verb with `ru' ending (archaic)">
 <!ENTITY v5aru "Godan verb - -aru special class">
 <!ENTITY v5b "Godan verb with `bu' ending">
 <!ENTITY v5g "Godan verb with `gu' ending">
@@ -343,7 +343,6 @@ various information fields.
 <!ENTITY v5u "Godan verb with `u' ending">
 <!ENTITY v5u-s "Godan verb with `u' ending (special class)">
 <!ENTITY v5uru "Godan verb - Uru old class verb (old form of Eru)">
-<!ENTITY v5z "Godan verb with `zu' ending">
 <!ENTITY vz "Ichidan verb - zuru verb (alternative form of -jiru verbs)">
 <!ENTITY vi "intransitive verb">
 <!ENTITY vk "Kuru verb - special class">
@@ -366,4 +365,57 @@ various information fields.
 <!ENTITY hob "Hokkaido-ben">
 <!ENTITY vt "transitive verb">
 <!ENTITY vulg "vulgar expression or word">
+<!ENTITY adj-kari "`kari' adjective (archaic)">
+<!ENTITY adj-ku "`ku' adjective (archaic)">
+<!ENTITY adj-shiku "`shiku' adjective (archaic)">
+<!ENTITY adj-nari "archaic/formal form of na-adjective">
+<!ENTITY n-pr "proper noun">
+<!ENTITY v-unspec "verb unspecified">
+<!ENTITY v4k "Yodan verb with `ku' ending (archaic)">
+<!ENTITY v4g "Yodan verb with `gu' ending (archaic)">
+<!ENTITY v4s "Yodan verb with `su' ending (archaic)">
+<!ENTITY v4t "Yodan verb with `tsu' ending (archaic)">
+<!ENTITY v4n "Yodan verb with `nu' ending (archaic)">
+<!ENTITY v4b "Yodan verb with `bu' ending (archaic)">
+<!ENTITY v4m "Yodan verb with `mu' ending (archaic)">
+<!ENTITY v2k-k "Nidan verb (upper class) with `ku' ending (archaic)">
+<!ENTITY v2g-k "Nidan verb (upper class) with `gu' ending (archaic)">
+<!ENTITY v2t-k "Nidan verb (upper class) with `tsu' ending (archaic)">
+<!ENTITY v2d-k "Nidan verb (upper class) with `dzu' ending (archaic)">
+<!ENTITY v2h-k "Nidan verb (upper class) with `hu/fu' ending (archaic)">
+<!ENTITY v2b-k "Nidan verb (upper class) with `bu' ending (archaic)">
+<!ENTITY v2m-k "Nidan verb (upper class) with `mu' ending (archaic)">
+<!ENTITY v2y-k "Nidan verb (upper class) with `yu' ending (archaic)">
+<!ENTITY v2r-k "Nidan verb (upper class) with `ru' ending (archaic)">
+<!ENTITY v2k-s "Nidan verb (lower class) with `ku' ending (archaic)">
+<!ENTITY v2g-s "Nidan verb (lower class) with `gu' ending (archaic)">
+<!ENTITY v2s-s "Nidan verb (lower class) with `su' ending (archaic)">
+<!ENTITY v2z-s "Nidan verb (lower class) with `zu' ending (archaic)">
+<!ENTITY v2t-s "Nidan verb (lower class) with `tsu' ending (archaic)">
+<!ENTITY v2d-s "Nidan verb (lower class) with `dzu' ending (archaic)">
+<!ENTITY v2n-s "Nidan verb (lower class) with `nu' ending (archaic)">
+<!ENTITY v2h-s "Nidan verb (lower class) with `hu/fu' ending (archaic)">
+<!ENTITY v2b-s "Nidan verb (lower class) with `bu' ending (archaic)">
+<!ENTITY v2m-s "Nidan verb (lower class) with `mu' ending (archaic)">
+<!ENTITY v2y-s "Nidan verb (lower class) with `yu' ending (archaic)">
+<!ENTITY v2r-s "Nidan verb (lower class) with `ru' ending (archaic)">
+<!ENTITY v2w-s "Nidan verb (lower class) with `u' ending and `we' conjugation (archaic)">
+<!ENTITY archit "architecture term">
+<!ENTITY astron "astronomy, etc. term">
+<!ENTITY baseb "baseball term">
+<!ENTITY biol "biology term">
+<!ENTITY bot "botany term">
+<!ENTITY bus "business term">
+<!ENTITY econ "economics term">
+<!ENTITY eng "engineering term">
+<!ENTITY fin "finance term">
+<!ENTITY geol "geology, etc. term">
+<!ENTITY law "law, etc. term">
+<!ENTITY med "medicine, etc. term">
+<!ENTITY music "music term">
+<!ENTITY Shinto "Shinto term">
+<!ENTITY sports "sports term">
+<!ENTITY sumo "sumo term">
+<!ENTITY zool "zoology term">
+<!ENTITY joc "jocular, humorous term">
 ]>

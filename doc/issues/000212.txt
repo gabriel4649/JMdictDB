@@ -1,0 +1,83 @@
+Title:	Added a heap of POS, MISC and FLD tags
+Stat:	closed
+Disp:	done
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	Jim
+
+2012-04-12 1800:00:00  Jim
+
+Added the following:
+
+POS
+
+ adj-kari	`kari' adjective (archaic)
+ adj-ku	`ku' adjective (archaic)
+ adj-shiku	`shiku' adjective (archaic)
+ adj-nari	archaic/formal form of na-adjective
+ n-pr	proper noun
+ v-unspec	verb unspecified
+ v4k	Yodan verb with `ku' ending (archaic)
+ v4g	Yodan verb with `gu' ending (archaic)
+ v4s	Yodan verb with `su' ending (archaic)
+ v4t	Yodan verb with `tsu' ending (archaic)
+ v4n	Yodan verb with `nu' ending (archaic)
+ v4b	Yodan verb with `bu' ending (archaic)
+ v4m	Yodan verb with `mu' ending (archaic)
+ v2k-k	Nidan verb (upper class) with `ku' ending (archaic)
+ v2g-k	Nidan verb (upper class) with `gu' ending (archaic)
+ v2t-k	Nidan verb (upper class) with `tsu' ending (archaic)
+ v2d-k	Nidan verb (upper class) with `dzu' ending (archaic)
+ v2h-k	Nidan verb (upper class) with `hu/fu' ending (archaic)
+ v2b-k	Nidan verb (upper class) with `bu' ending (archaic)
+ v2m-k	Nidan verb (upper class) with `mu' ending (archaic)
+ v2y-k	Nidan verb (upper class) with `yu' ending (archaic)
+ v2r-k	Nidan verb (upper class) with `ru' ending (archaic)
+ v2k-s	Nidan verb (lower class) with `ku' ending (archaic)
+ v2g-s	Nidan verb (lower class) with `gu' ending (archaic)
+ v2s-s	Nidan verb (lower class) with `su' ending (archaic)
+ v2z-s	Nidan verb (lower class) with `zu' ending (archaic)
+ v2t-s	Nidan verb (lower class) with `tsu' ending (archaic)
+ v2d-s	Nidan verb (lower class) with `dzu' ending (archaic)
+ v2n-s	Nidan verb (lower class) with `nu' ending (archaic)
+ v2h-s	Nidan verb (lower class) with `hu/fu' ending (archaic)
+ v2b-s	Nidan verb (lower class) with `bu' ending (archaic)
+ v2m-s	Nidan verb (lower class) with `mu' ending (archaic)
+ v2y-s	Nidan verb (lower class) with `yu' ending (archaic)
+ v2r-s	Nidan verb (lower class) with `ru' ending (archaic)
+ v2w-s	Nidan verb (lower class) with `u' ending and `we' conjugation (archaic)
+
+FIELD 
+
+ archit	architecture term
+ astron	astronomy, etc. term
+ baseb	baseball term
+ biol	biology term
+ bot	botany term
+ bus	business term
+ econ	economics term
+ eng	engineering term
+ fin	finance term
+ geol	geology, etc. term
+ law	law, etc. term
+ med	medicine, etc. term
+ music	music term
+ Shinto	Shinto term
+ sports	sports term
+ sumo	sumo term
+ zool	zoology term
+
+MISC
+
+ joc	jocular, humorous term
+
+
+These were:
+(a) added to the two DTDs;
+(b) added to the .csv files;
+(c) added to Current_kwds in test_jdb_kwds.py;
+(d) added to the 3 tables in the database
+
+Tested. Seems OK.
+

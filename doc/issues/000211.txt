@@ -1,6 +1,6 @@
 Title:	Add new dial keyword, "hob" 
-Stat:	open
-Disp:	
+Stat:	closed
+Disp:	done
 Prio:	med
 Cats:	dev
 Reqtrs:	
@@ -16,3 +16,7 @@ AssdTo:	jwb
   and python/lib/dtd-jmdict.xml
 
   Added test 194 for new keyword to python/tests/test_jdb_kwds.py.
+
+2012-04-25 12:44:00 stuart
+  Added patches/006_01.sql to update a pre-existing database based
+  on jwb changes.

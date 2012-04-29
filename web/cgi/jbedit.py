@@ -41,7 +41,7 @@ def main (args, opts):
 	fv = lambda x:(form.getfirst(x) or '').decode(Enc)
 	is_editor = jmcgi.is_editor (sess)
 	dbg = fv ('d'); meth = fv ('meth')
-	srcs = sorted (jdb.KW.recs('SRC'), key=lambda x: x.kw)
+	srcs = sorted (jdb.KW.recs('SRC'), key=lambda x: x.kw.lower())
 
 	  # Get the filename url parameter, and validate it.
 	fn = fv ('fn')

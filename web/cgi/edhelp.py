@@ -32,7 +32,7 @@ def main (args, opts):
 	kwlist = []; kwhash = {}
 	for t in 'RINF KINF FREQ MISC POS FLD DIAL LANG GINF SRC STAT XREF'.split():
 	    kw = jdb.KW.recs (t)
-	    kwset = [t.capitalize(), sorted (kw, key=lambda x:x.kw)]
+	    kwset = [t.capitalize(), sorted (kw, key=lambda x:x.kw.lower())]
 	    kwlist.append (kwset)
 	    kwhash[t] = kwset[1]
 	jmcgi.gen_page ("tmpl/edhelp.tal", macros='tmpl/macros.tal', 

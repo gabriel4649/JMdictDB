@@ -34,23 +34,23 @@ def main( args, opts ):
 	  # reshapes()'s last argument is the maximum number of checkboxes
 	  # to put on a line, and is ajusted empirically to make the total
 	  # widths for all the sections approximately equal. 
-	pos =  reshape (sorted (jdb.KW.recs('POS'),  key=lambda x:x.kw), 10)
-	misc = reshape (sorted (jdb.KW.recs('MISC'), key=lambda x:x.kw), 8)
-	stat = reshape (sorted (jdb.KW.recs('STAT'), key=lambda x:x.kw), 10)
-	fld =  reshape (sorted (jdb.KW.recs('FLD'),  key=lambda x:x.kw), 10)
-	dial = reshape (sorted (jdb.KW.recs('DIAL'), key=lambda x:x.kw), 12)
-	kinf = reshape (sorted (jdb.KW.recs('KINF'), key=lambda x:x.kw), 5)
+	pos =  reshape (sorted (jdb.KW.recs('POS'),  key=lambda x:x.kw.lower()), 10)
+	misc = reshape (sorted (jdb.KW.recs('MISC'), key=lambda x:x.kw.lower()), 8)
+	stat = reshape (sorted (jdb.KW.recs('STAT'), key=lambda x:x.kw.lower()), 10)
+	fld =  reshape (sorted (jdb.KW.recs('FLD'),  key=lambda x:x.kw.lower()), 10)
+	dial = reshape (sorted (jdb.KW.recs('DIAL'), key=lambda x:x.kw.lower()), 12)
+	kinf = reshape (sorted (jdb.KW.recs('KINF'), key=lambda x:x.kw.lower()), 5)
 	  # FIXME: restricting 'rinf' kwds to values less that 100 causes
 	  #  the searchj form not to show the the kanjidic-related ones.
 	  #  This is really too hackish.  See IS-190 for fix.
 	rinf = reshape (sorted ([x for x in jdb.KW.recs('RINF') if x.id < 100],
-						     key=lambda x:x.kw), 5)
+						     key=lambda x:x.kw.lower()), 5)
 	  # FIXME: Filter out the kanjidic corpus for now.  Will figure
 	  #  out how to integrate it later.  This too is pre- IS-190 hack.
 	corp = reshape (sorted ([x for x in jdb.KW.recs('SRC') if x.kw!='xxkanjidic'] , 
-						     key=lambda x:x.kw), 10)
+						     key=lambda x:x.kw.lower()), 10)
 	freq = []
-	for x in sorted (jdb.KW.recs('FREQ'), key=lambda x:x.kw):
+	for x in sorted (jdb.KW.recs('FREQ'), key=lambda x:x.kw.lower()):
 	   if x.kw!='nf' and x.kw!='gA': freq.extend ([x.kw+'1', x.kw+'2'])
 
 	jmcgi.gen_page ("tmpl/srchform.tal", macros='tmpl/macros.tal', 
@@ -70,4 +70,3 @@ def reshape (array, ncols, default=None):
 if __name__ == '__main__': 
 	args, opts = jmcgi.args()
 	main (args, opts)
-

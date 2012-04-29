@@ -161,7 +161,7 @@ def main (args, opts):
 	    errs.append ("No matching entries were found") 
 	if errs: jmcgi.err_page (errs)
 
-	srcs = sorted (jdb.KW.recs('SRC'), key=lambda x: x.kw)
+	srcs = sorted (jdb.KW.recs('SRC'), key=lambda x: x.kw.lower())
 	#srcs.insert (0, jdb.Obj (id=0, kw='', descr=''))
 	if not entrs:
 	      # This is a blank new entry.

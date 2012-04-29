@@ -108,6 +108,7 @@ def parse_ex (fin, begin):
 	# begin -- Line number at which to begin processing.  Lines 
 	#    before that are skipped.
 
+	seq_cache = set()
 	for aln, bln in fin:
 	    global Lnnum, Seq
 	    if fin.lineno < begin: continue
@@ -121,7 +122,9 @@ def parse_ex (fin, begin):
 		  # FIXME: the following assumes that the english sentence id
 		  #  number will never be greater than 1E6, which is probably
 		  #  not wise given that some are already in the 400K range. 
-		Seq = int (mo.group(2)) * 1000000 + int (mo.group(3))
+		id1, id0 = int(mo.group(2)), int(mo.group(3))
+		if id0 >= 1000000: msg ("Warning, ID#%s_%s, 2nd half exceeds limit" % (id1, id0))
+		Seq = id1 * 1000000 + id0
 	    else: 
 		msg ("No ID number found"); continue
 	    try: 
@@ -130,6 +133,12 @@ def parse_ex (fin, begin):
 	    except ParseError, e:
 		msg (e.args[0]); continue
 	    if not idxlist: continue
+	      # Turns out some of the entries in the examples file are duplicates
+	      # (including the ID#) so we check the seq# 
+	    if Seq in seq_cache: 
+		msg ("Duplicate id#: %s_%s" % (id1, id0))
+		continue
+	    seq_cache.add (Seq)
 	    entr = mkentr (jtxt, etxt, kwds)
 	    entr.seq = Seq
 	    entr._sens[0]._xrslv = mkxrslv (idxlist)

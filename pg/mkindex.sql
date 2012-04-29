@@ -6,6 +6,7 @@ CREATE INDEX entr_seq ON entr(seq);
 CREATE INDEX entr_stat ON entr(stat) WHERE stat!=2;
 CREATE INDEX entr_dfrm ON entr(dfrm) WHERE dfrm IS NOT NULL;
 CREATE INDEX entr_unap ON entr(unap) WHERE unap;
+CREATE UNIQUE INDEX entr_active ON entr(src,seq,stat,unap) WHERE stat=2 AND NOT unap;
 CREATE INDEX rdng_txt ON rdng(txt);
 CREATE UNIQUE INDEX rdng_txt1 ON rdng(entr,txt);
 CREATE INDEX rdng_txt2 ON rdng(txt varchar_pattern_ops); --For fast LIKE 'xxx%'

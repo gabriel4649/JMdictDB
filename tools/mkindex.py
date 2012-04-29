@@ -33,6 +33,7 @@ def main (args, opts):
 		elif line.startswith ('--ALTER TABLE'):
 		    line = re.sub (r' FOREIGN[^;]*', '', line[2:])
 		    line = line.replace (' ADD ', ' DROP ')
+		    line = line.replace (' CONSTRAINT ', ' CONSTRAINT IF EXISTS ')
 		    fk.append (line)
 	print '''\
 -- This file is recreated during the database build process.

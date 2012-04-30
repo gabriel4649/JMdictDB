@@ -26,6 +26,10 @@ sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import cgitbx; cgitbx.enable()
 import jdb, jmcgi
 
+class Kwfreq (object): 
+    def __init__ (self, kw, descr):
+	self.kw, self.descr = kw, descr
+
 def main( args, opts ):
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
 	except StandardError, e: jmcgi.err_page ([unicode (e)])
@@ -51,9 +55,15 @@ def main( args, opts ):
 						     key=lambda x:x.kw.lower()), 10)
 	freq = []
 	for x in sorted (jdb.KW.recs('FREQ'), key=lambda x:x.kw.lower()):
-	   if x.kw!='nf' and x.kw!='gA': freq.extend ([x.kw+'1', x.kw+'2'])
+	     # Build list of Kwfreq keywords for populating the webpage Freq
+	     # checkboxes.  Since the 'kwfreq' table does not include the
+	     # values (the "1", "2", in "ichi1" etc), we create the expanded 
+	     # values here.  We also supply the "descr" value which will provide
+	     # tool tips on web page.
+	   if x.kw!='nf' and x.kw!='gA': freq.extend ([Kwfreq(x.kw+'1', x.descr), 
+						       Kwfreq(x.kw+'2', x.descr)])
 
-	jmcgi.gen_page ("tmpl/srchform.tal", macros='tmpl/macros.tal', 
+	jmcgi.gen_page ("tmpl/srchform.tal", macros='tmpl/macros.tal', KW=jdb.KW,
 			pos=pos, misc=misc, stat=stat, src=corp, freq=freq,
 			fld=fld, kinf=kinf, rinf=rinf, dial=dial, parms=parms,
 			svc=svc, host=host, sid=sid, session=sess, cfg=cfg, 

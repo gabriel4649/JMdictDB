@@ -126,7 +126,7 @@
 		<table class="optgroup">
 		  <tr tal:repeat="r src">
 		    <td tal:repeat="c r">
-		      <input name="src" tal:condition="c" tal:attributes="value c/id; checked python:TALdecode(c.id,1,1)" tal:content="c/kw" type="checkbox"/> 
+		      <input name="src" tal:condition="c" tal:attributes="value c/id; title c/descr; checked python:TALdecode(c.id,1,1)" tal:content="c/kw" type="checkbox"/> 
 		      </td>
 		    </tr>
 		  </table>
@@ -140,7 +140,7 @@
 		<table class="optgroup">
 		  <tr tal:repeat="r stat">
 		    <td tal:repeat="c r"> 
-		      <input name="stat" tal:condition="c" tal:attributes="value c/id; checked python:TALdecode(c.kw,'A',1,'N',1)" tal:content="c/descr" type="checkbox"/> 
+		      <input name="stat" tal:condition="c" tal:attributes="value c/id; title c/descr; checked python:TALdecode(c.kw,'A',1,'N',1)" tal:content="c/descr" type="checkbox"/> 
 		      </td>
 		    </tr>
 		  </table>
@@ -160,10 +160,10 @@
 	      <td colspan="2"><span class="descriptor">Frequency of use:</span>
                 <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_freq">help</a><br/>
 	        <span tal:repeat="z freq" class="optgroup">
-		  <input name="freq" tal:attributes="value z" tal:content="z" type="checkbox"/> 
+		  <input name="freq" tal:attributes="value z/kw; title z/descr" tal:content="z/kw" type="checkbox"/> 
 	          </span> 
 	        <br/><span class="optgroup">
-	          <input name="freq" value="nf" type="checkbox"/>nf
+	          <input name="freq" value="nf" tal:attributes="title KW/FREQ/nf/descr" type="checkbox"/>nf
 	          <select name="nfcmp">
 	            <option selected="selected">&lt;=</option>
 	            <option>=</option>
@@ -171,13 +171,15 @@
 	            </select>
 	          <input name="nfval" size="2"/>
 	          &nbsp;&nbsp;
-	          <input name="freq" value="ga" type="checkbox"/>gA
-	          <select name="gacmp">
-	            <option>&lt;=</option>
-	            <option>=</option>
-	            <option selected="selected">&gt;=</option>
-	            </select>
-	          <input name="gaval" size="8"/>
+		  <span tal:condition="KW/FREQ/gA">
+	            <input name="freq" value="ga" tal:attributes="title KW/FREQ/gA/descr" type="checkbox"/>gA
+	            <select name="gacmp">
+	              <option>&lt;=</option>
+	              <option>=</option>
+	              <option selected="selected">&gt;=</option>
+	              </select>
+	            <input name="gaval" size="8"/>
+		    </span>
 		  </span>
 	        </td>
 	      </tr>
@@ -189,7 +191,7 @@
 		<table class="optgroup">
 		  <tr tal:repeat="r kinf">
 		    <td tal:repeat="c r">
-		      <input name="kinf" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/> 
+		      <input name="kinf" tal:condition="c" tal:attributes="value c/id; title c/descr" tal:content="c/kw" type="checkbox"/> 
 		      </td>
 		    </tr>
 		  </table>
@@ -200,7 +202,7 @@
 		<table class="optgroup">
 		  <tr tal:repeat="r rinf">
 		    <td tal:repeat="c r">
-		      <input name="rinf" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/> 
+		      <input name="rinf" tal:condition="c" tal:attributes="value c/id; title c/descr" tal:content="c/kw" type="checkbox"/> 
 		      </td>
 		    </tr>
 		  </table>
@@ -214,7 +216,7 @@
 	        <table class="optgroup">
 		  <tr tal:repeat="r pos">
 		    <td tal:repeat="c r"> 
-		      <input name="pos" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/> 
+		      <input name="pos" tal:condition="c" tal:attributes="value c/id; title c/descr; title c/descr" tal:content="c/kw" type="checkbox" /> 
 		      </td>
 		    </tr>
 	          </table>
@@ -228,7 +230,7 @@
 	        <table class="optgroup">
 		  <tr tal:repeat="r misc">
 		    <td tal:repeat="c r"> 
-		      <input name="misc" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/> 
+		      <input name="misc" tal:condition="c" tal:attributes="value c/id; title c/descr" tal:content="c/kw" type="checkbox"/> 
 		      </td>
 		    </tr>
 	          </table>
@@ -242,7 +244,7 @@
 	        <table class="optgroup">
 		  <tr tal:repeat="r fld">
 		    <td tal:repeat="c r">
-		      <input name="fld" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/> 
+		      <input name="fld" tal:condition="c" tal:attributes="value c/id; title c/descr" tal:content="c/kw" type="checkbox"/> 
 		      </td>
 		    </tr>
 	          </table>
@@ -256,7 +258,7 @@
 	        <table class="optgroup">
 		  <tr tal:repeat="r dial">
 		    <td tal:repeat="c r">
-		      <input name="dial" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/> 
+		      <input name="dial" tal:condition="c" tal:attributes="value c/id; title c/descr" tal:content="c/kw" type="checkbox"/> 
 		      </td>
 		    </tr>
 	          </table>

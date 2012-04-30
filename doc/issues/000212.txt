@@ -94,3 +94,12 @@ AssdTo:	jwb
  a fatal problem but will mean that users have to explicitly
  disabiguate them in some circumstances (e.g. "LANG=eng" rather
  than just "eng").  Emailed jwb.  
+
+2012-04-29 15:43:00 stuart
+ Jwb posted note on edict list asking about change
+  http://tech.groups.yahoo.com/group/edict-jmdict/message/4752 
+ suggesting "engr" and "finc" as replacements.  No negative
+ responses to date, one positive one. 
+ Updated file pg/data/kwfld.csv, python/tests/
+ and created patches/008_01.sql to update running jmdictdb
+ instances. 

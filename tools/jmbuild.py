@@ -28,7 +28,10 @@ __version__ = ('$Revision$'[11:-2],
 # See also: jmextract.py -- Pulls subset of elements out of 
 #   a jmdict or jmnedict file.
 
-import sys
+import sys, os, inspect, pdb
+_ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
+_ = os.path.join (os.path.dirname(_), 'python', 'lib')
+if _ not in sys.path: sys.path.insert(0, _) 
 
 def main (args, opts):
 	parts = []

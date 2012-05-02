@@ -31,11 +31,14 @@ __version__ = ('$Revision$'[11:-2],
 # Decompose dic_ref into (numb,vol,ch,pg,other)?  Is this basis for
 #   general locator scheme that can be applied in other corpora?
 
-import sys, os
+import sys, os, inspect, pdb
+_ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
+_ = os.path.join (os.path.dirname(_), 'python', 'lib')
+if _ not in sys.path: sys.path.insert(0, _) 
+
 from xml.etree import cElementTree as ElementTree
 import jdb, pgi
 from iso639maps import iso639_1_to_2
-
 
 # Remap the keywords used in the kanjidic2.xml file to
 # the keywords used in the kw* tables.  Those keywords

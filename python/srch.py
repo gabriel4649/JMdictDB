@@ -2,11 +2,18 @@
 
 _VERSION_=("$Revision$"[11:-2],"$Date$"[7:-11])
 
-import sys, re, operator, os, tempfile, time, cgi, pdb
+import sys, os, inspect, pdb
+_ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
+_ = os.path.join (os.path.dirname(_), 'python', 'lib')
+if _ not in sys.path: sys.path.insert(0, _) 
+
+import re, operator, tempfile, time, cgi
 import wx, wx.xrc, wx.grid, wx.html, wx.lib.pubsub, wx.lib.delayedresult
 import wx.lib.inspection
-import jdb, fmt, fmtjel, tal, jmcgi, pylib.config
-import ply, jelparse, jellex
+import jdb, fmt, fmtjel, tal, jmcgi
+from pylib import config
+import ply
+import jelparse, jellex
 from jelparse import ParseError
 from jdb import AuthError
 from functools import partial

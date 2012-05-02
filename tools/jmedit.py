@@ -13,10 +13,15 @@ __version__ = ("$Revision$"[11:-2],
 # How to edit groups, snds, kw* tables, the t* tables?
 # Make jmedit callable from the src.py gui tool?
 
-import sys, copy, pdb
+import sys, os, inspect, pdb
+_ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
+_ = os.path.join (os.path.dirname(_), 'python', 'lib')
+if _ not in sys.path: sys.path.insert(0, _) 
+
+import copy
 import wx, wx.grid, wx.xrc as xrc
 from wx.lib.pubsub import Publisher as publisher
-import  jdb, fmt, fmtjel, fmtxml, objects
+import jdb, fmt, fmtjel, fmtxml, objects
 
 Subscribe = publisher().subscribe
 def Notify (topic, msg=None):

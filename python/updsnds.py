@@ -27,7 +27,12 @@ __version__ = ('$Revision$'[11:-2],
 # and update the strt and leng parameters of the existing 
 # sounds from data in the label file.
 
-import sys, os.path, codecs
+import sys, os, inspect, pdb
+_ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
+_ = os.path.join (os.path.dirname(_), 'python', 'lib')
+if _ not in sys.path: sys.path.insert(0, _) 
+
+import os.path, codecs
 import jdb
 
 def main (args, opts):

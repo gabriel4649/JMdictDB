@@ -27,8 +27,12 @@ __version__ = ('$Revision$'[11:-2],
 # page with the edit boxes initialized with the submission's
 # data, ready for review and submission.
 
+import sys, os, inspect, pdb
+_ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
+_ = os.path.join (os.path.dirname(_), 'python', 'lib')
+if _ not in sys.path: sys.path.insert(0, _) 
 
-import sys, re, collections, datetime, os.path, json, pdb
+import re, collections, datetime, os.path, json
 import jdb, jmcgi, fmtjel, edparse
 from edparse import ParseError as eParseError
 

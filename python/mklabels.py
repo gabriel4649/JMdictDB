@@ -24,7 +24,12 @@ __version__ = ('$Revision$'[11:-2],
 # Write an Audacity label track for the sound clips in a 
 # sound file.  Run with --help option for details.
 
-import sys, os.path
+import sys, os, inspect, pdb
+_ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
+_ = os.path.join (os.path.dirname(_), 'python', 'lib')
+if _ not in sys.path: sys.path.insert(0, _) 
+
+import os.path
 import jdb
 
 def main (args, opts):

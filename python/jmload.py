@@ -26,7 +26,12 @@ __version__ = ('$Revision$'[11:-2],
 # of a jmdict database, so that the file can be loaded into a database
 # with existing entries and not conflict with those entries.
 
-import sys, re, codecs
+import sys, os, inspect, pdb
+_ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
+_ = os.path.join (os.path.dirname(_), 'python', 'lib')
+if _ not in sys.path: sys.path.insert(0, _) 
+
+import re, codecs
 import jdb, warns
 
 def main (args, opts):

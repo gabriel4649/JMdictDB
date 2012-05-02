@@ -5,7 +5,11 @@ Program to generate parser tables from the jelparse module.
 
 """
 
-import sys, pdb
+import sys, os, inspect, pdb
+_ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
+_ = os.path.join (os.path.dirname(_), 'python', 'lib')
+if _ not in sys.path: sys.path.insert(0, _) 
+
 import jdb, jellex, jelparse
 
 def main():

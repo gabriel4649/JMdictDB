@@ -49,7 +49,12 @@ __version__ = ('$Revision$'[11:-2],
 # entries still exist after applying the selection
 # algorithm, the fact is reported and that xref skipped.
 
-import sys, re
+import sys, os, inspect, pdb
+_ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
+_ = os.path.join (os.path.dirname(_), 'python', 'lib')
+if _ not in sys.path: sys.path.insert(0, _) 
+
+import re
 from collections import defaultdict
 import jdb
 

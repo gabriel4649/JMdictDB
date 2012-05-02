@@ -257,6 +257,7 @@ Current_kwds = [
 	('244', 'POS', 96, 'v2r-s'),
 	('245', 'POS', 97, 'v2w-s'),
 	('246', 'MISC', 28, 'joc'),
+	('247', 'FLD', 28, 'anat'),
 	]
 
 Cursor = None

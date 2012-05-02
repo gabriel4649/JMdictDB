@@ -103,3 +103,11 @@ AssdTo:	jwb
  Updated file pg/data/kwfld.csv, python/tests/
  and created patches/008_01.sql to update running jmdictdb
  instances. 
+
+2012-05-01 20:34 stuart
+ Forgot to update dtd-jmdict.xml and dtd-jmdict-ex.xml with 
+ the "eng"->"engr" and "in"->"finc" change.
+
+ Add new FLD keyword "anat" ("anatomical term", 28).
+ Updated patches/008_01.sql rather than create a new patch
+ since 008 hasn't been used yet.

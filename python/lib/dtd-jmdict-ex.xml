@@ -474,8 +474,8 @@ various information fields.
 <!ENTITY bot "botany term">
 <!ENTITY bus "business term">
 <!ENTITY econ "economics term">
-<!ENTITY eng "engineering term">
-<!ENTITY fin "finance term">
+<!ENTITY engr "engineering term">
+<!ENTITY finc "finance term">
 <!ENTITY geol "geology, etc. term">
 <!ENTITY law "law, etc. term">
 <!ENTITY med "medicine, etc. term">
@@ -485,4 +485,5 @@ various information fields.
 <!ENTITY sumo "sumo term">
 <!ENTITY zool "zoology term">
 <!ENTITY joc "jocular, humorous term">
+<!ENTITY anat "anatomical term">
 ]>

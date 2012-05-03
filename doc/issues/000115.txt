@@ -26,7 +26,6 @@ AssdTo:
   * What about corpus dropdown list on edit page?  Should edconf.py
     (and edsubmit.py) pages refuse to accept entries wiyj kanjidic
     corpus?
-  
   * entr page probably ok as is since its driven by entr.id
   * shentr.py util probably ok since that in internal tool and
     should allow display of kanji entries is desired.
@@ -47,3 +46,23 @@ AssdTo:
 2008-06-03 19:18:00 sysad
   Fixed a typo that prevented the kanjidic corpus from being 
   suppressed on the web/cgi/srchform.py page.
+
+2012-05-03 13:26:00 stuart
+  Modify the entr.tal template to display kanjidic info (in
+  entr.chr attribute) if present.
+  Issues:
+   Can't edit any of this info.
+   Need to check and make sure .chr is passed though edits 
+    unchanged when the entr info is edited.
+   Normal skip code and misclassified skip code both displayed
+    as "skip: xxx".  (This is problem with kdparse and db schema
+    neither of which distinguishes them.)
+   "References" (the cinf table info) should be devided into 
+    four tables: References, Classifications (the qc elements)
+    in the kanjidic xml and "other readings" (the korean, chinese
+    etc reading), encodigns.  These changes will be easier with
+    database support (e.g. separate tables), or api support (split
+    the .cinf list into 4 lists.)
+   References table should be sorted by name.
+   Should add ecodings (unicode CP, utf8, iso2022jp, euc-sp, sjis,
+    along with the jis208 value in kanjidic.

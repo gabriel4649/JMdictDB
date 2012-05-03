@@ -1,2 +1,6 @@
 [patterns]
+**.png = BIN
+**.bmp = BIN
+**.odt = BIN
+**.pdf = BIN
 ** = native

@@ -185,6 +185,33 @@
 	    </tr>
 	  </table>
 
+        <span call="kdinfo" tal:condition="e/chr" tal:omit-tag=""><br/>
+	  <table valign="top">
+	    <tr><th>Kanji details</th><th>&nbsp;&nbsp;&nbsp;&nbsp;</th><th>References</th></tr>
+	    <tr>
+	      <td valign="top">
+		<table class="kddetails" border="1">
+	          <tr><td>Strokes:</td><td tal:content="e/chr/strokes"></td></tr>
+	          <tr><td>Radical:</td><td tal:content="python:e.chr.bushu or u'&nbsp;'"></td></tr>
+	          <tr><td>Radical name:</td><td tal:content="python:e.chr.radname or u'&nbsp;'"></td></tr>
+	          <tr><td>Grade:</td><td tal:content="python:e.chr.grade or u'&nbsp;'"></td></tr>
+	          <tr><td>Freq:</td><td tal:content="python:e.chr.freq or u'&nbsp;'"></td></tr>
+	          <tr><td>JLPT:</td><td tal:content="python:e.chr.jlpt or u'&nbsp;'"></td></tr>
+	          </table>
+	 	</td>
+	      <td></td>
+	      <td>
+	        <table class="kdrefs" border="1">
+	          <tr tal:repeat="rf e/chr/_cinf">
+	            <td tal:content="python:TALabbr('CINF',rf.kw)" tal:attributes="title python:TALdescr('CINF',rf.kw)">kwname</td>
+	            <td tal:content="rf/value">value</td>
+		    </tr>
+		  </table>
+		</td>
+	      </tr>
+	    </table>
+          </span>
+
 	<span tal:condition="e/_grp" tal:omit-tag=""><br/>Belongs to groups:
 	  <span tal:repeat="g e/_grp" tal:omit-tag="">
 	    <span class="grp">

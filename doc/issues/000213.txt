@@ -23,18 +23,11 @@ AssdTo:	stuart
   The following was my first idea but it doesn't work.
   Add a table, call it "actv" defined like:
 
-  CREATE TABLE entr (
-    ....);
-  CREATE UNIQUE INDEX entr_seq_src_id ON entr(seq,src,id);
+  CREATE UNIQUE INDEX ON entr(id,seq);
   CREATE TABLE actv (
-    seq INT NOT NULL,
-    src SMALLINT NOT NULL,
-    id SMALLINT NOT NULL,
-    PRIMARY KEY (seq,src,id));
-  CREATE UNIQUE INDEX entr_seq_src ON entr(seq,src);
-  ALTER TABLE actv ADD CONSTRAINT actv_seq_src_id_fkey 
-    FOREIGN KEY (seq,src,id) REFERENCES entr(seq,src,id)
-      ON DELETE CASCADE ON UPDATE CASCADE;
+    seq BIGINT PRIMARY KEY,
+    entr INT NOT NULL UNIQUE,
+    FOREIGN KEY (entr,seq) REFERENCES entr(id,seq));
 
   This table will only allow one entry to be associated 
   with one seq number and allows disallows multiple rows
@@ -44,7 +37,7 @@ AssdTo:	stuart
   But it is no good -- we can can have arbitrary number
   of D and R stat'd entries either approved or unapproved,
   in a seq# set and the above provides no assurance that a 
-  row in 'actv' points to a stat=2,unap=F entr row. 
+  row in 'actv' points to a stat=2,unap=F entr. 
 
   The ability to reference xref targets by seq# is also 
   iffy -- how to create xrefs when there isn't an active
@@ -60,8 +53,14 @@ AssdTo:	stuart
 2012-04-28 09:45:00 stuart
  I think we can an use a unique partial index to enforce only
  one active entry:
-    CREATE UNIQUE INDEX ON entr(src,seq,stat,unap) WHERE stat=2 AND NOT unap;
+    CREATE UNIQUE INDEX ON entr(seq,stat,unap) WHERE stat=2 AND NOT unap;
  but this does not provide a way for xrefs to reference by
  seq# since one apperantly can't create an FK that references 
  a partial unique index.
 
+2012-05-03 15:43:00 stuart
+ Backout the above index (removed patches/007_01.sql and commented
+ out the line tha creates the index in pg/mktables.sql.  
+
+ Problem is that with the index in place, I am unable to submit
+ "approved" entries; get a key violation on that index. 

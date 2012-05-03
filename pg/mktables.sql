@@ -206,7 +206,9 @@ CREATE TABLE entr (
 --CREATE INDEX entr_stat ON entr(stat) WHERE stat!=2;
 --CREATE INDEX entr_dfrm ON entr(dfrm) WHERE dfrm IS NOT NULL;
 --CREATE INDEX entr_unap ON entr(unap) WHERE unap;
---CREATE UNIQUE INDEX entr_active ON entr(src,seq,stat,unap) WHERE stat=2 AND NOT unap;
+   -- Following temporarily disabled since it is preventing the 
+   -- submission of "approved" entries.
+-- -- CREATE UNIQUE INDEX entr_active ON entr(src,seq,stat,unap) WHERE stat=2 AND NOT unap;
 --ALTER TABLE entr ADD CONSTRAINT entr_src_fkey FOREIGN KEY (src) REFERENCES kwsrc(id) ON DELETE CASCADE ON UPDATE CASCADE;
 --ALTER TABLE entr ADD CONSTRAINT entr_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
 --ALTER TABLE entr ADD CONSTRAINT entr_dfrm_fkey FOREIGN KEY (dfrm) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;

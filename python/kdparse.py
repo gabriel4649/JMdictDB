@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
@@ -75,7 +76,7 @@ def main (args, opts):
 		      dt=srcdate, seq='seq_kanjidic')
 	pgi.wrcorp (srcrec, workfiles)
 	pgi.finalize (workfiles, Opts.o, not Opts.k)
-	print >>sys.stderr, "\nDone!"
+	print ("\nDone!", file=sys.stderr)
 
 class LnFile:
       # Wrap a standard file object so as to keep track
@@ -100,7 +101,7 @@ def parse_xmlfile (infn, srcid, workfiles, start, count, langs):
         inpf = LnFile(open(infn))
 	context = iter(ElementTree.iterparse( inpf, ("start","end")))
 	event, root = context.next()
-	if start and start>1: print >>sys.stderr, "Skipping initial entries..."
+	if start and start>1: print ("Skipping initial entries...", file=sys.stderr)
 	cntr = 0; 
 	for event, elem in context:
 
@@ -151,7 +152,7 @@ def parse_xmlfile (infn, srcid, workfiles, start, count, langs):
 		# save the current entry counter value.
  
 		cntr += 1
-		if cntr == 1: print >>sys.stderr, "Parsing..."
+		if cntr == 1: print ("Parsing...", file=sys.stderr)
 
 		# Process and write this entry.
 
@@ -390,7 +391,7 @@ def jlptnum (x, c):
 def warn (msg, *args):
 	global Char, Lineno, Opts
 	s = "%s (line %d), warning: %s" % (Char, Lineno, msg % args)
-	print >>Opts.l, s.encode (Opts.e, 'backslashreplace')
+	print (s.encode (Opts.e, 'backslashreplace'), file=Opts.l)
 
    
 

@@ -16,6 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
@@ -94,7 +95,7 @@ def parse_entry (txt, dtd=None):
 	else: txt = re.sub ('&[a-zA-Z0-9-]+;', _ent_repl, txt)
 	xo = ElementTree.XML (txt)
 	if xo is None:
-	    print "No parse results"
+	    print ("No parse results")
 	    return []
 	e = do_entr (xo, None)
 	return [e]
@@ -873,12 +874,12 @@ def main (args, opts):
             inpf = JmdictFile( open( args[0] ))
 	    for tag,entr in parse_xmlfile (inpf, xlit=1):
 		import fmt
-		print fmt.entr (entr)
+		print (fmt.entr (entr))
 	else:
-	    print >>sys.stderr, """
+	    print ("""
 No argument given.  Please supply the name of a file containing
 test entries that will be read, formatted and printed.  The entries
 must be enclosed in a root element (e.g. <JMdict>...</JMdict>) but
-a DTD is not necessary.""" 
+a DTD is not necessary.""", file=sys.stderr) 
 
 if __name__ == '__main__': main (sys.argv[1:], None)

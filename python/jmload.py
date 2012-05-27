@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
@@ -50,7 +51,7 @@ def main (args, opts):
 	    raise ValueError ("Invalid valid entr.id value '%s', please check -i" % eid)
 	rmin = opts.minimum_id; rmax = opts.maximum_id
 	eiddelt = eid - rmin;
-	print >>sys.stderr, "Rebasing %d to %d." % (rmin, eid)
+	print ("Rebasing %d to %d." % (rmin, eid), file=sys.stderr)
 	srcid = opts.srcid
 
 	fin  = open (args[0])
@@ -110,8 +111,8 @@ def main (args, opts):
 	    fout.write (line + "\n")
 
 	if updtd and eiddelt != 0:
-	    print >>sys.stderr, "Rebased tables: " + ",".join (updtd)
-	else: print >>sys.stderr, "No changes made"
+	    print ("Rebased tables: " + ",".join (updtd), file=sys.stderr)
+	else: print ("No changes made", file=sys.stderr)
 
 def get_max_ids (opts):
 	  # Get and return 1 + the max values of entr.id found in the

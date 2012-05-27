@@ -22,6 +22,8 @@
 # entries that have a comment with a timestamp in the day
 # given in the URL y (year), m (month), and d (day) parameters.
 
+from __future__ import print_function
+
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11])
 

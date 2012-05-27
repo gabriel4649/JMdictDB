@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11])
@@ -144,7 +145,7 @@ def main( args, opts ):
 	      # results page.  'force_srchres' allows supressing this behavior
 	      # for debugging.
 	    svcstr = ("svc=%s&sid=%s&" % (svc,sid)) if svc else ''
-	    print "Location: entr.py?%se=%d\n" % (svcstr, rs[0].id)
+	    print ("Location: entr.py?%se=%d\n" % (svcstr, rs[0].id))
 	else:
 	    if not meth: meth = 'get' if dbg else 'post'
 	    jmcgi.gen_page ("tmpl/srchres.tal", macros='tmpl/macros.tal', 

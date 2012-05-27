@@ -16,7 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 ########################################################################
-
+from __future__ import print_function
 from __future__ import with_statement
 
 __version__ = ('$Revision$'[11:-2],

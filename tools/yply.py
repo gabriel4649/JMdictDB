@@ -10,6 +10,7 @@
 # Based on the yply code written by David Beazley (dave@dabeaz.com)
 # October 2, 2006 and distributed with the examples in Ply-2.3.
 
+from __future__ import print_function
 
 __version__ = ("$Revision$"[11:-2], 
 	       "$Date$"[7:-11])

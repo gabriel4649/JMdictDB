@@ -3,6 +3,7 @@
 
 # Tests the jdb.jstr_classify() function.
 
+from __future__ import print_function
 import sys, pdb, unittest
 if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb

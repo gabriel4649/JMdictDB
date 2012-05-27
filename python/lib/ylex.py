@@ -3,6 +3,7 @@
 # Author: David Beazley (dave@dabeaz.com)
 # Date  : October 2, 2006
 
+from __future__ import print_function
 import sys
 sys.path.append("../..")
 
@@ -97,8 +98,8 @@ def t_code_error(t):
     raise RuntimeError
 
 def t_error(t):
-    print "%d: Illegal character '%s'" % (t.lineno, t.value[0])
-    print t.value
+    print ("%d: Illegal character '%s'" % (t.lineno, t.value[0]))
+    print (t.value)
     t.lexer.skip(1)
 
 lex.lex()

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 
 Logfile = sys.stderr
@@ -6,6 +7,6 @@ Encoding = sys.getdefaultencoding()
 def warn (msg, *args):
 	m = msg % args
 	if Encoding: m = m.encode (Encoding, 'backslashreplace')
-	print >>Logfile, m
+	print (m, file=Logfile)
 
 

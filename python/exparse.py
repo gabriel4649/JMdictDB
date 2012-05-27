@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
@@ -394,7 +395,7 @@ Arguments:
 		"(in a more convenient form) to stdout before it exits.")
 
 	opts, args = p.parse_args ()
-	if len (args) > 1: print >>sys.stderr, "%d arguments given, expected at most one"
+	if len (args) > 1: print ("%d arguments given, expected at most one", file=sys.stderr)
 	if len (args) < 1: args = ["examples.txt"]
 	return args, opts
 

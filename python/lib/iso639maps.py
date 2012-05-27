@@ -1,4 +1,6 @@
 ﻿# coding: utf-8
+from __future__ import print_function
+
 iso639_1_to_2 = {
 	'aa': 'aar',	# Afar
 	'ab': 'abk',	# Abkhazian

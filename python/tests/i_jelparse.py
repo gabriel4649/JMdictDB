@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys, ply.yacc, re, unicodedata, pdb
 from collections import defaultdict
 import jdb, jellex, jelparse
@@ -22,11 +23,11 @@ def main (args, opts):
 	      # to 1 (jmdict) below.
 	    srctxt, parsedtxt = _roundtrip (cur, lexer, parser, seq, 1)
 	    if not srctxt:
-		print "Entry %s not found" % seq
+		print ("Entry %s not found" % seq)
 	    else:
-		print srctxt
-		print "----"
-		print parsedtxt
+		print (srctxt)
+		print ("----")
+		print (parsedtxt)
 	else:
 	    _interactive (cur, lexer, parser)
 
@@ -74,14 +75,14 @@ def _interactive (cur, lexer, parser):
 	    except jelparse.ParseError, e: 
 		if not e.loc: msg = e.args[0]
 		else: msg = "%s\n%s" % (e.args[0], e.loc)
-		print msg
+		print (msg)
 		continue
 	    try:
 		jelparse.resolv_xrefs (cur, result)
 	    except ValueError:
-		print e
+		print (e)
             s = fmtjel.entr (result)
-            print s
+            print (s)
 
 def _getinptext ():
 	instr = '';  cnt = 0;  prompt = 'test> '

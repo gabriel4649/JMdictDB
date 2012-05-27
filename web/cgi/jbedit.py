@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11])
@@ -77,10 +78,10 @@ def read_editdata (cursor, fullname):
 			  parsed.get('name'),
 			  parsed.get('email')]
 	#--- debug
-	#print "submission %s" % fullname
-	#print "ktxt:", entr.ktxt
-	#print "rtxt:", entr.rtxt
-	#print "stxt:", entr.stxt
+	#print ("submission %s" % fullname)
+	#print ("ktxt:", entr.ktxt)
+	#print ("rtxt:", entr.rtxt)
+	#print ("stxt:", entr.stxt)
 	#---
 
 	return entrdata
@@ -102,7 +103,7 @@ def create_entr (cursor, parsed):
 	      # FIXME: following assumes seqnum is an entry in jmdict.
 	    entrs = jmcgi.get_entrs (cursor, None, [seqnum], errs,
 				     active=True, corpus='jmdict')
-	    if errs: print '\n'.join (errs)
+	    if errs: print ('\n'.join (errs))
 	    if entrs: entr = entrs[0]
 	    else: raise ParseError ("Unable to get entry seq# %s from database" % seqnum)
 
@@ -159,14 +160,14 @@ def reformat (ktxt, rtxt, stxt, entr):
 	try: 
 	    kanjs = edparse.parse_krpart (ktxt, fmap) 
 	except eParseError, excep: 
-	    try: print "reformat kanj failed: %s" % (unicode(excep))
+	    try: print ("reformat kanj failed: %s" % (unicode(excep)))
 	    except UnicodeError: "reformat kanj failed: (unprintable exception)"
 
 	if kanjs is not None:    # kanjs is None if kanji parse failed in
 	    try:                 #  which case we can't parse readings or senses.
 		rdngs = edparse.parse_krpart (rtxt, fmap, kanjs)
 	    except eParseError, excep: 
-		try: print "reformat rdng failed: %s" % (unicode(excep))
+		try: print ("reformat rdng failed: %s" % (unicode(excep)))
 		except UnicodeError: "reformat rdng failed: (unprintable exception)"
 
         if rdngs is not None:    # rdngs is None if reading parse failed in 
@@ -183,7 +184,7 @@ def reformat (ktxt, rtxt, stxt, entr):
                 jrtxt = fmtjel.rdngs (rdngs, kanjs)
 	        jstxt = fmtjel.senss (senss, kanjs, rdngs)
 	    except eParseError, excep:
-		try: print "reformat sens failed: %s" % (unicode(excep))
+		try: print ("reformat sens failed: %s" % (unicode(excep)))
 		except UnicodeError: "reformat sens failed: (unprintable exception)"
 
 	return jktxt, jrtxt, jstxt

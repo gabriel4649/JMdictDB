@@ -23,6 +23,8 @@
 # Provide the pg/mktables.sql file on stdin.  Output written to 
 # stdout should be saved in file pg/mkperms.sql.
 #
+from __future__ import print_function
+
 __version__ = ("$Revision$"[11:-2],
 	       "$Date$"[7:-11])
 
@@ -39,8 +41,8 @@ def main (args, opts):
 	for filename in args:
 	    tables.extend (extract_object_names (filename))
 	tlist = ','.join (tables)
-	print "GRANT ALL ON %s TO jmdictdb;"     % tlist
-	print "GRANT SELECT ON %s TO jmdictdbv;" % tlist
+	print ("GRANT ALL ON %s TO jmdictdb;"     % tlist)
+	print ("GRANT SELECT ON %s TO jmdictdbv;" % tlist)
 
 def extract_object_names (filename):
 	tables = []

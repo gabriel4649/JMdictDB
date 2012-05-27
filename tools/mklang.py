@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
@@ -40,9 +41,9 @@ def main (args, opts):
 
 def out (style, n, lang, descr):
 	if style == 'csv':
-	    print ('%d\t%s\t%s' % (n, lang, descr)).encode('utf-8')
+	    print (('%d\t%s\t%s' % (n, lang, descr)).encode('utf-8'))
 	elif style == 'perl':
-	    print ("\t    '%s' => %d,\t# %s" % (lang, n, descr)).encode('utf-8')
+	    print (("\t    '%s' => %d,\t# %s" % (lang, n, descr)).encode('utf-8'))
 	else:
 	    raise ValueError ("Invalid 'style' parameter: '%s'" % style)
 

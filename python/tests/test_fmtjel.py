@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 import sys, unittest, codecs, os.path, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb, fmtjel, jmxml, xmlkw, jelparse, jellex

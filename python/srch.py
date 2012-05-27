@@ -1,5 +1,7 @@
 ﻿#!/usr/bin/env python
 
+from __future__ import print_function
+
 _VERSION_=("$Revision$"[11:-2],"$Date$"[7:-11])
 
 import sys, os, inspect, pdb
@@ -164,13 +166,13 @@ class Frame (wx.Frame):		# Main frame
 	    # FIXME: check name in [a-zA-Z0-9_ whatever...].  Use validator?
 	    if name != GET (self.p2, "srchs").GetValue():
 		# FIXME: need popup dialog here.
-		print "Warning: Overwriting a different saved search."
+		print ("Warning: Overwriting a different saved search.")
 	    self.ss[name][cntl.GetName()] = cntl.GetValue()
 	    self.ssdirty.add (self.sscurrent)
 	    cntl.SetModified (False)
 
     def p2_save (self, evt=None): 
-	print"save: sscurrent=%d, dirty=%r" % (self.sscurrent, self.ssdirty)
+	print ("save: sscurrent=%d, dirty=%r" % (self.sscurrent, self.ssdirty))
 	if self.sscurrent not in self.ssdirty: return
 	cur_name = GET (self.p2, "srchs").GetValue()
 	if self.sscurrent == 0:
@@ -193,7 +195,7 @@ class Frame (wx.Frame):		# Main frame
 	seldf.ssdirty = Set()
 
     def p2_choice (self, evt=None): 
-	print"choice: sscurrent=%d, dirty=%r" % (self.sscurrent, self.ssdirty)
+	print ("choice: sscurrent=%d, dirty=%r" % (self.sscurrent, self.ssdirty))
 	if self.sscurrent in self.ssdirty: pass  # warning dialog
 	    # if wx.CANCEL: return
 	    # if wx.OK: save_previous, idx in self.sscurrent
@@ -201,13 +203,13 @@ class Frame (wx.Frame):		# Main frame
 	self.p2_updview (idxnum)
 
     def p2_updview (self, idxnum=None):
-	print"updview: idxnum=%r, sscurrent=%d, dirty=%r" % (idxnum, self.sscurrent, self.ssdirty)
+	print ("updview: idxnum=%r, sscurrent=%d, dirty=%r" % (idxnum, self.sscurrent, self.ssdirty))
 	srchs = GET (self.p2, "srchs")
 	if not idxnum: idxnum = srchs.GetSelection()
 	else:
 	    if srchs.GetSelection() != idxnum: srchs.SetSelection (idxnum)
 	self.sscurrent = idxnum
-	print "updview: new sscurrent = %r" % idxnum
+	print ("updview: new sscurrent = %r" % idxnum)
 	if idxnum == 0:
 	    GET (self.p2, 'sql').ChangeValue (self.ss_new_sql)
 	    GET (self.p2, 'help').ChangeValue (self.ss_new_help)
@@ -228,7 +230,7 @@ class Frame (wx.Frame):		# Main frame
     def p2_delete (self, evt=None): 
 	if self.sscurrent <= 1: 
 	    # FIXME: warning dialog
-	    print "can't delete new entry."
+	    print ("can't delete new entry.")
 	    return
 	name = GET (self.p2, "srchs").GetValue()
 	GET (self.p2, "srchs").Delete (self.sscurrent)
@@ -364,7 +366,7 @@ def _htmlfontsz (window, factor):
 	    wx.html.wxHTML_FONT_SIZE_6,
 	    wx.html.wxHTML_FONT_SIZE_7, ]
 	fszs = [x+factor for x in fszs]
-	print repr(fszs)
+	print (repr(fszs))
 	window.SetFonts ("", "", fszs)
 
 class Frame2 (wx.Frame):		# Results frame
@@ -562,7 +564,7 @@ class Frame2 (wx.Frame):		# Results frame
 
     def find_data (self, sql, sql_args):
 	# This function is run in a separate thread.
-	print sql, sql_args
+	print (sql, sql_args)
 	tmptbl = self.model.find_entrs (sql, sql_args)
 	#except StandardError, e:  return e
 	#if self.abortEvent(): return None
@@ -593,7 +595,7 @@ class Frame2 (wx.Frame):		# Results frame
 	#self.RequestUserAttention()
 
     def abort_evt (self, evt=None): 
-	print "Aborting..." 
+	print ("Aborting...") 
         self.abortEvent.set()
 	self.Close()
 
@@ -680,7 +682,7 @@ class EntrGridtab (wx.grid.PyGridTableBase):
     def DeleteRows(self, pos, numRows): return True
     def InsertRows(self, pos, numRows): return True
     def AppendRows(self, numRows): 
-	print "table base: APPENDING %d ROWS" % numRows
+	print ("table base: APPENDING %d ROWS" % numRows)
 	return True
     def DataUpdated(self):
 	  # Call this method to inform the grid after a change has been made

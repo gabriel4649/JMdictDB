@@ -1,5 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 
+from __future__ import print_function
 import sys, re, unittest, pdb
 try: import json
 except ImportError: import simplejson as json

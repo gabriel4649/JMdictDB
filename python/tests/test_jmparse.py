@@ -4,6 +4,7 @@
 #   program which in turn requires PYTHONPATH be properly configured
 #   so that jmparse.py can find the jdb libraries.
 #--------------------------------------------------------------------
+from __future__ import print_function
 import sys, os, tempfile, atexit, subprocess, difflib, \
 	shutil, pdb, unittest, unittest_extensions
 if '../lib' not in sys.path: sys.path.append ('../lib')
@@ -61,7 +62,7 @@ def mk_temp_dir (in_dir=".", keep=False):
 def rm_temp_dir (dirname):
 	if sys.platform == 'win32': dirname = unicode(dirname)
 	else: dirname = dirname.encode(sys.getfilesystemencoding())
-	print "Removing", dirname
+	print ("Removing", dirname)
 	shutil.rmtree (dirname)
 
 def diff_strings (a, b):

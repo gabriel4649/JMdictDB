@@ -16,6 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
@@ -599,10 +600,10 @@ def _main (args, opts):
 	    e, raw = jdb.entrList (cur, [int(id)], ret_tuple=True)
 	    jdb.augment_xrefs (cur, raw['xref'])
 	    if not e:
-		print "Entry id %d not found" % id
+		print ("Entry id %d not found" % id)
 	    else:
 		txt = entr (e[0], compat=None)
-		print txt
+		print (txt)
 
 if __name__ == '__main__':
 	_main (None, None)

@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
@@ -92,17 +93,17 @@ def main (args, opts):
 	      #   number.  Might want just the stat="A" entries for example.
 	    sql = "SELECT id,seq,src FROM entr e WHERE seq=%s%s%s ORDER BY src" \
 		    % (int(opts.begin), corp_terms, whr_act)
-	    if debug: print >>sys.stderr, sql
+	    if debug: print (sql, file=sys.stderr)
 	    start = time.time()
 	    rs = jdb.dbread (cur, sql)
-	    if debug: print >>sys.stderr, "Time: %s (init read)" % (time.time()-start)
+	    if debug: print ("Time: %s (init read)" % (time.time()-start), file=sys.stderr)
 	    if not rs:
-		print >>sys.stderr, "No entry with seq '%s' found" \
-				     % opts.begin;  sys.exit (1)
+		print ("No entry with seq '%s' found" \
+				     % opts.begin, file=sys.stderr);  sys.exit (1)
 	    if len(rs) > 1:
-		print >>sys.stderr, "Multiple entries having seq '%s' found, results " \
+		print ("Multiple entries having seq '%s' found, results " \
 		                    "may not be as expected.  Consider using -s to " \
-				    "restrict to a single corpus." % (opts.begin)
+				    "restrict to a single corpus." % (opts.begin), file=sys.stderr)
 	else: 
 	      # If no "--begin" option, remove the " AND" from the front of
 	      # the 'corp_terms' string.  Read the first entry (by seq number)
@@ -112,9 +113,9 @@ def main (args, opts):
 	      # entries only.
 	    sql = "SELECT id,seq,src FROM entr e WHERE %s%s ORDER BY src,seq LIMIT 1" % (cc, whr_act)
 	    start = time.time()
-	    if debug: print >>sys.stderr, sql
+	    if debug: print (sql, file=sys.stderr)
 	    rs = jdb.dbread (cur, sql)
-	    if debug: print >>sys.stderr, "Time: %s (init read)" % (time.time()-start)
+	    if debug: print ("Time: %s (init read)" % (time.time()-start), file=sys.stderr)
 
 	lastsrc, lastseq, lastid = rs[0].src, rs[0].seq, rs[0].id  
 	count = opts.count; done = 0; blksize = opts.blocksize; corpora = set()
@@ -146,14 +147,14 @@ def main (args, opts):
 	      # Create a temporary table of id numbers and give that to
 	      # jdb.entrList().  This is an order of magnitude faster than
 	      # giving the above sql directly to entrList().
-	    if debug: print >>sys.stderr, sql, sql_args
+	    if debug: print (sql, sql_args, file=sys.stderr)
 	    start = time.time()
 	    tmptbl = jdb.entrFind (cur, sql, sql_args)
 	    mid = time.time()
 	    entrs, raw = jdb.entrList (cur, tmptbl, None, ord="src,seq,id", ret_tuple=True)
 	    end = time.time()
-	    if debug: print >>sys.stderr, "read %d entries" % len(entrs)
-	    if debug: print >>sys.stderr, "Time: %s (entrFind), %s (entrList)" % (mid-start, end-mid)
+	    if debug: print ("read %d entries" % len(entrs), file=sys.stderr)
+	    if debug: print ("Time: %s (entrFind), %s (entrList)" % (mid-start, end-mid), file=sys.stderr)
 	    if not entrs : break
 
 	      # To format xrefs in xml, they must be augmented so that the 
@@ -178,7 +179,7 @@ def main (args, opts):
 		txt = fmtxml.entr (e, compat=opts.compat, genhists=True,
 				   last_imported=opts.last_imported)
 		outf.write (txt.encode (opts.encoding) + "\n")
-	    if debug: print >>sys.stderr, "Time: %s (fmt)" % (time.time()-start)
+	    if debug: print ("Time: %s (fmt)" % (time.time()-start), file=sys.stderr)
 
 	      # Update the 'last*' variables for the next time through
 	      # the loop.  Also, decrement 'count', if we are counting.
@@ -186,10 +187,10 @@ def main (args, opts):
 	    if count is not None: count -= blksize
 	    done += len (entrs)
 	    if not debug: sys.stderr.write ('.')
-	    else: print >>sys.stderr, "%d entries written" % done
+	    else: print ("%d entries written" % done, file=sys.stderr)
 	if not opts.nodtd: outf.writelines ('</%s>\n' % opts.root)
 	if not debug: sys.stderr.write ('\n')
-	print >>sys.stderr, "Wrote %d entries" % done
+	print ("Wrote %d entries" % done, file=sys.stderr)
 
 def parse_corpus_opt (s, src_col):
 	if not s: return ''

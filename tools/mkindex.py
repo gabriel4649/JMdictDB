@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import sys, re
 
 def main (args, opts):
@@ -16,7 +17,7 @@ def main (args, opts):
 
 	"""
 	if (len (args) != 1 or args[0] != 'd' and args[0] != 'c'):
-	    print >>sys.syserr, 'Expected one argument which must be "c" or "d"'
+	    print ('Expected one argument which must be "c" or "d"', file=sys.syserr)
 	    sys.exit (1)
 	index =[];  fk = []
 	for line in sys.stdin:
@@ -35,14 +36,14 @@ def main (args, opts):
 		    line = line.replace (' ADD ', ' DROP ')
 		    line = line.replace (' CONSTRAINT ', ' CONSTRAINT IF EXISTS ')
 		    fk.append (line)
-	print '''\
+	print ('''\
 -- This file is recreated during the database build process.
 -- See pg/Makefile for details.
 
-\set ON_ERROR_STOP 1'''
+\set ON_ERROR_STOP 1''')
 
-	print '\n'.join (index)
-	print '\n'.join (fk)
+	print ('\n'.join (index))
+	print ('\n'.join (fk))
 
 if __name__ == '__main__':
 	main (sys.argv[1:], None)

@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11])
@@ -47,7 +48,7 @@ def main (args, opts):
 	else: 
 	    problems = runtests (suites, opts)
 	    if problems and opts.output:
-		print 'Some tests failed, details in file "%s".' % opts.output
+		print ('Some tests failed, details in file "%s".' % opts.output)
 
 def runtests (suites, opts):
 	problems = 0
@@ -71,15 +72,15 @@ def listtests (obj, sumtyp):
 	if collect is not None:
 	    for m,v in collect.items():
 		if sumtyp == 'm': 
-		    print "%s (%d classes, %d tests)" \
-			   % (m, len(v), sum (v.values())) 
+		    print ("%s (%d classes, %d tests)" \
+			   % (m, len(v), sum (v.values()))) 
 		else:
 		    for c,n in v.items():
-			print "%s.%s (%d tests)" % (m, c, n)
+			print ("%s.%s (%d tests)" % (m, c, n))
 
 def scantests (obj, collect):
 	if isinstance (obj, unittest.TestCase):
-	    if collect is None: print obj.id()
+	    if collect is None: print (obj.id())
 	    else:
 		modnm, clsnm, testnm = obj.id().split ('.')
 		collect[modnm][clsnm] += 1
@@ -88,7 +89,7 @@ def scantests (obj, collect):
 	elif hasattr (obj, '__iter__'):
 	    for s in obj: scantests (s, collect)
 	else: 
-	    print >>sys.stderr, "Unexpected object found: %s" % repr (obj)
+	    print ("Unexpected object found: %s" % repr (obj), file=sys.stderr)
 	    sys.exit (1)
 
 from optparse import OptionParser

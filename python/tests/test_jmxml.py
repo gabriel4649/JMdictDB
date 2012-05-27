@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys, unittest, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')
 import jmxml

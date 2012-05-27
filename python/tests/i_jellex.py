@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import jellex, jdb, fmtjel
 
@@ -8,8 +9,8 @@ def main (args, opts):
         lexer, tokens = jellex.create_lexer (debug=opts.debug)
 	if opts.seq:
 	    instr = _get_text_from_database (opts.seq, 1)
-	    print instr
-	    print "----------"
+	    print (instr)
+	    print ("----------")
 	    test (lexer, instr)
 	else:
 	    while 1:
@@ -22,7 +23,7 @@ def test (lexer, instr):
 	while 1:
 	    tok = lexer.token()
 	    if not tok: break
-	    print tok
+	    print (tok)
 
 def _get_text_from_database (seq, src):
 	cur = jdb.dbOpen ('jmdict')
@@ -30,7 +31,7 @@ def _get_text_from_database (seq, src):
 	sql = "SELECT id FROM entr WHERE seq=%s AND src=%s"
 	elist = jdb.entrList (cur, sql, [seq, src])
 	if not elist:
-	    print "Entry %s not found" % seq
+	    print ("Entry %s not found" % seq)
 	    return
 	entr = elist[0]
 	for s in entr._sens:

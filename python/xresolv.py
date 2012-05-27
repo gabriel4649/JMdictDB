@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110#1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
@@ -83,7 +84,7 @@ def main (args, opts):
 	while 1:
 	    if not opts.noaction and lastpos != [0,0,0,0]:
 		dbh.connection.commit()
-		if opts.verbose: print "Commit" 
+		if opts.verbose: print ("Commit") 
 	    lastpos = resolv (dbh, lastpos, blksz, 
 			      xref_src, targ_src, krmap) 
 	    if lastpos is None: break 
@@ -109,7 +110,7 @@ def resolv (dbh, lastpos, blksz, xref_src, targ_src, krmap):
 	rs = jdb.dbread (dbh, sql, [xref_src, e0,e0,s0,s0,t0,t0,o0])
 	if len (rs) == 0: return None
 	if Opts.debug & 0x04: 
-	    print >>sys.stderr, "Read %d xresolv rows" % (len(rs),) 
+	    print ("Read %d xresolv rows" % (len(rs),), file=sys.stderr) 
 	for v in rs:
 
 	      # Skip this xref if the "ignore-nonactive" option was 
@@ -379,12 +380,12 @@ def fmt_jitem (ktxt, rtxt, slist):
 
 def msg (source, msg, arg):
 	if not Opts.quiet:
-	    print ("%s %s: %s" % (source,msg,arg)).encode (
-		Opts.encoding or sys.stdout.encoding or getdefaultencoding())
+	    print (("%s %s: %s" % (source,msg,arg)).encode (
+		Opts.encoding or sys.stdout.encoding or getdefaultencoding()))
 
 def prnt (f, msg):
-	print >>f, msg.encode (
-		Opts.encoding or sys.stdout.encoding or getdefaultencoding())
+	print (msg.encode (
+		Opts.encoding or sys.stdout.encoding or getdefaultencoding()), file=f)
 
 #-----------------------------------------------------------------------
 

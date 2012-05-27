@@ -1,5 +1,6 @@
 #!/usr/env python
 
+from __future__ import print_function
 import sys, re, unittest, codecs, pdb
 import unittest_extensions
 if '../lib' not in sys.path: sys.path.append ('../lib')
@@ -93,8 +94,8 @@ def readedict (filename):
 	    if ln.startswith ('#') or ln.lstrip() == '': continue
 	    name, edict = ln.split (': ', 1)
 	    if name in data:
-		print >>sys.stderr, 'Duplicate test name "%s", %s: %d' \
-				     % (name, filename, n+1)
+		print ('Duplicate test name "%s", %s: %d' \
+				     % (name, filename, n+1), file=sys.stderr)
 	    else: data[name] = edict
 	f.close()
 	return data
@@ -108,8 +109,8 @@ def readxml (filename):
 	    if ln.startswith ('@'):
 		name = re.sub (r'\s*#.*', '', ln[1:])
 		if name in data:
-		    print >>sys.stderr, 'Duplicate test name "%s", %s: %d' \
-				         % (name, filename, n+1)
+		    print ('Duplicate test name "%s", %s: %d' \
+				         % (name, filename, n+1), file=sys.stderr)
 		    dup = True
 		else: 
 		    data[name] = txt = []

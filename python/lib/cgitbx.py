@@ -11,6 +11,7 @@
 # Use this module in a cgi script as follows:
 #   import cgitbx; cgitbx.enable()
 
+from __future__ import print_function
 import sys
 
 def reset():

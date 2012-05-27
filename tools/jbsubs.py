@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11])
@@ -81,8 +82,8 @@ def process_file (inpname, outdir, prefix='', verbose=False,
 	good_f = open (os.path.join (outdir, prefix+"ok.log"), "a")
 	startmsg = "# %s: processing %s" %\
 		(datetime.datetime.now().ctime(), inpname)
-	print >>bad_f, startmsg
-	print >>good_f, startmsg
+	print (startmsg, file=bad_f)
+	print (startmsg, file=good_f)
 	subnum = count = badcnt = 0
 
 	  # Process each submission in open file 'inp_f'.
@@ -106,7 +107,7 @@ def process_file (inpname, outdir, prefix='', verbose=False,
 		parsed = parse_submission (lines)
 		ovwt = write_data (parsed, os.path.join (outdir, out_fn), overwrite)
 		if ovwt and verbose:
-		    print "Overwriting output file %s" % out_fn
+		    print ("Overwriting output file %s" % out_fn)
 	    except ParseError, excep:
 		msg = "Failed on submission %d (line %d): %s" \
 		       % (subnum, linenum, str(excep))
@@ -115,20 +116,20 @@ def process_file (inpname, outdir, prefix='', verbose=False,
 		continue
 	    write_good (good_f, lines, "Parsed submission %d (line %d), wrote to %s"\
 					% (subnum, linenum, out_fn), verbose)
-	print "%s total submissions processed, %d good, %d bad" % (count, count-badcnt, badcnt)
+	print ("%s total submissions processed, %d good, %d bad" % (count, count-badcnt, badcnt))
 	in_f.close();  bad_f.close();  good_f.close()
 
 def write_bad (bad_f, lines, msg):
-	print msg
+	print (msg)
 	msg = '# ' + msg.replace('\n', '\n# ')
-	print >>bad_f, msg
-	print >>bad_f, ('\n'.join (lines)).encode (Output_encoding)
+	print (msg, file=bad_f)
+	print (('\n'.join (lines)).encode (Output_encoding), file=bad_f)
 
 def write_good (good_f, lines, msg, verbose):
-	if verbose: print msg
+	if verbose: print (msg)
 	msg = '# ' + msg.replace('\n', '\n# ')
-	print >>good_f, msg
-	print >>good_f, ('\n'.join (lines)).encode (Output_encoding)
+	print (msg, file=good_f)
+	print (('\n'.join (lines)).encode (Output_encoding), file=good_f)
 
 def write_data (parsed, fn, force=False):
 	# parsed -- a dict containing parsed wwwjdic form data as
@@ -155,10 +156,10 @@ def write_data (parsed, fn, force=False):
 	return ovwt
 
 def write_msg (errmsg, lines, err_f=None):
-	print errmsg
+	print (errmsg)
 	if err_f: 
-	    print >>err_f, ('# ' + errmsg.replace('\n', '\n# ')).encode (Output_encoding)
-	    if lines: print >>err_f, ('\n'.join (lines)).encode (Output_encoding)
+	    print (('# ' + errmsg.replace('\n', '\n# ')).encode (Output_encoding), file=err_f)
+	    if lines: print (('\n'.join (lines)).encode (Output_encoding), file=err_f)
 
 def incremental_scanner (f, encoding=None):
 	  # This function is an iterator and thus may be used in a "for"

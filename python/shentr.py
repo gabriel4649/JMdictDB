@@ -4,6 +4,8 @@
 # Simple command line tool to find and display entries
 # in the JMdict database.
 
+from __future__ import print_function
+
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
 import sys, os, inspect, pdb
@@ -28,7 +30,7 @@ def main (args, opts):
 	  # multiple hi-cost trips to the database later.  
 	try: cur = jdb.dbOpen (opts.database, **jdb.dbopts(opts))
 	except jdb.dbapi.OperationalError, e:
-	    print >>sys.stderr, "Error, unable to connect to database, do you need -u or -p?\n", str(e);  
+	    print ("Error, unable to connect to database, do you need -u or -p?\n", str(e), file=sys.stderr);  
 	    sys.exit(1)
 	Enc = opts.encoding or sys.stdout.encoding or 'utf-8'
 
@@ -36,7 +38,7 @@ def main (args, opts):
 	  # statement that will find the desired entries.
 	sql, sqlargs = opts2sql (args, opts)
 	if opts.debug: 
-	    print ("%s  %s" % (sql, repr(sqlargs))).encode(Enc, 'replace')
+	    print (("%s  %s" % (sql, repr(sqlargs))).encode(Enc, 'replace'))
 
 	  # Retrieve the entries from the database.  'entrs' will be
 	  # set to a list on entry objects.  'raw' is set to dictionary, 
@@ -64,11 +66,11 @@ def main (args, opts):
 
 	      # Print the formatted entry using the requested encoding
 	      # and inserting a blank line between entries.
-	    if not first: print
-	    print txt.encode (Enc, "replace")
+	    if not first: print ()
+	    print (txt.encode (Enc, "replace"))
 	    first = False
 
-	if len(entrs) == 0: print "No entries found"
+	if len(entrs) == 0: print ("No entries found")
 
 def opts2sql (args, opts):
 	conds = []
@@ -118,7 +120,7 @@ def char2cond (opts_char):
 	    else:
 		try: ucs_list.append (int (ch, 16))
 		except ValueError: 
-		    print >>sys.stderr, "--char value must be unicode value in hex or single character."
+		    print ("--char value must be unicode value in hex or single character.", file=sys.stderr)
 		    sys.exit (1)
 	if char_list:
 	     conds.append (('chr', 

@@ -16,6 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision: $'[11:-2],
 	       '$Date: $'[7:-11]);
@@ -222,7 +223,7 @@ def set_sid_cookie (sid, delete=False):
         c = Cookie.SimpleCookie()
 	c[COOKIE_NAME] = sid
 	c[COOKIE_NAME]['max-age'] = 0 if delete else 1*60*60
-	print c.output()
+	print (c.output())
 
 def is_editor (sess):
 	"""Return a true value if the 'sess' object (which may be None)
@@ -448,7 +449,7 @@ def gen_page (tmpl, output=None, macros=None, xml=False, **kwds):
 	    macros = tal.mktemplate (tmpldir + '/' + macros, xml=xml)
 	    kwds['macros'] = macros
 	html += tal.fmt_simpletal (tmpldir + '/' + tmpl, xml=xml, **kwds)
-	if output: print >>output, html.encode ('utf-8')
+	if output: print (html.encode ('utf-8'), file=output)
 	return html
 
 def err_page (errs):
@@ -464,7 +465,7 @@ def logw (msg, pre=''):
 	ts = datetime.datetime.now().isoformat(' ')
 	try:
 	    logf = open ("./jmdictdb.log", "a")
-	    print >>logf, "%s%s [%s]: %s" % (pre, ts, pid, msg)
+	    print ("%s%s [%s]: %s" % (pre, ts, pid, msg), file=logf)
 	    logf.close()
 	except StandardError: pass
 

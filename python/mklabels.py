@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
@@ -38,13 +39,13 @@ def main (args, opts):
 	cur = jdb.dbOpen (opts.database, **jdb.dbopts (opts))
 	for f in args:
 	    fname, ldata = getlabels (cur, f)
-	    if not fname: print >>sys.stderr, "No data for sound file '%s'" % str(f)
+	    if not fname: print ("No data for sound file '%s'" % str(f), file=sys.stderr)
 	    else:
-		print fname
+		print (fname)
 		for r in ldata:
 		    strt = r.strt/100.0
-		    print "%f\t%f\t%s" % (strt, strt + r.leng/100.0,
-					  r.trns.encode(opts.encoding))
+		    print ("%f\t%f\t%s" % (strt, strt + r.leng/100.0,
+					  r.trns.encode(opts.encoding)))
 
 def getlabels (cur, filenum):
 	sql = "SELECT v.loc AS vloc, f.loc AS floc " \

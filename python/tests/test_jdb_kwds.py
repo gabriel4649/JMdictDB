@@ -2,6 +2,7 @@
 
 # Tests the jdb.Kwds class.
 
+from __future__ import print_function
 import sys, pdb, unittest
 if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb

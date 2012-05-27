@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
+from __future__ import print_function
 from __future__ import with_statement
 
 __version__ = ('$Revision$'[11:-2],
@@ -137,7 +138,7 @@ def overlap (a, b):
 	return ex - sx
 
 def pout (s):
-	print s.encode ('sjis')
+	print (s.encode ('sjis'))
 
 def do_noninteractive (cur, sndfilenum, update, nomatch):
 	updated = added = 0

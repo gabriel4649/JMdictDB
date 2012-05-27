@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys, os, os.path, unittest, time, subprocess, tempfile, \
        shutil, difflib, re, pdb
 
@@ -169,7 +170,7 @@ def mk_temp_dir (in_dir=".", keep=False):
 def rm_temp_dir (dirname):
 	if sys.platform == 'win32': dirname = unicode(dirname)
 	else: dirname = dirname.encode(sys.getfilesystemencoding())
-	print "Removing", dirname
+	print ("Removing", dirname)
 	shutil.rmtree (dirname)
 
 def diff_strings (a, b):

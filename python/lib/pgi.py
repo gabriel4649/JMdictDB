@@ -16,6 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
@@ -123,24 +124,24 @@ def finalize (workfiles, outfn, delfiles=True, transaction=True):
 	if outfn: fout = open (outfn, "w")
 	else: fout = sys.stdout
 	if transaction:
-	    print >>fout, "\\set ON_ERROR_STOP 1\nBEGIN;\n"
+	    print ("\\set ON_ERROR_STOP 1\nBEGIN;\n", file=fout)
 	for v in sorted (workfiles.values(), key=operator.attrgetter('ord')):
 	    if not v.file: continue
 	    v.file.close()
 	    fin = open (v.fn)
-	    print >>fout, "COPY %s(%s) FROM STDIN;" % (v.tbl,','.join(v.cols))
-	    for ln in fin: print >>fout, ln,
-	    print >>fout, '\\.\n'
+	    print ("COPY %s(%s) FROM STDIN;" % (v.tbl,','.join(v.cols)), file=fout)
+	    for ln in fin: print (ln, end='', file=fout)
+	    print ('\\.\n', file=fout)
 	    fin.close()
 	    if delfiles: os.unlink (v.fn)
-	if transaction: print >>fout, 'COMMIT'
+	if transaction: print ('COMMIT', file=fout)
 	if fout != sys.stdout: fout.close()
 
 def _wrrow (rowobj, workfile):
 	if not workfile.file: 
 	    workfile.file = open (workfile.fn, "w")
 	s = "\t".join ([pgesc(getattr (rowobj, x, None)) for x in workfile.cols])
-	print >>workfile.file, s.encode ('utf-8')
+	print (s.encode ('utf-8'), file=workfile.file)
 
 def pgesc (s):
 	  # Escape characters that are special to the Postgresql COPY

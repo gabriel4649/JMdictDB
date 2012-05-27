@@ -16,6 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
@@ -48,7 +49,7 @@ class CheckListBoxCombo (wx.combo.ComboCtrl):
 	    try: 
 		parsed.append (self.values.index(i))
 	    except ValueError:
-		print 'unknown flag: %s: ignored.' % i
+		print ('unknown flag: %s: ignored.' % i)
 		self.ignored.append(i)
 	return parsed
 

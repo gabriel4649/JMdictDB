@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
@@ -44,15 +45,15 @@ def main (args, opts):
 	fin = codecs.open (infn, "r", "utf_8_sig")
 	if seqlist:
 	    for seq,entr in jmxml.extract (fin, seqlist, opts.dtd, opts.all):
-	        print >>sys.stderr, seq
+	        print (seq, file=sys.stderr)
 		if opts.dtd and first:
 		    toplev, dtd = seq, entr
-		    print ('\n'.join (dtd)).encode (opts.encoding, 'backslashreplace')
-		    print ("<%s>" % toplev)
+		    print (('\n'.join (dtd)).encode (opts.encoding, 'backslashreplace'))
+		    print (("<%s>" % toplev))
 		    first = False;  continue
-		print ('\n'.join (entr)).encode (opts.encoding, 'backslashreplace')
-	    if opts.dtd: print ("</%s>" % toplev)
-	else: print >>sys.stderr, "No seq numbers!"
+		print (('\n'.join (entr)).encode (opts.encoding, 'backslashreplace'))
+	    if opts.dtd: print (("</%s>" % toplev))
+	else: print ("No seq numbers!", file=sys.stderr)
 
 def parse_seqfile (fname):
 	seqlist = []
@@ -64,7 +65,7 @@ def parse_seqfile (fname):
 	    seq, dummy, count = lnx.partition (' ')
 	    try: seqlist.append ((int (seq), int (count or 1)))
 	    except ValueError: 
-		print >>sys.stderr, "Line %d, bad format: %s" % (lnnum+1, ln.rstrip())
+		print ("Line %d, bad format: %s" % (lnnum+1, ln.rstrip()), file=sys.stderr)
 	return seqlist
 
 #######################################################################

@@ -3,6 +3,8 @@
 # This program allows direct editing of the database tables
 # that constitute an entry.
 
+from __future__ import print_function
+
 __version__ = ("$Revision$"[11:-2], 
 	       "$Date$"[7:-11])
 # To do:
@@ -140,7 +142,7 @@ class MainFrame (wx.Frame):
     def upd_view (self, msg=None):
 	  # Update the textual view of the entries that is provided 
 	  # in the text window.
-	print >>sys.stderr, "MainFrame.upd_view"
+	print ("MainFrame.upd_view", file=sys.stderr)
 	textwin = XRC (self, "entrtxt")
 	data = dict ((k,v.data) for k,v in self.model.recordsets.items())
 	entrs = jdb.entr_bld (data)
@@ -165,7 +167,7 @@ class MainFrame (wx.Frame):
 
     def mark_dirty (self, msg):
 	self.uncommited_changes = msg.data
-	print >>sys.stderr, "Notify: changed = %r" % msg.data
+	print ("Notify: changed = %r" % msg.data, file=sys.stderr)
 	XRC (self, "e_save"  ).Enable (msg.data)
 	XRC (self, "e_cancel").Enable (msg.data)
 
@@ -304,7 +306,7 @@ class TableFrame (wx.Frame):
 
     def upd_view (self, msg=None):
 	# Refresh the grid.
-	print >>sys.stderr, "TableFrame(%s).upd_view" % self.tablename
+	print ("TableFrame(%s).upd_view" % self.tablename, file=sys.stderr)
 	self.grid.reload (msg.data[self.tablename])
 
 class MyGrid (wx.grid.Grid):
@@ -352,7 +354,7 @@ class MyGrid (wx.grid.Grid):
 	self.ForceRefresh()
 
     def rowstat (self, msg=None): 
-	print >>sys.stderr, "GridTable.rowstat()"
+	print ("GridTable.rowstat()", file=sys.stderr)
 	self.ForceRefresh()
 
     def do_rvrt (self, evt=None):
@@ -360,7 +362,7 @@ class MyGrid (wx.grid.Grid):
 	if evt and hasattr (evt, 'GetRow'): rownum = evt.GetRow()
 	else: rownum = self.GetGridCursorRow()
 	row = self.recordset.row (rownum)
-	print >>sys.stderr, "MyGrid.do_rvrt(%d):" % rownum
+	print ("MyGrid.do_rvrt(%d):" % rownum, file=sys.stderr)
 	self.recordset.revert (row)
 	wx.CallAfter (self.ForceRefresh)
 
@@ -372,7 +374,7 @@ class MyGrid (wx.grid.Grid):
 	if evt and hasattr (evt, 'GetRow'): rownum = evt.GetRow()
 	else: rownum = self.GetGridCursorRow()
 	row = self.recordset.row (rownum)
-	print >>sys.stderr, "MyGrid.do_write(%d):" % rownum
+	print ("MyGrid.do_write(%d):" % rownum, file=sys.stderr)
 	try: 
 	    self.recordset.write (row)
 	except jdb.dbapi.Error, excep: 
@@ -391,7 +393,7 @@ class MyGrid (wx.grid.Grid):
 	wx.CallAfter (self.ForceRefresh)
 
     def keyevt (self, evt=None):
-	print >>sys.stderr, "key evt=%s" % (evt.GetKeyCode()) 
+	print ("key evt=%s" % (evt.GetKeyCode()), file=sys.stderr) 
 	#pdb.set_trace()
 	rownum = self.GetGridCursorRow()
 	try: row = self.recordset.row (rownum)
@@ -401,7 +403,7 @@ class MyGrid (wx.grid.Grid):
 	if key == wx.WXK_ESCAPE:	# WXK_ESCAPE: 
 	    self.do_rvrt(); evt.Skip()
 	elif key == wx.WXK_DELETE:
-	    print >>sys.stderr, "MyGrid.keyevt(): deleteing row %d" % rownum
+	    print ("MyGrid.keyevt(): deleteing row %d" % rownum, file=sys.stderr)
 	    self.do_delete()
 	    # Don't do a .Skip() -- otherwise, the del will start an
 	    #   edit and delete a character.
@@ -418,7 +420,7 @@ class MyGrid (wx.grid.Grid):
 	wx.CallAfter (self.ForceRefresh)
 
     def show_ctxmenu (self, evt):
-	print >>sys.stderr, "ctx menu"
+	print ("ctx menu", file=sys.stderr)
 	self.ctxmenu.show (evt, self)
 	evt.Skip()
 
@@ -429,7 +431,7 @@ class MyGridTable (wx.grid.PyGridTableBase):
 	Subscribe (self.delete_listener, 'delete')
 
     def delete_listener (self, msg):
-	print >>sys.stderr, "delete listener called, rn=%d" % msg.data
+	print ("delete listener called, rn=%d" % msg.data, file=sys.stderr)
 	self.delete_row (msg.data)
 
     def reload (self, recordset):
@@ -492,7 +494,7 @@ class MyGridTable (wx.grid.PyGridTableBase):
         return self.rs.cols[colnum][2]
 
     def delete_row (self, rownum):
-	print >>sys.stderr, "deleting grid table row %d" % rownum
+	print ("deleting grid table row %d" % rownum, file=sys.stderr)
 	change_number_of_rows (self, -1, rownum)
 
     def cast (self, col, value):
@@ -703,7 +705,7 @@ class RecordSet:
 
     def update (self, row, attr, newval):
 	# Change an attribute value in an existing row.
-	print >>sys.stderr, "Recordset.update: attr=%s, val=%s, row=%r" % (attr, newval, row)
+	print ("Recordset.update: attr=%s, val=%s, row=%r" % (attr, newval, row), file=sys.stderr)
 	stat = self.edit_status (row)
 	if stat == 'd': raise ValueError ("Can't update a deleted row, revert first")
 	if newval == self.getcurval (row, attr): return
@@ -713,7 +715,7 @@ class RecordSet:
     def delete (self, row):
 	# Mark a row for deletion.
 	stat = self.edit_status (row)
-	print >>sys.stderr, "Recordset.delete: stat=%s, row=%r" % (stat, row)
+	print ("Recordset.delete: stat=%s, row=%r" % (stat, row), file=sys.stderr)
 	if stat == 'd': return
 	elif stat == 'n': self.revert (row)
 	else: row.EDITSTAT = 'd'
@@ -722,7 +724,7 @@ class RecordSet:
     def revert (self, row):
 	# Revert all unwritten changes made to a row.
 	stat = self.edit_status (row)
-	if stat: print >>sys.stderr, "reverting stat=%s, row=%r" % (stat, row)
+	if stat: print ("reverting stat=%s, row=%r" % (stat, row), file=sys.stderr)
 	if not stat: return
 	elif stat == 'u': 
 	    del row._changed;  Notify ('rowstat')
@@ -748,7 +750,7 @@ class RecordSet:
 	# a newly added but not yet written row.
 	rownum = self.rownum (row)
 	del self.data[rownum]
-	print >>sys.stderr, "sending delete messge for row %d" % rownum
+	print ("sending delete messge for row %d" % rownum, file=sys.stderr)
 	Notify ('delete', rownum)
 
     def colnames (self):       return [x[0] for x in self.cols]
@@ -804,7 +806,7 @@ class RecordSet:
 
     def write (self, row, nonotify=False):
 	stat = self.edit_status (row)
-	print >>sys.stderr, "Recordset.write: stat=%s, row=%r" % (stat, row)
+	print ("Recordset.write: stat=%s, row=%r" % (stat, row), file=sys.stderr)
 	if not stat: return
 	elif stat == 'd': 
 	    pkvals = self.oldpkvals (row)
@@ -835,7 +837,7 @@ class RecordSet:
 	cols = ','.join (colnames)
 	whr = " AND ".join ('%s=%%s' % k for k in self.pks())
 	sql = "SELECT %s FROM %s WHERE %s" % (cols, self.table, whr)
-	print >>sys.stderr, "Recordset.dbreread: %s / %r" % (sql, pkvals)
+	print ("Recordset.dbreread: %s / %r" % (sql, pkvals), file=sys.stderr)
 	try: self.cursor.execute (sql, pkvals)
 	except jdb.dbapi.Error, excep: 
 	    excep.sql = sql;  excep.sqlargs = args
@@ -862,7 +864,7 @@ class RecordSet:
 	uargs = changes.values()
 	sql = "UPDATE %s SET %s WHERE %s" % (self.table, upd, whr)
 	args = uargs + pkvals
-	print >>sys.stderr, "Recordset._dbupd: %s / %r" % (sql, args)
+	print ("Recordset._dbupd: %s / %r" % (sql, args), file=sys.stderr)
 	try: jdb.dbexecsp (self.cursor, sql, args)
 	except jdb.dbapi.Error, excep: 
 	    excep.sql = sql;  excep.sqlargs = args
@@ -876,7 +878,7 @@ class RecordSet:
 	    pmarks.append ('%s')
 	    args.append (v)
 	sql = "INSERT INTO %s (%s) VALUES(%s)" % (self.table, ','.join(cols), ','.join(pmarks))
-	print >>sys.stderr, "Recordset.dbins: %s / %r" % (sql, args)
+	print ("Recordset.dbins: %s / %r" % (sql, args), file=sys.stderr)
 	try: jdb.dbexecsp (self.cursor, sql, args)
 	except jdb.dbapi.Error, excep: 
 	    excep.sql = sql;  excep.sqlargs = args
@@ -886,7 +888,7 @@ class RecordSet:
     def _dbdel (self, pkvals):
 	whr = " AND ".join ('%s=%%s' % k for k in self.pks())
 	sql = "DELETE FROM %s WHERE %s" % (self.table, whr)
-	print >>sys.stderr, "Recordset.dbdel: %s / %r" % (sql, pkvals)
+	print ("Recordset.dbdel: %s / %r" % (sql, pkvals), file=sys.stderr)
 	try: jdb.dbexecsp (self.cursor, sql, pkvals)	
 	except jdb.dbapi.Error, excep: 
 	    excep.sql = sql;  excep.sqlargs = pkvals

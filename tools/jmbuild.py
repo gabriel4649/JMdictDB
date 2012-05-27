@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
+from __future__ import print_function
 
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11])
@@ -55,20 +56,20 @@ def get_dtd (dtdfname, origroot, newroot, newenc):
 	        a = dtd.replace ('<?xml version="1.0">', 
 				 '<?xml version="1.0" encoding="%s"?>' % newenc, 1)
 	    if a == dtd:
-		print >>sys.stderr, "Unable to replace DTD encoding"
+		print ("Unable to replace DTD encoding", file=sys.stderr)
 		sys.exit (1)
 	    dtd = a
 	if newroot != origroot:
 	    a = dtd.replace ('\n<!DOCTYPE %s [\n' % origroot, 
 			     '\n<!DOCTYPE %s [\n' % newroot, 1)
 	    if a == dtd:
-		print >>sys.stderr, "Unable to replace DTD doctype root declaration"
+		print ("Unable to replace DTD doctype root declaration", file=sys.stderr)
 		sys.exit (1)
 	    dtd = a
 	    a = dtd.replace ('\n<!ELEMENT %s' % origroot, 
 			     '\n<!ELEMENT %s' % newroot, 1)
 	    if a == dtd:
-		print >>sys.stderr, "Unable to replace DTD root entity declaration"
+		print ("Unable to replace DTD root entity declaration", file=sys.stderr)
 		sys.exit (1)
 	    dtd = a
 	return dtd

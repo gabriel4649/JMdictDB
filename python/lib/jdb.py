@@ -17,6 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
+from __future__ import print_function
 from __future__ import with_statement
 
 __version__ = ('$Revision$'[11:-2],
@@ -112,7 +113,7 @@ def dbinsert (dbh, table, cols, row, wantid=False):
 	    if len(row) != len(cols): raise ValueError(row)
 	    args = row
 	if not args: raise ValueError (args)
-	if Debug.get ('prtsql'): print repr(sql), repr(args)
+	if Debug.get ('prtsql'): print (repr(sql), repr(args))
 	try: dbh.execute (sql, args)
 	except StandardError, e:
 	    e.sql = sql;  e.sqlargs = args
@@ -341,8 +342,8 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
 		t[tbl] = dbread (dbh, sql, args, cls=cls)
 		##Debug['table read time, %s'%tbl] = time()start2
 	    except (psycopg2.ProgrammingError), e:
-	        print >>sys.stderr, e,
-		print >>sys.stderr, '%s %s' % (sql, args)
+	        print (e, end='', file=sys.stderr)
+		print ('%s %s' % (sql, args), file=sys.stderr)
 		dbh.connection.rollback()
 	Debug['Obj retrieval time'] = time() - start;
 	return t

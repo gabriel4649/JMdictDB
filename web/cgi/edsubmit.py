@@ -124,6 +124,8 @@
 # yet handled gracefully in the code -- so the result will
 # be an unhandled exception and traceback.)
 
+from __future__ import print_function
+
 __version__ = ('$Revision$'[11:-2],
 	       '$Date$'[7:-11]);
 

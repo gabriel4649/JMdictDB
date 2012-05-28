@@ -866,7 +866,7 @@ def find_xref (cur, typ, rtxt, ktxt, slist, seq, corp,
 
         try:
             xrfs = jdb.resolv_xref (cur, typ, rtxt, ktxt, slist, seq, corpid)
-        except ValueError, e:
+        except ValueError as e:
             msg = e.args[0]
             xunrs = jdb.Xrslv (typ=typ, ktxt=ktxt, rtxt=rtxt,tsens=None)
             xunrs.msg = msg

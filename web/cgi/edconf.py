@@ -30,7 +30,7 @@ import jdb, jmcgi, jelparse, jellex, serialize
 def main (args, opts):
 	errs = []; chklist = {}
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except StandardError, e: jmcgi.err_page ([unicode (e)])
+	except StandardError as e: jmcgi.err_page ([unicode (e)])
 
 	fv = form.getfirst; fl = form.getlist
 	dbg = fv ('dbg'); meth = fv ('meth')
@@ -370,7 +370,7 @@ def parse (krstext):
         jellex.lexreset (lexer, krstext)
         try: 
 	    entr = parser.parse (krstext, lexer=lexer, tracking=True)
-	except jelparse.ParseError, e:
+	except jelparse.ParseError as e:
 	    if not e.loc: msg = e.args[0]
 	    else: msg = "%s\n<pre>\n%s\n</pre>" % (e.args[0], e.loc)
 	    errs.append (msg)

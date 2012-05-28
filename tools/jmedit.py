@@ -291,7 +291,7 @@ class TableFrame (wx.Frame):
 	      #FIXME: Some of the writes below may fail.  We need to catch that
 	      # event, and then veto the close.
 	    try: self.recordset.write_all()
-	    except jdb.dbapi.Error, excep: 
+	    except jdb.dbapi.Error as excep: 
 	        msg = "Unable to write to database. \n" \
 		    "SQL was: %s\n" \
 		    "SQL args were: %r\n" \
@@ -377,7 +377,7 @@ class MyGrid (wx.grid.Grid):
 	print ("MyGrid.do_write(%d):" % rownum, file=sys.stderr)
 	try: 
 	    self.recordset.write (row)
-	except jdb.dbapi.Error, excep: 
+	except jdb.dbapi.Error as excep: 
 	    msg = "Unable to write to database. \n" \
 		"SQL was: %s\n" \
 		"SQL args were: %r\n" \
@@ -476,7 +476,7 @@ class MyGridTable (wx.grid.PyGridTableBase):
     def SetValue (self, rownum, colnum, value):
 	try:
             self._setvalue (rownum, colnum, value)
-	except jdb.dbapi.Error, e:
+	except jdb.dbapi.Error as e:
 	    msg = "Unable to make change. Database error was:\n%s" % str(e)
 	    rv = dialog (None, msg, "Database Error", style=wx.OK|wx.ICON_ERROR)
 	Notify ('rowstat')
@@ -839,7 +839,7 @@ class RecordSet:
 	sql = "SELECT %s FROM %s WHERE %s" % (cols, self.table, whr)
 	print ("Recordset.dbreread: %s / %r" % (sql, pkvals), file=sys.stderr)
 	try: self.cursor.execute (sql, pkvals)
-	except jdb.dbapi.Error, excep: 
+	except jdb.dbapi.Error as excep: 
 	    excep.sql = sql;  excep.sqlargs = args
 	    raise excep 
 	rs = self.cursor.fetchall ()
@@ -866,7 +866,7 @@ class RecordSet:
 	args = uargs + pkvals
 	print ("Recordset._dbupd: %s / %r" % (sql, args), file=sys.stderr)
 	try: jdb.dbexecsp (self.cursor, sql, args)
-	except jdb.dbapi.Error, excep: 
+	except jdb.dbapi.Error as excep: 
 	    excep.sql = sql;  excep.sqlargs = args
 	    raise excep 
 	Notify ('dbdirty', True)
@@ -880,7 +880,7 @@ class RecordSet:
 	sql = "INSERT INTO %s (%s) VALUES(%s)" % (self.table, ','.join(cols), ','.join(pmarks))
 	print ("Recordset.dbins: %s / %r" % (sql, args), file=sys.stderr)
 	try: jdb.dbexecsp (self.cursor, sql, args)
-	except jdb.dbapi.Error, excep: 
+	except jdb.dbapi.Error as excep: 
 	    excep.sql = sql;  excep.sqlargs = args
 	    raise excep 
 	Notify ('dbdirty', True)
@@ -890,7 +890,7 @@ class RecordSet:
 	sql = "DELETE FROM %s WHERE %s" % (self.table, whr)
 	print ("Recordset.dbdel: %s / %r" % (sql, pkvals), file=sys.stderr)
 	try: jdb.dbexecsp (self.cursor, sql, pkvals)	
-	except jdb.dbapi.Error, excep: 
+	except jdb.dbapi.Error as excep: 
 	    excep.sql = sql;  excep.sqlargs = pkvals
 	    raise excep 
 	Notify ('dbdirty', True)

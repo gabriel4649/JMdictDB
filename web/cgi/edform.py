@@ -117,7 +117,7 @@ import jdb, jmcgi, fmtjel, serialize, edparse
 def main (args, opts):
 	errs = []; entrs =[]
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except StandardError, e: errs = jmcgi.err_page ([unicode (e)])
+	except StandardError as e: errs = jmcgi.err_page ([unicode (e)])
 
 	fv = form.getfirst; fl = form.getlist
 	is_editor = jmcgi.is_editor (sess)
@@ -134,7 +134,7 @@ def main (args, opts):
 	sentrs = fl ("entr")
 	for sentr in sentrs:
 	    try: entrs = serialize.unserialize (sentr)
-	    except StandardError, e:
+	    except StandardError as e:
 		errs.append ("Bad 'entr' value, unable to unserialize: %s" % unicode(e))
 	    else: 
 		entrs.append (entr)
@@ -142,7 +142,7 @@ def main (args, opts):
 	jentrs = fl ('j')
 	for jentr in jentrs:
 	    try: entr = edparse.entr (jentr.decode('utf-8'))
-	    except StandardError, e:
+	    except StandardError as e:
 		errs.append ("Bad 'j' value, unable to parse: %s" % unicode(e))
 	    else:
 		entr.src = None

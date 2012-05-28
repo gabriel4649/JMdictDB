@@ -30,7 +30,7 @@ import jdb, jmcgi, serialize, jelparse
 def main( args, opts ):
 	errs = []; so = None; stats = {}
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except StandardError, e: jmcgi.err_page ([unicode (e)])
+	except StandardError as e: jmcgi.err_page ([unicode (e)])
 
 	cfg_web = d2o (cfg['web'])
 	cfg_srch = d2o (cfg['search'])
@@ -90,7 +90,7 @@ def main( args, opts ):
 
 	if so:
 	    try: condlist = jmcgi.so2conds (so)
-	    except ValueError, e:
+	    except ValueError as e:
 		errs.append (unicode (e))
 	      # FIXME: [IS-115] Following will prevent kanjidic entries from
 	      #  appearing in results.  Obviously hardwiring id=4 is a hack.
@@ -109,7 +109,7 @@ def main( args, opts ):
 	if cfg_srch.MAX_QUERY_COST > 0:
 	    try:
 	        cost = jdb.get_query_cost (cur, sql2, sql_args);
-	    except StandardError, e:
+	    except StandardError as e:
 		jmcgi.err_page (["Database error (%s):<pre> %s </pre></body></html>" 
 			   % (e.__class__.__name__, str(e))])
 	    stats['cost']=cost;
@@ -122,7 +122,7 @@ def main( args, opts ):
 			% (cost, cfg_srch.MAX_QUERY_COST)])
 	t0 = time.time()
 	try: rs = jdb.dbread (cur, sql2, sql_args)
-	except Exception, e:		#FIXME, what exception value(s)?
+	except Exception as e:		#FIXME, what exception value(s)?
 	    jmcgi.err_page (["Database error (%s):<pre> %s </pre></body></html>" 
 		       % (e.__class__.__name__, str(e))])
 	stats['dbtime'] = time.time() - t0

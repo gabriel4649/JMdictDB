@@ -108,7 +108,7 @@ def process_file (inpname, outdir, prefix='', verbose=False,
 		ovwt = write_data (parsed, os.path.join (outdir, out_fn), overwrite)
 		if ovwt and verbose:
 		    print ("Overwriting output file %s" % out_fn)
-	    except ParseError, excep:
+	    except ParseError as excep:
 		msg = "Failed on submission %d (line %d): %s" \
 		       % (subnum, linenum, str(excep))
 		write_bad (bad_f, lines, msg)

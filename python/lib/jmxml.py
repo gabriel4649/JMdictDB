@@ -165,7 +165,7 @@ def parse_xmlfile (
 	    if not startseq or seq >= startseq:
 		startseq = None
 		try: entr = do_entr (elem, seq, xlit, xlang, corp_dict, grpdefs)
-		except ParseError, e:
+		except ParseError as e:
 		    warn (" (line %d): %s" % (lineno, e))
 		else: yield "entry", entr
 	        count += 1

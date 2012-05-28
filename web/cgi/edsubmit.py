@@ -144,7 +144,7 @@ def main( args, opts ):
 	errs = []; dbh = svc = None
 	logw ("Starting submit.py", pre='\n')
 	try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
-	except ValueError, e: jmcgi.err_page ([unicode (e)])
+	except ValueError as e: jmcgi.err_page ([unicode (e)])
 
 	logw ("main(): parseform done: userid=%s, sid=%s" % (sess and sess.userid, sess and sess.id))
 
@@ -406,14 +406,14 @@ def approve (dbh, entr, edtree, errs):
 	      # existing entry.  Check that there is a single edit
 	      # chain back to the root entry.
 	    try: approve_ok (edtree, dfrmid)
-	    except NonLeafError, e:
+	    except NonLeafError as e:
 		logw ("approve(): NonLeafError")
 		errs.append ("Edits have been made to this entry.  "\
 		    "You need to reject those edits before you can approve this entry.  "\
 		    "The id numbers are: %s"\
 		    % ', '.join ("id="+str(x) for x in leafsn([e.args[0]])))
 		return
-	    except BranchesError, e:
+	    except BranchesError as e:
 		logw ("approve(): BranchesError")
 		errs.append ("There are other edits pending on some of "\
 		    "the predecessor entries of this one, and this "\
@@ -440,14 +440,14 @@ def reject (dbh, entr, edtree, errs, rejcnt=None):
 	  # with our entry's parent, that can be rejected.  If this is a new
 	  # entry, 'rejs' will be set to [].
 	try: rejs = rejectable (edtree, entr.dfrm)
-	except NonLeafError, e:
+	except NonLeafError as e:
 	    logw ("reject(): NonLeafError")
 	    errs.append ("Edits have been made to this entry.  "\
 		    "To reject entries, you must reject the version(s) most recently edited, "\
 		    "which are: %s"\
 		    % ', '.join ("id="+str(x) for x in leafsn([e.args[0]])))
 	    return
-	except IsApprovedError, e:
+	except IsApprovedError as e:
 	    logw ("reject(): IsApprovedrror")
 	    errs.append ("You can only reject unapproved entries.")
 	    return

@@ -29,7 +29,7 @@ import jdb, jmcgi
 
 def main (args, opts):
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except StandardError, e: jmcgi.err_page ([unicode (e)])
+	except StandardError as e: jmcgi.err_page ([unicode (e)])
 	kwlist = []; kwhash = {}
 	for t in 'RINF KINF FREQ MISC POS FLD DIAL LANG GINF SRC STAT XREF'.split():
 	    kw = jdb.KW.recs (t)

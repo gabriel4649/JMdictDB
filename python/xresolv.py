@@ -71,7 +71,7 @@ def main (args, opts):
 	if opts.debug & 0x02: Debug.prtsql = True
 
 	try: dbh = jdb.dbOpen (opts.database, **jdb.dbopts(opts))
-	except jdb.dbapi.OperationalError, e:
+	except jdb.dbapi.OperationalError as e:
 	    prnt (sys.stderr, "Error, unable to connect to database, do you need -u or -p?\n" % str(e))  
 	    sys.exit(1)
 

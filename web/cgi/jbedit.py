@@ -32,7 +32,7 @@ Enc = 'utf-8'
 def main (args, opts):
 	errs = []
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except StandardError, e: jmcgi.err_page ([unicode (e)])
+	except StandardError as e: jmcgi.err_page ([unicode (e)])
 
 	  # The filesystem path of the directory containing editdata files.
 	filesdir = cfg['web']['EDITDATA_DIR']
@@ -51,7 +51,7 @@ def main (args, opts):
 	fullname = os.path.join (filesdir, fn)
 	  # Open the file, get the data.
 	try: e, ref, comment, name, email = read_editdata (cur, fullname)
-	except StandardError, e:
+	except StandardError as e:
 	    err_page (["Bad file data, unable to unserialize: %s" % unicode(e)])
 	extra = {'ref':ref, 'comment':comment, 'name':name, 'email':email}
 	e.NOCORPOPT = ''  # This seems to be required by template, see edform.py
@@ -159,14 +159,14 @@ def reformat (ktxt, rtxt, stxt, entr):
 
 	try: 
 	    kanjs = edparse.parse_krpart (ktxt, fmap) 
-	except eParseError, excep: 
+	except eParseError as excep: 
 	    try: print ("reformat kanj failed: %s" % (unicode(excep)))
 	    except UnicodeError: "reformat kanj failed: (unprintable exception)"
 
 	if kanjs is not None:    # kanjs is None if kanji parse failed in
 	    try:                 #  which case we can't parse readings or senses.
 		rdngs = edparse.parse_krpart (rtxt, fmap, kanjs)
-	    except eParseError, excep: 
+	    except eParseError as excep: 
 		try: print ("reformat rdng failed: %s" % (unicode(excep)))
 		except UnicodeError: "reformat rdng failed: (unprintable exception)"
 
@@ -183,7 +183,7 @@ def reformat (ktxt, rtxt, stxt, entr):
 	        jktxt = fmtjel.kanjs (kanjs)
                 jrtxt = fmtjel.rdngs (rdngs, kanjs)
 	        jstxt = fmtjel.senss (senss, kanjs, rdngs)
-	    except eParseError, excep:
+	    except eParseError as excep:
 		try: print ("reformat sens failed: %s" % (unicode(excep)))
 		except UnicodeError: "reformat sens failed: (unprintable exception)"
 

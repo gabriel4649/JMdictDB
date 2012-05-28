@@ -34,7 +34,7 @@ import jdb, jmcgi
 
 def main (args, opts):
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except StandardError, e: jmcgi.err_page ([unicode (e)])
+	except StandardError as e: jmcgi.err_page ([unicode (e)])
 	fv = form.getfirst; fl = form.getlist
 
 	t = datetime.date.today()  # Will supply default values of y, m, d.
@@ -42,7 +42,7 @@ def main (args, opts):
             y = int (fv ('y') or t.year)
             m = int (fv ('m') or t.month)
             d = int (fv ('d') or t.day)
-        except StandardError, e: jmcgi.err_page ("Bad 'y', 'm' or 'd' url parameter.")
+        except StandardError as e: jmcgi.err_page ("Bad 'y', 'm' or 'd' url parameter.")
 	day = datetime.date (y, m, d)
 
 	sql = '''SELECT DISTINCT e.id 

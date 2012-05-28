@@ -62,7 +62,7 @@ def dbread (cur, sql, args=None, cols=None, cls=None):
 	if not args: args = None
 	  # Execute the sql in a try statement to catch any errors.
 	try: cur.execute (sql, args)
-	except dbapi.Error, e:
+	except dbapi.Error as e:
 	      # If the execute failed, append the sql and args to the
 	      # error message.
 	    msg = e.args[0] if len(e.args) > 0 else ''
@@ -115,7 +115,7 @@ def dbinsert (dbh, table, cols, row, wantid=False):
 	if not args: raise ValueError (args)
 	if Debug.get ('prtsql'): print (repr(sql), repr(args))
 	try: dbh.execute (sql, args)
-	except StandardError, e:
+	except StandardError as e:
 	    e.sql = sql;  e.sqlargs = args
 	    e.message += "  %s [%s]" % (sql, ','.join(repr(x) for x in args))
 	    raise e
@@ -137,7 +137,7 @@ def dbexecsp (cursor, sql, args, savepoint_name="sp"):
 	cursor.execute ("SAVEPOINT %s" % savepoint_name)
 	try:
 	    cursor.execute (sql, args)
-	except dbapi.Error, e:
+	except dbapi.Error as e:
 	    cursor.execute ("ROLLBACK TO %s" % savepoint_name)
 	    raise e
 	else:
@@ -341,7 +341,7 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
 		##start2 = time()
 		t[tbl] = dbread (dbh, sql, args, cls=cls)
 		##Debug['table read time, %s'%tbl] = time()start2
-	    except (psycopg2.ProgrammingError), e:
+	    except (psycopg2.ProgrammingError) as e:
 	        print (e, end='', file=sys.stderr)
 		print ('%s %s' % (sql, args), file=sys.stderr)
 		dbh.connection.rollback()
@@ -1772,7 +1772,7 @@ def kwnorm (kwtyp, kwlist, inv=None):
 	    try: x = int(x)
 	    except ValueError: pass
 	    try: v = getattr (KW, kwtyp)[x].id
-	    except KeyError,e:
+	    except KeyError as e:
 		raise ValueError ("'%s' is not a known %s keyword" % (x, kwtyp))
 	    nkwlist.append (v)
 	kwall = KW.recs(kwtyp)
@@ -1995,7 +1995,7 @@ class Kwds:
 	      # does not exist or is not readable due to permissions)
 	      # catch it and add the table name to the 'failed' list. 
 	    try: recs = dbread (cursor, "SELECT * FROM %s" % table, ())
-	    except dbapi.ProgrammingError, e: 
+	    except dbapi.ProgrammingError as e: 
 		failed.append (table)
 	    else: 
 		for record in recs: self.add (attr, record)

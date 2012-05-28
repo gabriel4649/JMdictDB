@@ -32,7 +32,7 @@ Enc = 'utf-8'
 def main (args, opts):
 	errs = []
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except StandardError, e: jmcgi.err_page ([unicode(e)])
+	except StandardError as e: jmcgi.err_page ([unicode(e)])
 
 	  # The filesystem path of the directory containing editdata files.
 	filesdir = cfg['web']['EDITDATA_DIR']

@@ -205,12 +205,12 @@ def _assertRaisesMsg (self, exception, message, func, *args, **kwargs):
         expected = "Expected %s(%r)," % (exception.__name__, message)
         try:
             func(*args, **kwargs)
-        except exception, e:
+        except exception as e:
             if str(e) != message:
                 msg = "%s got %s(%r)" % (
                     expected, exception.__name__, str(e))
                 raise AssertionError(msg)
-        except Exception, e:
+        except Exception as e:
             msg = "%s got %s(%r)" % (expected, e.__class__.__name__, str(e))
             raise AssertionError(msg)
         else:

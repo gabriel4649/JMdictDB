@@ -72,7 +72,7 @@ def _interactive (cur, lexer, parser):
 	    jellex.lexreset (lexer, instr)
 	    try: 
 		result = parser.parse(instr,lexer=lexer,debug=opts.debug)
-	    except jelparse.ParseError, e: 
+	    except jelparse.ParseError as e: 
 		if not e.loc: msg = e.args[0]
 		else: msg = "%s\n%s" % (e.args[0], e.loc)
 		print (msg)

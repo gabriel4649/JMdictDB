@@ -29,7 +29,7 @@ def main (args, opts):
 	  # "kw*".  We read this data once at program startup to avoid
 	  # multiple hi-cost trips to the database later.  
 	try: cur = jdb.dbOpen (opts.database, **jdb.dbopts(opts))
-	except jdb.dbapi.OperationalError, e:
+	except jdb.dbapi.OperationalError as e:
 	    print ("Error, unable to connect to database, do you need -u or -p?\n", str(e), file=sys.stderr);  
 	    sys.exit(1)
 	Enc = opts.encoding or sys.stdout.encoding or 'utf-8'

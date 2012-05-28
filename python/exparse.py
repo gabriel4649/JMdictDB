@@ -136,7 +136,7 @@ def parse_ex (fin, begin):
 	    try: 
 		jtxt, etxt, kwds = parsea (aln)
 		idxlist = parseb (bln, jtxt)
-	    except ParseError, e:
+	    except ParseError as e:
 		msg (e.args[0]); continue
 	    if not idxlist: continue
 	      # Turns out some of the entries in the examples file are duplicates
@@ -171,7 +171,7 @@ def parseb (bln, jtxt):
 	res = []
 	for n,x in enumerate (parts):
 	    try: res.append (parsebitem (x, n, jtxt))
-	    except ParseError, e: msg (e.args[0])
+	    except ParseError as e: msg (e.args[0])
 	return res
 
 def parsebitem (s, n, jtxt):

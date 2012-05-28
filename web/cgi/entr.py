@@ -32,7 +32,7 @@ def main (args, opts):
 	#print "Content-type: text/html\n"
 	errs = []
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except StandardError, e: jmcgi.err_page ([unicode (e)])
+	except StandardError as e: jmcgi.err_page ([unicode (e)])
 
 	entries = jmcgi.get_entrs (cur, form.getlist ('e'),
 					form.getlist ('q'), errs)

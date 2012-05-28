@@ -788,7 +788,7 @@ class Frame3 (wx.Frame):  # from srch.py
 		self.getvalue (GET(self, 'srcnote'),unicode),
 		self.getvalue (GET(self, 'notes'),unicode))
 	    self.model.add_entr ( newentr, userid, user, email, comment, refs)
-	except (ParseError,AuthError), excep:
+	except (ParseError,AuthError) as excep:
 	    msg (self, str(excep), wx.OK|wx.ICON_ERROR)
 	    return
 	msgtxt = "Entry added to database, id=%s" % newentr.id

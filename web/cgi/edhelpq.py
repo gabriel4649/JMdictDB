@@ -29,7 +29,7 @@ import jdb, jmcgi
 
 def main (args, opts):
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except StandardError, e: jmcgi.err_page ([unicode (e)])
+	except StandardError as e: jmcgi.err_page ([unicode (e)])
 	jmcgi.gen_page ("tmpl/edhelpq.tal", macros='tmpl/macros.tal', 
 			svc=svc, output=sys.stdout)
 

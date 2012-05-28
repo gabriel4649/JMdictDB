@@ -58,7 +58,7 @@ def entr (text, simple=False):
 	fmap = collections.defaultdict (lambda:([list(),list()]))
 	#krtxt, x, stxt = text.partition ('/')
 	try: krtxt, stxt = re.split (ur'[ \t\u3000]*/[ \t\u3000]*', text, 1)
-	except ValueError, e:
+	except ValueError as e:
 	    raise ParseError ('Missing KR-S separator, "/"')
 	kanjs, rdngs = parse_jppart (krtxt, fmap)
 	entr = Entr (_kanj=kanjs, _rdng=rdngs)
@@ -561,7 +561,7 @@ def extract_lsrc_or_ginf (gtxt):
 	      # specs and presume the entire (tetative) lsource text
 	      # is part of the gloss.
 	    try: lsrctuple = parse_lsrc (lang, txt)
-	    except KeyError, e: 
+	    except KeyError as e: 
 		raise ParseError ('Lsrc keyerror on "%s" in "%s"' % (str(e), ptext))
 		return (gtxt, (None, None), [])
 	      # If it parsed ok, add it to the collection.

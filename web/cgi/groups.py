@@ -30,7 +30,7 @@ import jdb, jmcgi
 def main( args, opts ):
 	errs = []
 	try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-	except StandardError, e: jmcgi.gen_page ([unicode(e)])
+	except StandardError as e: jmcgi.gen_page ([unicode(e)])
 
 	fv = form.getfirst; fl = form.getlist
 	orderby = "k.id,s.kw,e.src"

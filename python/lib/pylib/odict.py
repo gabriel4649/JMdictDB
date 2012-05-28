@@ -82,7 +82,7 @@ class odict(dict):
             self._keys.append(key)
 
     def index(self, key):
-        if not self.has_key(key):
+        if key not in self:
             raise KeyError(key)
         return self._keys.index(key)
 

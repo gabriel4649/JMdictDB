@@ -208,7 +208,7 @@ def db_del_old_sessions (cur):
 
 def get_sid_from_cookie ():
         sid = ''
-	if os.environ.has_key ('HTTP_COOKIE'):
+	if 'HTTP_COOKIE' in os.environ:
             c = Cookie.SimpleCookie()
             c.load (os.environ['HTTP_COOKIE'])
             try: sid = c[COOKIE_NAME].value

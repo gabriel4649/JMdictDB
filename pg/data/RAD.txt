@@ -10,6 +10,9 @@ The data in rad.csv was compiled from the following sources:
   http://en.wikipedia.org/wiki/List_of_Kangxi_radicals
   http://en.wikipedia.org/wiki/Radical_214
 
+An additional source that hasn't been used yet is 
+  http://www.sljfaq.org/afaq/radical-names.html
+
 To do:
  Remove or replace examples characters that are not in kanjidic.
  Remove radical variants that are not used in kanjidic characters

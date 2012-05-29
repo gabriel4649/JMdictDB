@@ -2,7 +2,7 @@
 
 # Tests the jdb.Kwds class.
 
-from __future__ import print_function, absolute_import, division
+from __future__ import print_function, absolute_import, division, unicode_literals
 from future_builtins import ascii, filter, hex, map, oct, zip
 import sys, pdb, unittest
 if '../lib' not in sys.path: sys.path.append ('../lib')

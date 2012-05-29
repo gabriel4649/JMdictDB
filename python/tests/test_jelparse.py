@@ -10,7 +10,7 @@
 #  may change from time to time.
 #---------------------------------------------------------------------
 
-from __future__ import print_function, absolute_import, division
+from __future__ import print_function, absolute_import, division, unicode_literals
 from future_builtins import ascii, filter, hex, map, oct, zip
 import sys, unittest, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')

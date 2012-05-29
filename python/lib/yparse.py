@@ -4,7 +4,7 @@
 # Date  : October 2, 2006
 
 from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip 
+from future_builtins import ascii, filter, hex, map, oct, zip
 import re
 import ylex
 tokens = ylex.tokens
@@ -30,7 +30,7 @@ def p_defsection(p):
     print ("precedence = ", repr(preclist))
     print ()
     print ("# -------------- RULES ----------------")
-    print () 
+    print ()
 
 def p_rulesection(p):
     '''rulesection : rules SECTION'''
@@ -83,12 +83,12 @@ def p_idlist(p):
         p[1].append(p[3])
 
 def p_tokenid(p):
-    '''tokenid : ID 
+    '''tokenid : ID
                | ID NUMBER
                | QLITERAL
                | QLITERAL NUMBER'''
     p[0] = p[1]
-    
+
 def p_optsemi(p):
     '''optsemi : ';'
                | empty'''
@@ -144,7 +144,7 @@ def p_rules(p):
              else:
                   prod.append(item)
         print ("    '''%s : %s'''" % (rulename, " ".join(prod)))
-	#print "    if p.parser.debug & 256: print p_%s_%d.__doc__" % (rulename,rulecount)
+        #print "    if p.parser.debug & 256: print p_%s_%d.__doc__" % (rulename,rulecount)
         print_code(prodcode,4,getattr(p.lexer,'initindent',0))
         print ()
         rulecount += 1
@@ -152,7 +152,7 @@ def p_rules(p):
     for e,code in embedded:
         print ("def p_%s(p):" % e)
         print ("    '''%s : '''" % e)
-	#print "    if p.parser.debug & 256: print %s.__doc__" % e
+        #print "    if p.parser.debug & 256: print %s.__doc__" % e
         print_code(code,4,getattr(p.lexer,'initindent',0))
         print ()
 
@@ -171,7 +171,7 @@ def p_rule_empty(p):
 
 def p_rule_empty2(p):
    '''rule : ID ':' morerules ';' '''
-   
+
    p[3].insert(0,[])
    p[0] = (p[1],p[3])
 
@@ -179,10 +179,10 @@ def p_morerules(p):
    '''morerules : morerules '|' rulelist
                 | '|' rulelist
                 | '|'  '''
- 
-   if len(p) == 2:   
+
+   if len(p) == 2:
        p[0] = [[]]
-   elif len(p) == 3: 
+   elif len(p) == 3:
        p[0] = [p[2]]
    else:
        p[0] = p[1]
@@ -218,12 +218,12 @@ yacc.yacc(debug=0)
 def print_code(code,indent,initindent):
     if not emit_code: return
     if code.startswith('{'):
-	code = code[1:-1].strip()
+        code = code[1:-1].strip()
     codelines = code.splitlines()
     if len (codelines) > 0:
         print ("%s%s" % (" "*indent,codelines[0]))
         if len (codelines) > 1:
-	    for c in codelines[1:]:
-		if c[:initindent] != ' '*initindent: raise ValueError
-		c = c[initindent:]
-		print ("%s%s" % (" "*indent,c))
+            for c in codelines[1:]:
+                if c[:initindent] != ' '*initindent: raise ValueError
+                c = c[initindent:]
+                print ("%s%s" % (" "*indent,c))

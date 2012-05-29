@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 
 from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip 
+from future_builtins import ascii, filter, hex, map, oct, zip
 import sys, re, unittest, pdb
 try: import json
 except ImportError: import simplejson as json
@@ -12,12 +12,12 @@ import serialize
 
 Cursor = None
 def globalSetup ():
-	global Cursor
-	try:	# Get login credentials from dbauth.py if possible.
-	    import dbauth; kwargs = dbauth.auth
-	except ImportError: kwargs = {}
-	  # FIXME: don't hardwire dbname.
-	Cursor = jdb.dbOpen ('jmdict', **kwargs)
+        global Cursor
+        try:    # Get login credentials from dbauth.py if possible.
+            import dbauth; kwargs = dbauth.auth
+        except ImportError: kwargs = {}
+          # FIXME: don't hardwire dbname.
+        Cursor = jdb.dbOpen ('jmdict', **kwargs)
 
 class Test_obj2struc (unittest.TestCase):
 
@@ -66,24 +66,24 @@ class Test_multirefs (unittest.TestCase):
       # lost when serializing/deserializing.
 
     def test001(_):
-	a = [3, 4, 5]
-	b = jdb.Obj (x=a, y=a)
-	b2 = serialize.unserialize (serialize.serialize (b))
-	_.assertEqual (a, b2.x)
-	_.assertEqual (b2.x, b2.y)
-	_.assertEqual (id(b2.x), id(b2.y))
+        a = [3, 4, 5]
+        b = jdb.Obj (x=a, y=a)
+        b2 = serialize.unserialize (serialize.serialize (b))
+        _.assertEqual (a, b2.x)
+        _.assertEqual (b2.x, b2.y)
+        _.assertEqual (id(b2.x), id(b2.y))
 
     def test002(_):
-	a1 = [3, 4, 5]
-	a2 = [3, 4, 5]
-	b = jdb.Obj (x=a1, y=a2)
-	b2 = serialize.unserialize (serialize.serialize (b))
-	_.assertEqual (a1, b2.x)
-	_.assertEqual (b2.x, b2.y)
-	_.assertNotEqual (id(b2.x), id(b2.y))
+        a1 = [3, 4, 5]
+        a2 = [3, 4, 5]
+        b = jdb.Obj (x=a1, y=a2)
+        b2 = serialize.unserialize (serialize.serialize (b))
+        _.assertEqual (a1, b2.x)
+        _.assertEqual (b2.x, b2.y)
+        _.assertNotEqual (id(b2.x), id(b2.y))
 
 class Test_roundtrip (unittest.TestCase):
-    
+
     def test001(_): rt (_, 1005250)
     def test002(_): rt (_, 1005930)
     def test003(_): rt (_, 1000920)
@@ -91,100 +91,100 @@ class Test_roundtrip (unittest.TestCase):
 
 class Test_objects (unittest.TestCase):
     def test001(_):
-	e1 = Obj (id=555, seq=222, stat=2)
-	e2 = serialize.unserialize (serialize.serialize (e1))
-	_.assertEqual (type(e1), type(e2))
-	_.assertEqual (e1.id, e2.id)
-	_.assertEqual (e1.seq, e2.seq)
-	_.assertEqual (e1.stat, e2.stat)
+        e1 = Obj (id=555, seq=222, stat=2)
+        e2 = serialize.unserialize (serialize.serialize (e1))
+        _.assertEqual (type(e1), type(e2))
+        _.assertEqual (e1.id, e2.id)
+        _.assertEqual (e1.seq, e2.seq)
+        _.assertEqual (e1.stat, e2.stat)
     def test002(_):
-	e1 = DbRow ([555,222,2],['id','seq','stat'])
-	e2 = serialize.unserialize (serialize.serialize (e1))
-	_.assertEqual (type(e1), type(e2))
-	_.assertEqual (e1.id, e2.id)
-	_.assertEqual (e1.seq, e2.seq)
-	_.assertEqual (e1.stat, e2.stat)
+        e1 = DbRow ([555,222,2],['id','seq','stat'])
+        e2 = serialize.unserialize (serialize.serialize (e1))
+        _.assertEqual (type(e1), type(e2))
+        _.assertEqual (e1.id, e2.id)
+        _.assertEqual (e1.seq, e2.seq)
+        _.assertEqual (e1.stat, e2.stat)
 
     def test011(_):
-	e1 = Entr (id=555, seq=222, stat=2)
-	e2 = serialize.unserialize (serialize.serialize (e1))
-	_.assertEqual (type(e1), type(e2))
-	_.assertEqual (e1.id, e2.id)
-	_.assertEqual (e1.seq, e2.seq)
-	_.assertEqual (e1.stat, e2.stat)
-	_.assertEqual (e1.unap, e2.unap)
-	_.assertEqual (e1.notes, e2.notes)
+        e1 = Entr (id=555, seq=222, stat=2)
+        e2 = serialize.unserialize (serialize.serialize (e1))
+        _.assertEqual (type(e1), type(e2))
+        _.assertEqual (e1.id, e2.id)
+        _.assertEqual (e1.seq, e2.seq)
+        _.assertEqual (e1.stat, e2.stat)
+        _.assertEqual (e1.unap, e2.unap)
+        _.assertEqual (e1.notes, e2.notes)
     def test012(_):
-	e1 = Rdng (txt=u'あいうえお', rdng=2, entr=555)
-	e2 = serialize.unserialize (serialize.serialize (e1))
-	_.assertEqual (type(e1), type(e2))
-	_.assertEqual (e1.entr, e2.entr)
-	_.assertEqual (e1.rdng, e2.rdng)
-	_.assertEqual (e1.txt, e2.txt)
+        e1 = Rdng (txt=u'あいうえお', rdng=2, entr=555)
+        e2 = serialize.unserialize (serialize.serialize (e1))
+        _.assertEqual (type(e1), type(e2))
+        _.assertEqual (e1.entr, e2.entr)
+        _.assertEqual (e1.rdng, e2.rdng)
+        _.assertEqual (e1.txt, e2.txt)
     def test013(_):
-	e1 = Kanj (txt=u'田中さん', kanj=2, entr=555)
-	e2 = serialize.unserialize (serialize.serialize (e1))
-	_.assertEqual (type(e1), type(e2))
-	_.assertEqual (e1.entr, e2.entr)
-	_.assertEqual (e1.kanj, e2.kanj)
-	_.assertEqual (e1.txt, e2.txt)
+        e1 = Kanj (txt=u'田中さん', kanj=2, entr=555)
+        e2 = serialize.unserialize (serialize.serialize (e1))
+        _.assertEqual (type(e1), type(e2))
+        _.assertEqual (e1.entr, e2.entr)
+        _.assertEqual (e1.kanj, e2.kanj)
+        _.assertEqual (e1.txt, e2.txt)
     def test014(_):
-	e1 = Sens (notes=u'abcd', sens=2, entr=555)
-	e2 = serialize.unserialize (serialize.serialize (e1))
-	_.assertEqual (type(e1), type(e2))
-	_.assertEqual (e1.entr, e2.entr)
-	_.assertEqual (e1.sens, e2.sens)
-	_.assertEqual (e1.notes, e2.notes)
+        e1 = Sens (notes=u'abcd', sens=2, entr=555)
+        e2 = serialize.unserialize (serialize.serialize (e1))
+        _.assertEqual (type(e1), type(e2))
+        _.assertEqual (e1.entr, e2.entr)
+        _.assertEqual (e1.sens, e2.sens)
+        _.assertEqual (e1.notes, e2.notes)
     def test015(_):
-	e1 = Gloss (txt=u'abcd', sens=2, gloss=3, entr=555, lang=33)
-	e2 = serialize.unserialize (serialize.serialize (e1))
-	_.assertEqual (type(e1), type(e2))
-	_.assertEqual (e1.entr, e2.entr)
-	_.assertEqual (e1.sens, e2.sens)
-	_.assertEqual (e1.gloss, e2.gloss)
-	_.assertEqual (e1.lang, e2.lang)
+        e1 = Gloss (txt=u'abcd', sens=2, gloss=3, entr=555, lang=33)
+        e2 = serialize.unserialize (serialize.serialize (e1))
+        _.assertEqual (type(e1), type(e2))
+        _.assertEqual (e1.entr, e2.entr)
+        _.assertEqual (e1.sens, e2.sens)
+        _.assertEqual (e1.gloss, e2.gloss)
+        _.assertEqual (e1.lang, e2.lang)
     # TBS... test cases for every object type?  Or just assume that,
     #   since objects are all very similar, that the existing tests
     #  are sufficient.
     def test101(_):
-	e1 = Entr (id=555, seq=222, stat=2,
-		_rdng = [Rdng (txt=u'あいうえお'),
-			 Rdng (txt=u'たちつてと')],
-		_kanj = [Kanj (txt=u'田中さん')],
-		_sens = [Sens (_gloss = [Gloss (txt='abcd')]),
-			 Sens (_gloss = [Gloss (txt='abcd'),
-				         Gloss (txt='efg')])])
-	e2 = serialize.unserialize (serialize.serialize (e1))
-	_.assertEqual (e1, e2)
-	_.assertEqual (e1._rdng[1].txt, e2._rdng[1].txt)
-	_.assertEqual (e1._sens[1]._gloss[1].txt, e2._sens[1]._gloss[1].txt)
+        e1 = Entr (id=555, seq=222, stat=2,
+                _rdng = [Rdng (txt=u'あいうえお'),
+                         Rdng (txt=u'たちつてと')],
+                _kanj = [Kanj (txt=u'田中さん')],
+                _sens = [Sens (_gloss = [Gloss (txt='abcd')]),
+                         Sens (_gloss = [Gloss (txt='abcd'),
+                                         Gloss (txt='efg')])])
+        e2 = serialize.unserialize (serialize.serialize (e1))
+        _.assertEqual (e1, e2)
+        _.assertEqual (e1._rdng[1].txt, e2._rdng[1].txt)
+        _.assertEqual (e1._sens[1]._gloss[1].txt, e2._sens[1]._gloss[1].txt)
 
 def isEqual (a, b):
-	if type(a) != type(b) : return False
-	return a == b
+        if type(a) != type(b) : return False
+        return a == b
 
 Cursor = None
 def rt(_, seq):
-	# Test round trip from entry object through
-	# serialize.serialize, serialize.unserialize, back to
-	# object.  Compare input and output objects 
-	# by converting both to xml and comparing 
-	# text.  (Watch out for order problems).
+        # Test round trip from entry object through
+        # serialize.serialize, serialize.unserialize, back to
+        # object.  Compare input and output objects
+        # by converting both to xml and comparing
+        # text.  (Watch out for order problems).
 
-	  # FIXME: reading database to slow, too volatile.
-	  #   read from a test xml file instead.
-	if not Cursor: globalSetup()
-	  # FIXME: don't hardwire corpus (aka src).
-	sql = "SELECT id FROM entr WHERE seq=%s AND src=1"
-	elist,r = jdb.entrList (Cursor, sql, [seq], ret_tuple=1)
-	e1 = elist[0]
-	jdb.augment_xrefs (Cursor, r['xref'])
-	s = serialize.serialize (e1)
-	e2 = serialize.unserialize (s)
-	f1 = fmtxml.entr (e1)
-	_.assert_ (len (f1) > 40)  # Sanity check to detect empty entry.
-	f2 = fmtxml.entr (e2)
-	_.assertEqual (f1, f2)
+          # FIXME: reading database to slow, too volatile.
+          #   read from a test xml file instead.
+        if not Cursor: globalSetup()
+          # FIXME: don't hardwire corpus (aka src).
+        sql = "SELECT id FROM entr WHERE seq=%s AND src=1"
+        elist,r = jdb.entrList (Cursor, sql, [seq], ret_tuple=1)
+        e1 = elist[0]
+        jdb.augment_xrefs (Cursor, r['xref'])
+        s = serialize.serialize (e1)
+        e2 = serialize.unserialize (s)
+        f1 = fmtxml.entr (e1)
+        _.assert_ (len (f1) > 40)  # Sanity check to detect empty entry.
+        f2 = fmtxml.entr (e2)
+        _.assertEqual (f1, f2)
 
 if __name__ == '__main__': unittest.main()
 

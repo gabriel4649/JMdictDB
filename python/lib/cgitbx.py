@@ -1,9 +1,9 @@
 # An alternative html traceback displayer.
-# 
+#
 # This is a replacement for Python's cgitb module which,
 # in this developer's opinion, produces very ugly and overly
 # complex output.  What I want is just a simple traceback,
-# as one would see in a command line program, to appear in 
+# as one would see in a command line program, to appear in
 # the browser when a cgi script fails.
 # The code here is from cgitb.py with all the junk stripped
 # out.
@@ -12,7 +12,7 @@
 #   import cgitbx; cgitbx.enable()
 
 from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip 
+from future_builtins import ascii, filter, hex, map, oct, zip
 import sys
 
 def reset():
@@ -41,12 +41,12 @@ class Hook:
         doc = ''.join(traceback.format_exception(*info))
         doc = doc.replace('&', '&amp;').replace('<', '&lt;')
         self.file.write("<br/>"
-	    "We're sorry, but an error occured while processing your request. "
-	    "It has resulted in an alarm condition in the EDRDG Worldwide "
-	    "Network Operations Center, and a large number of people are "
-	    "now scurrying around trying to fix the problem you caused. "
-	    "We hope you're happy. " +
-	    '<pre>' + doc + '</pre>\n')
+            "We're sorry, but an error occured while processing your request. "
+            "It has resulted in an alarm condition in the EDRDG Worldwide "
+            "Network Operations Center, and a large number of people are "
+            "now scurrying around trying to fix the problem you caused. "
+            "We hope you're happy. " +
+            '<pre>' + doc + '</pre>\n')
 
 handler = Hook().handle
 def enable(): sys.excepthook = Hook()

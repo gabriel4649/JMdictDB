@@ -3,7 +3,7 @@ import textwrap
 
 # This is a modified version of the formatter supplied with Optparse
 # in the Python Standard Library.  If preserves paragraph breaks (two
-# consecutive '\n's) which the standard optparse formatter doesn't do. 
+# consecutive '\n's) which the standard optparse formatter doesn't do.
 # It is based on a posting to comp.lang.python:
 #
 #   From: Dan <thermostat@gmail.com>
@@ -21,15 +21,15 @@ class IndentedHelpFormatterWithNL (IndentedHelpFormatter):
         text_width = self.width - self.current_indent
         indent = " "*self.current_indent
     # Code in this method above this line is the same as in Python 2.5 Optparse.
-	lines = []
-	cleaned = "\n".join ([x.strip() for x in text.split ("\n")])
-	for para in cleaned.split("\n\n"):
-	    lines.extend (textwrap.wrap (para, text_width,
-                             		 initial_indent=indent,
-                             		 subsequent_indent=indent))
-	    # for each paragraph, keep the double newlines.
-	    if len (lines): lines[-1] += "\n"
-	return '\n'.join (lines)
+        lines = []
+        cleaned = "\n".join ([x.strip() for x in text.split ("\n")])
+        for para in cleaned.split("\n\n"):
+            lines.extend (textwrap.wrap (para, text_width,
+                                         initial_indent=indent,
+                                         subsequent_indent=indent))
+            # for each paragraph, keep the double newlines.
+            if len (lines): lines[-1] += "\n"
+        return '\n'.join (lines)
 
     def format_option(self, option):
         # The help for each option consists of two parts:
@@ -58,15 +58,15 @@ class IndentedHelpFormatterWithNL (IndentedHelpFormatter):
         result.append(opts)
         if option.help:
             #help_text = self.expand_default(option)
-	    help_text = option.help
+            help_text = option.help
     # Code in this method above this line is the same as in Python 2.5 Optparse.
-	    help_lines = []
-	    help_text = "\n".join([x.strip() for x in help_text.split("\n")])
-	    for para in help_text.split("\n\n"):
-		help_lines.extend(textwrap.wrap(para, self.help_width))
-		if len(help_lines):
-		    # for each paragraph, keep the double newlines..
-		    help_lines[-1] += "\n"
+            help_lines = []
+            help_text = "\n".join([x.strip() for x in help_text.split("\n")])
+            for para in help_text.split("\n\n"):
+                help_lines.extend(textwrap.wrap(para, self.help_width))
+                if len(help_lines):
+                    # for each paragraph, keep the double newlines..
+                    help_lines[-1] += "\n"
     # Code in this method below this line is the same as in Python 2.5 Optparse.
             result.append("%*s%s\n" % (indent_first, "", help_lines[0]))
             result.extend(["%*s%s\n" % (self.help_position, "", line)

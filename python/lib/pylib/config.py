@@ -35,28 +35,28 @@ DEFAULTSECT = '# FIXME'
 
 class Config (odict):
     def __init__ (self, fn_or_iter=None, option_name_case=None):
-	  # 'fn_or_iter'
-	  #   If a string, will be used as a filename to open and read.
-	  #   Otherwise will be iterated to get lines of the ini file data. 
-	  # 'option_name_case' is one of:
-	  #   "u" -- Convert option names to upper case.
-	  #   "l" -- Convert option names to lower case.
-	  #   "c"-- Call optionxform() to get option names.
-	  #   anything else -- Use option names as-is.
+          # 'fn_or_iter'
+          #   If a string, will be used as a filename to open and read.
+          #   Otherwise will be iterated to get lines of the ini file data.
+          # 'option_name_case' is one of:
+          #   "u" -- Convert option names to upper case.
+          #   "l" -- Convert option names to lower case.
+          #   "c"-- Call optionxform() to get option names.
+          #   anything else -- Use option names as-is.
 
-	odict.__init__ (self)
-	self.option_name_case = option_name_case
-	self.blank_line_between_sections = True
-	self.start_multiline_opt_on_new_line = False
-	self.line_terminator = '\n'
-	if fn_or_iter:
-	    if isinstance (fn_or_iter, (str, unicode)):
-	        fl = open (fn_or_iter)
-		fname = fn_or_iter
-	    else: 
-		fl = fn_or_iter
-		fname = None
-	    self.read (fl, fname)
+        odict.__init__ (self)
+        self.option_name_case = option_name_case
+        self.blank_line_between_sections = True
+        self.start_multiline_opt_on_new_line = False
+        self.line_terminator = '\n'
+        if fn_or_iter:
+            if isinstance (fn_or_iter, (str, unicode)):
+                fl = open (fn_or_iter)
+                fname = fn_or_iter
+            else:
+                fl = fn_or_iter
+                fname = None
+            self.read (fl, fname)
 
     # Following stolen from the Python-2.5.1 ConfigParser module.
     # Regular expressions for parsing section headers and options.
@@ -90,7 +90,7 @@ class Config (odict):
         e = None                                  # None, or an exception
         for line in iterable:
             lineno = lineno + 1
-	    line = line.rstrip()
+            line = line.rstrip()
             # comment or blank line?
             if line == '' or re.search (r'^((\s*[#;])|(rem\s))', line, re.I):
                 continue
@@ -131,10 +131,10 @@ class Config (odict):
                         # allow empty values
                         if optval == '""':
                             optval = ''
-			optname = optname.rstrip()
-			if   self.option_name_case == "lower":  optname = optname.lower()
-			elif self.option_name_case == "upper":  optname = optname.upper()
-			elif self.option_name_case == "custom": optname = self.optionxform (optname)
+                        optname = optname.rstrip()
+                        if   self.option_name_case == "lower":  optname = optname.lower()
+                        elif self.option_name_case == "upper":  optname = optname.upper()
+                        elif self.option_name_case == "custom": optname = self.optionxform (optname)
                         cursect[optname] = optval
                     else:
                         # a non-fatal parsing error occurred.  set up the
@@ -150,25 +150,25 @@ class Config (odict):
 
     def write (self):
         """Generator that yields lines of the .ini-format representation
-	   of the configuration state."""
-	first = True;  lt = self.line_terminator
-        for sect_name, opts in self.items(): 
-	    if not first and self.blank_line_between_sections: yield lt
-	    first = False
-	    for s in self._writesec (sect_name, opts):
-		yield s + lt
+           of the configuration state."""
+        first = True;  lt = self.line_terminator
+        for sect_name, opts in self.items():
+            if not first and self.blank_line_between_sections: yield lt
+            first = False
+            for s in self._writesec (sect_name, opts):
+                yield s + lt
 
     def _writesec (self, name, opts):
-	yield "[%s]" % name
-	for (key, value) in opts.items():
+        yield "[%s]" % name
+        for (key, value) in opts.items():
             if key == "__name__": continue
-	    lines = str(value).splitlines()
-	    if self.start_multiline_opt_on_new_line and len(lines) > 1:
-		yield "%s =" % key
-		yield "\t%s" % lines[0]
-	    else: yield "%s = %s" % (key, lines[0])
-	    if len(lines) > 1:
-		for line in lines[1:]: yield "\t%s" % line
+            lines = str(value).splitlines()
+            if self.start_multiline_opt_on_new_line and len(lines) > 1:
+                yield "%s =" % key
+                yield "\t%s" % lines[0]
+            else: yield "%s = %s" % (key, lines[0])
+            if len(lines) > 1:
+                for line in lines[1:]: yield "\t%s" % line
 
     def optionxform(self, optionstr):
         return optionstr.lower()

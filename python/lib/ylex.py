@@ -4,7 +4,7 @@
 # Date  : October 2, 2006
 
 from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip 
+from future_builtins import ascii, filter, hex, map, oct, zip
 import sys
 sys.path.append("../..")
 
@@ -66,7 +66,7 @@ def t_code(t):
    t.lexer.codestart = t.lexpos
    t.lexer.level = 1
    t.lexer.begin('code')
-   t.lexer.initindent = t.lexpos - t.lexer.linestart 
+   t.lexer.initindent = t.lexpos - t.lexer.linestart
 
 def t_code_ignore_string(t):
         r'(\"([^\\\n]|(\\.))*?\")|(\'([^\\\n]|(\\.))*?\')'
@@ -86,7 +86,7 @@ def t_code_rbrace(t):
     t.lexer.level -= 1
     if t.lexer.level == 0:
          t.type = 'CODE'
-	 t.value = t.lexer.lexdata[t.lexer.codestart:t.lexpos+1]
+         t.value = t.lexer.lexdata[t.lexer.codestart:t.lexpos+1]
          t.lexer.begin('INITIAL')
          t.lexer.lineno += t.value.count('\n')
          return t
@@ -108,9 +108,9 @@ lex.lex()
 if __name__ == '__main__':
     lex.runmain()
 
-            
-            
-           
 
-        
+
+
+
+
 

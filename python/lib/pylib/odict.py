@@ -48,14 +48,14 @@ class odict(dict):
         dict.clear(self)
         self._keys = []
 
-    def items(self): 
-	return [(k,self[k]) for k in self._keys]
+    def items(self):
+        return [(k,self[k]) for k in self._keys]
 
     def keys(self):
         return self._keys
 
     def values(self):
-	return [self[k] for k in self._keys]
+        return [self[k] for k in self._keys]
 
     def iteritems(self):
         for k in self._keys:
@@ -69,7 +69,7 @@ class odict(dict):
             yield self[k]
 
     def update(self, data):
-        if data is not None: 
+        if data is not None:
             if hasattr(data, 'iterkeys'):
                 self._merge_keys(data.iterkeys())
             else:
@@ -107,49 +107,49 @@ class odict(dict):
         del self._keys[cur]
 
     def atpos (self, index):
-	"Return the item (key, value pair as tuple) at position 'index'."
-	# odict[index]
-	k = self._keys[index]
-	return k,self[k]
+        "Return the item (key, value pair as tuple) at position 'index'."
+        # odict[index]
+        k = self._keys[index]
+        return k,self[k]
 
     def setpos (self, index, item):
-	# odict[index] = item
-	newkey, newval = item
-	oldkey = self._keys[index]
-	if oldkey != newkey:
-	    if newkey in self: raise KeyError (("Duplicate key: %r" % newkey), newkey) 
-	    self._keys[index] = newkey
-	    dict.__delitem__ (self, oldkey)
-	dict.__setitem__(self, newkey, item[1])
+        # odict[index] = item
+        newkey, newval = item
+        oldkey = self._keys[index]
+        if oldkey != newkey:
+            if newkey in self: raise KeyError (("Duplicate key: %r" % newkey), newkey)
+            self._keys[index] = newkey
+            dict.__delitem__ (self, oldkey)
+        dict.__setitem__(self, newkey, item[1])
 
     def delpos (self, index):
-	del self[self._keys[index]]
-	del self._keys[index]
+        del self[self._keys[index]]
+        del self._keys[index]
 
     def changekey (self, index, newkey):
-	"Change the key at position 'index' to 'newkey'."
-	oldkey = self._keys[index]
-	if newkey != oldkey: 
-	    if newkey in self: raise KeyError (("Duplicate key: %r" % newkey), newkey) 
-	    v = self[oldkey]
-	    self._keys[index] = newkey
-	    self[newkey] = v
-	    dict.__delitem__ (self, oldkey)
+        "Change the key at position 'index' to 'newkey'."
+        oldkey = self._keys[index]
+        if newkey != oldkey:
+            if newkey in self: raise KeyError (("Duplicate key: %r" % newkey), newkey)
+            v = self[oldkey]
+            self._keys[index] = newkey
+            self[newkey] = v
+            dict.__delitem__ (self, oldkey)
 
     def _merge_keys(self, keys):
         self._keys.extend(keys)
         newkeys = {}
         self._keys = [newkeys.setdefault(x, x) for x in self._keys
-            				       if x not in newkeys]
+                                               if x not in newkeys]
 
 # overwridden dict methods
 #   __delitem__, __setitem__, __iter__, __repr__, clear, items, keys, values,
-#   iteritems, iterkeys, itervalues, update, setdefault, popitem, 
+#   iteritems, iterkeys, itervalues, update, setdefault, popitem,
 # Inherited from dict():
 #    copy, has_key, get, pop
 # List-ish methods:
 #    index
 # Unique methods:
 #    move, k,v=atpos(i), chgkey(i,newkey)
-# To-do???: 
+# To-do???:
 #    slices?, reverse, sort, insert(i,k,v)

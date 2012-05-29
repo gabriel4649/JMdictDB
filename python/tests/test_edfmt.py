@@ -1,7 +1,7 @@
 #!/usr/env python
 
 from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip 
+from future_builtins import ascii, filter, hex, map, oct, zip
 import sys, re, unittest, codecs, pdb
 import unittest_extensions
 if '../lib' not in sys.path: sys.path.append ('../lib')
@@ -11,17 +11,17 @@ import xslfmt
 Test_xmlcmp_xmldata = Test_xmlcmp_edictdata = None
 
 def global_setup():
-	global Test_xmlcmp_xmldata, Test_xmlcmp_edictdata
-	if Test_xmlcmp_xmldata is None:
-	    jdb.KW = jdb.Kwds (jdb.std_csv_dir())
-	    Test_xmlcmp_xmldata   = readxml   ('data/edfmt/testset.xml')
-	    Test_xmlcmp_edictdata = readedict ('data/edfmt/testset.txt')
+        global Test_xmlcmp_xmldata, Test_xmlcmp_edictdata
+        if Test_xmlcmp_xmldata is None:
+            jdb.KW = jdb.Kwds (jdb.std_csv_dir())
+            Test_xmlcmp_xmldata   = readxml   ('data/edfmt/testset.xml')
+            Test_xmlcmp_edictdata = readedict ('data/edfmt/testset.txt')
 
 class Test_xslfmt (unittest.TestCase):
     def setUp (_):
-	global_setup()
-	_.indata  = Test_xmlcmp_xmldata
-	_.expdata = Test_xmlcmp_edictdata
+        global_setup()
+        _.indata  = Test_xmlcmp_xmldata
+        _.expdata = Test_xmlcmp_edictdata
 
     def test_b1 (_): dotest (_, 'b1')
     def test_b2 (_): dotest (_, 'b2')
@@ -80,48 +80,48 @@ class Test_xslfmt (unittest.TestCase):
 #   mult fld, mult dial, stagr,stagk, failure mode tests.
 
 def dotest (_, testnum):
-	xml = _.indata[testnum]
-	result = xslfmt.entr (xml, 'edict2.xsl')
-	expected = _.expdata[testnum]
-	if expected != result:
-	    msg = "\nExpected: '%s'\nGot:      '%s'" % (expected, result)
-	    _.failIf (1, msg)
+        xml = _.indata[testnum]
+        result = xslfmt.entr (xml, 'edict2.xsl')
+        expected = _.expdata[testnum]
+        if expected != result:
+            msg = "\nExpected: '%s'\nGot:      '%s'" % (expected, result)
+            _.failIf (1, msg)
 
 def readedict (filename):
-	data = {}
-	f = codecs.open (filename, 'r', 'utf_8_sig ')
-	for n, ln in enumerate (f):
-	    ln = ln.rstrip('\n\r')
-	    if ln.startswith ('#') or ln.lstrip() == '': continue
-	    name, edict = ln.split (': ', 1)
-	    if name in data:
-		print ('Duplicate test name "%s", %s: %d' \
-				     % (name, filename, n+1), file=sys.stderr)
-	    else: data[name] = edict
-	f.close()
-	return data
+        data = {}
+        f = codecs.open (filename, 'r', 'utf_8_sig ')
+        for n, ln in enumerate (f):
+            ln = ln.rstrip('\n\r')
+            if ln.startswith ('#') or ln.lstrip() == '': continue
+            name, edict = ln.split (': ', 1)
+            if name in data:
+                print ('Duplicate test name "%s", %s: %d' \
+                                     % (name, filename, n+1), file=sys.stderr)
+            else: data[name] = edict
+        f.close()
+        return data
 
 def readxml (filename):
-	data = {}
-	f = codecs.open (filename, 'r', 'utf_8_sig ')
-	for n, ln in enumerate (f):
-	    ln = ln.rstrip()
-	    if re.match (r'\s*(#.*)?$', ln): continue
-	    if ln.startswith ('@'):
-		name = re.sub (r'\s*#.*', '', ln[1:])
-		if name in data:
-		    print ('Duplicate test name "%s", %s: %d' \
-				         % (name, filename, n+1), file=sys.stderr)
-		    dup = True
-		else: 
-		    data[name] = txt = []
-		    dup = False
-	    else:
-		if not dup: txt.append (ln)
-	f.close()
-	exp = {}
-	for k, v in data.items():
-	    exp[k] = '\n'.join (v)
-	return exp
+        data = {}
+        f = codecs.open (filename, 'r', 'utf_8_sig ')
+        for n, ln in enumerate (f):
+            ln = ln.rstrip()
+            if re.match (r'\s*(#.*)?$', ln): continue
+            if ln.startswith ('@'):
+                name = re.sub (r'\s*#.*', '', ln[1:])
+                if name in data:
+                    print ('Duplicate test name "%s", %s: %d' \
+                                         % (name, filename, n+1), file=sys.stderr)
+                    dup = True
+                else:
+                    data[name] = txt = []
+                    dup = False
+            else:
+                if not dup: txt.append (ln)
+        f.close()
+        exp = {}
+        for k, v in data.items():
+            exp[k] = '\n'.join (v)
+        return exp
 
 if __name__ == '__main__': unittest.main()

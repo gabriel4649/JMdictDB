@@ -11,56 +11,56 @@
 # October 2, 2006 and distributed with the examples in Ply-2.3.
 
 from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip 
+from future_builtins import ascii, filter, hex, map, oct, zip
 
-__version__ = ("$Revision$"[11:-2], 
-	       "$Date$"[7:-11])
+__version__ = ("$Revision$"[11:-2],
+               "$Date$"[7:-11])
 
 import sys, optparse
 import ylex, yparse
 from ply import *
 
 def main (args, opts):
-	yparse.emit_code = not opts.nocode
-	yparse.emit_tokens = opts.tokens
-	instr = open(args[0]).read()
-	instr = instr.expandtabs()
-	yacc.parse(instr,debug=opts.debug)
+        yparse.emit_code = not opts.nocode
+        yparse.emit_tokens = opts.tokens
+        instr = open(args[0]).read()
+        instr = instr.expandtabs()
+        yacc.parse(instr,debug=opts.debug)
 
 def parse_cmdline ():
-	from optparse import OptionParser 
-	u = \
+        from optparse import OptionParser
+        u = \
 """\n\tpython %prog [options] input_filename
-	
+
   %prog will generate a PLY-compatible parser module from a YACC
   specification file."""
 
-	v = "Version %s (%s)" % __version__
-	p = OptionParser (usage=u, version=v)
-	p.add_option ("-c", "--nocode",
+        v = "Version %s (%s)" % __version__
+        p = OptionParser (usage=u, version=v)
+        p.add_option ("-c", "--nocode",
             action="store_true", dest="nocode", default=False,
             help="Don't produce any of the semantic action code.  "\
-	        "Default is to write all the action code to the "\
-		"output file.  ")
-	p.add_option ("-t", "--tokens",
+                "Default is to write all the action code to the "\
+                "output file.  ")
+        p.add_option ("-t", "--tokens",
             action="store_true", dest="tokens", default=False,
             help="Generate a \"tokens\" statement in the output file.  "\
-		"Default is not to generate the statement on the assumtion "\
-		"that the tokens will be imported from the lexer.  ")
-	p.add_option ("-d", "--debug", 
-	    type="int", dest="debug", default=0,
+                "Default is not to generate the statement on the assumtion "\
+                "that the tokens will be imported from the lexer.  ")
+        p.add_option ("-d", "--debug",
+            type="int", dest="debug", default=0,
             help="Set parser debug flag when parsing the input file.  ")
-	p.epilog = "Arguments: input_filename  (traditionaly this will be "\
-		"named with a \".y\" suffix.)"
+        p.epilog = "Arguments: input_filename  (traditionaly this will be "\
+                "named with a \".y\" suffix.)"
 
-	opts, args = p.parse_args ()
-	#...arg defaults can be setup here...
-	if len (args) > 1: p.error ("Expected only one argument (input file name)")
-	if len (args) < 1: p.error ("Expected one argument (input file name)")
-	return args, opts
+        opts, args = p.parse_args ()
+        #...arg defaults can be setup here...
+        if len (args) > 1: p.error ("Expected only one argument (input file name)")
+        if len (args) < 1: p.error ("Expected one argument (input file name)")
+        return args, opts
 
-if __name__ == '__main__': 
-	args, opts = parse_cmdline ()
-	sys.argv[0] = sys.argv[0].split('\\')[-1].split('/')[-1]
-	main (args, opts)
+if __name__ == '__main__':
+        args, opts = parse_cmdline ()
+        sys.argv[0] = sys.argv[0].split('\\')[-1].split('/')[-1]
+        main (args, opts)
 

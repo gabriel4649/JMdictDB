@@ -1,7 +1,7 @@
 #!/usr/env python
 
 from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip 
+from future_builtins import ascii, filter, hex, map, oct, zip
 import sys, re, unittest, codecs, pdb
 import unittest_extensions
 if '../lib' not in sys.path: sys.path.append ('../lib')
@@ -12,18 +12,18 @@ import edparse
 Loaded = Test_indata = Test_expdata = None
 
 def global_setup (loadname):
-	global Loaded, Test_indata, Test_expdata
-	if Loaded != loadname:
-	    jdb.KW = jdb.Kwds (jdb.std_csv_dir())
-	    Test_indata  = readedict ('data/edparse/%s.txt' % loadname)
-	    Test_expdata = readxml   ('data/edparse/%s.xml' % loadname)
-	    Loaded = loadname
-	return
+        global Loaded, Test_indata, Test_expdata
+        if Loaded != loadname:
+            jdb.KW = jdb.Kwds (jdb.std_csv_dir())
+            Test_indata  = readedict ('data/edparse/%s.txt' % loadname)
+            Test_expdata = readxml   ('data/edparse/%s.xml' % loadname)
+            Loaded = loadname
+        return
 
 class Test_xmlcmp (unittest.TestCase):
     def setUp (_):
-	global_setup ('xmlcmp')
-	_.indata, _.expdata = Test_indata, Test_expdata
+        global_setup ('xmlcmp')
+        _.indata, _.expdata = Test_indata, Test_expdata
 
     def test_b1 (_): dotest (_, 'b1')
     def test_b2 (_): dotest (_, 'b2')
@@ -52,8 +52,8 @@ class Test_xmlcmp (unittest.TestCase):
 
 class Test_canonical (unittest.TestCase):
     def setUp (_):
-	global_setup ('canon')
-	_.indata, _.expdata = Test_indata, Test_expdata
+        global_setup ('canon')
+        _.indata, _.expdata = Test_indata, Test_expdata
 
     def test_b1 (_): dotest (_, 'b1')
     def test_b2 (_): dotest (_, 'b2')
@@ -105,8 +105,8 @@ class Test_misc (unittest.TestCase):
     # These are tests from an earlier unfinished attempt at
     # an edict2 parser.
     def setUp (_):
-	global_setup ('misc')
-	_.indata, _.expdata = Test_indata, Test_expdata
+        global_setup ('misc')
+        _.indata, _.expdata = Test_indata, Test_expdata
 
     def test_q1000230 (_): dotest (_, 'q1000230')
     def test_q1000540 (_): dotest (_, 'q1000540')
@@ -124,55 +124,55 @@ class Test_misc (unittest.TestCase):
     def test_q2157980 (_): dotest (_, 'q2157980')
 
 def dotest (_, testnum, expnum=None):
-	global Test_xmlcmp_indata, Test_xmlcmp_expdata
-	e = edparse.entr (_.indata[testnum])
-	xml = fmtxml.entr (e, compat="jmdict")
-	expected = _.expdata[expnum or testnum]
-	diff = fmtxml.entr_diff (expected, xml)
-	if diff:
-	    #msg = "\nExpected: '%s'\nDiff: '%s'" % (expected, diff)
-	    msg = "\nDiff: '%s'" % (diff)
-	    _.failIf (1, msg)
+        global Test_xmlcmp_indata, Test_xmlcmp_expdata
+        e = edparse.entr (_.indata[testnum])
+        xml = fmtxml.entr (e, compat="jmdict")
+        expected = _.expdata[expnum or testnum]
+        diff = fmtxml.entr_diff (expected, xml)
+        if diff:
+            #msg = "\nExpected: '%s'\nDiff: '%s'" % (expected, diff)
+            msg = "\nDiff: '%s'" % (diff)
+            _.failIf (1, msg)
 
 def readedict (filename):
-	# Read edict test data lines into a dixt, keyed by test name.
-	data = {}
-	f = codecs.open (filename, 'r', 'utf_8_sig ')
-	for n, ln in enumerate (f):
-	    ln = ln.rstrip('\n\r')
-	    if re.match (r'\s*(#.*)?$', ln): continue
-	    name, edict = ln.split (': ', 1)
-	    if name in data:
-		print ('Duplicate test name "%s" in %s (line %d)' \
-				     % (name, filename, n+1), file=sys.stderr)
-	    else: data[name] = edict
-	f.close()
-	return data
+        # Read edict test data lines into a dixt, keyed by test name.
+        data = {}
+        f = codecs.open (filename, 'r', 'utf_8_sig ')
+        for n, ln in enumerate (f):
+            ln = ln.rstrip('\n\r')
+            if re.match (r'\s*(#.*)?$', ln): continue
+            name, edict = ln.split (': ', 1)
+            if name in data:
+                print ('Duplicate test name "%s" in %s (line %d)' \
+                                     % (name, filename, n+1), file=sys.stderr)
+            else: data[name] = edict
+        f.close()
+        return data
 
 def readxml (filename):
-	# Read xml test data sets into a dict, keyed by test name.
-	data = {}
-	f = codecs.open (filename, 'r', 'utf_8_sig ')
-	for n, ln in enumerate (f):
-	    ln = ln.rstrip()
-	    if re.match (r'\s*(#.*)?$', ln): continue
-	    if ln.startswith ('@'):
-		name = re.sub (r'\s*#.*', '', ln[1:])
-		name = name.strip(':')
-		if name in data:
-		    print ('Duplicate test name "%s" in %s (line: %d)' \
-				         % (name, filename, n+1), file=sys.stderr)
-		    dup = True
-		else: 
-		    data[name] = txt = []
-		    dup = False
-	    else:
-		if not dup: txt.append (ln)
-	f.close()
-	exp = {}
-	for k, v in data.items():
-	    exp[k] = '\n'.join (v)
-	return exp
+        # Read xml test data sets into a dict, keyed by test name.
+        data = {}
+        f = codecs.open (filename, 'r', 'utf_8_sig ')
+        for n, ln in enumerate (f):
+            ln = ln.rstrip()
+            if re.match (r'\s*(#.*)?$', ln): continue
+            if ln.startswith ('@'):
+                name = re.sub (r'\s*#.*', '', ln[1:])
+                name = name.strip(':')
+                if name in data:
+                    print ('Duplicate test name "%s" in %s (line: %d)' \
+                                         % (name, filename, n+1), file=sys.stderr)
+                    dup = True
+                else:
+                    data[name] = txt = []
+                    dup = False
+            else:
+                if not dup: txt.append (ln)
+        f.close()
+        exp = {}
+        for k, v in data.items():
+            exp[k] = '\n'.join (v)
+        return exp
 
 if __name__ == '__main__': unittest.main()
 

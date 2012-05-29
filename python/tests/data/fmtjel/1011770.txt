@@ -1,10 +1,10 @@
-﻿惚け[ichi1]；呆け[ichi1]
+惚け[ichi1]；呆け[ichi1]
 ぼけ[ichi1]；ボケ[nokanji]
 [1][n,suf][uk]
   idiot; fool; touched in the head (from); out of it (from); space case
-[2][n,suf]
+[2][n,suf][uk]
   funny man (of a comedy duo); (in comedy) silly or stupid line
   [see=1604310・漫才[1]]
-  [ant=1456930・突っ込み・つっこみ[2]]
+  [see=1456930・突っ込み・つっこみ[2]]
 [3][n,suf]
   Alzheimer's (impol)

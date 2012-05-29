@@ -1,9 +1,9 @@
-﻿
+
 バイト[gai1,ichi1]
 [1][n,vs][abbr]
   [lsrc=ger:Arbeit]
   work (esp. part time or casual)
-  [see=1019420・アルバイト[1,2]]
+  [see=1019420・アルバイト[1]]
 [2][n][fld=comp,fld=math]
   byte; octet
 [3][n]

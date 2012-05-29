@@ -1,4 +1,5 @@
 南瓜[ichi1]
-かぼちゃ[ichi1]；なんか[gikun,ok]
-[1][n]
-  (Japanese) squash; pumpkin
+かぼちゃ[ichi1]；ぼうぶら；なんか[ok]；カボチャ[nokanji]
+[1][n][uk]
+  [note="ぼうぶら is primarily Kansai dialect"]
+  pumpkin; squash

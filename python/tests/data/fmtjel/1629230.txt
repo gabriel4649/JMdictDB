@@ -1,5 +1,5 @@
-﻿
+
 メリヤスシャツ
 [1][n]
-  [lsrc=spa:medias,lsrc=por:meias,lsrc=eng:shirt]
+  [lsrc=spa/p:medias,lsrc=por/p:meias,lsrc=eng/p:shirt]
   undershirt

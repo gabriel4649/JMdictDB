@@ -1,5 +1,6 @@
 ﻿# coding: utf-8
-from __future__ import print_function
+from __future__ import print_function, absolute_import, division
+from future_builtins import ascii, filter, hex, map, oct, zip 
 
 iso639_1_to_2 = {
 	'aa': 'aar',	# Afar

@@ -4,7 +4,8 @@
 #   program which in turn requires PYTHONPATH be properly configured
 #   so that jmparse.py can find the jdb libraries.
 #--------------------------------------------------------------------
-from __future__ import print_function
+from __future__ import print_function, absolute_import, division
+from future_builtins import ascii, filter, hex, map, oct, zip 
 import sys, os, tempfile, atexit, subprocess, difflib, \
 	shutil, pdb, unittest, unittest_extensions
 if '../lib' not in sys.path: sys.path.append ('../lib')

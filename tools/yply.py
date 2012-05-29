@@ -10,7 +10,8 @@
 # Based on the yply code written by David Beazley (dave@dabeaz.com)
 # October 2, 2006 and distributed with the examples in Ply-2.3.
 
-from __future__ import print_function
+from __future__ import print_function, absolute_import, division
+from future_builtins import ascii, filter, hex, map, oct, zip 
 
 __version__ = ("$Revision$"[11:-2], 
 	       "$Date$"[7:-11])

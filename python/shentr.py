@@ -4,7 +4,8 @@
 # Simple command line tool to find and display entries
 # in the JMdict database.
 
-from __future__ import print_function
+from __future__ import print_function, absolute_import, division
+from future_builtins import ascii, filter, hex, map, oct, zip 
 
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 

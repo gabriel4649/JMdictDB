@@ -2016,7 +2016,8 @@ class Kwds:
             try: f = open (fname)
             except IOError:
                 failed.append (table); continue
-            for ln in f:
+            for lnx in f:
+		ln = lnx.decode ('utf-8')
                 if re.match (r'\s*(#.*)?$', ln): continue
                 fields = ln.rstrip('\n\r').split ("\t")
                 fields = [x if x!='' else None for x in fields]

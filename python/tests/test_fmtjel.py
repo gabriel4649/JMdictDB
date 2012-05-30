@@ -121,8 +121,7 @@ class Test_restr (unittest.TestCase):
         r = Restr(); e1._rdng[2]._restr.append (r); e1._kanj[1]._restr.append(r)
         expect =  'jmdict 1000010 A {100}\n' \
                   '手紙；切手\n' \
-                  'てがみ[手紙]；あとで[切手]；きって[nokanji]\n' \
-                  .decode('utf-8')
+                  'てがみ[手紙]；あとで[切手]；きって[nokanji]\n'
         jeltxt = fmtjel.entr (e1)
         msg = "\nA:\n%s\nB:\n%s" % (expect, jeltxt)
         _.assertEqual (expect, jeltxt, msg)

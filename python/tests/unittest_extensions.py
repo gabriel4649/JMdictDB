@@ -113,7 +113,7 @@ class EncodedAssertionError (AssertionError):
         except: return AssertionError.__str__(self)
 
 # Tell the unicode module to use it.
-unittest.TestCase.failureException = EncodedAssertionError
+#unittest.TestCase.failureException = EncodedAssertionError
 
 
 def runcmd (wkdir, cmdln):

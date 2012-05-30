@@ -136,7 +136,7 @@ def dotest (_, testnum, expnum=None):
 def readedict (filename):
         # Read edict test data lines into a dixt, keyed by test name.
         data = {}
-        f = codecs.open (filename, 'r', 'utf_8_sig ')
+        f = open (filename, encoding='utf_8_sig')
         for n, ln in enumerate (f):
             ln = ln.rstrip('\n\r')
             if re.match (r'\s*(#.*)?$', ln): continue
@@ -151,7 +151,7 @@ def readedict (filename):
 def readxml (filename):
         # Read xml test data sets into a dict, keyed by test name.
         data = {}
-        f = codecs.open (filename, 'r', 'utf_8_sig ')
+        f = codecs.open (filename, encoding='utf_8_sig')
         for n, ln in enumerate (f):
             ln = ln.rstrip()
             if re.match (r'\s*(#.*)?$', ln): continue

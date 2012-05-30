@@ -192,7 +192,7 @@ def parsebitem (s, n, jtxt):
             sens = [x for x in sens.split ('[') if len(x)>0]
 
         if atxt and jtxt.find (atxt) < 0:
-            raise ParseError ("\{%s\} not in A line in item %d" % (atxt, n))
+            raise ParseError ("{%s} not in A line in item %d" % (atxt, n))
         return ktxt, rtxt, sens, atxt, not not prio
 
 def hw (ktxt, rtxt):

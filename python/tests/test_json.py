@@ -1,7 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 
-from __future__ import print_function, absolute_import, division, unicode_literals
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 import sys, re, unittest, pdb
 try: import json
 except ImportError: import simplejson as json
@@ -26,8 +25,8 @@ class Test_obj2struc (unittest.TestCase):
     def test0002(_): _.assert_ (isEqual (serialize.obj2struc(1), 1))
     def test0003(_): _.assert_ (isEqual (serialize.obj2struc(2000000000000), 2000000000000))
     def test0004(_): _.assert_ (isEqual (serialize.obj2struc('abc'), 'abc'))
-    def test0005(_): _.assert_ (isEqual (serialize.obj2struc(u'abc'), u'abc'))
-    def test0006(_): _.assert_ (isEqual (serialize.obj2struc(u'\u304a\u5143\u6c17\u3067'), u'\u304a\u5143\u6c17\u3067'))
+    def test0005(_): _.assert_ (isEqual (serialize.obj2struc('abc'), 'abc'))
+    def test0006(_): _.assert_ (isEqual (serialize.obj2struc('\u304a\u5143\u6c17\u3067'), '\u304a\u5143\u6c17\u3067'))
     def test0007(_): _.assert_ (isEqual (serialize.obj2struc(1.1428), 1.1428))
     def test0008(_): _.assert_ (isEqual (serialize.obj2struc(True), True))
     def test0009(_): _.assert_ (isEqual (serialize.obj2struc(False), False))
@@ -49,8 +48,8 @@ class Test_struc2obj (unittest.TestCase):
     def test0002(_): _.assert_ (isEqual (serialize.struc2obj(1), 1))
     def test0003(_): _.assert_ (isEqual (serialize.struc2obj(2000000000000), 2000000000000))
     def test0004(_): _.assert_ (isEqual (serialize.struc2obj('abc'), 'abc'))
-    def test0005(_): _.assert_ (isEqual (serialize.struc2obj(u'abc'), u'abc'))
-    def test0006(_): _.assert_ (isEqual (serialize.struc2obj(u'\u304a\u5143\u6c17\u3067'), u'\u304a\u5143\u6c17\u3067'))
+    def test0005(_): _.assert_ (isEqual (serialize.struc2obj('abc'), 'abc'))
+    def test0006(_): _.assert_ (isEqual (serialize.struc2obj('\u304a\u5143\u6c17\u3067'), '\u304a\u5143\u6c17\u3067'))
     def test0007(_): _.assert_ (isEqual (serialize.struc2obj(1.1428), 1.1428))
     def test0008(_): _.assert_ (isEqual (serialize.struc2obj(True), True))
     def test0009(_): _.assert_ (isEqual (serialize.struc2obj(False), False))
@@ -115,28 +114,28 @@ class Test_objects (unittest.TestCase):
         _.assertEqual (e1.unap, e2.unap)
         _.assertEqual (e1.notes, e2.notes)
     def test012(_):
-        e1 = Rdng (txt=u'あいうえお', rdng=2, entr=555)
+        e1 = Rdng (txt='あいうえお', rdng=2, entr=555)
         e2 = serialize.unserialize (serialize.serialize (e1))
         _.assertEqual (type(e1), type(e2))
         _.assertEqual (e1.entr, e2.entr)
         _.assertEqual (e1.rdng, e2.rdng)
         _.assertEqual (e1.txt, e2.txt)
     def test013(_):
-        e1 = Kanj (txt=u'田中さん', kanj=2, entr=555)
+        e1 = Kanj (txt='田中さん', kanj=2, entr=555)
         e2 = serialize.unserialize (serialize.serialize (e1))
         _.assertEqual (type(e1), type(e2))
         _.assertEqual (e1.entr, e2.entr)
         _.assertEqual (e1.kanj, e2.kanj)
         _.assertEqual (e1.txt, e2.txt)
     def test014(_):
-        e1 = Sens (notes=u'abcd', sens=2, entr=555)
+        e1 = Sens (notes='abcd', sens=2, entr=555)
         e2 = serialize.unserialize (serialize.serialize (e1))
         _.assertEqual (type(e1), type(e2))
         _.assertEqual (e1.entr, e2.entr)
         _.assertEqual (e1.sens, e2.sens)
         _.assertEqual (e1.notes, e2.notes)
     def test015(_):
-        e1 = Gloss (txt=u'abcd', sens=2, gloss=3, entr=555, lang=33)
+        e1 = Gloss (txt='abcd', sens=2, gloss=3, entr=555, lang=33)
         e2 = serialize.unserialize (serialize.serialize (e1))
         _.assertEqual (type(e1), type(e2))
         _.assertEqual (e1.entr, e2.entr)
@@ -148,9 +147,9 @@ class Test_objects (unittest.TestCase):
     #  are sufficient.
     def test101(_):
         e1 = Entr (id=555, seq=222, stat=2,
-                _rdng = [Rdng (txt=u'あいうえお'),
-                         Rdng (txt=u'たちつてと')],
-                _kanj = [Kanj (txt=u'田中さん')],
+                _rdng = [Rdng (txt='あいうえお'),
+                         Rdng (txt='たちつてと')],
+                _kanj = [Kanj (txt='田中さん')],
                 _sens = [Sens (_gloss = [Gloss (txt='abcd')]),
                          Sens (_gloss = [Gloss (txt='abcd'),
                                          Gloss (txt='efg')])])

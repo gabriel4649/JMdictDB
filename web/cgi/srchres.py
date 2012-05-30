@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -31,7 +30,7 @@ import jdb, jmcgi, serialize, jelparse
 def main( args, opts ):
         errs = []; so = None; stats = {}
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-        except StandardError as e: jmcgi.err_page ([unicode (e)])
+        except Exception as e: jmcgi.err_page ([str (e)])
 
         cfg_web = d2o (cfg['web'])
         cfg_srch = d2o (cfg['search'])
@@ -92,7 +91,7 @@ def main( args, opts ):
         if so:
             try: condlist = jmcgi.so2conds (so)
             except ValueError as e:
-                errs.append (unicode (e))
+                errs.append (str (e))
               # FIXME: [IS-115] Following will prevent kanjidic entries from
               #  appearing in results.  Obviously hardwiring id=4 is a hack.
             else:
@@ -110,7 +109,7 @@ def main( args, opts ):
         if cfg_srch.MAX_QUERY_COST > 0:
             try:
                 cost = jdb.get_query_cost (cur, sql2, sql_args);
-            except StandardError as e:
+            except Exception as e:
                 jmcgi.err_page (["Database error (%s):<pre> %s </pre></body></html>"
                            % (e.__class__.__name__, str(e))])
             stats['cost']=cost;
@@ -161,7 +160,7 @@ def d2o (dict_):
         # FIXME: What about floats, bools, datetimes, lists, ...?
         #  Should we consider JSON as an ini file format?
         o = jdb.Obj()
-        for k,v in dict_.items():
+        for k,v in list(dict_.items()):
             try: v = int (v)
             except (ValueError,TypeError): pass
             setattr (o, k, v)

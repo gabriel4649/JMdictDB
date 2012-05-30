@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2], \
                '$Date$'[7:-11]);
@@ -296,7 +295,7 @@ def p_tagitem_10(p):
           # syntactically.  Since we don''t have an xref, then the midots are
           # just characters in the text, so put the original text string back
           # together.
-        txt = u'\u30FB'.join (dotlist)
+        txt = '\u30FB'.join (dotlist)
         if tag == 'restr':
             if jdb.jstr_keb (txt):
                 taglist.append (['RESTR', None, txt])
@@ -517,7 +516,7 @@ def lookup_tag (tag, typs=None):
         matched = []
         if not typs:
             typs = [x for x in KW.attrs()]
-        if isinstance (typs, (str, unicode)): typs = [typs]
+        if isinstance (typs, str): typs = [typs]
         for typ in typs:
             typ = typ.upper(); val = None
             if typ == "FREQ":
@@ -858,7 +857,7 @@ def find_xref (cur, typ, rtxt, ktxt, slist, seq, corp,
 
         xrfs = [];  xunrs = None;  msg = ''
         if clearcache: corpcache.clear()
-        if isinstance (corp, (str, unicode)):
+        if isinstance (corp, str):
             if corpcache.get (corp, None): corpid = corpcache[corp]
             else:
                 rs = jdb.dbread (cur, "SELECT id FROM kwsrc WHERE kw=%s", [corp])
@@ -949,8 +948,8 @@ def fmt_xitem (xitem):
             else: c = '#' if corp is None else ''
             n = n + c
         else: c = ''
-        kr = k + (u'\u30FB' if k and r else '') + r
-        t = n + (u'\u30FB' if n and kr else '') + kr
+        kr = k + ('\u30FB' if k and r else '') + r
+        t = n + ('\u30FB' if n and kr else '') + kr
         s = ('[%s]' % ','.join(slist)) if slist else ''
         return t + s
 

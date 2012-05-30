@@ -16,8 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -58,7 +57,7 @@ from iso639maps import iso639_1_to_2
 def entr (text, simple=False):
         fmap = collections.defaultdict (lambda:([list(),list()]))
         #krtxt, x, stxt = text.partition ('/')
-        try: krtxt, stxt = re.split (ur'[ \t\u3000]*/[ \t\u3000]*', text, 1)
+        try: krtxt, stxt = re.split (r'[ \t\u3000]*/[ \t\u3000]*', text, 1)
         except ValueError as e:
             raise ParseError ('Missing KR-S separator, "/"')
         kanjs, rdngs = parse_jppart (krtxt, fmap)
@@ -69,7 +68,7 @@ def entr (text, simple=False):
             errtyp, r, k, kw, val = err
             raise ParseError ("%s freq tag(s) %s%s in %s%s%s"
                   % (errtyp, KW.FREQ[kw].kw, val, k or '',
-                    u'\u30FB' if k and r else '', r or ''))
+                    '\u30FB' if k and r else '', r or ''))
         return entr
 
 def parse_jppart (krtxt, fmap):
@@ -85,7 +84,7 @@ def parse_jppart (krtxt, fmap):
         # use "[]" for the reading.
 
         #ktxt, x, rtxt = krtxt.partition(' ')
-        parts = re.split(ur'[ \t\u3000]+', krtxt, 1)
+        parts = re.split(r'[ \t\u3000]+', krtxt, 1)
         if len (parts) == 1: ktxt, rtxt = '', parts[0]
         else: ktxt, rtxt = parts
         if ktxt: kanjs = parse_krpart (ktxt.strip(), fmap)
@@ -118,7 +117,7 @@ def parse_krpart (krtext, fmap, kanjs=None):
         # objects attached.
 
         if not krtext: return []
-        exps = []; pexps = []; krlist = []; krobjs = []; MARKER = u'\u1000'
+        exps = []; pexps = []; krlist = []; krobjs = []; MARKER = '\u1000'
           # We are going to get each individual kanji or reading word
           # by splitting the string on ';' characters.  But because semi-
           # colons can also occur in restr part or readings, will first
@@ -607,7 +606,7 @@ def parse_xrefs (txt, sens):
         xrsvs = []
         for n, x in enumerate (xrefs):
             if not x: continue
-            krs = x.split (u'\u30FB')
+            krs = x.split ('\u30FB')
             if len (krs) > 3 or len(krs) == 0:
                 raise ParseError ('Xref "%s", bad format' % x);  continue
 

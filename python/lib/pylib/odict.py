@@ -12,13 +12,13 @@ class odict(dict):
         if len(args) == 1:
             d = args[0]
             if hasattr(d, 'items'):
-                items = d.items()
+                items = list(d.items())
             else:
                 items = list(d)
-            for i in xrange(len(items)):
+            for i in range(len(items)):
                 self._keys.append(items[i][0])
         if kwds:
-            self._merge_keys(kwds.iterkeys())
+            self._merge_keys(iter(kwds.keys()))
             self.update (kwds)
 
     def __delitem__(self, key):
@@ -71,9 +71,9 @@ class odict(dict):
     def update(self, data):
         if data is not None:
             if hasattr(data, 'iterkeys'):
-                self._merge_keys(data.iterkeys())
+                self._merge_keys(iter(data.keys()))
             else:
-                self._merge_keys(data.keys())
+                self._merge_keys(list(data.keys()))
             dict.update(self,data)
 
     def setdefault(self, key, failobj = None):

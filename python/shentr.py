@@ -4,8 +4,7 @@
 # Simple command line tool to find and display entries
 # in the JMdict database.
 
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
@@ -181,7 +180,7 @@ arguments:  [text | number]...
         p.add_option ("--seq", "-q", action="append", dest="seq",
             help="Find entries with seq number SEQ.")
         p.add_option ("--corpus", "-s", action="extend", dest="corp",
-            help=u"Restrict the search to the given corpora.  Each corpus "
+            help="Restrict the search to the given corpora.  Each corpus "
                 "is specified by its keyword.  If more than one, they must "
                 " be comma separated. If the first comma separated word is "
                 "\"NOT\" rather than a corpus keyword, then all corpora "

@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -43,13 +42,13 @@ def main (args, opts):
         sys.stdout.write ("<%s>\n" % opts.root)
         for fname in args:
             sec = open (fname).read().decode ('utf-8')
-            if sec[0] == u'\uFEFF': sec = sec[1:]
+            if sec[0] == '\uFEFF': sec = sec[1:]
             sys.stdout.write (sec.encode (opts.encoding))
         sys.stdout.write (("</%s>\n" % opts.root).encode (opts.encoding))
 
 def get_dtd (dtdfname, origroot, newroot, newenc):
         dtd = open (dtdfname).read().decode('utf-8')
-        if dtd[0] == u'\uFEFF': dtd = dtd[1:]
+        if dtd[0] == '\uFEFF': dtd = dtd[1:]
         if newenc != "UTF-8":
             a = dtd.replace ('<?xml version="1.0" encoding="UTF-8"?>',
                              '<?xml version="1.0" encoding="%s"?>' % newenc, 1)

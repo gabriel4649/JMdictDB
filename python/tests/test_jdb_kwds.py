@@ -2,8 +2,7 @@
 
 # Tests the jdb.Kwds class.
 
-from __future__ import print_function, absolute_import, division, unicode_literals
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 import sys, pdb, unittest
 if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb
@@ -346,7 +345,7 @@ class Test_loadcsv (unittest.TestCase):
         expected = set (
                 'GINF_equ GINF_lit GINF_fig GINF_expl '
                 'KINF_xxx KINF_yy KINF_qq_r'.split())
-        actual = set ([x for x in _.o.__dict__.keys() if "_" in x])
+        actual = set ([x for x in list(_.o.__dict__.keys()) if "_" in x])
         _.assertEqual (expected, actual)
 
     def test006 (_):

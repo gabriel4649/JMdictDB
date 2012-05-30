@@ -22,8 +22,7 @@
 # entries that have a comment with a timestamp in the day
 # given in the URL y (year), m (month), and d (day) parameters.
 
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -35,7 +34,7 @@ import jdb, jmcgi
 
 def main (args, opts):
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-        except StandardError as e: jmcgi.err_page ([unicode (e)])
+        except Exception as e: jmcgi.err_page ([str (e)])
         fv = form.getfirst; fl = form.getlist
 
         t = datetime.date.today()  # Will supply default values of y, m, d.
@@ -43,7 +42,7 @@ def main (args, opts):
             y = int (fv ('y') or t.year)
             m = int (fv ('m') or t.month)
             d = int (fv ('d') or t.day)
-        except StandardError as e: jmcgi.err_page ("Bad 'y', 'm' or 'd' url parameter.")
+        except Exception as e: jmcgi.err_page ("Bad 'y', 'm' or 'd' url parameter.")
         day = datetime.date (y, m, d)
 
         sql = '''SELECT DISTINCT e.id

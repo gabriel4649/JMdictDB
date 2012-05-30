@@ -11,8 +11,7 @@
 # Use this module in a cgi script as follows:
 #   import cgitbx; cgitbx.enable()
 
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 import sys
 
 def reset():

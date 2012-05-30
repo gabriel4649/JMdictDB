@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -33,7 +32,7 @@ def main (args, opts):
         #print "Content-type: text/html\n"
         errs = []
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-        except StandardError as e: jmcgi.err_page ([unicode (e)])
+        except Exception as e: jmcgi.err_page ([str (e)])
 
         entries = jmcgi.get_entrs (cur, form.getlist ('e'),
                                         form.getlist ('q'), errs)

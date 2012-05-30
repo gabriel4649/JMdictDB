@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division, unicode_literals
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -71,12 +70,12 @@ def listtests (obj, sumtyp):
         else: collect = defaultdict (lambda: defaultdict (int))
         scantests (obj, collect)
         if collect is not None:
-            for m,v in collect.items():
+            for m,v in list(collect.items()):
                 if sumtyp == 'm':
                     print ("%s (%d classes, %d tests)" \
                            % (m, len(v), sum (v.values())))
                 else:
-                    for c,n in v.items():
+                    for c,n in list(v.items()):
                         print ("%s.%s (%d tests)" % (m, c, n))
 
 def scantests (obj, collect):

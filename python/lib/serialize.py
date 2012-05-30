@@ -16,13 +16,12 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
 
-import zlib, base64, urllib, datetime, time
+import zlib, base64, urllib.request, urllib.parse, urllib.error, datetime, time
 try: import json
 except ImportError: import simplejson as json
 import jdb
@@ -31,11 +30,11 @@ def serialize (obj):
         s = jencode (obj)
         s = zlib.compress (s)
         s = base64.b64encode (s)
-        s = urllib.quote_plus (s)
+        s = urllib.parse.quote_plus (s)
         return s
 
 def unserialize (str):
-        s = urllib.unquote_plus (str)
+        s = urllib.parse.unquote_plus (str)
         s = base64.b64decode (s)
         s = zlib.decompress (s)
         obj = jdecode (s)
@@ -222,7 +221,7 @@ def obj2struc (o, seen=None):
 
         if toplevel:
             xid = 0
-            for idn,refs in seen.items():
+            for idn,refs in list(seen.items()):
 
                   # 'idn' here is the id() number of an object.
                   # 'refs' is a list, with the first item being the

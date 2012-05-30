@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -79,7 +78,7 @@ EX2ID = {
         'senryuu'               : [83,"Senryuu"],
         'xxx'                   : [1],}
 
-class ParseError (StandardError): pass
+class ParseError (Exception): pass
 
 def main (args, opts):
         global Opts; Opts = opts
@@ -263,7 +262,7 @@ class ABPairReader (file):
             line = self.readline().decode('utf-8'); self.lineno += 1
             if not line: return None
             if line.startswith (key) \
-                    or (line[1:].startswith(key) and line[0]==u'\uFEFF'):
+                    or (line[1:].startswith(key) and line[0]=='\uFEFF'):
                 if didmsg:
                     warns.warn ("Line %d: resyncronised." % self.lineno)
                     didmsg = False
@@ -273,7 +272,7 @@ class ABPairReader (file):
                     warns.warn ("Line %d: expected '%s' line not found, resyncronising..."
                            % (self.lineno, key.strip()))
                     didmsg = True
-    def next( self ):
+    def __next__( self ):
         a, b = self.readpair()
         if not a: raise StopIteration
         return a, b

@@ -1,7 +1,6 @@
 #!/usr/env python
 
-from __future__ import print_function, absolute_import, division, unicode_literals
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 import sys, re, unittest, codecs, pdb
 import unittest_extensions
 if '../lib' not in sys.path: sys.path.append ('../lib')
@@ -120,7 +119,7 @@ def readxml (filename):
                 if not dup: txt.append (ln)
         f.close()
         exp = {}
-        for k, v in data.items():
+        for k, v in list(data.items()):
             exp[k] = '\n'.join (v)
         return exp
 

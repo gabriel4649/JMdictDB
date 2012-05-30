@@ -3,8 +3,7 @@
 # This program allows direct editing of the database tables
 # that constitute an entry.
 
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ("$Revision$"[11:-2],
                "$Date$"[7:-11])
@@ -65,7 +64,7 @@ class MainFrame (wx.Frame):
         self.Bind (wx.EVT_MENU, self.save_all, mitem('m_commit'))
         self.Bind (wx.EVT_MENU, self.cancel, mitem('m_rollback'))
 
-        for tblname in self.model.tables.keys():
+        for tblname in list(self.model.tables.keys()):
             self.bind_table_button (xrcres, model, tblname)
         XRC (self, "b_load").Bind (wx.EVT_BUTTON, self.read_entries)
         XRC (self, "d_norm").Bind (wx.EVT_RADIOBUTTON, lambda e:self.set_display('norm'))
@@ -145,7 +144,7 @@ class MainFrame (wx.Frame):
           # in the text window.
         print ("MainFrame.upd_view", file=sys.stderr)
         textwin = XRC (self, "entrtxt")
-        data = dict ((k,v.data) for k,v in self.model.recordsets.items())
+        data = dict ((k,v.data) for k,v in list(self.model.recordsets.items()))
         entrs = jdb.entr_bld (data)
           # Since the primary keys of some records may have changed, call reorder_entr()
           # to make sure all the sublists of the entry are ordered as expected by primary
@@ -296,7 +295,7 @@ class TableFrame (wx.Frame):
                 msg = "Unable to write to database. \n" \
                     "SQL was: %s\n" \
                     "SQL args were: %r\n" \
-                    "Error was: %s" % (excep.sql, excep.sqlargs, unicode (excep))
+                    "Error was: %s" % (excep.sql, excep.sqlargs, str (excep))
                 dialog (self, msg, "Database Error", wx.ICON_ERROR)
                 rv = wx.ID_CANCEL
         elif rv == wx.ID_NO:
@@ -382,7 +381,7 @@ class MyGrid (wx.grid.Grid):
             msg = "Unable to write to database. \n" \
                 "SQL was: %s\n" \
                 "SQL args were: %r\n" \
-                "Error was: %s" % (excep.sql, excep.sqlargs, unicode (excep))
+                "Error was: %s" % (excep.sql, excep.sqlargs, str (excep))
             dialog (self, msg, "Database Error", wx.ICON_ERROR)
         wx.CallAfter (self.ForceRefresh)
 
@@ -455,7 +454,7 @@ class MyGridTable (wx.grid.PyGridTableBase):
     def GetRowLabelValue (self, rownum):
         try: stat = self.rs.edit_status (self.rs.row (rownum))
         except IndexError: stat = None
-        return {None:'', 'u':u'*', 'n':u'\u2299', 'd':u'\u2715'}[stat]
+        return {None:'', 'u':'*', 'n':'\u2299', 'd':'\u2715'}[stat]
 
     def IsEmptyCell (self, rownum, colnum):
         try: return not self.rs.data[rownum][colnum]
@@ -468,7 +467,7 @@ class MyGridTable (wx.grid.PyGridTableBase):
         if v is None or v is Unset: vstr = ''
         else:
             kwtbl = self.rs.cols[colnum][3]
-            if not kwtbl:         vstr = unicode(v)
+            if not kwtbl:         vstr = str(v)
               # Map kw id values to keyword text.
             elif kwtbl == 'STAT': vstr = (getattr (jdb.KW, kwtbl))[v].descr
             else:                 vstr = (getattr (jdb.KW, kwtbl))[v].kw
@@ -593,7 +592,7 @@ class ContextMenu (wx.Menu):
         wx.Menu.__init__(self)
         self.selected = None
         for text in items:
-            if isinstance (text, (str, unicode)): _func = None
+            if isinstance (text, str): _func = None
             else: text, _func = text
             item = self.Append (-1, text)
             #print >>sys.stderr, "ctx menu setup, item=%s, funcs=%r" % (text, (_func,func,self.intern_handler))
@@ -861,8 +860,8 @@ class RecordSet:
 
     def _dbupd (self, pkvals, changes):
         whr = " AND ".join ('%s=%%s' % k for k in self.pks())
-        upd = ",".join ("%s=%%s" % k for k in changes.keys())
-        uargs = changes.values()
+        upd = ",".join ("%s=%%s" % k for k in list(changes.keys()))
+        uargs = list(changes.values())
         sql = "UPDATE %s SET %s WHERE %s" % (self.table, upd, whr)
         args = uargs + pkvals
         print ("Recordset._dbupd: %s / %r" % (sql, args), file=sys.stderr)
@@ -874,7 +873,7 @@ class RecordSet:
 
     def _dbins (self, changes):
         cols=[]; pmarks=[]; args=[]
-        for k, v in changes.items():
+        for k, v in list(changes.items()):
             cols.append (k)
             pmarks.append ('%s')
             args.append (v)
@@ -935,7 +934,7 @@ class Model:
         # Returns a list of recordset that have pending (not
         # yet written) database writes.
         if not self.recordsets: return []
-        return [tname for tname, rset in self.recordsets.items()
+        return [tname for tname, rset in list(self.recordsets.items())
                  if rset.has_changes()]
 
     def cancel (self):
@@ -944,7 +943,7 @@ class Model:
         Notify ('dbdirty', False)
 
     def save_all (self):
-        for rs in self.recordsets.values(): rs.write_all()
+        for rs in list(self.recordsets.values()): rs.write_all()
         self.cursor.connection.commit()
         Notify ('dbdirty', False)
 
@@ -959,8 +958,8 @@ def sortobjs (objlist, attrs):
         objlist.sort (key=lambda x: getcols(x, attrs))
 
 def rows_eq (r1, r2):
-        v1 = [v for k,v in r1.__dict__.items() if not k.startswith ('_') and k[0].islower()]
-        v2 = [v for k,v in r2.__dict__.items() if not k.startswith ('_') and k[0].islower()]
+        v1 = [v for k,v in list(r1.__dict__.items()) if not k.startswith ('_') and k[0].islower()]
+        v2 = [v for k,v in list(r2.__dict__.items()) if not k.startswith ('_') and k[0].islower()]
         return v1 == v2
 
 def reorder_entr (obj, tables):

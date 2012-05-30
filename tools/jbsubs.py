@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -179,7 +178,7 @@ def incremental_scanner (f, encoding=None):
         lines = [];  base_linenum = None
         for line_num, line in enumerate (f):
             if encoding: line = line.decode (encoding)
-            if line_num == 0 and line.startswith(u'\uFEFF'):
+            if line_num == 0 and line.startswith('\uFEFF'):
                 line = line[1:]                 # Remove BOM.
               # FIXME? it is possible the multi-line fields could
               #  contain lines starting with "#".
@@ -263,7 +262,7 @@ def parse_submission (lines):
           # defaultdict does.)
         collect = dict (collect)
 
-        for kw in collect.keys():
+        for kw in list(collect.keys()):
             if kw not in multi_field:
                   # All items in 'collect' were created as lists.
                   # Except for those that are intended to have multiple
@@ -274,7 +273,7 @@ def parse_submission (lines):
         if 'email' in collect and collect['email'] == 'Email address': del collect['email']
 
           # Sanity check to make sure we didn't accidently misplace something...
-        for kw in collect.keys(): assert kw in known_keywds
+        for kw in list(collect.keys()): assert kw in known_keywds
 
           # "subtype" field is required...
         if 'subtype' not in collect or collect['subtype'] not in ('new', 'amend'):

@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -31,7 +30,7 @@ import jdb, jmcgi, jelparse, jellex, serialize
 def main (args, opts):
         errs = []; chklist = {}
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-        except StandardError as e: jmcgi.err_page ([unicode (e)])
+        except Exception as e: jmcgi.err_page ([str (e)])
 
         fv = form.getfirst; fl = form.getlist
         dbg = fv ('dbg'); meth = fv ('meth')
@@ -303,16 +302,16 @@ def check_for_warnings (cur, entr, parent_seq, chklist):
         if entr.src==jdb.KW.SRC['jmdict'].id:
             chklist['nopos']   = ", ".join (str(n+1) for n,x in enumerate (getattr (entr,'_sens',[]))
                                                        if not x._pos)
-        chklist['jpgloss'] = ", ".join ("%d.%d: %s"%(n+1,m+1,'"'+'", "'.join(re.findall(ur'[\uFF01-\uFF5D]', g.txt))+'"')
+        chklist['jpgloss'] = ", ".join ("%d.%d: %s"%(n+1,m+1,'"'+'", "'.join(re.findall(r'[\uFF01-\uFF5D]', g.txt))+'"')
                                                 for n,s in enumerate (getattr (entr,'_sens',[]))
                                                   for m,g in enumerate (getattr (s, '_gloss',[]))
                                                         # Change text in edconf.tal if charset changed.
-                                                    if re.findall(ur'[\uFF01-\uFF5D]', g.txt))
+                                                    if re.findall(r'[\uFF01-\uFF5D]', g.txt))
           # Remove any empty warnings so that if there are no warnings,
           # 'chklist' itself will be empty and no warning span element
           # will be produced by the template (which otherwise will
           # contain a <hr/> even if there are no other warnings.)
-        for k in chklist.keys():
+        for k in list(chklist.keys()):
             if not chklist[k]: del chklist[k]
 
 def find_similar (dbh, kanj, rdng, src, excl_seq=None):
@@ -388,19 +387,19 @@ def url_int (name, form, errs):
 
 def url_str (name, form):
         v = form.getfirst (name)
-        if v: v = v.decode ('utf-8').strip(u'\n\r \t\u3000')
+        if v: v = v.decode ('utf-8').strip('\n\r \t\u3000')
         return v or ''
 
 Transtbl = {ord(' '):None, ord('\t'):None, ord('\r'):None, ord('\n'):None, }
 def stripws (s):
-        if s is None: return u''
+        if s is None: return ''
           # Make sure 's' is a uncode string; .translate() will
           # bomb if is is a str string.
-        return (unicode(s)).translate (Transtbl)
+        return (str(s)).translate (Transtbl)
 
 def compws (s):
-        if s is None: return u''
-        return u' '.join (s.split())
+        if s is None: return ''
+        return ' '.join (s.split())
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

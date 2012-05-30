@@ -16,8 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 ########################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -46,7 +45,7 @@ class Cd:
     def getToc (self):
         toc = []
         ntrks = mci.Status (self.devid, item=MCI_STATUS_NUMBER_OF_TRACKS)
-        for i in xrange (1, ntrks + 1):
+        for i in range (1, ntrks + 1):
            toc.append (self.getCdTrackLen (self.devid, i))
         return toc
 
@@ -99,7 +98,7 @@ class Audio:
         fname = dir + file
         if fname.lower().endswith(".mp3"): devtyp = "mpegvideo"
         elif fname.lower().endswith(".wav"): devtyp = "waveaudio"
-        else: raise ValueError, "Invalid file type: %s" % fname
+        else: raise ValueError("Invalid file type: %s" % fname)
         if fname in self.devCache: devid = self.devCache[fname]
         else:
             devid = mci.Open (MCI_OPEN_TYPE|MCI_OPEN_ELEMENT, devtyp, fname)

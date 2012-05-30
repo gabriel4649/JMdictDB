@@ -3,8 +3,7 @@
 # Author: David Beazley (dave@dabeaz.com)
 # Date  : October 2, 2006
 
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 import re
 import ylex
 tokens = ylex.tokens

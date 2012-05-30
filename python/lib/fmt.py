@@ -16,8 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -105,7 +104,7 @@ def sens (s, kanj, rdng, n=None, entrcorp=None):
 
         fmt.append ("%d. %s" % (getattr(s,'sens',n), ', '.join(
                                 [x for x in (stag, pos, misc, fld, _dial, _lsrc) if x])))
-        if hasattr(s,'notes') and s.notes: fmt.append (u"  \u00AB%s\u00BB" % s.notes)
+        if hasattr(s,'notes') and s.notes: fmt.append ("  \u00AB%s\u00BB" % s.notes)
 
           # Now print the glosses...
         for n, g in enumerate (getattr (s,'_gloss',[])):
@@ -208,7 +207,7 @@ def xref (xref, rev=False, entrcorp=None):
         t = (KW.XREF[xref.typ].kw).capitalize() + ': '
         corp = '' if (entrcorp == corp or corp is None) else (KW.SRC[corp].kw + ' ')
         enum = "%s%s[%s] " % (corp, seqtxt, eidtxt)
-        return t + enum + u'\u30fb'.join(kr) + stxt + glosses
+        return t + enum + '\u30fb'.join(kr) + stxt + glosses
 
 def xrslvs (xr, sep=None):
         fmt = [];  sep_done = False
@@ -228,7 +227,7 @@ def xrslv (xr):
         KW = jdb.KW
         k = getattr (xr, 'ktxt', '') or ''
         r = getattr (xr, 'rtxt', '') or ''
-        kr = k + (u'\u30FB' if k and r else '') + r
+        kr = k + ('\u30FB' if k and r else '') + r
         t = (KW.XREF[xr.typ].kw).capitalize() + ': '
         return t + kr
 
@@ -292,7 +291,7 @@ def indent (s, n):
         return b
 
 def kr (ktxt, rtxt):
-        if ktxt and rtxt: txt = u'%s \u3010%s\u3011' % (ktxt, rtxt)
+        if ktxt and rtxt: txt = '%s \u3010%s\u3011' % (ktxt, rtxt)
         elif ktxt: txt = ktxt
         elif rtxt: txt = rtxt
         return txt
@@ -360,7 +359,7 @@ def cinf (f):
         for r in f:
             r.abbr = jdb.KW.CINF[r.kw].kw
             d[r.abbr].append (r)
-        for abbr,rs in sorted (d.items(), key=lambda x:x[0]):
+        for abbr,rs in sorted (list(d.items()), key=lambda x:x[0]):
             fmt.append ("  %s: %s" % (abbr, ', '.join (x.value for x in rs)))
         return fmt
 
@@ -371,7 +370,7 @@ def xunrs (e):
         for n, s in enumerate (e._sens):
             for x in getattr (s, '_xunr', []):
                 k = getattr (x,'ktxt','') or ''; r = getattr (x,'rtxt','') or ''
-                t = k + (u'\u30FB' if k and r else '') + r
+                t = k + ('\u30FB' if k and r else '') + r
                 fmt.append ("    Sense %d: %s %s" % (n+1, KW.XREF[x.typ].kw, t))
         if fmt: fmt.insert (0, '  Unresolved xrefs:')
         return fmt

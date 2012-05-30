@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 import sys, re
 
 def main (args, opts):

@@ -124,8 +124,7 @@
 # yet handled gracefully in the code -- so the result will
 # be an unhandled exception and traceback.)
 
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -145,7 +144,7 @@ def main( args, opts ):
         errs = []; dbh = svc = None
         logw ("Starting submit.py", pre='\n')
         try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
-        except ValueError as e: jmcgi.err_page ([unicode (e)])
+        except ValueError as e: jmcgi.err_page ([str (e)])
 
         logw ("main(): parseform done: userid=%s, sid=%s" % (sess and sess.userid, sess and sess.id))
 
@@ -157,7 +156,7 @@ def main( args, opts ):
             errs.append ("Only registered editors can approve or reject entries")
         if errs: jmcgi.err_page (errs)
         try: entrs = serialize.unserialize (fv ("entr"))
-        except StandardError:
+        except Exception:
             jmcgi.err_page (["Bad 'entr' parameter, unable to unserialize."])
 
         added = []

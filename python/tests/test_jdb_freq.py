@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function, absolute_import, division, unicode_literals
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 import sys, unittest, itertools, pdb
 from copy import deepcopy
 if '../lib' not in sys.path: sys.path.append ('../lib')
@@ -25,19 +24,19 @@ class Test_jdb_copy_freqs (unittest.TestCase):
         _.assertEqual ([], e._kanj)
     def test_0020(_):
           # No kanj.
-        p = Entr(_rdng=[Rdng(u'よい')])
+        p = Entr(_rdng=[Rdng('よい')])
         e = deepcopy (p)
         jdb.copy_freqs (p, e)
         _.assertEqual ([], e._rdng[0]._freq)
     def test_0030(_):
           # No rdng.
-        p = Entr (_kanj=[Kanj(u'良い')])
+        p = Entr (_kanj=[Kanj('良い')])
         e = deepcopy (p)
         jdb.copy_freqs (p, e)
         _.assertEqual ([], e._kanj[0]._freq)
     def test_0040(_):
           # Test existing freq removal
-        p = Entr(_rdng=[Rdng(txt=u'よ')], _kanj=[Kanj(txt=u'良')])
+        p = Entr(_rdng=[Rdng(txt='よ')], _kanj=[Kanj(txt='良')])
         e = deepcopy (p)
         e._rdng[0]._freq = [_.ichi2]
         e._kanj[0]._freq = [_.gai1]
@@ -47,7 +46,7 @@ class Test_jdb_copy_freqs (unittest.TestCase):
 
     def test_0110(_):
           # Single shared freq on 1 kanj and 1 rdng.
-        p = Entr(_rdng=[Rdng(txt=u'よ')], _kanj=[Kanj(txt=u'良')])
+        p = Entr(_rdng=[Rdng(txt='よ')], _kanj=[Kanj(txt='良')])
         e = deepcopy (p)
           # Note that we must use the same (as in 'is', not as in '==')
           # Freq object in the two freq lists, the lists themselves must
@@ -62,7 +61,7 @@ class Test_jdb_copy_freqs (unittest.TestCase):
 
     def test_0120(_):
           # Rdng only freq
-        p = Entr(_rdng=[Rdng(txt=u'よ')], _kanj=[Kanj(txt=u'良')])
+        p = Entr(_rdng=[Rdng(txt='よ')], _kanj=[Kanj(txt='良')])
         e = deepcopy (p)
         p._rdng[0]._freq = [_.ichi2]
         jdb.copy_freqs (p, e)
@@ -72,7 +71,7 @@ class Test_jdb_copy_freqs (unittest.TestCase):
 
     def test_0130(_):
           # Kanj only freq
-        p = Entr(_rdng=[Rdng(txt=u'よ')], _kanj=[Kanj(txt=u'良')])
+        p = Entr(_rdng=[Rdng(txt='よ')], _kanj=[Kanj(txt='良')])
         e = deepcopy (p)
         p._kanj[0]._freq = [_.ichi2]
         jdb.copy_freqs (p, e)
@@ -82,8 +81,8 @@ class Test_jdb_copy_freqs (unittest.TestCase):
 
     def test_0140(_):
           # A more complex set.
-        p = Entr(_rdng=[Rdng(txt=u'の'), Rdng(txt=u'や'), Rdng(txt=u'ぬ')],
-                 _kanj=[Kanj(txt=u'野'), Kanj(txt=u'埜'), Kanj(txt=u'金')])
+        p = Entr(_rdng=[Rdng(txt='の'), Rdng(txt='や'), Rdng(txt='ぬ')],
+                 _kanj=[Kanj(txt='野'), Kanj(txt='埜'), Kanj(txt='金')])
         e = deepcopy (p)
         p._rdng[1]._freq.append (_.ichi1); p._kanj[0]._freq.append (_.ichi1)
         p._rdng[1]._freq.append (_.gai1);  p._kanj[2]._freq.append (_.gai1)
@@ -107,8 +106,8 @@ class Test_jdb_copy_freqs (unittest.TestCase):
 
     def test_0150(_):
           # Check the senario noted in IS-209, note "2011-09-03 07:02:00"
-        p = Entr(_rdng=[Rdng(txt=u'の')],
-                 _kanj=[Kanj(txt=u'野'), Kanj(txt=u'埜')])
+        p = Entr(_rdng=[Rdng(txt='の')],
+                 _kanj=[Kanj(txt='野'), Kanj(txt='埜')])
         e = deepcopy (p)
         p._rdng[0]._freq.append (_.ichi2);  p._kanj[0]._freq.append (_.ichi2)
         p._rdng[0]._freq.append (_.ichi2a); p._kanj[1]._freq.append (_.ichi2a)
@@ -119,8 +118,8 @@ class Test_jdb_copy_freqs (unittest.TestCase):
 
     def test_0160(_):
           # Same as test_0150 except reading and kanji swapped.
-        p = Entr(_rdng=[Rdng(txt=u'の'), Rdng(txt=u'や')],
-                 _kanj=[Kanj(txt=u'野')])
+        p = Entr(_rdng=[Rdng(txt='の'), Rdng(txt='や')],
+                 _kanj=[Kanj(txt='野')])
         e = deepcopy (p)
         p._rdng[0]._freq.append (_.ichi2);  p._kanj[0]._freq.append (_.ichi2)
         p._rdng[1]._freq.append (_.ichi2a); p._kanj[0]._freq.append (_.ichi2a)
@@ -131,8 +130,8 @@ class Test_jdb_copy_freqs (unittest.TestCase):
 
     def test_0170(_):
           # Same as test_0160 except but different tags.
-        p = Entr(_rdng=[Rdng(txt=u'の'), Rdng(txt=u'や')],
-                 _kanj=[Kanj(txt=u'野')])
+        p = Entr(_rdng=[Rdng(txt='の'), Rdng(txt='や')],
+                 _kanj=[Kanj(txt='野')])
         e = deepcopy (p)
         p._rdng[0]._freq.append (_.ichi2);  p._kanj[0]._freq.append (_.ichi2)
         p._rdng[1]._freq.append (_.ichi1); p._kanj[0]._freq.append (_.ichi1)
@@ -150,8 +149,8 @@ class Test_jdb_copy_freqs (unittest.TestCase):
 
     def test_0410(_):   # IS-209
           # Setup the "from" entry like seq# 1589900.
-        p = Entr(_rdng=[Rdng(txt=u'かき'),Rdng(txt=u'なつき')],
-                 _kanj=[Kanj(txt=u'夏期'),Kanj(txt=u'夏季')])
+        p = Entr(_rdng=[Rdng(txt='かき'),Rdng(txt='なつき')],
+                 _kanj=[Kanj(txt='夏期'),Kanj(txt='夏季')])
         e = deepcopy (p)
         ichi1a = Freq (kw=1, value=1); ichi1b = Freq (kw=1, value=1)
         news1 = Freq (kw=7, value=1); nf13 = Freq (kw=5, value=13)

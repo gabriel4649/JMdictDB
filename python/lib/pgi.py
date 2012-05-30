@@ -16,8 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -126,7 +125,7 @@ def finalize (workfiles, outfn, delfiles=True, transaction=True):
         else: fout = sys.stdout
         if transaction:
             print ("\\set ON_ERROR_STOP 1\nBEGIN;\n", file=fout)
-        for v in sorted (workfiles.values(), key=operator.attrgetter('ord')):
+        for v in sorted (list(workfiles.values()), key=operator.attrgetter('ord')):
             if not v.file: continue
             v.file.close()
             fin = open (v.fn)
@@ -150,7 +149,7 @@ def pgesc (s):
           # characters.   Newlines are replaced by the two characters
           # backslash and "n".  Similarly for tab and return characters.
         if s is None: return '\\N'
-        if isinstance (s, (int, long)): return str (s)
+        if isinstance (s, int): return str (s)
         if isinstance (s, (datetime.date, datetime.time)): return s.isoformat()
         if isinstance (s, datetime.datetime): return s.isoformat(' ')
         if s.isdigit(): return s

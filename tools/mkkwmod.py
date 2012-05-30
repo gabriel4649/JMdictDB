@@ -20,8 +20,7 @@
 #
 # Generate a static keywords module from database kw tables or csv files.
 #
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ("$Revision$"[11:-2],
                "$Date$"[7:-11])

@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -118,7 +117,7 @@ import jdb, jmcgi, fmtjel, serialize, edparse
 def main (args, opts):
         errs = []; entrs =[]
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-        except StandardError as e: errs = jmcgi.err_page ([unicode (e)])
+        except Exception as e: errs = jmcgi.err_page ([str (e)])
 
         fv = form.getfirst; fl = form.getlist
         is_editor = jmcgi.is_editor (sess)
@@ -135,16 +134,16 @@ def main (args, opts):
         sentrs = fl ("entr")
         for sentr in sentrs:
             try: entrs = serialize.unserialize (sentr)
-            except StandardError as e:
-                errs.append ("Bad 'entr' value, unable to unserialize: %s" % unicode(e))
+            except Exception as e:
+                errs.append ("Bad 'entr' value, unable to unserialize: %s" % str(e))
             else:
                 entrs.append (entr)
 
         jentrs = fl ('j')
         for jentr in jentrs:
             try: entr = edparse.entr (jentr.decode('utf-8'))
-            except StandardError as e:
-                errs.append ("Bad 'j' value, unable to parse: %s" % unicode(e))
+            except Exception as e:
+                errs.append ("Bad 'j' value, unable to parse: %s" % str(e))
             else:
                 entr.src = None
                 entrs.append (entr)

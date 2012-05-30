@@ -2012,11 +2012,10 @@ class Kwds:
         failed = []
         for attr,table in list(tables.items()):
             fname = dirname + table + ".csv"
-            try: f = open (fname)
+            try: f = open (fname, encoding='utf-8')
             except IOError:
                 failed.append (table); continue
-            for lnx in f:
-		ln = lnx.decode ('utf-8')
+            for ln in f:
                 if re.match (r'\s*(#.*)?$', ln): continue
                 fields = ln.rstrip('\n\r').split ("\t")
                 fields = [x if x!='' else None for x in fields]

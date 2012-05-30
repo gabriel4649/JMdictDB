@@ -70,7 +70,7 @@ def entr (entr, xslfile=None, xslt=[], want_utf8=False):
             xml = re.sub (r'&([a-zA-Z0-9-]+);', r'\1', xml)
             xml = "<JMdict>%s</JMdict>" % xml
               # Apply the xsl to the xml, result is utf-8 encoded.
-            edicttxt = xslt[0](etree.parse (StringIO (xml)))
-            if not want_utf8:  # Convert to utf-8 to unicode.
-                edicttxt = (str(edicttxt)).decode('utf-8')
-        return edicttxt.rstrip('\n\r') # Remove the added trailing \n.
+            edicttxt = str (xslt[0](etree.parse (StringIO (xml)))).rstrip('\n\r')
+            if want_utf8:  # Convert to utf-8 to unicode.
+                edicttxt = edicttxt.encode('utf-8')
+        return edicttxt

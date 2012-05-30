@@ -1,4 +1,4 @@
-import exceptions, re
+import re
 from .odict import odict
 
 class Error(Exception):

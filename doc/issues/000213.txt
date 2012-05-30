@@ -64,3 +64,10 @@ AssdTo:	stuart
 
  Problem is that with the index in place, I am unable to submit
  "approved" entries; get a key violation on that index. 
+
+2012-05-29 18:25:00 stuart
+ Change I thought I backed out above was not... I forgot to do a
+ "make" in pg/ with the result that pg/mkindex.sql has still been
+ creating the problem index, "entr_active", on table "entr".
+ Hence any database created between then and now will reject the
+ submission of edited entries. 

@@ -6,7 +6,6 @@ DROP INDEX IF EXISTS entr_seq;
 DROP INDEX IF EXISTS entr_stat;
 DROP INDEX IF EXISTS entr_dfrm;
 DROP INDEX IF EXISTS entr_unap;
-DROP INDEX IF EXISTS entr_active;
 DROP INDEX IF EXISTS rdng_txt;
 DROP INDEX IF EXISTS rdng_txt1;
 DROP INDEX IF EXISTS rdng_txt2; --For fast LIKE 'xxx%'

@@ -26,6 +26,13 @@ import jdb, fmtjel
 
 class LexSpec:
 
+    # Note that in the strings used as regexes below, all containing
+    # a "\unnnn" literal are non-raw strings in which any other 
+    # backslashes are doubled.  (This due to a Python 3 "improvement"
+    # that causes "\unnnn" literals in raw strings to be interpreted 
+    # as 6 characters rather than a single unicode character as was
+    # the case in Python 2.  Sigh.)
+
     states = (
         ('TAGLIST', 'exclusive'),
         ('GLOSS',   'exclusive'),
@@ -45,7 +52,7 @@ class LexSpec:
         return t
 
     def t_SEMI (self, t):
-        r'[;\uFF1B]'
+        '[;\uFF1B]'
         return t
 
     def t_BRKTL (self, t):
@@ -54,7 +61,7 @@ class LexSpec:
         return t
 
     def t_TEXT (self, t):
-        r'[^;\uFF1B\[\u3000 \t\r\n]+'
+        '[^;\uFF1B\[\u3000 \\t\\r\\n]+'
           # Classify it as kanji, reading (kana), or ordinary
           # text and return token accordingly.
         m = jdb.jstr_classify (t.value)
@@ -75,19 +82,19 @@ class LexSpec:
         r':'
         return t
     def t_TAGLIST_SEMI (self, t):
-        r'[;\uFF1B]'
+        '[;\uFF1B]'
         return t
     def t_TAGLIST_COMMA (self, t):
-        r'[,\u3001]'
+        '[,\u3001]'
         return t
     def t_TAGLIST_EQL (self, t):
         r'='
         return t
     def t_TAGLIST_SLASH (self, t):
-        r'[\/\uFF0F]'
+        '[\\/\uFF0F]'
         return t
     def t_TAGLIST_DOT (self, t):
-        r'[\.\u30FB]'
+        '[\\.\u30FB]'
         return t
     def t_TAGLIST_HASH (self, t):
         r'\#'
@@ -102,11 +109,11 @@ class LexSpec:
         return t
 
     def t_TAGLIST_NUMBER (self, t):
-        r'[0-9\uFF10-\uFF19]+'
+        '[0-9\uFF10-\uFF19]+'
         return t
 
     def t_TAGLIST_TEXT (self, t):
-        r'[^;\uFF1B:=,\u3001\/\.\#\uFF0F\u30FB\[\] \t\r\n]+'
+        '[^;\uFF1B:=,\u3001\\/\\.\\#\uFF0F\u30FB\\[\\] \\t\\r\\n]+'
           # Classify it as kanji, reading (kana), or ordinary
           # text and return token accordingly.
         t.value = qcleanup(t.value)
@@ -128,7 +135,7 @@ class LexSpec:
         return t
 
     def t_SNUMLIST_NUMBER (self, t):
-        r'[0-9\uFF10-\uFF19]+'
+        '[0-9\uFF10-\uFF19]+'
         return t
 
     def t_SNUMLIST_TEXT (self, t):
@@ -177,9 +184,9 @@ def gcleanup (txt):
         # Replace multiple whitespace characters with one.
         # Unescape backslash-escaped ';'s and '['s.
 
-        txt = re.sub (r'^[\s\u3000\n\r]+', '', txt)
-        txt = re.sub (r'[\s\u3000\n\r]+$', '', txt)
-        txt = re.sub (r'[\s\u3000\n\r]+$', ' ', txt)
+        txt = re.sub ('^[\\s\u3000\\n\\r]+', '', txt)
+        txt = re.sub ('[\\s\u3000\\n\\r]+$', '', txt)
+        txt = re.sub ('[\\s\u3000\\n\\r]+$', ' ', txt)
         #txt = re.sub (ur'\\([;\[\\])', ur'\1', txt)
         txt = re.sub (r'\\(.)', r'\1', txt)
         return txt
@@ -191,9 +198,9 @@ def qcleanup (txt):
         # Replace multiple whitespace characters with one.
         # Unescape backslash-escaped '"'s.
 
-        txt = re.sub (r'^[\s\u3000\n\r]+', '', txt)
-        txt = re.sub (r'[\s\u3000\n\r]+$', '', txt)
-        txt = re.sub (r'[\s\u3000\n\r]+$', ' ', txt)
+        txt = re.sub ('^[\\s\u3000\\n\\r]+', '', txt)
+        txt = re.sub ('[\\s\u3000\\n\\r]+$', '', txt)
+        txt = re.sub ('[\\s\u3000\\n\\r]+$', ' ', txt)
         #txt = re.sub (ur'\\(["\\])', r'\1', txt)
         txt = re.sub (r'\\(.)', r'\1', txt)
         return txt

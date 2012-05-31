@@ -125,7 +125,7 @@ class LexSpec:
         return t
 
     def t_SNUMLIST_COMMA (self, t):
-        ur','
+        ur','           #FIXME? include wide comma?
         return t
 
     def t_SNUMLIST_NUMBER (self, t):
@@ -205,7 +205,7 @@ def create_lexer (debug=0):
         lexer.lineno = 1
         return lexer, spec.tokens
 
-def lexreset (lexer, instr):
+def lexreset (lexer, instr, begin='INITIAL'):
         lexer.input (instr)
-        lexer.begin ('INITIAL')
+        lexer.begin (begin)
         lexer.lineno = 1;

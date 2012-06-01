@@ -302,11 +302,11 @@ def check_for_warnings (cur, entr, parent_seq, chklist):
         if entr.src==jdb.KW.SRC['jmdict'].id:
             chklist['nopos']   = ", ".join (str(n+1) for n,x in enumerate (getattr (entr,'_sens',[]))
                                                        if not x._pos)
-        chklist['jpgloss'] = ", ".join ("%d.%d: %s"%(n+1,m+1,'"'+'", "'.join(re.findall(r'[\uFF01-\uFF5D]', g.txt))+'"')
+        chklist['jpgloss'] = ", ".join ("%d.%d: %s"%(n+1,m+1,'"'+'", "'.join(re.findall('[\uFF01-\uFF5D]', g.txt))+'"')
                                                 for n,s in enumerate (getattr (entr,'_sens',[]))
                                                   for m,g in enumerate (getattr (s, '_gloss',[]))
                                                         # Change text in edconf.tal if charset changed.
-                                                    if re.findall(r'[\uFF01-\uFF5D]', g.txt))
+                                                    if re.findall('[\uFF01-\uFF5D]', g.txt))
           # Remove any empty warnings so that if there are no warnings,
           # 'chklist' itself will be empty and no warning span element
           # will be produced by the template (which otherwise will

@@ -66,12 +66,12 @@ class JmdictFile:
     #      values than their expanded text values.
 
     def __init__(self, source):
+        import pdb; pdb.set_trace()
         self.source = source;  self.lineno = 0
         self.name = None; self.created=None
     def read(self, bytes):
         s = self.source.readline();  self.lineno += 1
         if self.lineno == 1:
-            if s[:3] == '\xef\xbb\xbf': s = s[3:]
             if s[0] == '\uFEFF': s = s[1:]
         s = re.sub (r'&[a-zA-Z0-9-]+;', _ent_repl, s)
         if self.created is None and self.lineno < 400:
@@ -871,7 +871,9 @@ def main (args, opts):
         KW.__dict__.update (kw.short_vars (KW))
         XKW = xmlkw.make (KW)
         if len(args) >= 1:
-            inpf = JmdictFile( open( args[0] ))
+              #FIXME: the file could conceivably have an encoding (defined
+              # in thexml header) that is something other than utf-8.
+            inpf = JmdictFile( open( args[0], encoding='utf-8' ))
             for tag,entr in parse_xmlfile (inpf, xlit=1):
                 import fmt
                 print (fmt.entr (entr))

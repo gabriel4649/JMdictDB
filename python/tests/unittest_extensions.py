@@ -144,9 +144,8 @@ def readfile_utf8 (fname, enc='utf-8', secsep=None, rmcomments=False):
             results[label] = ln
             return [], secnum + 1
 
-        with open (fname) as f:
+        with open (fname, encoding=enc) as f:
             for lnnum, ln in enumerate (f):
-                ln = ln.decode (enc)
                 if lnnum == 0 and ln[0] == '\uFEFF': ln = ln[1:]
                 mo = re.match (secsep, ln) if secsep else None
                 if mo:

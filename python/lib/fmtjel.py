@@ -28,7 +28,7 @@ from collections import defaultdict
 MIDDOT = '\u30FB'
   # The following characters are recognised as special
   # in the TAGLIST state in jellex.py.
-SPECIALS = r'[ :;,.#/=\[\]\u3000\uFF1B\u3001\uFF0F\u30FB]'
+SPECIALS = '[ :;,.#/=\\[\\]\u3000\uFF1B\u3001\uFF0F\u30FB]'
 
 def qtxt (txt):
         # Enclose txt in quotes if it contains any special

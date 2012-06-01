@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 import sys, unittest, codecs, os.path, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb, fmtjel, jmxml, xmlkw, jelparse, jellex
@@ -83,7 +82,7 @@ class Test_general (unittest.TestCase):
         global Cur, KW
           # Read expected text, remove any unicode BOM or trailing whitespace
           # that may have been added when editing.
-        expected = open ("data/fmtjel/"+str(seq)+".txt").read().decode('utf-8').rstrip()
+        expected = open ("data/fmtjel/"+str(seq)+".txt",encoding='utf-8').read().rstrip()
         if expected[0] == '\ufeff': expected = expected[1:]
           # Read the entry from the database.  Be sure to get from the right
           # corpus and get only the currently active entry.  Assert that we
@@ -130,7 +129,8 @@ class Test_extra (unittest.TestCase):
         globalSetup()
         XKW = xmlkw.make (jdb.KW)
         jmxml.XKW = XKW    # FIXME: gross
-    def test_x00001(_): dotest (_, 'x00001')    # dotted restrs in quotes.
+    def test_x00001(_): 
+        dotest (_, 'x00001')    # dotted restrs in quotes.
 
 class Base (unittest.TestCase):
     def setUp (_):
@@ -187,7 +187,7 @@ def dotest (_, testid, xmlfn=None, jelfn=None, dir='data/fmtjel', enc='utf_8_sig
         if jelfn is None: jelfn = os.path.join (dir, testid + '.jel')
         expected = readfile (jelfn, enc)
         xmlu = readfile (xmlfn, enc)
-        xml8 = xmlu.encode ('utf-8')
+        xml8 = xmlu #xmlu.encode ('utf-8')
         elist = jmxml.parse_entry (xml8)
         got = fmtjel.entr (elist[0], nohdr=True)
         msg = "\nExpected:\n%s\nGot:\n%s" % (expected, got)

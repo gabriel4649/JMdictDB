@@ -154,6 +154,7 @@ class Test_objects (unittest.TestCase):
                          Sens (_gloss = [Gloss (txt='abcd'),
                                          Gloss (txt='efg')])])
         e2 = serialize.unserialize (serialize.serialize (e1))
+        pdb.set_trace()
         _.assertEqual (e1, e2)
         _.assertEqual (e1._rdng[1].txt, e2._rdng[1].txt)
         _.assertEqual (e1._sens[1]._gloss[1].txt, e2._sens[1]._gloss[1].txt)

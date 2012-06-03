@@ -18,9 +18,10 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
+
+# WARNING --  this file has only been partially converted to Python3.
 
 # This program build a complete XML file by combining a DTD
 # with a number of files containing one ot more XML elements.
@@ -35,19 +36,21 @@ _ = os.path.join (os.path.dirname(_), 'python', 'lib')
 if _ not in sys.path: sys.path.insert(0, _)
 
 def main (args, opts):
+          # Eeww! This is the pythonic way of saying "sys.stdout.encoding=enc"...
+        import codecs; sys.stdout = codecs.getwriter(opts.encoding)(sys.stdout.buffer)
         parts = []
         dtdfname = args.pop(0)
         dtd = get_dtd (dtdfname, opts.orig_root, opts.root, opts.encoding)
-        sys.stdout.write (dtd.encode (opts.encoding))
+        sys.stdout.write (dtd)
         sys.stdout.write ("<%s>\n" % opts.root)
         for fname in args:
-            sec = open (fname).read().decode ('utf-8')
+            sec = open (fname, 'r').read()
             if sec[0] == '\uFEFF': sec = sec[1:]
-            sys.stdout.write (sec.encode (opts.encoding))
-        sys.stdout.write (("</%s>\n" % opts.root).encode (opts.encoding))
+            sys.stdout.write (sec)
+        sys.stdout.write ("</%s>\n" % opts.root)
 
 def get_dtd (dtdfname, origroot, newroot, newenc):
-        dtd = open (dtdfname).read().decode('utf-8')
+        dtd = open (dtdfname, 'r').read()
         if dtd[0] == '\uFEFF': dtd = dtd[1:]
         if newenc != "UTF-8":
             a = dtd.replace ('<?xml version="1.0" encoding="UTF-8"?>',

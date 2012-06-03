@@ -28,15 +28,18 @@ import jdb
 
 def serialize (obj):
         s = jencode (obj)
-        s = zlib.compress (s)
-        s = base64.b64encode (s)
-        s = urllib.parse.quote_plus (s)
+        b = s.encode('latin1')
+        b = zlib.compress (b)
+        b = base64.b64encode (b)
+        s = urllib.parse.quote_plus (b)
         return s
 
 def unserialize (str):
         s = urllib.parse.unquote_plus (str)
-        s = base64.b64decode (s)
-        s = zlib.decompress (s)
+        b = s.encode('latin1')
+        b = base64.b64decode (b)
+        b = zlib.decompress (b)
+        s = b.decode('latin1')
         obj = jdecode (s)
         return obj
 

@@ -18,7 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
 
@@ -27,6 +26,8 @@ __version__ = ('$Revision$'[11:-2],
 # be opened by cgi script jbedit.py to present an html Edit Entry
 # page with the edit boxes initialized with the submission's
 # data, ready for review and submission.
+
+# WARNING: this file was converted for Python3 but not tested yet.
 
 import sys, os, inspect, pdb
 _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
@@ -77,9 +78,9 @@ def process_file (inpname, outdir, prefix='', verbose=False,
         #       not be overwritten, an error message generated, and
         #       this input file skipped.
 
-        in_f = open (inpname, "r")
-        bad_f = open (os.path.join (outdir, prefix+"bad.log"), "a")
-        good_f = open (os.path.join (outdir, prefix+"ok.log"), "a")
+        in_f = open (inpname, "r", encoding=Input_encoding)
+        bad_f = open (os.path.join (outdir, prefix+"bad.log"), "a", encoding=Output_encoding)
+        good_f = open (os.path.join (outdir, prefix+"ok.log"), "a", encoding=Output_encoding)
         startmsg = "# %s: processing %s" %\
                 (datetime.datetime.now().ctime(), inpname)
         print (startmsg, file=bad_f)
@@ -95,7 +96,7 @@ def process_file (inpname, outdir, prefix='', verbose=False,
           # will later (independently of this program) read it
           # and submit it under human supervision.
 
-        for r in incremental_scanner (in_f, Input_encoding):
+        for r in incremental_scanner (in_f):
             lines, linenum = r
             subnum += 1
             if subnum < start_at: continue
@@ -123,13 +124,13 @@ def write_bad (bad_f, lines, msg):
         print (msg)
         msg = '# ' + msg.replace('\n', '\n# ')
         print (msg, file=bad_f)
-        print (('\n'.join (lines)).encode (Output_encoding), file=bad_f)
+        print ('\n'.join (lines), file=bad_f)
 
 def write_good (good_f, lines, msg, verbose):
         if verbose: print (msg)
         msg = '# ' + msg.replace('\n', '\n# ')
         print (msg, file=good_f)
-        print (('\n'.join (lines)).encode (Output_encoding), file=good_f)
+        print ('\n'.join (lines), file=good_f)
 
 def write_data (parsed, fn, force=False):
         # parsed -- a dict containing parsed wwwjdic form data as
@@ -158,10 +159,10 @@ def write_data (parsed, fn, force=False):
 def write_msg (errmsg, lines, err_f=None):
         print (errmsg)
         if err_f:
-            print (('# ' + errmsg.replace('\n', '\n# ')).encode (Output_encoding), file=err_f)
-            if lines: print (('\n'.join (lines)).encode (Output_encoding), file=err_f)
+            print ('# ' + errmsg.replace('\n', '\n# '), file=err_f)
+            if lines: print ('\n'.join (lines), file=err_f)
 
-def incremental_scanner (f, encoding=None):
+def incremental_scanner (f):
           # This function is an iterator and thus may be used in a "for"
           # statement where it will repeatedly supply 2-tuples consisting
           # of:
@@ -177,7 +178,6 @@ def incremental_scanner (f, encoding=None):
 
         lines = [];  base_linenum = None
         for line_num, line in enumerate (f):
-            if encoding: line = line.decode (encoding)
             if line_num == 0 and line.startswith('\uFEFF'):
                 line = line[1:]                 # Remove BOM.
               # FIXME? it is possible the multi-line fields could

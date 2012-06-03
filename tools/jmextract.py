@@ -29,7 +29,7 @@ _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
 _ = os.path.join (os.path.dirname(_), 'python', 'lib')
 if _ not in sys.path: sys.path.insert(0, _)
 
-import re, codecs
+import re
 import jdb, jmxml
 
 def main (args, opts):
@@ -42,16 +42,18 @@ def main (args, opts):
             for arg in args:
                 seq, x, cnt = arg.partition (',')
                 seqlist.append ((int (seq), int (cnt or 1)))
-        fin = codecs.open (infn, "r", "utf_8_sig")
+        fin = open (infn, encoding="utf_8_sig")
+          # Eeww! This is the pythonic way of saying "sys.stdout.encoding=enc"...
+        import codecs; sys.stdout = codecs.getwriter(opts.encoding)(sys.stdout.buffer,'backslashreplace')
         if seqlist:
             for seq,entr in jmxml.extract (fin, seqlist, opts.dtd, opts.all):
                 print (seq, file=sys.stderr)
                 if opts.dtd and first:
                     toplev, dtd = seq, entr
-                    print (('\n'.join (dtd)).encode (opts.encoding, 'backslashreplace'))
-                    print (("<%s>" % toplev))
+                    print ('\n'.join (dtd))
+                    print ("<%s>" % toplev)
                     first = False;  continue
-                print (('\n'.join (entr)).encode (opts.encoding, 'backslashreplace'))
+                print ('\n'.join (entr))
             if opts.dtd: print (("</%s>" % toplev))
         else: print ("No seq numbers!", file=sys.stderr)
 

@@ -66,7 +66,6 @@ class JmdictFile:
     #      values than their expanded text values.
 
     def __init__(self, source):
-        import pdb; pdb.set_trace()
         self.source = source;  self.lineno = 0
         self.name = None; self.created=None
     def read(self, bytes):

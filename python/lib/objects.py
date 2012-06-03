@@ -81,6 +81,7 @@ class DbRow (Obj):
         for n in self.__cols__: yield getattr (self, n)
     def __eq__(self, other): return _compare (self, other)
     def __ne__(self, other): return not _compare (self, other)
+    def __hash__(self): return id (self)    #FIXME?!
     def copy (self):
         c = self.__class__()
         c.__dict__.update (self.__dict__)

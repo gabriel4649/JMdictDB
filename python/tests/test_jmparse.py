@@ -29,7 +29,7 @@ def do_test (_, name, dtdfile):
         testdata = "../../data/jmparse/%s.xml" % name
 
         subprocess.call (cwd=Workdir, shell=True,
-                         args="python %s %s %s >%s.xml"
+                         args="python3 %s %s %s >%s.xml"
                            % (jmbuild, dtdpath, testdata, name))
         so,se = runcmd (Workdir, "python3 %s -o %s.out -l %s.log %s.xml" %
                                   (jmparse, name, name, name))

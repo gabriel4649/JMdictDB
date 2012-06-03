@@ -141,7 +141,7 @@ def _wrrow (rowobj, workfile):
         if not workfile.file:
             workfile.file = open (workfile.fn, "w")
         s = "\t".join ([pgesc(getattr (rowobj, x, None)) for x in workfile.cols])
-        print (s.encode ('utf-8'), file=workfile.file)
+        print (s, file=workfile.file)
 
 def pgesc (s):
           # Escape characters that are special to the Postgresql COPY

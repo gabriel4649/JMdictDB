@@ -22,8 +22,7 @@ from future_builtins import ascii, filter, hex, map, oct, zip
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
 
-import sys, datetime
-import pdb
+import sys, datetime, pdb
 
 #######################################################################
 #
@@ -43,8 +42,7 @@ import pdb
 #
 #######################################################################
 #
-#  CAUTION
-#
+#  NOTE
 #  When adding/deleting/modifying the classes below, be sure to
 #  check in python/lib/serialize.py for any corresponding changes
 #  that need to be made there.
@@ -54,7 +52,7 @@ import pdb
 class Obj(object):
     # This creates "bucket of attributes" objects.  That is,
     # it creates a generic object with no special behavior
-    # that we can set and get atrribute values from.  One
+    # that we can set and get attribute values from.  One
     # could use a keys in a dict the same way, but sometimes
     # the attribute syntax results in more readable code.
     def __init__ (self, **kwds):
@@ -82,8 +80,8 @@ class DbRow (Obj):
         return len(self.__cols__)
     def __iter__(self):
         for n in self.__cols__: yield getattr (self, n)
-    def __cmp__ (self, other):
-        return _compare (self, other)
+    def __eq__(self, other): return _compare (self, other)
+    def __ne__(self, other): return not _compare (self, other)
     def copy (self):
         c = self.__class__()
         c.__dict__.update (self.__dict__)
@@ -105,20 +103,18 @@ def _p (o):
             if len(o) == 0: return "{}"
             else: return "{...}"
         else: return repr (o)
-class _Nothing: pass
 
+class _Nothing: pass
 def _compare (self, other):
-        try: attrs = set (self.__dict__.keys() + other.__dict__.keys())
-        except AttributeError: return cmp (id(self), id(other))
+        try: attrs = set (list(self.__dict__.keys()) + list(other.__dict__.keys()))
+        except AttributeError: return False
         for a in attrs:
             s = getattr (self, a, _Nothing)
             o = getattr (other, a, _Nothing)
-            if s is _Nothing: return -1
-            if o is _Nothing: return +1
-            c = cmp (s, o)
-            if c:
-                return c
-        return 0
+            if s is _Nothing: return False
+            if o is _Nothing: return False
+            if s != o: return False
+        return True
 
 
 class Entr (DbRow):

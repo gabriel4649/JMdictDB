@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2006,2008 Stuart McGraw
+#  Copyright (c) 2006-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -82,6 +82,7 @@ class DbRow (Obj):
         for n in self.__cols__: yield getattr (self, n)
     def __eq__(self, other): return _compare (self, other)
     def __ne__(self, other): return not _compare (self, other)
+    def __hash__(self): return id(self) 
     def copy (self):
         c = self.__class__()
         c.__dict__.update (self.__dict__)

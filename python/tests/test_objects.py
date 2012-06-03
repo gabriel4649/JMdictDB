@@ -25,7 +25,6 @@ class Test_DbRow (unittest.TestCase):
     def test000250(_): _.assertEqual (DbRow([20,21,22],['a','b','c'])[1], 21)
     def test000260(_): _.assertEqual (DbRow([20,21,22],['a','b','c'])[2], 22)
 
-
 class Test_DbRow_compare (unittest.TestCase):
     def test000010(_):
         e1 = DbRow(); e2 = DbRow()

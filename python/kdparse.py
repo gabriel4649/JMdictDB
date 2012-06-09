@@ -391,7 +391,7 @@ def jlptnum (x, c):
 def warn (msg, *args):
         global Char, Lineno, Opts
         s = "%s (line %d), warning: %s" % (Char, Lineno, msg % args)
-        print (s.encode (Opts.e, 'backslashreplace'), file=Opts.l)
+        print (s, file=Opts.l)
 
 
 

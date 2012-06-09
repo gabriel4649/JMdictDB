@@ -25,7 +25,7 @@ __version__ = ('$Revision$'[11:-2],
 import sys
 
 def main (args, opts):
-        f = open (args[0], 'r', 'utf_8_sig')
+        f = open (args[0], 'r', encoding='utf_8_sig')
         for n,ln in enumerate (f):
             if (opts.format):
                 id, part2b, part2t, part1, scope, type, ref_name = ln.split('\t')
@@ -41,9 +41,9 @@ def main (args, opts):
 
 def out (style, n, lang, descr):
         if style == 'csv':
-            print (('%d\t%s\t%s' % (n, lang, descr)).encode('utf-8'))
+            print ('%d\t%s\t%s' % (n, lang, descr))
         elif style == 'perl':
-            print (("\t    '%s' => %d,\t# %s" % (lang, n, descr)).encode('utf-8'))
+            print ("\t    '%s' => %d,\t# %s" % (lang, n, descr))
         else:
             raise ValueError ("Invalid 'style' parameter: '%s'" % style)
 

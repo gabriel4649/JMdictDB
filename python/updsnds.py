@@ -82,7 +82,7 @@ def labels_from_db (cur, filenum):
 
 def labels_from_file (fname):
         rs = []
-        f = open (fname, 'r', 'utf_8_sig')
+        f = open (fname, 'r', encoding='utf_8_sig')
         for line in f:
             s, e, trns = line.split('\t')
             strt = int (float (s) * 100)

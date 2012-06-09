@@ -88,7 +88,7 @@ def dotest (_, testnum):
 
 def readedict (filename):
         data = {}
-        f = open (filename, 'r', 'utf_8_sig ')
+        f = open (filename, 'r', encoding='utf_8_sig ')
         for n, ln in enumerate (f):
             ln = ln.rstrip('\n\r')
             if ln.startswith ('#') or ln.lstrip() == '': continue
@@ -102,7 +102,7 @@ def readedict (filename):
 
 def readxml (filename):
         data = {}
-        f = open (filename, 'r', 'utf_8_sig ')
+        f = open (filename, 'r', encoding='utf_8_sig ')
         for n, ln in enumerate (f):
             ln = ln.rstrip()
             if re.match (r'\s*(#.*)?$', ln): continue

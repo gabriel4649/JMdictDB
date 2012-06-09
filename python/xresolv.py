@@ -344,7 +344,7 @@ def mkxrefs (v, e):
 
 def read_krmap (dbh, infn, targ_src):
         if not infn: return None
-        FIN = open (infn, "r", "utf8_sig")
+        FIN = open (infn, "r", encoding="utf8_sig")
 
         krmap = {}
         for lnnum, line in enumberate (FIN):
@@ -380,12 +380,10 @@ def fmt_jitem (ktxt, rtxt, slist):
 
 def msg (source, msg, arg):
         if not Opts.quiet:
-            print (("%s %s: %s" % (source,msg,arg)).encode (
-                Opts.encoding or sys.stdout.encoding or getdefaultencoding()))
+            print ("%s %s: %s" % (source,msg,arg))
 
 def prnt (f, msg):
-        print (msg.encode (
-                Opts.encoding or sys.stdout.encoding or getdefaultencoding()), file=f)
+        print (msg, file=f)
 
 #-----------------------------------------------------------------------
 

@@ -194,7 +194,7 @@ def dotest (_, testid, xmlfn=None, jelfn=None, dir='data/fmtjel', enc='utf_8_sig
         _.assertEqual (expected, got, msg)
 
 def readfile (filename, enc):
-        with open (filename, 'r', enc) as f:
+        with open (filename, 'r', encoding=enc) as f:
             contents = f.read()
         return contents.strip()
 

@@ -84,7 +84,7 @@ class Test_xrslv (unittest.TestCase):
 '\u304a\u306a\u3058'
 def dotest(_, e, expected_file, **kwds):
         results = fmtxml.entr (e, **kwds)
-        expected = open ('data/fmtxml/'+expected_file+'.txt', 'r', 'utf_8_sig').read()
+        expected = open ('data/fmtxml/'+expected_file+'.txt', 'r', encoding='utf_8_sig').read()
         expected = expected.replace ('\r', '')  # In case we're running on windows.
         expected = expected.rstrip ('\n')       # fmtxml results have no trailing "\n".
         if results != expected:

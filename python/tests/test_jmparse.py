@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #--------------------------------------------------------------------
 # WARNING -- Some of these tests involve excuting the jmparse.py
 #   program which in turn requires PYTHONPATH be properly configured

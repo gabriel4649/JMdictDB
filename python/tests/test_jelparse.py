@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #----- REMINDER ------------------------------------------------------
 # To make any changes to the jelparse code, edit jelparse.y.  Then

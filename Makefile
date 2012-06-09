@@ -17,6 +17,9 @@
 #
 #    make JMDICTFILE=JMdict "LANGOPT=-g fre"
 #
+# Command used to run your Python interpreter.
+PYTHON = python3
+
 # The JMdict file to download.  Choice is usually between JMdict 
 # which contains multi-lingual glosses, and JMdict_e that contains
 # only English glosses but is 25% smaller and parses faster.
@@ -241,16 +244,16 @@ data/jmdict.xml:
 	mv $(JMDICTFILE) data/jmdict.xml
 
 data/jmdict.pgi: data/jmdict.xml
-	cd python && python jmparse.py $(LANGOPT) -y -l ../data/jmdict.log -o ../data/jmdict.pgi ../data/jmdict.xml
+	cd python && $(PYTHON) jmparse.py $(LANGOPT) -y -l ../data/jmdict.log -o ../data/jmdict.pgi ../data/jmdict.xml
 
 data/jmdict.dmp: data/jmdict.pgi
-	cd python && python jmload.py $(JM_HOST) -u $(USER) -d $(DB) -i 1 -o ../data/jmdict.dmp ../data/jmdict.pgi
+	cd python && $(PYTHON) jmload.py $(JM_HOST) -u $(USER) -d $(DB) -i 1 -o ../data/jmdict.dmp ../data/jmdict.pgi
 
 loadjm: data/jmdict.dmp
 	-cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/jmdict.dmp
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
-	cd python && python xresolv.py $(JM_HOST) -u $(USER) -d $(DB) >../data/jmdict_xresolv.log
+	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) >../data/jmdict_xresolv.log
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -c "vacuum analyze xref"
 	@echo 'Remember to check the log files for warning messages.'
 
@@ -265,10 +268,10 @@ data/jmnedict.xml:
 	mv JMnedict.xml data/jmnedict.xml
 
 data/jmnedict.pgi: data/jmnedict.xml
-	cd python && python jmparse.py -l ../data/jmnedict.log -o ../data/jmnedict.pgi ../data/jmnedict.xml
+	cd python && $(PYTHON) jmparse.py -l ../data/jmnedict.log -o ../data/jmnedict.pgi ../data/jmnedict.xml
 
 data/jmnedict.dmp: data/jmnedict.pgi
-	cd python && python jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/jmnedict.dmp ../data/jmnedict.pgi
+	cd python && $(PYTHON) jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/jmnedict.dmp ../data/jmnedict.pgi
 
 loadne: data/jmnedict.dmp
 	-cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
@@ -284,10 +287,10 @@ data/examples.txt:
 	mv examples.utf data/examples.txt
 
 data/examples.pgi: data/examples.txt 
-	cd python && python exparse.py -o ../data/examples.pgi -v -l ../data/examples.log ../data/examples.txt
+	cd python && $(PYTHON) exparse.py -o ../data/examples.pgi -v -l ../data/examples.log ../data/examples.txt
 
 data/examples.dmp: data/examples.pgi 
-	cd python && python jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/examples.dmp ../data/examples.pgi
+	cd python && $(PYTHON) jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/examples.dmp ../data/examples.pgi
 
 loadex: data/examples.dmp 
 	-cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
@@ -295,7 +298,7 @@ loadex: data/examples.dmp
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
 	# The following command is commented out because of the long time
 	# it can take to run.  It may be run manually after 'make' finishes.
-	#cd python && python xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -s3 -t1 >../data/examples_xresolv.log
+	#cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -s3 -t1 >../data/examples_xresolv.log
 	#cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -c 'vacuum analyze xref;'
 
 #------ Load kanjidic2,xml ---------------------------------------------------
@@ -307,10 +310,10 @@ data/kanjidic2.xml:
 	mv kanjidic2.xml data/kanjidic2.xml
 
 data/kanjidic2.pgi: data/kanjidic2.xml 
-	cd python && python kdparse.py -g en -o ../data/kanjidic2.pgi -l ../data/kanjidic2.log ../data/kanjidic2.xml 
+	cd python && $(PYTHON) kdparse.py -g en -o ../data/kanjidic2.pgi -l ../data/kanjidic2.log ../data/kanjidic2.xml 
 
 data/kanjidic2.dmp: data/kanjidic2.pgi 
-	cd python && python jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/kanjidic2.dmp ../data/kanjidic2.pgi
+	cd python && $(PYTHON) jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/kanjidic2.dmp ../data/kanjidic2.pgi
 
 loadkd: data/kanjidic2.dmp 
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
@@ -327,15 +330,15 @@ loadall: jmnew data/jmdict.dmp data/jmnedict.pgi data/examples.pgi
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/jmdict.dmp
 
-	cd python && python jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/examples.dmp ../data/examples.pgi
+	cd python && $(PYTHON) jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/examples.dmp ../data/examples.pgi
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/examples.dmp
 
-	cd python && python jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/jmnedict.dmp ../data/jmnedict.pgi
+	cd python && $(PYTHON) jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/jmnedict.dmp ../data/jmnedict.pgi
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/jmnedict.dmp
 
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
-	cd python && python xresolv.py $(JM_HOST) -u $(USER) -d $(DB) >../data/jmdict_xresolv.log
-	#cd python && python xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -s3 >../data/examples_xresolv.log
+	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) >../data/jmdict_xresolv.log
+	#cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -s3 >../data/examples_xresolv.log
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -c "vacuum analyze xref"
 	@echo 'Remember to check the log files for warning messages.'
 

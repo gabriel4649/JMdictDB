@@ -22,10 +22,10 @@
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
 
-import sys, codecs
+import sys
 
 def main (args, opts):
-        f = codecs.open (args[0], 'r', 'utf_8_sig')
+        f = open (args[0], 'r', 'utf_8_sig')
         for n,ln in enumerate (f):
             if (opts.format):
                 id, part2b, part2t, part1, scope, type, ref_name = ln.split('\t')

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys, unittest, codecs, os.path, pdb
+import sys, unittest, os.path, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb, fmtjel, jmxml, xmlkw, jelparse, jellex
 from objects import *
@@ -194,7 +194,7 @@ def dotest (_, testid, xmlfn=None, jelfn=None, dir='data/fmtjel', enc='utf_8_sig
         _.assertEqual (expected, got, msg)
 
 def readfile (filename, enc):
-        with codecs.open (filename, 'r', enc) as f:
+        with open (filename, 'r', enc) as f:
             contents = f.read()
         return contents.strip()
 

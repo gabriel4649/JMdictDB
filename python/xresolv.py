@@ -344,7 +344,7 @@ def mkxrefs (v, e):
 
 def read_krmap (dbh, infn, targ_src):
         if not infn: return None
-        FIN = codecs.open (infn, "r", "utf8_sig")
+        FIN = open (infn, "r", "utf8_sig")
 
         krmap = {}
         for lnnum, line in enumberate (FIN):

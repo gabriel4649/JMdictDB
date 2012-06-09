@@ -26,7 +26,7 @@ __version__ = ('$Revision$'[11:-2],
 # Run with "--help" option for information on command line
 # arguments and options.
 
-import sys, unittest, glob, codecs
+import sys, unittest, glob
 import unittest_extensions
 
 __unittest = 1

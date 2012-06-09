@@ -1,7 +1,7 @@
 #!/usr/env python
 
 
-import sys, re, unittest, codecs, pdb
+import sys, re, unittest, pdb
 import unittest_extensions
 if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb, fmtxml
@@ -151,7 +151,7 @@ def readedict (filename):
 def readxml (filename):
         # Read xml test data sets into a dict, keyed by test name.
         data = {}
-        f = codecs.open (filename, encoding='utf_8_sig')
+        f = open (filename, encoding='utf_8_sig')
         for n, ln in enumerate (f):
             ln = ln.rstrip()
             if re.match (r'\s*(#.*)?$', ln): continue

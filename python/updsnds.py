@@ -32,14 +32,14 @@ _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
 _ = os.path.join (os.path.dirname(_), 'python', 'lib')
 if _ not in sys.path: sys.path.insert(0, _)
 
-import os.path, codecs
+import os.path
 import jdb
 
 def main (args, opts):
           # Open the database.  jdb.dbopts() extracts the db-related
           # options from the command line options in 'opts'.
-        sys.stdout = codecs.EncodedFile (sys.stdout, opts.encoding)
-        #sys.stdout = codecs.getwriter(opts.encoding)(sys.stdout)
+        if sys.stdout.encoding != opts.encoding:
+            sys.stdout = open (sys.stdout.fileno(), 'w', encoding=opts.encoding)
         cur = jdb.dbOpen (opts.database, **jdb.dbopts (opts))
         fidnum = args[0]
         lbls = args[1]
@@ -82,7 +82,7 @@ def labels_from_db (cur, filenum):
 
 def labels_from_file (fname):
         rs = []
-        f = codecs.open (fname, 'r', 'utf_8_sig')
+        f = open (fname, 'r', 'utf_8_sig')
         for line in f:
             s, e, trns = line.split('\t')
             strt = int (float (s) * 100)

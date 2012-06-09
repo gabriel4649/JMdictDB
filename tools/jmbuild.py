@@ -36,8 +36,8 @@ _ = os.path.join (os.path.dirname(_), 'python', 'lib')
 if _ not in sys.path: sys.path.insert(0, _)
 
 def main (args, opts):
-          # Eeww! This is the pythonic way of saying "sys.stdout.encoding=enc"...
-        import codecs; sys.stdout = codecs.getwriter(opts.encoding)(sys.stdout.buffer)
+        if sys.stdout.encoding != opts.encoding:
+            sys.stdout = open (sys.stdout.fileno(), 'w', encoding=opts.encoding)
         parts = []
         dtdfname = args.pop(0)
         dtd = get_dtd (dtdfname, opts.orig_root, opts.root, opts.encoding)

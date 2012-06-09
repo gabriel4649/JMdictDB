@@ -33,6 +33,8 @@ import re
 import jdb, jmxml
 
 def main (args, opts):
+        if sys.stdout.encoding != opts.encoding:
+            sys.stdout = open (sys.stdout.fileno(), 'w', encoding=opts.encoding)
         jdb.KW = KW = jdb.Kwds (jdb.std_csv_dir())
         seqlist = []; first = True
         infn = args.pop (0)
@@ -43,8 +45,6 @@ def main (args, opts):
                 seq, x, cnt = arg.partition (',')
                 seqlist.append ((int (seq), int (cnt or 1)))
         fin = open (infn, encoding="utf_8_sig")
-          # Eeww! This is the pythonic way of saying "sys.stdout.encoding=enc"...
-        import codecs; sys.stdout = codecs.getwriter(opts.encoding)(sys.stdout.buffer,'backslashreplace')
         if seqlist:
             for seq,entr in jmxml.extract (fin, seqlist, opts.dtd, opts.all):
                 print (seq, file=sys.stderr)

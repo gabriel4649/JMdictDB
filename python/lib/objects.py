@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2006,2008 Stuart McGraw
+#  Copyright (c) 2006-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published

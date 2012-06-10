@@ -1,0 +1,59 @@
+Title:	Bad compare in DbRow class
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2012-06-03 12:05:00 stuart
+ In python/lib/objects.py, yesterday I replaced the DbRow class'
+ __cmp__() method with __eq__() and __ne__() for campatibility
+ with Python3.  However, in Python3, I started getting test
+ failures like:
+
+  ERROR: test_0110 (test_jdb_freq.Test_jdb_copy_freqs)
+  ----------------------------------------------------------------------
+  Traceback (most recent call last):
+    File "/home/stuart/devel/jdb/jb3/python/tests/test_jdb_freq.py", line 57, in test_0110
+      jdb.copy_freqs (p, e)
+    File "/home/stuart/devel/jdb/jb3/python/lib/jdb.py", line 889, in copy_freqs
+      dupl = _copy_freqs (old_entr, new_entr)
+    File "/home/stuart/devel/jdb/jb3/python/lib/jdb.py", line 899, in _copy_freqs
+      finv = freq_inv (old_entr)
+    File "/home/stuart/devel/jdb/jb3/python/lib/jdb.py", line 1012, in freq_inv
+      assert f not in b
+  TypeError: unhashable type: 'Freq'
+
+ Problem is that jdb.freq_inv uses Freq objects as keys in
+ a dict.  Turns out that in Python3, DbRow objects loose the
+ default __hash__() method but in Python2 that doesn't happen. 
+ Adding a
+  def __hash__(self): return id(self)
+ to DbRow fixes the problem in Python3.
+
+ For compabilty I made same change in the Python2 branch although
+ it id not neccessary there since in Py2 __hash__() is inherited
+ from
+ the parent class.
+
+ However....
+
+ Reading the docs for __hash__(), __eq__(), and __cmp__() indicates 
+ that having __hash__() defined is wrong, and was wrong in Python2
+ branch (even befor the __cmp__ replacement) as well:  objects that
+ compare "==" must have equal hash values.
+
+ Possible ways to fix.
+ 1) Ignore.  Is a problem if object is used as key in dict *and* the
+  object subsequently modified in a way that changes it's "==" test.
+  We seldom use DbRow objects as dict keys and when we do, I don't
+  think they get changed.  (But would need to audit the code to confirm.)
+
+ 2) Make DbRow objects base compares on only the predefined attributes
+  and make those attributes immutable once set initially.
+
+ 3) Make two versions of DbRow.  One, used for Entr and other objects 
+  that have lists and are othewise mutated has no __hash__() and can't
+  be used as dict key.  Other version used for Freq et.al. is immutable
+  after creation.

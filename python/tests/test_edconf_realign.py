@@ -38,19 +38,18 @@ class Test_MockDb (unittest.TestCase):
 class Test_realign (unittest.TestCase):
     @classmethod
     def setUpClass (cls):
-        #pdb.set_trace()
+        global SavedEntrListFunction
         cls.db = db = MockDb (rklookup)
         jdb.KW = db.kw
         db.addentrs ('data/edconf/realign.xml')
         db.xresolv()
           # Monkey patch the jdb module...
-        cls.savedEntrList = jdb.entrList
-        jdb.entrList = db.entrList
-
-            
+        SavedEntrListFunction = jdb.entrList
+        jdb.entrList = db.entrList 
     @classmethod
     def tearDownClass (cls):
-        jdb.entrList = cls.savedEntrList
+        global SavedEntrListFunction
+        jdb.entrList = SavedEntrListFunction
     def getpair (_, id):
         parent = _.db.get (id)
         entr = copy.deepcopy (parent)

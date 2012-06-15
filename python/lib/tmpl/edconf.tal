@@ -60,6 +60,23 @@
 	      </li>
 	    </ol>
 	  </p>
+	<p class="warnings" tal:condition="chklist/xrers">
+	  <span class="caution">Caution:</span>
+	  The xrefs below are on other entries and point to the entry
+          you have edited.  If you submit this entry they will be deleted
+          because they refer to a sense, reading or kanji that no longer
+          exists on this entry.
+          If you want to fix any of these xrefs, you will need to edit the
+          other entry and add them back with the appropriate corrections,
+          <b>after this one is submitted</b>.
+          (Numbers in square brackets are sense numbers.)
+	  <ol>
+	    <li tal:repeat="x chklist/xrers">
+	      <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${x/0}" tal:content="x/1">seq#</a>[<span tal:replace="x/2"/>] =&gt;
+              <span tal:replace="x/3"/>[<span tal:replace="x/4"/>]
+	      </li>
+	    </ol>
+	  </p>
 	<p class="warnings" tal:condition="chklist/invkebs">
 	  <span class="caution">Caution:</span>
 	  The following kanji are not valid:

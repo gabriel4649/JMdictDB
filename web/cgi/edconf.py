@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008-2011 Stuart McGraw
+#  Copyright (c) 2008-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -23,10 +23,10 @@ from future_builtins import ascii, filter, hex, map, oct, zip
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
 
-import sys, cgi, re, datetime
+import sys, cgi, re, datetime, copy
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import cgitbx; cgitbx.enable()
-import jdb, jmcgi, jelparse, jellex, serialize
+import jdb, jmcgi, jelparse, jellex, serialize, fmt
 
 def main (args, opts):
         errs = []; chklist = {}
@@ -101,6 +101,29 @@ def main (args, opts):
         entr.dfrm = eid;
         entr.unap = not disp
 
+          # To display the xrefs and reverse xrefs in html, they
+          # need to be augmented with additional info about their
+          # targets.  collect_refs() simply returns a list Xref
+          # objects that are on the entr argument's .xref list
+          # (forward xrefs) if rev not true, or the Xref objects
+          # on the entr argument's ._xrer list (reverse xrefs) if
+          # rev is true).  This does not remove them from the entry
+          # and is done simply for convinience so we have augment_xrefs()
+          # process them all in one shot.  augment_xrefs adds an
+          # attribute, .TARG, to each Xref object whose value is 
+          # an Entr object for the entry the xref points to if rev
+          # is not true, or the entry the xref is from, if rev is
+          # true.  These Entr objects can be used to display info
+          # about the xref target or source such as seq#, reading
+          # or kanji.  See jdb.augment_xrefs() for details.
+        if pentr:
+            xrefs = jdb.collect_xrefs ([pentr])
+            if xrefs: jdb.augment_xrefs (cur, xrefs)
+            xrers = jdb.collect_xrefs ([pentr], rev=True)
+            if xrers: jdb.augment_xrefs (cur, xrers, rev=True)
+        xrefs = jdb.collect_xrefs ([entr])
+        if xrefs: jdb.augment_xrefs (cur, refs)
+
         if delete:
               # Ignore any content changes made by the submitter by
               # restoring original values to the new entry.
@@ -113,13 +136,6 @@ def main (args, opts):
             entr._snd  = getattr (pentr, '_snd',  [])
             entr._grp  = getattr (pentr, '_grp',  [])
             entr._cinf = getattr (pentr, '_cinf', [])
-              # To display the xrefs and reverse xrefs in html, they
-              # need to be augmented with additional info about their
-              # targets,.
-            xrefs = jdb.collect_xrefs ([pentr])
-            if xrefs: jdb.augment_xrefs (cur, xrefs)
-            xrers = jdb.collect_xrefs ([entr], rev=True)
-            if xrers: jdb.augment_xrefs (cur, xrers, rev=True)
 
         else:
               # Migrate the entr details to the new entr object
@@ -142,42 +158,14 @@ def main (args, opts):
                 if hasattr (pentr, '_cinf'): entr._cinf = pentr._cinf
                 copy_snd (pentr, entr)
 
-                  # The entry's xref's need to be augmented so we can
-                  # show their details on th confirmation page.
-                xrefs = jdb.collect_xrefs ([pentr])
-                if xrefs: jdb.augment_xrefs (cur, xrefs)
-
-                  # We should be able to adjust reverse references in the
-                  # JEL edit but currently there is no provision for that.
-                  # (see IS-165) so we copy them from the parent entry.
-                  # We cannot ignore them because without them the
-                  # referencing entry will not have any xrefs to us
-                  # when we get added to the database.
-                  # For simplicity, we just copy the reverse xrefs by
-                  # sense number.  This will produce bad results if
-                  # the submitter has rearranged our senses and will
-                  # require a subsequent manual edit of the referencing
-                  # entry to correct.
-                for es, ps in zip (entr._sens, pentr._sens):
-                    es._xrer = ps._xrer
-                xrers = jdb.collect_xrefs ([entr], rev=True)
-                if xrers: jdb.augment_xrefs (cur, xrers, rev=True)
-                  # The new, edited entry may have had readings or kanji
-                  # deleted and it could be that some other entry's xref
-                  # referenced that readign or kanji.  Go through the
-                  # reverse xref lists and remove and erv xrefs that
-                  # refer to a reading or kanji no longer on our entry.
-                  # FIXME: If the readings or kanji were rearranged,
-                  #  the reverse xref may no longer point to the same
-                  #  reading or kanji text that it did in the parent entry.
-                for es in entr._sens:
-                      # Create a new _xrer that does not contain any rev xrefs
-                      # that have a rdng or kanj number bigger than the number
-                      # if readings or kanji in the target.  Note that the numbers
-                      # have an origin of 1, not 0 like python indexes.
-                    es._xrer = [x for x in es._xrer
-                                if (x.rdng is None or x.rdng <= len(x.TARG._rdng))
-                                  and (x.kanj is None or x.kanj <= len(x.TARG._kanj))]
+                  # Copy the reverse xrefs that are on pentr to entr, 
+                  # removing any that are no longer valid because they  
+                  # refer to senses , readings ot kanji no longer present
+                  # on the edited entry.  Note that these have already
+                  # been augmented above.
+                nuked_xrers = realign_xrers (entr, pentr)
+                if nuked_xrers: 
+                    chklist['xrers'] = format_for_warnings (nuked_xrers, pentr)
 
               # Add sound details so confirm page will look the same as the
               # original entry page.  Otherwise, the confirm page will display
@@ -223,6 +211,95 @@ def main (args, opts):
                         chklist=chklist, disp=disp, parms=parms, dbg=dbg,
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
                         method=meth, output=sys.stdout, this_page='edconf.py')
+
+def realign_xrers (entr, pentr):
+        # This function mutates 'entr' to remove invalid reverse
+        # xrefs from entr's ._xrer list and fix those that point 
+        # to moved readings or kanji.  
+        # There may be other entries in the database that have xrefs
+        # pointing to (senses of) the entry we are editing.  These 
+        # reverse xrefs also have rdng and kanj numbers that index 
+        # a specific reading and/or kanji our entry.  While the sense
+        # rdng and kanj numbers were correct for our parent (pre-edit)
+        # entry, the edits made may have changed, reordered or deleted 
+        # the senses, readings and kanji of our entry.  This function
+        # tries to adjust the reverse xrefs so that any that refer to
+        # a sense, reading or kanji that no longer exists is deleted,
+        # and any that now point to the wrong reading or kanji because
+        # they were reordered are corrected.  We fix them by getting 
+        # the rdng or kanj text from the parent entry, find the index
+        # same text in the edited entry, and update the rev xref with
+        # the new index. 
+        # Since senses have no real id (yet, see IS-197), we can't
+        # really do much to correct them other than to delete any 
+        # that reference a sense beyond the end of the senses list.
+
+        # First, copy rev xrefs from parent to new entry except
+        # for those there is no sense for on new entry.
+        nosens = []     # List for discarded for no sense xrers.
+        for n, sp in enumerate (pentr._sens):
+            if not sp._xrer: continue
+            if n < len (entr._sens):
+                entr._sens[n]._xrer = copy.copy (sp._xrer)
+            else: nosens.extend (sp._xrer)
+
+        # Now fix up missing and out of order readings and kanji.
+        nordng = []  # Lists to accumulate xrefs that refer to 
+        nokanj = []  #  readings and kanji no longer in new entry.
+          # Index the readings and kanji of our edited entry.
+          # The resulting dicts are keyed by rdng/kanj text and values
+          #  are the indices (0-based) in ._rdng/._kanj of those texts.
+        ridx = dict (((r.txt,n) for n,r in enumerate (entr._rdng)))
+        kidx = dict (((k.txt,n) for n,k in enumerate (entr._kanj)))
+        for i, s in enumerate (entr._sens):
+            new = []    # We will build a new _xrer list in here.
+            if i >= len (pentr._sens): break
+            for x in s._xrer:   # For each rev xref in edited entry sense...
+                if x.rdng:
+                      # Even though x is an xrer on the new entry, x.rdng is
+                      # still the number of the reading on the parent so we 
+                      # can use it to get the rdng text from the parent. 
+                      # Note that x.rdng is 1-based.
+                    rtxt = pentr._rdng[x.rdng - 1].txt
+                      # Look up the text in the rdng index for the new entry
+                      # which gives us the index number on the new entry.
+                      # Set the new index into the xref.   
+                    try: x.rdng = ridx[rtxt] + 1
+                    except KeyError: 
+                          # A KeyError means the reading on the parent 
+                          # is not on our new entry any more.  Add the 
+                          # rev xref to a list of same which we'll use
+                          # to tell user about later.
+                        nordng.append (x); continue
+                if x.kanj:
+                      # Follow the same process as above for kanji.
+                    ktxt = pentr._kanj[x.kanj - 1].txt
+                    try: x.kanj = kidx[ktxt] + 1
+                    except KeyError: 
+                        nokanj.append (x); continue
+                  # Add the updated rev xref to the 'new' list.
+                new.append (x)
+              # When all rev xrefs have been updated, replace the old
+              # rev xref list with the new one.
+            s._xrer = new
+        return nosens + nordng + nokanj
+
+def format_for_warnings (xrers, pentr):
+        msgs = []
+        for x in xrers:
+            rtxt = pentr._rdng[x.rdng-1].txt if x.rdng else ''
+            ktxt = pentr._kanj[x.kanj-1].txt if x.kanj else ''
+            krtxt = kr (ktxt, rtxt)
+            msgs.append ((x.entr, x.TARG.seq, x.sens, krtxt, x.xsens))
+        msgs.sort (key=lambda x: (x[0],x[2],x[3],x[4]))
+        return msgs
+
+def kr (ktxt, rtxt):
+        if ktxt and rtxt: txt = u'%s\u30FB%s' % (ktxt, rtxt)
+        elif ktxt: txt = ktxt
+        elif rtxt: txt = rtxt
+        else: txt = ''
+        return txt
 
 def check_for_errors (e, errs):
         # Do some validation of the entry.  This is nowhere near complete
@@ -308,6 +385,7 @@ def check_for_warnings (cur, entr, parent_seq, chklist):
                                                   for m,g in enumerate (getattr (s, '_gloss',[]))
                                                         # Change text in edconf.tal if charset changed.
                                                     if re.findall(ur'[\uFF01-\uFF5D]', g.txt))
+
           # Remove any empty warnings so that if there are no warnings,
           # 'chklist' itself will be empty and no warning span element
           # will be produced by the template (which otherwise will

@@ -1,0 +1,126 @@
+<!-- 
+This file contains test data in jmdict XML format for driving
+the edconf_realign tests.   
+-->
+
+<!-- 
+  Set 1.  Reading Xref between pair.
+-->
+<entry>
+<ent_seq>3000010</ent_seq>
+<r_ele><reb>さんびゃくまんじゅう</reb></r_ele>
+<r_ele><reb>さんびゃくまんじゅうって</reb></r_ele>
+<sense><gloss>3000010</gloss></sense>
+</entry>
+
+<entry>
+<ent_seq>3000020</ent_seq>
+<r_ele><reb>さんびゃくまんにじゅう</reb></r_ele>
+<sense><xref>さんびゃくまんじゅう</xref>
+<gloss>3000020</gloss></sense>
+</entry>
+
+<!-- 
+  Set 1.  Kanji Xref between pair.
+-->
+<entry>
+<ent_seq>3000030</ent_seq>
+<r_ele><reb>さんびゃくまんさんじゅう</reb></r_ele>
+<k_ele><keb>三百三十</keb></k_ele>
+<k_ele><keb>三百三十って</keb></k_ele>
+<sense><gloss>3000030</gloss></sense>
+</entry>
+
+<entry>
+<ent_seq>3000040</ent_seq>
+<r_ele><reb>さんびゃくまんよんじゅう</reb></r_ele>
+<k_ele><keb>三百四十</keb></k_ele>
+<sense><xref>三百三十</xref>
+<gloss>3000040</gloss></sense>
+</entry>
+
+<!-- 
+  Set 3.  Reference an entry by kanji and reading 
+  in the presence of matching reading-only and kanji-
+  only entries:
+-->
+<entry>
+<ent_seq>3000050</ent_seq>
+<r_ele><reb>さんびゃくまんごじゅう</reb></r_ele>
+<r_ele><reb>さんびゃくまんごじゅうって</reb></r_ele>
+<k_ele><keb>三百五十</keb></k_ele>
+<k_ele><keb>三百五十って</keb></k_ele>
+<sense><gloss>3000050</gloss></sense>
+</entry>
+
+<entry>
+<ent_seq>3000051</ent_seq>
+<r_ele><reb>さんびゃくまんごじゅう</reb></r_ele>
+<r_ele><reb>さんびゃくまんごじゅうって</reb></r_ele>
+<sense><gloss>3000051</gloss></sense>
+</entry>
+
+<entry>
+<ent_seq>3000052</ent_seq>
+<r_ele><reb>さんびゃくまんごじゅうがない</reb></r_ele>
+<k_ele><keb>三百五十</keb></k_ele>
+<k_ele><keb>三百五十って</keb></k_ele>
+<sense><gloss>3000052</gloss></sense>
+</entry>
+
+<entry>
+<ent_seq>3000060</ent_seq>
+<r_ele><reb>さんびゃくまんろくじゅう</reb></r_ele>
+<k_ele><keb>三百六十</keb></k_ele>
+<sense><xref>三百五十・さんびゃくまんごじゅう</xref>
+<gloss>3000060</gloss></sense>
+</entry>
+
+<!--
+  IS-216.
+-->
+<entry>
+<ent_seq>2177620</ent_seq>
+<k_ele>
+<keb>みなみじゅうじ座</keb>
+</k_ele>
+<k_ele>
+<keb>南十字座</keb>
+</k_ele>
+<r_ele>
+<reb>みなみじゅうじざ</reb>
+</r_ele>
+<info>
+<audit>
+<upd_date>2007-05-30</upd_date>
+<upd_detl>Entry created</upd_detl>
+</audit>
+</info>
+<sense>
+<pos>&n;</pos>
+<gloss>Southern Cross</gloss>
+</sense>
+</entry>
+
+<entry>
+<ent_seq>2177650</ent_seq>
+<k_ele>
+<keb>十字座</keb>
+</k_ele>
+<r_ele>
+<reb>じゅうじざ</reb>
+</r_ele>
+<info>
+<audit>
+<upd_date>2007-05-30</upd_date>
+<upd_detl>Entry created</upd_detl>
+</audit>
+</info>
+<sense>
+<pos>&n;</pos>
+<xref>南十字座</xref>
+<misc>&obsc;</misc>
+<gloss>Southern Cross</gloss>
+</sense>
+</entry>
+

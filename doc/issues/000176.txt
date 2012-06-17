@@ -86,3 +86,17 @@ AssdTo:	stuart
         RETURN num;
         END;
     $$ LANGUAGE plpgsql;
+
+2012-06-15 22:45:00 stuart
+ With Postgresql-9.0 and later setting the permissions is much easier
+ (see IS-171):
+
+  GRANT ALL    ON ALL TABLES    IN SCHEMA public TO   jmtestdb;
+  GRANT ALL    ON ALL SEQUENCES IN SCHEMA public TO   jmtestdb;
+  GRANT SELECT ON ALL TABLES    IN SCHEMA public TO   jmtestdbv;
+  GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO   jmtestdbv;
+  REVOKE ALL   ON ALL TABLES    IN SCHEMA public FROM jmdictdb,jmdictdbv;
+  REVOKE ALL   ON ALL SEQUENCES IN SCHEMA public FROM jmdictdb,jmdictdbv;
+
+ This I think removed the need for the function described in previous note.
+

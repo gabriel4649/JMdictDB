@@ -89,16 +89,8 @@ AssdTo:	stuart
  Also collect xrers that will be deleted and display them in a 
  warning box on the edconf.tal confirmation page.
 
-2012-06-16 07:12:00
+2012-06-16 07:12:00 stuart
  Wrote tests/test_edconf.py which contains some simple tests
  based on xml data in python/tests/data/edconf/.  A lot of time 
  went into a mock database suitable for calling jdb.augment_xrefs()
  against. 
-
-
- 
-
- 
-
-
-

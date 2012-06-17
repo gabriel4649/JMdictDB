@@ -7,8 +7,8 @@ Reqtrs:
 AssdTo:	jwb
 
 2012-03-29 15:00:00 jwb
-	Added new DIAL (dialect) keyword, "hob" for Hokkaido-ben.
-  	Added line to pg/data/kwdial.csv:
+  Added new DIAL (dialect) keyword, "hob" for Hokkaido-ben.
+  Added line to pg/data/kwdial.csv:
 
     12\thob\tHokkaido-ben
 

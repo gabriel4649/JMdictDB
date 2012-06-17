@@ -1,0 +1,22 @@
+Title:	Consolidate xresolv functions
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2012-06-15 08:32:00 stuart
+ There are a number of places in the jmdictdb code where
+ Xrslv (unresolved xref) need to be resolved to real 
+ Xrefs by finding a unique entry with matching reading 
+ and kanji.
+
+ But the code to do this has been independently reimplemented 
+ in multiple places in the code: 
+  * xresolv.py
+  * jdb.py (resolv_xref() function)
+  * jelparse (resolv_xrefs() function)
+  * tests_edconf_realign.py
+ We really should unify all these if possible.
+

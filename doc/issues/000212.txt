@@ -104,7 +104,7 @@ AssdTo:	jwb
  and created patches/008_01.sql to update running jmdictdb
  instances. 
 
-2012-05-01 20:34 stuart
+2012-05-01 20:34:00 stuart
  Forgot to update dtd-jmdict.xml and dtd-jmdict-ex.xml with 
  the "eng"->"engr" and "in"->"finc" change.
 

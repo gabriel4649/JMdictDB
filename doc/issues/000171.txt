@@ -33,7 +33,7 @@ AssdTo:	stuart
   Will run following procedure on Arakawa.
 
   **** WARNING -- following procedure incorrect, see note
-  **** 2010-06-19 below.
+  **** 2012-06-15 below.
   
   pg_dump -Fc jmtest >jmtest.dmp
   psql -U postgres
@@ -95,7 +95,10 @@ AssdTo:	stuart
   Ran following procedure on Arakawa to create a jmtest database
   that is a copy of jmdict database but with ja_JP.utf8 collation.
   This procedure corrects the permissions problems notes above.
-  ----
+
+  | **** NOTE ****
+  | see note 2012-06-15 below for revised procedure.
+
   pg_dump -Fc jmdict >jmtest.dmp
   dropdb jmnew
   createdb -E utf8 -T template0 -O jmtestdb -l ja_JP.utf8 jmnew
@@ -126,3 +129,27 @@ AssdTo:	stuart
 
   Have to do (1) above even though jmtestdb owns objects
   because owner doesn't necessarily have access permissions.
+
+2012-06-15 22:36:00 stuart
+ Revised procedure for loading jmtestdb from jmdict copy.
+
+  pg_dump -Fc jmdict >jmtest.dmp
+  dropdb jmtest
+  createdb -E utf8 -T template0 -O jmtestdb jmtest
+    # One could add "-l ja_JP.utf8" to the above line.
+  pg_restore -U jmtestdb -O -d jmtest jmtest.dmp
+    # Get errors here that language "plpgsql" already exists.
+    # and also the priviledges warnings mentioned in previous 
+    # note.
+
+ With Postgresql-9.0 and later setting the permissions is 
+ much easier:
+  GRANT ALL    ON ALL TABLES    IN SCHEMA public TO   jmtestdb;
+  GRANT ALL    ON ALL SEQUENCES IN SCHEMA public TO   jmtestdb;
+  GRANT SELECT ON ALL TABLES    IN SCHEMA public TO   jmtestdbv;
+  GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO   jmtestdbv;
+  REVOKE ALL   ON ALL TABLES    IN SCHEMA public FROM jmdictdb,jmdictdbv;
+  REVOKE ALL   ON ALL SEQUENCES IN SCHEMA public FROM jmdictdb,jmdictdbv;
+
+
+

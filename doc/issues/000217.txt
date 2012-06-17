@@ -1,0 +1,34 @@
+Title:	Fix problems in jmxml.py
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2012-06-15 00:07:00 stuart
+ While writing test code, found need to read in entry data
+ from xml.  Using jmxml.parse_entry() had a number of quirks,
+ in part due to it being one of the first pieces of code 
+ written for jmdictdb.
+
+ 1) Need to read KWs data and poke it into jdb module.
+ 2) Need to mkxml() and poke the results into jmxml module.
+ 3) Entr objects returned by parse_entry() have all the 
+    order/links fields (eg, rdng.rdng, sens.sens, gloss.sens,
+    gloss.gloss, etc) set.  Jmdictdb convention for entry
+    objects an constituents leave these all set to None
+    since their value is implicit is the position of the 
+    object in its containing list.  They are usually only
+    set just before writing to database.  Having them None
+    would simplify test code that currently has to change
+    these values when position of object in list changes. 
+
+    Should either add option to jmxml to provide Entr objects
+    without these fields set, or make non-setting always
+    and modify jmparse.py (and whatever else) to call
+    jdb.setkeys() before using the Entr objects in the 
+    numbering is needed.
+ 4) I don't think (not sure) the jmxml will parse my extended
+    jmdictdb xml format?
+

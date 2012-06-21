@@ -16,7 +16,7 @@ def main():
         unittest.main()
 
 def globalSetup ():
-        global Cur, KW, Lexer, Parser
+        global Cur, KW, Lexer, Parser, Jmparser
         if Cur: return False
         try: import dbauth; kwargs = dbauth.auth
         except ImportError: kwargs = {}
@@ -24,6 +24,7 @@ def globalSetup ():
         KW = jdb.KW
         Lexer, tokens = jellex.create_lexer ()
         Parser = jelparse.create_parser (Lexer, tokens)
+        Jmparser = jmxml.Jmparser (KW)
         return True
 
 class Test_general (unittest.TestCase):
@@ -129,8 +130,6 @@ class Test_restr (unittest.TestCase):
 class Test_extra (unittest.TestCase):
     def setUp (_):
         globalSetup()
-        XKW = xmlkw.make (jdb.KW)
-        jmxml.XKW = XKW    # FIXME: gross
     def test_x00001(_): dotest (_, 'x00001')    # dotted restrs in quotes.
 
 class Base (unittest.TestCase):
@@ -189,7 +188,7 @@ def dotest (_, testid, xmlfn=None, jelfn=None, dir='data/fmtjel', enc='utf_8_sig
         expected = readfile (jelfn, enc)
         xmlu = readfile (xmlfn, enc)
         xml8 = xmlu.encode ('utf-8')
-        elist = jmxml.parse_entry (xml8)
+        elist = Jmparser.parse_entry (xml8)
         got = fmtjel.entr (elist[0], nohdr=True)
         msg = "\nExpected:\n%s\nGot:\n%s" % (expected, got)
         _.assertEqual (expected, got, msg)

@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2006,2008,2009 Stuart McGraw
+#  Copyright (c) 2006-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -41,8 +41,6 @@ import jdb, warns, xmlkw
 # can change these defaults be setting warns.Logfile and
 # warns.Encoding.
 
-Seq = None
-
 class ParseError (RuntimeError): pass
 class NotFoundError (RuntimeError): pass
 
@@ -82,7 +80,21 @@ class JmdictFile:
                 self.created = datetime.date (*map(int, mo.group(2,3,4)))
         return s
 
-def parse_entry (txt, dtd=None):
+class Jmparser (object):
+    def __init__ (self, 
+            kw,         # A jdb.Kwds object initialized with database
+                        #  keywords, such as returned by jdb.dbOpen()
+                        #  or jdb.Kwds(jdb.std_csv_dir()).
+            xkw=None):  # A jdb.Kwds object initialized with XML 
+                        #  keywords, such as returned by xmlmk.make().
+                        #  If None, __init__() will get one by calling
+                        #  xmlmk.make(kw).
+        self.KW = kw
+        if xkw: self.XKW = xkw
+        else: self.XKW = xmlkw.make (kw)
+        self.seq = 0
+
+    def parse_entry (self, txt, dtd=None):
         # Convert an XML text string into entry objects.
         #
         # @param txt Text string containing a piece of XML defining
@@ -98,10 +110,10 @@ def parse_entry (txt, dtd=None):
         if xo is None:
             print ("No parse results")
             return []
-        e = do_entr (xo, None)
+        e = self.do_entr (xo, None)
         return [e]
 
-def parse_xmlfile (
+    def parse_xmlfile (self, 
         inpf,           # (file) An open jmdict/jmnedict XML file..
         startseq=None,  # (int) Skip until this entry seen, or None
                         #   to start at first entry.
@@ -127,7 +139,6 @@ def parse_xmlfile (
                         #   a string giving the name of the top-level
                         #   element.
 
-        global Seq
         etiter = iter(ElementTree.iterparse( inpf, ("start","end")))
         event, root = etiter.next()
         if toptag: yield 'root', root.tag
@@ -148,32 +159,32 @@ def parse_xmlfile (
               # At this point elem.tag must be either 'entry', 'corpus', or
               # 'grpdef', and event is 'end'.
             if elem.tag == 'grpdef':
-                grpdef = do_grpdef (elem)
+                grpdef = self.do_grpdef (elem)
                 grpdefs[grpdef.id] = grpdefs[grpdef.kw] = grpdef
                 yield "grpdef", grpdef
                 continue
             if elem.tag == 'corpus':
-                corp = do_corpus (elem)
+                corp = self.do_corpus (elem)
                 corp_dict[corp.id] = corp_dict[corp.kw] = corp
                 yield "corpus", corp
                 continue
 
               # From this point on elem.tag is 'entr'...
-            prevseq = Seq
-            Seq = seq = int (elem.findtext ('ent_seq') or entrnum)
+            prevseq = self.seq
+            self.seq = seq = int (elem.findtext ('ent_seq') or entrnum)
             if prevseq and seq <= prevseq:
-                warn (" (line %d): Sequence less than preceeding sequence" % lineno)
+                self.warn (" (line %d): Sequence less than preceeding sequence" % lineno)
             if not startseq or seq >= startseq:
                 startseq = None
-                try: entr = do_entr (elem, seq, xlit, xlang, corp_dict, grpdefs)
+                try: entr = self.do_entr (elem, seq, xlit, xlang, corp_dict, grpdefs)
                 except ParseError as e:
-                    warn (" (line %d): %s" % (lineno, e))
+                    self.warn (" (line %d): %s" % (lineno, e))
                 else: yield "entry", entr
                 count += 1
                 if elimit and count >= elimit: break
             root.clear()
 
-def do_corpus (elem):
+    def do_corpus (self, elem):
         o = jdb.Obj (id=int(elem.get('id')), kw=elem.findtext ('co_name'))
         descr = elem.findtext ('co_descr')
         if descr: o.descr = descr
@@ -191,13 +202,13 @@ def do_corpus (elem):
         if smax: o.smax = smax
         return o
 
-def do_grpdef (elem):
+    def do_grpdef (self, elem):
         o = jdb.Obj (id=int(elem.get('id')), kw=elem.findtext ('gd_name'))
         descr = elem.findtext ('gd_descr')
         if descr: o.descr = descr
         return o
 
-def do_entr (elem, seq, xlit=False, xlang=None, corp_dict=None, grpdefs=None):
+    def do_entr (self, elem, seq, xlit=False, xlang=None, corp_dict=None, grpdefs=None):
         """
     Create an entr object from a parsed ElementTree entry
     element, 'elem'.  'lineno' is the source file line number
@@ -228,7 +239,7 @@ def do_entr (elem, seq, xlit=False, xlang=None, corp_dict=None, grpdefs=None):
       attributes since these are required when adding restr,
       stagr, stagk, and freq objects.
         """
-        global XKW, KW
+        XKW, KW = self.XKW, self.KW
 
         entr = jdb.Entr ()
 
@@ -253,51 +264,51 @@ def do_entr (elem, seq, xlit=False, xlang=None, corp_dict=None, grpdefs=None):
         corpname = elem.findtext('ent_corp')
         if corpname is not None: entr.src = corp_dict[corpname].id
         fmap = defaultdict (lambda:([],[]))
-        do_kanjs (elem.findall('k_ele'), entr, fmap)
-        do_rdngs (elem.findall('r_ele'), entr, fmap)
+        self.do_kanjs (elem.findall('k_ele'), entr, fmap)
+        self.do_rdngs (elem.findall('r_ele'), entr, fmap)
         if fmap:
             freq_errs = jdb.make_freq_objs (fmap, entr)
             for x in freq_errs:
                 typ, r, k, kw, val = x
                 kwstr = XKW.FREQ[kw].kw + str (val)
-                freq_warn (typ, r, k, kwstr)
-        do_senss (elem.findall('sense'), entr, xlit, xlang)
-        do_senss (elem.findall('trans'), entr, xlit, xlang)
-        do_info  (elem.findall("info"), entr)
-        do_audio (elem.findall("audio"), entr, jdb.Entrsnd)
-        do_groups(elem.findall("group"), entr, grpdefs)
+                self.freq_warn (typ, r, k, kwstr)
+        self.do_senss (elem.findall('sense'), entr, xlit, xlang)
+        self.do_senss (elem.findall('trans'), entr, xlit, xlang)
+        self.do_info  (elem.findall("info"), entr)
+        self.do_audio (elem.findall("audio"), entr, jdb.Entrsnd)
+        self.do_groups(elem.findall("group"), entr, grpdefs)
         return entr
 
-def do_info (elems, entr):
+    def do_info (self, elems, entr):
         if not elems: return
         elem = elems[0]   # DTD allows only one "info" element.
         x = elem.findtext ('srcnote')
         if x: entr.srcnote = x
         x = elem.findtext ('notes')
         if x: entr.notes = x
-        do_hist (elem.findall("audit"), entr)
+        self.do_hist (elem.findall("audit"), entr)
 
-def do_kanjs (elems, entr, fmap):
+    def do_kanjs (self, elems, entr, fmap):
         if elems is None: return
         kanjs = []; dupchk = {}
         for ord, elem in enumerate (elems):
             txt = elem.find('keb').text
             if not jdb.unique (txt, dupchk):
-                warn ("Duplicate keb text: '%s'" % txt); continue
+                self.warn ("Duplicate keb text: '%s'" % txt); continue
             if not (jdb.jstr_keb (txt)):
-                warn ("keb text '%s' not kanji." % txt)
+                self.warn ("keb text '%s' not kanji." % txt)
             kanj = jdb.Kanj (kanj=ord+1, txt=txt)
-            do_kws (elem.findall('ke_inf'), kanj, '_inf', 'KINF')
+            self.do_kws (elem.findall('ke_inf'), kanj, '_inf', 'KINF')
             for x in elem.findall ('ke_pri'):
-                freqtuple = parse_freq (x.text, "ke_pri")
+                freqtuple = self.parse_freq (x.text, "ke_pri")
                 if not freqtuple: continue
                 klist = fmap[freqtuple][1]
                 if not jdb.isin (kanj, klist): klist.append (kanj)
-                else: freq_warn ("Duplicate", None, kanj, x.text)
+                else: self.freq_warn ("Duplicate", None, kanj, x.text)
             kanjs.append (kanj)
         if kanjs: entr._kanj = kanjs
 
-def do_rdngs (elems, entr, fmap):
+    def do_rdngs (self, elems, entr, fmap):
         if elems is None: return
         rdngs = getattr (entr, '_rdng', [])
         kanjs = getattr (entr, '_kanj', [])
@@ -305,25 +316,25 @@ def do_rdngs (elems, entr, fmap):
         for ord, elem in enumerate (elems):
             txt = elem.find('reb').text
             if not jdb.unique (txt, dupchk):
-                warn ("Duplicate reb text: '%s'" % txt); continue
+                self.warn ("Duplicate reb text: '%s'" % txt); continue
             if not jdb.jstr_reb (txt):
-                warn ("reb text '%s' not kana." % txt)
+                self.warn ("reb text '%s' not kana." % txt)
             rdng = jdb.Rdng (rdng=ord+1, txt=txt)
-            do_kws (elem.findall('re_inf'), rdng, '_inf', 'RINF')
+            self.do_kws (elem.findall('re_inf'), rdng, '_inf', 'RINF')
             for x in elem.findall ('re_pri'):
-                freqtuple = parse_freq (x.text, "re_pri")
+                freqtuple = self.parse_freq (x.text, "re_pri")
                 if not freqtuple: continue
                 rlist = fmap[freqtuple][0]
                 if not jdb.isin (rdng, rlist): rlist.append (rdng)
-                else: freq_warn ("Duplicate", rdng, None, x.text)
+                else: self.freq_warn ("Duplicate", rdng, None, x.text)
             nokanji = elem.find ('re_nokanji')
-            do_restr (elem.findall('re_restr'), rdng, kanjs, 'restr', nokanji)
-            do_audio (elem.findall("audio"), rdng, jdb.Rdngsnd)
+            self.do_restr (elem.findall('re_restr'), rdng, kanjs, 'restr', nokanji)
+            self.do_audio (elem.findall("audio"), rdng, jdb.Rdngsnd)
             rdngs.append (rdng)
         if rdngs: entr._rdng = rdngs
 
-def do_senss (elems, entr, xlit=False, xlang=None):
-        global XKW
+    def do_senss (self, elems, entr, xlit=False, xlang=None):
+        XKW = self.XKW
         rdngs = getattr (entr, '_rdng', [])
         kanjs = getattr (entr, '_kanj', [])
         senss = [];  last_pos = None
@@ -334,44 +345,44 @@ def do_senss (elems, entr, xlit=False, xlang=None):
 
             pelems = elem.findall('pos')
             if pelems:
-                last_pos = do_kws (pelems, sens, '_pos', 'POS')
+                last_pos = self.do_kws (pelems, sens, '_pos', 'POS')
             elif last_pos:
                 sens._pos = [jdb.Pos(kw=x.kw) for x in last_pos]
 
-            do_kws   (elem.findall('name_type'), sens, '_misc', 'NAME_TYPE')
-            do_kws   (elem.findall('misc'),      sens, '_misc', 'MISC')
-            do_kws   (elem.findall('field'),     sens, '_fld',  'FLD')
-            do_kws   (elem.findall('dial'),      sens, '_dial', 'DIAL')
-            do_lsrc  (elem.findall('lsource'),   sens,)
-            do_gloss (elem.findall('gloss'),     sens, xlit, xlang)
-            do_gloss (elem.findall('trans_det'), sens,)
-            do_restr (elem.findall('stagr'),     sens, rdngs, 'stagr')
-            do_restr (elem.findall('stagk'),     sens, kanjs, 'stagk')
-            do_xref  (elem.findall('xref'),      sens, jdb.KW.XREF['see'].id)
-            do_xref  (elem.findall('ant'),       sens, jdb.KW.XREF['ant'].id)
+            self.do_kws   (elem.findall('name_type'), sens, '_misc', 'NAME_TYPE')
+            self.do_kws   (elem.findall('misc'),      sens, '_misc', 'MISC')
+            self.do_kws   (elem.findall('field'),     sens, '_fld',  'FLD')
+            self.do_kws   (elem.findall('dial'),      sens, '_dial', 'DIAL')
+            self.do_lsrc  (elem.findall('lsource'),   sens,)
+            self.do_gloss (elem.findall('gloss'),     sens, xlit, xlang)
+            self.do_gloss (elem.findall('trans_det'), sens,)
+            self.do_restr (elem.findall('stagr'),     sens, rdngs, 'stagr')
+            self.do_restr (elem.findall('stagk'),     sens, kanjs, 'stagk')
+            self.do_xref  (elem.findall('xref'),      sens, jdb.KW.XREF['see'].id)
+            self.do_xref  (elem.findall('ant'),       sens, jdb.KW.XREF['ant'].id)
 
             if not getattr (sens, '_gloss', None):
-                warn ("Sense %d has no glosses." % (ord+1))
+                self.warn ("Sense %d has no glosses." % (ord+1))
             senss.append (sens)
         if senss: entr._sens = senss
 
-def do_gloss (elems, sens, xlit=False, xlang=None):
-        global XKW
+    def do_gloss (self, elems, sens, xlit=False, xlang=None):
+        XKW = self.XKW
         glosses=[]; lits=[]; lsrc=[]; dupchk={}
         for elem in elems:
             lng = elem.get ('{http://www.w3.org/XML/1998/namespace}lang')
             try: lang = XKW.LANG[lng].id if lng else XKW.LANG['eng'].id
             except KeyError:
-                warn ("Invalid gloss lang attribute: '%s'" % lng)
+                self.warn ("Invalid gloss lang attribute: '%s'" % lng)
                 continue
             txt = elem.text
             if not jdb.jstr_gloss (txt):
-                warn ("gloss text '%s' not latin characters." % txt)
+                self.warn ("gloss text '%s' not latin characters." % txt)
             lit = []
             if xlit and ('lit:' in txt):
                  txt, lit = extract_lit (txt)
             if not jdb.unique ((lang,txt), dupchk):
-                warn ("Duplicate lang/text in gloss '%s'/'%s'" % (lng, txt))
+                self.warn ("Duplicate lang/text in gloss '%s'/'%s'" % (lng, txt))
                 continue
             # (entr,sens,gloss,lang,txt)
             if txt and (not xlang or lang in xlang):
@@ -382,18 +393,18 @@ def do_gloss (elems, sens, xlit=False, xlang=None):
             if not hasattr (sens, '_gloss'): sens._gloss = []
             sens._gloss.extend (glosses + lits)
 
-def do_lsrc (elems, sens):
+    def do_lsrc (self, elems, sens):
         lsrc = [];
         for elem in elems:
             txt = elem.text or ''
             lng = elem.get ('{http://www.w3.org/XML/1998/namespace}lang')
-            try: lang = XKW.LANG[lng].id if lng else XKW.LANG['eng'].id
+            try: lang = self.XKW.LANG[lng].id if lng else self.XKW.LANG['eng'].id
             except KeyError:
-                warn ("Invalid lsource lang attribute: '%s'" % lng)
+                self.warn ("Invalid lsource lang attribute: '%s'" % lng)
                 continue
             lstyp = elem.get ('ls_type')
             if lstyp and lstyp != 'part':
-                warn ("Invalid lsource type attribute: '%s'" % lstyp)
+                self.warn ("Invalid lsource type attribute: '%s'" % lstyp)
                 continue
             wasei = elem.get ('ls_wasei') is not None
 
@@ -401,13 +412,13 @@ def do_lsrc (elems, sens):
                 attrs = ("ls_wasei" if wasei else '') \
                         + ',' if wasei and lstyp else '' \
                         + ("ls_type" if lstyp else '')
-                warn ("lsource has attribute(s) %s but no text" % attrs)
+                self.warn ("lsource has attribute(s) %s but no text" % attrs)
             lsrc.append (jdb.Lsrc (lang=lang, txt=txt, part=lstyp=='part', wasei=wasei))
         if lsrc:
             if not hasattr (sens, '_lsrc'): sens._lsrc = []
             sens._lsrc.extend (lsrc)
 
-def do_xref (elems, sens, xtypkw):
+    def do_xref (self, elems, sens, xtypkw):
           # Create a xresolv record for each xml <xref> element.  The xref
           # may contain a kanji string, kana string, or kanji.\x{30fb}kana.
           # (\x{30fb} is a mid-height dot.)  It may optionally be followed
@@ -467,8 +478,8 @@ def do_xref (elems, sens, xtypkw):
             if not hasattr (sens, '_xrslv'): sens._xrslv = []
             sens._xrslv.extend (xrefs)
 
-def do_hist (elems, entr):
-        global XKW
+    def do_hist (self, elems, entr):
+        XKW = self.XKW
         hists = []
         for elem in elems:
             x = elem.findtext ("upd_date")
@@ -493,67 +504,69 @@ def do_hist (elems, entr):
             if not hasattr (entr, '_hist'): entr._hist = []
             entr._hist.extend (hists)
 
-def do_groups (elems, entr, grpdefs):
+    def do_groups (self, elems, entr, grpdefs):
         grps = []
         for elem in elems:
             txt = elem.text
             try: grpdefid = grpdefs[txt].id
             except KeyError:
-                warn ("Unrecognised group text '%s'." % txt)
+                self.warn ("Unrecognised group text '%s'." % txt)
                 continue
             ordtxt = elem.get ('ord')
             if not ordtxt:
-                warn ("Missing group 'ord' attribute on group element '%s'." % (txt))
+                self.warn ("Missing group 'ord' attribute on group element '%s'." % (txt))
                 continue
             try: ord = int (ordtxt)
             except (ValueError, TypeError):
-                warn ("Invalid 'ord' attribute '%s' on group element '%s'." % (ordtxt, txt))
+                self.warn ("Invalid 'ord' attribute '%s' on group element '%s'." % (ordtxt, txt))
                 continue
             grps.append (jdb.Grp (kw=grpdefid, ord=ord))
         if grps:
             if not getattr (entr, '_grp', None): entr._grp = grps
             else: exnt._grps.extend (grps)
 
-def do_audio (elems, entr_or_rdng, sndclass):
+    def do_audio (self, elems, entr_or_rdng, sndclass):
         snds = []
         for n, elem in enumerate (elems):
             v =elem.get ('clipid')
             if not v:
-                warn ("Missing audio clipid attribute."); continue
+                self.warn ("Missing audio clipid attribute."); continue
             try: clipid = int (v.lstrip('c'))
-            except (ValueError, TypeError): warn ("Invalid audio clipid attribute: %s" % v)
+            except (ValueError, TypeError): self.warn ("Invalid audio clipid attribute: %s" % v)
             else:
                 snds.append (sndclass (snd=clipid, ord=n+1))
         if snds:
             if not hasattr (entr_or_rdng, '_snd'): entr_or_rdng._snd = []
             entr_or_rdng._snd.extend (snds)
 
-def do_kws (elems, obj, attr, kwtabname):
+    def do_kws (self, elems, obj, attr, kwtabname):
         """
         Extract the keywords in the elementtree elements 'elems',
         resolve them in kw table 'kwtabname', and append them to
         the list attached to 'obj' named 'attr'.
         """
-        global XKW
+        XKW = self.XKW
         if elems is None or len(elems) == 0: return None
         kwtab = getattr (XKW, kwtabname)
         kwtxts, dups = jdb.rmdups ([x.text for x in elems])
+        try: cls = getattr (jdb, kwtabname.capitalize())
+        except AttributeError: cls = jdb.Obj
         kwrecs = []
         for x in kwtxts:
             try: kw = kwtab[x].id
             except KeyError:
-                warn ("Unknown %s keyword '%s'" % (kwtabname,x))
+                self.warn ("Unknown %s keyword '%s'" % (kwtabname,x))
             else:
-                kwrecs.append (jdb.Obj (kw=kw))
+                kwrecs.append (cls (kw=kw))
         dups, x = jdb.rmdups (dups)
         for x in dups:
-            warn ("Duplicate %s keyword '%s'" % (kwtabname, x))
+            self.warn ("Duplicate %s keyword '%s'" % (kwtabname, x))
         if kwrecs:
             if not hasattr (obj, attr): setattr (obj, attr, [])
             getattr (obj, attr).extend (kwrecs)
         return kwrecs
 
-def do_restr (elems, rdng, kanjs, rtype, nokanji=None):
+    def do_restr (self, elems, rdng, kanjs, rtype, nokanji=None):
         """
         The function can be used to process stagr and stagk restrictions
         in addition to re_restr restrictions, but for simplicity, code
@@ -595,19 +608,19 @@ def do_restr (elems, rdng, kanjs, rtype, nokanji=None):
 
         if not elems and nokanji is None: return
         if elems and nokanji is not None:
-            warn ("Conflicting 'nokanji' and 're_restr' in reading %d." % rdng.rdng)
+            self.warn ("Conflicting 'nokanji' and 're_restr' in reading %d." % rdng.rdng)
         if nokanji is not None: allowed_kanj = []
         else:
             allowed_kanj, dups = jdb.rmdups ([x.text for x in elems])
             if dups:
-                warn ("Duplicate %s item(s) %s in %s %d."
+                self.warn ("Duplicate %s item(s) %s in %s %d."
                         % (pattr[1:], "'"+"','".join(dups)+"'",
                            rattr, getattr (rdng,rattr)))
         for kanj in kanjs:
             if kanj.txt not in allowed_kanj:
                 jdb.add_restrobj (rdng, rattr, kanj, kattr, pattr)
 
-def parse_freq (fstr, ptype):
+    def parse_freq (self, fstr, ptype):
         # Convert a re_pri or ke_pri element string (e.g "nf30") into
         # numeric (id,value) pair (like 4,30) (4 is the id number of
         # keyword "nf" in the database table "kwfreq", and we get it
@@ -616,26 +629,30 @@ def parse_freq (fstr, ptype):
         # $ptype is a string used only in error or warning messages
         # and is typically either "re_pri" or "ke_pri".
 
-        global XKW
+        XKW = self.XKW
         mo = re.match (r'^([a-z]+)(\d+)$', fstr)
         if not mo:
-            warn ("Invalid %s, '%s'" % (ptype, fstr))
+            self.warn ("Invalid %s, '%s'" % (ptype, fstr))
             return None
         kwstr, val = mo.group (1,2)
         try: kw = XKW.FREQ[kwstr].id
         except KeyError:
-            warn ("Unrecognised %s, '%s'" % (ptype, fstr))
+            self.warn ("Unrecognised %s, '%s'" % (ptype, fstr))
             return None
         val = int (val)
         #FIXME -- check for invalid values in 'val'.
         return kw, val
 
-def freq_warn (warn_type, r, k, kwstr):
+    def freq_warn (self, warn_type, r, k, kwstr):
         tmp = []
         if r: tmp.append ("reading %s" % r.txt)
         if k: tmp.append ("kanji %s" % k.txt)
-        warn ("%s pri value '%s' in %s"
+        self.warn ("%s pri value '%s' in %s"
                 % (warn_type, kwstr, ', '.join (tmp)))
+
+    def warn (self, msg):
+        warns.warn ("Seq %d: %s" % (self.seq, msg))
+
 
 def extract_lit (txt):
         """
@@ -670,9 +687,6 @@ def crossprod (*args):
             result = [x + [y] for x in result for y in arg]
         return result
 
-def warn (msg):
-        global Seq
-        warns.warn ("Seq %d: %s" % (Seq, msg))
 
 def extract (fin, seqs_wanted, dtd=False, fullscan=False, keepends=False):
         """
@@ -867,13 +881,12 @@ def do_clip (elem):
                         trns=elem.findtext('ac_trns'), notes=elem.findtext('ac_notes'))
 
 def main (args, opts):
-        global KW, XKW
         jdb.KW = KW = kw.Kwds (kw.std_csv_dir())
         KW.__dict__.update (kw.short_vars (KW))
-        XKW = xmlkw.make (KW)
+        jmparser = Jmparser (kW)
         if len(args) >= 1:
             inpf = JmdictFile( open( args[0] ))
-            for tag,entr in parse_xmlfile (inpf, xlit=1):
+            for tag,entr in jmparser.parse_xmlfile (inpf, xlit=1):
                 import fmt
                 print (fmt.entr (entr))
         else:

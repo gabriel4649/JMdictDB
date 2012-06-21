@@ -38,7 +38,6 @@ def main (args, opts):
             KW = jdb.KW
         else:
             jdb.KW = KW = jdb.Kwds (jdb.std_csv_dir())
-        jmxml.XKW = xmlkw.make (KW)
 
         xlang = None
         if opts.lang:
@@ -50,8 +49,9 @@ def main (args, opts):
         if opts.encoding: warns.Encoding = opts.encoding
 
         eid = 0
-        for typ, entr in jmxml.parse_xmlfile (inpf, opts.begin, opts.count,
-                                              opts.extract, xlang, toptag=True):
+        jmparser = jmxml.Jmparser (KW)
+        for typ, entr in jmparser.parse_xmlfile (inpf, opts.begin, opts.count,
+                                                 opts.extract, xlang, toptag=True):
             if typ == 'entry':
                 eid += 1
                 if not ((eid - 1) % 1800):

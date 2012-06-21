@@ -1,0 +1,160 @@
+## 000010
+<entry>
+<ent_seq>3000010</ent_seq>
+<r_ele><reb>あ</reb></r_ele>
+<sense>
+<gloss>e3000010</gloss>
+</sense>
+</entry>
+##--
+[Entr (seq=3000010, stat=2, unap=False, 
+    _rdng=[Rdng(rdng=1,txt='あ')],
+    _sens=[Sens(sens=1,
+        _gloss=[Gloss(lang=1,ginf=1,txt='e3000010')])])]
+
+## 000020
+<entry>
+<ent_seq>3000020</ent_seq>
+<r_ele><reb>あ</reb></r_ele>
+<k_ele><keb>亜</keb></k_ele>
+<sense>
+<gloss>e3000020</gloss>
+</sense>
+</entry>
+##--
+[Entr (seq=3000020, stat=2, unap=False, 
+    _kanj=[Kanj(kanj=1,txt='亜')],
+    _rdng=[Rdng(rdng=1,txt='あ')],
+    _sens=[Sens(sens=1,
+        _gloss=[Gloss(lang=1,ginf=1,txt='e3000020')])])]
+
+## 000030
+# Multiple readings, kanji
+<entry>
+<ent_seq>3000030</ent_seq>
+<r_ele><reb>あ</reb></r_ele>
+<r_ele><reb>いい</reb></r_ele>
+<r_ele><reb>ううう</reb></r_ele>
+<k_ele><keb>亜</keb></k_ele>
+<k_ele><keb>良い</keb></k_ele>
+<sense>
+<gloss>e3000030</gloss>
+</sense>
+</entry>
+##--
+[Entr (seq=3000030, stat=2, unap=False, 
+    _kanj=[Kanj(kanj=1,txt='亜'),
+           Kanj(kanj=2,txt='良い')],
+    _rdng=[Rdng(rdng=1,txt='あ'),
+           Rdng(rdng=2,txt='いい'),
+           Rdng(rdng=3,txt='ううう')],
+    _sens=[Sens(sens=1,
+        _gloss=[Gloss(lang=1,ginf=1,txt='e3000030')])])]
+
+## 000040
+# Multiple glosses
+<entry>
+<ent_seq>3000040</ent_seq>
+<r_ele><reb>あ</reb></r_ele>
+<sense>
+<gloss>e3000040a</gloss>
+<gloss>e3000040b</gloss>
+<gloss>e3000040c</gloss>
+</sense>
+</entry>
+##--
+[Entr (seq=3000040, stat=2, unap=False, 
+    _rdng=[Rdng(rdng=1,txt='あ')],
+    _sens=[Sens(sens=1,
+        _gloss=[Gloss(lang=1,ginf=1,txt='e3000040a'),
+                Gloss(lang=1,ginf=1,txt='e3000040b'),
+                Gloss(lang=1,ginf=1,txt='e3000040c')],)],)]
+
+## 000050
+# Multiple senses
+<entry>
+<ent_seq>3000050</ent_seq>
+<r_ele><reb>あ</reb></r_ele>
+<sense>
+<gloss>e3000050a</gloss>
+<gloss>e3000050b</gloss>
+</sense>
+<sense>
+<gloss>e3000050c</gloss>
+</sense>
+<sense>
+<gloss>e3000050d</gloss>
+<gloss>e3000050e</gloss>
+<gloss>e3000050f</gloss>
+</sense>
+</entry>
+##--
+[Entr (seq=3000050, stat=2, unap=False, 
+    _rdng=[Rdng(rdng=1,txt='あ')],
+    _sens=[Sens(sens=1,
+              _gloss=[Gloss(lang=1,ginf=1,txt='e3000050a'),
+                      Gloss(lang=1,ginf=1,txt='e3000050b')]),
+           Sens(sens=2,
+              _gloss=[Gloss(lang=1,ginf=1,txt='e3000050c')]),
+           Sens(sens=3,
+              _gloss=[Gloss(lang=1,ginf=1,txt='e3000050d'),
+                      Gloss(lang=1,ginf=1,txt='e3000050e'),
+                      Gloss(lang=1,ginf=1,txt='e3000050f')]),])]
+
+## 000060
+<entry>
+<ent_seq>3000060</ent_seq>
+<r_ele><reb>あ</reb><re_inf>&ok;</re_inf></r_ele>
+<sense>
+<gloss>e3000060</gloss>
+</sense>
+</entry>
+##--
+[Entr (seq=3000060, stat=2, unap=False, 
+    _rdng=[Rdng(rdng=1,txt='あ',
+        _inf=[Rinf (kw=2)])],
+    _sens=[Sens(sens=1,
+        _gloss=[Gloss(lang=1,ginf=1,txt='e3000060')])])]
+
+## 000070
+<entry>
+<ent_seq>3000070</ent_seq>
+<k_ele><keb>亜</keb><ke_inf>&oK;</ke_inf></k_ele>
+<sense>
+<gloss>e3000070</gloss>
+</sense>
+</entry>
+##--
+[Entr (seq=3000070, stat=2, unap=False, 
+    _kanj=[Kanj(kanj=1,txt='亜',
+        _inf=[Kinf (kw=3)])],
+    _sens=[Sens(sens=1,
+        _gloss=[Gloss(lang=1,ginf=1,txt='e3000070')])])]
+
+## 000080
+<entry>
+<ent_seq>3000080</ent_seq>
+<r_ele><reb>あ</reb><re_restr>亜</re_restr></r_ele>
+<r_ele><reb>ああ</reb></r_ele>
+<k_ele><keb>亜</keb></k_ele>
+<k_ele><keb>蛙</keb></k_ele>
+<sense>
+<gloss>e3000080</gloss>
+</sense>
+</entry>
+##--
+# Note that in xml, restr identifies RK pairs that are not
+# allowed but in Entr, restr identifies RK pairs that *are*
+# allowed.  Hence, restr(kanj=2) below...
+ 
+[Entr (seq=3000080, stat=2, unap=False, 
+    _rdng=[Rdng(rdng=1,txt='あ', _restr=[Restr(rdng=1,kanj=2)]),
+           Rdng(rdng=2,txt='ああ')],
+    _kanj=[Kanj(kanj=1,txt='亜'),
+           Kanj(kanj=2,txt='蛙')],
+    _sens=[Sens(sens=1,
+        _gloss=[Gloss(lang=1,ginf=1,txt='e3000080')])])]
+expect[0]._kanj[1]._restr = [expect[0]._rdng[0]._restr[0]]
+
+
+

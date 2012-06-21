@@ -206,7 +206,7 @@ class MockDb (dict):
     def __init__ (self, lookupfunc):
         dict.__init__ (self)
         self.kw = jdb.Kwds (jdb.std_csv_dir())
-        jmxml.XKW = xmlkw.make (self.kw)    # Uhgg!
+        self.jmparser = jmxml.Jmparser (self.kw)
         self.ridx = collections.defaultdict (set)
         self.kidx = collections.defaultdict (set)
         self.lookupfunc = lookupfunc
@@ -221,7 +221,7 @@ class MockDb (dict):
           #  position in the list that contains it.  Having them None
           #  would let us rearrange list objects for testing without 
           #  having to also reset these fields correspondingly.  
-        entr = jmxml.parse_entry (xml)[0]
+        entr = self.jmparser.parse_entry (xml)[0]
         entr.id = id if id else entr.seq
         if id in self: 
             raise DuplIdError ("id %d already exists in database" % id)

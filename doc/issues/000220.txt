@@ -1,0 +1,50 @@
+Title:	More xref problems
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart
+
+2012-06-20 12:53:00 stuart
+ Use two existing entries, call them A and B, in two separate browser 
+ windows:
+ 1. Edit (no actual changes needed) A as editor, click Next (Approve)
+  to get to confirmation page.
+ 2. Edit B as editor, add xref to A, click Next (Approve) to get to 
+  confirmation page.
+ 3. Submit A.
+ 4. Submit B.  Result is a traceback:
+   Traceback (most recent call last):
+     File "/home/stuart/devel/jdb/jb/web/cgi/edsubmit.py", line 647, in <module>
+       main (args, opts)
+     File "/home/stuart/devel/jdb/jb/web/cgi/edsubmit.py", line 186, in main
+       sess.userid if sess else None)
+     File "/home/stuart/devel/jdb/jb/web/cgi/edsubmit.py", line 372, in submission
+       added = approve (dbh, entr, edtree, errs)
+     File "/home/stuart/devel/jdb/jb/web/cgi/edsubmit.py", line 428, in approve
+       res = addentr (dbh, entr)
+     File "/home/stuart/devel/jdb/jb/web/cgi/edsubmit.py", line 472, in addentr
+       res = jdb.addentr (dbh, entr)
+     File "../../python/lib/jdb.py", line 1504, in addentr
+       for x in getattr (s, '_xref',  []): dbinsert (cur, "xref",  ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'], x)
+     File "../../python/lib/jdb.py", line 121, in dbinsert
+       raise e
+   IntegrityError: insert or update on table "xref" violates foreign key constraint "xref_xentr_fkey"
+   DETAIL:  Key (xentr, xsens)=(3487, 1) is not present in table "sens".
+
+ ------------------------------------------------------------------------
+ Use two existing entries, call them A and B, in two separate browser 
+ windows, logged in as editor:
+ 1. Edit (no actual changes needed) A, click Next (Approve) to get to
+  confirmation page.
+ 2. Edit B as editor, add xref to A, click Next (Approve) to get to 
+  confirmation page.
+ 3. Submit B. Successful, view entry again, diff shows the added xref.
+ 4. Submit A. Successful, view entry again, no reverse xref shown.
+ 5. Refresh B.  Xref has disappeared, but diffs still show it was added.
+
+ -------------------------------------------------------------------------
+ The sequence
+   Edit A; Edit B; Conf, Submit A; Conf, Submit B, worked ok.
+

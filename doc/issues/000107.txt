@@ -10,3 +10,11 @@ AssdTo:	stuart@friix.com
   Would be nice if the submitter of an entry or change could retract it.
   This requires some way of verifying that the requester of the retraction
   is the same as the original submitter.  (Suggested by Paul Blay.)
+
+2012-10-14 23:18:00 stuart
+  jwb received a similar request from Hi Huixing and cc'd me on the
+  reply, suggesting this could be accomlished by setting a short term
+  cookie.  We would need to check and verify that no other user had 
+  submitted an edit to the original entry but other than that, it should
+  be straight forward to do.
+

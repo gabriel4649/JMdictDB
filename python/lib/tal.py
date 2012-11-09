@@ -16,13 +16,12 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
 
-import sys, logging, StringIO, copy, re
+import sys, logging, io, copy, re
 from simpletal import simpleTAL, simpleTALES
 import jdb, fmtjel
 
@@ -52,26 +51,24 @@ def fmt_simpletal (tmplfn, xml=False, **kwds):
 
         tmpl = mktemplate (tmplfn, xml=xml)
         txt = serialize (tmpl, **kwds)
-        txt = txt.decode ('utf-8')
-        if txt.startswith (u'\ufeff') or txt.startswith (u'\ufffe'):
+        if txt.startswith ('\ufeff') or txt.startswith ('\ufffe'):
             txt = txt[1:]
         return txt
 
-def mktemplate (tmplFilename, xml=False, encoding='utf-8'):
-        tmplFile = file (tmplFilename)
+def mktemplate (tmplFilename, xml=False):
+        tmplFile = open (tmplFilename)
         if xml:
             tmpl = simpleTAL.compileXMLTemplate (tmplFile)
         else:
-            tmpl = simpleTAL.compileHTMLTemplate (tmplFile,
-                                                  inputEncoding=encoding)
+            tmpl = simpleTAL.compileHTMLTemplate (tmplFile)
         tmplFile.close()
         return tmpl
 
 def serialize (tmpl, outfile=None, encoding='utf-8', **kwds):
         ctx = simpleTALES.Context (allowPythonPath=1)
-        for k,v in kwds.items(): ctx.addGlobal (k, v)
+        for k,v in list(kwds.items()): ctx.addGlobal (k, v)
           # Use StringIO module because cStringIO does not do unicode.
-        if outfile is None: ofl = StringIO.StringIO()
+        if outfile is None: ofl = io.StringIO()
         else: ofl = outfile
         tmpl.expand (ctx, ofl, outputEncoding=encoding)
         if outfile: return
@@ -82,8 +79,8 @@ def serialize (tmpl, outfile=None, encoding='utf-8', **kwds):
 def add2builtins (f):
         # Decorator to add function 'f' to the __builtin__ module
         # so that it will be available to the simpleTAL processor.
-        import __builtin__
-        __builtin__.__dict__[f.__name__] = f
+        import builtins
+        builtins.__dict__[f.__name__] = f
 
 @add2builtins
 def TALhas (parent, attr):

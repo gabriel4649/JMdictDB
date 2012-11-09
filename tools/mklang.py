@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
 #  Copyright (c) 2008 Stuart McGraw
@@ -17,16 +17,15 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
 
-import sys, codecs
+import sys
 
 def main (args, opts):
-        f = codecs.open (args[0], 'r', 'utf_8_sig')
+        f = open (args[0], 'r', encoding='utf_8_sig')
         for n,ln in enumerate (f):
             if (opts.format):
                 id, part2b, part2t, part1, scope, type, ref_name = ln.split('\t')
@@ -42,9 +41,9 @@ def main (args, opts):
 
 def out (style, n, lang, descr):
         if style == 'csv':
-            print (('%d\t%s\t%s' % (n, lang, descr)).encode('utf-8'))
+            print ('%d\t%s\t%s' % (n, lang, descr))
         elif style == 'perl':
-            print (("\t    '%s' => %d,\t# %s" % (lang, n, descr)).encode('utf-8'))
+            print ("\t    '%s' => %d,\t# %s" % (lang, n, descr))
         else:
             raise ValueError ("Invalid 'style' parameter: '%s'" % style)
 

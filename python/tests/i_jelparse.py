@@ -1,5 +1,4 @@
-from __future__ import print_function, absolute_import, division, unicode_literals
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 import sys, ply.yacc, re, unicodedata, pdb
 from collections import defaultdict
 import jdb, jellex, jelparse
@@ -88,7 +87,7 @@ def _interactive (cur, lexer, parser):
 def _getinptext ():
         instr = '';  cnt = 0;  prompt = 'test> '
         while cnt < 2:
-            try: s = raw_input(prompt).decode(Encoding)
+            try: s = input(prompt).decode(Encoding)
             except EOFError: break
             prompt = ''
             if s: cnt = 0

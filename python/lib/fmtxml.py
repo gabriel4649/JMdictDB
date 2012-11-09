@@ -16,8 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -342,7 +341,7 @@ def xrefs (xrefs, src):
                       # placeholder for the sense number.  Generate
                       # an xref element with sense for each xref in
                       # the group.  \u30FB is mid-height dot.
-                    fmt.append (fmtdxref % u'\u30FB%d' % s)
+                    fmt.append (fmtdxref % '\u30FB%d' % s)
             else:
                   # There is an xref for each target sense so we want
                   # to supress the target sense numbers.
@@ -373,7 +372,7 @@ def xref (xref, src):
             k = targobj._kanj[xref.kanj-1].txt
         if getattr (xref, 'rdng', None):
             r = targobj._rdng[xref.rdng-1].txt
-        if k and r: target = k + u'\u30FB' + r  # \u30FB is mid-height dot.
+        if k and r: target = k + '\u30FB' + r  # \u30FB is mid-height dot.
         else: target = k or r
 
         tag = 'xref'; attrs = []
@@ -421,7 +420,7 @@ def xrslvs (xrslvs, src):
             if getattr (x, 'ktxt',  None): v.append (x.ktxt)
             if getattr (x, 'rtxt',  None): v.append (x.rtxt)
             if getattr (x, 'tsens', None): v.append (str(x.tsens))
-            xreftxt = u'\u30FB'.join (v)        # U+30FB is middot.
+            xreftxt = '\u30FB'.join (v)        # U+30FB is middot.
             fmt.append ("<%s%s>%s</%s>" % (elname, attrs, xreftxt, elname))
         return fmt
 
@@ -578,9 +577,9 @@ def entr_diff (eold, enew, n=2):
         # 'eold' and/or 'enew' can be either Entr objects or
         # XML strings of Entr objects.
 
-        if isinstance (eold, (str, unicode)): eoldxml = eold.splitlines(False)
+        if isinstance (eold, str): eoldxml = eold.splitlines(False)
         else: eoldxml = entr (eold, wantlist=1, implicit_pos=0)
-        if isinstance (enew, (str, unicode)): enewxml = enew.splitlines(False)
+        if isinstance (enew, str): enewxml = enew.splitlines(False)
         else: enewxml = entr (enew, wantlist=1, implicit_pos=0)
           # Generate diff and remove trailing whitespace, including newlines.
           # Also, skip the <entry> line since they will always differ.
@@ -595,7 +594,7 @@ def entr_diff (eold, enew, n=2):
 def _main (args, opts):
         cur = jdb.dbOpen ('jmdict')
         while True:
-            try: id = raw_input ("Id number? ")
+            try: id = input ("Id number? ")
             except EOFError: id = None
             if not id: break
             e, raw = jdb.entrList (cur, [int(id)], ret_tuple=True)

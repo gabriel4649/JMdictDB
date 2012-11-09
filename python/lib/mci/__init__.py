@@ -7,5 +7,5 @@ __date__ = "2005/10/28"
 
 __all__ = ["mci", "constants"]
 
-from mci import *
-from constants import *
+from .mci import *
+from .constants import *

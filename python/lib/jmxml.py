@@ -16,8 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -70,8 +69,7 @@ class JmdictFile:
     def read(self, bytes):
         s = self.source.readline();  self.lineno += 1
         if self.lineno == 1:
-            if s[:3] == '\xef\xbb\xbf': s = s[3:]
-            if s[0] == u'\uFEFF': s = s[1:]
+            if s[0] == '\uFEFF': s = s[1:]
         s = re.sub (r'&[a-zA-Z0-9-]+;', _ent_repl, s)
         if self.created is None and self.lineno < 400:
             mo = re.search (r'<!-- ([a-zA-Z]+) created: (\d{4})-(\d{2})-(\d{2}) -->', s)
@@ -140,7 +138,7 @@ class Jmparser (object):
                         #   element.
 
         etiter = iter(ElementTree.iterparse( inpf, ("start","end")))
-        event, root = etiter.next()
+        event, root = next(etiter)
         if toptag: yield 'root', root.tag
         if corp_dict is None: corp_dict   = {}
         if grpdefs is None: grpdefs = {}
@@ -435,7 +433,7 @@ class Jmparser (object):
 
               # Split the xref text on the separator character.
 
-            frags = txt.split (u"\u30fb")
+            frags = txt.split ("\u30fb")
 
               # Check for a sense number in the rightmost fragment.
               # But don't treat it as a sense number if it is the
@@ -468,8 +466,8 @@ class Jmparser (object):
               # Put the kanji and kana parts back together into
               # strings, and write the xresolv resord.
 
-            ktxt = u"\u30fb".join (klst) or None
-            rtxt = u"\u30fb".join (rlst) or None
+            ktxt = "\u30fb".join (klst) or None
+            rtxt = "\u30fb".join (rlst) or None
 
             if ktxt or rtxt:
                 xrefs.append (jdb.Xrslv (typ=xtypkw, ktxt=ktxt, rtxt=rtxt, tsens=snum))
@@ -854,7 +852,7 @@ def parse_sndfile (
                         #   element.
 
         etiter = iter(ElementTree.iterparse( inpf, ("start","end")))
-        event, root = etiter.next()
+        event, root = next(etiter)
         vols = []
         for event, elem in etiter:
             tag = elem.tag
@@ -885,8 +883,9 @@ def main (args, opts):
         KW.__dict__.update (kw.short_vars (KW))
         jmparser = Jmparser (kW)
         if len(args) >= 1:
-            inpf = JmdictFile( open( args[0] ))
+              #FIXME: the file could conceivably have an encoding (defined
             for tag,entr in jmparser.parse_xmlfile (inpf, xlit=1):
+            inpf = JmdictFile( open( args[0], encoding='utf-8' ))
                 import fmt
                 print (fmt.entr (entr))
         else:

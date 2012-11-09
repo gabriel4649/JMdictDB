@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -34,7 +33,7 @@ from objects import *
 global KW
 Debug = {}
 
-class AuthError (StandardError): pass
+class AuthError (Exception): pass
 
 def dbread (cur, sql, args=None, cols=None, cls=None):
         # Execute a result returning sql statement(s) and return the
@@ -115,7 +114,7 @@ def dbinsert (dbh, table, cols, row, wantid=False):
         if not args: raise ValueError (args)
         if Debug.get ('prtsql'): print (repr(sql), repr(args))
         try: dbh.execute (sql, args)
-        except StandardError as e:
+        except Exception as e:
             e.sql = sql;  e.sqlargs = args
             e.message += "  %s [%s]" % (sql, ','.join(repr(x) for x in args))
             raise e
@@ -215,7 +214,7 @@ def entrList (dbh, crit=None, args=None, ord='', tables=None, ret_tuple=False):
             crit = "SELECT id FROM entr WHERE id IN (%s)" % pmarks(args)
         if isinstance (crit, Tmptbl):
             t = entr_data (dbh, crit.name, args, "t.ord")
-        elif isinstance (crit, (str, unicode)):
+        elif isinstance (crit, str):
             t = entr_data (dbh, crit, args, ord, tables)
         else:
             # Deprecated - use 'crit'=None and put a real list in 'args'.
@@ -787,7 +786,7 @@ def make_freq_objs (fmap, entr):
           # each list will be either 0 or 1).
 
         frecs = {};  errs = []
-        for (kw,val),(rdngs,kanjs) in fmap.items():
+        for (kw,val),(rdngs,kanjs) in list(fmap.items()):
             #kw, val = parse_freq (freq, '')
             dups = []; repld = []
             if not rdngs:
@@ -804,7 +803,7 @@ def make_freq_objs (fmap, entr):
             for r, k, kw, val in repld:
                 errs.append (("Conflicting", r, k, kw, val))
 
-        for r, k, kw, val in frecs.values():
+        for r, k, kw, val in list(frecs.values()):
             fo = Freq (rdng=getattr(r,'rdng',None), kanj=getattr(k,'kanj',None),
                           kw=kw, value=val)
             if r:
@@ -912,7 +911,7 @@ def _copy_freqs (old_entr, new_entr):
           # Rng and Kanj objects, and locate the corresponding reading
           # or kanji (by text) on 'new_entr' and attach the Freq object
           # there.
-        for f, (r, k) in finv.items():
+        for f, (r, k) in list(finv.items()):
             rnew = rmap.get (r.txt) if r else None
             knew = kmap.get (k.txt) if k else None
               # Don't add the two Freq with the same (kw,value) to
@@ -966,7 +965,7 @@ def del_superfluous_freqs (dupl):
         #   val -- the value of the Freq object's .value attribute.
         # The value of each dict item is the Freq object itself.
 
-        for (rdng,kanj,kw,val),freq in dupl.items():
+        for (rdng,kanj,kw,val),freq in list(dupl.items()):
             if not rdng or not kanj:
                 continue        # Skip any freq items that aren't on both
                                 #  a reading and a kanji.
@@ -1159,7 +1158,7 @@ def mark_seq_xrefs (cur, xrefs):
           # seq-number) pair and put in dict 'seq_count' keyed by (corpus,
           # seq) with values being the corresponding counts.
         seq_counts = {};  args = []
-        for src,seqs in srcseq.items():
+        for src,seqs in list(srcseq.items()):
             sql = "SELECT src,seq,COUNT(*) FROM entr " \
                   "WHERE src=%%s AND seq IN(%s) AND stat=%%s GROUP BY src,seq" \
                   % ",".join (["%s"]*len(seqs))
@@ -1266,7 +1265,7 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
             if rtxt and     jstr_keb (rtxt): ktxt, rtxt = rtxt, ktxt
 
           # Build a string for use in error messages.
-        krtxt = (ktxt or '') + (u'\u30fb' if ktxt and rtxt else '') + (rtxt or '')
+        krtxt = (ktxt or '') + ('\u30fb' if ktxt and rtxt else '') + (rtxt or '')
 
           # Build a SQL statement that will find all entries
           # that have a kanji and reading matching 'ktxt' and
@@ -1962,12 +1961,12 @@ class Kwds:
           # Add a set of standard attributes to this instance and
           # initialize each to an empty dict.
         failed = []
-        for attr,table in self.Tables.items():
+        for attr,table in list(self.Tables.items()):
             setattr (self, attr, dict())
 
           # 'cursor_or_dirname' may by a directory name, a database
           # cursor, or None.  If a string, assume the former.
-        if isinstance (cursor_or_dirname, (str, unicode)):
+        if isinstance (cursor_or_dirname, str):
             failed = self.loadcsv (cursor_or_dirname)
 
           # If not None, must be a database cursor.
@@ -1987,7 +1986,7 @@ class Kwds:
 
         failed = []
         if tables is None: tables = self.Tables
-        for attr,table in tables.items():
+        for attr,table in list(tables.items()):
               # For item in Tables is a attribute name, database table
               # name pair.  Read the table from the database and use
               # method .add() to store the records in attribute 'attr'.
@@ -2011,13 +2010,12 @@ class Kwds:
         if dirname[-1] != '/' and dirname[-1] != '\\' and len(dirname) > 1:
             dirname += '/'
         failed = []
-        for attr,table in tables.items():
+        for attr,table in list(tables.items()):
             fname = dirname + table + ".csv"
-            try: f = open (fname)
+            try: f = open (fname, encoding='utf-8')
             except IOError:
                 failed.append (table); continue
-            for lnx in f:
-		ln = lnx.decode ('utf-8')
+            for ln in f:
                 if re.match (r'\s*(#.*)?$', ln): continue
                 fields = ln.rstrip('\n\r').split ("\t")
                 fields = [x if x!='' else None for x in fields]
@@ -2059,7 +2057,7 @@ class Kwds:
         # may be empty if they haven't been loaded (because the
         # corresponding .csv file of table was missing or empty.)
 
-        return sorted([x for x in self.Tables.keys() if getattr(self, x)])
+        return sorted([x for x in list(self.Tables.keys()) if getattr(self, x)])
 
     def recs( self, attr ):
         # Return a list of DbRow objects representing the rows on the
@@ -2070,7 +2068,7 @@ class Kwds:
         #    pos_recs = KW ('POS')
 
         vt = getattr (self, attr)
-        r = [v for k,v in vt.items() if isinstance(k, int)]
+        r = [v for k,v in list(vt.items()) if isinstance(k, int)]
         return r
 
 def std_csv_dir ():
@@ -2203,7 +2201,7 @@ def jstr_reb (s):
         # It must consist exclusively of characters marked as KANA
         # by jstr_classify.
 
-        if isinstance (s, (str, unicode)):
+        if isinstance (s, str):
             b = jstr_classify (s)
         else: b = s
         if b == 0: return True  # Empty string.
@@ -2219,7 +2217,7 @@ def jstr_gloss (s):
         # FIXME: this won't work in a multi-lingual corpus when we
         #  may have cryllic, or korean, or chinese, etc, glosses.
 
-        if isinstance (s, (str, unicode)):
+        if isinstance (s, str):
             b = jstr_classify (s)
         else: b = s
         if b == 0: return True  # Empty string.
@@ -2231,7 +2229,7 @@ def jstr_keb (s):
         # for use in a <keb> element.  This is any string that
         # is not usable as a reb or a gloss.
 
-        if isinstance (s, (str, unicode)):
+        if isinstance (s, str):
             b = jstr_classify (s)
         else: b = s
         if b == 0: return True  # Empty string.
@@ -2302,7 +2300,7 @@ def dbOpen (dbname_, **kwds):
 
           # Remove kwds with None values since psycopg2 doesn't
           # seem to like them.
-        nonekwds = [k for k,v in kwargs.items() if v is None]
+        nonekwds = [k for k,v in list(kwargs.items()) if v is None]
         for k in nonekwds: del kwargs[k]
 
         conn = psycopg2.connect (**kwargs)
@@ -2432,7 +2430,7 @@ def dbOpenSvc (cfg, svcname, readonly=False, session=False, **kwds):
         # the svcname section rather than the 'svcname' database
         # itself.
 
-        if isinstance (cfg, (str, unicode)): cfg = cfgOpen (cfg)
+        if isinstance (cfg, str): cfg = cfgOpen (cfg)
         dbopts = getSvc (cfg, svcname, readonly, session)
         dbopts.update (kwds)
         cur = dbOpen (None, **dbopts)

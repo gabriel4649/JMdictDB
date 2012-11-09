@@ -1,7 +1,6 @@
 ﻿#!/usr/bin/env python
 
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 _VERSION_=("$Revision$"[11:-2],"$Date$"[7:-11])
 
@@ -99,7 +98,7 @@ class Frame (wx.Frame):         # Main frame
         self.Close()
 
     def p1_init (self):
-        for name,vals in gen_chkgrp_data (self.model).items():
+        for name,vals in list(gen_chkgrp_data (self.model).items()):
             d = CheckListBoxCombo (self.p1, values=vals)
             self.xrcres.AttachUnknownControl (name, d, self.p1)
 
@@ -136,7 +135,7 @@ class Frame (wx.Frame):         # Main frame
         self.ssinitfn = "jmdbss.txt"
         self.ss = pylib.config.Config()
         self.ss.read (open(self.ssinitfn))
-        for x in self.ss.keys(): GET (self.p2, "srchs").Append (x)
+        for x in list(self.ss.keys()): GET (self.p2, "srchs").Append (x)
         self.ss_new_sql = GET (self.p2, "sql").GetValue()
         self.ss_new_help = GET (self.p2, "help").GetValue()
         self.sscurrent = 0
@@ -576,7 +575,7 @@ class Frame2 (wx.Frame):                # Results frame
     def data_ready (self, delayedResult):
         rv = delayedResult.get()
         if rv is None: self.Close()
-        if isinstance (rv, StandardError): raise rv
+        if isinstance (rv, Exception): raise rv
         self.present_data (rv)
 
     def present_data (self, entrs):
@@ -671,9 +670,9 @@ class EntrGridtab (wx.grid.PyGridTableBase):
         elif colnum == 3: return stat_abbr (row)
         elif colnum == 4: return 'P' if jdb.is_p (row) else ' '
           # u'\uFF1B' is a wide semicolon.
-        elif colnum == 5: return u"\uFF1B".join ([k.txt for k in row._kanj])
-        elif colnum == 6: return u"\uFF1B".join ([r.txt for r in row._rdng])
-        elif colnum == 7: return u"/".join ([u"; ".join ([g.txt for g in s._gloss])
+        elif colnum == 5: return "\uFF1B".join ([k.txt for k in row._kanj])
+        elif colnum == 6: return "\uFF1B".join ([r.txt for r in row._rdng])
+        elif colnum == 7: return "/".join (["; ".join ([g.txt for g in s._gloss])
                                                                for s in row._sens])
     def SetValue (self, rownum, colnum, value): return
       # We must provide the above five method overrides...
@@ -786,8 +785,8 @@ class Frame3 (wx.Frame):  # from srch.py
                 self.getvalue (GET(self, 'seq'),int),
                 self.getselection (GET(self, 'stat')),
                 not self.getvalue (GET(self, 'unap'),bool),
-                self.getvalue (GET(self, 'srcnote'),unicode),
-                self.getvalue (GET(self, 'notes'),unicode))
+                self.getvalue (GET(self, 'srcnote'),str),
+                self.getvalue (GET(self, 'notes'),str))
             self.model.add_entr ( newentr, userid, user, email, comment, refs)
         except (ParseError,AuthError) as excep:
             msg (self, str(excep), wx.OK|wx.ICON_ERROR)

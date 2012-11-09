@@ -1,8 +1,7 @@
 #!/usr/env python
 
-from __future__ import print_function, absolute_import, division, unicode_literals
-from future_builtins import ascii, filter, hex, map, oct, zip
-import sys, re, unittest, codecs, pdb
+
+import sys, re, unittest, pdb
 import unittest_extensions
 if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb, fmtxml
@@ -137,7 +136,7 @@ def dotest (_, testnum, expnum=None):
 def readedict (filename):
         # Read edict test data lines into a dixt, keyed by test name.
         data = {}
-        f = codecs.open (filename, 'r', 'utf_8_sig ')
+        f = open (filename, encoding='utf_8_sig')
         for n, ln in enumerate (f):
             ln = ln.rstrip('\n\r')
             if re.match (r'\s*(#.*)?$', ln): continue
@@ -152,7 +151,7 @@ def readedict (filename):
 def readxml (filename):
         # Read xml test data sets into a dict, keyed by test name.
         data = {}
-        f = codecs.open (filename, 'r', 'utf_8_sig ')
+        f = open (filename, encoding='utf_8_sig')
         for n, ln in enumerate (f):
             ln = ln.rstrip()
             if re.match (r'\s*(#.*)?$', ln): continue
@@ -170,7 +169,7 @@ def readxml (filename):
                 if not dup: txt.append (ln)
         f.close()
         exp = {}
-        for k, v in data.items():
+        for k, v in list(data.items()):
             exp[k] = '\n'.join (v)
         return exp
 

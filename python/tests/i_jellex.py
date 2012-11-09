@@ -1,5 +1,4 @@
-from __future__ import print_function, absolute_import, division, unicode_literals
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 import sys
 import jellex, jdb, fmtjel
 
@@ -44,7 +43,7 @@ def _get_text_from_database (seq, src):
 def _get_text_interactively (enc='sjis'):
         instr = '';  cnt = 0;  prompt = 'test> '
         while cnt < 1:
-            try: s = raw_input(prompt).decode(enc)
+            try: s = input(prompt).decode(enc)
             except EOFError: break
             prompt = ''
             if s: cnt = 0

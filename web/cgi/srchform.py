@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
 #  Copyright (c) 2006-2010 Stuart McGraw
@@ -32,7 +32,7 @@ class Kwfreq (object):
 
 def main( args, opts ):
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-        except StandardError as e: jmcgi.err_page ([unicode (e)])
+        except Exception as e: jmcgi.err_page ([str (e)])
 
         qs = jmcgi.form2qs (form)
           # reshapes()'s last argument is the maximum number of checkboxes

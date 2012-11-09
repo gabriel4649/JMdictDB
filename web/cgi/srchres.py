@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
 #  Copyright (c) 2006-2010 Stuart McGraw
@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -31,15 +30,15 @@ import jdb, jmcgi, serialize, jelparse
 def main( args, opts ):
         errs = []; so = None; stats = {}
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-        except StandardError as e: jmcgi.err_page ([unicode (e)])
+        except Exception as e: jmcgi.err_page ([str (e)])
 
         cfg_web = d2o (cfg['web'])
         cfg_srch = d2o (cfg['search'])
         fv = form.getfirst; fl = form.getlist
         dbg = fv ('d'); meth = fv ('meth')
         force_srchres = fv('srchres')  # Force display of srchres page even if only one result.
-        sqlp = (fv ('sql') or '').decode ('utf-8')
-        soj = (fv ('soj') or '').decode ('utf-8')
+        sqlp = (fv ('sql') or '')
+        soj = (fv ('soj') or '')
         pgoffset = int(fv('p1') or 0)
         pgtotal = int(fv('pt') or -1)
         entrs_per_page = min (max (int(fv('ps') or cfg_web.DEF_ENTRIES_PER_PAGE),
@@ -49,7 +48,7 @@ def main( args, opts ):
             so.idnum=fv('idval');  so.idtyp=fv('idtyp')
             tl = []
             for i in (1,2,3):
-                txt = (fv('t'+str(i)) or '').decode('utf-8')
+                txt = (fv('t'+str(i)) or '')
                 if txt: tl.append (jmcgi.SearchItemsTexts (
                                      srchtxt = txt,
                                      srchin  = fv('s'+str(i)),
@@ -64,7 +63,7 @@ def main( args, opts ):
             so.gaval = fv('gaval'); so.gacmp = fv('gacmp')
               #FIXME? use selection boxes for dates?  Or a JS calendar control?
             so.ts = dateparse (fv('ts0'), 0, errs), dateparse (fv('ts1'), 1, errs)
-            so.smtr = (fv('smtr') or '').decode('utf-8'), fv('smtrm')
+            so.smtr = (fv('smtr') or ''), fv('smtrm')
             so.mt = fv('mt')
               # Pack up all the search criteria in a json string that will
               # be given to the srchres form, which will in turn give it back
@@ -92,7 +91,7 @@ def main( args, opts ):
         if so:
             try: condlist = jmcgi.so2conds (so)
             except ValueError as e:
-                errs.append (unicode (e))
+                errs.append (str (e))
               # FIXME: [IS-115] Following will prevent kanjidic entries from
               #  appearing in results.  Obviously hardwiring id=4 is a hack.
             else:
@@ -110,7 +109,7 @@ def main( args, opts ):
         if cfg_srch.MAX_QUERY_COST > 0:
             try:
                 cost = jdb.get_query_cost (cur, sql2, sql_args);
-            except StandardError as e:
+            except Exception as e:
                 jmcgi.err_page (["Database error (%s):<pre> %s </pre></body></html>"
                            % (e.__class__.__name__, str(e))])
             stats['cost']=cost;
@@ -161,7 +160,7 @@ def d2o (dict_):
         # FIXME: What about floats, bools, datetimes, lists, ...?
         #  Should we consider JSON as an ini file format?
         o = jdb.Obj()
-        for k,v in dict_.items():
+        for k,v in list(dict_.items()):
             try: v = int (v)
             except (ValueError,TypeError): pass
             setattr (o, k, v)

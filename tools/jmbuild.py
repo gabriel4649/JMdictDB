@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
 #  Copyright (c) 2008 Stuart McGraw
@@ -17,11 +17,11 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
+
+# WARNING --  this file has only been partially converted to Python3.
 
 # This program build a complete XML file by combining a DTD
 # with a number of files containing one ot more XML elements.
@@ -36,20 +36,22 @@ _ = os.path.join (os.path.dirname(_), 'python', 'lib')
 if _ not in sys.path: sys.path.insert(0, _)
 
 def main (args, opts):
+        if sys.stdout.encoding != opts.encoding:
+            sys.stdout = open (sys.stdout.fileno(), 'w', encoding=opts.encoding)
         parts = []
         dtdfname = args.pop(0)
         dtd = get_dtd (dtdfname, opts.orig_root, opts.root, opts.encoding)
-        sys.stdout.write (dtd.encode (opts.encoding))
+        sys.stdout.write (dtd)
         sys.stdout.write ("<%s>\n" % opts.root)
         for fname in args:
-            sec = open (fname).read().decode ('utf-8')
-            if sec[0] == u'\uFEFF': sec = sec[1:]
-            sys.stdout.write (sec.encode (opts.encoding))
-        sys.stdout.write (("</%s>\n" % opts.root).encode (opts.encoding))
+            sec = open (fname, 'r').read()
+            if sec[0] == '\uFEFF': sec = sec[1:]
+            sys.stdout.write (sec)
+        sys.stdout.write ("</%s>\n" % opts.root)
 
 def get_dtd (dtdfname, origroot, newroot, newenc):
-        dtd = open (dtdfname).read().decode('utf-8')
-        if dtd[0] == u'\uFEFF': dtd = dtd[1:]
+        dtd = open (dtdfname, 'r').read()
+        if dtd[0] == '\uFEFF': dtd = dtd[1:]
         if newenc != "UTF-8":
             a = dtd.replace ('<?xml version="1.0" encoding="UTF-8"?>',
                              '<?xml version="1.0" encoding="%s"?>' % newenc, 1)

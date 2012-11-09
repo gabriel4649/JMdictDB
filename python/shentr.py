@@ -1,11 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # Simple command line tool to find and display entries
 # in the JMdict database.
-
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
 
 _VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
 
@@ -17,11 +14,9 @@ if _ not in sys.path: sys.path.insert(0, _)
 import re
 import jdb, fmt, fmtjel
 
-global KW, Enc
+global KW
 
 def main (args, opts):
-        global Enc
-
           # The following call creates a database "cursor" that will
           # be used for subsequent database operations.  It also, as
           # a side-effect, create a global variable in module 'jdb'
@@ -33,13 +28,16 @@ def main (args, opts):
         except jdb.dbapi.OperationalError as e:
             print ("Error, unable to connect to database, do you need -u or -p?\n", str(e), file=sys.stderr);
             sys.exit(1)
-        Enc = opts.encoding or sys.stdout.encoding or 'utf-8'
+
+        enc = opts.encoding or sys.stdout.encoding or 'utf-8'
+        if sys.stdout.encoding != enc:
+            reopen (sys.stdout, encoding=enc)
 
           # Get the command line options and convert them into a sql
           # statement that will find the desired entries.
         sql, sqlargs = opts2sql (args, opts)
         if opts.debug:
-            print (("%s  %s" % (sql, repr(sqlargs))).encode(Enc, 'replace'))
+            print (("%s  %s" % (sql, repr(sqlargs))))
 
           # Retrieve the entries from the database.  'entrs' will be
           # set to a list on entry objects.  'raw' is set to dictionary,
@@ -68,7 +66,7 @@ def main (args, opts):
               # Print the formatted entry using the requested encoding
               # and inserting a blank line between entries.
             if not first: print ()
-            print (txt.encode (Enc, "replace"))
+            print (txt)
             first = False
 
         if len(entrs) == 0: print ("No entries found")
@@ -79,25 +77,25 @@ def opts2sql (args, opts):
             if x.isdigit(): appendto (opts, 'id', x)
             else: appendto (opts, '_is', x)
         if opts.char:      conds.extend (char2cond (opts.char))
-        if opts._is:       conds.extend (jdb.autocond (x.decode(Enc), 1, 1) for x in opts._is)
-        if opts.starts:    conds.extend (jdb.autocond (x.decode(Enc), 2, 1) for x in opts.starts)
-        if opts.contains:  conds.extend (jdb.autocond (x.decode(Enc), 3, 1) for x in opts.contains)
-        if opts.ends:      conds.extend (jdb.autocond (x.decode(Enc), 4, 1) for x in opts.ends)
+        if opts._is:       conds.extend (jdb.autocond (x, 1, 1) for x in opts._is)
+        if opts.starts:    conds.extend (jdb.autocond (x, 2, 1) for x in opts.starts)
+        if opts.contains:  conds.extend (jdb.autocond (x, 3, 1) for x in opts.contains)
+        if opts.ends:      conds.extend (jdb.autocond (x, 4, 1) for x in opts.ends)
 
-        if opts.kis:       conds.extend (jdb.autocond (x.decode(Enc), 1, 2) for x in opts.kis)
-        if opts.kstarts:   conds.extend (jdb.autocond (x.decode(Enc), 2, 2) for x in opts.kstarts)
-        if opts.kcontains: conds.extend (jdb.autocond (x.decode(Enc), 3, 2) for x in opts.kcontains)
-        if opts.kends:     conds.extend (jdb.autocond (x.decode(Enc), 4, 2) for x in opts.kends)
+        if opts.kis:       conds.extend (jdb.autocond (x, 1, 2) for x in opts.kis)
+        if opts.kstarts:   conds.extend (jdb.autocond (x, 2, 2) for x in opts.kstarts)
+        if opts.kcontains: conds.extend (jdb.autocond (x, 3, 2) for x in opts.kcontains)
+        if opts.kends:     conds.extend (jdb.autocond (x, 4, 2) for x in opts.kends)
 
-        if opts.ris:       conds.extend (jdb.autocond (x.decode(Enc), 1, 3) for x in opts.ris)
-        if opts.rstarts:   conds.extend (jdb.autocond (x.decode(Enc), 2, 3) for x in opts.rstarts)
-        if opts.rcontains: conds.extend (jdb.autocond (x.decode(Enc), 3, 3) for x in opts.rcontains)
-        if opts.rends:     conds.extend (jdb.autocond (x.decode(Enc), 4, 3) for x in opts.rends)
+        if opts.ris:       conds.extend (jdb.autocond (x, 1, 3) for x in opts.ris)
+        if opts.rstarts:   conds.extend (jdb.autocond (x, 2, 3) for x in opts.rstarts)
+        if opts.rcontains: conds.extend (jdb.autocond (x, 3, 3) for x in opts.rcontains)
+        if opts.rends:     conds.extend (jdb.autocond (x, 4, 3) for x in opts.rends)
 
-        if opts.gis:       conds.extend (jdb.autocond (x.decode(Enc), 1, 4) for x in opts.gis)
-        if opts.gstarts:   conds.extend (jdb.autocond (x.decode(Enc), 2, 4) for x in opts.gstarts)
-        if opts.gcontains: conds.extend (jdb.autocond (x.decode(Enc), 3, 4) for x in opts.gcontains)
-        if opts.gends:     conds.extend (jdb.autocond (x.decode(Enc), 4, 4) for x in opts.gends)
+        if opts.gis:       conds.extend (jdb.autocond (x, 1, 4) for x in opts.gis)
+        if opts.gstarts:   conds.extend (jdb.autocond (x, 2, 4) for x in opts.gstarts)
+        if opts.gcontains: conds.extend (jdb.autocond (x, 3, 4) for x in opts.gcontains)
+        if opts.gends:     conds.extend (jdb.autocond (x, 4, 4) for x in opts.gends)
 
         if opts.id:        conds.append (('entr',
                                           "id IN(%s)" % (','.join(('%s',)*len(opts.id))),
@@ -116,7 +114,7 @@ def opts2sql (args, opts):
 def char2cond (opts_char):
         conds = []; char_list = [];  ucs_list = []
         for ch in opts_char:
-            ch = ch.decode(Enc)
+            ch = ch
             if len (ch) == 1: char_list.append (ch)
             else:
                 try: ucs_list.append (int (ch, 16))
@@ -136,6 +134,12 @@ def char2cond (opts_char):
 def appendto (obj, attr, val):
         try: getattr(obj,attr).append (val)
         except AttributeError: setattr (obj, attr, [val])
+
+
+def reopen (file, encoding='utf-8'):
+        file.__init__(file.detach(),
+                      line_buffering=file.line_buffering,
+                      encoding=encoding)
 
 #---------------------------------------------------------------------
 
@@ -181,7 +185,7 @@ arguments:  [text | number]...
         p.add_option ("--seq", "-q", action="append", dest="seq",
             help="Find entries with seq number SEQ.")
         p.add_option ("--corpus", "-s", action="extend", dest="corp",
-            help=u"Restrict the search to the given corpora.  Each corpus "
+            help="Restrict the search to the given corpora.  Each corpus "
                 "is specified by its keyword.  If more than one, they must "
                 " be comma separated. If the first comma separated word is "
                 "\"NOT\" rather than a corpus keyword, then all corpora "

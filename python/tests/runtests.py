@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
 #  Copyright (c) 2008 Stuart McGraw
@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division, unicode_literals
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -27,7 +26,7 @@ __version__ = ('$Revision$'[11:-2],
 # Run with "--help" option for information on command line
 # arguments and options.
 
-import sys, unittest, glob, codecs
+import sys, unittest, glob
 import unittest_extensions
 
 __unittest = 1
@@ -71,12 +70,12 @@ def listtests (obj, sumtyp):
         else: collect = defaultdict (lambda: defaultdict (int))
         scantests (obj, collect)
         if collect is not None:
-            for m,v in collect.items():
+            for m,v in list(collect.items()):
                 if sumtyp == 'm':
                     print ("%s (%d classes, %d tests)" \
                            % (m, len(v), sum (v.values())))
                 else:
-                    for c,n in v.items():
+                    for c,n in list(v.items()):
                         print ("%s.%s (%d tests)" % (m, c, n))
 
 def scantests (obj, collect):

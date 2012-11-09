@@ -16,13 +16,11 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
 
 __version__ = ('$Revision: $'[11:-2],
                '$Date: $'[7:-11]);
 
-import sys, re, cgi, urllib, os, os.path, random, time, Cookie, datetime, time
+import sys, re, cgi, urllib.request, urllib.parse, urllib.error, os, os.path, random, time, http.cookies, datetime, time
 import jdb, tal, fmt
 
 def parseform (readonly=False):
@@ -77,8 +75,8 @@ def parseform (readonly=False):
           # them to the page template which will use them in the login
           # section as hidden parms so the page can be recreated after
           # a login.
-        parms = [(k,v.decode('utf-8'))
-                 for k in form.keys()
+        parms = [(k,v)
+                 for k in list(form.keys())
                  if k not in ('loginout','username','password')
                      for v in form.getlist(k) ]
 
@@ -210,7 +208,7 @@ def db_del_old_sessions (cur):
 def get_sid_from_cookie ():
         sid = ''
         if 'HTTP_COOKIE' in os.environ:
-            c = Cookie.SimpleCookie()
+            c = http.cookies.SimpleCookie()
             c.load (os.environ['HTTP_COOKIE'])
             try: sid = c[COOKIE_NAME].value
             except KeyError: pass
@@ -221,7 +219,7 @@ def set_sid_cookie (sid, delete=False):
         # Set-Cookie line to stdout.  Caller is responsible for
         # calling this while http headers are being output.
 
-        c = Cookie.SimpleCookie()
+        c = http.cookies.SimpleCookie()
         c[COOKIE_NAME] = sid
         c[COOKIE_NAME]['max-age'] = 0 if delete else 1*60*60
         print (c.output())
@@ -246,10 +244,10 @@ def form2qs (form):
     Convert a cgi.FieldStorage object back into a query string.
         """
         d = []
-        for k in form.keys():
+        for k in list(form.keys()):
             for v in form.getlist (k):
                 d.append ((k, v))
-        qs = urllib.urlencode (d)
+        qs = urllib.parse.urlencode (d)
         return qs
 
 def args():
@@ -450,17 +448,17 @@ def gen_page (tmpl, output=None, macros=None, xml=False, **kwds):
             macros = tal.mktemplate (tmpldir + '/' + macros, xml=xml)
             kwds['macros'] = macros
         html += tal.fmt_simpletal (tmpldir + '/' + tmpl, xml=xml, **kwds)
-        if output: print (html.encode ('utf-8'), file=output)
+        if output: print (html, file=output)
         return html
 
 def err_page (errs):
-        if isinstance (errs, (unicode, str)): errs = [errs]
+        if isinstance (errs, str): errs = [errs]
         gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
         sys.exit()
 
 def logw (msg, pre=''):
         #return   # Uncomment me to disable logging.
-        if isinstance (msg, unicode): msg = msg.encode ('utf-8')
+        if isinstance (msg, str): msg = msg.encode ('utf-8')
         try: pid = os.getpid()
         except OSError: pid = ''
         ts = datetime.datetime.now().isoformat(' ')
@@ -468,7 +466,7 @@ def logw (msg, pre=''):
             logf = open ("./jmdictdb.log", "a")
             print ("%s%s [%s]: %s" % (pre, ts, pid, msg), file=logf)
             logf.close()
-        except StandardError: pass
+        except Exception: pass
 
 def htmlprep (entries):
         """\
@@ -843,7 +841,7 @@ def _freqcond (freq, nfval, nfcmp, gaval, gacmp):
         # Now process each domain and it's list of values...
 
         whr = []
-        for k,v in x.items():
+        for k,v in list(x.items()):
               # Convert the domain string to a kwfreq table id number.
             kwid = KW.FREQ[k].id
 
@@ -906,14 +904,14 @@ def _freqcond (freq, nfval, nfcmp, gaval, gacmp):
 def utt (d):
         # Convert a simple string-to-string mapping into
         # the form required by <unicode>.translate().
-        return dict ((ord(k), unicode(v)) for k,v in d.items())
+        return dict ((ord(k), str(v)) for k,v in list(d.items()))
 
 Wc_trans = utt({'*':'%', '?':'_', '%':'\\%', '_':'\\_'})
 def wc2like (s):
         # Convert a string with wildcard characters '*' and '?' to SQL
         # "like" operator characters, "%" and "_", being careful of
         # escape "\" characters.
-        s1 = unicode (s)
+        s1 = str (s)
         s1 = s1.replace ('\\*', '\x01')
         s1 = s1.replace ('\\?', '\x02')
         s1 = s1.translate (Wc_trans)

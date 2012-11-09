@@ -1,5 +1,4 @@
-from __future__ import print_function, absolute_import, division, unicode_literals
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 import sys, os, os.path, unittest, time, subprocess, tempfile, \
        shutil, difflib, re, pdb
 
@@ -114,7 +113,7 @@ class EncodedAssertionError (AssertionError):
         except: return AssertionError.__str__(self)
 
 # Tell the unicode module to use it.
-unittest.TestCase.failureException = EncodedAssertionError
+#unittest.TestCase.failureException = EncodedAssertionError
 
 
 def runcmd (wkdir, cmdln):
@@ -145,16 +144,15 @@ def readfile_utf8 (fname, enc='utf-8', secsep=None, rmcomments=False):
             results[label] = ln
             return [], secnum + 1
 
-        with open (fname) as f:
+        with open (fname, encoding=enc) as f:
             for lnnum, ln in enumerate (f):
-                ln = ln.decode (enc)
-                if lnnum == 0 and ln[0] == u'\uFEFF': ln = ln[1:]
+                if lnnum == 0 and ln[0] == '\uFEFF': ln = ln[1:]
                 mo = re.match (secsep, ln) if secsep else None
                 if mo:
                     if current_txts:
                         current_txts, secnum = save (results, label, current_txts)
                     try: label = mo.group(1)
-                    except StandardError: label = secnum
+                    except Exception: label = secnum
                     continue
                   # Note that blank lines are NOT comments.
                 if rmcomments and re.match (r'\s*#', ln): continue
@@ -169,7 +167,7 @@ def mk_temp_dir (in_dir=".", keep=False):
         return dirname
 
 def rm_temp_dir (dirname):
-        if sys.platform == 'win32': dirname = unicode(dirname)
+        if sys.platform == 'win32': dirname = str(dirname)
         else: dirname = dirname.encode(sys.getfilesystemencoding())
         print ("Removing", dirname)
         shutil.rmtree (dirname)

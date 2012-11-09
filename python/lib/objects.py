@@ -16,8 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -56,11 +55,11 @@ class Obj(object):
     # could use a keys in a dict the same way, but sometimes
     # the attribute syntax results in more readable code.
     def __init__ (self, **kwds):
-        for k,v in kwds.items(): setattr (self, k, v)
+        for k,v in list(kwds.items()): setattr (self, k, v)
     def __repr__ (self):
         return self.__class__.__name__ + '(' \
                  + ', '.join([k + '=' + _p(v)
-                              for k,v in self.__dict__.items() if k != '__cols__']) + ')'
+                              for k,v in list(self.__dict__.items()) if k != '__cols__']) + ')'
 
 class DbRow (Obj):
     def __init__(self, values=None, cols=None):
@@ -69,8 +68,8 @@ class DbRow (Obj):
                 self.__cols__ = cols
                 for n,v in zip (cols, values): setattr (self, n, v)
             else:
-                self.__cols__ = values.keys()
-                for n,v in values.items(): setattr (self, n, v)
+                self.__cols__ = list(values.keys())
+                for n,v in list(values.items()): setattr (self, n, v)
     def __getitem__ (self, idx):
         return getattr (self, self.__cols__[idx])
     def __setitem__ (self, idx, value):
@@ -82,7 +81,7 @@ class DbRow (Obj):
         for n in self.__cols__: yield getattr (self, n)
     def __eq__(self, other): return _compare (self, other)
     def __ne__(self, other): return not _compare (self, other)
-    def __hash__(self): return id(self) 
+    def __hash__(self): return id (self)    #FIXME?!
     def copy (self):
         c = self.__class__()
         c.__dict__.update (self.__dict__)
@@ -93,7 +92,7 @@ class DbRow (Obj):
         return c
 
 def _p (o):
-        if isinstance (o, (int,long,str,unicode,bool,type(None))):
+        if isinstance (o, (int,str,bool,type(None))):
             return repr(o)
         if isinstance (o, (datetime.datetime, datetime.date, datetime.time)):
             return str(o)

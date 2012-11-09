@@ -1,6 +1,5 @@
-#!/usr/bin/env python
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+#!/usr/bin/env python3
+
 
 """
 Program to generate parser tables from the jelparse module.

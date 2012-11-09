@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
 #  Copyright (c) 2010 Stuart McGraw
@@ -17,8 +17,6 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -28,6 +26,8 @@ __version__ = ('$Revision$'[11:-2],
 # be opened by cgi script jbedit.py to present an html Edit Entry
 # page with the edit boxes initialized with the submission's
 # data, ready for review and submission.
+
+# WARNING: this file was converted for Python3 but not tested yet.
 
 import sys, os, inspect, pdb
 _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
@@ -78,9 +78,9 @@ def process_file (inpname, outdir, prefix='', verbose=False,
         #       not be overwritten, an error message generated, and
         #       this input file skipped.
 
-        in_f = open (inpname, "r")
-        bad_f = open (os.path.join (outdir, prefix+"bad.log"), "a")
-        good_f = open (os.path.join (outdir, prefix+"ok.log"), "a")
+        in_f = open (inpname, "r", encoding=Input_encoding)
+        bad_f = open (os.path.join (outdir, prefix+"bad.log"), "a", encoding=Output_encoding)
+        good_f = open (os.path.join (outdir, prefix+"ok.log"), "a", encoding=Output_encoding)
         startmsg = "# %s: processing %s" %\
                 (datetime.datetime.now().ctime(), inpname)
         print (startmsg, file=bad_f)
@@ -96,7 +96,7 @@ def process_file (inpname, outdir, prefix='', verbose=False,
           # will later (independently of this program) read it
           # and submit it under human supervision.
 
-        for r in incremental_scanner (in_f, Input_encoding):
+        for r in incremental_scanner (in_f):
             lines, linenum = r
             subnum += 1
             if subnum < start_at: continue
@@ -124,13 +124,13 @@ def write_bad (bad_f, lines, msg):
         print (msg)
         msg = '# ' + msg.replace('\n', '\n# ')
         print (msg, file=bad_f)
-        print (('\n'.join (lines)).encode (Output_encoding), file=bad_f)
+        print ('\n'.join (lines), file=bad_f)
 
 def write_good (good_f, lines, msg, verbose):
         if verbose: print (msg)
         msg = '# ' + msg.replace('\n', '\n# ')
         print (msg, file=good_f)
-        print (('\n'.join (lines)).encode (Output_encoding), file=good_f)
+        print ('\n'.join (lines), file=good_f)
 
 def write_data (parsed, fn, force=False):
         # parsed -- a dict containing parsed wwwjdic form data as
@@ -159,10 +159,10 @@ def write_data (parsed, fn, force=False):
 def write_msg (errmsg, lines, err_f=None):
         print (errmsg)
         if err_f:
-            print (('# ' + errmsg.replace('\n', '\n# ')).encode (Output_encoding), file=err_f)
-            if lines: print (('\n'.join (lines)).encode (Output_encoding), file=err_f)
+            print ('# ' + errmsg.replace('\n', '\n# '), file=err_f)
+            if lines: print ('\n'.join (lines), file=err_f)
 
-def incremental_scanner (f, encoding=None):
+def incremental_scanner (f):
           # This function is an iterator and thus may be used in a "for"
           # statement where it will repeatedly supply 2-tuples consisting
           # of:
@@ -178,8 +178,7 @@ def incremental_scanner (f, encoding=None):
 
         lines = [];  base_linenum = None
         for line_num, line in enumerate (f):
-            if encoding: line = line.decode (encoding)
-            if line_num == 0 and line.startswith(u'\uFEFF'):
+            if line_num == 0 and line.startswith('\uFEFF'):
                 line = line[1:]                 # Remove BOM.
               # FIXME? it is possible the multi-line fields could
               #  contain lines starting with "#".
@@ -263,7 +262,7 @@ def parse_submission (lines):
           # defaultdict does.)
         collect = dict (collect)
 
-        for kw in collect.keys():
+        for kw in list(collect.keys()):
             if kw not in multi_field:
                   # All items in 'collect' were created as lists.
                   # Except for those that are intended to have multiple
@@ -274,7 +273,7 @@ def parse_submission (lines):
         if 'email' in collect and collect['email'] == 'Email address': del collect['email']
 
           # Sanity check to make sure we didn't accidently misplace something...
-        for kw in collect.keys(): assert kw in known_keywds
+        for kw in list(collect.keys()): assert kw in known_keywds
 
           # "subtype" field is required...
         if 'subtype' not in collect or collect['subtype'] not in ('new', 'amend'):

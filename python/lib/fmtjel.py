@@ -16,8 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -26,10 +25,10 @@ import re
 import jdb, fmt
 from collections import defaultdict
 
-MIDDOT = u'\u30FB'
+MIDDOT = '\u30FB'
   # The following characters are recognised as special
   # in the TAGLIST state in jellex.py.
-SPECIALS = ur'[ :;,.#/=\[\]\u3000\uFF1B\u3001\uFF0F\u30FB]'
+SPECIALS = '[ :;,.#/=\\[\\]\u3000\uFF1B\u3001\uFF0F\u30FB]'
 
 def qtxt (txt):
         # Enclose txt in quotes if it contains any special
@@ -47,7 +46,7 @@ def escgloss (txt):
         return txt
 
 def kanjs (kanjs):
-        txt = u'\uFF1B'.join ([kanj (x) for x in kanjs])
+        txt = '\uFF1B'.join ([kanj (x) for x in kanjs])
         return txt
 
 def kanj (kanj):
@@ -60,7 +59,7 @@ def kanj (kanj):
         return txt
 
 def rdngs (rdngs, kanjs):
-        txt = u'\uFF1B'.join ([rdng (x, kanjs) for x in rdngs])
+        txt = '\uFF1B'.join ([rdng (x, kanjs) for x in rdngs])
         return txt
 
 def rdng (rdng, kanjs):
@@ -212,7 +211,7 @@ def xrslv (xr):
         if ts: ts  = '[%d]' % ts
         kt = getattr (xr, 'ktxt', '') or ''
         rt = getattr (xr, 'rtxt', '') or ''
-        txt = KW.XREF[xr.typ].kw + '=' + kt + (u'\u30FB' if kt and rt else '') + rt + ts
+        txt = KW.XREF[xr.typ].kw + '=' + kt + ('\u30FB' if kt and rt else '') + rt + ts
         return txt
 
 def lsrc (lsrc):

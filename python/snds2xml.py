@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
 #  Copyright (c) 2008 Stuart McGraw
@@ -17,8 +17,6 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -37,21 +35,26 @@ if _ not in sys.path: sys.path.insert(0, _)
 import jdb, fmtxml
 
 def main (args, opts):
-        pout = lambda x:sys.stdout.write (x.encode(opts.encoding) + '\n')
+        if opts.encoding != sys.stdout.encoding: reopen (sys.stdout, opts.encoding)
         dir = jdb.find_in_syspath ("dtd-audio.xml")
         dtd = jdb.get_dtd (dir + "/" + "dtd-audio.xml", "JMaudio", opts.encoding)
-        pout (dtd); pout ("<JMaudio>")
+        print (dtd); print ("<JMaudio>")
         cur = jdb.dbOpen (opts.database, **jdb.dbopts (opts))
         vols = jdb.dbread (cur, "SELECT * FROM sndvol")
         for v in vols:
-            pout ("\n".join (fmtxml.sndvols ([v])))
+            print ("\n".join (fmtxml.sndvols ([v])))
             sels = jdb.dbread (cur, "SELECT * FROM sndfile s WHERE s.vol=%s", [v.id])
             for s in sels:
-                pout ("\n".join (fmtxml.sndsels ([s])))
+                print ("\n".join (fmtxml.sndsels ([s])))
                 clips = jdb.dbread (cur, "SELECT * FROM snd c WHERE c.file=%s", [s.id])
                 for c in clips:
-                    pout ("\n".join (fmtxml.sndclips ([c])))
-        pout ('</JMaudio>')
+                    print ("\n".join (fmtxml.sndclips ([c])))
+        print ('</JMaudio>')
+
+def reopen (file, encoding='utf-8'):
+        file.__init__(file.detach(),
+                      line_buffering=file.line_buffering,
+                      encoding=encoding)
 
 
 from optparse import OptionParser, OptionGroup

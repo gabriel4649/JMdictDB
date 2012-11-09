@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
 #  Copyright (c) 2008 Stuart McGraw
@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -44,7 +43,7 @@ __version__ = ('$Revision$'[11:-2],
 # jmdict entries.  All the pseudo-xref genereated by this
 # program will have a typ=6.
 
-import sys, os, inspect, pdb
+import sys, os, io, inspect, pdb
 _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
 _ = os.path.join (os.path.dirname(_), 'python', 'lib')
 if _ not in sys.path: sys.path.insert(0, _)
@@ -79,7 +78,7 @@ EX2ID = {
         'senryuu'               : [83,"Senryuu"],
         'xxx'                   : [1],}
 
-class ParseError (StandardError): pass
+class ParseError (Exception): pass
 
 def main (args, opts):
         global Opts; Opts = opts
@@ -249,10 +248,10 @@ def msg (msg):
         if Opts.verbose: warns.warn ("Seq %d (line %s): %s" % (Seq, Lnnum, msg))
         Msgs[msg] = Lnnum
 
-class ABPairReader (file):
+class ABPairReader:
     def __init__ (self, *args, **kwds):
-        file.__init__ (self, *args, **kwds)
-        self.lineno = 0
+        self.__dict__['stream'] = open (*args, **kwds)
+        self.__dict__['lineno'] = 0
     def readpair( self ):
         aline = self.getline ('A: ')
         bline = self.getline ('B: ')
@@ -260,10 +259,10 @@ class ABPairReader (file):
     def getline( self, key ):
         didmsg = False
         while 1:
-            line = self.readline().decode('utf-8'); self.lineno += 1
+            line = self.stream.readline(); self.lineno += 1
             if not line: return None
             if line.startswith (key) \
-                    or (line[1:].startswith(key) and line[0]==u'\uFEFF'):
+                    or (line[1:].startswith(key) and line[0]=='\uFEFF'):
                 if didmsg:
                     warns.warn ("Line %d: resyncronised." % self.lineno)
                     didmsg = False
@@ -273,10 +272,17 @@ class ABPairReader (file):
                     warns.warn ("Line %d: expected '%s' line not found, resyncronising..."
                            % (self.lineno, key.strip()))
                     didmsg = True
-    def next( self ):
+    def __next__( self ):
         a, b = self.readpair()
         if not a: raise StopIteration
         return a, b
+    def __iter__ (self): return self
+
+    # Delegate all other method calls to the stream.
+    def __getattr__(self, attr):
+        return getattr(self.stream, attr)
+    def __setattr__(self, attr, value):
+        return setattr(self.stream, attr, value)        
 
 
 from optparse import OptionParser

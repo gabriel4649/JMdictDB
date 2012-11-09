@@ -16,8 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -29,7 +28,7 @@ formmated version of an entry.
 
 """
 import sys, re, lxml
-from StringIO import StringIO
+from io import StringIO
 from lxml import etree
 import jdb, fmtxml
 
@@ -64,14 +63,14 @@ def entr (entr, xslfile=None, xslt=[], want_utf8=False):
             xslt[:] = [lxml.etree.XSLT (xsldoc)]
         edicttxt = None
         if entr:
-            if not isinstance (entr, (str, unicode)):
+            if not isinstance (entr, str):
                 xml = fmtxml.entr (entr, compat='jmdict')
             else: xml = entr
               # Replace entities.
             xml = re.sub (r'&([a-zA-Z0-9-]+);', r'\1', xml)
             xml = "<JMdict>%s</JMdict>" % xml
               # Apply the xsl to the xml, result is utf-8 encoded.
-            edicttxt = xslt[0](etree.parse (StringIO (xml)))
-            if not want_utf8:  # Convert to utf-8 to unicode.
-                edicttxt = (str(edicttxt)).decode('utf-8')
-        return edicttxt.rstrip('\n\r') # Remove the added trailing \n.
+            edicttxt = str (xslt[0](etree.parse (StringIO (xml)))).rstrip('\n\r')
+            if want_utf8:  # Convert to utf-8 to unicode.
+                edicttxt = edicttxt.encode('utf-8')
+        return edicttxt

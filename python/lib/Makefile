@@ -3,11 +3,13 @@
 
 all: jelparse.py
 
+PYTHON = python3
+
 jelparse.py jelparse_tab.py: jelparse.y
 	-rm jelparse_tab.py*
-	python ../../tools/yply.py jelparse.y >jelparse.py
-	python ../../tools/gen_parsetab.py 
-	python -c "import jelparse_tab"
+	$(PYTHON) ../../tools/yply.py jelparse.y >jelparse.py
+	$(PYTHON) ../../tools/gen_parsetab.py 
+	$(PYTHON) -c "import jelparse_tab"
 	-rm parsetab.py*
 
 .DELETE_ON_ERROR:

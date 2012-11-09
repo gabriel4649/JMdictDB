@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
 #  Copyright (c) 2008 Stuart McGraw
@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -30,10 +29,12 @@ _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
 _ = os.path.join (os.path.dirname(_), 'python', 'lib')
 if _ not in sys.path: sys.path.insert(0, _)
 
-import re, codecs
+import re
 import jdb, jmxml
 
 def main (args, opts):
+        if sys.stdout.encoding != opts.encoding:
+            sys.stdout = open (sys.stdout.fileno(), 'w', encoding=opts.encoding)
         jdb.KW = KW = jdb.Kwds (jdb.std_csv_dir())
         seqlist = []; first = True
         infn = args.pop (0)
@@ -43,16 +44,16 @@ def main (args, opts):
             for arg in args:
                 seq, x, cnt = arg.partition (',')
                 seqlist.append ((int (seq), int (cnt or 1)))
-        fin = codecs.open (infn, "r", "utf_8_sig")
+        fin = open (infn, encoding="utf_8_sig")
         if seqlist:
             for seq,entr in jmxml.extract (fin, seqlist, opts.dtd, opts.all):
                 print (seq, file=sys.stderr)
                 if opts.dtd and first:
                     toplev, dtd = seq, entr
-                    print (('\n'.join (dtd)).encode (opts.encoding, 'backslashreplace'))
-                    print (("<%s>" % toplev))
+                    print ('\n'.join (dtd))
+                    print ("<%s>" % toplev)
                     first = False;  continue
-                print (('\n'.join (entr)).encode (opts.encoding, 'backslashreplace'))
+                print ('\n'.join (entr))
             if opts.dtd: print (("</%s>" % toplev))
         else: print ("No seq numbers!", file=sys.stderr)
 

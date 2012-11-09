@@ -1,5 +1,5 @@
-import exceptions, re
-from odict import odict
+import re
+from .odict import odict
 
 class Error(Exception):
     """Base class for ConfigParser exceptions."""
@@ -50,7 +50,7 @@ class Config (odict):
         self.start_multiline_opt_on_new_line = False
         self.line_terminator = '\n'
         if fn_or_iter:
-            if isinstance (fn_or_iter, (str, unicode)):
+            if isinstance (fn_or_iter, str):
                 fl = open (fn_or_iter)
                 fname = fn_or_iter
             else:
@@ -152,7 +152,7 @@ class Config (odict):
         """Generator that yields lines of the .ini-format representation
            of the configuration state."""
         first = True;  lt = self.line_terminator
-        for sect_name, opts in self.items():
+        for sect_name, opts in list(self.items()):
             if not first and self.blank_line_between_sections: yield lt
             first = False
             for s in self._writesec (sect_name, opts):
@@ -160,7 +160,7 @@ class Config (odict):
 
     def _writesec (self, name, opts):
         yield "[%s]" % name
-        for (key, value) in opts.items():
+        for (key, value) in list(opts.items()):
             if key == "__name__": continue
             lines = str(value).splitlines()
             if self.start_multiline_opt_on_new_line and len(lines) > 1:

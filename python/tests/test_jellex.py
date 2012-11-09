@@ -1,8 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function, absolute_import, division, unicode_literals
-from future_builtins import ascii, filter, hex, map, oct, zip
 import sys, unittest, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb, jellex, ply, unittest_extensions

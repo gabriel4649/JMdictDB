@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function, absolute_import, division, unicode_literals
-from future_builtins import ascii, filter, hex, map, oct, zip
-import sys, unittest, codecs, os.path, pdb
+import sys, unittest, os.path, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb, fmtjel, jmxml, xmlkw, jelparse, jellex
 from objects import *
@@ -85,8 +83,8 @@ class Test_general (unittest.TestCase):
         global Cur, KW
           # Read expected text, remove any unicode BOM or trailing whitespace
           # that may have been added when editing.
-        expected = open ("data/fmtjel/"+str(seq)+".txt").read().decode('utf-8').rstrip()
-        if expected[0] == u'\ufeff': expected = expected[1:]
+        expected = open ("data/fmtjel/"+str(seq)+".txt",encoding='utf-8').read().rstrip()
+        if expected[0] == '\ufeff': expected = expected[1:]
           # Read the entry from the database.  Be sure to get from the right
           # corpus and get only the currently active entry.  Assert that we
           # received excatly one entry.
@@ -114,8 +112,8 @@ class Test_restr (unittest.TestCase):
         _.assertEqual (expect, jeltxt)
     def test_002(_):
         e1 = Entr (id=100, src=1, seq=1000010, stat=2, unap=False)
-        e1._kanj = [Kanj(txt=u'手紙',), Kanj(txt=u'切手')]
-        e1._rdng = [Rdng(txt=u'てがみ'), Rdng(txt=u'あとで'), Rdng(txt=u'きって')]
+        e1._kanj = [Kanj(txt='手紙',), Kanj(txt='切手')]
+        e1._rdng = [Rdng(txt='てがみ'), Rdng(txt='あとで'), Rdng(txt='きって')]
         r = Restr(); e1._rdng[0]._restr.append (r); e1._kanj[1]._restr.append(r)
         r = Restr(); e1._rdng[1]._restr.append (r); e1._kanj[0]._restr.append(r)
         r = Restr(); e1._rdng[2]._restr.append (r); e1._kanj[0]._restr.append(r)
@@ -130,7 +128,8 @@ class Test_restr (unittest.TestCase):
 class Test_extra (unittest.TestCase):
     def setUp (_):
         globalSetup()
-    def test_x00001(_): dotest (_, 'x00001')    # dotted restrs in quotes.
+    def test_x00001(_): 
+        dotest (_, 'x00001')    # dotted restrs in quotes.
 
 class Base (unittest.TestCase):
     def setUp (_):
@@ -187,14 +186,14 @@ def dotest (_, testid, xmlfn=None, jelfn=None, dir='data/fmtjel', enc='utf_8_sig
         if jelfn is None: jelfn = os.path.join (dir, testid + '.jel')
         expected = readfile (jelfn, enc)
         xmlu = readfile (xmlfn, enc)
-        xml8 = xmlu.encode ('utf-8')
+        xml8 = xmlu #xmlu.encode ('utf-8')
         elist = Jmparser.parse_entry (xml8)
         got = fmtjel.entr (elist[0], nohdr=True)
         msg = "\nExpected:\n%s\nGot:\n%s" % (expected, got)
         _.assertEqual (expected, got, msg)
 
 def readfile (filename, enc):
-        with codecs.open (filename, 'r', enc) as f:
+        with open (filename, 'r', encoding=enc) as f:
             contents = f.read()
         return contents.strip()
 

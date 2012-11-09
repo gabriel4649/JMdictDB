@@ -16,8 +16,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -26,6 +25,13 @@ import ply.lex, re
 import jdb, fmtjel
 
 class LexSpec:
+
+    # Note that in the strings used as regexes below, all containing
+    # a "\unnnn" literal are non-raw strings in which any other 
+    # backslashes are doubled.  (This due to a Python 3 "improvement"
+    # that causes "\unnnn" literals in raw strings to be interpreted 
+    # as 6 characters rather than a single unicode character as was
+    # the case in Python 2.  Sigh.)
 
     states = (
         ('TAGLIST', 'exclusive'),
@@ -41,21 +47,21 @@ class LexSpec:
 # State: INITIAL
 
     def t_SNUM (self, t):
-        ur'\[\d+\]\s*'
+        r'\[\d+\]\s*'
         t.lexer.begin('GLOSS')
         return t
 
     def t_SEMI (self, t):
-        ur'[;\uFF1B]'
+        '[;\uFF1B]'
         return t
 
     def t_BRKTL (self, t):
-        ur'\['
+        r'\['
         t.lexer.push_state ('TAGLIST')
         return t
 
     def t_TEXT (self, t):
-        ur'[^;\uFF1B\[\u3000 \t\r\n]+'
+        '[^;\uFF1B\[\u3000 \\t\\r\\n]+'
           # Classify it as kanji, reading (kana), or ordinary
           # text and return token accordingly.
         m = jdb.jstr_classify (t.value)
@@ -73,41 +79,41 @@ class LexSpec:
           # escaped with backslash characters.
         return t
     def t_TAGLIST_COLON (self, t):
-        ur':'
+        r':'
         return t
     def t_TAGLIST_SEMI (self, t):
-        ur'[;\uFF1B]'
+        '[;\uFF1B]'
         return t
     def t_TAGLIST_COMMA (self, t):
-        ur'[,\u3001]'
+        '[,\u3001]'
         return t
     def t_TAGLIST_EQL (self, t):
-        ur'='
+        r'='
         return t
     def t_TAGLIST_SLASH (self, t):
-        ur'[\/\uFF0F]'
+        '[\\/\uFF0F]'
         return t
     def t_TAGLIST_DOT (self, t):
-        ur'[\.\u30FB]'
+        '[\\.\u30FB]'
         return t
     def t_TAGLIST_HASH (self, t):
-        ur'\#'
+        r'\#'
         return t
     def t_TAGLIST_BRKTL (self, t):
-        ur'\['
+        r'\['
         t.lexer.push_state('SNUMLIST')
         return t
     def t_TAGLIST_BRKTR (self, t):
-        ur'\]'
+        r'\]'
         t.lexer.pop_state()
         return t
 
     def t_TAGLIST_NUMBER (self, t):
-        ur'[0-9\uFF10-\uFF19]+'
+        '[0-9\uFF10-\uFF19]+'
         return t
 
     def t_TAGLIST_TEXT (self, t):
-        ur'[^;\uFF1B:=,\u3001\/\.\#\uFF0F\u30FB\[\] \t\r\n]+'
+        '[^;\uFF1B:=,\u3001\\/\\.\\#\uFF0F\u30FB\\[\\] \\t\\r\\n]+'
           # Classify it as kanji, reading (kana), or ordinary
           # text and return token accordingly.
         t.value = qcleanup(t.value)
@@ -120,38 +126,38 @@ class LexSpec:
 # State: SNUMLIST
 
     def t_SNUMLIST_BRKTR (self, t):
-        ur'\]'
+        r'\]'
         t.lexer.pop_state()
         return t
 
     def t_SNUMLIST_COMMA (self, t):
-        ur','           #FIXME? include wide comma?
+        r','           #FIXME? include wide comma?
         return t
 
     def t_SNUMLIST_NUMBER (self, t):
-        ur'[0-9\uFF10-\uFF19]+'
+        '[0-9\uFF10-\uFF19]+'
         return t
 
     def t_SNUMLIST_TEXT (self, t):
-        ur'.'
+        r'.'
         return t
 
 # State: GLOSS
 
     def t_GLOSS_GTEXT (self, t):
-        ur'(([^;\\\[])|(\\\[)|(\\;))+'
+        r'(([^;\\\[])|(\\\[)|(\\;))+'
         t.lexer.lineno += t.value.count ('\n')
         t.value = gcleanup(t.value)
         if t.value: return t
         else: return None
     def t_GLOSS_SNUM (self, t):
-        ur'\s*\[\d+\]\s*'
+        r'\s*\[\d+\]\s*'
         return t
     def t_GLOSS_SEMI (self, t):
-        ur';'
+        r';'
         return t
     def t_GLOSS_BRKTL (self, t):
-        ur'\['
+        r'\['
         t.lexer.push_state('TAGLIST')
         return t
 
@@ -162,10 +168,10 @@ class LexSpec:
             return t
         return None
 
-    t_ignore = u' \u3000\r\t'
-    t_TAGLIST_ignore = u' \u3000\r\t'
-    t_SNUMLIST_ignore = u' \u3000\r\t'
-    t_GLOSS_ignore = u''
+    t_ignore = ' \u3000\r\t'
+    t_TAGLIST_ignore = ' \u3000\r\t'
+    t_SNUMLIST_ignore = ' \u3000\r\t'
+    t_GLOSS_ignore = ''
 
     def t_error(self, t):
         raise RuntimeError ("Illegal character '%s'" % t.value[0])
@@ -178,11 +184,11 @@ def gcleanup (txt):
         # Replace multiple whitespace characters with one.
         # Unescape backslash-escaped ';'s and '['s.
 
-        txt = re.sub (ur'^[\s\u3000\n\r]+', '', txt)
-        txt = re.sub (ur'[\s\u3000\n\r]+$', '', txt)
-        txt = re.sub (ur'[\s\u3000\n\r]+$', ' ', txt)
+        txt = re.sub ('^[\\s\u3000\\n\\r]+', '', txt)
+        txt = re.sub ('[\\s\u3000\\n\\r]+$', '', txt)
+        txt = re.sub ('[\\s\u3000\\n\\r]+$', ' ', txt)
         #txt = re.sub (ur'\\([;\[\\])', ur'\1', txt)
-        txt = re.sub (ur'\\(.)', ur'\1', txt)
+        txt = re.sub (r'\\(.)', r'\1', txt)
         return txt
 
 def qcleanup (txt):
@@ -192,11 +198,11 @@ def qcleanup (txt):
         # Replace multiple whitespace characters with one.
         # Unescape backslash-escaped '"'s.
 
-        txt = re.sub (ur'^[\s\u3000\n\r]+', '', txt)
-        txt = re.sub (ur'[\s\u3000\n\r]+$', '', txt)
-        txt = re.sub (ur'[\s\u3000\n\r]+$', ' ', txt)
+        txt = re.sub ('^[\\s\u3000\\n\\r]+', '', txt)
+        txt = re.sub ('[\\s\u3000\\n\\r]+$', '', txt)
+        txt = re.sub ('[\\s\u3000\\n\\r]+$', ' ', txt)
         #txt = re.sub (ur'\\(["\\])', r'\1', txt)
-        txt = re.sub (ur'\\(.)', r'\1', txt)
+        txt = re.sub (r'\\(.)', r'\1', txt)
         return txt
 
 def create_lexer (debug=0):

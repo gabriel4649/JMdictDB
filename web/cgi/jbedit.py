@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
 #  Copyright (c) 2010 Stuart McGraw
@@ -17,8 +17,7 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
+
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -33,7 +32,7 @@ Enc = 'utf-8'
 def main (args, opts):
         errs = []
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-        except StandardError as e: jmcgi.err_page ([unicode (e)])
+        except Exception as e: jmcgi.err_page ([str (e)])
 
           # The filesystem path of the directory containing editdata files.
         filesdir = cfg['web']['EDITDATA_DIR']
@@ -52,8 +51,8 @@ def main (args, opts):
         fullname = os.path.join (filesdir, fn)
           # Open the file, get the data.
         try: e, ref, comment, name, email = read_editdata (cur, fullname)
-        except StandardError as e:
-            err_page (["Bad file data, unable to unserialize: %s" % unicode(e)])
+        except Exception as e:
+            err_page (["Bad file data, unable to unserialize: %s" % str(e)])
         extra = {'ref':ref, 'comment':comment, 'name':name, 'email':email}
         e.NOCORPOPT = ''  # This seems to be required by template, see edform.py
         if not meth: meth = 'get' if dbg else 'post'
@@ -161,14 +160,14 @@ def reformat (ktxt, rtxt, stxt, entr):
         try:
             kanjs = edparse.parse_krpart (ktxt, fmap)
         except eParseError as excep:
-            try: print ("reformat kanj failed: %s" % (unicode(excep)))
+            try: print ("reformat kanj failed: %s" % (str(excep)))
             except UnicodeError: "reformat kanj failed: (unprintable exception)"
 
         if kanjs is not None:    # kanjs is None if kanji parse failed in
             try:                 #  which case we can't parse readings or senses.
                 rdngs = edparse.parse_krpart (rtxt, fmap, kanjs)
             except eParseError as excep:
-                try: print ("reformat rdng failed: %s" % (unicode(excep)))
+                try: print ("reformat rdng failed: %s" % (str(excep)))
                 except UnicodeError: "reformat rdng failed: (unprintable exception)"
 
         if rdngs is not None:    # rdngs is None if reading parse failed in
@@ -185,7 +184,7 @@ def reformat (ktxt, rtxt, stxt, entr):
                 jrtxt = fmtjel.rdngs (rdngs, kanjs)
                 jstxt = fmtjel.senss (senss, kanjs, rdngs)
             except eParseError as excep:
-                try: print ("reformat sens failed: %s" % (unicode(excep)))
+                try: print ("reformat sens failed: %s" % (str(excep)))
                 except UnicodeError: "reformat sens failed: (unprintable exception)"
 
         return jktxt, jrtxt, jstxt

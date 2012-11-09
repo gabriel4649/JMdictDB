@@ -1,6 +1,5 @@
-from __future__ import print_function, absolute_import, division, unicode_literals
-from future_builtins import ascii, filter, hex, map, oct, zip
-import sys, unittest, codecs, pdb
+
+import sys, unittest, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb
 from objects import *
@@ -64,28 +63,28 @@ class Test_xrslv (unittest.TestCase):
         fmtxml.XKW = None
 
     def test0202010(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, ktxt=u'\u540c\u3058')])])
+        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, ktxt='\u540c\u3058')])])
         dotest (_, e, '0202010', compat='jmdict')
     def test0202020(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=2, ktxt=u'\u540c\u3058')])])
+        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=2, ktxt='\u540c\u3058')])])
         dotest (_, e, '0202020', compat='jmdict')
     def test0202030(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, rtxt=u'\u304a\u306a\u3058')])])
+        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, rtxt='\u304a\u306a\u3058')])])
         dotest (_, e, '0202030', compat='jmdict')
     def test0202040(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, ktxt=u'\u540c\u3058',
-                                                rtxt=u'\u304a\u306a\u3058')])])
+        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, ktxt='\u540c\u3058',
+                                                rtxt='\u304a\u306a\u3058')])])
         dotest (_, e, '0202040', compat='jmdict')
     def test0202050(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, ktxt=u'\u540c\u3058',
-                                                rtxt=u'\u304a\u306a\u3058', tsens=3)])])
+        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, ktxt='\u540c\u3058',
+                                                rtxt='\u304a\u306a\u3058', tsens=3)])])
         dotest (_, e, '0202050', compat='jmdict')
 
 
-u'\u304a\u306a\u3058'
+'\u304a\u306a\u3058'
 def dotest(_, e, expected_file, **kwds):
         results = fmtxml.entr (e, **kwds)
-        expected = codecs.open ('data/fmtxml/'+expected_file+'.txt', 'r', 'utf_8_sig').read()
+        expected = open ('data/fmtxml/'+expected_file+'.txt', 'r', encoding='utf_8_sig').read()
         expected = expected.replace ('\r', '')  # In case we're running on windows.
         expected = expected.rstrip ('\n')       # fmtxml results have no trailing "\n".
         if results != expected:

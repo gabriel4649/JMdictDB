@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
 #  Copyright (c) 2008 Stuart McGraw
@@ -17,8 +17,6 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-from __future__ import print_function, absolute_import, division
-from future_builtins import ascii, filter, hex, map, oct, zip
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -35,6 +33,7 @@ import os.path
 import jdb
 
 def main (args, opts):
+        if opts.encoding != sys.stdout.encoding: reopen (sys.stdout, opts.encoding)
           # Open the database.  jdb.dbopts() extracts the db-related
           # options from the command line options in 'opts'.
         cur = jdb.dbOpen (opts.database, **jdb.dbopts (opts))
@@ -45,8 +44,7 @@ def main (args, opts):
                 print (fname)
                 for r in ldata:
                     strt = r.strt/100.0
-                    print ("%f\t%f\t%s" % (strt, strt + r.leng/100.0,
-                                          r.trns.encode(opts.encoding)))
+                    print ("%f\t%f\t%s" % (strt, strt + r.leng/100.0, r.trns))
 
 def getlabels (cur, filenum):
         sql = "SELECT v.loc AS vloc, f.loc AS floc " \
@@ -60,6 +58,11 @@ def getlabels (cur, filenum):
         sql = "SELECT strt,leng,trns,notes FROM snd s WHERE s.file=%s ORDER BY strt,leng"
         rs = jdb.dbread (cur, sql, [filenum])
         return fname, rs
+
+def reopen (file, encoding='utf-8'):
+        file.__init__(file.detach(),
+                      line_buffering=file.line_buffering,
+                      encoding=encoding)
 
 from optparse import OptionParser, OptionGroup
 from pylib.optparse_formatters import IndentedHelpFormatterWithNL

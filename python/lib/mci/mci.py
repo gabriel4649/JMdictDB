@@ -10,14 +10,13 @@
 #   $Id$
 #==============================================================
 
-__Version__ = map (lambda x:(x.split())[1],
-        ("$Revision$","$Date$"))
+__Version__ = [(x.split())[1] for x in ("$Revision$","$Date$")]
 
 from ctypes import *
 try: from ctypes.wintypes import *
 except ValueError: raise ImportError ('mci module not available')
 import exceptions
-from constants import *
+from .constants import *
 
 #-------------------------------------------------------------------------------
 def Break (devid, flags=0, key=0, hwnd=0):
@@ -111,14 +110,14 @@ def SendCommand (devid, msg, flags, params):
         global dllWinmm
         if not dllWinmm: dllWinmm = windll.winmm
         rc = dllWinmm.mciSendCommandA (devid, msg, flags, params)
-        if rc != 0: raise mciError, (rc, GetErrorString (rc))
+        if rc != 0: raise mciError(rc, GetErrorString (rc))
 
 def SendString (cmdstr):
         global  dllWinmm
         if not dllWinmm: dllWinmm = windll.winmm
         p = create_string_buffer(250)
         rc = dllWinmm.mciSendStringA (byref (cmdstr), p, 250, None)
-        if rc != 0: raise mciError, (rc, GetErrorString (rc))
+        if rc != 0: raise mciError(rc, GetErrorString (rc))
         return p.value
 
 def GetErrorString (errno):
@@ -126,14 +125,14 @@ def GetErrorString (errno):
         if not dllWinmm: dllWinmm = windll.winmm
         p = create_string_buffer(250)
         rc = dllWinmm.mciGetErrorStringA (errno, p, 250)
-        if rc == 0: raise mciError, (0, "GetErrorString: unknown error code %s" % errno)
+        if rc == 0: raise mciError(0, "GetErrorString: unknown error code %s" % errno)
         return p.value
 
 def GetDeviceID (devname):
         global dllWinmm
         if not dllWinmm: dllWinmm = windll.winmm
         devid = dllWinmm.mciGetDeviceIDA (byref (devname))
-        if devid == 0: raise mciError, (0, "GetDeviceID: unable to get device ID")
+        if devid == 0: raise mciError(0, "GetDeviceID: unable to get device ID")
         return devid
 
 #==============================================================================

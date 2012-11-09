@@ -18,7 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
 
@@ -141,7 +140,7 @@ def main (args, opts):
 
         jentrs = fl ('j')
         for jentr in jentrs:
-            try: entr = edparse.entr (jentr.decode('utf-8'))
+            try: entr = edparse.entr (jentr)
             except Exception as e:
                 errs.append ("Bad 'j' value, unable to parse: %s" % str(e))
             else:

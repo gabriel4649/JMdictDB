@@ -18,7 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
 
@@ -62,7 +61,9 @@ def main (args, opts):
             dtdtxt= jdb.get_dtd (dtdfn, opts.root, opts.encoding)
             if len (args) == 0: outf = sys.stdout
             else: outf = open (args[0], "w")
-            outf.write (dtdtxt.encode (opts.encoding))
+            if opts.encoding != outf.encoding:
+                reopen (outf, encoding=opts.encoding)
+            outf.write (dtdtxt)
 
           # Turn the "--corpus" option value into a string that can be
           # and'ed into a SQL WHERE clause to restrict the results to
@@ -167,7 +168,7 @@ def main (args, opts):
                 if not opts.compat:
                     if e.src not in corpora:
                         txt = '\n'.join (fmtxml.corpus ([e.src]))
-                        outf.write (txt.encode (opts.encoding) + "\n")
+                        outf.write (txt + "\n")
                         corpora.add (e.src)
                     grp = getattr (e, '_grp', [])
                     for g in grp:
@@ -175,10 +176,10 @@ def main (args, opts):
                         if not hasattr (gob, 'written'):
                             gob.written = True
                             txt = '\n'.join (fmtxml.grpdef (gob))
-                            outf.write (txt.encode (opts.encoding) + "\n")
+                            outf.write (txt + "\n")
                 txt = fmtxml.entr (e, compat=opts.compat, genhists=True,
                                    last_imported=opts.last_imported)
-                outf.write (txt.encode (opts.encoding) + "\n")
+                outf.write (txt + "\n")
             if debug: print ("Time: %s (fmt)" % (time.time()-start), file=sys.stderr)
 
               # Update the 'last*' variables for the next time through
@@ -211,6 +212,11 @@ def parse_corpus_opt (s, src_col):
         clause = " AND ".join (other_srcs)
         if clause: clause = " AND " + clause
         return clause
+
+def reopen (file, encoding='utf-8'):
+        file.__init__(file.detach(),
+                      line_buffering=file.line_buffering,
+                      encoding=encoding)
 
 from optparse import OptionParser, OptionGroup
 from pylib.optparse_formatters import IndentedHelpFormatterWithNL

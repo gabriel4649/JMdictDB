@@ -17,7 +17,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-
 __version__ = ('$Revision: $'[11:-2],
                '$Date: $'[7:-11]);
 
@@ -76,7 +75,7 @@ def parseform (readonly=False):
           # them to the page template which will use them in the login
           # section as hidden parms so the page can be recreated after
           # a login.
-        parms = [(k,v.decode('utf-8'))
+        parms = [(k,v)
                  for k in list(form.keys())
                  if k not in ('loginout','username','password')
                      for v in form.getlist(k) ]
@@ -449,7 +448,7 @@ def gen_page (tmpl, output=None, macros=None, xml=False, **kwds):
             macros = tal.mktemplate (tmpldir + '/' + macros, xml=xml)
             kwds['macros'] = macros
         html += tal.fmt_simpletal (tmpldir + '/' + tmpl, xml=xml, **kwds)
-        if output: print (html.encode ('utf-8'), file=output)
+        if output: print (html, file=output)
         return html
 
 def err_page (errs):

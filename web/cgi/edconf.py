@@ -18,7 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
 
@@ -465,7 +464,7 @@ def url_int (name, form, errs):
 
 def url_str (name, form):
         v = form.getfirst (name)
-        if v: v = v.decode ('utf-8').strip('\n\r \t\u3000')
+        if v: v = v.strip('\n\r \t\u3000')
         return v or ''
 
 Transtbl = {ord(' '):None, ord('\t'):None, ord('\r'):None, ord('\n'):None, }

@@ -36,10 +36,9 @@ import os.path
 import jdb
 
 def main (args, opts):
+        if opts.encoding != sys.stdout.encoding: reopen (sys.stdout, opts.encoding)
           # Open the database.  jdb.dbopts() extracts the db-related
           # options from the command line options in 'opts'.
-        if sys.stdout.encoding != opts.encoding:
-            sys.stdout = open (sys.stdout.fileno(), 'w', encoding=opts.encoding)
         cur = jdb.dbOpen (opts.database, **jdb.dbopts (opts))
         fidnum = args[0]
         lbls = args[1]
@@ -137,7 +136,12 @@ def overlap (a, b):
         return ex - sx
 
 def pout (s):
-        print (s.encode ('sjis'))
+        print (s)
+
+def reopen (file, encoding='utf-8'):
+        file.__init__(file.detach(),
+                      line_buffering=file.line_buffering,
+                      encoding=encoding)
 
 def do_noninteractive (cur, sndfilenum, update, nomatch):
         updated = added = 0

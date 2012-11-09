@@ -37,8 +37,8 @@ def main( args, opts ):
         fv = form.getfirst; fl = form.getlist
         dbg = fv ('d'); meth = fv ('meth')
         force_srchres = fv('srchres')  # Force display of srchres page even if only one result.
-        sqlp = (fv ('sql') or '').decode ('utf-8')
-        soj = (fv ('soj') or '').decode ('utf-8')
+        sqlp = (fv ('sql') or '')
+        soj = (fv ('soj') or '')
         pgoffset = int(fv('p1') or 0)
         pgtotal = int(fv('pt') or -1)
         entrs_per_page = min (max (int(fv('ps') or cfg_web.DEF_ENTRIES_PER_PAGE),
@@ -48,7 +48,7 @@ def main( args, opts ):
             so.idnum=fv('idval');  so.idtyp=fv('idtyp')
             tl = []
             for i in (1,2,3):
-                txt = (fv('t'+str(i)) or '').decode('utf-8')
+                txt = (fv('t'+str(i)) or '')
                 if txt: tl.append (jmcgi.SearchItemsTexts (
                                      srchtxt = txt,
                                      srchin  = fv('s'+str(i)),
@@ -63,7 +63,7 @@ def main( args, opts ):
             so.gaval = fv('gaval'); so.gacmp = fv('gacmp')
               #FIXME? use selection boxes for dates?  Or a JS calendar control?
             so.ts = dateparse (fv('ts0'), 0, errs), dateparse (fv('ts1'), 1, errs)
-            so.smtr = (fv('smtr') or '').decode('utf-8'), fv('smtrm')
+            so.smtr = (fv('smtr') or ''), fv('smtrm')
             so.mt = fv('mt')
               # Pack up all the search criteria in a json string that will
               # be given to the srchres form, which will in turn give it back

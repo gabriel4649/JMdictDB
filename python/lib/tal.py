@@ -51,18 +51,16 @@ def fmt_simpletal (tmplfn, xml=False, **kwds):
 
         tmpl = mktemplate (tmplfn, xml=xml)
         txt = serialize (tmpl, **kwds)
-        txt = txt.decode ('utf-8')
         if txt.startswith ('\ufeff') or txt.startswith ('\ufffe'):
             txt = txt[1:]
         return txt
 
-def mktemplate (tmplFilename, xml=False, encoding='utf-8'):
-        tmplFile = file (tmplFilename)
+def mktemplate (tmplFilename, xml=False):
+        tmplFile = open (tmplFilename)
         if xml:
             tmpl = simpleTAL.compileXMLTemplate (tmplFile)
         else:
-            tmpl = simpleTAL.compileHTMLTemplate (tmplFile,
-                                                  inputEncoding=encoding)
+            tmpl = simpleTAL.compileHTMLTemplate (tmplFile)
         tmplFile.close()
         return tmpl
 

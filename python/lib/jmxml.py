@@ -17,10 +17,8 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
-
 """
 Functions for parsing XML descriptions of entries into
 entry objects.
@@ -467,10 +465,10 @@ class Jmparser (object):
                 else: rlst.append (frag)
 
               # Put the kanji and kana parts back together into
-              # strings, and write the xresolv resord.
+              # strings, and write the xresolv record.
 
-            ktxt = "\u30fb".join (klst) or None
-            rtxt = "\u30fb".join (rlst) or None
+            ktxt = "\u30fb".join (reversed (klst)) or None
+            rtxt = "\u30fb".join (reversed (rlst)) or None
 
             if ktxt or rtxt:
                 xrefs.append (jdb.Xrslv (typ=xtypkw, ktxt=ktxt, rtxt=rtxt, tsens=snum))

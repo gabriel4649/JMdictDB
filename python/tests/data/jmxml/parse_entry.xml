@@ -154,7 +154,7 @@
            Kanj(kanj=2,txt='蛙')],
     _sens=[Sens(sens=1,
         _gloss=[Gloss(lang=1,ginf=1,txt='e3000080')])])]
-expect[0]._kanj[1]._restr = [expect[0]._rdng[0]._restr[0]]
+_test_expect[0]._kanj[1]._restr = [_test_expect[0]._rdng[0]._restr[0]]
 
 
 

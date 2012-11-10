@@ -103,7 +103,10 @@ class Jmparser (object):
         # @returns An list of entry objects.
 
         if dtd: txt = dtd + txt
-        else: txt = re.sub ('&[a-zA-Z0-9-]+;', _ent_repl, txt)
+        else: 
+            pat = '&[a-zA-Z0-9-]+;'
+            if isinstance (txt, bytes): pat = pat.encode ('latin1')
+            txt = re.sub (pat, _ent_repl, txt)
         xo = ElementTree.XML (txt)
         if xo is None:
             print ("No parse results")
@@ -883,9 +886,8 @@ def main (args, opts):
         KW.__dict__.update (kw.short_vars (KW))
         jmparser = Jmparser (kW)
         if len(args) >= 1:
-              #FIXME: the file could conceivably have an encoding (defined
-            for tag,entr in jmparser.parse_xmlfile (inpf, xlit=1):
             inpf = JmdictFile( open( args[0], encoding='utf-8' ))
+            for tag,entr in jmparser.parse_xmlfile (inpf, xlit=1):
                 import fmt
                 print (fmt.entr (entr))
         else:

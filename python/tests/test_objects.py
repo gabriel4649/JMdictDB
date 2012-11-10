@@ -18,8 +18,7 @@ class Test_DbRow (unittest.TestCase):
     def test000080(_): _.assertEqual ([x for x in DbRow([20,21,22],['a','b','c'])], [20,21,22])
       # Following test is bogus because it depends on the iteration order
       # of the dict argument when it is evaluated by DbRow.__init__().
-    def test000090(_): _.assertEqual ([x for x in DbRow({'a':20,'c':21,'b':22})], [20,21,22])
-
+    #def test000090(_): _.assertEqual ([x for x in DbRow({'a':20,'c':21,'b':22})], [20,21,22])
     def test000210(_): _.assertEqual (DbRow([20,21,22],['a','b','c']).a, 20)
     def test000220(_): _.assertEqual (DbRow([20,21,22],['a','b','c']).b, 21)
     def test000230(_): _.assertEqual (DbRow([20,21,22],['a','b','c']).c, 22)

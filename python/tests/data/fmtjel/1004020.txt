@@ -1,4 +1,4 @@
 ﻿
 ぐうぐう
-[1][adv][on-mim]
+[1][adv,adv-to][on-mim]
   fast (asleep); snoring or grumbling sound

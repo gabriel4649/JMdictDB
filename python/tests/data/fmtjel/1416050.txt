@@ -1,7 +1,7 @@
 叩き[spec1]；敲き；三和土
 たたき[spec1]；タタキ[nokanji][spec1]
 [1][n]
-  [restr=叩き; 敲き]
+  [restr=叩き; 敲き; タタキ]
   mince (minced meat or fish)
 [2][n]
   [restr=叩き; 敲き]
@@ -13,3 +13,6 @@
 [4][n]
   [note="usu. 三和土 (gikun)"]
   hard-packed dirt (clay, gravel, etc.) floor; concrete floor
+[5][n]
+  [restr=叩き; タタキ]
+  whipping; lashing; bashing; beating; flaming

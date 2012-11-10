@@ -1,4 +1,4 @@
 ﻿
 あさひ
 [1][n]
-  skips-most-stations Jouetsu-line Shinkansen
+  Jouetsu line express Shinkansen

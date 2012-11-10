@@ -515,7 +515,7 @@ def lookup_tag (tag, typs=None):
         matched = []
         if not typs:
             typs = [x for x in KW.attrs()]
-        if isinstance (typs, (str, unicode)): typs = [typs]
+        if isinstance (typs, str): typs = [typs]
         for typ in typs:
             typ = typ.upper(); val = None
             if typ == "FREQ":
@@ -856,7 +856,7 @@ def find_xref (cur, typ, rtxt, ktxt, slist, seq, corp,
 
         xrfs = [];  xunrs = None;  msg = ''
         if clearcache: corpcache.clear()
-        if isinstance (corp, (str, unicode)):
+        if isinstance (corp, str):
             if corpcache.get (corp, None): corpid = corpcache[corp]
             else:
                 rs = jdb.dbread (cur, "SELECT id FROM kwsrc WHERE kw=%s", [corp])

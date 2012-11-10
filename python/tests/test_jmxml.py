@@ -23,11 +23,12 @@ class Test_parsexml (unittest.TestCase):
         _.jmparser = jmxml.Jmparser (KW)
 
     def dotest (_, testid):
+        global _test_expect
         xml, exp = _.getxml (testid)
         entrs = _.jmparser.parse_entry (xml)
-        exec ("expect=" + exp)      
-        _.assertEqual (entrs, expect)
-        return entrs, expect
+        exec ("_test_expect=" + exp, globals())
+        _.assertEqual (entrs, _test_expect)
+        return entrs, _test_expect
 
     def test_000010(_): _.dotest ('000010')
     def test_000020(_): _.dotest ('000020')
@@ -107,13 +108,13 @@ def getxml (fname, testid, mode=''):
         # The XML is followed by a line starting with "##--", and that
         # is followed by Python code to created an Entr object equal to
         # what is expected from parsing the XML.  The python code must
-        # start with "expect =" since it will be exex'd and the test code 
+        # start with "expect =" since it will be exec'd and the test code 
         # will look for a variable named "expect".  The Python code may
         # be followed by another test data section of the end of the file.
         # Throughout out the test data file, blank lines and lines
         # starting with a hash and a space, "# ", (comment line) are
         # ignored.  
-        # This function returns a two-tuple of test data (xml and opython
+        # This function returns a two-tuple of test data (xml and python
         # code) for the test data identified by 'testid'.  The first item
         # is either a bytes object with the undecoded XML text if mode was
         # 'b', or decoded XML text string is mode was not 'b'.  The second
@@ -128,8 +129,8 @@ def getxml (fname, testid, mode=''):
                   # it (in principle) to detect the testid lines.  If 
                   # mode is 'b', we'll collect and return utf-8 lines.
                   # Otherwise, collect and return decoded unicode lines.   
-                ln = raw.decode ('utf-8').strip()
-                if mode != 'b': raw = ln
+                if mode == 'b': ln = raw.decode ('utf-8').strip()
+                else: ln = raw
                 if not ln: continue                  # Skip blank lines.
                 if (len(ln)==1 and ln.startswith ("#")) or ln.startswith ("# "):
                     continue                         # Skip comment lines.

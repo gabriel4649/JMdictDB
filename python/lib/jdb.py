@@ -2532,7 +2532,7 @@ def find_in_syspath (fname):
         return None
 
 def get_dtd (filename, root="JMdict", encoding="UTF-8"):
-        with open (filename) as f:
-            txt = f.read().decode(encoding)
+        with open (filename, encoding=encoding) as f:
+            txt = f.read()
             txt %= {'root':root, 'encoding':encoding}
         return txt

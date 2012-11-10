@@ -17,10 +17,8 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
-
 """
 Functions for generating XML descriptions of entries.
 
@@ -434,7 +432,7 @@ def info (entr, compat=None, genhists=False, last_imported=None):
         if genhists:
             for n, x in enumerate (getattr (entr, '_hist', [])):
                 fmt.extend (audit (x, compat, force_created=
-                                   (n==0 and entr.seq>last_imported)))
+                                   (n==0 and (last_imported is None or entr.seq>last_imported))))
         if fmt:
             fmt.insert (0, '<info>')
             fmt.append ('</info>')

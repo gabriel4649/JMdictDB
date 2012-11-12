@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008 Stuart McGraw
+#  Copyright (c) 2008-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -17,7 +17,6 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -84,9 +83,8 @@ def main (args, opts):
         global Opts; Opts = opts
         global KW; jdb.KW = KW = jdb.Kwds (jdb.std_csv_dir())
 
-        if opts.logfile: warns.Logfile = open (opts.logfile, "w")
-        if opts.encoding: warns.Encoding = opts.encoding
-        fin = ABPairReader (args[0])
+        if opts.logfile: warns.Logfile = open (opts.logfile, "w", encoding=opts.encoding)
+        fin = ABPairReader (args[0], encoding='utf-8')
           # FIXME: following gives localtime, change to utc or lt+tz.
         mtime = datetime.date.fromtimestamp(os.stat(args[0])[8])
         corpid, corprec \

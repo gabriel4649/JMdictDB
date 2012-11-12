@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-
+﻿# -*- coding: utf-8 -*-
 
 import sys, re, unittest, pdb
 try: import json
@@ -12,11 +11,11 @@ import serialize
 Cursor = None
 def globalSetup ():
         global Cursor
-        try:    # Get login credentials from dbauth.py if possible.
-            import dbauth; kwargs = dbauth.auth
-        except ImportError: kwargs = {}
-          # FIXME: don't hardwire dbname.
-        Cursor = jdb.dbOpen ('jmdict', **kwargs)
+          # Get login credentials from dbauth.py if possible.
+        try: import dbauth; kwargs = dbauth.auth
+        except ImportError: kwargs = {'database':'jmdict'}
+        kwargs['autocommit'] = True
+        Cursor = jdb.dbOpen (None, **kwargs)
 
 class Test_obj2struc (unittest.TestCase):
 

@@ -26,9 +26,9 @@ def globalSetup ():
         global Cur, KW, Lexer, Parser
         if Cur: return False
         try: import dbauth; kwargs = dbauth.auth
-        except ImportError: kwargs = {}
+        except ImportError: kwargs = {'database':'jmdict'}
         kwargs['autocommit'] = True
-        Cur = jdb.dbOpen ('jmdict', **kwargs)
+        Cur = jdb.dbOpen (None, **kwargs)
         KW = jdb.KW
         Lexer, tokens = jellex.create_lexer ()
         Parser = jelparse.create_parser (Lexer, tokens)

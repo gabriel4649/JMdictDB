@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008 Stuart McGraw
+#  Copyright (c) 2008-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -18,10 +18,8 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
-
 # To do:
 # Misc/variant not processed.  Use xref?
 # Skip cinf records ignore skip_misclass, skip misclass type.
@@ -60,7 +58,7 @@ def main (args, opts):
 
         jdb.KW = KW = jdb.Kwds (jdb.std_csv_dir())
 
-        if Opts.l: Opts.l = open (Opts.l, "w")
+        if Opts.l: Opts.l = open (Opts.l, "w", encoding=opts.e)
         else: Opts.l = sys.stderr
         if not Opts.o:
             fn = (os.path.split (args[0]))[1]
@@ -98,7 +96,7 @@ def parse_xmlfile (infn, srcid, workfiles, start, count, langs):
         # of the entry, and then write_entry() to do the actual
         # writing to the database.
 
-        inpf = LnFile(open(infn))
+        inpf = LnFile( open (infn, encoding='utf-8'))
         context = iter(ElementTree.iterparse( inpf, ("start","end")))
         event, root = next(context)
         if start and start>1: print ("Skipping initial entries...", file=sys.stderr)
@@ -409,7 +407,7 @@ def parse_cmdline ():
   in the database.
 
 arguments:
-  xmlfile          Filename of a JMdict XML file."""
+  xmlfile          Filename of a JMdict XML file.  Utf-8 encoding expected."""
 
         v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
                 + " Rev %s (%s)" % __version__
@@ -438,6 +436,9 @@ arguments:
              type="str", dest="l", default=None,
              help="Write warning and errors messages to this filename. "
                 "If not given write to stderr.")
+        p.add_option ("-e", "--encoding",
+             type="str", dest="e", default="utf-8",
+             help="If --logfile given, write to it using this encoding.")
         p.add_option ("-k", "--keep",
              action="store_true", dest="k", default=False,
              help="Do not delete the workfiles when finished.  This "
@@ -445,9 +446,6 @@ arguments:
         p.add_option ("-t", "--tempdir",
              type="str", dest="t", default=".",
              help="Create the work files in this directory.")
-        p.add_option ("-e", "--encoding",
-             type="str", dest="e", default="utf-8",
-             help="Write output messages using this encoding.")
         opts, args = p.parse_args ()
         if len(args) < 1: p.error("Too few arguments, expected name of kanjidic xml file."
                                 "\nUse --help for more info")

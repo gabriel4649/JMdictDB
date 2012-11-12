@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008 Stuart McGraw
+#  Copyright (c) 2008-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -17,7 +17,6 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -54,8 +53,8 @@ def main (args, opts):
         print ("Rebasing %d to %d." % (rmin, eid), file=sys.stderr)
         srcid = opts.srcid
 
-        fin  = open (args[0])
-        fout = open (opts.output, 'w')
+        fin  = open (args[0], encoding='utf-8')
+        fout = open (opts.output, 'w', encoding=opts.encoding)
 
           # This hash identifies the database tables that have a foreign
           # reference to entr.id (or primary key in the case of table "entr"),
@@ -156,7 +155,7 @@ numbers.
 
 Arguments:
         pgi-filename -- Name of input dump file.  Default is
-            "jmdict.pgi"."""
+            "jmdict.pgi".  Must have utf-8 encoding."""
 
         v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
                 + " Rev %s (%s)" % __version__
@@ -205,7 +204,9 @@ Arguments:
         p.add_option ("-e", "--encoding", default="utf-8",
             dest="encoding",
             help="Encoding for output (typically \"sjis\", \"utf8\", "
-              "or \"euc-jp\"")
+              "or \"euc-jp\".  Note that changing this is generally "
+              "useful only for debugging as most jmdictdb programs "
+              "accept only utf-8 encoded files as input.")
 
         g = OptionGroup (p, "Database access options",
                 """If -i was not given, the following options will be used

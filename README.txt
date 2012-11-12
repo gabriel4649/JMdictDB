@@ -348,28 +348,34 @@ loaded database to "jmdict".
 
 8. In the top level directory, run "make" which won't
    do anything other than list the available targets 
-   that will do something.
+   that will do something.  
 
-   To load JMdict, JMnedict, and Examples, run:
+   If you are running on Microsoft Windows you should
+   first set the client encoding for Postgresql by
+   setting an environment variable:
+
+        set PGCLIENTENCODING=utf-8
+
+   To load JMdict, JMnedict, and Examples on a Unix-like 
+   machine, run:
 
 	make loadall
 	make activate
 
-   To load JMdict only, run make thrice with the
-   targets:
+   To load JMdict only, run make thrice with the targets:
 
 	make jmnew
 	make loadjm
 	make activate
 
-   If you are running on Microsoft Windows and did not 
-   modify DBLOCALE in the Makefile (see step 4), use 
+   Similarly but on a Windows machine:
 
-        make jmnew DBLOCALE=japanese
+        make DBLOCALE=japanese loadall
+        make activate
    or 
-        make loadall DBLOCALE=japanese
-
-   instead of the commands given above.
+	make DBLOCALE=japanese jmnew
+	make DBLOCALE=japanese loadjm
+	make activate
 
    Some of the more significant Makefile targets are:
 

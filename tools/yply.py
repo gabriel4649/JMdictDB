@@ -10,8 +10,6 @@
 # Based on the yply code written by David Beazley (dave@dabeaz.com)
 # October 2, 2006 and distributed with the examples in Ply-2.3.
 
-
-
 __version__ = ("$Revision$"[11:-2],
                "$Date$"[7:-11])
 
@@ -22,7 +20,7 @@ from ply import *
 def main (args, opts):
         yparse.emit_code = not opts.nocode
         yparse.emit_tokens = opts.tokens
-        instr = open(args[0]).read()
+        instr = open(args[0], encoding='utf-8').read()
         instr = instr.expandtabs()
         yacc.parse(instr,debug=opts.debug)
 

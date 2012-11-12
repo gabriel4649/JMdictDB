@@ -33,14 +33,14 @@ def do_test (_, name, dtdfile):
                            % (jmbuild, dtdpath, testdata, name))
         so,se = runcmd (Workdir, "python3 %s -o %s.out -l %s.log %s.xml" %
                                   (jmparse, name, name, name))
-        expected = open ("data/jmparse/%s.out" % name).read()
-        produced = open ("%s/%s.out" % (Workdir, name)).read()
+        expected = open ("data/jmparse/%s.out" % name,  encoding='utf-8').read()
+        produced = open ("%s/%s.out" % (Workdir, name), encoding='utf-8').read()
         if expected == produced: diff = ''
         else: diff = diff_strings (expected, produced)
         _.failIf (diff, msg=diff)
 
-        expected = open ("data/jmparse/%s.log" % name).read()
-        produced = open ("%s/%s.log" % (Workdir, name)).read()
+        expected = open ("data/jmparse/%s.log" % name,  encoding='utf-8').read()
+        produced = open ("%s/%s.log" % (Workdir, name), encoding='utf-8').read()
         if expected == produced: diff = ''
         else: diff = diff_strings (expected, produced)
         _.failIf (diff, msg=diff)

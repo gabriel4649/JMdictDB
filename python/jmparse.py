@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008 Stuart McGraw
+#  Copyright (c) 2008-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -17,7 +17,6 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -42,11 +41,12 @@ def main (args, opts):
         if opts.lang:
             xlang = [KW.LANG[x].id for x in opts.lang.split(',')]
 
-        inpf = jmxml.JmdictFile( open( args[0] ))
+	  #FIXME: we open the xml file with utf-8 encoding even though 
+	  # its encoding may be given within the file and may be different. 
+        inpf = jmxml.JmdictFile( open( args[0], encoding='utf-8' ))
         tmpfiles = pgi.initialize (opts.tempdir)
-        if opts.logfile: warns.Logfile = open (opts.logfile, "w")
-        if opts.encoding: warns.Encoding = opts.encoding
-
+        if opts.logfile: warns.Logfile = open (opts.logfile, "w", 
+                                               encoding=opts.encoding)
         eid = 0
         jmparser = jmxml.Jmparser (KW)
         for typ, entr in jmparser.parse_xmlfile (inpf, opts.begin, opts.count,
@@ -90,7 +90,7 @@ database (usually after pre-processing by jmload.pl).
 
 Arguments:
         filename -- Name of input jmdict xml file.  Default is
-        "JMdict"."""
+        "JMdict".  Must use utf-8 encoding."""
 
         v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
                 + " Rev %s (%s)" % __version__
@@ -229,7 +229,7 @@ Arguments:
 
         p.add_option ("-e", "--encoding", default="utf-8",
             type="str", dest="encoding",
-            help="Encoding for error and logfile messages (typically "
+            help="Encoding for logfile messages (typically "
                 "\"sjis\", \"utf8\", or \"euc-jp\").  This does not "
                 "affect the output .pgi file or the temp files which "
                 "are always written with utf-8 encoding.")

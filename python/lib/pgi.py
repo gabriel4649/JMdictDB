@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2006,2008 Stuart McGraw
+#  Copyright (c) 2006-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -16,7 +16,6 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -121,14 +120,14 @@ def finalize (workfiles, outfn, delfiles=True, transaction=True):
         # Close all the temp files, merge them all into a single
         # output file, and delete them (if 'delfiles is true).
 
-        if outfn: fout = open (outfn, "w")
+        if outfn: fout = open (outfn, "w", encoding='utf-8')
         else: fout = sys.stdout
         if transaction:
             print ("\\set ON_ERROR_STOP 1\nBEGIN;\n", file=fout)
         for v in sorted (list(workfiles.values()), key=operator.attrgetter('ord')):
             if not v.file: continue
             v.file.close()
-            fin = open (v.fn)
+            fin = open (v.fn, encoding='utf-8')
             print ("COPY %s(%s) FROM STDIN;" % (v.tbl,','.join(v.cols)), file=fout)
             for ln in fin: print (ln, end='', file=fout)
             print ('\\.\n', file=fout)
@@ -139,7 +138,7 @@ def finalize (workfiles, outfn, delfiles=True, transaction=True):
 
 def _wrrow (rowobj, workfile):
         if not workfile.file:
-            workfile.file = open (workfile.fn, "w")
+            workfile.file = open (workfile.fn, "w", encoding='utf-8')
         s = "\t".join ([pgesc(getattr (rowobj, x, None)) for x in workfile.cols])
         print (s, file=workfile.file)
 

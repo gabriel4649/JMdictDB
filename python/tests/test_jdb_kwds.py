@@ -264,10 +264,12 @@ Current_kwds = [
 Cursor = None
 def globalSetup ():
         global Cursor
-        try:    # Get login credentials from dbauth.py if possible.
-            import dbauth; kwargs = dbauth.auth
-        except ImportError: kwargs = {}
-        Cursor = jdb.dbOpen ('jmdict', **kwargs)
+          # Get login credentials from dbauth.py if possible.
+        try: import dbauth; kwargs = dbauth.auth
+        except ImportError: kwargs = {'database':'jmdict'}
+        kwargs['autocommit'] = True
+        Cursor = jdb.dbOpen (None, **kwargs)
+
 
 class Test_Empty (unittest.TestCase):
     def setUp (_):

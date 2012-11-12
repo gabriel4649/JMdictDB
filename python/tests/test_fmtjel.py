@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 import sys, unittest, os.path, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')
@@ -17,8 +17,9 @@ def globalSetup ():
         global Cur, KW, Lexer, Parser, Jmparser
         if Cur: return False
         try: import dbauth; kwargs = dbauth.auth
-        except ImportError: kwargs = {}
-        Cur = jdb.dbOpen ('jmdict', **kwargs)
+        except ImportError: kwargs = {'database':'jmdict'}
+        kwargs['autocommit'] = True
+        Cur = jdb.dbOpen (None, **kwargs)
         KW = jdb.KW
         Lexer, tokens = jellex.create_lexer ()
         Parser = jelparse.create_parser (Lexer, tokens)

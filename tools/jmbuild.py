@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008 Stuart McGraw
+#  Copyright (c) 2008-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -44,7 +44,7 @@ def main (args, opts):
         sys.stdout.write (dtd)
         sys.stdout.write ("<%s>\n" % opts.root)
         for fname in args:
-            sec = open (fname, 'r').read()
+            sec = open (fname, 'r', encoding='utf-8').read()
             if sec[0] == '\uFEFF': sec = sec[1:]
             sys.stdout.write (sec)
         sys.stdout.write ("</%s>\n" % opts.root)

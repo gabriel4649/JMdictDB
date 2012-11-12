@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 import sys, re, copy, collections, unittest, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')
@@ -230,7 +230,7 @@ class MockDb (dict):
         for k in entr._kanj: self.kidx[k.txt].add (entr.id)
         return entr
     def addentrs (self, xmlfile, init_id=None, id_incr=1):
-        with open (xmlfile) as f: xmltxt = f.read()
+        with open (xmlfile, encoding='utf-8') as f: xmltxt = f.read()
         xmlentries = (x.lstrip()+"</entry>" for x in xmltxt.split ("</entry>"))
         entr = None
         for n, xml in enumerate (xmlentries):

@@ -4,7 +4,7 @@ import sys
 def main ():
         if len (sys.argv) < 1: infname = sys.argv[1]
         else: infname = "../doc/iso-639-3_20080228.tab"
-        f = open (infname)
+        f = open (infname, encoding='utf-8')
         print ("# coding: utf-8")
         print ("iso639_1_to_2 = {")
         for line in f:

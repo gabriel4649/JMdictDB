@@ -18,7 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
 
@@ -30,6 +29,7 @@ import jdb, jmcgi
 Enc = 'utf-8'
 
 def main (args, opts):
+        jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str(e)])

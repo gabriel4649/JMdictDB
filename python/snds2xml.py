@@ -35,7 +35,7 @@ if _ not in sys.path: sys.path.insert(0, _)
 import jdb, fmtxml
 
 def main (args, opts):
-        if opts.encoding != sys.stdout.encoding: reopen (sys.stdout, opts.encoding)
+        jdb.reset_encoding (sys.stdout, opts.encoding)
         dir = jdb.find_in_syspath ("dtd-audio.xml")
         dtd = jdb.get_dtd (dir + "/" + "dtd-audio.xml", "JMaudio", opts.encoding)
         print (dtd); print ("<JMaudio>")
@@ -50,11 +50,6 @@ def main (args, opts):
                 for c in clips:
                     print ("\n".join (fmtxml.sndclips ([c])))
         print ('</JMaudio>')
-
-def reopen (file, encoding='utf-8'):
-        file.__init__(file.detach(),
-                      line_buffering=file.line_buffering,
-                      encoding=encoding)
 
 
 from optparse import OptionParser, OptionGroup

@@ -27,6 +27,7 @@ import cgitbx; cgitbx.enable()
 import jdb, jmcgi, jelparse, jellex, serialize, fmt
 
 def main (args, opts):
+        jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []; chklist = {}
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])

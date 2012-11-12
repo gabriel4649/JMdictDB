@@ -18,7 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
 
@@ -36,7 +35,7 @@ import os.path
 import jdb
 
 def main (args, opts):
-        if opts.encoding != sys.stdout.encoding: reopen (sys.stdout, opts.encoding)
+        jdb.reset_encoding (sys.stdout, opts.encoding)
           # Open the database.  jdb.dbopts() extracts the db-related
           # options from the command line options in 'opts'.
         cur = jdb.dbOpen (opts.database, **jdb.dbopts (opts))
@@ -137,11 +136,6 @@ def overlap (a, b):
 
 def pout (s):
         print (s)
-
-def reopen (file, encoding='utf-8'):
-        file.__init__(file.detach(),
-                      line_buffering=file.line_buffering,
-                      encoding=encoding)
 
 def do_noninteractive (cur, sndfilenum, update, nomatch):
         updated = added = 0

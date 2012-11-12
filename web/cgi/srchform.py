@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2006-2010 Stuart McGraw
+#  Copyright (c) 2006-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -31,6 +31,7 @@ class Kwfreq (object):
         self.kw, self.descr = kw, descr
 
 def main( args, opts ):
+        jdb.reset_encoding (sys.stdout, 'utf-8')
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
 

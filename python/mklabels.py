@@ -33,7 +33,7 @@ import os.path
 import jdb
 
 def main (args, opts):
-        if opts.encoding != sys.stdout.encoding: reopen (sys.stdout, opts.encoding)
+        jdb.reset_encoding (sys.stdout, opts.encoding)
           # Open the database.  jdb.dbopts() extracts the db-related
           # options from the command line options in 'opts'.
         cur = jdb.dbOpen (opts.database, **jdb.dbopts (opts))
@@ -59,10 +59,6 @@ def getlabels (cur, filenum):
         rs = jdb.dbread (cur, sql, [filenum])
         return fname, rs
 
-def reopen (file, encoding='utf-8'):
-        file.__init__(file.detach(),
-                      line_buffering=file.line_buffering,
-                      encoding=encoding)
 
 from optparse import OptionParser, OptionGroup
 from pylib.optparse_formatters import IndentedHelpFormatterWithNL

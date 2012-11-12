@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008-2010 Stuart McGraw
+#  Copyright (c) 2008-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -114,6 +114,7 @@ import cgitbx; cgitbx.enable()
 import jdb, jmcgi, fmtjel, serialize, edparse
 
 def main (args, opts):
+        jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []; entrs =[]
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: errs = jmcgi.err_page ([str (e)])

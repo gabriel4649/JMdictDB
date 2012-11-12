@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008 Stuart McGraw
+#  Copyright (c) 2008-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -61,8 +61,7 @@ def main (args, opts):
             dtdtxt= jdb.get_dtd (dtdfn, opts.root, opts.encoding)
             if len (args) == 0: outf = sys.stdout
             else: outf = open (args[0], "w")
-            if opts.encoding != outf.encoding:
-                reopen (outf, encoding=opts.encoding)
+            jdb.reset_encoding (outf, opts.encoding)
             outf.write (dtdtxt)
 
           # Turn the "--corpus" option value into a string that can be
@@ -212,11 +211,6 @@ def parse_corpus_opt (s, src_col):
         clause = " AND ".join (other_srcs)
         if clause: clause = " AND " + clause
         return clause
-
-def reopen (file, encoding='utf-8'):
-        file.__init__(file.detach(),
-                      line_buffering=file.line_buffering,
-                      encoding=encoding)
 
 from optparse import OptionParser, OptionGroup
 from pylib.optparse_formatters import IndentedHelpFormatterWithNL

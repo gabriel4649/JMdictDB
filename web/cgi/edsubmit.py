@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008-2010 Stuart McGraw
+#  Copyright (c) 2008-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -124,8 +124,6 @@
 # yet handled gracefully in the code -- so the result will
 # be an unhandled exception and traceback.)
 
-
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
 
@@ -140,6 +138,7 @@ class NonLeafError (ValueError): pass
 class IsApprovedError (ValueError): pass
 
 def main( args, opts ):
+        jdb.reset_encoding (sys.stdout, 'utf-8')
         cgitbx.enable()
         errs = []; dbh = svc = None
         logw ("Starting submit.py", pre='\n')

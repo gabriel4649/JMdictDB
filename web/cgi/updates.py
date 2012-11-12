@@ -22,8 +22,6 @@
 # entries that have a comment with a timestamp in the day
 # given in the URL y (year), m (month), and d (day) parameters.
 
-
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
 
@@ -33,6 +31,7 @@ import cgitbx; cgitbx.enable()
 import jdb, jmcgi
 
 def main (args, opts):
+        jdb.reset_encoding (sys.stdout, 'utf-8')
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
         fv = form.getfirst; fl = form.getlist

@@ -4,7 +4,8 @@
 # Simple command line tool to find and display entries
 # in the JMdict database.
 
-_VERSION_ = ("$Revision$"[11:-2], "$Date$"[7:-11])
+__version__ = ("$Revision$"[11:-2],
+               "$Date$"[7:-11])
 
 import sys, os, inspect, pdb
 _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
@@ -30,8 +31,7 @@ def main (args, opts):
             sys.exit(1)
 
         enc = opts.encoding or sys.stdout.encoding or 'utf-8'
-        if sys.stdout.encoding != enc:
-            reopen (sys.stdout, encoding=enc)
+        jdb.reset_encoding (sys.stdout, encoding=enc)
 
           # Get the command line options and convert them into a sql
           # statement that will find the desired entries.
@@ -134,12 +134,6 @@ def char2cond (opts_char):
 def appendto (obj, attr, val):
         try: getattr(obj,attr).append (val)
         except AttributeError: setattr (obj, attr, [val])
-
-
-def reopen (file, encoding='utf-8'):
-        file.__init__(file.detach(),
-                      line_buffering=file.line_buffering,
-                      encoding=encoding)
 
 #---------------------------------------------------------------------
 

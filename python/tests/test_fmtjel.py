@@ -129,7 +129,7 @@ class Test_restr (unittest.TestCase):
 class Test_extra (unittest.TestCase):
     def setUp (_):
         globalSetup()
-    def test_x00001(_): 
+    def test_x00001(_):
         dotest (_, 'x00001')    # dotted restrs in quotes.
 
 class Base (unittest.TestCase):

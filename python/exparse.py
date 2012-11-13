@@ -280,7 +280,7 @@ class ABPairReader:
     def __getattr__(self, attr):
         return getattr(self.stream, attr)
     def __setattr__(self, attr, value):
-        return setattr(self.stream, attr, value)        
+        return setattr(self.stream, attr, value)
 
 
 from optparse import OptionParser

@@ -18,9 +18,9 @@ def setup (_):
 
 class Test_create (unittest.TestCase):
     def setUp   (_): setup (_)
-    def test001 (_): _.assertIsInstance (_.lexer, ply.lex.Lexer) 
-    def test002 (_): 
-        _.assertEqual (set(_.tokens), 
+    def test001 (_): _.assertIsInstance (_.lexer, ply.lex.Lexer)
+    def test002 (_):
+        _.assertEqual (set(_.tokens),
                        set(('SNUM', 'SEMI', 'BRKTL', 'TEXT', 'QTEXT', 'COLON',
                             'COMMA', 'DOT', 'EQL', 'SLASH', 'BRKTR', 'NL',
                             'GTEXT', 'KTEXT', 'RTEXT', 'NUMBER', 'HASH')))
@@ -151,13 +151,13 @@ class Test_single1 (unittest.TestCase):
     def test002000(_): check(_,'[2,33,5]',['BRKTL','NUMBER','COMMA','NUMBER','COMMA','NUMBER','BRKTR'],
                                           ['[','2',',','33',',','5',']'],begin='TAGLIST',expect_end='TAGLIST')
 
-def check (_, in_str,            # String containing text to feed to lexer. 
+def check (_, in_str,            # String containing text to feed to lexer.
               expect_toks,       # List of tokens expected from lexer (or None to not check).
-              expect_vals=None,  # List of token values expected from lexer (or None...) 
+              expect_vals=None,  # List of token values expected from lexer (or None...)
               expect_end=None,   # Lexer state expected after lexer has processed string.
-              begin='INITIAL'):  # Lexer state to set before processing string. 
+              begin='INITIAL'):  # Lexer state to set before processing string.
         tokens, values = _check (_, in_str, begin)
-        if expect_toks is not None: 
+        if expect_toks is not None:
             _.assertEqual (tokens, expect_toks)
         if expect_vals is not None:
             _.assertEqual (values, expect_vals)

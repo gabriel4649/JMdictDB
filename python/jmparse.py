@@ -41,11 +41,11 @@ def main (args, opts):
         if opts.lang:
             xlang = [KW.LANG[x].id for x in opts.lang.split(',')]
 
-	  #FIXME: we open the xml file with utf-8 encoding even though 
-	  # its encoding may be given within the file and may be different. 
+          #FIXME: we open the xml file with utf-8 encoding even though
+          # its encoding may be given within the file and may be different.
         inpf = jmxml.JmdictFile( open( args[0], encoding='utf-8' ))
         tmpfiles = pgi.initialize (opts.tempdir)
-        if opts.logfile: warns.Logfile = open (opts.logfile, "w", 
+        if opts.logfile: warns.Logfile = open (opts.logfile, "w",
                                                encoding=opts.encoding)
         eid = 0
         jmparser = jmxml.Jmparser (KW)

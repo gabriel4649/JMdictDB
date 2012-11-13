@@ -2539,10 +2539,10 @@ def get_dtd (filename, root="JMdict", encoding="UTF-8"):
 
 def reset_encoding (file, encoding='utf-8'):
         # As of Python-3.3, this seems to be the best (if still
-	# ugly) way to change the encoding on an already-opened
-	# file such as sys.stdout that python has kindly determined
-	# that we want some other unwanted encoding on.
-  
+        # ugly) way to change the encoding on an already-opened
+        # file such as sys.stdout that python has kindly determined
+        # that we want some other unwanted encoding on.
+
         if file.encoding == encoding: return
         file.__init__(file.detach(),
                       line_buffering=file.line_buffering,

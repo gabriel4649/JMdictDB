@@ -45,7 +45,7 @@ class Test_realign (unittest.TestCase):
         db.xresolv()
           # Monkey patch the jdb module...
         SavedEntrListFunction = jdb.entrList
-        jdb.entrList = db.entrList 
+        jdb.entrList = db.entrList
     @classmethod
     def tearDownClass (cls):
         global SavedEntrListFunction
@@ -65,7 +65,7 @@ class Test_realign (unittest.TestCase):
         _.assertEqual (res, [])
         _.assertEqual (entr._sens[0]._xrer, [Xref(3000020,1,1,3,3000010,1,1,None,None)])
 
-    def test_000020(_): 
+    def test_000020(_):
         # Swap rdng 1 and rdng 2
         pentr, entr = _.getpair (3000010)
         entr._rdng = entr._rdng[::-1]
@@ -74,7 +74,7 @@ class Test_realign (unittest.TestCase):
         _.assertEqual (res, [])
         _.assertEqual (entr._sens[0]._xrer, [Xref(3000020,1,1,3,3000010,1,2,None,None)])
 
-    def test_000030(_): 
+    def test_000030(_):
         # Delete rdng 1.
         pentr, entr = _.getpair (3000010)
         del entr._rdng[0]
@@ -90,7 +90,7 @@ class Test_realign (unittest.TestCase):
         _.assertEqual (res, [])
         _.assertEqual (entr._sens[0]._xrer, [Xref(3000040,1,1,3,3000030,1,None,1,None)])
 
-    def test_000050(_): 
+    def test_000050(_):
         # Swap kanj 1 and kanj 2
         pentr, entr = _.getpair (3000030)
         entr._kanj = entr._kanj[::-1]
@@ -99,7 +99,7 @@ class Test_realign (unittest.TestCase):
         _.assertEqual (res, [])
         _.assertEqual (entr._sens[0]._xrer, [Xref(3000040,1,1,3,3000030,1,None,2,None)])
 
-    def test_000060(_): 
+    def test_000060(_):
         # Delete kanj 1.
         pentr, entr = _.getpair (3000030)
         del entr._kanj[0]; entr._kanj[0].kanj=1
@@ -143,7 +143,7 @@ class Test_realign (unittest.TestCase):
         _.assertEqual (res, [])
         _.assertEqual (entr._sens[0]._xrer, [Xref(3000060,1,1,3,3000050,1,2,2,None)])
 
-    def test_000110(_): 
+    def test_000110(_):
         # Delete rdng 1.
         pentr, entr = _.getpair (3000050)
         del entr._rdng[0]
@@ -152,7 +152,7 @@ class Test_realign (unittest.TestCase):
         _.assertEqual (res, [Xref(3000060,1,1,3,3000050,1,1,1,None)])
         _.assertEqual (entr._sens[0]._xrer, [])
 
-    def test_000120(_): 
+    def test_000120(_):
         # Delete kanj 1.
         pentr, entr = _.getpair (3000050)
         del entr._kanj[0]
@@ -161,20 +161,20 @@ class Test_realign (unittest.TestCase):
         _.assertEqual (res, [Xref(3000060,1,1,3,3000050,1,1,1,None)])
         _.assertEqual (entr._sens[0]._xrer, [])
 
-    def test_000130(_): 
+    def test_000130(_):
         # Swap rdng, delete kanj 1.
         pentr, entr = _.getpair (3000050)
         entr._rdng = entr._rdng[::-1]
         del entr._kanj[0]
         jdb.setkeys (entr)
         res = realign_xrers (entr, pentr)
-          # Note that the rdng number was changed from 1 to 2 
+          # Note that the rdng number was changed from 1 to 2
           # because realign() processes rdng before kanj. (c.f.
           # test_000140.)
         _.assertEqual (res, [Xref(3000060,1,1,3,3000050,1,2,1,None)])
         _.assertEqual (entr._sens[0]._xrer, [])
 
-    def test_000140(_): 
+    def test_000140(_):
         # Swap kanj, delete rdng 1.
         pentr, entr = _.getpair (3000050)
         entr._kanj = entr._kanj[::-1]
@@ -219,11 +219,11 @@ class MockDb (dict):
           #  Convention in most jmdictdb code is to leave these set to
           #  None since they are implicitly defined by the object's
           #  position in the list that contains it.  Having them None
-          #  would let us rearrange list objects for testing without 
-          #  having to also reset these fields correspondingly.  
+          #  would let us rearrange list objects for testing without
+          #  having to also reset these fields correspondingly.
         entr = self.jmparser.parse_entry (xml)[0]
         entr.id = id if id else entr.seq
-        if id in self: 
+        if id in self:
             raise DuplIdError ("id %d already exists in database" % id)
         self[entr.id] = entr
         for r in entr._rdng: self.ridx[r.txt].add (entr.id)
@@ -237,9 +237,9 @@ class MockDb (dict):
             if xml.startswith ("</entry>"): continue
             id = (init_id + n * id_incr) if init_id else None
             if xml: entr = self.addentr (xml, id)
-        return entr.id if entr else None 
+        return entr.id if entr else None
     def entrList (self, dbh, crit=None, args=None, ord='', tables=None, ret_tuple=False):
-        if sql and args: raise ValueError 
+        if sql and args: raise ValueError
         idlist = sql or args
         retlist = [self[id] for id in idlist]
         return retlist
@@ -249,7 +249,7 @@ class MockDb (dict):
                 for v in s._xrslv: self.xresolv1 (e, s, v)
     def xresolv1 (self, e, s, v):
         #FIXME: there are three xresolv functions, one here, one
-        # in xresolv.py, and one in jdb.py.  Would be nice to 
+        # in xresolv.py, and one in jdb.py.  Would be nice to
         # combine them somehow.
           # 'lookupfunc' is a function that find a set of Entr's
           # that match the criteria given by the args which define
@@ -262,7 +262,7 @@ class MockDb (dict):
               # verify that the sense exists in the target entry.
             if v.sens and v.tsens >= len (t._sens): raise NoSenseError (
                 "id %d, xref(rdng=%r, kanj=%r): no sense #%d in target entry id=%d"
-                % (e.id, v.rtxt, v.ktxt, v.tsens, t.id)) 
+                % (e.id, v.rtxt, v.ktxt, v.tsens, t.id))
               # Find the indices of the reading and kanji text.
             rdng = (1 + [r.txt for r in t._rdng].index (v.rtxt)) if v.rtxt else None
             kanj = (1 + [k.txt for k in t._kanj].index (v.ktxt)) if v.ktxt else None
@@ -280,12 +280,12 @@ class MockDb (dict):
                 % (e.id, v.rtxt, v.ktxt))
         else: # len(targs) > 0:
             raise MultTargError (
-                "id %d: xref(rdng=%r, kanj=%r): multiple (%d) entries found" 
+                "id %d: xref(rdng=%r, kanj=%r): multiple (%d) entries found"
                 % (e.id, len (targs), v.rtxt, v.ktxt))
         return xrefcnt
 
 def rklookup (ctx, ourid, rtxt=None, ktxt=None, seq=None, corpid=None, eid=None):
-        # This function meets the interface requirements of 
+        # This function meets the interface requirements of
         #  of (a future) general xresolve function.
         # ctx -- a MockDb instance.
         # ourid -- Entry id number to be excluded from results.
@@ -302,11 +302,11 @@ def rklookup (ctx, ourid, rtxt=None, ktxt=None, seq=None, corpid=None, eid=None)
         elif rtxt: targs = rcandidates
         elif ktxt: targs = kcandidates
         else: raise ValueError
-        if ourid: targs.discard (ourid) 
+        if ourid: targs.discard (ourid)
           # 'targs' is a set of entry id numbers of entries that
-          # have 'rtxt' readings and 'ktxt' kanji and does not 
+          # have 'rtxt' readings and 'ktxt' kanji and does not
           # include 'ourid'.
-        return targs 
+        return targs
 
 if __name__ == '__main__': unittest.main()
 

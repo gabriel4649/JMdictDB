@@ -39,10 +39,10 @@ class Test_parsexml (unittest.TestCase):
     def test_000070(_): _.dotest ('000070')  # kinf
     def test_000080(_):                      # restr
         en, ex = _.dotest ('000080')
-        _.assertIs (en[0]._rdng[0]._restr[0], 
+        _.assertIs (en[0]._rdng[0]._restr[0],
                     en[0]._kanj[1]._restr[0])
 
-    # To do: restr combos, freq, pos, misc, fld, dial, lsrc, stagr, 
+    # To do: restr combos, freq, pos, misc, fld, dial, lsrc, stagr,
     #   stagk, xrslv, gloss (lang, ginf), hist, grp
     #   jmnedict: name_type and others
     #   kanjdic: cinf, chr, krslv
@@ -108,27 +108,27 @@ def getxml (fname, testid, mode=''):
         # The XML is followed by a line starting with "##--", and that
         # is followed by Python code to created an Entr object equal to
         # what is expected from parsing the XML.  The python code must
-        # start with "expect =" since it will be exec'd and the test code 
+        # start with "expect =" since it will be exec'd and the test code
         # will look for a variable named "expect".  The Python code may
         # be followed by another test data section of the end of the file.
         # Throughout out the test data file, blank lines and lines
         # starting with a hash and a space, "# ", (comment line) are
-        # ignored.  
+        # ignored.
         # This function returns a two-tuple of test data (xml and python
         # code) for the test data identified by 'testid'.  The first item
         # is either a bytes object with the undecoded XML text if mode was
         # 'b', or decoded XML text string is mode was not 'b'.  The second
         # item is always a decoded text string containing the Python code
         # part of the test data set.
-        # If the requested test data set is not found, an Error is raised. 
+        # If the requested test data set is not found, an Error is raised.
 
         with open (fname, 'r'+mode) as f:
             state = '';  xml = [];  exp = []
             for lnnum, raw in enumerate (f):
-                  # In Py2 'raw' is undecoded utf-8.  We need to decode 
-                  # it (in principle) to detect the testid lines.  If 
+                  # In Py2 'raw' is undecoded utf-8.  We need to decode
+                  # it (in principle) to detect the testid lines.  If
                   # mode is 'b', we'll collect and return utf-8 lines.
-                  # Otherwise, collect and return decoded unicode lines.   
+                  # Otherwise, collect and return decoded unicode lines.
                 if mode == 'b': ln = raw.decode ('utf-8').strip()
                 else: ln = raw
                 if not ln: continue                  # Skip blank lines.
@@ -140,7 +140,7 @@ def getxml (fname, testid, mode=''):
                 if ln.startswith ("## "):            # Start of next section.
                     if state.startswith('copying'): break
                 if ln.startswith ("##--"):           # Start of exec section.
-                    if state == "copying1": 
+                    if state == "copying1":
                         state = "copying2"; continue
                 if state == "copying1":
                     xml.append (raw)
@@ -149,7 +149,7 @@ def getxml (fname, testid, mode=''):
             if not xml: raise RuntimeError ('Test section "%s" not found in %s'
                                             % (testid, fname))
             expstr = '\n'.join (exp) + '\n'
-            if mode == 'b': 
+            if mode == 'b':
                 return b''.join (xml), expstr
             return ('\n'.join (xml) + '\n'), expstr
 

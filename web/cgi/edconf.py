@@ -109,7 +109,7 @@ def main (args, opts):
           # rev is true).  This does not remove them from the entry
           # and is done simply for convinience so we have augment_xrefs()
           # process them all in one shot.  augment_xrefs adds an
-          # attribute, .TARG, to each Xref object whose value is 
+          # attribute, .TARG, to each Xref object whose value is
           # an Entr object for the entry the xref points to if rev
           # is not true, or the entry the xref is from, if rev is
           # true.  These Entr objects can be used to display info
@@ -157,13 +157,13 @@ def main (args, opts):
                 if hasattr (pentr, '_cinf'): entr._cinf = pentr._cinf
                 copy_snd (pentr, entr)
 
-                  # Copy the reverse xrefs that are on pentr to entr, 
-                  # removing any that are no longer valid because they  
+                  # Copy the reverse xrefs that are on pentr to entr,
+                  # removing any that are no longer valid because they
                   # refer to senses , readings ot kanji no longer present
                   # on the edited entry.  Note that these have already
                   # been augmented above.
                 nuked_xrers = realign_xrers (entr, pentr)
-                if nuked_xrers: 
+                if nuked_xrers:
                     chklist['xrers'] = format_for_warnings (nuked_xrers, pentr)
 
               # Add sound details so confirm page will look the same as the
@@ -213,24 +213,24 @@ def main (args, opts):
 
 def realign_xrers (entr, pentr):
         # This function mutates 'entr' to remove invalid reverse
-        # xrefs from entr's ._xrer list and fix those that point 
-        # to moved readings or kanji.  
+        # xrefs from entr's ._xrer list and fix those that point
+        # to moved readings or kanji.
         # There may be other entries in the database that have xrefs
-        # pointing to (senses of) the entry we are editing.  These 
-        # reverse xrefs also have rdng and kanj numbers that index 
+        # pointing to (senses of) the entry we are editing.  These
+        # reverse xrefs also have rdng and kanj numbers that index
         # a specific reading and/or kanji our entry.  While the sense
         # rdng and kanj numbers were correct for our parent (pre-edit)
-        # entry, the edits made may have changed, reordered or deleted 
+        # entry, the edits made may have changed, reordered or deleted
         # the senses, readings and kanji of our entry.  This function
         # tries to adjust the reverse xrefs so that any that refer to
         # a sense, reading or kanji that no longer exists is deleted,
         # and any that now point to the wrong reading or kanji because
-        # they were reordered are corrected.  We fix them by getting 
+        # they were reordered are corrected.  We fix them by getting
         # the rdng or kanj text from the parent entry, find the index
         # same text in the edited entry, and update the rev xref with
-        # the new index. 
+        # the new index.
         # Since senses have no real id (yet, see IS-197), we can't
-        # really do much to correct them other than to delete any 
+        # really do much to correct them other than to delete any
         # that reference a sense beyond the end of the senses list.
 
         # First, copy rev xrefs from parent to new entry except
@@ -243,7 +243,7 @@ def realign_xrers (entr, pentr):
             else: nosens.extend (sp._xrer)
 
         # Now fix up missing and out of order readings and kanji.
-        nordng = []  # Lists to accumulate xrefs that refer to 
+        nordng = []  # Lists to accumulate xrefs that refer to
         nokanj = []  #  readings and kanji no longer in new entry.
           # Index the readings and kanji of our edited entry.
           # The resulting dicts are keyed by rdng/kanj text and values
@@ -256,17 +256,17 @@ def realign_xrers (entr, pentr):
             for x in s._xrer:   # For each rev xref in edited entry sense...
                 if x.rdng:
                       # Even though x is an xrer on the new entry, x.rdng is
-                      # still the number of the reading on the parent so we 
-                      # can use it to get the rdng text from the parent. 
+                      # still the number of the reading on the parent so we
+                      # can use it to get the rdng text from the parent.
                       # Note that x.rdng is 1-based.
                     rtxt = pentr._rdng[x.rdng - 1].txt
                       # Look up the text in the rdng index for the new entry
                       # which gives us the index number on the new entry.
-                      # Set the new index into the xref.   
+                      # Set the new index into the xref.
                     try: x.rdng = ridx[rtxt] + 1
-                    except KeyError: 
-                          # A KeyError means the reading on the parent 
-                          # is not on our new entry any more.  Add the 
+                    except KeyError:
+                          # A KeyError means the reading on the parent
+                          # is not on our new entry any more.  Add the
                           # rev xref to a list of same which we'll use
                           # to tell user about later.
                         nordng.append (x); continue
@@ -274,7 +274,7 @@ def realign_xrers (entr, pentr):
                       # Follow the same process as above for kanji.
                     ktxt = pentr._kanj[x.kanj - 1].txt
                     try: x.kanj = kidx[ktxt] + 1
-                    except KeyError: 
+                    except KeyError:
                         nokanj.append (x); continue
                   # Add the updated rev xref to the 'new' list.
                 new.append (x)

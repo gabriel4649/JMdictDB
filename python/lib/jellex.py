@@ -27,9 +27,9 @@ import jdb, fmtjel
 class LexSpec:
 
     # Note that in the strings used as regexes below, all containing
-    # a "\unnnn" literal are non-raw strings in which any other 
+    # a "\unnnn" literal are non-raw strings in which any other
     # backslashes are doubled.  (This due to a Python 3 "improvement"
-    # that causes "\unnnn" literals in raw strings to be interpreted 
+    # that causes "\unnnn" literals in raw strings to be interpreted
     # as 6 characters rather than a single unicode character as was
     # the case in Python 2.  Sigh.)
 

@@ -77,11 +77,11 @@ class JmdictFile:
         return s
 
 class Jmparser (object):
-    def __init__ (self, 
+    def __init__ (self,
             kw,         # A jdb.Kwds object initialized with database
                         #  keywords, such as returned by jdb.dbOpen()
                         #  or jdb.Kwds(jdb.std_csv_dir()).
-            xkw=None):  # A jdb.Kwds object initialized with XML 
+            xkw=None):  # A jdb.Kwds object initialized with XML
                         #  keywords, such as returned by xmlmk.make().
                         #  If None, __init__() will get one by calling
                         #  xmlmk.make(kw).
@@ -101,7 +101,7 @@ class Jmparser (object):
         # @returns An list of entry objects.
 
         if dtd: txt = dtd + txt
-        else: 
+        else:
             pat = '&[a-zA-Z0-9-]+;'
             if isinstance (txt, bytes): pat = pat.encode ('latin1')
             txt = re.sub (pat, _ent_repl, txt)
@@ -112,7 +112,7 @@ class Jmparser (object):
         e = self.do_entr (xo, None)
         return [e]
 
-    def parse_xmlfile (self, 
+    def parse_xmlfile (self,
         inpf,           # (file) An open jmdict/jmnedict XML file..
         startseq=None,  # (int) Skip until this entry seen, or None
                         #   to start at first entry.

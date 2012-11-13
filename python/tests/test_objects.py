@@ -121,9 +121,9 @@ class Test_Attrs (unittest.TestCase):
     def test000280(_): attrchk (_, Sndvol(),  ['id','title','loc','type','idstr','corp','notes'])
 
 def attrchk (_, o, exp_attrs):
-          # Check that all the attribute names in list 'exp_attrs' exist 
+          # Check that all the attribute names in list 'exp_attrs' exist
           # in object 'o', and that 'o' has no other attributes exist (except
-          # that attributes starting with "__" are ignored).  Also check that 
+          # that attributes starting with "__" are ignored).  Also check that
           # any attributes starting with "_" (but not "__") are lists.
 
         o_attrs = set ((a for a in dir (o) if not a.startswith('__')))

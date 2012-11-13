@@ -1,55 +1,92 @@
-#! /usr/bin/env python
+#!/usr/bin/env python3
 
-"""Replace tabs with spaces and remove trailing space/tabs in
-argument files.  Print names of changed files."""
+"""Replace leading tabs with spaces and remove trailing
+space/tabs in argument files.  Print names of changed files.
+This file is a modified version on the untabify.py script
+distributed with Python."""
 
-import os
-import sys
-import re
-import getopt
+__version__ = ('$Revision$'[11:-2],
+               '$Date$'[7:-11]);
 
-def main():
-    tabsize = 8
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "t:")
-        if not args:
-            raise getopt.error("At least one file argument required")
-    except getopt.error as msg:
-        print(msg)
-        print(("usage:", sys.argv[0], "[-t tabwidth] file ..."))
-        return
-    for optname, optvalue in opts:
-        if optname == '-t':
-            tabsize = int(optvalue)
+import sys, os, re
 
-    for filename in args:
-        process(filename, tabsize)
+def main (args, opts):
+        changed = errors = 0
+        for filename in args:
+            try: stat = process (filename, opts.tabsize, opts.alltabs,
+                                 opts.noaction, opts.backup)
+            except IOError as exc:
+                print ("%r: I/O error: %s" % (filename, exc), file=sys.stderr)
+                errors += 1;  stat = 0
+            if stat and (opts.noaction or not opts.quiet):  print (filename)
+            changed += stat
+        return 2 if errors else (changed > 0)  # Exit status code
 
-def process(filename, tabsize, verbose=True):
-    try:
-        f = open(filename)
-        text = f.read()
+def process (filename, tabsize, alltabs, noaction, suffix):
+        # Parameters:
+        #   filename -- Name of file to process.
+        #   tabsize -- Number of spaces for each tab.
+        #   alltabs -- If true expand all tabs.  If false expand
+        #       only leading tabs.
+        #   noaction -- Check file but don't make any changes to it.
+        #   suffix -- Append this string to 'filename' to generate
+        #       the backup filename.
+        # Returns:
+        #   1 if file was (or would have been) modified.
+        #   0 if not.
+
+        f = open (filename, 'rb')
+        bytes = f.read()
         f.close()
-    except IOError as msg:
-        print(("%r: I/O error: %s" % (filename, msg)))
-        return
-    newtext = text.expandtabs(tabsize)
-    newtext = re.sub (r'[ \t]+$', lambda x:'', newtext, 0, re.M)
-    if newtext == text:
-        return
-    backup = filename + "~"
-    try:
-        os.unlink(backup)
-    except os.error:
-        pass
-    try:
-        os.rename(filename, backup)
-    except os.error:
-        pass
-    with open(filename, "w") as f:
-        f.write(newtext)
-    if verbose:
-        print(filename)
+        newbytes = bytes
+        if b'\t' in newbytes:  # Skip slow .sub() if no tabs.
+            if alltabs: newbytes = newbytes.expandtabs (tabsize)
+            else: newbytes = re.sub (rb'(^[ \t]+)',   # Expand only leading tabs.
+                                     lambda x: x.group(0).expandtabs(tabsize),
+                                     bytes, 0, re.M)
+          # Remove trailing spaces and tabs.
+        newbytes = re.sub (rb'[ \t]+$', lambda x:b'', newbytes, 0, re.M)
+        if newbytes == bytes: return 0
+        if not noaction:
+            s = os.stat (filename)
+            backup = filename + suffix
+            try: os.unlink (backup)
+            except os.error: pass
+            os.rename (filename, backup)
+            with open (filename, "wb") as f: f.write (newbytes)
+            os.chmod (filename, s.st_mode)
+        return 1
+
+import argparse
+
+def parse_cmdline ():
+        v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
+                + " Rev %s (%s)" % __version__
+        p = argparse.ArgumentParser (description=
+            "Replace tabs with spaces and remove trailing whitespace "
+            "in files.")
+        p.add_argument ("filename", nargs='*',
+            help="Name(s) of file(s) to be checked.")
+        p.add_argument ("-t", "--tabsize", default=8,
+            help="Number of spaces to tab stop.")
+        p.add_argument ("-a", "--alltabs", action="store_true", default=False,
+            help="Expand all tabs to spaces.  If not given, only leading "
+                "tabs (those before any non-whitespace characters on a "
+                "line) will be expanded.")
+        p.add_argument ("-q", "--quiet", action="store_true", default=False,
+            help="Don't print names of files that have been  modified.")
+        p.add_argument ("-n", "--noaction", action="store_true", default=False,
+            help="Don't actually change any files but print names "
+                "of files that would have been modified.")
+        p.add_argument ("-b", "--backup", metavar='SUFFIX', default='~',
+            help='Backup filename suffix.  Default is "~"')
+        p.add_argument ('--version', action='version', version=v)
+        p.epilog = ("\nExit status is 0 if no files modified, 1 if "
+            "one or more files were modified, on 2 on other errors.")
+        opts = p.parse_args ()
+        return opts.filename, opts
 
 if __name__ == '__main__':
-    main()
+        args, opts = parse_cmdline()
+        sys.exit (main (args, opts))
+

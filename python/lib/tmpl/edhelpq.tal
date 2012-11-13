@@ -13,47 +13,47 @@
   <div class="entry">
     <h3>Getting Started</h3>
 
-    Entries in the JMdictDB database are usually in three parts: a 
-    kanji/special character part, a reading(s) part (always in kana) and 
+    Entries in the JMdictDB database are usually in three parts: a
+    kanji/special character part, a reading(s) part (always in kana) and
     a meaning(s) part. Consider the following entry as it appears in WWWJDIC:
-	  <p/>
+          <p/>
     <dl><dd><pre>思い出す 【おもいだす】 (v5s,vt) to recall; to remember</pre></dd></dl>
-	  <p/>
-    Here 思い出す is the kanji/special character part, おもいだす the 
+          <p/>
+    Here 思い出す is the kanji/special character part, おもいだす the
     reading(s) part and "(v5s,vt) to recall; to remember" the meaning(s)
-    part. 
-	  <p/>
+    part.
+          <p/>
     To enter a simple entry such as the one above, key or paste the information
-    of the parts in the three boxes. Put 思い出す in the 
-    kanji/special character part, おもいだす in the readings part, and 
+    of the parts in the three boxes. Put 思い出す in the
+    kanji/special character part, おもいだす in the readings part, and
     in the meanings part put:
-	  <p/>
+          <p/>
     <dl><dd><pre>[1][v5s,vt] to recall; to remember</pre></dd></dl>
-	  <p/>
+          <p/>
     That meanings format needs a little explanation:
     <ol type="a">
-	  <li> the "[1]" is the number of the "sense", i.e. a related group
-	  of meanings. All entries have at least one sense.
-	  <li> the "[v5s,vt]" is the coded "part-of-speech", in this case saying
-	  it's a "Godan" verb (五段) ending in す (サ行), and it's transitive.
-	  (The full set of part-of-speech tags can be seen by clicking on the 
-	  link to the right of the box.)
-	  <li> the two English meanings are simply separated by semicolons. (If
-	  you want a semicolon inside a meaning, use "\;" to tell the system
-	  it is not a separator.)
+          <li> the "[1]" is the number of the "sense", i.e. a related group
+          of meanings. All entries have at least one sense.
+          <li> the "[v5s,vt]" is the coded "part-of-speech", in this case saying
+          it's a "Godan" verb (五段) ending in す (サ行), and it's transitive.
+          (The full set of part-of-speech tags can be seen by clicking on the
+          link to the right of the box.)
+          <li> the two English meanings are simply separated by semicolons. (If
+          you want a semicolon inside a meaning, use "\;" to tell the system
+          it is not a separator.)
           </ol>
-    In some cases where the word/expression is written in kana alone, 
-    the kanji/special character part is omitted, e.g. in 
+    In some cases where the word/expression is written in kana alone,
+    the kanji/special character part is omitted, e.g. in
     <dl><dd><pre>アイスクリーム (n) ice cream; icecream</pre></dd></dl>
-	  <p/>
+          <p/>
     Be sure to mention the source of your entry (name of dictionary, URL
     of WWW site, etc.) in the References box, and feel free to comment on
     the entry or your submission in the Comments box. (Note that the contents
     of these two boxes are kept in the database, and can be viewed by others
     as they form part of the history of the entry.)
-	  <p/>
+          <p/>
     Once you have completed the entry (or edit), click on the "Next" button
-    at the foot of the screen. If no errors are detected, you will be shown 
+    at the foot of the screen. If no errors are detected, you will be shown
     what the entry will look like in a more readable form. If you are happy with
     it, click on "Submit", otherwise go back and amend it.
 
@@ -61,47 +61,47 @@
 
     The information above should be enough to get you started, but let's
     just look at a couple more points.
-	  <p/>
+          <p/>
     1. That clumsily named "kanji/special character part". This for the
     form of the entry that is written using at least one kanji character
     or other non-kana character, e.g. 漢字, ＤＮＡ, 〒, ２ちゃんねら, etc.
     would all go in this part as each has at least one non-kana character.
     (In linguistics, this is often called the "surface form" of a word.)
-	  <p/>
+          <p/>
     2. Quite a few entries have multiple versions of the kanji part or the
     readings part, e.g.:
-	  <p/>
+          <p/>
     <dl><dd><pre>
 一結び; ひと結び 【ひとむすび】 (n,vs) knotting
 金肥 【きんぴ; かねごえ】 (n) chemical fertilizer
       </pre></dd></dl>
-    You can enter these multiple versions simply by separating them 
-    with a ";", just as in the extended EDICT format above: 一結び; 
+    You can enter these multiple versions simply by separating them
+    with a ";", just as in the extended EDICT format above: 一結び;
     ひと結び in the Kanji box or きんぴ; かねごえ in the Readings box.
-	  <p/>
-    3. Each of the parts of the dictionary entry can be accompanied by a 
+          <p/>
+    3. Each of the parts of the dictionary entry can be accompanied by a
     number of tags, such as the part-of-speech mentioned above. In this system
     the tags are written in a simple language (read about it in the full
     <a tal:attributes="href edhelp.py?svc=${svc}&amp;sid=${sid}">
       Help File
-      </a>) and placed inside square backets: [..]. 
+      </a>) and placed inside square backets: [..].
     Most of these
     tags are used as-is and can be used in any order. They can also be grouped;
     "[n,uk,abbr]" is the same as "[n][uk][abbr]". Some, such as cross-references,
-    need a value, e.g. [see=時々] or [note="contraction of 書いておく"]. (If 
+    need a value, e.g. [see=時々] or [note="contraction of 書いておく"]. (If
     you want to use square brackets within a meaning, type \[ and \] to tell the
     system they are not tags.)
-	  <p/>
-    4. The meanings part of the entry will contain or more "senses", i.e. 
+          <p/>
+    4. The meanings part of the entry will contain or more "senses", i.e.
     different sets of meanings for the term, as in:
     <dl><dd><pre>識別名 【しきべつめい】 (n) (1) {comp} identifier; (2) {comp} distinguished name</pre></dd></dl>
-    Use "[1]", "[2]", etc. at the start of each sense.  So the above 
+    Use "[1]", "[2]", etc. at the start of each sense.  So the above
     senses would be entered as:
     <dl><dd><pre>[1][n,comp] identifier [2][n,comp] distinguished name</pre></dd></dl>
 
     5. Note that the ";" is used for <b>separating</b> kanji forms,
     readings snd glosses within a sense. Don't use them at the end
-    of the text in a box, or after the last gloss in a sense. That will 
+    of the text in a box, or after the last gloss in a sense. That will
     cause an error.
 
     <h3>And In Closing</h3>
@@ -109,8 +109,8 @@
     The system using [...] to enter tags, notes. cross-references, etc. avoids
     having to have forms with masses of specific boxes. It can, however, take
     some time to get used to it.
-	  <p/>
-    If you find it too complicated, write a summary of what you want in the 
+          <p/>
+    If you find it too complicated, write a summary of what you want in the
     "Comments" box and an editor will fix up the format.
     </div>
   <div metal:use-macro="macros/macros/footer"></div>

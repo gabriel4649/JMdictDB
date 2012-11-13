@@ -13,22 +13,22 @@
   <div class="results">
     Wwwjdic preprocessed submission data in <a href="httpdir" tal:content="filesdir"></a>
 
-    <br/>Log files: 
+    <br/>Log files:
     <table>
       <tr tal:repeat="f logfiles">
-	<td> 
-	  <a tal:attributes="href string:${httpdir}/${f}" tal:content="f"/>
-	  </td>
-	</tr>
+        <td>
+          <a tal:attributes="href string:${httpdir}/${f}" tal:content="f"/>
+          </td>
+        </tr>
       </table>
 
-    <br/>Editdata files: 
+    <br/>Editdata files:
     <table>
       <tr tal:repeat="f editfiles">
-	<td> 
-	  <a tal:attributes="href string:jbedit.py?svc=${svc}&amp;sid=${sid}&amp;fn=${f}" tal:content="f"/>
-	  </td>
-	</tr>
+        <td>
+          <a tal:attributes="href string:jbedit.py?svc=${svc}&amp;sid=${sid}&amp;fn=${f}" tal:content="f"/>
+          </td>
+        </tr>
       </table>
 
     </div>

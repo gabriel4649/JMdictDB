@@ -148,8 +148,8 @@
               <td valign="top"><span class="descriptor">Approval:</span>
                 <table class="optgroup">
                   <tr>
-                    <td><input name="appr" value="appr" type="checkbox">Approved</td>
-                    <td><input name="appr" value="unappr" type="checkbox">Unapproved</td>
+                    <td><input name="appr" value="appr" type="checkbox"/>Approved</td>
+                    <td><input name="appr" value="unappr" type="checkbox"/>Unapproved</td>
                     </tr>
                   </table>
                 </td>
@@ -276,8 +276,8 @@
                     <td>Submitter: </td>
                     <td><input name="smtr" size="16"/></td>
                     <td colspan="3">
-                      <input type=radio name="smtrm" value="0" checked="checked">Exact match</input>
-                      <input type=radio name="smtrm" value="1">Wildcard match</input>
+                      <input type=radio name="smtrm" value="0" checked="checked"/>Exact match
+                      <input type=radio name="smtrm" value="1"/>Wildcard match
                       </td>
                     </tr>
                   <tr>
@@ -289,9 +289,9 @@
                   <tr>
                     <td colspan="4">
                       Which history record?
-                      <input type=radio name="mt" value="0" checked="checked">Any</input>
-                      <input type=radio name="mt" value="1">First</input>
-                      <input type=radio name="mt" value="-1">Last</input>
+                      <input type=radio name="mt" value="0" checked="checked"/>Any
+                      <input type=radio name="mt" value="1"/>First
+                      <input type=radio name="mt" value="-1"/>Last
                       </td>
                     </tr>
                   </table>

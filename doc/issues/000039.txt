@@ -37,3 +37,35 @@ AssdTo:	stuart@friix.com
   function (rather than the more conventional use of Python's 
   "set" datatype, because we want to preserve the order of the
   items.)
+
+2012-11-16 08:13:00 stuart
+  For reference the following page compares the performance of a
+  number of methods to remove duplicates from a list (aka "deduplicate",
+  "uniquifying", "uniqify"), both order-preserving and not:
+    http://www.peterbe.com/plog/uniqifiers-benchmark
+  The fastest order-preverving one was:
+    def f5(seq, idfun=None): 
+       # order preserving
+       if idfun is None:
+           def idfun(x): return x
+       seen = {}
+       result = []
+       for item in seq:
+           marker = idfun(item)
+           # in old Python versions:
+           # if seen.has_key(marker)
+           # but in new ones:
+           if marker in seen: continue
+           seen[marker] = 1
+           result.append(item)
+       return result
+  jdb.rmdups() seems to take about the same approach as the above
+  and given the very short lists that is its typical use case in
+  jmdictdb, the existing code does not seem to need any changes 
+  based on that blog post.
+  There is also a stackoverflow post addressing the same issue:
+    http://stackoverflow.com/questions/480214/how-do-you-remove-duplicates-from-a-list-in-python-whilst-preserving-order
+  and message/thread on python-ideas list:
+    http://mail.python.org/pipermail/python-ideas/2012-November/017893.html
+　and:
+    http://code.activestate.com/recipes/52560-remove-duplicates-from-a-sequence/

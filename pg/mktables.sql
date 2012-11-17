@@ -15,7 +15,7 @@
 --  along with JMdictDB; if not, write to the Free Software Foundation,
 --  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 --
---  Copyright (c) 2006,2007 Stuart McGraw 
+--  Copyright (c) 2006-2012 Stuart McGraw 
 ---------------------------------------------------------------------------
 
 -- $Revision$ $Date$
@@ -26,12 +26,13 @@ CREATE LANGUAGE 'plpgsql';
 \set ON_ERROR_STOP 
 
 -- Note: The commented-out ALTER TABLE and CREATE INDEX statements
--- (where the comment's "--" starts in the first column and is
--- followed immediately by text with no intervening space character,
--- are not really comments.  They is extracted by a tool, put into 
--- a separate file, and execute during the database build phase.
--- They are kept in here in comment form in order to provide a more
--- cohesive view of the schema.
+-- (where the comments' "--" start in the first column and are
+-- followed immediately by text with no intervening space character)
+-- are not really comments.  They are extracted by tools/mkindex.py
+-- into a separate file that is executed during the database build
+-- phase to create indexes and foreign keys.
+-- They are kept in comment form in this file order to provide a
+-- more coherent view of the schema.
 
 CREATE TABLE kwdial (
     id SMALLINT PRIMARY KEY,

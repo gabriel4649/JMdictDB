@@ -17,6 +17,11 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
+# This file contains functions for using SimpleTAL templates.
+# The SimpleTAL software is available at
+#   http://www.owlfish.com/software/simpleTAL/.
+# The SimpleTAL templates used by the JMdictDB project are
+#  located in python/lib/tmpl/*.tal.
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -56,7 +61,7 @@ def fmt_simpletal (tmplfn, xml=False, **kwds):
         return txt
 
 def mktemplate (tmplFilename, xml=False):
-        tmplFile = open (tmplFilename)
+        tmplFile = open (tmplFilename, encoding='utf-8')
         if xml:
             tmpl = simpleTAL.compileXMLTemplate (tmplFile)
         else:
@@ -81,6 +86,10 @@ def add2builtins (f):
         # so that it will be available to the simpleTAL processor.
         import builtins
         builtins.__dict__[f.__name__] = f
+
+# Functions added the the __builtin__ namespace below should be
+# named with a prefix of 'TAL" to avoid conflicts with preexisting
+# functions.
 
 @add2builtins
 def TALhas (parent, attr):

@@ -21,10 +21,15 @@
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
 
-# This program will read an Examples file and create
-# an output file containing postgresql data COPY commands.
-# The file can be loaded into a Postgresql jmdict database
-# after subsequent processing with jmload.pl.
+# This program will read an Examples file containing paired
+# English and Japanese sentences and available for download
+# at
+#   ftp://ftp.monash.edu.au/pub/nihongo/examples.utf.gz
+#   (This file is derived from data from the Tatoeba
+#   project: http://tatoeba.org)
+# and create an output file containing postgresql data COPY
+# commands.  This file can be loaded into a Postgresql JMdictDB
+# database after subsequent processing with jmload.pl.
 #
 # The Example file "A" lines create database entries with
 # a entr.src=3 which identifies them as from the Examples
@@ -49,6 +54,14 @@ if _ not in sys.path: sys.path.insert(0, _)
 
 import re, datetime
 import jdb, pgi
+
+  # There are two Tatoeba id numbers for each example pair, one is the
+  # for the Japanese sentence, the other for the English sentence.
+  # We need to combine them to get a single seq#.  Since the database
+  # uses a bigint for seq number we just multiply one of the Tatoeba
+  # id numbers by MAXID and then add the second.  At this time, the
+  # largest Tatoeba id numbers in the examples file is about 1.5*10^6.
+MAXID = 10000000
 
 Seq = None
 Lnnum = None
@@ -129,11 +142,10 @@ def parse_ex (fin, begin):
                   # Tatoeba English sentence id number, and "mmmm" is the Japanese
                   # id number.  Generate a seq number by combining them.
                   # FIXME: the following assumes that the english sentence id
-                  #  number will never be greater than 1E6, which is probably
-                  #  not wise given that some are already in the 400K range.
+                  #  number will never be greater than MAXID.
                 id1, id0 = int(mo.group(2)), int(mo.group(3))
-                if id0 >= 1000000: msg ("Warning, ID#%s_%s, 2nd half exceeds limit" % (id1, id0))
-                Seq = id1 * 1000000 + id0
+                if id0 >= MAXID: msg ("Warning, ID#%s_%s, 2nd half exceeds limit" % (id1, id0))
+                Seq = id1 * MAXID + id0
             else:
                 msg ("No ID number found"); continue
             try:
@@ -261,7 +273,7 @@ def _msg (logfile, verbose, message):
 class ABPairReader:
     def __init__ (self, *args, **kwds):
         self.__dict__['stream'] = open (*args, **kwds)
-        self.__dict__['lineno'] = 0
+        self.lineno = 0  # This creates attribute on self.stream object.
     def readpair( self ):
         aline = self.getline ('A: ')
         bline = self.getline ('B: ')

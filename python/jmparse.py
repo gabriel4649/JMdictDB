@@ -26,10 +26,10 @@ _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
 _ = os.path.join (os.path.dirname(_), 'python', 'lib')
 if _ not in sys.path: sys.path.insert(0, _)
 
-import jdb, jmxml, xmlkw, pgi, warns, fmt
+import jdb, jmxml, xmlkw, pgi, fmt
 
 def main (args, opts):
-        global Logfile, KW
+        global KW
 
         if opts.database:
             jdb.dbOpen (opts.database, **jdb.dbopts (opts))
@@ -45,17 +45,17 @@ def main (args, opts):
           # its encoding may be given within the file and may be different.
         inpf = jmxml.JmdictFile( open( args[0], encoding='utf-8' ))
         tmpfiles = pgi.initialize (opts.tempdir)
-        if opts.logfile: warns.Logfile = open (opts.logfile, "w",
-                                               encoding=opts.encoding)
+        if not opts.logfile: logfile = sys.stderr
+        else: logfile = open (opts.logfile, "w", encoding=opts.encoding)
         eid = 0
-        jmparser = jmxml.Jmparser (KW)
+        jmparser = jmxml.Jmparser (KW, logfile=logfile)
         for typ, entr in jmparser.parse_xmlfile (inpf, opts.begin, opts.count,
                                                  opts.extract, xlang, toptag=True):
             if typ == 'entry':
                 eid += 1
                 if not ((eid - 1) % 1800):
                     sys.stdout.write ('.'); sys.stdout.flush()
-                    warns.Logfile.flush()
+                    logfile.flush()
                 if not getattr (entr, 'src', None): entr.src = corpid
                 jdb.setkeys (entr, eid)
                 pgi.wrentr (entr, tmpfiles)

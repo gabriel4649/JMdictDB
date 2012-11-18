@@ -32,7 +32,7 @@ _ = os.path.join (os.path.dirname(_), 'python', 'lib')
 if _ not in sys.path: sys.path.insert(0, _)
 
 import re
-import jdb, warns
+import jdb
 
 def main (args, opts):
         eid = opts.starting_id

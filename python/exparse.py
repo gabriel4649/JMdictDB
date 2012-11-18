@@ -217,18 +217,18 @@ def mkentr (jtxt, etxt, kwds):
         global Lnnum
           # Create an entry object to represent the "A" line text of the
           # example sentence.
-        e = jdb.Obj (stat=KW.STAT_A, unap=False)
+        e = jdb.Entr (stat=KW.STAT_A, unap=False)
         e.srcnote = str (Lnnum)
           # Each @$kwds item is a 2-array consisting of the kw
           # id number and optionally a note string.
         kws = [x[0] for x in kwds]
         sens_note = "; ".join ([x[1] for x in kwds if len(x)>1]) or None
-        if jdb.jstr_reb (jtxt): e._rdng = [jdb.Obj (txt=jtxt)]
-        else:                   e._kanj = [jdb.Obj (txt=jtxt)]
-        e._sens = [jdb.Obj (notes=sens_note,
-                    _gloss=[jdb.Obj (lang=KW.LANG_eng,
+        if jdb.jstr_reb (jtxt): e._rdng = [jdb.Rdng (txt=jtxt)]
+        else:                   e._kanj = [jdb.Kanj (txt=jtxt)]
+        e._sens = [jdb.Sens (notes=sens_note,
+                    _gloss=[jdb.Gloss (lang=KW.LANG_eng,
                                      ginf=KW.GINF_equ, txt=etxt)],
-                    _misc=[jdb.Obj (kw=x) for x in kws])]
+                    _misc=[jdb.Misc (kw=x) for x in kws])]
         return e
 
 def mkxrslv (idxlist):

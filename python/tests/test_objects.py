@@ -88,7 +88,7 @@ class Test_DbRow_compare (unittest.TestCase):
 class Test_Attrs (unittest.TestCase):
     # Check the jmdictdb objects for the expected attribute sets.
     def test000010(_): attrchk (_, Entr(),    ['id','src','stat','seq','dfrm','unap','srcnote','notes',
-                                               '_kanj','_rdng','_sens','_hist','_snd','_grp','_cinf'])
+                                               '_kanj','_rdng','_sens','_hist','_snd','_grp','chr','_krslv'])
     def test000020(_): attrchk (_, Rdng(),    ['entr','rdng','txt',
                                                '_inf','_freq','_restr','_stagr','_snd'])
     def test000030(_): attrchk (_, Kanj(),    ['entr','kanj','txt',
@@ -111,7 +111,7 @@ class Test_Attrs (unittest.TestCase):
     def test000180(_): attrchk (_, Hist(),    ['entr','hist','stat','userid','dt','name','email','diff','refs','notes'])
     def test000190(_): attrchk (_, Grp(),     ['entr','kw','ord','notes'])
     def test000200(_): attrchk (_, Cinf(),    ['entr','kw','value','mctype'])
-    def test000210(_): attrchk (_, Chr(),     ['entr','uni','bushu','strokes','freq','grade','jlpt'])
+    def test000210(_): attrchk (_, Chr(),     ['entr','chr','bushu','strokes','freq','grade','jlpt','_cinf'])
     def test000220(_): attrchk (_, Xrslv(),   ['entr','sens','ord','typ','rtxt','ktxt','tsens','notes','prio'])
     def test000230(_): attrchk (_, Kreslv(),  ['entr','kw','value'])
     def test000240(_): attrchk (_, Entrsnd(), ['entr','ord','snd'])

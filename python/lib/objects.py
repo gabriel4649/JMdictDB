@@ -17,7 +17,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
 
@@ -116,12 +115,25 @@ def _compare (self, other):
             if s != o: return False
         return True
 
+# JMdictDB database objects...
+# * Each corresponds to a database table containing some
+#    part of a dictionary entry object.
+# * Based on DbRow so that column values can be accessed
+#    by attribute or index.
+# * Fields used to initialize DbRow part correspond exactly
+#    to the database columns for the table come first in the
+#    parameter list and aren't prefixed with underscores.
+# * Extra fields (that don't represent columns in the table)
+#    follow in the parameter list.  If they have list values,
+#    they are prefixed with an "_".  The attributes are for
+#    lists of JMdictDB database objects from other tables
+#    having a 1:N relationship with this table.
 
 class Entr (DbRow):
     def __init__ (s, id=None, src=None, stat=None, seq=None, dfrm=None,
                      unap=None, srcnote=None, notes=None,
                      _kanj=None, _rdng=None, _sens=None, _hist=None,
-                     _snd=None, _grp=None, _cinf=None):
+                     _snd=None, _grp=None, chr=None, _krslv=None):
         DbRow.__init__(s, ( id,  src,  stat,  seq,  dfrm,  unap,  srcnote,  notes),
                           ('id','src','stat','seq','dfrm','unap','srcnote','notes'))
         s._kanj = _kanj or []
@@ -130,7 +142,8 @@ class Entr (DbRow):
         s._hist = _hist or []
         s._snd  = _snd  or []
         s._grp  = _grp  or []
-        s._cinf = _cinf or []
+        s.chr   =  chr
+        s._krslv = _krslv  or []
 
 class Rdng (DbRow):
     def __init__ (s, entr=None, rdng=None, txt=None,
@@ -255,10 +268,11 @@ class Cinf (DbRow):
                           ('entr','kw','value','mctype'))
 
 class Chr (DbRow):
-    def __init__ (s, entr=None, uni=None, bushu=None, strokes=None,
-                  freq=None, grade=None, jlpt=None):
-        DbRow.__init__(s, ( entr,  uni,  bushu,  strokes,  freq,  grade,  jlpt),
-                          ('entr','uni','bushu','strokes','freq','grade','jlpt'))
+    def __init__ (s, entr=None, chr=None, bushu=None, strokes=None,
+                  freq=None, grade=None, jlpt=None, _cinf=None):
+        DbRow.__init__(s, ( entr,  chr,  bushu,  strokes,  freq,  grade,  jlpt),
+                          ('entr','chr','bushu','strokes','freq','grade','jlpt'))
+        s._cinf = _cinf or []
 
 class Xrslv (DbRow):
     def __init__ (s, entr=None, sens=None, ord=None, typ=None,

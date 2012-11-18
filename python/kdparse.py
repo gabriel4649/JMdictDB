@@ -179,9 +179,9 @@ def do_chr (elem, srcid, langs):
 
         chtxt = elem.find('literal').text
         Char = chtxt    # For warning messages created by warn().
-        c = jdb.Obj (chr=chtxt, _cinf=[])
-        e = jdb.Obj (src=srcid, stat=KW.STAT_A, seq=jdb.uord(chtxt), unap=False,
-                 chr=c, _kanj=[jdb.Obj(txt=chtxt)], _rdng=[], _sens=[], _krslv=[])
+        c = jdb.Chr (chr=chtxt, _cinf=[])
+        e = jdb.Entr (src=srcid, stat=KW.STAT_A, seq=jdb.uord(chtxt), unap=False,
+                 chr=c, _kanj=[jdb.Kanj(txt=chtxt)], _rdng=[], _sens=[], _krslv=[])
         for x in elem.findall ('codepoint/cp_value'): codepoint (x, c, chtxt)
         for x in elem.findall ('radical/rad_value'): radical (x, c)
 
@@ -189,14 +189,14 @@ def do_chr (elem, srcid, langs):
         try: x = (elem.find ('misc/freq')).text
         except: pass
         if x:
-            if hasattr (c,'freq'): warn ('Duplicate "freq" element ignored: %s' % x)
+            if c.freq is not None: warn ('Duplicate "freq" element ignored: %s' % x)
             else: c.freq = int(x)
 
         x = None
         try: x = (elem.find ('misc/grade')).text
         except: pass
         if x:
-            if hasattr (c,'grade'): warn ('Duplicate "grade" element ignored: %s' % x)
+            if c.grade is not None: warn ('Duplicate "grade" element ignored: %s' % x)
             else: c.grade = int(x)
 
         for n,x in enumerate (elem.findall ('misc/stroke_count')):
@@ -231,7 +231,7 @@ def variant (x):
         vt = vmap.get(vt,vt)
         if vt == 'ucs': kw = 0
         else: kw = KW.CINF[Xml2db.CINF.get(vt,vt)].id
-        return jdb.Obj (kw=kw, value=x.text)
+        return jdb.Cinf (kw=kw, value=x.text)
 
 def codepoint (x, c, chtxt):
         cinf = c._cinf
@@ -242,7 +242,7 @@ def codepoint (x, c, chtxt):
             if int (x.text, 16) != jdb.uord (chtxt):
                 warn ("xml codepoint ucs value '%s' doesnt match character %s (0x%x)." \
                         % (x.text, chtxt, jdb.uord (chtxt)))
-        else: cinf.append( jdb.Obj( kw=KW.CINF[Xml2db.CINF.get(cp_type, cp_type)].id, value=x.text))
+        else: cinf.append( jdb.Cinf( kw=KW.CINF[Xml2db.CINF.get(cp_type, cp_type)].id, value=x.text))
 
 def radical (x, c):
         cinf = c._cinf
@@ -251,7 +251,7 @@ def radical (x, c):
         if rad_attr != 'rad_type': warn ('Unexpected rad_value attribute: %s', rad_attr)
         if rad_type == 'classical': c.bushu = int(x.text)
         elif rad_type == 'nelson_c':
-            cinf.append (jdb.Obj (kw=KW.CINF_nelson_rad, value=int(x.text)))
+            cinf.append (jdb.Cinf (kw=KW.CINF_nelson_rad, value=int(x.text)))
         else: warn ("Unknown radical attribute value: %s=\"%s\"", (rad_attr, rad_type))
 
 def strokes (x, n, c):
@@ -259,14 +259,14 @@ def strokes (x, n, c):
         if n == 0:
              c.strokes = int(x.text)
         else:
-            cinf.append ( jdb.Obj (kw=KW.CINF_strokes, value=int(x.text)))
+            cinf.append ( jdb.Cinf (kw=KW.CINF_strokes, value=int(x.text)))
 
 def reading_meaning (rm, rdng, sens, cinf, langs):
         KW_NANORI = KW.RINF[Xml2db.RINF.get('nanori','nanori')].id
         for x in rm.findall ('rmgroup'):
             r, g, c = rmgroup (x, langs)
             rdng.extend (r)
-            sens.append (jdb.Obj (_gloss=g))
+            sens.append (jdb.Sens (_gloss=g))
           # Make a dict keyed by the readings already parsed.
         rlookup = dict ([(r.txt,r) for r in rdng])
           # Get the nanori readings...
@@ -295,13 +295,13 @@ def reading_meaning (rm, rdng, sens, cinf, langs):
                   # add a nanori tag to 'r'.
             except KeyError:
                   # This nanori reading has not been seen before.
-                  # Create a new Rdnfg object for it.
-                r = jdb.Obj (txt=x.text)
+                  # Create a new Rdng object for it.
+                r = jdb.Rdng (txt=x.text)
                 rdng.append (r)
                   # Add it to the previously seen readings dict.
                 rlookup[r.txt] = r
             if not hasattr (r, '_inf'): r._inf = []
-            r._inf.append (jdb.Obj (kw=KW_NANORI))
+            r._inf.append (jdb.Rinf (kw=KW_NANORI))
         cinf.extend (c)
 
 def rmgroup (rmg, langs=None):
@@ -317,15 +317,15 @@ def rmgroup (rmg, langs=None):
                     warn ("Duplicate reading ignored: %s, %s" % (rtype, x.text))
                     continue
                 dupchk[(rtype,x.text)] = True
-                cinf.append (jdb.Obj (kw=KW.CINF[rtype].id, value=x.text))
+                cinf.append (jdb.Cinf (kw=KW.CINF[rtype].id, value=x.text))
             elif rtype=='ja_on' or rtype=='ja_kun':
                 if x.text in dupchk:
                     warn ('Duplicate reading ignored: %s' % x.text)
                     continue
                 dupchk[x.text] = True
-                rdng = jdb.Obj (txt=x.text, _inf=[])
-                rdng._inf.append (jdb.Obj (kw=KW.RINF[Xml2db.RINF.get(aval,aval)].id))
-                if rstat: rdng._inf.append (jdb.Obj (kw=KW.RINF[Xml2db.RINF.get(rstat,rstat)].id))
+                rdng = jdb.Rdng (txt=x.text, _inf=[])
+                rdng._inf.append (jdb.Rinf (kw=KW.RINF[Xml2db.RINF.get(aval,aval)].id))
+                if rstat: rdng._inf.append (jdb.Rinf (kw=KW.RINF[Xml2db.RINF.get(rstat,rstat)].id))
                 rdngs.append (rdng)
             else:
                 raise KeyError ('Unkown r_type attribute: %s' % rtype)
@@ -339,7 +339,7 @@ def rmgroup (rmg, langs=None):
                 continue
             dupchk[(lang,x.text)] = True
             if not langs or langkw in langs:
-                glosses.append (jdb.Obj (txt=x.text, lang=langkw, ginf=1))
+                glosses.append (jdb.Gloss (txt=x.text, lang=langkw, ginf=1))
         return rdngs, glosses, cinf
 
 def dicnum (dic_number, cinf):
@@ -359,7 +359,7 @@ def dicnum (dic_number, cinf):
                 warn ('Duplicate dr_type,value pair ignored: %s, %s' % (drtype, val))
                 continue
             dupchk[(kw,val)] = True
-            cinf.append (jdb.Obj (kw=kw, value=val))
+            cinf.append (jdb.Cinf (kw=kw, value=val))
 
 def qcode (query_code, cinf):
         dupchk = {}; saw_misclass = False;  saw_skip = False
@@ -377,7 +377,7 @@ def qcode (query_code, cinf):
                 saw_misclass = True
             elif qctype == 'skip':
                 saw_skip = True
-            cinf.append (jdb.Obj (kw=kw, value=val, mctype=misclass))
+            cinf.append (jdb.Cinf (kw=kw, value=val, mctype=misclass))
         if saw_misclass and not saw_skip:
             warn ("Has skip_misclass but no skip")
 

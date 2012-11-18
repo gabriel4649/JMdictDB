@@ -21,10 +21,15 @@
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
 
-# This program will read an Examples file and create
-# an output file containing postgresql data COPY commands.
-# The file can be loaded into a Postgresql jmdict database
-# after subsequent processing with jmload.pl.
+# This program will read an Examples file containing paired
+# English and Japanese sentences and available for download
+# at
+#   ftp://ftp.monash.edu.au/pub/nihongo/examples.utf.gz
+#   (This file is derived from data from the Tatoeba
+#   project: http://tatoeba.org)
+# and create an output file containing postgresql data COPY
+# commands.  This file can be loaded into a Postgresql JMdictDB
+# database after subsequent processing with jmload.pl.
 #
 # The Example file "A" lines create database entries with
 # a entr.src=3 which identifies them as from the Examples
@@ -48,12 +53,16 @@ _ = os.path.join (os.path.dirname(_), 'python', 'lib')
 if _ not in sys.path: sys.path.insert(0, _)
 
 import re, datetime
-from collections import defaultdict
+import jdb, pgi
 
-import jdb, pgi, warns
-from warns import warn
+  # There are two Tatoeba id numbers for each example pair, one is the
+  # for the Japanese sentence, the other for the English sentence.
+  # We need to combine them to get a single seq#.  Since the database
+  # uses a bigint for seq number we just multiply one of the Tatoeba
+  # id numbers by MAXID and then add the second.  At this time, the
+  # largest Tatoeba id numbers in the examples file is about 1.5*10^6.
+MAXID = 10000000
 
-Msgs = defaultdict (list)
 Seq = None
 Lnnum = None
 Opts = None
@@ -80,10 +89,19 @@ EX2ID = {
 class ParseError (Exception): pass
 
 def main (args, opts):
+        global msg
         global Opts; Opts = opts
         global KW; jdb.KW = KW = jdb.Kwds (jdb.std_csv_dir())
 
-        if opts.logfile: warns.Logfile = open (opts.logfile, "w", encoding=opts.encoding)
+          # Create a globally accessible function, msg() that has
+          # has 'logfile' and 'opts.verbose' already bound and
+          # which will be called elsewhere when there is a need to
+          # write a message to the logfile.
+        logfile = sys.stderr
+        if opts.logfile:
+            logfile = open (opts.logfile, "w", encoding=opts.encoding)
+        def msg (message): _msg (logfile, opts.verbose, message)
+
         fin = ABPairReader (args[0], encoding='utf-8')
           # FIXME: following gives localtime, change to utc or lt+tz.
         mtime = datetime.date.fromtimestamp(os.stat(args[0])[8])
@@ -112,9 +130,9 @@ def parse_ex (fin, begin):
         # begin -- Line number at which to begin processing.  Lines
         #    before that are skipped.
 
+        global Lnnum, Seq
         seq_cache = set()
         for aln, bln in fin:
-            global Lnnum, Seq
             if fin.lineno < begin: continue
             Lnnum = fin.lineno
             mo = re.search (r'(\s*#\s*ID\s*=\s*(\d+)_(\d+)\s*)$', aln)
@@ -124,11 +142,10 @@ def parse_ex (fin, begin):
                   # Tatoeba English sentence id number, and "mmmm" is the Japanese
                   # id number.  Generate a seq number by combining them.
                   # FIXME: the following assumes that the english sentence id
-                  #  number will never be greater than 1E6, which is probably
-                  #  not wise given that some are already in the 400K range.
+                  #  number will never be greater than MAXID.
                 id1, id0 = int(mo.group(2)), int(mo.group(3))
-                if id0 >= 1000000: msg ("Warning, ID#%s_%s, 2nd half exceeds limit" % (id1, id0))
-                Seq = id1 * 1000000 + id0
+                if id0 >= MAXID: msg ("Warning, ID#%s_%s, 2nd half exceeds limit" % (id1, id0))
+                Seq = id1 * MAXID + id0
             else:
                 msg ("No ID number found"); continue
             try:
@@ -197,6 +214,7 @@ def hw (ktxt, rtxt):
         return ktxt or rtxt
 
 def mkentr (jtxt, etxt, kwds):
+        global Lnnum
           # Create an entry object to represent the "A" line text of the
           # example sentence.
         e = jdb.Obj (stat=KW.STAT_A, unap=False)
@@ -241,15 +259,21 @@ def kana_only (txt):
         v = jdb.jstr_reb (txt)
         return (v & jdb.KANA) and not (v & jdb.KANJI)
 
-def msg (msg):
-        global Opts, Seq, Lnnum
-        if Opts.verbose: warns.warn ("Seq %d (line %s): %s" % (Seq, Lnnum, msg))
-        Msgs[msg] = Lnnum
+def _msg (logfile, verbose, message):
+        # This function should not be called directly.  It is called
+        # by the global function, msg(), which is a closure with 'logfile'
+        # and 'verbose' already bound, created in main() and which should
+        # be called instead of calling _msg() directly.
+        global Seq, Lnnum
+        m = "Seq %d (line %s): %s" % (Seq, Lnnum, message)
+        if verbose and logfile !=sys.stderr:
+            print (m, file=sys.stderr)
+        if logfile:  print (m, file=logfile)
 
 class ABPairReader:
     def __init__ (self, *args, **kwds):
         self.__dict__['stream'] = open (*args, **kwds)
-        self.__dict__['lineno'] = 0
+        self.lineno = 0  # This creates attribute on self.stream object.
     def readpair( self ):
         aline = self.getline ('A: ')
         bline = self.getline ('B: ')
@@ -262,12 +286,12 @@ class ABPairReader:
             if line.startswith (key) \
                     or (line[1:].startswith(key) and line[0]=='\uFEFF'):
                 if didmsg:
-                    warns.warn ("Line %d: resyncronised." % self.lineno)
+                    msg ("Line %d: resyncronised." % self.lineno)
                     didmsg = False
                 return line[len(key):].strip()
             else:
                 if not didmsg:
-                    warns.warn ("Line %d: expected '%s' line not found, resyncronising..."
+                    msg ("Line %d: expected '%s' line not found, resyncronising..."
                            % (self.lineno, key.strip()))
                     didmsg = True
     def __next__( self ):
@@ -372,7 +396,7 @@ Arguments:
             dest="keep", action="store_true",
             help="Do not delete temporary files after program exits.")
 
-        p.add_option ("-l", "--logfile", default="exparse.log",
+        p.add_option ("-l", "--logfile",
             dest="logfile", metavar="FILENAME",
             help="Name of file to write log messages to.")
 
@@ -392,14 +416,13 @@ Arguments:
             help="Parse only, no database access used: do not resolve "
                 "index words from it.")
 
-        p.add_option ("-v", "--verbose", default=False,
+        p.add_option ("-v", "--verbose", default=None,
             dest="verbose", action="store_true",
-            help="Print messages to stderr as irregularies "
-                "are encountered.  With or without this option, the "
-                "program will print a full accounting of irregularies "
-                "(in a more convenient form) to stdout before it exits.")
+            help="Write log messages to stderr.  Default is true if "
+                "--logfile was not given, or false if it was.")
 
         opts, args = p.parse_args ()
+        if opts.verbose is None: opts.verbose = not bool (opts.logfile)
         if len (args) > 1: print ("%d arguments given, expected at most one", file=sys.stderr)
         if len (args) < 1: args = ["examples.txt"]
         return args, opts

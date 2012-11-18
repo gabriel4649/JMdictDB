@@ -287,7 +287,7 @@ data/examples.txt:
 	mv examples.utf data/examples.txt
 
 data/examples.pgi: data/examples.txt 
-	cd python && $(PYTHON) exparse.py -o ../data/examples.pgi -v -l ../data/examples.log ../data/examples.txt
+	cd python && $(PYTHON) exparse.py -o ../data/examples.pgi -l ../data/examples.log ../data/examples.txt
 
 data/examples.dmp: data/examples.pgi 
 	cd python && $(PYTHON) jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/examples.dmp ../data/examples.pgi

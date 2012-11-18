@@ -58,22 +58,22 @@ def main (args, opts):
 
         jdb.KW = KW = jdb.Kwds (jdb.std_csv_dir())
 
-        if Opts.l: Opts.l = open (Opts.l, "w", encoding=opts.e)
-        else: Opts.l = sys.stderr
-        if not Opts.o:
+        if opts.l: opts.l = open (opts.l, "w", encoding=opts.e)
+        else: opts.l = sys.stderr
+        if not opts.o:
             fn = (os.path.split (args[0]))[1]
             fn = (os.path.splitext (fn))[0]
-            Opts.o = fn + ".pgi"
-        elif Opts.o  == "-":
-            Opts.o = None
+            opts.o = fn + ".pgi"
+        elif opts.o  == "-":
+            opts.o = None
         if opts.g: langs = [KW.LANG[iso639_1_to_2[x]].id for x in opts.g.split(',')]
         else: langs = None
-        workfiles = pgi.initialize (Opts.t)
-        srcdate = parse_xmlfile (args[0], 4, workfiles, Opts.b, Opts.c, langs)
+        workfiles = pgi.initialize (opts.t)
+        srcdate = parse_xmlfile (args[0], 4, workfiles, opts.b, opts.c, langs)
         srcrec = jdb.Obj (id=4, kw='kanjidic', descr='kanjidic2.xml',
-                      dt=srcdate, seq='seq_kanjidic')
+                          dt=srcdate, seq='seq_kanjidic')
         pgi.wrcorp (srcrec, workfiles)
-        pgi.finalize (workfiles, Opts.o, not Opts.k)
+        pgi.finalize (workfiles, opts.o, not opts.k)
         print ("\nDone!", file=sys.stderr)
 
 class LnFile:

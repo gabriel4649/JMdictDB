@@ -22,21 +22,13 @@ __version__ = ('$Revision$'[11:-2],
 """
 Functions for parsing XML descriptions of entries into
 entry objects.
-
 """
 
 import sys, os, re, datetime
 from collections import defaultdict
 #import lxml.etree as ElementTree
 import xml.etree.cElementTree as ElementTree
-import jdb, warns, xmlkw
-
-# This module calls function warns.warn() (from inside local
-# function warn()) to log non-fatal warning messages.  By default,
-# that function will write it's messages to sys.stderr using the
-# system default encoding.  The caller of this module (jmxml.py)
-# can change these defaults be setting warns.Logfile and
-# warns.Encoding.
+import jdb, xmlkw
 
 class ParseError (RuntimeError): pass
 class NotFoundError (RuntimeError): pass
@@ -61,10 +53,10 @@ class JmdictFile:
     #      It is more convinient to work with the entity string
     #      values than their expanded text values.
 
-    def __init__(self, source):
+    def __init__ (self, source):
         self.source = source;  self.lineno = 0
         self.name = None; self.created=None
-    def read(self, bytes):
+    def read (self, bytes):  # 'bytes' argument ignored.
         s = self.source.readline();  self.lineno += 1
         if self.lineno == 1:
             if s[0] == '\uFEFF': s = s[1:]
@@ -81,13 +73,15 @@ class Jmparser (object):
             kw,         # A jdb.Kwds object initialized with database
                         #  keywords, such as returned by jdb.dbOpen()
                         #  or jdb.Kwds(jdb.std_csv_dir()).
-            xkw=None):  # A jdb.Kwds object initialized with XML
+            xkw=None,   # A jdb.Kwds object initialized with XML
                         #  keywords, such as returned by xmlmk.make().
                         #  If None, __init__() will get one by calling
                         #  xmlmk.make(kw).
+            logfile=None):  # File object to write warning messages to.
         self.KW = kw
         if xkw: self.XKW = xkw
         else: self.XKW = xmlkw.make (kw)
+        self.logfile = logfile
         self.seq = 0
 
     def parse_entry (self, txt, dtd=None):
@@ -650,7 +644,8 @@ class Jmparser (object):
                 % (warn_type, kwstr, ', '.join (tmp)))
 
     def warn (self, msg):
-        warns.warn ("Seq %d: %s" % (self.seq, msg))
+        print ("Seq %d: %s" % (self.seq, msg),
+               file=self.logfile or sys.stderr)
 
 
 def extract_lit (txt):

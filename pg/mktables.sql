@@ -25,8 +25,23 @@
 CREATE LANGUAGE 'plpgsql';
 \set ON_ERROR_STOP 
 
+-- Update the DB patch number in the INSERT statement below
+-- whenever there is a change to the schema or static data. 
+-- At the same time create a patch file in the patches/
+-- directory to bring a database at the previous patch level
+-- to the current one. 
+-- We don't support rolling back patches -- to undo a patch
+-- create a new one that undoes the previous one.  Thus the
+-- current database patch level should be determined by
+-- MAX(level) rather than MAX(dt) (although usually they will
+-- correspond.) 
+CREATE TABLE dbpatch(
+    level INT PRIMARY KEY,
+    dt TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'utc'));
+INSERT INTO dbpatch(level) VALUES(9);
+
 -- Note: The commented-out ALTER TABLE and CREATE INDEX statements
--- (where the comments' "--" start in the first column and are
+-- below (where the comments' "--" start in the first column and are
 -- followed immediately by text with no intervening space character)
 -- are not really comments.  They are extracted by tools/mkindex.py
 -- into a separate file that is executed during the database build
@@ -562,3 +577,4 @@ CREATE TABLE kresolv(
 --ALTER TABLE kresolv ADD CONSTRAINT kresolv_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 -- No FK constraint on 'kw' (to kwcinf) because it may have a value of
 -- 0, meaning 'ucs', which we don't need or want to be a real cinf item.
+

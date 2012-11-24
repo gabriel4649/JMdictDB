@@ -39,13 +39,27 @@ STATUS
 ======
 
 This code is under development and is pre-alpha quality.
-Everything here is subject to future change.  The web pages
-currently use Python/CGI.
+Everything here is subject to future change.  The API code
+is written for Python 3; Python 2 is no longer supported
+(although an older Python 2 version is available from the 
+code repository, seeINSTALLATION/Requirements below).  The 
+web pages use Python/CGI.
+
+The Python 2 to Python 3 conversion was only done recently
+(2012-05 through 2012-11 approximately) thus there are likely
+a number of conversion related errors remaining in less 
+frequently used parts of the code.
 
 Development uses Mercurial (http://selenic.com/mercurial)
 as a version control system.  The development repository is
 available for download, and the project's revision history 
 can be browsed at http://www.edrdg.org/~smg/.
+
+The JMdictDB system is currently running on Jim Breen's 
+wwwjdic web sites
+ (http://www.edrdg.org/cgi-bin/wwwjdic/wwwjdic?1C and mirrors)
+where it is used to accept additions and corrections to the 
+wwwjdic/JMdict data from wwwjdict users.
 
 =============
 DOCUMENTATION
@@ -119,49 +133,50 @@ The following work with labeled audio produced by Audacity.
 INSTALLATION
 ============
 
-Eventually, the system resulting from this development will
-be running on a JMdict project server, for the purpose of
-receiving additions and corrections to the JMdict data.
+Although this software was written and is maintained primarily
+to support Jim Breen's JMdict and wwwjdic projects, you may 
+wish to install a local copy of this software:
 
-However, you may wish to install a local copy of this software:
 - To contribute development work to the JMdict project.
+
 - To use or adapt the code to a project of your own.
 
 Requirements
 ------------
 The code is developed and tested on Microsoft Windows XP, 
-Fedora Core 11, and Unbuntu, with either Apache (on Linux)
-or IIS (on MS Windows) as a web server.  The webserver should
+Fedora 15, and Unbuntu, with either Apache (on Linux) or 
+IIS (on MS Windows) as a web server.  The webserver should
 be configured to run Python CGI scripts.
 
-Some additional Python modules are also needed.
-Version numbers are the versions currently in use in the 
-author's development environment -- the software may work
-fine with earlier or later versions, but this has not been 
-verified.
+JMdictDB requires Python 3; Python 2 is no longer supported
+although the last working Python 2 version is available in 
+the code repository with the tag, "py2-branch".
 
-  Postgresql [8.4]
-  Python [2.6] 
-    Note that Python-2.5 and -2.5.1 have somebugs in the codecs
-    module that will cause some jmdictdb tests to fail.  These 
-    are fixed in Python-2.5.2 and later.
+Some additional Python modules are also needed.  Version 
+numbers are the versions currently in use in the author's 
+development environment -- the software may work fine with 
+earlier or later versions, but this has not been verified.
+
+  Postgresql [9.2]
+  Python [3.3] 
   Additional Python packages:
-    psycopg2-2.0.5.1 Python-Postgresql connector.
+    psycopg2-2.4.5 Python-Postgresql connector.
       http://initd.org/projects/psycopg2/
       http://stickpeople.com/projects/python/win-psycopg/ (Windows)
-    simpleTAL-4.1 -- Template file processor.
+    simpleTAL-5.1 -- Template file processor.
       http://www.owlfish.com/software/simpleTAL/
-    ply-3.3 -- YACC'ish parser generator.
+    ply-3.4 -- YACC'ish parser generator.
       http://www.dabeaz.com/ply/
-    lxml-2.1.5 -- XML/XSLT library.  Used by xslfmt.py for doing
+    lxml-3.0.1 -- XML/XSLT library.  Used by xslfmt.py for doing
       xml->edict2 conversion.
-    wxPython-2.8.10.1 -- (Optional) JMdictDB inludes a simple
-      GUI interface to the database that is similar to the
-      cgi interface.  To run this requires wxPython.
+    [wxPython -- (Optional) JMdictDB includes a couple simple
+      GUI tools for accessing the database.  To run these requires
+      wxPython.
       http://www.wxpython.org/
-    If running on Python-2.5 the simplejson module is needed.
-      It is not need on Python-2.6 and later since Python now 
-      includes simplejson as module "json".
+      [*** Currently wxPython is not available for Python-3
+      so the two JMdictDB apps that require wxPython 
+      (tools/jmedit.py and python/srvh.py) will not run
+      until it is.]
   Apache [2.2] (on Unix/Linux/Windows systems) or
     IIS [5.0] (on MS Windows systems)
   make -- Gnu make is required if you want to use the provided
@@ -500,14 +515,14 @@ reasons we will refer simply to "~/.pgpass" in this document.
 [*4]
 For more information on usernames, passwords, and the .pgpass
 file, see the Postgresql docs:
-  30.13  Client Interfaces / libpq / The Password File
-  30.1   Client Interfaces / libpq / Database Connection -
+  31.15  Client Interfaces / libpq / The Password File
+  31.1   Client Interfaces / libpq / Database Connection -
             Control Functions
-  21     Server Administration / Client Authentication
-  sec VI Refernece / Postgresql Client Applications / -
+  19     Server Administration / Client Authentication
+  sec VI Reference / Postgresql Client Applications / -
             psql / Usage / Connecting to a Database
 Note that chapter numbers are Postgresql version dependent.  
-Numbers given are for Postgres version 8.3.5.
+Numbers given are for Postgres version 9.2.
 
 ===
 EOF

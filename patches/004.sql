@@ -1,8 +1,12 @@
+-- Descr: Fix view vt_misc.
+-- Trans: 3->4
+
 -- Previously, this view was erroneously getting keyword text
 -- from kwpos rather than kwmisc.
 
 \set ON_ERROR_STOP
 BEGIN;
+
 CREATE OR REPLACE VIEW vt_misc AS (
     SELECT m.entr,m.sens,
        (SELECT ARRAY_TO_STRING(ARRAY_AGG(m2.txt), ',') 

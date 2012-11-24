@@ -1,4 +1,6 @@
--- Patch for IS-184.
+-- Descr: Patch for IS-184.
+-- Trans: 1->2
+
 \set ON_ERROR_STOP 
 BEGIN;
 

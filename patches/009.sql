@@ -1,4 +1,5 @@
--- Add support for database patch level.
+-- Descr: Add support for database patch level.
+-- Trans: 8->9
 
 \set ON_ERROR_STOP
 BEGIN;

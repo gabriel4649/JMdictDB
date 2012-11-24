@@ -1,6 +1,10 @@
+-- Descr: IS-211,IS-212 Add new keywords.
+-- Trans: 5->6
+
 -- Patch to running database to apply the changes made in IS-211 and IS-212.
 
---BEGIN;
+\set ON_ERROR_STOP
+BEGIN;
 -- Add new keywords described in IS-211 ("hob") and IS-212 (the rest).
 INSERT INTO kwdial VALUES(12,'hob','Hokkaidou-ben');
 INSERT INTO kwfld  VALUES(11,'archit','architecture term');
@@ -65,4 +69,4 @@ UPDATE kwpos SET descr='Yodan verb with `hu/fu'' ending (archaic)' WHERE kw='v4h
 
 DELETE FROM kwpos WHERE kw='v5z';
 
---COMMIT;
+COMMIT;

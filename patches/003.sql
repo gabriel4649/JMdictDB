@@ -1,9 +1,11 @@
+-- Descr: IS-192 Change entr.seq from int to bigint.
+-- Trans: 2->3
+--
+-- IMPORTANT: run patchdb.py from the top (jmdictdb) directory.
+--
 -- This patch will change the type of column entr.seq 
 -- from INT to BIGINT in order to support new synthetic
 -- Tatoeba sequence numbers. See IS-192 for more details.
---
--- After running this, you must execute pg/mkviews.sql 
--- and pg/mkviews2.sql.
 
 \set ON_ERROR_STOP 
 BEGIN;
@@ -94,8 +96,10 @@ CREATE OR REPLACE FUNCTION syncseq() RETURNS VOID AS $syncseq$
 	END;
     $syncseq$ LANGUAGE plpgsql;
 
+\i pg/mkviews.sql
+\i pg/mkviews.sql
+
 COMMIT;
 
 -- Now run mkviews.sql and mkviews2.sql to recreate all the
 -- views dropped above.
-

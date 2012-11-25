@@ -1,0 +1,55 @@
+Title:	JMnedict XML formatter not escaping ampersands
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart
+
+2012-11-25 08:14:00 stuart
+ Email from jwb (Sun, 25 Nov 2012 22:15:23 +1100):
+  > I've run into problems with ampersands in the bodies of entries. When
+  > I extract in "jmnedict.xml" format they arrive just as "&". In "jmdict.xml"
+  > format they come as "&amp;", which is what I want. xsltproc blows up on
+  > "&" alone. (I can verify this by using those links at the bottom of the entry.py
+  > display.)
+  > 
+  > I'm extracting using "entrs2xml.py -d jmnew -s jmnedict
+  > --compat=jmnedict output-file"'
+
+ Can reproduce by using web search page to search in jmnedict corpus
+ for entry that starts with "キャッツ" to get:
+    キャッツ＆ドッグス
+    1. [unclass]
+      ▶ Cats & Dogs (film)
+
+ (Noted that search that includes the ampersand doesn't find entry,
+ that's another problem.)
+ Click the "jmnedict xml" link which shows:
+    
+    <name_type>&unclass;</name_type>
+    <trans_det>Cats & Dogs (film)</trans_det>
+    </trans>
+
+2012-11-25 11:03:00 stuart
+ In python/lib/fmtxml.py in function trans():
+
+  @@ -236,7 +236,7 @@
+           for g in getattr (s, '_gloss', []):
+               lang = getattr (g, 'g_lang', eng_id)
+               lang_attr = (' xml:lang="%s"' % XKW.LANG[lang].kw) if lang != eng_id else ''
+  -            fmt.append ('<trans_det%s>%s</trans_det>' % (lang_attr, g.txt))
+  +            fmt.append ('<trans_det%s>%s</trans_det>' % (lang_attr, esc(g.txt)))
+           if fmt:
+               fmt.insert (0, '<trans>')
+               fmt.append ('</trans>')
+
+ It looks like all the other text fields have esc() called on them 
+ before insertion into the xml so this case looks like a simple 
+ oversight.
+
+ Noticed that the reading and kanji texts were also not escaped and
+ although one would not expect ascii ampersands or other xml special
+ characters in them, escaped them too on the grounds that it won't 
+ hurt and bogus xml shouldn't be generated no matter what they contain.
+

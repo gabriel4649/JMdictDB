@@ -1,0 +1,5 @@
+<entry>
+<k_ele>
+<keb>高橋</keb>
+</k_ele>
+</entry>

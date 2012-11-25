@@ -80,6 +80,33 @@ class Test_xrslv (unittest.TestCase):
                                                 rtxt='\u304a\u306a\u3058', tsens=3)])])
         dotest (_, e, '0202050', compat='jmdict')
 
+class Test_jmnedict (unittest.TestCase):
+    def setUp(_):
+        jdb.KW = jdb.Kwds ('data/fmtxml/kw/')
+        fmtxml.XKW = None
+    def test0300010(_):
+        e = Entr (src=99, seq=300010)
+        dotest (_, e, '0300010', compat='jmnedict')
+    def test0300020(_):
+        e = Entr (src=99, _rdng=[Rdng (txt='たかはし')])
+        dotest (_, e, '0300020', compat='jmnedict')
+    def test0300030(_):
+        e = Entr (src=99, _rdng=[Rdng (txt='キャッツ')])
+        dotest (_, e, '0300030', compat='jmnedict')
+    def test0300040(_):
+        e = Entr (src=99, _kanj=[Kanj (txt='高橋')])
+        dotest (_, e, '0300040', compat='jmnedict')
+    def test0300050(_):
+        e = Entr (src=99, _sens=[Sens (_gloss=[Gloss(txt='Takahashi')])])
+        dotest (_, e, '0300050', compat='jmnedict')
+
+    def test0305001(_):  # IS-221
+        e = Entr (src=99, _rdng=[Rdng (txt='キャッツ＆ドッグス')],
+                          _sens=[Sens (_gloss=[Gloss (txt='Cats & Dogs (film)')],
+                                       _misc=[Misc (kw=jdb.KW.MISC['unclass'].id)])])
+        dotest (_, e, '0305001', compat='jmnedict')
+
+
 
 '\u304a\u306a\u3058'
 def dotest(_, e, expected_file, **kwds):

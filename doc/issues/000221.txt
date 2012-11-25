@@ -52,4 +52,9 @@ AssdTo:	stuart
  although one would not expect ascii ampersands or other xml special
  characters in them, escaped them too on the grounds that it won't 
  hurt and bogus xml shouldn't be generated no matter what they contain.
+ Committed to hg repo.
+
+2012-11-25 15:12:00 stuart
+ Forgot tests for the above fix.  Commited as followup rev since
+ I'd already pushed first to master repo.
 

@@ -1,0 +1,9 @@
+<entry>
+<r_ele>
+<reb>キャッツ＆ドッグス</reb>
+</r_ele>
+<trans>
+<name_type>&unclass;</name_type>
+<trans_det>Cats &amp; Dogs (film)</trans_det>
+</trans>
+</entry>

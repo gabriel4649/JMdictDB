@@ -18,7 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
 
@@ -26,7 +25,7 @@ import sys, os, os.path, random, re, datetime, operator, \
     warnings
 from time import time
 from collections import defaultdict
-import pylib; from pylib.config import Config
+import configparser
 import fmtxml
 from objects import *
 
@@ -2395,8 +2394,11 @@ def cfgOpen (cfgname):
             if not dir:
                 raise IOError (2, 'File not found on sys.path', cfgname)
             fname = os.path.join (dir, cfgname)
-        cfg = pylib.config.Config (fname)
-        cfg.__filename__ = fname
+        cfg = configparser.ConfigParser (interpolation=None)
+          # Disable ConfigParser's normal lowercasing of option names.
+        cfg.optionxform = lambda option: option
+        with open (fname) as cfgfile:
+            cfg.read_file (cfgfile)
         return cfg
 
 def getSvc (cfg, svcname, readonly=False, session=False):
@@ -2547,5 +2549,4 @@ def reset_encoding (file, encoding='utf-8'):
         file.__init__(file.detach(),
                       line_buffering=file.line_buffering,
                       encoding=encoding)
-
 

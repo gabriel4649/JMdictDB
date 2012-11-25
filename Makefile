@@ -137,11 +137,6 @@ LIB_FILES = jdb.py \
 	edict2.xsl
 WEB_LIB	= $(addprefix $(LIB_DIR)/,$(LIB_FILES))
 
-PYLIB_FILES = __init__.py \
-	config.py \
-	odict.py
-WEB_PYLIB = $(addprefix $(LIB_DIR)/pylib/,$(PYLIB_FILES))
-
 TAL_FILES = entr.tal \
 	edconf.tal \
 	edform.tal \
@@ -344,7 +339,7 @@ loadall: jmnew data/jmdict.dmp data/jmnedict.pgi data/examples.pgi
 
 #------ Move cgi files to web server location --------------------------
 
-web:	webcgi weblib webpylib webtal webcss
+web:	webcgi weblib webtal webcss
 
 webcss: $(WEB_CSS)
 $(WEB_CSS): $(CSS_DIR)/%: web/%
@@ -356,10 +351,6 @@ $(WEB_CGI): $(CGI_DIR)/%: web/cgi/%
 
 weblib: $(WEB_LIB)
 $(WEB_LIB): $(LIB_DIR)/%: python/lib/%
-	install -pm 644 $? $@
-
-webpylib: $(WEB_PYLIB)
-$(WEB_PYLIB): $(LIB_DIR)/pylib/%: python/lib/pylib/%
 	install -pm 644 $? $@
 
 webtal: $(WEB_TAL)

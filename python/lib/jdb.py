@@ -21,11 +21,9 @@
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
 
-import sys, os, os.path, random, re, datetime, operator, \
-    warnings
+import sys, os, os.path, random, re, datetime, operator, configparser
 from time import time
 from collections import defaultdict
-import configparser
 import fmtxml
 from objects import *
 

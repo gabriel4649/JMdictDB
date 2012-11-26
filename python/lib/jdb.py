@@ -222,7 +222,7 @@ def entrList (dbh, crit=None, args=None, ord='', tables=None, ret_tuple=False):
 
 OrderBy = {
         'rdng':"x.entr,x.rdng",          'kanj':"x.entr,x.kanj",
-        'sens':"x.entr,x.sens",          'gloss':"x.entr,x.sens,x.gloss",
+        'sens':"x.entr,x.ord,x.sens",    'gloss':"x.entr,x.sens,x.gloss",
         'xref':"x.entr,x.sens,x.xref",   'hist':"x.entr,x.hist",
         'kinf':"x.entr,x.kanj,x.ord",    'rinf':"x.entr,x.rdng,x.ord",
         'pos':"x.entr,x.sens,x.ord",     'misc':"x.entr,x.sens,x.ord",
@@ -1488,7 +1488,7 @@ def addentr (cur, entr):
         for x in freqs:
             dbinsert (cur, "freq",  ['entr','rdng','kanj','kw','value'], x)
         for s in getattr (entr, '_sens'):
-            dbinsert (cur, "sens", ['entr','sens','notes'], s)
+            dbinsert (cur, "sens", ['entr','sens','ord','notes'], s)
             for g in getattr (s, '_gloss', []): dbinsert (cur, "gloss", ['entr','sens','gloss','lang','ginf','txt'], g)
             for x in getattr (s, '_pos',   []): dbinsert (cur, "pos",   ['entr','sens','ord','kw'], x)
             for x in getattr (s, '_misc',  []): dbinsert (cur, "misc",  ['entr','sens','ord','kw'], x)
@@ -1532,7 +1532,8 @@ def setkeys (e, id=0):
             for x in getattr (k, '_restr', []): (x.entr, x.kanj) = (id, n)
             for x in getattr (k, '_stagk', []): (x.entr, x.kanj) = (id, n)
         for n,s in enumerate (getattr (e, '_sens', [])):
-            n += 1; (s.entr, s.sens) = (id, n)
+            n += 1; (s.entr, s.ord) = (id, n)
+            if not s.sens: s.sens = n
             for m,x in enumerate (getattr (s, '_gloss', [])): (x.entr,x.sens,x.gloss) = (id, n, m+1)
             for p,x in enumerate (getattr (s, '_pos',   [])): (x.entr, x.sens, x.ord) = (id, n, p+1)
             for p,x in enumerate (getattr (s, '_misc',  [])): (x.entr, x.sens, x.ord) = (id, n, p+1)

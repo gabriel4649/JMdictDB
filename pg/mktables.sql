@@ -275,6 +275,7 @@ CREATE TABLE kanj (
 CREATE TABLE sens (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL CHECK (sens>0),
+    ord SMALLINT NOT NULL,
     notes TEXT,
     PRIMARY KEY (entr,sens));
 --ALTER TABLE sens ADD CONSTRAINT sens_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;

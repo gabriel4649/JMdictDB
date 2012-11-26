@@ -17,7 +17,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
 
@@ -80,8 +79,6 @@ def senss (senss, kanjs, rdngs):
         nsens = 0;  stxts = []
         for s in senss:
             nsens += 1
-            if s.sens and s.sens != nsens:
-                raise ValueError ("Sense %d has \{sens\} value of %s" % (nsens, s.sens))
             stxts.append (sens (s, kanjs, rdngs, nsens))
         txt = '\n'.join (stxts)
         return txt
@@ -129,7 +126,7 @@ def sens (sens, kanjs, rdngs, nsens):
             gtxt.append ('%s%s' % (kwstr, escgloss (g.txt)))
         gloss = ['; '.join (gtxt)]
         lines = []
-        lines.append ("[%d]%s%s" % (nsens,kwds,dial))
+        lines.append ("[%d]%s%s" % (sens.sens,kwds,dial))
         if restr: lines.append (restr)
         if _lsrc: lines.append (_lsrc)
         if note: lines.append (note)

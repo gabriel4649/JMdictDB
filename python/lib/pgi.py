@@ -87,7 +87,7 @@ def initialize (tmpdir):
           ('rinf',   ['entr','rdng','ord','kw']),
           ('restr',  ['entr','rdng','kanj']),
           ('freq',   ['entr','rdng','kanj','kw','value']),
-          ('sens',   ['entr','sens','notes']),
+          ('sens',   ['entr','sens','ord','notes']),
           ('gloss',  ['entr','sens','gloss','lang','ginf','txt']),
           ('pos',    ['entr','sens','ord','kw']),
           ('misc',   ['entr','sens','ord','kw']),

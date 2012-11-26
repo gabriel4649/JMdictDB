@@ -167,12 +167,12 @@ class Kanj (DbRow):
         s._stagk = _stagk or []
 
 class Sens (DbRow):
-    def __init__ (s, entr=None, sens=None, notes=None,
+    def __init__ (s, entr=None, sens=None, ord=None, notes=None,
                      _gloss=None, _pos=None, _misc=None, _fld=None,
                      _dial=None, _lsrc=None, _stagr=None, _stagk=None,
                      _xref=None, _xrer=None, _xrslv=None):
-        DbRow.__init__(s,  (entr,  sens,  notes),
-                          ('entr','sens','notes'))
+        DbRow.__init__(s,  (entr,  sens,  ord,  notes),
+                       ('entr','sens','ord','notes'))
         s._gloss = _gloss or []
         s._pos   = _pos   or []
         s._misc  = _misc  or []

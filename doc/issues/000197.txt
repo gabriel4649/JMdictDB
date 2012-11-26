@@ -11,3 +11,60 @@ AssdTo:	stuart
   changes in code.  See edict list discussion, "<xref> tags without
   a destination or with too many destinations", 2010-10-28 thru
   2010-11-04.
+
+2010-11-15 17:35:00 stuart
+  [note: the following attempt was abandonded]
+  Add column 'key' (SMALLINT) to table sens, and column 'skey'
+  (also SMALLINT) to table entry in mktables.sql.  sens.key will
+  contain the sense id number and entr.skey will contain the largest
+  sens.key value used to date in the entry's senses, -- when a new
+  sense is added to an entry, entr.skey should be incremented 
+  and its value assigned to sens.key
+  value of entr.skey+1 and .  We can't use MAX(sens.key)+1 because
+  if the last sense is deleted, then later a new sense is added,
+  the new sense would end up with the key value used earlier by
+  the deleted sense, which is undesireable (unless of course the
+  new sense has the same semantics as the old, but that requires
+  human intervention to determine.)
+
+  Add code to jdb.setkeys() to set the sens.key and entr.skey
+  values properly.  Allow for the additional columns in object.py,
+  pgi.py.
+
+2012-05-01 18:35:00 stuart
+  After thinking about this a little more, decided to abandon the
+  idea of tracking the max sense number used.  ISTM that the whole
+  concept of changing a sense versus deleting, then adding a new 
+  indepedent sense, is squishy and subjective enough that it is
+  not worth the complexity required to handle in the corner case
+  of the last sense.  Further, the primary customer of sense id
+  numbers are people who want to do incremental updates to local
+  databases, but the people responsible for maintaining sense id's
+  coherently (that is making correct decisions regarding when an
+  existing sense is changed vs delete and adding a new unrelated
+  sense) is done by submitters who likely are not to have a good 
+  understanding of the needs of the first group.
+
+  What we will do is consider sens.sens numbers as the sense "key"
+  and will add an additional table attribute, "ord", which will 
+  control the display order.  When an entry is submitted, "ord"
+  will be supplied based on the order of the senses in the Entr
+  object (the way sens.sens in generated currently.)
+
+  When editing an entry, each sense will be numbered with its
+  (sequential) ord number.  The user may rearrange senses but
+  the sense (ord) number needs to move with its sense and will
+  be used by the submission code to match the senses in the
+  submission with the corresponding sense in the the per-edit 
+  entry.  Then the "ord" fields will be changed to match the
+  order given by the submitter.  As mentioned above, of the 
+  last sense is removed and sometime later a new last sense
+  is added, and a jmdict xml user does an incremental update
+  from the pre-remove xml to the post-add xml, it will appear
+  that the last sense was a change rather than a delete/add
+  (because it will have the same sens.sens number in both files).
+
+  Made database changes and minimal api changes to provide
+  support for "ord" column although it's not used for anything
+  yet -- but can load jmdictxml and submit edited entries.
+

@@ -225,7 +225,7 @@ def mkentr (jtxt, etxt, kwds):
         sens_note = "; ".join ([x[1] for x in kwds if len(x)>1]) or None
         if jdb.jstr_reb (jtxt): e._rdng = [jdb.Rdng (txt=jtxt)]
         else:                   e._kanj = [jdb.Kanj (txt=jtxt)]
-        e._sens = [jdb.Sens (notes=sens_note,
+        e._sens = [jdb.Sens (sens=1, notes=sens_note,
                     _gloss=[jdb.Gloss (lang=KW.LANG_eng,
                                      ginf=KW.GINF_equ, txt=etxt)],
                     _misc=[jdb.Misc (kw=x) for x in kws])]

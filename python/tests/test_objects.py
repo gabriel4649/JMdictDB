@@ -93,7 +93,7 @@ class Test_Attrs (unittest.TestCase):
                                                '_inf','_freq','_restr','_stagr','_snd'])
     def test000030(_): attrchk (_, Kanj(),    ['entr','kanj','txt',
                                                '_inf','_freq','_restr','_stagk'])
-    def test000040(_): attrchk (_, Sens(),    ['entr','sens','notes','_gloss','_pos','_misc','_fld','_dial',
+    def test000040(_): attrchk (_, Sens(),    ['entr','sens','ord','notes','_gloss','_pos','_misc','_fld','_dial',
                                                '_lsrc','_stagr','_stagk','_xref','_xrer','_xrslv'])
     def test000050(_): attrchk (_, Gloss(),   ['entr','sens','gloss','lang','ginf','txt'])
     def test000060(_): attrchk (_, Rinf(),    ['entr','rdng','ord','kw'])

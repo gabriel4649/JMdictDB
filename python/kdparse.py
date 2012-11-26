@@ -263,10 +263,10 @@ def strokes (x, n, c):
 
 def reading_meaning (rm, rdng, sens, cinf, langs):
         KW_NANORI = KW.RINF[Xml2db.RINF.get('nanori','nanori')].id
-        for x in rm.findall ('rmgroup'):
+        for n, x in enumerate (rm.findall ('rmgroup')):
             r, g, c = rmgroup (x, langs)
             rdng.extend (r)
-            sens.append (jdb.Sens (_gloss=g))
+            sens.append (jdb.Sens (sens=n+1, _gloss=g))
           # Make a dict keyed by the readings already parsed.
         rlookup = dict ([(r.txt,r) for r in rdng])
           # Get the nanori readings...

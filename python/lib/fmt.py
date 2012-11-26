@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008 Stuart McGraw
+#  Copyright (c) 2008-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -16,7 +16,6 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -83,6 +82,7 @@ def rdng (r, k, n=None):
 
 def sens (s, kanj, rdng, n=None, entrcorp=None):
         KW = jdb.KW;  fmt = []
+        n = sens.sens
           # Part-of-speech, misc keywords, field...
         pos = ",".join([KW.POS[p.kw].kw for p in getattr (s,'_pos',[])])
         if pos: pos = "[" + pos + "]"

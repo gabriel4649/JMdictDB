@@ -179,7 +179,7 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
         in the EDRDG JMdict XML file of 2009-03-01.
         """
         fmt = []
-        fmt.append ('<sense>')
+        fmt.append ('<sense sid="%d">' % s.sens)
 
         fmt.extend (restrs (s, kanj, '_stagk'))
         fmt.extend (restrs (s, rdng, '_stagr'))

@@ -1,7 +1,7 @@
 %{
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008-2010 Stuart McGraw
+#  Copyright (c) 2008-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -122,11 +122,20 @@ senses
         : sense
                 { p[0] = [p[1]] }
         | senses sense
-                { p[0] = p[1]; p[0].append(p[2]) }
+                { p[0] = p[1]
+                snums = [s.sens for s in p[0]]
+                if p[2].sens in snums:
+                    perror (p, "Sense id '%d' has already been used" % p[2].sens)
+                p[0].append(p[2]) }
         ;
 sense
         : SNUM glosses
-                { sens = jdb.Sens()
+                { try: snum = int (p[1].strip (' []\t\r\n'))
+                except (ValueError, TypeError): 
+                    perror (p, "Sense id \"[%s]\" is not a number", p[1])
+                if snum < 1 or snum > 99:  # 99 is an arbitrary limit. 
+                    perror (p, "Sense id \"[%s]\" must be between 1 and 99", snum)
+                sens = jdb.Sens (sens=snum)
                 err = bld_sens (sens, p[2])
                 if err: perror (p, "Unable to build sense %s\n%s" % (p[1], err))
                 p[0] = sens }

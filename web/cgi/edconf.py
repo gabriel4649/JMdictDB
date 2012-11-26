@@ -212,37 +212,42 @@ def main (args, opts):
                         method=meth, output=sys.stdout, this_page='edconf.py')
 
 def realign_xrers (entr, pentr):
-        # This function mutates 'entr' to remove invalid reverse
-        # xrefs from entr's ._xrer list and fix those that point
-        # to moved readings or kanji.
         # There may be other entries in the database that have xrefs
-        # pointing to (senses of) the entry we are editing.  These
-        # reverse xrefs also have rdng and kanj numbers that index
-        # a specific reading and/or kanji our entry.  While the sense
-        # rdng and kanj numbers were correct for our parent (pre-edit)
-        # entry, the edits made may have changed, reordered or deleted
-        # the senses, readings and kanji of our entry.  This function
-        # tries to adjust the reverse xrefs so that any that refer to
-        # a sense, reading or kanji that no longer exists is deleted,
-        # and any that now point to the wrong reading or kanji because
-        # they were reordered are corrected.  We fix them by getting
-        # the rdng or kanj text from the parent entry, find the index
-        # same text in the edited entry, and update the rev xref with
-        # the new index.
-        # Since senses have no real id (yet, see IS-197), we can't
-        # really do much to correct them other than to delete any
-        # that reference a sense beyond the end of the senses list.
+        # pointing to (senses of) the entry we are editing (or more
+        # accurately, the parent of the edited entry).
+        # This function copies those reverse xrefs (xrer's) to the
+        # entry being edited ('entr') making sure that if the senses
+        # have changed position the old xrers end up on the relocated
+        # sense, and removing any for which the corresponng sense was
+        # deleted.  Also, xrer objects have index numbers that may
+        # index a reading or kanji in our entr and those readings or
+        # kanji may have been moved or deleted.  So we also fix up
+        # any of the index numbers that need it as well.
 
-        # First, copy rev xrefs from parent to new entry except
-        # for those there is no sense for on new entry.
-        nosens = []     # List for discarded for no sense xrers.
-        for n, sp in enumerate (pentr._sens):
-            if not sp._xrer: continue
-            if n < len (entr._sens):
-                entr._sens[n]._xrer = copy.copy (sp._xrer)
-            else: nosens.extend (sp._xrer)
+          # First, copy rev xrefs from parent to new entry except
+          # for those there is no sense for on new entry.
+        nosens = []     # List for discarded-for-no-sense xrers.
+        for n,ps in enumerate (pentr._sens):
+            if not ps._xrer: continue
+              # For this 'ps' (parent sense) look for the sense
+              # 's' on our new entry 'entr' that has the same sense
+              # number and copy the parent sense's xrer list to there.
+            moved = False
+            for s in entr._sens:
+                if ps.sens == s.sens:
+                    if s._xrer:
+                          # We expect the new entry's _xrer list to be empty.
+                        raise ValueError ("Unexpected xrer list on sense %s" % s.sens)
+                    s._xrer = copy.copy (ps._xrer)
+                    moved = True
+            if not moved: nosens.extend (ps._xrer)
 
         # Now fix up missing and out of order readings and kanji.
+        # We find the reading or kanji text in the parent entry,
+        # locate the same text in the 'entr' entry, and adjust
+        # the xrer index numbers (xrer.rdng, xrer.kanj) appropriately
+        # if need be.
+
         nordng = []  # Lists to accumulate xrefs that refer to
         nokanj = []  #  readings and kanji no longer in new entry.
           # Index the readings and kanji of our edited entry.

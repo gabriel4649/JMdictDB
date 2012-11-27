@@ -68,3 +68,37 @@ AssdTo:	stuart
   support for "ord" column although it's not used for anything
   yet -- but can load jmdictxml and submit edited entries.
 
+2012-11-27 07:05:00 stuart
+  Had commited the changes described in previous two notes on
+  that dates of the notes, in a separate clone of jmdictdb.
+  However, after a number of merges and other changes I was
+  unable to figure out how to get mercurial to move the changes
+  in to the main repository on separate branch.  Consequently
+  created patch files in the sensid clone for the only two
+  significant changes:
+    hg export -r e6fb23767103 > sid1.patch
+    hg export -r b3ab9160923e > sid2.patch
+  created branch "sensid" in new jmdict clone, applied the 
+  patches with the "patch" command (had to manually enter each
+  target filename but that's easy copy-paste from info patch
+  prints).  Got three rejected hunk #1 in: python/lib/fmtjel.py,
+  (sid1.patch) and fmt.py, fmtxml.py (sid2.patch), but all were
+  trivially easily correctable conflicts in the copyright or
+  version lines. 
+  Commited the sid1 and sid2 changes seperately into branch
+  "sensid".  First commit 4574f8195fa2 2012-11-26T13:20:33
+  had wrong message.  Should have been:
+
+    sid: add ord column to table sens (IS-197) 
+     First step in implementing IS-197.  Adding 'ord' column
+     allows 'sens' column to be used a long-term sense id.
+     This rev allows loading and displaying (though not editing
+     yet) jmdict entries with a sense id.
+
+2012-11-27 14:22:00 stuart
+  Set database patch level in pg/mktables.sql and patches/1001.sql
+  to use patch level 1001 for a database with sensid's during
+  development.  When we merge the sensid branch into the main
+  branch, will change the patch level (and rename 1001.sql) to
+  whatever the next regular patch level is at that time.
+

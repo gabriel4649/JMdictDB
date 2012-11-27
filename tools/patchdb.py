@@ -238,7 +238,7 @@ def error (msg):
         sys.exit(1)
 
 import argparse
-from pylib.paraformatter import ParagraphFormatter
+from pylib.argparse_formatters import ParagraphFormatter
 
 def parse_cmdline ():
         v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \

@@ -266,11 +266,13 @@ def parse_cmdline ():
                 "the patch is applied entirely or not at all.  This script will "
                 "stop if a patch fails and not apply any further ones until the "
                 "problem is corrected and the failing patch sucessfully applied." )
-        p.add_argument ("patchdir", default=None,
-            help="Directory containing patch files.")
         p.add_argument ("-t", "--tolevel", default=None,
             help="Upgrade to the given patch level.  This is required unless "
                 "--list is given.")
+        p.add_argument ("--patchdir", default='patches',
+            help="Directory containing patch files.  Default is \"patches\" "
+                "which will usually be correct when this program is run "
+                "from the root of the jmdictdb directory tree.")
         p.add_argument ("-l", "--list", action="store_true", default=False,
             help="List all the patches available in PATCHDIR and exit.")
         p.add_argument ("-a", "--apply", action="store_true", default=False,
@@ -294,8 +296,10 @@ def parse_cmdline ():
         p.add_argument ("-v", "--verbose", action="store_true", default=False,
             help="Print the patch commands as they are applied.")
 
-        p.add_argument ("-d", "--database", default="jmdict",
-            help="Name of the database to load.  Default is \"jmdict\".")
+        p.add_argument ("-d", "--database", default=None,
+            help="Name of the database to patch.  To help prevent accidents "
+                "there is no default and this option is required if --list "
+                "is not given.")
         p.add_argument ("-h", "--host", default=None,
             help="Name host machine database resides on.")
         p.add_argument ("-u", "--user", default=None,
@@ -308,6 +312,8 @@ def parse_cmdline ():
         opts = p.parse_args ()
         if not opts.tolevel and not opts.list:
             p.error ("The following arguments are required: --tolevel")
+        if not opts.database and not opts.list:
+            p.error ("The following arguments are required: --database")
         return [opts.tolevel, opts.patchdir], opts
 
 if __name__ == '__main__':

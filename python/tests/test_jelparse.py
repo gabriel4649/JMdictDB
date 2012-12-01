@@ -230,6 +230,7 @@ def check (self, seq, exp=None):
         self.assertEqual (outtxt, exptxt, msg)
 
 def check2 (_, test, exp=None):
+        #pdb.set_trace()
         intxt = _.data[test + '_data']
         try: exptxt = (_.data[test + '_expect']).strip('\n')
         except KeyError: exptxt = intxt.strip('\n')

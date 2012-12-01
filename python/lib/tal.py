@@ -174,3 +174,13 @@ def TALdecode (arg, *args):
             if arg == args[i]: return args[i+1]
         if len(args) % 2: return args[-1]
         return None
+
+@add2builtins
+def TALsensid (senss, id):
+          # Given a list of senses, 'senss', return the first (normally
+          # only) one with a .sens value of 'id' or raise ValueError if
+          # no such is found.
+        for s in senss:
+            if id == s.sens: return s
+        raise ValueError ("Sense id '%s' not found" % id)
+

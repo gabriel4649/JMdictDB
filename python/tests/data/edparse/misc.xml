@@ -7,7 +7,7 @@
 <r_ele>
 <reb>あかん</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <pos>&int;</pos>
 <pos>&n;</pos>
 <misc>&uk;</misc>
@@ -30,7 +30,7 @@
 <r_ele>
 <reb>あらわに</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <pos>&adv;</pos>
 <misc>&uk;</misc>
 <gloss>openly</gloss>
@@ -50,12 +50,12 @@
 <r_ele>
 <reb>ガロップ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <stagr>ギャロップ</stagr>
 <pos>&n;</pos>
 <gloss>gallop</gloss>
 </sense>
-<sense>
+<sense sid="2">
 <gloss>galop (dance)</gloss>
 </sense>
 </entry>
@@ -82,7 +82,7 @@
 <re_restr>鰻丼</re_restr>
 <re_restr>うなぎ丼</re_restr>
 </r_ele>
-<sense>
+<sense sid="1">
 <pos>&n;</pos>
 <gloss>bowl of eel and rice (donburi)</gloss>
 </sense>
@@ -98,7 +98,7 @@
 <reb>ねがわくわ</reb>
 <re_inf>&ik;</re_inf>
 </r_ele>
-<sense>
+<sense sid="1">
 <pos>&exp;</pos>
 <xref>願わくは</xref>
 <gloss>(misspelling of 願わくは;ねがわくは) I pray</gloss>
@@ -118,7 +118,7 @@
 <r_ele>
 <reb>かけこみ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <pos>&n;</pos>
 <gloss>last-minute rush</gloss>
 <gloss>stampede</gloss>
@@ -141,7 +141,7 @@
 <r_ele>
 <reb>おみくじ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <pos>&n;</pos>
 <misc>&uk;</misc>
 <gloss>(leading to 大吉, 中吉, 小吉, 吉, 末吉, 凶 or 大凶) written oracle</gloss>
@@ -171,7 +171,7 @@
 <r_ele>
 <reb>うまくいく</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <pos>&v5k-s;</pos>
 <gloss>to go smoothly</gloss>
 <gloss>to turn out well</gloss>
@@ -197,7 +197,7 @@
 <reb>ぐけい</reb>
 <re_restr>愚計</re_restr>
 </r_ele>
-<sense>
+<sense sid="1">
 <pos>&n;</pos>
 <gloss>foolish plan</gloss>
 <gloss>one's plan</gloss>
@@ -219,7 +219,7 @@
 <r_ele>
 <reb>むくろ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <pos>&n;</pos>
 <gloss>(dead) body</gloss>
 <gloss>corpse</gloss>
@@ -232,14 +232,14 @@
 <r_ele>
 <reb>あらまし</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <pos>&adv;</pos>
 <pos>&n;</pos>
 <gloss>outline</gloss>
 <gloss>gist</gloss>
 <gloss>abstract</gloss>
 </sense>
-<sense>
+<sense sid="2">
 <gloss>roughly</gloss>
 <gloss>about</gloss>
 </sense>
@@ -251,7 +251,7 @@
 <r_ele>
 <reb>ありあり</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <pos>&adj-f;</pos>
 <pos>&adv-to;</pos>
 <misc>&on-mim;</misc>
@@ -281,7 +281,7 @@
 <r_ele>
 <reb>おしゃかさん</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <pos>&n;</pos>
 <gloss>Buddha</gloss>
 <gloss>Shakyamuni</gloss>
@@ -306,7 +306,7 @@
 <r_ele>
 <reb>およべっさん</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <pos>&n;</pos>
 <xref>恵比寿</xref>
 <misc>&col;</misc>

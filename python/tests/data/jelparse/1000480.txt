@@ -1,4 +1,4 @@
 ﻿
 あほんだら
-[1][n][dial=ksb]
+[S1][n][dial=ksb]
   fool; oaf; airhead

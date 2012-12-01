@@ -123,7 +123,11 @@ class Test_misc (unittest.TestCase):
     def test_q2157980 (_): dotest (_, 'q2157980')
 
 def dotest (_, testnum, expnum=None):
-        global Test_xmlcmp_indata, Test_xmlcmp_expdata
+          # '_.indata':  Dict of edict-formatted strings indexed by 'testnum'.
+          # '_.expdata': Dict of xml-formatted data indexed by 'testnum'.
+          # Tests are performed by parsing the edict strings in _.indata with
+          # edparse.entr (the unit under test), them formatting as xml and
+          # comparing the result to the expected xml in _.expdata.
         e = edparse.entr (_.indata[testnum])
         xml = fmtxml.entr (e, compat="jmdict")
         expected = _.expdata[expnum or testnum]

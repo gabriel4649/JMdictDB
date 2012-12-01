@@ -1,5 +1,5 @@
 窒扶斯[ateji]
 チフス[gai1]；チブス
-[1][n]
+[S1][n]
   [lsrc=ger:Typhus,lsrc=dut:]
   typhoid fever; typhus

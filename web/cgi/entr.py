@@ -41,8 +41,8 @@ def main (args, opts):
         entries.sort (key=lex_sort)
         for e in entries:
             for s in e._sens:
-                if hasattr (s, '_xref'): jdb.augment_xrefs (cur, s._xref)
-                if hasattr (s, '_xrer'): jdb.augment_xrefs (cur, s._xrer, 1)
+                jdb.augment_xrefs (cur, s._xref)
+                jdb.augment_xrefs (cur, s._xrer, 1)
             if hasattr (e, '_snd'): jdb.augment_snds (cur, e._snd)
         cur.close()
         disp = form.getfirst ('disp')

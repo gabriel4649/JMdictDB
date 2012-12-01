@@ -2,7 +2,7 @@
 # 0330010_data -- 
 
 ふう
-[1]
+[S1]
   [lsrc=fre:fou]
   foo
 
@@ -10,7 +10,7 @@
 # 0330020_data -- 
 
 ふう
-[1]
+[S1]
   [lsrc=fre:]
   foo
 
@@ -18,7 +18,7 @@
 # 0330030_data -- 
 
 ふう
-[1]
+[S1]
   [lsrc=fre/w:fou]
   foo
 
@@ -26,7 +26,7 @@
 # 0330040_data -- 
 
 ふう
-[1]
+[S1]
   [lsrc=fre/p:fou]
   foo
 
@@ -34,7 +34,7 @@
 # 0330050_data -- 
 
 ふう
-[1]
+[S1]
   [lsrc=fre/pw:fou]
   foo
 
@@ -42,14 +42,14 @@
 # 0330051_data -- 
 
 ふう
-[1]
+[S1]
   [lsrc=fre/wp:fou]
   foo
 
 # 0330051_expect -- 
 
 ふう
-[1]
+[S1]
   [lsrc=fre/pw:fou]
   foo
 
@@ -57,7 +57,7 @@
 # 0330060_data -- 
 
 ふう
-[1]
+[S1]
   [lsrc=fre/p:]
   foo
 
@@ -65,14 +65,14 @@
 # 0330070_data -- 
 
 ふう
-[1]
+[S1]
   [lsrc=fou]
   foo
 
 # 0330070_expect -- 
 
 ふう
-[1]
+[S1]
   [lsrc=eng:fou]
   foo
 
@@ -80,7 +80,7 @@
 # 0330080_data -- 
 
 ふう
-[1]
+[S1]
   [lsrc=eng:]
   foo
 

@@ -1,17 +1,17 @@
 紅葉[ichi1,news1,nf16]；黄葉
 こうよう[ichi1,news1,nf16]；もみじ[ichi1]
-[1][n,vs]
+[S1][n,vs]
   autumn colours; fall colors; leaves changing color (colour)
-[2][n,vs]
+[S2][n,vs]
   [restr=紅葉; こうよう]
   leaves turning red; red leaves
-[3][n,vs]
+[S3][n,vs]
   [restr=黄葉; こうよう]
   leaves turning yellow; yellow leaves
-[4][n]
+[S4][n]
   [restr=もみじ]
   (Japanese) maple (Acer japonicum)
-  [see=2148610・以呂波紅葉[1]]
-[5][n][col]
+  [see=2148610・以呂波紅葉[S1]]
+[S5][n][col]
   [restr=もみじ]
   venison

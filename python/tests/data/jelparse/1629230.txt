@@ -1,5 +1,5 @@
 ﻿
 メリヤスシャツ
-[1][n]
+[S1][n]
   [lsrc=spa:medias,lsrc=por:meias,lsrc=eng:shirt]
   undershirt

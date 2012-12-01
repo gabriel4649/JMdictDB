@@ -82,7 +82,6 @@ def rdng (r, k, n=None):
 
 def sens (s, kanj, rdng, n=None, entrcorp=None):
         KW = jdb.KW;  fmt = []
-        n = sens.sens
           # Part-of-speech, misc keywords, field...
         pos = ",".join([KW.POS[p.kw].kw for p in getattr (s,'_pos',[])])
         if pos: pos = "[" + pos + "]"
@@ -102,7 +101,7 @@ def sens (s, kanj, rdng, n=None, entrcorp=None):
         if hasattr(s,'_dial') and s._dial:
             _dial = ("Dialect:" + ",".join([KW.DIAL[x.kw].kw for x in s._dial]))
 
-        fmt.append ("%d. %s" % (getattr(s,'sens',n), ', '.join(
+        fmt.append ("%d.[S%d] %s" % (n, sens.sens, ', '.join(
                                 [x for x in (stag, pos, misc, fld, _dial, _lsrc) if x])))
         if hasattr(s,'notes') and s.notes: fmt.append ("  \u00AB%s\u00BB" % s.notes)
 

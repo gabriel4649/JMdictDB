@@ -169,7 +169,7 @@ def main (args, opts):
               # The following dummy entry will produce the default
               # text for new entries: no kanji, no reading, and sense
               # text "[1][n]".
-            entr = jdb.Entr(_sens=[jdb.Sens(_pos=[jdb.Pos(kw=jdb.KW.POS['n'].id)])], src=None)
+            entr = jdb.Entr (_sens=[jdb.Sens (sens=1, _pos=[jdb.Pos(kw=jdb.KW.POS['n'].id)])], src=None)
             entrs = [entr]
         for e in entrs:
             if not is_editor: remove_freqs (e)

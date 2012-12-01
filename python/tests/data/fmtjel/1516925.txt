@@ -1,17 +1,17 @@
 方[ichi1]
 かた[ichi1]
-[1][n]
+[S1][n]
   [note="also ほう"]
   direction; way
-[2][n][hon]
+[S2][n][hon]
   person; lady; gentleman
-[3][n,n-suf]
+[S3][n,n-suf]
   method of; manner of; way of
-[4][n-suf]
+[S4][n-suf]
   care of ..
-[5][n-suf]
+[S5][n-suf]
   [note="also がた"]
   person in charge of ..
-[6][n-suf]
+[S6][n-suf]
   [note="also がた"]
   side (e.g. "on my mother's side")

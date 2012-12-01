@@ -6,7 +6,7 @@
 <r_ele>
 <reb>かんじ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>kanji</gloss>
 </sense>
 </entry>
@@ -22,7 +22,7 @@
 <r_ele>
 <reb>かんじ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>kanji</gloss>
 </sense>
 </entry>
@@ -38,7 +38,7 @@
 <r_ele>
 <reb>ぶんぽう</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>kanji</gloss>
 </sense>
 </entry>
@@ -51,13 +51,13 @@
 <r_ele>
 <reb>かんじ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>sense1</gloss>
 </sense>
-<sense>
+<sense sid="2">
 <gloss>sense 2</gloss>
 </sense>
-<sense>
+<sense sid="3">
 <gloss>sense number 3</gloss>
 </sense>
 </entry>
@@ -70,7 +70,7 @@
 <r_ele>
 <reb>かんじ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>gloss1</gloss>
 <gloss>gloss 2</gloss>
 <gloss>gloss number 3</gloss>
@@ -97,15 +97,15 @@
 <r_ele>
 <reb>さくや</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>sense1 gloss1</gloss>
 </sense>
-<sense>
+<sense sid="2">
 <gloss>sense2 gloss1</gloss>
 <gloss>sense2 gloss2</gloss>
 <gloss>sense2 gloss3</gloss>
 </sense>
-<sense>
+<sense sid="3">
 <gloss>sense3 gloss1</gloss>
 <gloss>sense3 gloss2</gloss>
 </sense>
@@ -134,7 +134,7 @@
 
 @b104
 <entry>
-<sense>
+<sense sid="1">
 <gloss>kanji</gloss>
 </sense>
 </entry>
@@ -151,7 +151,7 @@
 <r_ele>
 <reb>たべる</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>to eat</gloss>
 </sense>
 </entry>
@@ -179,7 +179,7 @@
 <reb>さくや</reb>
 <re_restr>昨夜</re_restr>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>evening</gloss>
 </sense>
 </entry>
@@ -206,7 +206,7 @@
 <reb>さくや</reb>
 <re_restr>昨夜</re_restr>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>evening</gloss>
 </sense>
 </entry>
@@ -237,7 +237,7 @@
 <r_ele>
 <reb>さくや</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>evening</gloss>
 </sense>
 </entry>
@@ -253,7 +253,7 @@
 <r_ele>
 <reb>こーひー</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>coffee</gloss>
 </sense>
 </entry>
@@ -286,7 +286,7 @@
 <re_restr>昨夜</re_restr>
 <re_restr>何か</re_restr>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>evening</gloss>
 </sense>
 </entry>
@@ -318,7 +318,7 @@
 <reb>ばれいしょ</reb>
 <re_restr>馬鈴薯</re_restr>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>potato</gloss>
 </sense>
 </entry>
@@ -338,7 +338,7 @@
 <re_inf>&gikun;</re_inf>
 <re_inf>&ok;</re_inf>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>Japanese squash</gloss>
 </sense>
 </entry>
@@ -357,7 +357,7 @@
 <r_ele>
 <reb>じぐ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>jig (tool)</gloss>
 </sense>
 </entry>
@@ -374,7 +374,7 @@
 <reb>ついたち</reb>
 <re_pri>spec1</re_pri>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -388,7 +388,7 @@
 <r_ele>
 <reb>ついたち</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -402,7 +402,7 @@
 <reb>ついたち</reb>
 <re_pri>spec1</re_pri>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -417,7 +417,7 @@
 <reb>ついたち</reb>
 <re_pri>spec1</re_pri>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -429,7 +429,7 @@
 <ke_pri>spec1</ke_pri>
 </k_ele>
 <r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -440,7 +440,7 @@
 <reb>ついたち</reb>
 <re_pri>spec1</re_pri>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -461,7 +461,7 @@
 <r_ele>
 <reb>さくじつ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -481,7 +481,7 @@
 <r_ele>
 <reb>さくじつ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -501,7 +501,7 @@
 <r_ele>
 <reb>さくじつ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -522,7 +522,7 @@
 <reb>さくじつ</reb>
 <re_pri>spec1</re_pri>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -543,7 +543,7 @@
 <r_ele>
 <reb>さくじつ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -564,7 +564,7 @@
 <reb>さくじつ</reb>
 <re_pri>spec1</re_pri>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -584,7 +584,7 @@
 <r_ele>
 <reb>さくじつ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -604,7 +604,7 @@
 <reb>さくじつ</reb>
 <re_pri>spec1</re_pri>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -626,7 +626,7 @@
 <reb>さくじつ</reb>
 <re_pri>spec1</re_pri>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -648,7 +648,7 @@
 <reb>さくじつ</reb>
 <re_pri>spec1</re_pri>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>1st day of month</gloss>
 </sense>
 </entry>
@@ -657,7 +657,7 @@
 
 @s1		# One pos tag.
 <entry>
-<sense>
+<sense sid="1">
 <pos>&n;</pos>
 <gloss>gloss text</gloss>
 </sense>
@@ -665,7 +665,7 @@
 
 @s2		# Multiple pos tag.
 <entry>
-<sense>
+<sense sid="1">
 <pos>&n;</pos>
 <pos>&vs;</pos>
 <pos>&adj-na;</pos>
@@ -689,7 +689,7 @@
 <r_ele>
 <reb>ジャガイモ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <stagk>じゃが芋</stagk>
 <stagr>ジャガイモ</stagr>
 <pos>&n;</pos>
@@ -702,7 +702,7 @@
 <dial>&ksb;</dial>
 <gloss>(Not a real entry.) potato</gloss>
 </sense>
-<sense>
+<sense sid="2">
 <gloss>Solanum tuberosum</gloss>
 </sense>
 </entry>

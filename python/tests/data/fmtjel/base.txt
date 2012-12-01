@@ -2,7 +2,7 @@
 # 0000010_data -- 
 犬
 いぬ
-[1]
+[S1]
   [lsrc=spa/w:perro]
   dog
 
@@ -10,7 +10,7 @@
 # 0000020_data -- 
 犬
 いぬ
-[1]
+[S1]
   [lsrc=spa/p:perro]
   dog
 
@@ -18,7 +18,7 @@
 # 0000030_data -- 
 犬
 いぬ
-[1]
+[S1]
   [lsrc=spa/pw:perro]
   dog
 
@@ -26,13 +26,13 @@
 # 0000040_data -- 
 犬
 いぬ
-[1]
+[S1]
   [lsrc=spa/wp:perro]
   dog
 
 # 0000040_expect
 犬
 いぬ
-[1]
+[S1]
   [lsrc=spa/pw:perro]
   dog

@@ -125,19 +125,17 @@ senses
                 { p[0] = p[1]
                 snums = [s.sens for s in p[0]]
                 if p[2].sens in snums:
-                    perror (p, "Sense id '%d' has already been used" % p[2].sens)
+                    perror (p, "Sense id 'S%d' has already been used" % p[2].sens)
                 p[0].append(p[2]) }
         ;
 sense
         : SNUM glosses
-                { try: snum = int (p[1].strip (' []\t\r\n'))
-                except (ValueError, TypeError): 
-                    perror (p, "Sense id \"[%s]\" is not a number", p[1])
-                if snum < 1 or snum > 99:  # 99 is an arbitrary limit. 
-                    perror (p, "Sense id \"[%s]\" must be between 1 and 99", snum)
+                { snum = int (p[1])
+                if snum < 1 or snum > 99:
+                    perror (p, "Sense id 'S%s' must be between s1 and s99" % snum)
                 sens = jdb.Sens (sens=snum)
                 err = bld_sens (sens, p[2])
-                if err: perror (p, "Unable to build sense %s\n%s" % (p[1], err))
+                if err: perror (p, "Unable to build sense 'S%s'\n%s" % (p[1], err))
                 p[0] = sens }
         ;
 glosses
@@ -391,13 +389,13 @@ slist
 snums
         : NUMBER
                 { n = int(p[1])
-                if n<1 or n>99:
-                    perror (p, "Invalid sense number: '%s' % n")
+                if n<1 or n>99: # Arbitrary limit for sanity check.
+                    perror (p, "Sense id 'S%s' must be between s1 and s99" % n)
                 p[0] = [n] }
         | snums COMMA NUMBER
                 { n = int(p[3])
-                if n<1 or n>99:
-                    perror (p, "Invalid sense number: '%s' % n")
+                if n<1 or n>99: # Arbitrary limit for sanity check.
+                    perror (p, "Sense id 'S%s' must be between s1 and s99" % n)
                 p[0] = p[1] + [n] }
         ;
 

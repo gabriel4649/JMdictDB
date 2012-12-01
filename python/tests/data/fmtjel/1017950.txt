@@ -1,6 +1,6 @@
 ﻿
 アフターサービス
-[1][n]
+[S1][n]
   [lsrc=eng/w:"after service"]
   after-sales service; warranty service
-  [see=1017940・アフターケア[1]]
+  [see=1017940・アフターケア[S1]]

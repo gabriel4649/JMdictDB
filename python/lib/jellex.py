@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008 Stuart McGraw
+#  Copyright (c) 2008-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -16,7 +16,6 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11]);
@@ -46,8 +45,9 @@ class LexSpec:
 
 # State: INITIAL
 
-    def t_SNUM (self, t):
-        r'\[\d+\]\s*'
+    def t_SNUM (self, t):  # A "[Snnn]" marks start of a sense id number.
+        r'\[[sS]\d+\]\s*'
+        t.value = t.value.strip('sS[] \t\n\r\u3000')  # Remove the non-numeric parts.
         t.lexer.begin('GLOSS')
         return t
 
@@ -131,11 +131,12 @@ class LexSpec:
         return t
 
     def t_SNUMLIST_COMMA (self, t):
-        r','           #FIXME? include wide comma?
+        r','
         return t
 
-    def t_SNUMLIST_NUMBER (self, t):
-        '[0-9\uFF10-\uFF19]+'
+    def t_SNUMLIST_NUMBER (self, t):  # Sense id numbers are prefixed with "S".
+        '[sS][0-9]+'
+        t.value = t.value.strip('sS ')  # Remove the non-numeric parts.
         return t
 
     def t_SNUMLIST_TEXT (self, t):
@@ -151,7 +152,8 @@ class LexSpec:
         if t.value: return t
         else: return None
     def t_GLOSS_SNUM (self, t):
-        r'\s*\[\d+\]\s*'
+        r'\s*\[[Ss]\d+\]\s*'  # A "[Snnn]" marks start of a sense id number.
+        t.value = t.value.strip('sS[] ')  # Remove the leading "S", return numeric part.
         return t
     def t_GLOSS_SEMI (self, t):
         r';'

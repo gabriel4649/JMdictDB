@@ -1,6 +1,6 @@
 ﻿#######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2009 Stuart McGraw
+#  Copyright (c) 2009-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -16,7 +16,6 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
-
 
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
@@ -323,7 +322,7 @@ def parse_senses (senslist, kanjs, rdngs):
         return sense_list
 
 def process_sense (tags, glosstxts, snum, prev_pos, kanjs, rdngs):
-        sens = Sens()
+        sens = Sens (sens=snum)
           # Tags may be (in the order listed):
           #     After       Before
           #     ~2010-06-22 ~2010-06-22

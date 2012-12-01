@@ -63,20 +63,20 @@ class Test_xrslv (unittest.TestCase):
         fmtxml.XKW = None
 
     def test0202010(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, ktxt='\u540c\u3058')])])
+        e = Entr (src=99, _sens=[Sens (sens=1, _xrslv=[Xrslv(typ=3, ktxt='\u540c\u3058')])])
         dotest (_, e, '0202010', compat='jmdict')
     def test0202020(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=2, ktxt='\u540c\u3058')])])
+        e = Entr (src=99, _sens=[Sens (sens=1, _xrslv=[Xrslv(typ=2, ktxt='\u540c\u3058')])])
         dotest (_, e, '0202020', compat='jmdict')
     def test0202030(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, rtxt='\u304a\u306a\u3058')])])
+        e = Entr (src=99, _sens=[Sens (sens=1, _xrslv=[Xrslv(typ=3, rtxt='\u304a\u306a\u3058')])])
         dotest (_, e, '0202030', compat='jmdict')
     def test0202040(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, ktxt='\u540c\u3058',
+        e = Entr (src=99, _sens=[Sens (sens=1, _xrslv=[Xrslv(typ=3, ktxt='\u540c\u3058',
                                                 rtxt='\u304a\u306a\u3058')])])
         dotest (_, e, '0202040', compat='jmdict')
     def test0202050(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, ktxt='\u540c\u3058',
+        e = Entr (src=99, _sens=[Sens (sens=1, _xrslv=[Xrslv(typ=3, ktxt='\u540c\u3058',
                                                 rtxt='\u304a\u306a\u3058', tsens=3)])])
         dotest (_, e, '0202050', compat='jmdict')
 

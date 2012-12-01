@@ -102,3 +102,27 @@ AssdTo:	stuart
   branch, will change the patch level (and rename 1001.sql) to
   whatever the next regular patch level is at that time.
 
+2012-11-28 19:04:00 stuart
+  Modified sense-id code to use form "[Sn]" for sense id numbers
+  where S may be upper or lower case and n one or mode decimal
+  digits.  This format is parsed when reading JEL input (web
+  page edform.py) and generated on display output (web pages
+  entry.py, edconf.py).  Internally the sense id number (in
+  object Sens.sens, the database, and output to xml) remains a 
+  small integer.
+
+  The bare minimum was changed to get the web page editcycle
+  to work -- half the tests fail and many other places in the 
+  code need to be updated to put this in production.
+
+2012-12-01 13;23:00 stuart
+  Updated tests and more changes to lexer (python/lib/jellex.py)
+  as a result.  At this point (commit), all tests pass, can load
+  from all four usual datasources, UI seems to work after very
+  light testing.
+  TO-DO: add tests for non-sequential sense ids.  Check xresolv.py
+  and its libs (at least its log messages are not using the new
+  sense id syntax), some files have not been touched: shentr.py,
+  bulkupd.py, srch.py, jmedit.py (last two are waiting for Python3
+  version of wxPython).
+

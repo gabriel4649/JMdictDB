@@ -1,5 +1,5 @@
 ﻿<entry>
-<sense>
+<sense sid="1">
 <xref>同じ・おなじ・3</xref>
 </sense>
 </entry>

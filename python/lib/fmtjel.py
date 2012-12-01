@@ -76,14 +76,13 @@ def rdng (rdng, kanjs):
         return txt
 
 def senss (senss, kanjs, rdngs):
-        nsens = 0;  stxts = []
+        stxts = []
         for s in senss:
-            nsens += 1
-            stxts.append (sens (s, kanjs, rdngs, nsens))
+            stxts.append (sens (s, kanjs, rdngs))
         txt = '\n'.join (stxts)
         return txt
 
-def sens (sens, kanjs, rdngs, nsens):
+def sens (sens, kanjs, rdngs):
         KW = jdb.KW
         dial = ['dial='+KW.DIAL[x.kw].kw for x in getattr(sens,'_dial',[])]
         misc = [        KW.MISC[x.kw].kw for x in getattr(sens,'_misc',[])]
@@ -126,7 +125,7 @@ def sens (sens, kanjs, rdngs, nsens):
             gtxt.append ('%s%s' % (kwstr, escgloss (g.txt)))
         gloss = ['; '.join (gtxt)]
         lines = []
-        lines.append ("[%d]%s%s" % (sens.sens,kwds,dial))
+        lines.append ("[S%d]%s%s" % (sens.sens,kwds,dial))
         if restr: lines.append (restr)
         if _lsrc: lines.append (_lsrc)
         if note: lines.append (note)
@@ -189,8 +188,8 @@ def fmt_xref_kr (xref):
         snum_or_slist = getattr (xref, '_xsens', xref.xsens)
         if snum_or_slist is None: ts = ''
         elif hasattr (snum_or_slist, '__iter__'):
-            ts = '[' + ','.join ((str(x) for x in snum_or_slist)) + ']'
-        else: ts = '[%d]' % snum_or_slist
+            ts = '[' + ','.join (('S'+str(x) for x in snum_or_slist)) + ']'
+        else: ts = '[S%d]' % snum_or_slist
         t = getattr (xref, 'TARG', None)
         if t:
             kt = (getattr (t, '_kanj', [])[xref.kanj-1]).txt if getattr (xref, 'kanj', None) else ''

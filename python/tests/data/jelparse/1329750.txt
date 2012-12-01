@@ -1,5 +1,5 @@
 ﻿受験地獄
 じゅけんじごく
-[1][n]
+[S1][n]
   competitive university entrance examinations; 
   [lit] examination hell

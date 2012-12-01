@@ -1,8 +1,8 @@
 彼の[spec1]
 あの[spec1]；かの
-[1][adj-pn][uk]
+[S1][adj-pn][uk]
   that (someone or something distant from both speaker and listener, or situation unfamiliar to both speaker and listener)
-  [see=1920240・何の・どの[1]]
-  [see=1582920・此の[1]]
-  [see=1006830・其の[1]]
-  [see=1000580・彼・あれ[1]]
+  [see=1920240・何の・どの[S1]]
+  [see=1582920・此の[S1]]
+  [see=1006830・其の[S1]]
+  [see=1000580・彼・あれ[S1]]

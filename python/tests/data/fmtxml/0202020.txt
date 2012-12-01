@@ -1,5 +1,5 @@
 ﻿<entry>
-<sense>
+<sense sid="1">
 <ant>同じ</ant>
 </sense>
 </entry>

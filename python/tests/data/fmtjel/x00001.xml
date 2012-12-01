@@ -13,11 +13,11 @@
 <reb>だいにっぽんじん</reb>
 <re_restr>大・日本人</re_restr>
 </r_ele>
-<sense>
+<sense sid="1">
 <pos>&n;</pos>
 <gloss>big Japanese person</gloss>
 </sense>
-<sense>
+<sense sid="2">
 <pos>&n;</pos>
 <stagk>大・日本人</stagk>
 <gloss>name of 2007 movie</gloss>

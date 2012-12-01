@@ -59,8 +59,13 @@ class Test_single1 (unittest.TestCase):
     def test000290(_): check(_,'a　 ;b',['TEXT','SEMI','TEXT'])
     def test000300(_): check(_,'　a ;  ；; b',['TEXT','SEMI','SEMI','SEMI','TEXT'])
     def test000310(_): check(_,'a[',['TEXT','BRKTL'])
-    def test000320(_): check(_,'[0]',['SNUM'],expect_end='GLOSS')
-    def test000330(_): check(_,'a[9999999999]',['TEXT','SNUM'])
+      # Number in brackets is no longer a sense number.
+    def test000320(_): check(_,'[0]',['BRKTL','NUMBER','BRKTR'],expect_end='INITIAL')
+      # Sense numbers must be prefixed with an "S" or "s".
+    def test000322(_): check(_,'[s0]',['SNUM'],expect_end='GLOSS')
+    def test000324(_): check(_,'[S0]',['SNUM'],expect_end='GLOSS')
+    def test000330(_): check(_,'a[9999999999]',['TEXT','BRKTL','NUMBER','BRKTR'])
+    def test000330(_): check(_,'a[S9999999999]',['TEXT','SNUM'])
       # Note the following are not an SNUM due to the space inside brackets.
     #def test000340(_): check(_,'[0 ]',['TEXT','SNUM'])
     #def test000350(_): check(_,'[ 0]',['SNUM'])
@@ -109,7 +114,8 @@ class Test_single1 (unittest.TestCase):
                                                     ['[','kw','=','"  xx  xx  "',']'])
     # Gloss sequences
 
-    def test001510(_): check(_,'[0]text',['SNUM','GTEXT'],['[0]','text'],expect_end='GLOSS')  #see also test000320.
+    def test001510(_): check(_,'[1]text',['BRKTL','NUMBER','BRKTR','TEXT'],['[','1',']','text'],expect_end='INITIAL')  #see also test000320.
+    def test001512(_): check(_,'[s1]text',['SNUM','GTEXT'],['1','text'],expect_end='GLOSS')  #see also test000320.
     def test001520(_): check(_,'te\;xt',['GTEXT'],['te;xt'],begin='GLOSS')
     def test001530(_): check(_,'te\[xt',['GTEXT'],['te[xt'],begin='GLOSS')
     def test001540(_): check(_,'\;text',['GTEXT'],[';text'],begin='GLOSS')
@@ -119,20 +125,20 @@ class Test_single1 (unittest.TestCase):
     def test001580(_): check(_,'text1;text2',['GTEXT','SEMI','GTEXT'],begin='GLOSS')
     def test001590(_): check(_,'text1;\;text2',['GTEXT','SEMI','GTEXT'],begin='GLOSS')
       # check cleanup functions...
-    def test001610(_): check(_,'[0]  text',['SNUM','GTEXT'],['[0]  ','text'])  #FIXME
-    def test001620(_): check(_,'[0]text  ',['SNUM','GTEXT'],['[0]','text'])
-    def test001630(_): check(_,'[0]  text  ',['SNUM','GTEXT'],['[0]  ','text'])  #FIXME
-    def test001640(_): check(_,'[0]  words twice  ',['SNUM','GTEXT'],['[0]  ','words twice'])  #FIXME
-    def test001650(_): check(_,'[0]  words   twice  ',['SNUM','GTEXT'],['[0]  ','words   twice'])  #FIXME
-    def test001660(_): check(_,'[0]\u3000\u3000text',['SNUM','GTEXT'],['[0]\u3000\u3000','text'])  #FIXME
-    def test001670(_): check(_,'[0]text\u3000\u3000',['SNUM','GTEXT'],['[0]','text'])
-    def test001680(_): check(_,'[0]\t\ttext',['SNUM','GTEXT'],['[0]\t\t','text'])  #FIXME
-    def test001690(_): check(_,'[0]text\t\t',['SNUM','GTEXT'],['[0]','text'])
-    def test001700(_): check(_,'[0]\n\ntext',['SNUM','GTEXT'],['[0]\n\n','text'])  #FIXME
-    def test001710(_): check(_,'[0]text\n\n',['SNUM','GTEXT'],['[0]','text'])
-    def test001720(_): check(_,'[0] \u3000\t \u3000text',['SNUM','GTEXT'],['[0] \u3000\t \u3000','text'])  #FIXME
-    def test001730(_): check(_,'[0]text \u3000\t \u3000',['SNUM','GTEXT'],['[0]','text'])
-    def test001740(_): check(_,'[0] \u3000\t \u3000text \u3000\t \u3000',['SNUM','GTEXT'],['[0] \u3000\t \u3000','text'])  #FIXME
+    def test001610(_): check(_,'[S1]  text',['SNUM','GTEXT'],['1','text'])  #FIXME
+    def test001620(_): check(_,'[S1]text  ',['SNUM','GTEXT'],['1','text'])
+    def test001630(_): check(_,'[S1]  text  ',['SNUM','GTEXT'],['1','text'])  #FIXME
+    def test001640(_): check(_,'[S1]  words twice  ',['SNUM','GTEXT'],['1','words twice'])  #FIXME
+    def test001650(_): check(_,'[S1]  words   twice  ',['SNUM','GTEXT'],['1','words   twice'])  #FIXME
+    def test001660(_): check(_,'[S1]\u3000\u3000text',['SNUM','GTEXT'],['1','text'])  #FIXME
+    def test001670(_): check(_,'[S1]text\u3000\u3000',['SNUM','GTEXT'],['1','text'])
+    def test001680(_): check(_,'[S1]\t\ttext',['SNUM','GTEXT'],['1','text'])  #FIXME
+    def test001690(_): check(_,'[S1]text\t\t',['SNUM','GTEXT'],['1','text'])
+    def test001700(_): check(_,'[S1]\n\ntext',['SNUM','GTEXT'],['1','text'])  #FIXME
+    def test001710(_): check(_,'[S1]text\n\n',['SNUM','GTEXT'],['1','text'])
+    def test001720(_): check(_,'[S1] \u3000\t \u3000text',['SNUM','GTEXT'],['1','text'])  #FIXME
+    def test001730(_): check(_,'[S1]text \u3000\t \u3000',['SNUM','GTEXT'],['1','text'])
+    def test001740(_): check(_,'[S1] \u3000\t \u3000text \u3000\t \u3000',['SNUM','GTEXT'],['1','text'])  #FIXME
     def test001750(_): check(_,'[',['BRKTL'],begin='GLOSS',expect_end='TAGLIST')
     def test001760(_): check(_,'[]',['BRKTL','BRKTR'],begin='GLOSS',expect_end='GLOSS')
 
@@ -140,16 +146,21 @@ class Test_single1 (unittest.TestCase):
 
     def test001910(_): check(_,'[',['BRKTL'],begin='TAGLIST',expect_end='SNUMLIST')
     def test001920(_): check(_,'[]',['BRKTL','BRKTR'],begin='TAGLIST',expect_end='TAGLIST')
-    def test001930(_): check(_,'[1',['BRKTL','NUMBER'],['[','1'],begin='TAGLIST',expect_end='SNUMLIST')
+    def test001930(_): check(_,'[S1',['BRKTL','NUMBER'],['[','1'],begin='TAGLIST',expect_end='SNUMLIST')
+    def test001932(_): check(_,'[1',['BRKTL','TEXT'],['[','1'],begin='TAGLIST',expect_end='SNUMLIST')
     def test001940(_): check(_,'[,',['BRKTL','COMMA'],begin='TAGLIST',expect_end='SNUMLIST')
     def test001950(_): check(_,'[a',['BRKTL','TEXT'],begin='TAGLIST',expect_end='SNUMLIST')
-    def test001960(_): check(_,'[2aa33bb',['BRKTL','NUMBER','TEXT','TEXT','NUMBER','TEXT','TEXT'],  #FIXME?
-                                          ['[','2','a','a','33','b','b'],begin='TAGLIST',expect_end='SNUMLIST')
-    def test001970(_): check(_,'[ 1',['BRKTL','NUMBER'],['[','1'],begin='TAGLIST',expect_end='SNUMLIST')
-    def test001980(_): check(_,'[２',['BRKTL','NUMBER'],['[','２'],begin='TAGLIST',expect_end='SNUMLIST')
-    def test001990(_): check(_,'[　２　',['BRKTL','NUMBER'],['[','２'],begin='TAGLIST',expect_end='SNUMLIST')
-    def test002000(_): check(_,'[2,33,5]',['BRKTL','NUMBER','COMMA','NUMBER','COMMA','NUMBER','BRKTR'],
+    def test001960(_): check(_,'[2aa33bb',['BRKTL','TEXT','TEXT','TEXT','TEXT','TEXT','TEXT','TEXT'],  #FIXME?
+                                          ['[','2','a','a','3','3','b','b'],begin='TAGLIST',expect_end='SNUMLIST')
+                                 #
+    def test001970(_): check(_,'[ S1',['BRKTL','NUMBER'],['[','1'],begin='TAGLIST',expect_end='SNUMLIST')
+                                 # We no longer recognise FW sense numbers
+    def test001980(_): check(_,'[S２',['BRKTL','TEXT','TEXT'],['[','S','２'],begin='TAGLIST',expect_end='SNUMLIST')
+    def test001990(_): check(_,'[　S２　',['BRKTL','TEXT','TEXT'],['[','S','２'],begin='TAGLIST',expect_end='SNUMLIST')
+    def test002000(_): check(_,'[S2,S33,S5]',['BRKTL','NUMBER','COMMA','NUMBER','COMMA','NUMBER','BRKTR'],
                                           ['[','2',',','33',',','5',']'],begin='TAGLIST',expect_end='TAGLIST')
+    def test002002(_): check(_,'[2,33,5]',['BRKTL','TEXT','COMMA','TEXT','TEXT','COMMA','TEXT','BRKTR'],
+                                          ['[','2',',','3','3',',','5',']'],begin='TAGLIST',expect_end='TAGLIST')
 
 def check (_, in_str,            # String containing text to feed to lexer.
               expect_toks,       # List of tokens expected from lexer (or None to not check).

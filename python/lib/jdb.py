@@ -1304,10 +1304,11 @@ def resolv_xref (dbh, typ, rtxt, ktxt, slist=None, enum=None, corpid=None,
               # The submitter gave some specific senses that the xref will
               # target, so check that they actually exist in the target entry(s).
             for e in entrs:
-                snums = len (e._sens); nosens = []
+                snums = [s.sens for s in e._sens]
                 for s in slist:
-                    if s<1 or s>snums:
-                        raise ValueError ('Xref "%s": Sense %s not in target id %d.'
+                    try: snums.index (s)
+                    except ValueError:
+                        raise ValueError ('Xref "%s": Sense S%s not in target id %d.'
                                           % (krtxt, s, e.id))
         else:
               # No specific senses given, so this xref(s) should target every

@@ -6,7 +6,7 @@
 <r_ele>
 <reb>かんじ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>kanji</gloss>
 </sense>
 </entry>
@@ -19,7 +19,7 @@
 <r_ele>
 <reb>かんじ</reb>
 </r_ele>
-<sense>
+<sense sid="1">
 <gloss>kanji</gloss>
 </sense>
 </entry>
@@ -68,42 +68,42 @@
 
 @b9
 <entry>
-<sense>
+<sense sid="1">
 <gloss>kanji</gloss>
 </sense>
 </entry>
 
 @b10
 <entry>
-<sense>
+<sense sid="1">
 <gloss>kanji</gloss>
 </sense>
 </entry>
 
 @b11
 <entry>
-<sense>
+<sense sid="1">
 <gloss>kanji</gloss>
 </sense>
 </entry>
 
 @b12
 <entry>
-<sense>
+<sense sid="1">
 <gloss>kanji</gloss>
 </sense>
 </entry>
 
 @b13
 <entry>
-<sense>
+<sense sid="1">
 <gloss>kanji</gloss>
 </sense>
 </entry>
 
 @b14
 <entry>
-<sense>
+<sense sid="1">
 <gloss>kanji</gloss>
 </sense>
 </entry>
@@ -111,7 +111,7 @@
 
 @x1 
 <entry>
-<sense>
+<sense sid="1">
 <xref>同じ</xref>
 <gloss>gloss</gloss>
 </sense>
@@ -119,7 +119,7 @@
 
 @x2
 <entry>
-<sense>
+<sense sid="1">
 <xref>おなじ</xref>
 <gloss>gloss</gloss>
 </sense>
@@ -127,7 +127,7 @@
 
 @x3
 <entry>
-<sense>
+<sense sid="1">
 <xref>同じ・おなじ</xref>
 <gloss>gloss</gloss>
 </sense>
@@ -135,7 +135,7 @@
 
 @x4
 <entry>
-<sense>
+<sense sid="1">
 <xref>同じ・おなじ・2</xref>
 <gloss>gloss</gloss>
 </sense>
@@ -143,7 +143,7 @@
 
 @x5
 <entry>
-<sense>
+<sense sid="1">
 <xref>同じ・2</xref>
 <gloss>gloss</gloss>
 </sense>
@@ -151,7 +151,7 @@
 
 @x6
 <entry>
-<sense>
+<sense sid="1">
 <xref>おなじ・2</xref>
 <gloss>gloss</gloss>
 </sense>
@@ -159,7 +159,7 @@
 
 @x7
 <entry>
-<sense>
+<sense sid="1">
 <xref>位・くらい</xref>
 <gloss>gloss</gloss>
 </sense>
@@ -167,7 +167,7 @@
 
 @x8
 <entry>
-<sense>
+<sense sid="1">
 <xref>ＧＡＴＴ</xref>
 <gloss>gloss</gloss>
 </sense>
@@ -175,7 +175,7 @@
 
 @x9
 <entry>
-<sense>
+<sense sid="1">
 <xref>カレーライス</xref>
 <gloss>gloss</gloss>
 </sense>

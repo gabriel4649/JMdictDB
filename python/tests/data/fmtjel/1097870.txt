@@ -1,12 +1,12 @@
 
 バイト[gai1,ichi1]
-[1][n,vs][abbr]
+[S1][n,vs][abbr]
   [lsrc=ger:Arbeit]
   work (esp. part time or casual)
-  [see=1019420・アルバイト[1]]
-[2][n][fld=comp,fld=math]
+  [see=1019420・アルバイト[S1]]
+[S2][n][fld=comp,fld=math]
   byte; octet
-[3][n]
+[S3][n]
   bite
-[4][n]
+[S4][n]
   cutting tool; bit

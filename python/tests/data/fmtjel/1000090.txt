@@ -1,10 +1,10 @@
 ○；〇[iK]
 まる
-[1][n]
+[S1][n]
   circle (sometimes used for zero)
-[2][n]
+[S2][n]
   'correct' (when marking)
-  [see=1000090・〇[1]]
-  [ant=1000090・○[1,2]]
+  [see=1000090・〇[S1]]
+  [ant=1000090・○[S1,S2]]
   [ant=×]
   [see=◎]

@@ -94,28 +94,6 @@ class TextTestRunner (unittest.TextTestRunner):
             self.stream.writeln (summary)
         return result
 
-# In Python-2.5, Exception cannot be used with unicode arguments
-# because the Exception default __str__() method calls str() which
-# results in a UnicodeEncodeError since the default encoding is almost
-# always ascii, which in turn results in the exception message,
-# "Unprintable exception".  See http://bugs.python.org/issue2517
-#
-# We define our own flavor of exeception that will do it's own
-# encoding.
-
-class EncodedAssertionError (AssertionError):
-    def __init__ (self, *args, **kwds):
-        AssertionError.__init__ (self, *args, **kwds)
-        self.encoding = sys.stdout.encoding or 'utf-8'
-    def __str__ (self):
-        try:
-           return self.args[0].encode(self.encoding)
-        except: return AssertionError.__str__(self)
-
-# Tell the unicode module to use it.
-#unittest.TestCase.failureException = EncodedAssertionError
-
-
 def runcmd (wkdir, cmdln):
         proc = subprocess.Popen (cmdln, shell=True, cwd=wkdir,
                     env=os.environ,
@@ -184,6 +162,3 @@ def diff_strings (a, b):
         difflines = difflib.unified_diff(a.splitlines(True), b.splitlines(True), n=0)
         return ''.join(difflines)
 
-def match (pat, a):
-        mo = re.search (pat, a)
-        return True if mo else False

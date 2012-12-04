@@ -1,5 +1,0 @@
-﻿<entry>
-<sense>
-<xref>同じ</xref>
-</sense>
-</entry>

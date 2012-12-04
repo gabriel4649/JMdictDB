@@ -1,5 +1,0 @@
-<entry>
-<trans>
-<trans_det>Takahashi</trans_det>
-</trans>
-</entry>

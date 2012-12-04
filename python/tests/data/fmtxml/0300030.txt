@@ -1,5 +1,0 @@
-<entry>
-<r_ele>
-<reb>キャッツ</reb>
-</r_ele>
-</entry>

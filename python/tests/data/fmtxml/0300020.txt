@@ -1,5 +1,0 @@
-<entry>
-<r_ele>
-<reb>たかはし</reb>
-</r_ele>
-</entry>

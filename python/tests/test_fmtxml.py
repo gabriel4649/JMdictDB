@@ -5,6 +5,9 @@ import jdb
 from objects import *
 import fmtxml
 
+sys.path.append ("./data/fmtxml")
+import fmtxml_data as f
+
 class Test_restr (unittest.TestCase):
     def test_001(_):
         k1, k2, k3 = Kanj(txt='k1'), Kanj(txt='k2'), Kanj(txt='k3')
@@ -40,83 +43,56 @@ class Test_restr (unittest.TestCase):
         xml = fmtxml.restrs (rdng, kanjs)
         _.assertEqual (['<re_nokanji/>'], xml)
 
+# The following tests use data from data/fmtxml_data.py imported (as 'f'
+# for brevity) above.  Module f contains two dicts., 'f.inp' and 'f.exp',
+# both keyed by the test id number (as a string).  The values in f.inp
+# are python code strings that will be exed'd by dotest() to produce a
+# jdb.Entr object for feeding to the module-under-test, fmtxml.  The
+# values in f.exp are strings with the coresponding XML that the fmtxml
+# is expected to produce.
 
 class Test_entr (unittest.TestCase):
     def setUp(_):
         jdb.KW = jdb.Kwds ('data/fmtxml/kw/')
         fmtxml.XKW = None
 
-    def test0200010 (_):
-        e = Entr(); dotest (_, e, '0200010')
-    def test0201020 (_):
-        e = Entr(_grp=[Grp(kw=2,ord=1)]); dotest (_, e, '0201020')
-    def test0201030 (_):
-        e = Entr(_grp=[Grp(kw=11,ord=5),Grp(kw=10,ord=2)]); dotest (_, e, '0201030')
-    def test0201040 (_):
-        e = Entr(_grp=[Grp(kw=5,ord=1)]); dotest (_, e, '0201040', compat='jmdict')
-    def test0201050 (_):
-        e = Entr(_grp=[Grp(kw=1)]); dotest (_, e, '0201050')
+    def test0200010 (_): dotest (_, f.t_in['0200010'], f.t_exp['0200010'])
+    def test0201020 (_): dotest (_, f.t_in['0201020'], f.t_exp['0201020'])
+    def test0201030 (_): dotest (_, f.t_in['0201030'], f.t_exp['0201030'])
+    def test0201040 (_): dotest (_, f.t_in['0201040'], f.t_exp['0201040'], compat='jmdict')
+    def test0201050 (_): dotest (_, f.t_in['0201050'], f.t_exp['0201050'])
 
 class Test_xrslv (unittest.TestCase):
     def setUp (_):
         jdb.KW = jdb.Kwds ('data/fmtxml/kw/')
         fmtxml.XKW = None
 
-    def test0202010(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, ktxt='\u540c\u3058')])])
-        dotest (_, e, '0202010', compat='jmdict')
-    def test0202020(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=2, ktxt='\u540c\u3058')])])
-        dotest (_, e, '0202020', compat='jmdict')
-    def test0202030(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, rtxt='\u304a\u306a\u3058')])])
-        dotest (_, e, '0202030', compat='jmdict')
-    def test0202040(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, ktxt='\u540c\u3058',
-                                                rtxt='\u304a\u306a\u3058')])])
-        dotest (_, e, '0202040', compat='jmdict')
-    def test0202050(_):
-        e = Entr (src=99, _sens=[Sens (_xrslv=[Xrslv(typ=3, ktxt='\u540c\u3058',
-                                                rtxt='\u304a\u306a\u3058', tsens=3)])])
-        dotest (_, e, '0202050', compat='jmdict')
+    def test0202010(_): dotest (_, f.t_in['0202010'], f.t_exp['0202010'], compat='jmdict')
+    def test0202020(_): dotest (_, f.t_in['0202020'], f.t_exp['0202020'], compat='jmdict')
+    def test0202030(_): dotest (_, f.t_in['0202030'], f.t_exp['0202030'], compat='jmdict')
+    def test0202040(_): dotest (_, f.t_in['0202040'], f.t_exp['0202040'], compat='jmdict')
+    def test0202050(_): dotest (_, f.t_in['0202050'], f.t_exp['0202050'], compat='jmdict')
 
 class Test_jmnedict (unittest.TestCase):
     def setUp(_):
         jdb.KW = jdb.Kwds ('data/fmtxml/kw/')
         fmtxml.XKW = None
-    def test0300010(_):
-        e = Entr (src=99, seq=300010)
-        dotest (_, e, '0300010', compat='jmnedict')
-    def test0300020(_):
-        e = Entr (src=99, _rdng=[Rdng (txt='たかはし')])
-        dotest (_, e, '0300020', compat='jmnedict')
-    def test0300030(_):
-        e = Entr (src=99, _rdng=[Rdng (txt='キャッツ')])
-        dotest (_, e, '0300030', compat='jmnedict')
-    def test0300040(_):
-        e = Entr (src=99, _kanj=[Kanj (txt='高橋')])
-        dotest (_, e, '0300040', compat='jmnedict')
-    def test0300050(_):
-        e = Entr (src=99, _sens=[Sens (_gloss=[Gloss(txt='Takahashi')])])
-        dotest (_, e, '0300050', compat='jmnedict')
+    def test0300010(_): dotest (_, f.t_in['0300010'], f.t_exp['0300010'], compat='jmnedict')
+    def test0300020(_): dotest (_, f.t_in['0300020'], f.t_exp['0300020'], compat='jmnedict')
+    def test0300030(_): dotest (_, f.t_in['0300030'], f.t_exp['0300030'], compat='jmnedict')
+    def test0300040(_): dotest (_, f.t_in['0300040'], f.t_exp['0300040'], compat='jmnedict')
+    def test0300050(_): dotest (_, f.t_in['0300050'], f.t_exp['0300050'], compat='jmnedict')
 
     def test0305001(_):  # IS-221
-        e = Entr (src=99, _rdng=[Rdng (txt='キャッツ＆ドッグス')],
-                          _sens=[Sens (_gloss=[Gloss (txt='Cats & Dogs (film)')],
-                                       _misc=[Misc (kw=jdb.KW.MISC['unclass'].id)])])
-        dotest (_, e, '0305001', compat='jmnedict')
+        dotest (_, f.t_in['0305001'], f.t_exp['0305001'], compat='jmnedict')
 
-
-
-'\u304a\u306a\u3058'
-def dotest(_, e, expected_file, **kwds):
-        results = fmtxml.entr (e, **kwds)
-        expected = open ('data/fmtxml/'+expected_file+'.txt', 'r', encoding='utf_8_sig').read()
-        expected = expected.replace ('\r', '')  # In case we're running on windows.
-        expected = expected.rstrip ('\n')       # fmtxml results have no trailing "\n".
-        if results != expected:
+def dotest (_, execstr, expected, **kwds):
+        lcls = {}
+        exec (execstr, globals(), lcls)
+        xml = fmtxml.entr (lcls['e'], **kwds)
+        if xml != expected:
             msg = "\nExpected (len=%d):\n%s\nGot (len=%d):\n%s" \
-                   % (len(expected), expected, len(results), results)
+                   % (len(expected), expected, len(xml), xml)
             _.failIf (1, msg)
 
 if __name__ == '__main__': unittest.main()

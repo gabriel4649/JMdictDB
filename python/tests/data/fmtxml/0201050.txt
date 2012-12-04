@@ -1,3 +1,0 @@
-<entry>
-<group>grp1</group>
-</entry>

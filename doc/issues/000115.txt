@@ -66,3 +66,12 @@ AssdTo:
    References table should be sorted by name.
    Should add ecodings (unicode CP, utf8, iso2022jp, euc-sp, sjis,
     along with the jis208 value in kanjidic.
+
+2012-12-11 01:44:00 stuart
+  Added support for displaying encodings on the entr.tal template.
+  Added support for providing urls to the Gahoh stroke order 
+  quicktime animations for kanji for which they are available
+  by adding a GAHOH_URL base-url to the config.ini file, and a
+  new CINF attribute, "gahoh", that can be set to the url/filename
+  of the animation file. 
+

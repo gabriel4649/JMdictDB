@@ -187,7 +187,11 @@
 
         <span call="kdinfo" tal:condition="e/chr" tal:omit-tag=""><br/>
           <table valign="top">
-            <tr><th>Kanji details</th><th>&nbsp;&nbsp;&nbsp;&nbsp;</th><th>References</th></tr>
+            <tr>
+              <th>Kanji details</th><th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
+              <th>References</th><th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
+              <th tal:condition="e/chr/enc" omit-tag="">Encodings</th>
+              </tr>
             <tr>
               <td valign="top">
                 <table class="kddetails" border="1">
@@ -200,12 +204,27 @@
                   </table>
                 </td>
               <td></td>
-              <td>
+              <td valign="top">
                 <table class="kdrefs" border="1">
                   <tr tal:repeat="rf e/chr/_cinf">
                     <td tal:content="python:TALabbr('CINF',rf.kw)" tal:attributes="title python:TALdescr('CINF',rf.kw)">kwname</td>
-                    <td tal:content="rf/value">value</td>
+                    <td tal:condition="python:TALabbr('CINF',rf.kw)!='gahoh'" tal:content="rf/value">value</td>
+                    <td tal:condition="python:TALabbr('CINF',rf.kw)=='gahoh'">
+                      <a tal:condition="cfg/web/GAHOH_URL" tal:content="rf/value"
+                         tal:attributes="href string:${cfg/web/GAHOH_URL}${rf/value}">gahoh-url</a>
+                      <span tal:condition="not:cfg/web/GAHOH_URL" tal:content="rf/value">gahoh-value</span></td>
                     </tr>
+                  </table>
+                </td>
+              <td></td>
+              <td valign="top" tal:condition="e/chr/enc" omit-tag="">
+                <table class="kdenc" border="1">
+                  <tr><td>Unicode:</td><td><a tal:content="e/chr/enc/uni" tal:attributes="href e/chr/enc/uurl"></a></td></tr>
+                  <tr><td>UTF-8:</td><td tal:content="e/chr/enc/utf8"></td></tr>
+                  <tr><td>JIS:</td><td tal:content="e/chr/enc/jis"></td></tr>
+                  <tr><td>ISO2022JP:</td><td tal:content="e/chr/enc/iso2022jp"></td></tr>
+                  <tr><td>SJIS:</td><td tal:content="e/chr/enc/sjis"></td></tr>
+                  <tr><td>EUCJP:</td><td tal:content="e/chr/enc/eucjp"></td></tr>
                   </table>
                 </td>
               </tr>

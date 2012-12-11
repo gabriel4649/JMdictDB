@@ -59,6 +59,7 @@ def main (args, opts):
         else:
             etxts = ['' for e in entries]
         jmcgi.htmlprep (entries)
+        jmcgi.add_encodings (entries)    # For kanjidic entries.
         if disp == 'ed': etxts = [jmcgi.txt2html (x) for x in etxts]
         jmcgi.add_filtered_xrefs (entries, rem_unap=True)
 

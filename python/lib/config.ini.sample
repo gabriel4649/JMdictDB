@@ -35,6 +35,12 @@ MIN_ENTRIES_PER_PAGE = 1
 EDITDATA_DIR = /home/me/public_html/editdata
 EDITDATA_URL = http://localhost/~me/editdata
 
+  # URL for Gahoh kanji stroke order animations.  If not 
+  # available leave empty after the "=".  If supplied, must
+  # end with a trailing slash.
+GAHOH_URL =
+#GAHOH_URL = http://localhost/gahoh/
+
 #=======================================================================
 [search]
 

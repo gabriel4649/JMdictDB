@@ -598,6 +598,28 @@ def add_filtered_xrefs (entries, rem_unap=False):
                 s.XREF = [x for x in s._xref if cond (e, x)]
                 s.XRER = [x for x in s._xrer if cond (e, x)]
 
+def add_encodings (entries, gahoh_url=None):
+
+        # Add encoding info which is displayed when presenting kanjidic
+        # (or similar single-character) entries.
+
+        for e in entries:
+            if not hasattr (e, 'chr') or not e.chr: continue
+            c = e.chr; c.enc = {}
+            c.enc['uni'] = hex (ord (c.chr)).upper()[2:]
+            c.enc['unid'] = ord (c.chr)
+            c.enc['uurl'] = 'http://www.unicode.org/cgi-bin/GetUnihanData.pl?codepoint=' + c.enc['uni']
+            c.enc['utf8'] = ' '.join(["%0.2X"%x for x in c.chr.encode('utf-8')])
+            try:
+                iso2022jp = c.chr.encode ('iso2022-jp')
+                c.enc['iso2022jp'] = ' '.join(["%0.2X"%x for x in iso2022jp])
+                c.enc['jis'] = ''.join(["%0.2X"%x for x in iso2022jp[3:5]])
+            except UnicodeEncodeError: c.enc['iso2022jp'] = c.enc['jis'] = '\u3000'
+            try: c.enc['sjis'] = ''.join(["%0.2X"%x for x in c.chr.encode('sjis')])
+            except UnicodeEncodeError: c.enc['sjis'] = '\u3000'
+            try: c.enc['eucjp'] = ''.join(["%0.2X"%x for x in c.chr.encode('euc-jp')])
+            except UnicodeEncodeError: c.enc['eucjp'] = '\u3000 '
+
 class SearchItems (jdb.Obj):
     """Convenience class for creating objects for use as an argument
     to function so2conds() that prevents using invalid attribute

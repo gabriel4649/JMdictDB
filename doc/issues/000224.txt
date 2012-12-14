@@ -13,6 +13,38 @@ AssdTo:	stuart
  until such time as that site can be moved to the Python-3
  "default" branch which is the main development branch.
 
- 
+ Note only independent changes or changes merged in from the 
+ default branch should occur in this one.  This branch should
+ never be merged back into "default" and will eventually be
+ closed.
 
+2012-12-14 15:24:00 stuart
+ Backport rev 3be4185d90ee (2012-11-25), IS-221.
+ Note that this is only the fix to python/lib/fmtxml.py and does
+ not include fixes to the tests or to the IS-121 doc itself.
+ See the default branch for those.
+
+ For future reference, generated patch file with:
+   hg diff -r 1109 -r 1110 python/lib/fmtxml.py >xx.patch
+
+ Then applied:
+  $ patch <xx.patch
+  can't find file to patch at input line 4
+  Perhaps you should have used the -p or --strip option?
+  The text leading up to this was:
+  --------------------------
+  |diff -r c2e3adbbd834 -r 3be4185d90ee python/lib/fmtxml.py
+  |--- a/python/lib/fmtxml.py	Sat Nov 24 21:00:49 2012 -0700
+  |+++ b/python/lib/fmtxml.py	Sun Nov 25 12:01:11 2012 -0700
+  --------------------------
+  File to patch: python/lib/fmtxml.py
+                 \__________________/<-----copy/pasted from 4 lines above.
+
+  patching file python/lib/fmtxml.py
+  Hunk #2 succeeded at 106 (offset 3 lines).
+  Hunk #3 succeeded at 116 (offset 3 lines).
+  Hunk #4 succeeded at 213 (offset 3 lines).
+  Hunk #5 succeeded at 239 (offset 3 lines).
+ Note that I had to manually supply the filename to patch because "hg diff"s
+ output is not exactly what is expected by patch.
 

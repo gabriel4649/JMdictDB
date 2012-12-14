@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2006,2008 Stuart McGraw
+#  Copyright (c) 2006-2012 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -106,7 +106,7 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
 def kanj (k):
         fmt = []
         fmt.append ('<k_ele>')
-        fmt.append ('<keb>%s</keb>' % k.txt)
+        fmt.append ('<keb>%s</keb>' % esc(k.txt))
         fmt.extend (kwds (k, '_inf', 'KINF', 'ke_inf', sort=True))
         fmt.extend (['<ke_pri>%s</ke_pri>' %s
                      for s in jdb.freq2txts (getattr (k,'_freq',[]))])
@@ -116,7 +116,7 @@ def kanj (k):
 def rdng (r, k, compat):
         fmt = []
         fmt.append ('<r_ele>')
-        fmt.append ('<reb>%s</reb>' % r.txt)
+        fmt.append ('<reb>%s</reb>' % esc(r.txt))
         fmt.extend (restrs (r, k))
         fmt.extend (kwds (r, '_inf', 'RINF', 're_inf', sort=True))
         fmt.extend (['<re_pri>%s</re_pri>' %s
@@ -213,7 +213,7 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
         fmt.extend (kwds (s, '_misc', 'MISC', 'misc'))
 
         notes = getattr (s, 'notes', None)
-        if notes: fmt.append ('<s_inf>%s</s_inf>' % esc (notes))
+        if notes: fmt.append ('<s_inf>%s</s_inf>' % esc(notes))
 
         lsource = getattr (s, '_lsrc', None)
         if lsource:
@@ -239,7 +239,7 @@ def trans (s):
         for g in getattr (s, '_gloss', []):
             lang = getattr (g, 'g_lang', eng_id)
             lang_attr = (' xml:lang="%s"' % XKW.LANG[lang].kw) if lang != eng_id else ''
-            fmt.append ('<trans_det%s>%s</trans_det>' % (lang_attr, g.txt))
+            fmt.append ('<trans_det%s>%s</trans_det>' % (lang_attr, esc(g.txt)))
         if fmt:
             fmt.insert (0, '<trans>')
             fmt.append ('</trans>')

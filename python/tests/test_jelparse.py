@@ -142,6 +142,7 @@ class Restr (unittest.TestCase):
     def test0300250(_): check2(_,'0300250')
     def test0300270(_): check2(_,'0300270')
     def test0300280(_): check2(_,'0300280')
+    def test0300290(_): check2(_,'0300290')
 
 class Xref (unittest.TestCase):
     def setUp (_):

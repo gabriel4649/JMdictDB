@@ -49,7 +49,7 @@ Data = [
     ('039', 'ゞ',               jdb.KANA,                  True,  False, False, ),
     ('040', '〃',               jdb.KSYM,                  False, True,  False, ),
     ('041', '々',               jdb.KSYM,                  False, True,  False, ),
-    ('042', '〆',               jdb.KSYM,                  False, True,  False, ),
+    ('042', '〆',               jdb.KANJI,                 False, True,  False, ),  # IS-222
     ('043', '３',               jdb.KANJI,                 False, True,  False, ),
     ('044', '・',               jdb.KSYM,                  False, True,  False, ),
     ('045', '\u301C',           jdb.KANA,                  True,  False, False, ),  # WAVE DASH
@@ -70,7 +70,7 @@ Data = [
     ('113', 'ＳＭＢＣフレンド証券', jdb.KANJI|jdb.KANA,    False, True,  False, ),
     ('114', 'あか組４',         jdb.KANJI|jdb.KANA,        False, True,  False, ),
     ('115', 'βカロチン',        jdb.KANA|jdb.OTHER,        False, True,  False, ),
-    ('116', '〆る',             jdb.KSYM|jdb.KANA,         True,  False, False, ),
+    ('116', '〆る',             jdb.KANJI|jdb.KANA,        False,  True, False, ),  # IS-222
     ('117', 'おげんき',         jdb.KANA,                  True,  False, False, ),
     ('118', 'お元気',           jdb.KANJI|jdb.KANA,        False, True,  False, ),
     ('119', '会う',             jdb.KANJI|jdb.KANA,        False, True,  False, ),

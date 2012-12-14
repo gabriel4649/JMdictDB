@@ -99,8 +99,8 @@ AssdTo:	stuart@friix.com
 
   Modified jdb.jstr_classify() to incorporate the definition JB
   suggested, and added three new functions, jstr_reb(), jstr_keb(),
-  and jstr_gloss() since those determinations are  nor more complex
-  than siple bit masking.
+  and jstr_gloss() since those determinations are now more complex
+  than simple bit masking.
 
   Also modified lib/jmxml.py, lib/jellex.py, autocond() in lib/jdb.py,
   and progam exparse.py to use the new functions rather than 
@@ -164,7 +164,7 @@ AssdTo:	stuart@friix.com
 
 2009-03-13 15:10:00 stuart
   Closing this issue.
-  <reb> elements must contrain strings consisting of characters in the 
+  <reb> elements must contain strings consisting of characters in the 
   set U+3040-U+30FF,U+301C.  <keb> can contain any string except those
   that meet the <reb> condition.  
   The jmdictdb database does not enforce these conditions but 
@@ -211,4 +211,136 @@ AssdTo:	stuart@friix.com
     jstr_gloss() although the logic is done in jstr_keb() rather
     that calling those two functions.
   test_jdb_jstr_classify.py adjusted to match the new behavior.
+
+2012-12-12 19:02:00 stuart
+ The following info was collected as part of investigating IS-222:
+
+ Use of CJK Symbols and Punctuation characters (range U+3000 - U+303F)
+ excluding 々 (U+3005) where it occurs with other kanji (100's of entries)
+ in jmdict and jmnedict kanj.txt.
+ Sql used for search:
+    select e.seq,e.src,txt from kanj k join entr e on e.id=k.entr 
+      where src!=3 and txt similar to '%[　-〄〆-〿]%' or txt='々'
+      order by id;
+ (Note that the space in the brackets is a U+3000 space character.)
+
+   seq   | src |           txt            
+ --------+-----+--------------------------
+ 1000040 |   1 | 〃
+ 1000090 |   1 | 〇
+ 1000060 |   1 | 々
+ 1436570 |   1 | 〆る
+ 1594590 |   1 | 〆切
+ 1594590 |   1 | 〆切り
+ 1594600 |   1 | 〆切る
+ 1853450 |   1 | 〆
+ 1881510 |   1 | 〆切日
+ 2055680 |   1 | 〆粕
+ 2083160 |   1 | 〒
+ 2086620 |   1 | 見ヶ〆料
+ 2086620 |   1 | 見ケ〆料
+ 2146000 |   1 | 〇〇
+ 2170380 |   1 | ストロンチウム九〇
+ 2224860 |   1 | 申し込み〆切
+ 2415870 |   1 | 〜
+ 2570040 |   1 | 朝焼けは雨、夕焼けは晴れ
+ 2617550 |   1 | コバルト六〇
+ 2651930 |   1 | 活〆
+ 2651930 |   1 | 活け〆
+ 2741050 |   1 | 〇×
+       4 |   2 | 〆丸
+       5 |   2 | 〆子
+       6 |   2 | 〆治
+       7 |   2 | 〆代
+       8 |   2 | 〆谷
+       9 |   2 | 〆木
+      10 |   2 | 〆野
+      11 |   2 | 〆祐
+   78717 |   2 | モーニング娘。
+   78790 |   2 | モー娘。
+  146253 |   2 | 下〆
+  163678 |   2 | 荷〆峠
+  200053 |   2 | 菊乃家〆丸
+  220785 |   2 | 金〆
+  273462 |   2 | 甲〆
+  279456 |   2 | 高〆
+  287495 |   2 | 黒、岩池
+  290496 |   2 | 根〆
+  312589 |   2 | 傘〆
+  382326 |   2 | 上〆
+  420979 |   2 | 世〆子
+  421647 |   2 | 瀬〆
+  422978 |   2 | 勢〆
+  506370 |   2 | 中〆
+  580050 |   2 | 馬〆
+  580051 |   2 | 馬〆
+  580052 |   2 | 馬〆
+  580053 |   2 | 馬〆
+  618380 |   2 | 文〆
+ (51 rows)
+
+ Query for rdng including 々:
+ Sql:
+    select e.seq,e.src,txt from rdng r join entr e on e.id=r.entr
+    where src!=3 and txt similar to '%[　-〿]%' order by id;
+ (Note that the space in the brackets is a U+3000 space character.)
+
+   seq   | src |                  txt                   
+ --------+-----+----------------------------------------
+ 2147960 |   1 | モワァ〜ン
+ 2570040 |   1 | あさやけはあめ、ゆうやけははれ
+ 2730550 |   1 | あぼ〜ん
+       2 |   2 | 〆
+       3 |   2 | 〆ヱ
+   13580 |   2 | ウィリアム「バッファロービル」コーディ
+   15804 |   2 | エグゼクティブ　デシジョン
+   17339 |   2 | エンパイア　レコード
+   17483 |   2 | オースティンパワーズ　ゴールドメンバー
+ (9 rows)
+
+ Checking the examples" corpus and excluding "。" and "、":
+    select e.seq,e.src,txt from rdng r join entr e on e.id=r.entr
+    where src=3 and txt similar to '%[　-〿]%' 
+      and txt not like '%。%' and txt not like '%、%' 
+    order by id;
+
+     seq      | src |                       txt                        
+ -------------+-----+--------------------------------------------------
+ 328986074733 |   3 | 「おさきにしつれいします」「おつかれさまでした」
+  39393202181 |   3 | 「テニスをしましょうか」「ええ」
+
+ Same check on my personal mnn corpus shows these characters in rdng:
+  〜「」［］〜V.te（）／…？，
+
+ Ascii characters:
+    kanjidict.rdng: has many ascii "."s to denote okurigana.
+    kanjidict.kang: <none of course>
+    jmdict.kanj: β-カロテン, α-ｈｅｌｉｘ, 插入(oK) (7 total)
+    jmdict.rdng: <none> 
+    jjmnedict.kanj: <none>
+    jmnedict.rdng: 3 total, all look like errors, e.g. こうのとりのゆりかご)
+    examples: 10分だけ..., Windows95対応の...,
+
+2012-12-14 11:43:00 stuart
+ Gave up trying to reengineer the jstr_classify code for now.  Made
+ some minmal code changes to jdb.jstr_classify to address fix the 
+ IS-222 problem.  Will revisit the reengineering attempt later.
+
+ I think the conclusion at this point is that even if the jmdict and
+ jmnedict corpora adopt policies that allow the definitive classification
+ of japanese text as kanji ("keb") or reading ("reb") text, that cannot
+ be assured for other corpora.  For example, jmnedict's rules consider
+ digits in a japanese text string (e.g. ６３ビール) as identifying keb
+ text yet in many other sources of japanese text, that would be perfectly
+ acceptable reading text. 
+
+ Ultimately the idea of trying to reliably determine if a string is
+ kanji or reading by looking only at the string is not doable.  We 
+ should instead remove from the code any need to make such a determination,
+ except possibly as a hueristic for the purpose of generating advisory
+ warning messages.  For example, for restr and xref resolution, we could
+ look for the given text in both kanj and rdng tables.  Sadly, a side
+ effect in the JEL parser will be that syntax errors that formerly could 
+ be detected very close to their source in the input text will now be
+ semantic errors only discovered after an input is fully parsed.
 

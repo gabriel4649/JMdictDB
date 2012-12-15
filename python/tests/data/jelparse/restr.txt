@@ -206,3 +206,12 @@
 [1][n]
   middle dot
 
+#---------------------------------------------------------------------------------
+# 0300290_data -- U+3006 (IDEOGRAPHIC CLOSING MARK) should be kanji 
+# (IS-222; c.f. entry jmdict.1436570)
+締める；〆る；緊める
+しめる
+[1][v1]
+  [restr=締める; 〆る]
+  to total
+

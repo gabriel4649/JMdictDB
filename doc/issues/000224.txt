@@ -48,3 +48,34 @@ AssdTo:	stuart
  Note that I had to manually supply the filename to patch because "hg diff"s
  output is not exactly what is expected by patch.
 
+ Looked at porting the tests but looks like too much work to port
+ right now, the test fixture has changed a lot between then and now.
+
+2012-12-14 18:50:00 stuart
+ Followed the same procedure above to backport the IS-222 fix (rev
+ 6d69691e6d00 2012-12-14) to files:
+  python/lib/jdb.py
+  python/tests/data/jelparse/restr.txt
+  python/tests/test_jdb_jstr_classify.py
+  python/tests/test_jelparse.py
+ Was unable to apply the test_jdb_jstr_classify.py patch, it was rejected
+ for reasons I don't understand.  (Possibly patch has problems with utf-8
+ text?)  Applied by hand.  All tests pass except for the usual failures in
+ test_jelparse due to changes in the jmdict database between then and now.
+ (But note there are no tests for IS-121 in previous note.)
+
+2012-12-14 21:02:00 stuart
+ Did a "make loadall".  Run correctly with Python-2 , result ok except...
+ Compared data/jmdict.pgi with same file generated from same jmdict.xml
+ file but with the tip of development branch with Python-3 and found a 
+ number of discrepencies in the xresolv table data of the form:
+  py2maint:
+    13456	1	3	1	ライター・ルポルタージュ	\N	\N	\N	\N
+  default:
+    13456	1	3	1	ルポルタージュ・ライター	\N	\N	\N	\N
+ Entry 13456 is jmdict eq# 1144190.
+ The not-yet-resolved xref has the dotted pair reversed.  The python-3
+ data (default branch) is correct and the swapped Python-2 xrefs result
+ in the xrefs being unresolvable later.  
+
+

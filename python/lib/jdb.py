@@ -2017,7 +2017,7 @@ class Kwds:
             except IOError:
                 failed.append (table); continue
             for lnx in f:
-		ln = lnx.decode ('utf-8')
+                ln = lnx.decode ('utf-8')
                 if re.match (r'\s*(#.*)?$', ln): continue
                 fields = ln.rstrip('\n\r').split ("\t")
                 fields = [x if x!='' else None for x in fields]
@@ -2187,13 +2187,15 @@ def jstr_classify (s):
             n = uord (c)
             if    n >= 0x0000 and n <= 0x02FF:       r |= LATIN
             elif (n >= 0x3040 and n <= 0x30FF                   # Hiragana/katakana
-                  and n != 0x30FB                               #  but not MIDDOT
-                  or n == 0x301C):                   r |= KANA  #  or WAVE DASH char.
+                  and n != 0x30FB                               #  but excl. MIDDOT
+                  or n == 0x301C):                   r |= KANA  #  but incl. WAVE DASH.
             elif (n >= 0x3000 and n <= 0x303F                   # CJK Symbols
-                  or n == 0x30FB):                   r |= KSYM  #  or MIDDOT.
-            elif (n >= 0x4E00 and n <= 0x9FFF                   # CJK Unified.
-                  or n >= 0xFF00 and n <= 0xFF5F                # Fullwidth ascii.
-                  or n >= 0x20000 and n <= 0x2FFFF): r |= KANJI # CJK Unified ExtB+Supl.
+                  and n != 0x3006                               #  but excl. IDEO CLOSE
+                  or n == 0x30FB):                   r |= KSYM  #  but incl. MIDDOT.
+            elif (n >= 0x4E00 and n <= 0x9FFF                   # CJK Unified,
+                  or n >= 0xFF00 and n <= 0xFF5F                #  Fullwidth ascii,
+                  or n >= 0x20000 and n <= 0x2FFFF              #  CJK Unified ExtB+Supl,
+                  or n == 0x3006):                   r |= KANJI #  IDEO CLOSE.
             else:                                    r |= OTHER
         return r
 

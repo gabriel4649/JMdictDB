@@ -457,8 +457,8 @@ def do_xref (elems, sens, xtypkw):
               # Put the kanji and kana parts back together into
               # strings, and write the xresolv resord.
 
-            ktxt = u"\u30fb".join (klst) or None
-            rtxt = u"\u30fb".join (rlst) or None
+            ktxt = u"\u30fb".join (reversed (klst)) or None
+            rtxt = u"\u30fb".join (reversed (rlst)) or None
 
             if ktxt or rtxt:
                 xrefs.append (jdb.Xrslv (typ=xtypkw, ktxt=ktxt, rtxt=rtxt, tsens=snum))

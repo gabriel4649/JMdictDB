@@ -76,6 +76,12 @@ AssdTo:	stuart
  Entry 13456 is jmdict eq# 1144190.
  The not-yet-resolved xref has the dotted pair reversed.  The python-3
  data (default branch) is correct and the swapped Python-2 xrefs result
- in the xrefs being unresolvable later.  
+ in the xrefs being unresolvable later.
 
+2012-12-14 22:28:00 stuart
+ Found it!  this problem was fixed in rev 22dc5c58f7c8 2012-11-10 
+ ("Unresolved xrefs with dotted pair saved in reverse order") in
+ python/lib/jmxml.py: JmdictFile.do_xref(): lines 740, 741, by adding
+ calls to reversed().  The rev and fix was made after after py2maint
+ was branched.
 

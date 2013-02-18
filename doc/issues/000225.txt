@@ -1,0 +1,52 @@
+Title:	jmnedict xml fotrmatting failing 
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart
+
+2013-02-17 18:24:00 stuart
+ Email from jwb (2013-02-17, "jmnedict xml format crashing"):
+ > I just noticed the link to see the "jmnedict xml" entry
+ > format is crashing. The "jmdict xml" version is fine. 
+ > Dunno when this started.
+
+ Can cause a failure by displaying jmdict entry 1444570 in
+ web interface using the current Python3 development version
+ and clicking the jmnedict xml link:
+
+  Traceback (most recent call last):
+    File "/home/stuart/devel/jdb/jb/web/cgi/entr.py", line 92, in <module>
+      main (args, opts)
+    File "/home/stuart/devel/jdb/jb/web/cgi/entr.py", line 54, in main
+      etxts = [fmtxml.entr (e, compat='jmnedict') for e in entries]
+    File "/home/stuart/devel/jdb/jb/web/cgi/entr.py", line 54, in <listcomp>
+      etxts = [fmtxml.entr (e, compat='jmnedict') for e in entries]
+    File "../../python/lib/fmtxml.py", line 91, in entr
+      for x in senss: fmt.extend (trans (x))
+    File "../../python/lib/fmtxml.py", line 234, in trans
+      for x in nlist])
+    File "../../python/lib/fmtxml.py", line 234, in <listcomp>
+      for x in nlist])
+    KeyError: 22
+
+ In other entries the jmnedict is ok.
+
+2013-02-17 18:45:00 stuart
+ Problem is in (per asbove traceback) lib/fmtxml.py
+
+  232  	        kwtab = getattr (XKW, 'NAME_TYPE')
+  233  	        fmt.extend (['<name_type>&%s;</name_type>' % kwtab[x.kw].kw
+  234  ->	             for x in nlist])
+  235  	        eng_id = KW.LANG['eng'].id
+
+ 'kwtab' comes from XKW which is created on lib/xmlkw.py by selecting 
+ only jmnedict relevant keywords from KW.MISC.  So any entry that has
+ non-jmnedict keywords (22='uk' in the above case) will cause an exception.  
+
+ Note that since we are generating jmnedict xml we have to adhere 
+ to the jmnedict DTD and the entities defined therein -- so we can't
+ expand the keyword repertoire here and output a 'uk' tag.  Changed the
+ code in fmtxml.py to ignore KeyErrors.  
+

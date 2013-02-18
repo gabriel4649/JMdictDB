@@ -230,8 +230,12 @@ def trans (s):
         fmt = []
         nlist = getattr (s, '_misc', [])
         kwtab = getattr (XKW, 'NAME_TYPE')
-        fmt.extend (['<name_type>&%s;</name_type>' % kwtab[x.kw].kw
-                     for x in nlist])
+        for x in nlist:
+               # 'kwtab' contains only 'misc' keywords that are used
+               # in jmnedict so we want to ignore KeyErrors caused by
+               # encountering other (eg jmdict) keywords.  (IS-225)
+             try: fmt.append ('<name_type>&%s;</name_type>' % kwtab[x.kw].kw)
+             except KeyError: pass
         eng_id = KW.LANG['eng'].id
         for g in getattr (s, '_gloss', []):
             lang = getattr (g, 'g_lang', eng_id)

@@ -125,8 +125,8 @@
                 <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_src">help</a>
                 <table class="optgroup">
                   <tr tal:repeat="r src">
-                    <td tal:repeat="c r">
-                      <input name="src" tal:condition="c" tal:attributes="value c/id; title c/descr; checked python:TALdecode(c.id,1,1)" tal:content="c/kw" type="checkbox"/>
+                    <td tal:repeat="c r" tal:attributes="title c/descr">
+                      <input name="src" tal:condition="c" tal:attributes="value c/id; checked python:TALdecode(c.id,1,1)" tal:content="c/kw" type="checkbox"/>
                       </td>
                     </tr>
                   </table>
@@ -140,7 +140,7 @@
                 <table class="optgroup">
                   <tr tal:repeat="r stat">
                     <td tal:repeat="c r">
-                      <input name="stat" tal:condition="c" tal:attributes="value c/id; title c/descr; checked python:TALdecode(c.kw,'A',1,'N',1)" tal:content="c/descr" type="checkbox"/>
+                      <input name="stat" tal:condition="c" tal:attributes="value c/id; checked python:TALdecode(c.kw,'A',1,'N',1)" tal:content="c/descr" type="checkbox"/>
                       </td>
                     </tr>
                   </table>
@@ -159,11 +159,11 @@
             <tr>
               <td colspan="2"><span class="descriptor">Frequency of use:</span>
                 <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_freq">help</a><br/>
-                <span tal:repeat="z freq" class="optgroup">
-                  <input name="freq" tal:attributes="value z/kw; title z/descr" tal:content="z/kw" type="checkbox"/>
+                <span tal:repeat="z freq" class="optgroup" tal:attributes="title z/descr">
+                  <input name="freq" tal:attributes="value z/kw" tal:content="z/kw" type="checkbox"/>
                   </span>
-                <br/><span class="optgroup">
-                  <input name="freq" value="nf" tal:attributes="title KW/FREQ/nf/descr" type="checkbox"/>nf
+                <br/><span class="optgroup" tal:attributes="title KW/FREQ/nf/descr">
+                  <input name="freq" value="nf" type="checkbox"/>nf
                   <select name="nfcmp">
                     <option selected="selected">&lt;=</option>
                     <option>=</option>
@@ -171,8 +171,8 @@
                     </select>
                   <input name="nfval" size="2"/>
                   &nbsp;&nbsp;
-                  <span tal:condition="KW/FREQ/gA">
-                    <input name="freq" value="ga" tal:attributes="title KW/FREQ/gA/descr" type="checkbox"/>gA
+                  <span tal:condition="KW/FREQ/gA" tal:attributes="title KW/FREQ/gA/descr">
+                    <input name="freq" value="ga" type="checkbox"/>gA
                     <select name="gacmp">
                       <option>&lt;=</option>
                       <option>=</option>
@@ -190,8 +190,8 @@
                 <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_kinf">help</a>
                 <table class="optgroup">
                   <tr tal:repeat="r kinf">
-                    <td tal:repeat="c r">
-                      <input name="kinf" tal:condition="c" tal:attributes="value c/id; title c/descr" tal:content="c/kw" type="checkbox"/>
+                    <td tal:repeat="c r" tal:attributes="title c/descr">
+                      <input name="kinf" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/>
                       </td>
                     </tr>
                   </table>
@@ -201,8 +201,8 @@
                 <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_rinf">help</a>
                 <table class="optgroup">
                   <tr tal:repeat="r rinf">
-                    <td tal:repeat="c r">
-                      <input name="rinf" tal:condition="c" tal:attributes="value c/id; title c/descr" tal:content="c/kw" type="checkbox"/>
+                    <td tal:repeat="c r" tal:attributes="title c/descr">
+                      <input name="rinf" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/>
                       </td>
                     </tr>
                   </table>
@@ -215,8 +215,8 @@
                 <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_pos">help</a>
                 <table class="optgroup">
                   <tr tal:repeat="r pos">
-                    <td tal:repeat="c r">
-                      <input name="pos" tal:condition="c" tal:attributes="value c/id; title c/descr; title c/descr" tal:content="c/kw" type="checkbox" />
+                    <td tal:repeat="c r" tal:attributes="title c/descr">
+                      <input name="pos" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox" />
                       </td>
                     </tr>
                   </table>
@@ -229,8 +229,8 @@
                 <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_misc">help</a>
                 <table class="optgroup">
                   <tr tal:repeat="r misc">
-                    <td tal:repeat="c r">
-                      <input name="misc" tal:condition="c" tal:attributes="value c/id; title c/descr" tal:content="c/kw" type="checkbox"/>
+                    <td tal:repeat="c r" tal:attributes="title c/descr">
+                      <input name="misc" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/>
                       </td>
                     </tr>
                   </table>
@@ -243,8 +243,8 @@
                 <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_fld">help</a>
                 <table class="optgroup">
                   <tr tal:repeat="r fld">
-                    <td tal:repeat="c r">
-                      <input name="fld" tal:condition="c" tal:attributes="value c/id; title c/descr" tal:content="c/kw" type="checkbox"/>
+                    <td tal:repeat="c r" tal:attributes="title c/descr">
+                      <input name="fld" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/>
                       </td>
                     </tr>
                   </table>
@@ -257,8 +257,8 @@
                 <a class="helplink" target="edhelp" tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}#kw_dial">help</a>
                 <table class="optgroup">
                   <tr tal:repeat="r dial">
-                    <td tal:repeat="c r">
-                      <input name="dial" tal:condition="c" tal:attributes="value c/id; title c/descr" tal:content="c/kw" type="checkbox"/>
+                    <td tal:repeat="c r" tal:attributes="title c/descr">
+                      <input name="dial" tal:condition="c" tal:attributes="value c/id" tal:content="c/kw" type="checkbox"/>
                       </td>
                     </tr>
                   </table>

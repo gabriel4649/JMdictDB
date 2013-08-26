@@ -13,11 +13,30 @@ The data in rad.csv was compiled from the following sources:
 An additional source that hasn't been used yet is 
   http://www.sljfaq.org/afaq/radical-names.html
 
+rad table columns:
+ num      The standard radical number.
+ var      Variant number.
+ rchr     Radical character from Unicode radicals U2F00.pdf or U2E80.pdf
+ chr      Character used in Breen's kradfile.
+ strokes  Number of strokes in radical
+ loc      Position of radical in character: T: top, B: bottom, L: left,
+           R: right, V: various, E: enclosure, O: original
+ name     Radical name.
+ examples Sample kanji characters that use the radical.
+
 To do:
- Remove or replace examples characters that are not in kanjidic.
+ Remove or replace example characters that are not in kanjidic.
  Remove radical variants that are not used in kanjidic characters
   (but a few are listed in Halpern, and others may be used in 
   jis-213 but i can't see because of no suitable font.) 
+ Most kanji character sources including kanjidic have only a radical
+  number, no variant number, so how to create foreign key into rad 
+  table?  Have only "primary" radical in rad, and a separate table
+  for variants?  Or a table to map radical number to (num,var) in
+  rad?
+ Recent (2013-05-26) check of radical names against JB's data (chr table)
+  and wikipedia (http://en.wikipedia.org/wiki/List_of_Kangxi_radicals)
+  shows many errors.  Need to recheck all.
 
 Questions...
 12.1	Some of these examples should be moved to 12.2, 12.3?
@@ -37,5 +56,10 @@ Questions...
 193	Halpern/Breen have two versions but they have identical shape
 	 and name (afaict) so I took as one.
 199.2	Is example baku or bakunyo?
+200.1,2 On my machine the 200.1.chr and 2002.2.rchr appear identical
+         but 2002.2.rchr (\u2FC7) appears quite distinct in U2F00.pdf
 200.3	Examples correct?
 200.4	Examples correct? (added first two from kanjidic.)
+
+Misc notes...
+

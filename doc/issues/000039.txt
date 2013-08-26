@@ -67,5 +67,5 @@ AssdTo:	stuart@friix.com
     http://stackoverflow.com/questions/480214/how-do-you-remove-duplicates-from-a-list-in-python-whilst-preserving-order
   and message/thread on python-ideas list:
     http://mail.python.org/pipermail/python-ideas/2012-November/017893.html
-　and:
+  and:
     http://code.activestate.com/recipes/52560-remove-duplicates-from-a-sequence/

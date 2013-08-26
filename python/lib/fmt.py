@@ -102,7 +102,7 @@ def sens (s, kanj, rdng, n=None, entrcorp=None):
         if hasattr(s,'_dial') and s._dial:
             _dial = ("Dialect:" + ",".join([KW.DIAL[x.kw].kw for x in s._dial]))
 
-        fmt.append ("%d. %s" % (getattr(s,'sens',n), ', '.join(
+        fmt.append ("%s. %s" % (getattr(s,'sens',n), ', '.join(
                                 [x for x in (stag, pos, misc, fld, _dial, _lsrc) if x])))
         if hasattr(s,'notes') and s.notes: fmt.append ("  \u00AB%s\u00BB" % s.notes)
 

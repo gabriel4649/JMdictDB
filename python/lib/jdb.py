@@ -113,6 +113,7 @@ def dbinsert (dbh, table, cols, row, wantid=False):
         try: dbh.execute (sql, args)
         except Exception as e:
             e.sql = sql;  e.sqlargs = args
+            if not hasattr (e, 'message'): e.message = ''
             e.message += "  %s [%s]" % (sql, ','.join(repr(x) for x in args))
             raise e
         id = None
@@ -1503,7 +1504,7 @@ def addentr (cur, entr):
         for x in getattr (entr, '_snd', []): dbinsert (cur, "entrsnd", ['entr','ord','snd'], x)
         for x in getattr (entr, '_grp', []): dbinsert (cur, "grp",     ['entr','kw','ord'], x)
         if getattr (entr, 'chr', None):
-            c = e.chr
+            c = entr.chr
             dbinsert (cur, "chr", ['entr','chr','bushu','strokes','freq','grade','jlpt','radname'], c)
             for x in getattr (c, '_cinf',  []): dbinsert (cur, "cinf",  ['entr','kw','value','mctype'], x)
         return eid, entr.seq, entr.src

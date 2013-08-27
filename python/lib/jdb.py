@@ -856,11 +856,20 @@ def _freq_bin (r, k, kw, val, freqs, dups, repld):
         else:
             freqs[key] = (r, k, kw, val)
 
-def freq2txts (freqs):
+#def freq2txts (freqs):
+#        flist = []
+#        for f in freqs:
+#            kwstr = KW.FREQ[f.kw].kw
+#            fstr = ('%s%02d' if kwstr=='nf' else '%s%d') % (kwstr, f.value)
+#            if fstr not in flist: flist.append (fstr)
+#        return sorted (flist)
+
+def freq2txts (freqs, tt=False):
         flist = []
         for f in freqs:
-            kwstr = KW.FREQ[f.kw].kw
+            kwstr, descr = KW.FREQ[f.kw].kw, KW.FREQ[f.kw].descr
             fstr = ('%s%02d' if kwstr=='nf' else '%s%d') % (kwstr, f.value)
+            if tt: fstr = '<span title="%s">%s</span>' % (descr, fstr)
             if fstr not in flist: flist.append (fstr)
         return sorted (flist)
 

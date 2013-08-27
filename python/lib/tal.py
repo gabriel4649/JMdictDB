@@ -107,15 +107,26 @@ def TALattror (parent, *attrs):
             if getattr (parent, a, None): return True
         return False
 
+def abbr (kwtyp, id, textonly=False):
+    # Should this be in fmt.py with freq2txt()?
+        kws = getattr (KW, kwtyp)
+        kw, descr =  kws[id].kw, kws[id].descr
+        if descr and not textonly:
+           kw = '<span title="%s">%s</span>' % (descr, kw)
+        return kw
+
+@add2builtins
+def TALabbrtxt (kwtyp,id):
+        return abbr (kwtyp, id, True)
+
 @add2builtins
 def TALabbr (kwtyp,id):
-        kws = getattr(KW,kwtyp)
-        return kws[id].kw
+        return abbr (kwtyp, id)
 
 @add2builtins
 def TALabbrs (kwtyp,parent,attr,sep=','):
         kws = getattr(KW,kwtyp)
-        return sep.join([kws[x.kw].kw for x in getattr(parent,attr)])
+        return sep.join([abbr (kwtyp, x.kw) for x in getattr (parent,attr)])
 
 @add2builtins
 def TALdescr (kwtyp,id):
@@ -129,7 +140,7 @@ def TALdescrs (kwtyp,parent,attr,sep=','):
 
 @add2builtins
 def TALfreqs (parent,sep=','):
-        f = jdb.freq2txts(getattr(parent,'_freq'))
+        f = jdb.freq2txts(getattr(parent,'_freq'), tt=True)
         return sep.join (f)
 
 @add2builtins

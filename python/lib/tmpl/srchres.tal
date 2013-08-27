@@ -60,13 +60,13 @@
         <tr class="resrow" tal:repeat="r results">
           <td><input type="checkbox" name="e" tal:attributes="value r/id"/></td>
           <td class="seq">
-            <span tal:replace="python:TALabbr('SRC',r.src)"/>
+            <span tal:replace="structure python:TALabbr('SRC',r.src)"/>
             <a tal:content="r/seq" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${r/id}"/>
             </td>
           <td>
-            <span tal:condition="not:r/unap" tal:replace="python:TALabbr('STAT',r.stat)"/>
+            <span tal:condition="not:r/unap" tal:replace="structure python:TALabbr('STAT',r.stat)"/>
             <span tal:condition="r/unap" class="pend">
-              <span tal:replace="python:TALabbr('STAT',r.stat)"/>*</span>
+              <span tal:replace="structure python:TALabbr('STAT',r.stat)"/>*</span>
             </td>
           <td>
             <span tal:condition="r/p" tal:omit-tag="">P</span>

@@ -86,7 +86,7 @@
                   </tr>
                 <tr tal:condition="e/id">
                   <td colspan="2">Corpus:
-                    <span tal:condition="e/src" tal:content="python:TALabbr('SRC',e.src)">src</span>
+                    <span tal:condition="e/src" tal:content="structure python:TALabbr('SRC',e.src)">src</span>
                     </td>
                   <td>Seq:
                     <a tal:condition="e/seq" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;q=${e/seq}.${e/src}" tal:content="e/seq">seq#</a>
@@ -120,7 +120,7 @@
                   </span>
                 </select>
               <span tal:condition="python:not(not e.NOCORPOPT or is_editor or not e.src)" tal:omit-tag="">
-                <span tal:replace="python:TALabbr('SRC',e.src)">corpus</span>
+                <span tal:replace="structure python:TALabbr('SRC',e.src)">corpus</span>
                 <!-- #2 src parameter when new entry and user is not editor w/o corp option. -->
                 <input type="hidden" name="src" tal:attributes="value e/src"/>
                 </span>

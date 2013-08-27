@@ -111,7 +111,7 @@
         <hr/>
         </span>
 
-      <span tal:replace="python:TALabbr('SRC',e.src)">src</span>
+      <span tal:replace="structure python:TALabbr('SRC',e.src)">src</span>
       <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;q=${e/seq}.${e/src}" tal:content="e/seq">seq#</a>
       <span class="status">
         <span tal:condition="e/unap" class="pend">
@@ -136,7 +136,7 @@
         <span tal:condition="not:repeat/k/start" tal:omit-tag="">； </span>
         <span class="kanj" tal:content="k/txt">kanji text</span>
         <span class="kattrs" tal:condition="python:TALattror(k,'_inf','_freq')">
-          [<span class="kinf" tal:condition="k/_inf" tal:content="python:TALabbrs('KINF',k,'_inf')">kinf</span>
+          [<span class="kinf" tal:condition="k/_inf" tal:content="structure python:TALabbrs('KINF',k,'_inf')">kinf</span>
            <span tal:condition="python:TALattrand(k,'_inf','_freq')" tal:replace="string:/">/</span>
            <span class="kfreq" tal:condition="k/_freq" tal:content="python:TALfreqs(k)">kfreq</span>]
           </span>
@@ -154,7 +154,7 @@
             </span>)
           </span>
         <span class="rattrs" tal:condition="python:TALattror(r,'_inf','_freq')">
-          [<span class="rinf" tal:condition="r/_inf" tal:content="python:TALabbrs('RINF',r,'_inf')">rinf</span>
+          [<span class="rinf" tal:condition="r/_inf" tal:content="structure python:TALabbrs('RINF',r,'_inf')">rinf</span>
           <span tal:condition="python:TALattrand(r,'_inf','_freq')" tal:replace="string:/">/</span>
           <span class="rfreq" tal:condition="r/_freq" tal:content="python:TALfreqs(r)">rfreq</span>]
           </span>
@@ -172,22 +172,22 @@
                 </span> only)
               </span>
             <span class="pos" tal:condition="s/_pos">
-              [<span tal:replace="python:TALabbrs('POS',s,'_pos')">pos</span>]
+              [<span tal:replace="structure python:TALabbrs('POS',s,'_pos')">pos</span>]
               </span>
             <span class="misc" tal:condition="s/_misc">
-              [<span tal:replace="python:TALabbrs('MISC',s,'_misc')">misc</span>]
+              [<span tal:replace="structure python:TALabbrs('MISC',s,'_misc')">misc</span>]
               </span>
             <span class="fld" tal:condition="s/_fld">
               {<span tal:replace="python:TALdescrs('FLD',s,'_fld')">fields</span>}
               </span>
 
             <span class="dial" tal:condition="s/_dial">,
-              Dialect: <span tal:replace="python:TALabbrs('DIAL',s,'_dial')">dial</span>
+              Dialect: <span tal:replace="structure python:TALabbrs('DIAL',s,'_dial')">dial</span>
               </span>
             <span class="lsrc" tal:condition="s/_lsrc">,
               From
               <span tal:repeat="z s/_lsrc" tal:omit-tag="">
-                <span tal:replace="python:TALabbr('LANG',z.lang)">(xx)</span
+                <span tal:replace="structure python:TALabbr('LANG',z.lang)">(xx)</span
                 ><span tal:condition="python:TALattror(z,'part','wasei')" tal:omit-tag=""
                   >(<span tal:condition="z/part" tal:replace="string: p">p</span
                   ><span tal:condition="python:TALattrand(z,'part','wasei')" tal:replace="string: ,">,</span
@@ -209,10 +209,10 @@
               <span tal:repeat="g s/_gloss" tal:omit-tag="">
               <span class="gloss" tal:replace="string:▶">num.</span>
                 <span tal:condition="python:1!=g.lang" omit-tag="">
-                  <span class="glang" tal:replace="python:TALabbr('LANG',g.lang)">lang</span>:
+                  <span class="glang" tal:replace="structure python:TALabbr('LANG',g.lang)">lang</span>:
                   </span>
                 <span tal:condition="python:1!=g.ginf" omit-tag="">
-                  [<span class="ginf" tal:replace="python:TALabbr('GINF',g.ginf)">lang</span>.]
+                  [<span class="ginf" tal:replace="structure python:TALabbr('GINF',g.ginf)">lang</span>.]
                   </span>
                 <span tal:replace="g/txt">gloss</span><br/>
                 </span>
@@ -228,7 +228,7 @@
               <tr tal:condition="s/XREF" tal:repeat="x s/XREF">
                 <td>&nbsp;</td>
                 <td>
-                  <span tal:replace="python:TALabbr('XREF',x.typ)">xref-type</span>:
+                  <span tal:replace="structure python:TALabbr('XREF',x.typ)">xref-type</span>:
                   <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${x/xentr}" tal:content="x/TARG/seq">seq-num</a>
                   <span tal:condition="x/TARG/_kanj" tal:replace="python:TALkrtxt(x.TARG,'_kanj',x.kanj)">xref-kanj</span>
                   <span tal:condition="python:TALattrand(x,'kanj','rdng')" tal:omit-tag="">【</span>
@@ -245,7 +245,7 @@
               <tr tal:condition="s/_xrslv" tal:repeat="x s/_xrslv">
                 <td>&nbsp;</td>
                 <td>
-                  <span tal:replace="python:TALabbr('XREF',x.typ)">xrslv-type</span>:
+                  <span tal:replace="structure python:TALabbr('XREF',x.typ)">xrslv-type</span>:
                   <span tal:condition="x/ktxt" tal:replace="x/ktxt">xrslv-kanj</span>
                   <span tal:condition="python:TALattrand(x,'ktxt','rtxt')" tal:omit-tag="">・</span>
                   <span tal:condition="x/rtxt" tal:replace="x/rtxt">xrslv-rdng</span>
@@ -257,7 +257,7 @@
               <tr tal:condition="s/XRER" tal:repeat="x s/XRER">
                 <td>&nbsp;</td>
                 <td>
-                  <span tal:replace="python:TALabbr('XREF',x.typ)">xref-type</span>:
+                  <span tal:replace="structure python:TALabbr('XREF',x.typ)">xref-type</span>:
                   <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${x/entr}" tal:content="x/TARG/seq">seq-num</a>
                   <span tal:condition="x/TARG/_kanj" tal:replace="x/TARG/_kanj/0/txt">xref-kanj</span>
                   <span tal:condition="python:TALattrand(x.TARG,'_kanj','_rdng')" tal:omit-tag="">【</span>
@@ -276,7 +276,7 @@
       <span tal:condition="e/_grp" tal:omit-tag=""><br/>Belongs to groups:
         <span tal:repeat="g e/_grp" tal:omit-tag="">
           <span class="grp">
-            <span tal:replace="python:TALabbr('GRP',g.kw)" tal:omit-tag="">grpname</span
+            <span tal:replace="structure python:TALabbr('GRP',g.kw)" tal:omit-tag="">grpname</span
             >(<span tal:replace="g/ord">ord</span
             >)<span tal:condition="not:repeat/g/end" tal:omit-tag="">,</span>
             </span>
@@ -329,7 +329,7 @@
               <tr>
                 <td tal:content="string:${h/hist}.">#.</td>
                 <td class="hhdr" colspan="2">
-                  <span tal:content="string: ${python:TALabbr('STAT',h.stat)}${python:'*' if h.unap else ''}"/>
+                  <span tal:content="string: ${python:TALabbrtxt('STAT',h.stat)}${python:'*' if h.unap else ''}"/>
                   <span tal:content="h/dt">timestamp</span>&nbsp;
                   <span class="submitter_name" tal:content="h/name">name</span>
                   <span tal:content="email">email</span>

@@ -1,4 +1,4 @@
-﻿<html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
+<html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
 <!--? Copyright (c) 2009 Stuart McGraw -->
 <!--? $Revision$ $Date$ -->
 
@@ -23,7 +23,7 @@
     <span tal:define="global e epair/0" tal:omit-tag=""/>
     <span tal:define="global etxt epair/1" tal:omit-tag=""/>
     <div class="entry">
-      <span tal:replace="python:TALabbr('SRC',e.src)">src</span>
+      src
       <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;q=${e/seq}.${e/src}" tal:content="e/seq">seq#</a>
       <span class="status">
         <span tal:condition="e/unap" class="pend">

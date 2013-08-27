@@ -288,45 +288,45 @@
       <span tal:condition="not:etxt" tal:omit-tag="">
         <div class="hist" tal:condition="e/_hist">History:
           <table>
-           <tbody class="histtab">
-            <span tal:repeat="h e/_hist">
-              <span tal:condition="h/email" tal:omit-tag="">
-                <span tal:condition="session/userid">
-                  <span tal:define="global email string:&lt;${h/email}&gt;"/>
+            <tbody class="histtab">
+              <span tal:repeat="h e/_hist" tal:omit-tag="">
+                <span tal:condition="h/email" tal:omit-tag="">
+                  <span tal:condition="session/userid" tal:omit-tag="">
+                    <span tal:define="global email string:&lt;${h/email}&gt;" tal:omit-tag=""/>
+                    </span>
+                  <span tal:condition="not:session/userid" tal:omit-tag="">
+                    <span tal:define="global email string:&lt;...address hidden...&gt;" tal:omit-tag=""/>
+                    </span>
                   </span>
-                <span tal:condition="not:session/userid">
-                  <span tal:define="global email string:&lt;...address hidden...&gt;"/>
+                <span tal:condition="not:h/email" tal:omit-tag="">
+                  <span tal:define="global email string:" tal:omit-tag=""/>
                   </span>
+                <tr>
+                  <td tal:content="string:${h/hist}.">#.</td>
+                  <td class="hhdr" colspan="2">
+                    <span tal:content="string: ${python:TALabbrtxt('STAT',h.stat)}${python:'*' if h.unap else ''}"/>
+                    <span tal:content="h/dt">timestamp</span>&nbsp;
+                    <span class="submitter_name" tal:content="h/name">name</span>
+                    <span tal:content="email">email</span>
+                    </td>
+                  </tr>
+                <tr tal:condition="h/refs">
+                  <td>&nbsp;</td>
+                  <td valign="top">Refs:</td>
+                  <td><pre class="preformat" tal:content="h/refs">refs</pre></td>
+                  </tr>
+                <tr tal:condition="h/notes">
+                  <td>&nbsp;</td>
+                  <td valign="top">Comments:</td>
+                  <td><pre class="preformat" tal:content="h/notes">notes</pre></td>
+                  </tr>
+                <tr tal:condition="h/diff">
+                  <td>&nbsp;</td>
+                  <td valign="top">Diff:</td>
+                  <td><pre class="preformat" tal:content="h/diff">diff</pre></td>
+                  </tr>
                 </span>
-              <span tal:condition="not:h/email" tal:omit-tag="">
-                <span tal:define="global email string:"/>
-                </span>
-              <tr>
-                <td tal:content="string:${h/hist}.">#.</td>
-                <td class="hhdr" colspan="2">
-                  <span tal:content="string: ${python:TALabbrtxt('STAT',h.stat)}${python:'*' if h.unap else ''}"/>
-                  <span tal:content="h/dt">timestamp</span>&nbsp;
-                  <span class="submitter_name" tal:content="h/name">name</span>
-                  <span tal:content="email">email</span>
-                  </td>
-                </tr>
-              <tr tal:condition="h/refs">
-                <td>&nbsp;</td>
-                <td valign="top">Refs:</td>
-                <td><pre class="preformat" tal:content="h/refs">refs</pre></td>
-               </tr>
-              <tr tal:condition="h/notes">
-                <td>&nbsp;</td>
-                <td valign="top">Comments:</td>
-                <td><pre class="preformat" tal:content="h/notes">notes</pre></td>
-               </tr>
-              <tr tal:condition="h/diff">
-                <td>&nbsp;</td>
-                <td valign="top">Diff:</td>
-                <td><pre class="preformat" tal:content="h/diff">diff</pre></td>
-               </tr>
-              </span>
-             </tbody>
+              </tbody>
             </table>
           </div>
         </span>

@@ -278,6 +278,11 @@
         <pre tal:content="etxt"/>
         </span>
 
+      <span tal:condition="e/POS">
+        <a tal:attributes="href string:conj.py?e=${e/id}&amp;svc=${svc}&amp;sid=${sid}&amp;e=${x/xentr}">Conjugations</a>
+        <br/><br/>
+        </span>
+
       <form tal:condition="e/EDITABLE" action="edform.py" method="get">
         <input type="submit" value="Edit"/>
         <input type="hidden" name="e" tal:attributes="value e/id"/>

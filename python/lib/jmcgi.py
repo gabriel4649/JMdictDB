@@ -480,6 +480,7 @@ def htmlprep (entries):
         add_audio_flag (entries)
         add_editable_flag (entries)
         add_unreslvd_flag (entries)
+        add_pos_flag (entries)
 
 def add_p_flag (entrs):
         # Add a supplemantary attribute to each entr object in
@@ -575,6 +576,23 @@ def add_unreslvd_flag (entries):
             for s in e._sens:
                 if len (getattr (s, '_xunr', [])) > 0:
                     e.UNRESLVD = True
+
+def add_pos_flag (entries):
+
+        # This is a convenience function to avoid embedding this logic
+        # in the TAL templates.  This sets a boolean POS flag on
+        # each entry if any senses in the entry have a part-of-speech
+        # (pos) tag and says whether or not an "Conjugations" link
+        # should be shown for the entry.  There is no guaranty that any
+        # of the pos tags are conjugatable but at least it filters out
+        # jmnedict and other such entries.
+
+        KW = jdb.KW
+        for e in entries:
+            e.POS = False
+            for s in e._sens:
+                if len (getattr (s, '_pos', [])) > 0:
+                    e.POS = True;  break
 
 def add_filtered_xrefs (entries, rem_unap=False):
 

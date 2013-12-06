@@ -208,8 +208,8 @@
                 <table class="kdrefs" border="1">
                   <tr tal:repeat="rf e/chr/_cinf">
                     <td tal:content="structure python:TALabbr('CINF',rf.kw)" tal:attributes="title python:TALdescr('CINF',rf.kw)">kwname</td>
-                    <td tal:condition="structure python:TALabbr('CINF',rf.kw)!='gahoh'" tal:content="rf/value">value</td>
-                    <td tal:condition="structure python:TALabbr('CINF',rf.kw)=='gahoh'">
+                    <td tal:condition="python:TALabbrtxt('CINF',rf.kw)!='gahoh'" tal:content="rf/value">value</td>
+                    <td tal:condition="python:TALabbrtxt('CINF',rf.kw)=='gahoh'">
                       <a tal:condition="cfg/web/GAHOH_URL" tal:content="rf/value"
                          tal:attributes="href string:${cfg/web/GAHOH_URL}${rf/value}">gahoh-url</a>
                       <span tal:condition="not:cfg/web/GAHOH_URL" tal:content="rf/value">gahoh-value</span></td>

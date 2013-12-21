@@ -278,7 +278,7 @@
         <pre tal:content="etxt"/>
         </span>
 
-      <span tal:condition="e/POS">
+      <span tal:condition="python: e.POS and not etxt">
         <a tal:attributes="href string:conj.py?e=${e/id}&amp;svc=${svc}&amp;sid=${sid}&amp;e=${x/xentr}">Conjugations</a>
         <br/><br/>
         </span>

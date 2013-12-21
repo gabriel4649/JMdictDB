@@ -102,7 +102,8 @@ endif
 CSS_FILES = jmdict.css
 WEB_CSS = $(addprefix $(CSS_DIR)/,$(CSS_FILES))
 
-CGI_FILES = entr.py \
+CGI_FILES = conj.py \
+	entr.py \
 	edconf.py \
 	edform.py \
 	edhelp.py \
@@ -137,7 +138,8 @@ LIB_FILES = jdb.py \
 	edict2.xsl
 WEB_LIB	= $(addprefix $(LIB_DIR)/,$(LIB_FILES))
 
-TAL_FILES = entr.tal \
+TAL_FILES = conj.tal \
+	entr.tal \
 	edconf.tal \
 	edform.tal \
 	edhelp.tal \

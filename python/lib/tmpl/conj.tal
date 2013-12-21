@@ -28,9 +28,9 @@
           <th>Formal</th>
           </tr>
         <span tal:repeat="r s" tal:omit-tag="">
-          <tr tal:condition="r/sbreak">
-            <td bgcolor="#FFFFE0">&nbsp;</td>
-            <td bgcolor="#FFFFE0" colspan="4">
+          <tr class="conjbrk" tal:condition="r/sbreak">
+            <td>&nbsp;</td>
+            <td colspan="4">
               <span tal:replace="string: '${r/ptxt}' conjugations for "/>
               <span tal:condition="r/ktxt" tal:replace="r/ktxt"
               /><span tal:condition="python:TALattrand(r,'ktxt','rtxt')" tal:omit-tag="">【</span

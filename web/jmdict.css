@@ -37,6 +37,10 @@
 .descriptor	{font-style: italic; color: #008000;} 
 .optgroup	{font: 75% arial}
 
+/* Conjugations */
+.conjtable	{border-collapse: collapse; border: 1px solid black;}
+.conjbrk	{background: #FFFFE0;}
+
 /* other */
 .helplink	{font-size: 75%;}
 table.syntable	{border: 1px solid black; border-collapse:collapse;}

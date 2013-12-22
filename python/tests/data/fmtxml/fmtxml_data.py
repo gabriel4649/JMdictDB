@@ -167,3 +167,21 @@ t_exp[tid] = '''\
 </trans>
 </entry>'''
 
+# Following data for class Test_entr_diff
+
+tid = '0400010' ####################################
+t_in[tid] = \
+        "e1 = Entr (id=1, src=99, _rdng=[Rdng (txt='たかはし')])\n"\
+        "e2 = Entr (id=2, src=99, _rdng=[Rdng (txt='たかはし')])"
+t_exp[tid] = ''
+
+tid = '0400020' ####################################
+t_in[tid] = \
+        "e1 = Entr (id=1, src=99, _rdng=[Rdng (txt='たかはし')])\n"\
+        "e2 = Entr (id=2, src=99, _rdng=[Rdng (txt='たかばし')])"
+t_exp[tid] = '''\
+@@ -4 +4 @@
+-<reb>たかはし</reb>
++<reb>たかばし</reb>'''
+
+

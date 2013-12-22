@@ -1,7 +1,7 @@
 
 import sys, unittest, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')
-import jdb
+import jdb, copy
 from objects import *
 import fmtxml
 
@@ -94,5 +94,26 @@ def dotest (_, execstr, expected, **kwds):
             msg = "\nExpected (len=%d):\n%s\nGot (len=%d):\n%s" \
                    % (len(expected), expected, len(xml), xml)
             _.failIf (1, msg)
+
+# Tests for fmtxml.entr_diff(), see IS-227.
+# Like class Test_entr above, we use data from data/fmtxml_data.py imported 
+# (as 'f' for brevity) earlier.  See Test_entr above for more details.
+
+class Test_entr_diff (unittest.TestCase):
+    def setUp(_):
+        jdb.KW = jdb.Kwds ('data/fmtxml/kw/')
+        fmtxml.XKW = None
+    def test_0001(_):
+        lcls = {}
+        exec (f.t_in['0400010'], globals(), lcls)
+        e1, e2 = lcls['e1'], lcls['e2']
+        s = fmtxml.entr_diff (e1, e2, n=0)
+        _.assertEqual (s, f.t_exp['0400010']) 
+    def test_0002(_):
+        lcls = {}
+        exec (f.t_in['0400020'], globals(), lcls)
+        e1, e2 = lcls['e1'], lcls['e2']
+        s = fmtxml.entr_diff (e1, e2, n=0)
+        _.assertEqual (s, f.t_exp['0400020']) 
 
 if __name__ == '__main__': unittest.main()

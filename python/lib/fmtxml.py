@@ -576,8 +576,11 @@ def corpus (corpora):
 
 
 def entr_diff (eold, enew, n=2):
-        # 'eold' and/or 'enew' can be either Entr objects or
-        # XML strings of Entr objects.
+        # Returns a text string of the unified diff between the xml for 
+        # the entries 'eold' and 'enew'.  'eold' and/or 'enew' can be
+        # either Entr objects or XML strings of Entr objects.
+        # 'n' is the number of context lines to be output in the diff
+        # (equivalent to the 'n' value in the unix command, "diff -Un ...". 
 
         if isinstance (eold, str): eoldxml = eold.splitlines(False)
         else: eoldxml = entr (eold, wantlist=1, implicit_pos=0)
@@ -587,7 +590,7 @@ def entr_diff (eold, enew, n=2):
           # Also, skip the <entry> line since they will always differ.
         rawdiff = difflib.unified_diff (eoldxml, enewxml, n=n)
         diffs = [x.rstrip() for x in rawdiff
-                 if not (x[1:].startswith ('<entry') or x.startswith ('@@ -1,1 +1,1 @@')) ]
+                 if not (x[1:].startswith ('<entry') or x.startswith ('@@ -1 +1 @@')) ]
           # Remove the intial "---", "+++" lines.
         if len(diffs) >= 2: diffs = diffs[2:]
         diffstr = '\n'.join (diffs)

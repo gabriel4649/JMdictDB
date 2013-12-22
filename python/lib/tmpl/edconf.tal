@@ -138,7 +138,7 @@
         <span class="kattrs" tal:condition="python:TALattror(k,'_inf','_freq')">
           [<span class="kinf" tal:condition="k/_inf" tal:content="structure python:TALabbrs('KINF',k,'_inf')">kinf</span>
            <span tal:condition="python:TALattrand(k,'_inf','_freq')" tal:replace="string:/">/</span>
-           <span class="kfreq" tal:condition="k/_freq" tal:content="python:TALfreqs(k)">kfreq</span>]
+           <span class="kfreq" tal:condition="k/_freq" tal:content="structure python:TALfreqs(k)">kfreq</span>]
           </span>
         </span>
 
@@ -156,7 +156,7 @@
         <span class="rattrs" tal:condition="python:TALattror(r,'_inf','_freq')">
           [<span class="rinf" tal:condition="r/_inf" tal:content="structure python:TALabbrs('RINF',r,'_inf')">rinf</span>
           <span tal:condition="python:TALattrand(r,'_inf','_freq')" tal:replace="string:/">/</span>
-          <span class="rfreq" tal:condition="r/_freq" tal:content="python:TALfreqs(r)">rfreq</span>]
+          <span class="rfreq" tal:condition="r/_freq" tal:content="structure python:TALfreqs(r)">rfreq</span>]
           </span>
         </span>
       <span tal:condition="python:TALattrand(e,'_kanj','_rdng')" tal:omit-tag="">】</span>
@@ -208,10 +208,10 @@
             <span tal:condition="s/_gloss" tal:omit-tag="">
               <span tal:repeat="g s/_gloss" tal:omit-tag="">
               <span class="gloss" tal:replace="string:▶">num.</span>
-                <span tal:condition="python:1!=g.lang" omit-tag="">
+                <span tal:condition="python:1!=g.lang" tal:omit-tag="">
                   <span class="glang" tal:replace="structure python:TALabbr('LANG',g.lang)">lang</span>:
                   </span>
-                <span tal:condition="python:1!=g.ginf" omit-tag="">
+                <span tal:condition="python:1!=g.ginf" tal:omit-tag="">
                   [<span class="ginf" tal:replace="structure python:TALabbr('GINF',g.ginf)">lang</span>.]
                   </span>
                 <span tal:replace="g/txt">gloss</span><br/>
@@ -369,7 +369,7 @@
                     <span tal:define="global email string:&lt;...address hidden...&gt;" tal:omit-tag=""/>
                     </span>
                   </span>
-                <span tal:condition="not:h/email" tal:omit-tag="" tal:omit-tag="">
+                <span tal:condition="not:h/email" tal:omit-tag="">
                   <span tal:define="global email string:" tal:omit-tag=""/>
                   </span>
                 <tr>

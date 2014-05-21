@@ -6,7 +6,7 @@ Cats:	bug
 Reqtrs:	
 AssdTo:	stuart
 
-2013-12-22 9:57:00 stuart
+2013-12-22 09:57:00 stuart
  When evaluating the Python3 code prior to deployment at edrdg.org,
  jwb noticed that when a new entry is submitted with no changes made
  to it, the diff in the history record shows "@@ -1 +1 @@" (should

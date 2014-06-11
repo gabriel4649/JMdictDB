@@ -281,7 +281,7 @@ various information fields.
 <!ENTITY derog "derogatory">
 <!ENTITY eK "exclusively kanji">
 <!ENTITY ek "exclusively kana">
-<!ENTITY exp "Expressions (phrases, clauses, etc.)">
+<!ENTITY exp "expressions (phrases, clauses, etc.)">
 <!ENTITY fam "familiar language">
 <!ENTITY fem "female term or language">
 <!ENTITY food "food term">
@@ -326,6 +326,8 @@ various information fields.
 <!ENTITY suf "suffix">
 <!ENTITY uK "word usually written using kanji alone">
 <!ENTITY uk "word usually written using kana alone">
+<!ENTITY unc "unclassified">
+<!ENTITY yoji "yojijukugo">
 <!ENTITY v1 "Ichidan verb">
 <!ENTITY v2a-s "Nidan verb with 'u' ending (archaic)">
 <!ENTITY v4h "Yodan verb with `hu/fu' ending (archaic)">
@@ -412,9 +414,11 @@ various information fields.
 <!ENTITY finc "finance term">
 <!ENTITY geol "geology, etc. term">
 <!ENTITY law "law, etc. term">
+<!ENTITY mahj "mahjong term">
 <!ENTITY med "medicine, etc. term">
 <!ENTITY music "music term">
 <!ENTITY Shinto "Shinto term">
+<!ENTITY shogi "shogi term">
 <!ENTITY sports "sports term">
 <!ENTITY sumo "sumo term">
 <!ENTITY zool "zoology term">

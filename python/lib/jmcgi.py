@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008-2010 Stuart McGraw
+#  Copyright (c) 2008-2014 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -582,17 +582,23 @@ def add_pos_flag (entries):
         # This is a convenience function to avoid embedding this logic
         # in the TAL templates.  This sets a boolean POS flag on
         # each entry if any senses in the entry have a part-of-speech
-        # (pos) tag and says whether or not an "Conjugations" link
-        # should be shown for the entry.  There is no guaranty that any
-        # of the pos tags are conjugatable but at least it filters out
-        # jmnedict and other such entries.
+        # (pos) tag that is conjugatable.  A POS tag is conjugatable
+        # if its id number is an id number in jdb.KW.COPOS.  jdb.KW.COPOS
+        # in turn is populated from database view 'vcopos' which are those
+        # rows in kwpos which are also referenced in table 'copos' (that
+        # identifies them as conjugatable.)  See also the comments for
+        # view 'vcopos' in pg/conj.sql.
+        # The .POS attribute set by this function is used to determine
+        # if a "Conjugations" link should be shown for the entry.
 
         KW = jdb.KW
+        conjugatable_poslist = [x.id for x in jdb.KW.recs('COPOS')]
         for e in entries:
             e.POS = False
             for s in e._sens:
-                if len (getattr (s, '_pos', [])) > 0:
-                    e.POS = True;  break
+                for p in s._pos:
+                    if p.kw in conjugatable_poslist:
+                        e.POS = True;  break
 
 def add_filtered_xrefs (entries, rem_unap=False):
 

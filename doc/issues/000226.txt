@@ -44,3 +44,84 @@ AssdTo:	stuart
 
  Both views are effcient and it is practical to select a word by
  seq number, dictionary form kanji or reading, etc.
+
+2014-06-10 21:33:00 stuart
+ Received email from jwb yesterday who received mail from 
+ <cfwong1@sbcglobal.net> pointing out that the conjugations of 
+ 良い・いい are wrong.  For example
+
+  jmdict=# select ptxt,ktxt,rtxt,rnum,kitxt,ritxt from vinfl where seq=1605820
+   and conj=2 and not fml and not neg and knum=1 and rnum in (1,2);
+
+   ptxt  | ktxt | rtxt | rnum |  kitxt   |  ritxt   
+  -------+------+------+------+----------+----------
+   adj-i | 良い  | よい   |    1   | 良かった   | よかった
+   adj-i | 良い  | いい   |    2   | 良かった   | いかった
+
+ The ritxt for rnum=2 should be よかった, not いかった.
+ Note also there are ~70 other entries that end with 良い・いい and should
+ be conjugated the same way. 
+ In my speadsheet (conj.ods) used to develop the conjugations that were
+ later extracted for loading into the database conjo (and other) tables,
+ I used a psuedo-pos of 'adj-ii' to distinguish 良い・いい from other 'adj-i'
+ words with the intent of proposing a dedicated pos tag to jwb, but I never
+ did do that.  Since he offered a dedicated pos in the above referenced
+ email, I replied requesting that. 
+ Also mentioned two other cases: だ (copula) which is currently tagged 'aux'
+ making it non-conjugatable, and くれる which is tagged 'v1' but has an
+ irregular imperative form (and used to be tagged 'v1k-i' presumably for
+ that reason).
+
+2014-06-11 13:32:00 stuart
+ Updated kwpos.csv, copos.csv, conjo.csv, and added patches/012.sql 
+ Also fixed a bug in conj.py that showed up when using it to test the
+ *.csv file changes.
+ To-do:
+   dtd-jmdict[-ex].xml, test_jdb_kwds.py, 
+   if jwb approves pos for da, kureru, do both steps above for those.
+   else: add note to kureru imperative conj about ireg form.
+
+2014-06-12 12:13:00 stuart
+ Supress the "Conjugations" link in the entr.py page if an entry has
+ no conjugatable parts-of-speech.  Prior, the link was displayed if
+ the entry has any pos tags, even if they were not conjugatable.  
+ Display of the link is determined by jmcgi.add_pos_flag() which 
+ formerly would add a flag to the entry if there were any pos tags.
+ We change it to add the flag if the entry contains any conjugatable
+ tags.  To do that, jmcgi.add_pos_flag() needs a list of pos's that
+ are conjugatable.  The table, copos, contains all the pos' that 
+ are conjugatable but we'd need to read it and create a global 
+ list accessible to add_pos_flag().  Instead, we use the KW global
+ that already exists.  But the KW dicts expect to read tables of
+ triples: (id, kw, descr).  So we add a view, 'vcopos', that creates
+ rows that have the same structure as kwpos but only has rows for those
+ pos's that are in 'copos'.  We add that view to the list of tables 
+ use to initialize KW (with the name "COPOS") and use KW.COPOS in
+ add_pos_flag() to get the conjugatable pos list we need.
+ 
+2014-06-14 16:48:00 stuart
+ Ran " python3 runtests.py test_jdb_kwds" and a several fail/error. 
+ Rolled back changes to e8f90bb79e59 "Add patch file for jwb tag changes."
+ but still getting errors in Test_actual_db:
+
+ ERROR: test_248 (test_jdb_kwds.Test_actual_db)
+ ----------------------------------------------------------------------
+ Traceback (most recent call last):
+  File "/usr/local/lib/python3.3/unittest/case.py", line 385, in _executeTestPart
+    function()
+  File "/home/stuart/devel/jdb/jb/python/tests/test_jdb_kwds.py", line 411, in <lambda>
+    lambda self,d=domain,i=id,k=kw: validate_rec(self,self.o,d,i,k))
+  File "/home/stuart/devel/jdb/jb/python/tests/test_jdb_kwds.py", line 441, in validate_rec
+    r1 = getattr (o, domain)[idx]
+ KeyError: 29
+
+ After some exploration it turns out that the database used for checking
+ is jmnew (specified in tests/dbauth.py).  Applied patches/010.py and
+ 011.sql to jmnew and now tests pass.
+
+2014-06-15 11:37:00 stuart
+ Commit changes for the Conjugations link (see 2014-06-12 12:13:00) now...
+  python/lib/jdb.py python/lib/jmcgi.py patches/012.sql pg/conj.sql.
+
+
+

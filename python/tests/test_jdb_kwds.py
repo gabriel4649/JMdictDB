@@ -9,7 +9,7 @@ import jdb
 __unittest = 1
 
 KwdsAttrs = set (('DIAL','FLD','FREQ','GINF','KINF','LANG','MISC',
-                  'POS','RINF','SRC','STAT','XREF','CINF','GRP'))
+                  'POS','RINF','SRC','STAT','XREF','CINF','GRP', 'COPOS'))
 
 # The following should be updated when changes are made to the
 # base data in the ../../pg/data/*.csv files.
@@ -373,7 +373,11 @@ class Test_missing_csv (unittest.TestCase):
     def test003 (_):
         o = jdb.Kwds()
         missing = o.loadcsv ('data/kwds/full')
-        _.assertEquals ([], missing)
+          # There is no 'vcopos.csv' file since that data is only present as
+          # a SQL view (see pg/conj.sql) and is only loaded when the kw* data
+          # is loaded from a database rather then directly from *.csv files.
+          # See IS-226.
+        _.assertEquals (['vcopos'], missing)
 
 #FIXME: need Test_missing_db.
 

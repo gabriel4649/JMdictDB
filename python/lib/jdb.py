@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-  # non-ascii used in comments only.
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2006-2011 Stuart McGraw
+#  Copyright (c) 2006-2014 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -1950,7 +1950,9 @@ class Kwds:
     Tables = {'DIAL':"kwdial", 'FLD' :"kwfld",  'FREQ':"kwfreq", 'GINF':"kwginf",
               'KINF':"kwkinf", 'LANG':"kwlang", 'MISC':"kwmisc", 'POS' :"kwpos",
               'RINF':"kwrinf", 'STAT':"kwstat", 'XREF':"kwxref", 'CINF':"kwcinf",
-              'SRC' :"kwsrc",  'GRP':"kwgrp"}
+              'SRC' :"kwsrc",  'GRP':"kwgrp",   'COPOS':"vcopos"}
+
+    # Re COPOS, see comments in pg/conj.sql:vcopos and jmcgi.add_pos_flag().
 
     def __init__( self, cursor_or_dirname=None ):
         # Create and optionally load a Kwds instance.  If
@@ -2068,11 +2070,14 @@ class Kwds:
 
     def recs( self, attr ):
         # Return a list of DbRow objects representing the rows on the
-        # table identified by 'attr'.
+        # table identified by 'attr'.  Note that the naive way of attempting
+        # to get the same results, e.g., "KW.POS.values()", will return two
+        # instances of each row (because each row is keyed by both id and
+        # keyword.)
         #
         # Example (assuming 'KW' is an initialized Kwds instance):
         #    # Get the rows of the kwpos table:
-        #    pos_recs = KW ('POS')
+        #    pos_recs = KW.recs ('POS')
 
         vt = getattr (self, attr)
         r = [v for k,v in list(vt.items()) if isinstance(k, int)]

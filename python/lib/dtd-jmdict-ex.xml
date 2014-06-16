@@ -326,6 +326,7 @@ various information fields.
 <!ENTITY X "rude or X-rated term (not displayed in educational software)">
 <!ENTITY abbr "abbreviation">
 <!ENTITY adj-i "adjective (keiyoushi)">
+<!ENTITY adj-ii "adjective (keiyoushi) - yoi/ii class">
 <!ENTITY adj-na "adjectival nouns or quasi-adjectives (keiyodoshi)">
 <!ENTITY adj-no "nouns which may take the genitive case particle `no'">
 <!ENTITY adj-pn "pre-noun adjectival (rentaishi)">

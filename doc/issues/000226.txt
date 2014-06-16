@@ -72,15 +72,6 @@ AssdTo:	stuart
  irregular imperative form (and used to be tagged 'v1k-i' presumably for
  that reason).
 
-2014-06-11 13:32:00 stuart
- Updated kwpos.csv, copos.csv, conjo.csv, and added patches/012.sql 
- Also fixed a bug in conj.py that showed up when using it to test the
- *.csv file changes.
- To-do:
-   dtd-jmdict[-ex].xml, test_jdb_kwds.py, 
-   if jwb approves pos for da, kureru, do both steps above for those.
-   else: add note to kureru imperative conj about ireg form.
-
 2014-06-12 12:13:00 stuart
  Supress the "Conjugations" link in the entr.py page if an entry has
  no conjugatable parts-of-speech.  Prior, the link was displayed if
@@ -121,7 +112,61 @@ AssdTo:	stuart
 
 2014-06-15 11:37:00 stuart
  Commit changes for the Conjugations link (see 2014-06-12 12:13:00) now...
-  python/lib/jdb.py python/lib/jmcgi.py patches/012.sql pg/conj.sql.
+  python/lib/jdb.py python/lib/jmcgi.py patches/012.sql pg/conj.sql,
+  python/tests/test_jdb_kwds.py.
 
+2014-06-16 11:14:00 stuart
+ In my local database, for entries that have a kanji that ends in 良い
+ and have a pos tag of 'adj-i', change the pos tag to 'adj-ii' using the 
+ following sql script.  Before using it, change the userid, name and email
+ field text in the "INSERT INTO hist..." statement.
 
+ ===================================================================================
+ BEGIN; 
+ -- Create and populate a temp table with the entr.id an sens.sens numbers
+ -- of the entries to be updated: entries has a kanji ending with "良い" and
+ -- a sense with a pos of 'adj-i' (kw=1).
+ 
+ CREATE TEMP TABLE __adjiiupd__  AS 
+   SELECT DISTINCT e.id AS entr,s.sens
+     FROM entr e
+       JOIN sens s ON s.entr=e.id
+       JOIN pos p ON p.entr=s.entr AND p.sens=s.sens
+       JOIN kanj k ON k.entr=e.id
+     WHERE k.txt LIKE '%良い' AND p.kw=1;
+ 
+ -- Change the 'adj-i' (kw=1) pos tags of the entries saved in the temp table
+ -- to 'adj-ii'.
+ 
+ UPDATE pos SET kw=99 FROM __adjiiupd__ a
+   WHERE pos.entr=a.entr AND pos.sens=a.sens AND pos.kw=1;
+ 
+ -- For each of the entries saved in the temp table, add a hist table entry.
+ -- Note that these entries will have no 'diff' text.
+ -- ***NOTE***: change the userid, name and email fields below!
+ 
+ INSERT INTO hist(entr,hist,stat,unap,userid,name,email,notes)
+   (SELECT 
+       e.id, 1+COALESCE(MAX(h.hist), 0), e.stat, e.unap, 
+       'smg','Stuart McGraw','smcg4191@frii.com',  -- Change these as apporiate...
+       'Change pos from adj-i to adj-ii.'
+      FROM (SELECT DISTINCT entr FROM __adjiiupd__) AS a
+      JOIN entr e ON e.id=a.entr
+      LEFT JOIN hist h ON e.id=h.entr
+      GROUP BY 1,3,4,5,6,7,8);
+ 
+ DROP TABLE __adjiiupd__;
+ COMMIT;
+ ====================================================================================
+
+2014-06-16 15:30:00 stuart
+ Fixed a bug in conj.py that showed up when using it to test the
+ *.csv file changes.
+ Also enhanced arg parsing: most users will forget to switch back
+ to ascii when typing a space to separate kanji and kana arguments.
+ When a jp-space character is entered the shell won't (typically)
+ recognise it as an argument seperator and both the kanji and kana
+ will be treated as a single kanji argument producing erroneus
+ results.  Changed so that we'll split arg by hand if it contains
+ jp-space character.
 

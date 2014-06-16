@@ -1132,3 +1132,23 @@ pos	conj	neg	fml	onum	okuri	euphr	euphk	pos2
 48	12	True	False	1	なかったり	し		
 48	12	True	True	1	ませんでしたり	し		
 48	13	False	False	1	""	し		
+99	1	False	False	1	い			
+99	1	False	True	1	いです			
+99	1	True	False	1	くない	よ		
+99	1	True	True	1	くないです	よ		
+99	1	True	True	2	くありません	よ		
+99	2	False	False	1	かった	よ		
+99	2	False	True	1	かったです	よ		
+99	2	True	False	1	くなかった	よ		
+99	2	True	True	1	くなかったです	よ		
+99	2	True	True	2	くありませんでした	よ		
+99	3	False	False	1	くて	よ		
+99	3	True	False	1	くなくて	よ		
+99	4	False	False	1	ければ	よ		
+99	4	True	False	1	くなければ	よ		
+99	7	False	False	1	くさせる	よ		
+99	9	False	False	1	かろう	よ		
+99	9	False	True	1	いでしょう			
+99	11	False	False	1	かったら	よ		
+99	11	True	False	1	くなかったら	よ		
+99	12	False	False	1	かったり	よ		

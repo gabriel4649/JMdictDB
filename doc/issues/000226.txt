@@ -170,3 +170,13 @@ AssdTo:	stuart
  results.  Changed so that we'll split arg by hand if it contains
  jp-space character.
 
+ Commited the adj-ii changes.
+
+ To apply:
+     # Update code...
+   hg pull && hg update
+     # Update existing database(s)...
+   python3 tools/patchdb.py -t 13 -d jmdict -a
+     # Apply the adj-ii pos to entries...
+   <execute the sql above in psql to apply adj-ii to entries.
+

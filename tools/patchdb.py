@@ -134,7 +134,7 @@ def list_patches (patches, verbose):
                       % ("="*72, patchfile, transtxt, descr)
             print (summary)
             if verbose:
-                with open (patchfile) as f: text = f.read()
+                with open (patchfile, encoding='utf-8') as f: text = f.read()
                 print (text)
 
 def do_upgrade (upgrade_path, apply, verbose):
@@ -177,7 +177,7 @@ def read_patches (patchdir, quiet=False):
         return patchfiles
 
 def read_patch_file (filename):
-        with open (filename) as f:
+        with open (filename, encoding='utf-8') as f:
                 descr = transtxt = None
                 for n, ln in enumerate (f):
                     if not descr:
@@ -197,7 +197,7 @@ def apply_patch (dbopts, patchfile, apply, verbose):
         if not apply:
             print (' '.join ([shlex.quote(x) for x in command]))
             if verbose:
-                with open (patchfile) as f: text = f.read()
+                with open (patchfile, encoding='utf-8') as f: text = f.read()
                 print (text)
         else:
             try: subprocess.check_call (command)

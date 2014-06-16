@@ -69,14 +69,14 @@
 #    euphk: Replacement kanji text when there is a kanji change in
 #           the stem.  (The only case of this is for the Potential
 #           conjugation form of suru: 為る・する -> 出来る・できる).
-#    pos2:  Not used.
+#    pos2:  Not currently used.
 #
 # The first five items form a unique key identifying each
 # conjugation and are used as a key in the python dicts in the
 # code below to identify conjugations.  The remaining items in
 # each row are used to contruct the conjugated form of a word
 # for the conjugation specified by the key.
-
+#
 # The file .../copos.csv contains two columns: the first is a part-
 # of-speech (pos) number, the second a small number that is the
 # number of characters to remove from the end of a dictionary form
@@ -86,12 +86,15 @@
 # Thus, the algorithm for conjugating a word is to identify what
 # part-of-speech the words is and get the corresponding pos number.
 # With that, get the trim count (we'll call it 'trimcnt') from
-# copos.csv.  Then for each (or a desired) conjugation in conjo.csv
-# identified by (pos,conj,neg,fml,onum), get okuri, euphr, euphk.
+# copos.csv.  Then for each (or a desired) conjugation (identified
+# by the tuple (pos,conj,neg,fml,onum)), get okuri, euphr and
+# euphk from conjo.csv.
+#
 # If the word to be conjugated is kana and euphr is non-null,
-# replace the word with euphr.  Same for a kanji word and euphk.
-# If euphr (or euphk) is null then remove trimcnt characters from
-# the end of the word and append okuri.  That's it!
+# replace the word with euphr and append okuri.  Same for a kanji
+# word and euphk.  If euphr (or euphk) is null then remove trimcnt
+# characters from the end of the word and append okuri.  That's it!
+# (See function construct() below.)
 #
 # The other csv tables are:
 #    conj.csv: Maps each conj number to a descriptive text.
@@ -100,6 +103,16 @@
 #    conjo_notes.csv: Maps notes in conotes.csv (identified
 #         by id number) to conjugations in conjo.csv
 #         (identified by (pos,conj,neg,fml,onum)).
+#
+# This program reads the csv files because JMdictDB requires the
+# conjugation data in that form to load into database tables.  But
+# it should be clear that the conjugation data could alternatively
+# be included in a program in the form of constant, embedded
+# tables, possibly in a more conveniently structured form such as
+# is currently returned by read_conj_tables(), rather than reading
+# the csv files each time.  One could also eliminate the pos numbers,
+# substituting the corresponding abbreviation string wherever the
+# numbers occur.
 #
 # See also:
 # pg/conj.sql -- contains SQL views that perform the same
@@ -226,11 +239,11 @@ def construct (ktxt, rtxt, trimcnt, okuri, euphk, euphr):
         form by removing removing 'trimcnt' characters from its end unless
         'euphk' or 'euphr' are given which replace the entire kanji or kana
         text respectively) and then appending the okurgana 'okuri' text.
-        The conjugated kanji and kana text are comined into a single string
+        The conjugated kanji and kana text are combined into a single string
         and returned.'''
 
-        if ktxt: ktxt = euphk or ktxt[:len(ktxt)-trimcnt] + okuri
-        if rtxt: rtxt = euphr or rtxt[:len(rtxt)-trimcnt] + okuri
+        if ktxt: ktxt = (euphk or ktxt[:len(ktxt)-trimcnt]) + okuri
+        if rtxt: rtxt = (euphr or rtxt[:len(rtxt)-trimcnt]) + okuri
         txt = (ktxt + '【' + rtxt + '】') if ktxt and rtxt else (ktxt or rtxt)
         return txt
 
@@ -275,7 +288,7 @@ def read_conj_tables (dir):
                      }
         '''
           # For each csv file (identified sans the .csv suffix), give a
-          # list of functions, one gor each column in the file, that will
+          # list of functions, one for each column in the file, that will
           # convert the text string read into the correct data type.
           # Note that xint() is the same as int() but handles empty
           # ('') strings, sbool() converts text strings "t..." or "f..."
@@ -352,8 +365,8 @@ from argparse import ArgumentParser
 
 def parse_word (args):
         ''''args' is a list of one or two strings that are the kanji, kana
-        aeguments from the command line.  If two, we take them to be in the
-        order kanji, kana.  But it one, it could be either kanji or kana
+        arguments from the command line.  If two, we take them to be in the
+        order kanji, kana.  But if one, it could be either kanji or kana
         and we indentify which by looking for any kanji character (>=0x4000)
         in it.  We return separate kanji and kana strings accordingly.'''
 
@@ -390,6 +403,15 @@ def parse_args (argv=None):
         if args.list: return args
         if not args.pos or not re.match(r'[a-z0-9-]+$', args.pos):
             p.error ("Argument 'pos' is required if --list not given.")
+          # The shell won't distinguish args separated by jp space characters
+          # as seperate.  But users will frequently enter jp space characters
+          # to separate kanji and reading because it is pain to switch back
+          # to ascii for one character.  So we split them here.
+        words = []
+        for w in args.word:
+            ws = re.split (r'\s+', w)
+            words.extend (ws)
+        args.word = words
         if not 1 <= len (args.word) <= 2:
             p.error ("You must give one or two words to conjugate")
         args.kanj, args.kana = parse_word (args.word)

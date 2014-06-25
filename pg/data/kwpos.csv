@@ -4,6 +4,7 @@
 4	adj-pn	pre-noun adjectival (rentaishi)
 5	adj-t	`taru' adjective
 6	adv	adverb (fukushi)
+7	adj-ii	adjective (keiyoushi) - yoi/ii class
 8	adv-to	adverb taking the `to' particle
 9	aux	auxiliary
 10	aux-adj	auxiliary adjective
@@ -11,6 +12,7 @@
 12	conj	conjunction
 13	exp	Expressions (phrases, clauses, etc.)
 14	int	interjection (kandoushi)
+15	cop	copula
 17	n	noun (common) (futsuumeishi)
 18	n-adv	adverbial noun (fukushitekimeishi)
 19	n-suf	noun, used as a suffix
@@ -21,6 +23,7 @@
 26	prt	particle
 27	suf	suffix
 28	v1	Ichidan verb
+29	v1k-i	Ichidan verb - kureru special class
 30	v5aru	Godan verb - -aru special class
 31	v5b	Godan verb with `bu' ending
 32	v5g	Godan verb with `gu' ending
@@ -87,4 +90,3 @@
 96	v2r-s	Nidan verb (lower class) with `ru' ending (archaic)
 97	v2w-s	Nidan verb (lower class) with `u' ending and `we' conjugation (archaic)
 98	unc	unclassified
-99	adj-ii	adjective (keiyoushi) - yoi/ii class

@@ -345,6 +345,7 @@ various information fields.
 <!ENTITY col "colloquialism">
 <!ENTITY comp "computer terminology">
 <!ENTITY conj "conjunction">
+<!ENTITY cop "copula">
 <!ENTITY ctr "counter">
 <!ENTITY derog "derogatory">
 <!ENTITY eK "exclusively kanji">
@@ -397,6 +398,7 @@ various information fields.
 <!ENTITY unc "unclassified">
 <!ENTITY yoji "yojijukugo">
 <!ENTITY v1 "Ichidan verb">
+<!ENTITY v1k-i "Ichidan verb - kureru special class">
 <!ENTITY v2a-s "Nidan verb with 'u' ending (archaic)">
 <!ENTITY v4h "Yodan verb with `hu/fu' ending (archaic)">
 <!ENTITY v4r "Yodan verb with `ru' ending (archaic)">

@@ -10,13 +10,13 @@ AssdTo:	stuart
  This IS documents the conjugation feature of JMdictDB. 
 
 2013-10-24 07:50:00 stuart
- Conjugation of words is done entirely in the database without
+ Conjugation of words can be done entirely in the database without
  requiring any application-level support.
 
  Tables defined in pg/conj.sql (and corresponding data to load
  into to them in pg/data/) provide the information needed to
  conjugate words based on their 'pos' tags.  The actual production
- of the onjugated form on words is done in views that are also
+ of the conjugated form on words is done in views that are also
  defined in pg/conj.sql.
 
  The most important table is 'conjo'.  In it is a row for every
@@ -115,6 +115,42 @@ AssdTo:	stuart
   python/lib/jdb.py python/lib/jmcgi.py patches/012.sql pg/conj.sql,
   python/tests/test_jdb_kwds.py.
 
+2014-06-16 15:30:00 stuart
+ Fixed a bug in conj.py that showed up when using it to test the
+ *.csv file changes.
+ Also enhanced arg parsing: most users will forget to switch back
+ to ascii when typing a space to separate kanji and kana arguments.
+ When a jp-space character is entered the shell won't (typically)
+ recognise it as an argument seperator and both the kanji and kana
+ will be treated as a single kanji argument producing erroneus
+ results.  Changed so that we'll split arg by hand if it contains
+ jp-space character.
+
+ Commited the adj-ii changes.
+
+2014-06-24 18:19:00 stuart
+ Have not had any response from jwb yet.
+ Add pos tags and conjugations for だ ('cop':15) and くれる ('v1k-i':29)
+ Also changed value of 'adj-ii' pos tag from 99 to 7.
+
+ The only effect this (and the 'adj-ii' pos above) will have is they
+ will show up in the PoS section of the search page, help text, etc,
+ unless entries in JMdict are actually updated to use the new PoS
+ tags.  And if that is undesireable, they can manually be deleted 
+ from the kwpos table.  (They are also in the XML DTDs.)
+
+ To apply:
+     # Update code...
+   hg pull && hg update
+     # Update existing database(s)...
+   python3 tools/patchdb.py -t 13 -d jmdict -a
+     # Apply the adj-ii pos to entries...
+   <execute the sql below in psql to apply adj-ii to entries.
+
+ Also came across the following discussion of a 'cop' tag from 2010.
+ Ref: edict list 2010-10-17 "A 'cop' PoS tag?"
+  https://groups.yahoo.com/neo/groups/edict-jmdict/conversations/topics/4315
+
 2014-06-16 11:14:00 stuart
  In my local database, for entries that have a kanji that ends in 良い
  and have a pos tag of 'adj-i', change the pos tag to 'adj-ii' using the 
@@ -138,7 +174,7 @@ AssdTo:	stuart
  -- Change the 'adj-i' (kw=1) pos tags of the entries saved in the temp table
  -- to 'adj-ii'.
  
- UPDATE pos SET kw=99 FROM __adjiiupd__ a
+ UPDATE pos SET kw=7 FROM __adjiiupd__ a
    WHERE pos.entr=a.entr AND pos.sens=a.sens AND pos.kw=1;
  
  -- For each of the entries saved in the temp table, add a hist table entry.
@@ -156,27 +192,62 @@ AssdTo:	stuart
       GROUP BY 1,3,4,5,6,7,8);
  
  DROP TABLE __adjiiupd__;
+
+ -- Add 'cop' pos to the first sense of だ.  
+ -- FIXME: src=1 may not identify the right entry, nor is setting sens=1 neccesarily correct.
+ INSERT INTO pos(entr,sens,ord,kw) (SELECT e.id,1,2,15 FROM entr e WHERE e.src=1 AND e.seq=2089020);
+ -- Update 'v1' pos on くれる to 'v1k-i'.
+ -- FIXME: src=1 may not identify the right entry.
+ UPDATE pos SET kw=29 FROM entr e WHERE e.src=1 AND e.seq=1269130 AND e.id=pos.entr AND pos.kw=28;
+ 
  COMMIT;
  ====================================================================================
 
-2014-06-16 15:30:00 stuart
- Fixed a bug in conj.py that showed up when using it to test the
- *.csv file changes.
- Also enhanced arg parsing: most users will forget to switch back
- to ascii when typing a space to separate kanji and kana arguments.
- When a jp-space character is entered the shell won't (typically)
- recognise it as an argument seperator and both the kanji and kana
- will be treated as a single kanji argument producing erroneus
- results.  Changed so that we'll split arg by hand if it contains
- jp-space character.
+ For use while testing, the following will undo the effects of
+ the entry changes above:
 
- Commited the adj-ii changes.
+ BEGIN;
+ UPDATE pos SET kw=1 WHERE kw=7;
+ DELETE FROM pos WHERE kw=15;
+ UPDATE pos SET kw=28 WHERE kw=29;
+ COMMIT;
 
- To apply:
-     # Update code...
-   hg pull && hg update
-     # Update existing database(s)...
-   python3 tools/patchdb.py -t 13 -d jmdict -a
-     # Apply the adj-ii pos to entries...
-   <execute the sql above in psql to apply adj-ii to entries.
+ For use while testing, the following will undo the effects of
+ the patches/013.sql:
+
+ BEGIN;
+ DELETE FROM dbpatch WHERE level=13;
+ DELETE FROM conjo_notes WHERE pos IN (7,15,29); 
+ DELETE FROM conjo WHERE pos IN (7,15,29); 
+ DELETE FROM copos WHERE pos IN (7,15,29); 
+ DELETE FROM kwpos WHERE id IN (7,15,29);
+ COMMIT;
+
+2014-06-24 23:07:00 stuart
+ Tests failing: 
+   test_jelparse.Lookuptag: test005, test019
+ test005 for example:
+ ===================
+  FAIL: test005 (test_jelparse.Lookuptag)
+  AssertionError: Lists differ: [['POS', 17]] != [['COPOS', 17], ['POS', 17]]
+  First differing element 0:
+  ['POS', 17]
+  ['COPOS', 17]
+  Second list contains 1 additional elements.
+  First extra element 1:
+  ['POS', 17]
+  - [['POS', 17]]
+  + [['COPOS', 17], ['POS', 17]]
+ ===================
+ 
+ jelparse.Lookup now finds any conjugatable pos tag in both the KW 'POS'
+ and 'COPOS' dicts (called "domains" in jelparse.y).
+
+ I don't *think* this is a problem.  In jelparse.y:sens_tag(), we resolve
+ such ambiguities by ignoring any domains that are not relevent in the
+ current context.  Since COPOS will never be relevent, any dups from it
+ should be ignored.  I think.
+
+ Changed the tests to accept the duplicate tags.
+
 

@@ -272,7 +272,7 @@ class Lookuptag (unittest.TestCase):
     def test002(self): self.assertEqual ([['DIAL',2]], jelparse.lookup_tag('ksb'))
     def test003(self): self.assertEqual ([], jelparse.lookup_tag('ksb',['POS']))
     def test004(self): self.assertEqual ([['POS',17]], jelparse.lookup_tag('n',['POS']))
-    def test005(self): self.assertEqual ([['POS',17]], jelparse.lookup_tag('n'))
+    def test005(self): self.assertEqual ([['COPOS', 17],['POS',17]], jelparse.lookup_tag('n'))
     def test006(self): self.assertEqual ([], jelparse.lookup_tag('n',['RINF']))
     def test007(self): self.assertEqual ([['FREQ',5,12]], jelparse.lookup_tag('nf12',['FREQ']))
     def test008(self): self.assertEqual ([['FREQ',5,12]], jelparse.lookup_tag('nf12'))
@@ -285,7 +285,7 @@ class Lookuptag (unittest.TestCase):
     def test015(self): self.assertEqual ([['POS',44]], jelparse.lookup_tag('vi'))
     def test016(self): self.assertEqual ([], jelparse.lookup_tag('nf',['RINF']))
     def test018(self): self.assertEqual ([['KINF',4],['RINF',3]], jelparse.lookup_tag('ik'))
-    def test019(self): self.assertEqual ([['POS',28],], jelparse.lookup_tag('v1'))
+    def test019(self): self.assertEqual ([['COPOS', 28],['POS',28],], jelparse.lookup_tag('v1'))
 
     def test101(self): self.assertEqual (None, jelparse.lookup_tag ('n',['POSS']))
       # Is the following desired behavior? Or should value for 'n' in 'POS' be returned?

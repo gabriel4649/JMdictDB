@@ -162,4 +162,13 @@ CREATE OR REPLACE VIEW vconotes AS (
         ORDER BY m.id);
 ALTER VIEW vconotes OWNER TO jmdictdb;
 
+-- See IS-226.  This view is used to present a pseudo-keyword table
+--  that is loaded into the jdb.Kwds instance and provides a list
+--  of conjugatable pos's in the same format as the kwpos table.
+CREATE OR REPLACE VIEW vcopos AS (
+    SELECT id,kw,descr FROM kwpos p JOIN copos c ON c.pos=p.id);
+ALTER VIEW vcopos OWNER TO jmdictdb;
+GRANT SELECT ON vcopos TO jmdictdbv;
+
+
 COMMIT;

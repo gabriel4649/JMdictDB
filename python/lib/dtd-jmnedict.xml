@@ -1,4 +1,4 @@
-﻿<?xml version="1.0"?>
+<?xml version="1.0"?>
 <!DOCTYPE JMnedict [
 <!--
 	This is the DTD of the Japanese-Multilingual Named Entity
@@ -27,7 +27,8 @@
 	-->
 <!ELEMENT keb (#PCDATA)>
 	<!-- This element will contain an entity name in Japanese 
-	which is written using at least one kanji. The valid 
+	which is written using at least one non-kana character (usually
+	kanji, but can be other characters). The valid 
 	characters are kanji, kana, related characters such as chouon and 
 	kurikaeshi, and in exceptional cases, letters from other alphabets.
 	-->
@@ -83,11 +84,12 @@
 	<!-- The actual translations of the name, usually as a transcription
 	into the target language.
 	-->
-<!ATTLIST gloss g_lang CDATA #IMPLIED>
-	<!-- The g_lang attribute defines the target language of the
-	translated name. It will be coded using the two-letter language 
-	code from the ISO 639 standard. When absent, the value "en" 
-	(i.e. English) is implied. -->
+<!ATTLIST trans_det xml:lang CDATA #IMPLIED>
+	<!-- The xml:lang attribute defines the target language of the
+	translated name. It will be coded using the three-letter language 
+	code from the ISO 639-2 standard. When absent, the value "eng" 
+	(i.e. English) is the default value. The bibliographic (B) codes
+	are used.-->
 <!-- The following entity codes are used for common elements within the
 various information fields.
 -->
@@ -96,10 +98,12 @@ various information fields.
 <!ENTITY unclass "unclassified name">
 <!ENTITY company "company name">
 <!ENTITY product "product name">
+<!ENTITY work "work of art, literature, music, etc. name">
 <!ENTITY masc "male given name or forename">
 <!ENTITY fem "female given name or forename">
 <!ENTITY person "full name of a particular person">
 <!ENTITY given "given name or forename, gender not specified">
 <!ENTITY station "railway station">
+<!ENTITY organization "organization name">
 <!ENTITY ok "old or irregular kana form">
 ]>

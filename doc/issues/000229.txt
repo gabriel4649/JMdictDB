@@ -1,0 +1,38 @@
+Title:	Add 'work' misc tag (used in jmnedict).
+Stat:	open
+Disp:	
+Prio:	med
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2014-06-25 16:43:00 stuart
+ Need to add a "work" MISC tag to JMdictDB based on the following
+ email to the edict list from jwb:
+
+  On 06/18/2014 07:27 PM, Jim Breen jimbreen@gmail.com wrote:
+  >[...]
+  > I've been doing some tidying with these lately. With Enamdict:
+  > - I have made a new name classification of "wk" (i.e. work) and
+  > allocated it to the names of a lot of films, books, etc. There was
+  > a little-used "(l)" (literature?), which I have dropped and rolled
+  > into "wk".
+
+ A look at a freshly downloaded jmnedict.xml file shows the entity
+ used is "work".
+
+2014-06-25 16:49:00 stuart
+ Update dtd template based on freshly downloaded copy of jmnedict.xml.
+ There were some textual changes in the comments and a missing entity
+ definition for 'organization' that I added in addition to new entity
+ 'work'.
+
+ In python/lib/dtdjmdict-ex.xml, the MISC enties used in jmnedict 
+ were missing, added them.
+
+ Added to pg/data/kwmisc.csv (id=192), python/tests/test-jdb-kwds.py
+
+ Create patches/014.sql to update an existing database. 
+ Update dbpatch level in pg/mktables.sql (have been forgetting to 
+ do this until now, previous value was still 9!) 
+

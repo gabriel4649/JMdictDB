@@ -278,7 +278,7 @@ Arguments:
             help="""If given, must have a value of either 'jmdict' or
                 'jmnedict', and will cause the generation of a file that
                 uses a DTD compatible with the standard Monash JMdict or
-                JMnedict XML files.  Information not representable in the
+                JMnedict XML files.  Information not compatible with the
                 DTD will not be included in the XML and thus will lost if
                 the database is reloaded from the XML.
                 Without this option, an extended DTD is used that will

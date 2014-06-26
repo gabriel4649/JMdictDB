@@ -33,4 +33,7 @@
 33	skip_mis	SKIP code misclassification.
 34	s_h	"""The Kanji Dictionary"" by Spahn and Hadamitzky."
 35	maniette	"Codes from Yves Maniette's ""Les Kanjis dans la tete"" French adaptation of Heisig."
+36	halpern_kkd	"""Kodansha Kanji Dictionary"", (2nd Ed. of the NJECD) edited by Jack Halpern."
+37	halpern_kkld_2ed	"""Kanji Learners Dictionary"" (Kodansha), 2nd edition (2013) edited by Jack Halpern."
+38	heisig6	"""Remembering The Kanji, Sixth Ed."" by  James Heisig."
 101	gahoh	"Filename of Quicktime animation."

@@ -128,7 +128,7 @@ def parse_xmlfile (infn, srcid, workfiles, start, count, langs):
             if elem.tag == 'header' and event == 'end':
                 xmldate = (elem.find ('date_of_creation')).text
                 if (elem.find ('file_version')).text != '4' or \
-                   (elem.find ('database_version')).text != '2006-630':
+                   (elem.find ('database_version')).text != '2014-175':
                         warn ('Unexpected kanjidic file version or database version found.'
                               '\nThis program may or may not work on this file.')
 

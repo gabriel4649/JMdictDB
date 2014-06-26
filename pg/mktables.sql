@@ -38,7 +38,7 @@ CREATE LANGUAGE 'plpgsql';
 CREATE TABLE dbpatch(
     level INT PRIMARY KEY,
     dt TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'utc'));
-INSERT INTO dbpatch(level) VALUES(14);
+INSERT INTO dbpatch(level) VALUES(15);
 
 -- Note: The commented-out ALTER TABLE and CREATE INDEX statements
 -- below (where the comments' "--" start in the first column and are

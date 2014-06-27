@@ -71,7 +71,7 @@ def main (args, opts):
         workfiles = pgi.initialize (opts.t)
         srcdate = parse_xmlfile (args[0], 4, workfiles, opts.b, opts.c, langs)
         srcrec = jdb.Obj (id=4, kw='kanjidic', descr='kanjidic2.xml',
-                          dt=srcdate, seq='seq_kanjidic')
+                          dt=srcdate, seq='seq_kanjidic', srct=KW.SRCT['kanjidic'].id)
         pgi.wrcorp (srcrec, workfiles)
         pgi.finalize (workfiles, opts.o, not opts.k)
         print ("\nDone!", file=sys.stderr)

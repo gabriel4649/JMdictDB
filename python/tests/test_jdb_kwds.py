@@ -8,8 +8,8 @@ if '../lib' not in sys.path: sys.path.append ('../lib')
 import jdb
 __unittest = 1
 
-KwdsAttrs = set (('DIAL','FLD','FREQ','GINF','KINF','LANG','MISC',
-                  'POS','RINF','SRC','STAT','XREF','CINF','GRP', 'COPOS'))
+KwdsAttrs = set (('DIAL','FLD','FREQ','GINF','KINF','LANG','MISC','POS',
+                  'RINF','SRC','SRCT','STAT','XREF','CINF','GRP', 'COPOS'))
 
 # The following should be updated when changes are made to the
 # base data in the ../../pg/data/*.csv files.

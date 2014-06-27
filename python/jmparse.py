@@ -68,7 +68,7 @@ def main (args, opts):
                   # top-level element in the xml file, typically either
                   # "JMdict" or "JMnedict".
                 try: corpid, corprec \
-                        = pgi.parse_corpus_opt (opts.corpus, entr, inpf.created)
+                        = pgi.parse_corpus_opt (opts.corpus, entr, inpf.created, kw=KW)
                 except KeyError: pass
                 else:
                     if corprec: pgi.wrcorp (corprec, tmpfiles)
@@ -142,6 +142,8 @@ Arguments:
              There are five predefined sequences:
                 jmdict_seq, jmnedict_seq, examples_seq, test_seq, seq.
              You can create additional sequences if required.
+
+          srct -- The id number 
 
         [N.B. that the corpus table ("kwsrc") also has two other columns,
         'descr' and 'notes' but jmparse provides no means for setting

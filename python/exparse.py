@@ -106,7 +106,7 @@ def main (args, opts):
           # FIXME: following gives localtime, change to utc or lt+tz.
         mtime = datetime.date.fromtimestamp(os.stat(args[0])[8])
         corpid, corprec \
-            = pgi.parse_corpus_opt (opts.corpus, "examples", mtime)
+            = pgi.parse_corpus_opt (opts.corpus, "examples", mtime, KW.SRCT['examples'].id)
         tmpfiles = pgi.initialize (opts.tempdir)
         if not opts.noaction:
             tmpfiles = pgi.initialize (opts.tempdir)

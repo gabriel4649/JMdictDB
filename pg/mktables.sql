@@ -15,7 +15,7 @@
 --  along with JMdictDB; if not, write to the Free Software Foundation,
 --  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 --
---  Copyright (c) 2006-2012 Stuart McGraw 
+--  Copyright (c) 2006-2014 Stuart McGraw 
 ---------------------------------------------------------------------------
 
 -- $Revision$ $Date$
@@ -38,7 +38,7 @@ CREATE LANGUAGE 'plpgsql';
 CREATE TABLE dbpatch(
     level INT PRIMARY KEY,
     dt TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'utc'));
-INSERT INTO dbpatch(level) VALUES(15);
+INSERT INTO dbpatch(level) VALUES(16);
 
 -- Note: The commented-out ALTER TABLE and CREATE INDEX statements
 -- below (where the comments' "--" start in the first column and are
@@ -109,6 +109,11 @@ CREATE TABLE kwgrp (
     kw VARCHAR(20) NOT NULL UNIQUE,
     descr VARCHAR(255));
 
+CREATE TABLE kwsrct (
+    id SMALLINT PRIMARY KEY,
+    kw VARCHAR(20) NOT NULL UNIQUE,
+    descr VARCHAR(255));
+
 CREATE TABLE kwsrc (
     id SMALLINT PRIMARY KEY,
     kw VARCHAR(20) NOT NULL UNIQUE,
@@ -118,7 +123,9 @@ CREATE TABLE kwsrc (
     seq VARCHAR(20) NOT NULL,	-- Name of sequence to create for entr.seq default values.
     sinc SMALLINT,		-- Sequence INCREMENT value used when creating seq.
     smin BIGINT,		-- Sequence MINVALUE value used when creating seq.
-    smax BIGINT);		-- Sequence MAXVALUE value used when creating seq.
+    smax BIGINT,		-- Sequence MAXVALUE value used when creating seq.
+    srct SMALLINT NOT NULL);
+--ALTER TABLE kwsrc ADD CONSTRAINT kwsrc_srct_fkey FOREIGN KEY (srct) REFERENCES kwsrct(id);
 
 CREATE OR REPLACE FUNCTION kwsrc_updseq() RETURNS trigger AS $kwsrc_updseq$
     -- Create a sequence for entr.seq numbers whenever a new

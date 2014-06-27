@@ -30,6 +30,7 @@ CREATE INDEX xresolv_kanj ON xresolv(ktxt);
 CREATE UNIQUE INDEX chr_chr ON chr(chr);
 CREATE INDEX cinf_kw ON cinf(kw);
 CREATE INDEX cinf_val ON cinf(value);
+ALTER TABLE kwsrc ADD CONSTRAINT kwsrc_srct_fkey FOREIGN KEY (srct) REFERENCES kwsrct(id);
 ALTER TABLE entr ADD CONSTRAINT entr_src_fkey FOREIGN KEY (src) REFERENCES kwsrc(id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE entr ADD CONSTRAINT entr_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
 ALTER TABLE entr ADD CONSTRAINT entr_dfrm_fkey FOREIGN KEY (dfrm) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;

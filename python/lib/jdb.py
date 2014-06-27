@@ -1947,12 +1947,12 @@ class Kwds:
         KW.POS_adj_na   # => 2
     """
 
-    Tables = {'DIAL':"kwdial", 'FLD' :"kwfld",  'FREQ':"kwfreq", 'GINF':"kwginf",
-              'KINF':"kwkinf", 'LANG':"kwlang", 'MISC':"kwmisc", 'POS' :"kwpos",
-              'RINF':"kwrinf", 'STAT':"kwstat", 'XREF':"kwxref", 'CINF':"kwcinf",
-              'SRC' :"kwsrc",  'GRP':"kwgrp",   'COPOS':"vcopos"}
+    Tables = {'DIAL':"kwdial", 'FLD' :"kwfld",  'FREQ':"kwfreq", 'GINF' :"kwginf",
+              'KINF':"kwkinf", 'LANG':"kwlang", 'MISC':"kwmisc", 'POS'  :"kwpos",
+              'RINF':"kwrinf", 'STAT':"kwstat", 'XREF':"kwxref", 'CINF' :"kwcinf",
+              'SRC' :"kwsrc",  'SRCT':"kwsrct", 'GRP' :"kwgrp",  'COPOS':"vcopos"}
 
-    # Re COPOS, see comments in pg/conj.sql:vcopos and jmcgi.add_pos_flag().
+    # Re COPOS, see comments in pg/conj.sql:vcopos, jmcgi.add_pos_flag() and IS-226.
 
     def __init__( self, cursor_or_dirname=None ):
         # Create and optionally load a Kwds instance.  If

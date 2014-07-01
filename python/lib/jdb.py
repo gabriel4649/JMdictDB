@@ -2024,12 +2024,20 @@ class Kwds:
             try: f = open (fname, encoding='utf-8')
             except IOError:
                 failed.append (table); continue
+            first_line = True
             for ln in f:
                 if re.match (r'\s*(#.*)?$', ln): continue
                 fields = ln.rstrip('\n\r').split ("\t")
                 fields = [x if x!='' else None for x in fields]
-                fields[0] = int (fields[0])
+                try: fields[0] = int (fields[0])
+                except ValueError:
+                      # A ValueError on the first line of the file we 
+                      # take to mean that the csv file has a header line
+                      # which we'll ignore.
+                    if first_line: continue
+                    else: raise
                 self.add (attr, fields)
+                first_line = False
             f.close()
         return failed
 

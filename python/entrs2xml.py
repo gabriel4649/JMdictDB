@@ -119,7 +119,15 @@ def main (args, opts):
 
         lastsrc, lastseq, lastid = rs[0].src, rs[0].seq, rs[0].id
         count = opts.count; done = 0; blksize = opts.blocksize; corpora = set()
-        if not opts.nodtd: outf.write ('<%s>\n' % opts.root)
+
+          # Add an enclosing root element only if we are also including 
+          # a DTD (ie, producing a full XML file).  Otherwise, the file
+          # generated will just be a list of <entr> elements. 
+        if not opts.nodtd:
+            if opts.compat:  # Add a date comment... 
+                today = time.strftime ("%Y-%m-%d", time.localtime())
+                outf.write ("<!-- %s created: %s -->\n" % (opts.root, today))
+            outf.write ('<%s>\n' % opts.root)
 
         while count is None or count > 0:
 

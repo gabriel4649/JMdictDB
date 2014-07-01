@@ -10,10 +10,12 @@ of the OO document, and a png of the database diagram.  On
 Windows, the Gnu make program is required to use the Makefile. 
 See the top-level directory README.txt for more information.
 
-The database diagram was constructed using Dia (an Open Source
-Visio-like diagranmming tool).  Dia is available for Windows 
-but the schema.dia file here was created on a Linux system and 
-looks horrible when opened in Dia under Windows.  So "make schema" 
+The first version of the database diagram was created with 
+postgresql_autodoc v1.40 but after intitial creation it was/is
+maintained independently with Dia (an Open Source Visio-like 
+diagramming tool).  Dia is available for Windows but the 
+schema.dia file here was created on a Linux system and looks 
+horrible when opened in Dia under Windows.  So "make schema" 
 should be done on a Linux system unless you want to manually 
 adjust the positions of everything in the diagram on Windows.
 

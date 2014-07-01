@@ -250,4 +250,10 @@ AssdTo:	stuart
 
  Changed the tests to accept the duplicate tags.
 
+2014-06-28 20:30:00 stuart
+ Excepts from mail from jbw in resopnse to post I made to Edict list:
+
+ Alsp apropo to 'aux' PoS is this Edict list thread from 2010-07-28
+  Subject: [edict-jmdict] aux, aux-v, aux-adj
+
 

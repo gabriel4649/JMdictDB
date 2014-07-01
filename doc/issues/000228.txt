@@ -22,14 +22,17 @@ AssdTo:	stuart
 2014-06-24 21:00:00 stuart
  To-do items (these will be added to as discovered, deleted as done)
  * Add a --corpus option to kdparse.py like jmparse.py, exparse.py?
-
+ * Remove asumptions that certain corpora are of a specific type:
+    entrs2xml.py: --help says (under --corpus / examples),
+     -s 2         Restrict to corpus id 2 (jmnedict).
+    web/cgi/srchform.py: see the #fixme's.
 
 2014-06-24 21:18:00 stuart
  Add new table 'kwsrct' for corpus types. 
  Add new column 'srct' in kwsrc referencing table kwsrct.
  Provide initial data for in pg/data/kwsrct.csv for corpus
   types: jmdict, jmnedict, examples, and kanjidic.
- Add patches/016.sql (number may change...)
+ Add patches/016.sql.
  Add new attribute SRCT in jdb.KW and in
   python/tests/data/kwds/full/kwsrct.csv.
  Run pg/Makefile to regen index, constraint files. 
@@ -38,6 +41,7 @@ AssdTo:	stuart
  kwsrc.csv needs data for new column srct added.
  Change pgi.parse_corpus_opt() to parse srct from its 'sopt'
   argument or from a new 4th argument.
+ Pull into master default branch code.
 
 
 

@@ -485,7 +485,7 @@ def htmlprep (entries):
 def add_p_flag (entrs):
         # Add a supplemantary attribute to each entr object in
         # list 'entrs', that has a boolean value indicating if
-        # any of its readings or kabji meet wwwjdic's criteria
+        # any of its readings or kanji meet wwwjdic's criteria
         # for "P" status (have a freq tag of "ichi1", "gai1",
         # "spec1", or "news1").
 
@@ -600,7 +600,7 @@ def add_pos_flag (entries):
                     if p.kw in conjugatable_poslist:
                         e.POS = True;  break
 
-def add_filtered_xrefs (entries, rem_unap=False):
+def add_filtered_xrefs_old (entries, rem_unap=False):
 
         # Generate substitute _xref and _xrer lists and put them in
         # sense attribute .XREF and .XRER.  These lists are copies of
@@ -621,6 +621,55 @@ def add_filtered_xrefs (entries, rem_unap=False):
             for s in e._sens:
                 s.XREF = [x for x in s._xref if cond (e, x)]
                 s.XRER = [x for x in s._xrer if cond (e, x)]
+
+def add_filtered_xrefs (entries, rem_unap=False):
+
+        # Works like add_filtered_xrefs_old() above except:
+        # Put all xrefs, both forward (from list s._xref) and reverse
+        # from list s._xrer), into s.XREF and creates an additional
+        # attribute on the s.XREF objects, .direc, that indicates whether
+        # the xref is a "from", "to" or "bidirectional" xref.  If the
+        # same xref occurs in both the s._xref and s_xrer lists, it is
+        # only added once and the .direc attribute set to "bidirectional".
+        # This allows an entr display app (such as entr.py/entr.tal) to
+        # display an icon for the xref direction.  This was suggested
+        # on the Edict maillist by Jean-Luc Leger, 2010-07-29, Subject:
+        # "Re: Database testing - call for testers - more comments"
+
+        cond = lambda e,x: (e.unap or not x.TARG.unap or not rem_unap) \
+                            and x.TARG.stat==jdb.KW.STAT['A'].id
+        def setdir (x, dir):
+            x.direc = dir
+            return x
+
+        FWD = 1;  BIDIR = 0;  REV = -1  # Direction of an xref.
+        for e in entries:
+            for s in e._sens:
+                  # Add all (non-excluded) forward xrefs to the xref list,
+                  # s.XREF.  Some of these may be bi-directional (have
+                  # xrefs on the target that refer back to us) but we will
+                  # indentify those later to fixup the FWD flag to BIDIR.
+                s.XREF = [setdir (x, FWD) for x in s._xref if cond (e, x)]
+                  # Make dict of all the fwd xrefs.
+                fwdrefs = {(x.entr,x.sens,x.xentr,x.xsens):x for x in s.XREF}
+                for x in s._xrer:
+                    if not cond (e, x): continue
+                      # Because we will display the reverse xref with the
+                      # same code that displays forward xrefs (that is, it 
+                      # creates a link to the entry using x.xentr and x.xsens),
+                      # swap the (entr,sens) and (xentr,xsens) values so that
+                      # when (xentr,xsens) are used, they'll actually be 
+                      # the entr,sens values which identify the entry the 
+                      # the reverse xref is on, which is what we want.
+                    x.entr,x.sens,x.xentr,x.xsens = x.xentr,x.xsens,x.entr,x.sens
+                      # Is this reverse xref the same as a forward xref?
+                    if (x.entr,x.sens,x.xentr,x.xsens) in fwdrefs:
+                          # If so, change the forward xref's 'direc' attribute
+                          # from FWD to BIDIR.
+                        setdir (fwdrefs[(x.entr,x.sens,x.xentr,x.xsens)], BIDIR)
+                      # Otherwise (our xref is not bi-directional), add us to 
+                      # the xref list as a reverse xref.
+                    else: s.XREF.append (setdir (x, REV))
 
 def add_encodings (entries, gahoh_url=None):
 

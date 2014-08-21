@@ -251,9 +251,29 @@ AssdTo:	stuart
  Changed the tests to accept the duplicate tags.
 
 2014-06-28 20:30:00 stuart
- Excepts from mail from jbw in resopnse to post I made to Edict list:
-
- Alsp apropo to 'aux' PoS is this Edict list thread from 2010-07-28
+ Also apropos to 'aux' PoS is this Edict list thread from 2010-07-28
   Subject: [edict-jmdict] aux, aux-v, aux-adj
 
+2014-08-16 16:41:00 stuart
+ Noticed that the provisional conjugation (conj=4) of くる (pos=45) was wrong:
+ the conjugation data results in これば but should be くれば.  Fixed in 
+ pg/data/conjo.csv and patches/017.sql
+
+2014-08-20 15:58:00 stuart
+ A discussion on the Edict list: 
+  2014-06-28, "Conjugations and PoS tags for だ, くれる", Stuart McGraw
+   https://groups.yahoo.com/neo/groups/edict-jmdict/conversations/messages/5203
+  2014-07-25 "Re: いい/よい POS matters", Jim Breen
+   https://groups.yahoo.com/neo/groups/edict-jmdict/conversations/messages/5225
+  2014-07-25, "Re: くれる POS issues", Jim Breen
+   https://groups.yahoo.com/neo/groups/edict-jmdict/conversations/messages/5226
+  2014-08-06, "Additional POSs", Jim Breen
+   https://groups.yahoo.com/neo/groups/edict-jmdict/conversations/messages/5257
+ resulted in the acceptance of the proposal to add PoS tags for yoi/ii adjectives,
+ くれる and だ as 'adj-ix', 'v1-s' and 'cop-da'.  I've already added to these to
+ the repo as 'adj-i', 'v1k-i' and 'cop', so those keywords need to be changed
+ to the approved ones.
+
+ Fixed in pg/data/kwpos.csv, patches/018.sql, python/tests/test_jdb_kwds.py,
+  python/lib/dtd-jmdict.xml, python/lib/dtd-jmdict-ex.xml
 

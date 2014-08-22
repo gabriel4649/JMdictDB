@@ -13,3 +13,6 @@ id	note
 4	The (first) non-abbreviated form is obtained by applying sequentially the causative, then passive conjugations.
 5	The -まい negative form is literary and rather rare.
 6	The ら is sometimes dropped from -られる, etc. in the potential form in conversational Japanese, but it is not regarded as grammatically correct.
+7	"'n' and 'adj-na' words when used as predicates are followed by the
+ copula <a href=""entr.py?svc=jmdict&sid=&q=2089020.jmdict"">だ</a> which is what is conjugated (<a href=""conj.py?svc=jmdict&sid=&q=2089020.jmdict"">conjugations</a>)."
+8	'vs' words are followed by <a href="entr.py?svc=jmdict&sid=&q=1157170.jmdict">する</a> which is what is conjugated (<a href=""conj.py?svc=jmdict&sid=&q=1157170.jmdict"">conjugations</a>).

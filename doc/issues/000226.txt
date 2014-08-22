@@ -157,11 +157,15 @@ AssdTo:	stuart
  following sql script.  Before using it, change the userid, name and email
  field text in the "INSERT INTO hist..." statement.
 
+ [Changed 'adj-ii' to 'adj-ix' per note <2014-08-20 15:58:00 stuart> below.]
+
  ===================================================================================
  BEGIN; 
  -- Create and populate a temp table with the entr.id an sens.sens numbers
  -- of the entries to be updated: entries has a kanji ending with "良い" and
  -- a sense with a pos of 'adj-i' (kw=1).
+ -- FIXME? this criteria includes entry 1254440 which may be wrong:
+ --  潔い(P);潔よい(io);いさぎ良い(iK) [いさぎよい] /(adj-ix) (1) manly/sportsmanlike/gracious/...
  
  CREATE TEMP TABLE __adjiiupd__  AS 
    SELECT DISTINCT e.id AS entr,s.sens
@@ -172,7 +176,7 @@ AssdTo:	stuart
      WHERE k.txt LIKE '%良い' AND p.kw=1;
  
  -- Change the 'adj-i' (kw=1) pos tags of the entries saved in the temp table
- -- to 'adj-ii'.
+ -- to 'adj-ix'.
  
  UPDATE pos SET kw=7 FROM __adjiiupd__ a
    WHERE pos.entr=a.entr AND pos.sens=a.sens AND pos.kw=1;
@@ -185,7 +189,7 @@ AssdTo:	stuart
    (SELECT 
        e.id, 1+COALESCE(MAX(h.hist), 0), e.stat, e.unap, 
        'smg','Stuart McGraw','smcg4191@frii.com',  -- Change these as apporiate...
-       'Change pos from adj-i to adj-ii.'
+       'Change pos from adj-i to adj-ix.'
       FROM (SELECT DISTINCT entr FROM __adjiiupd__) AS a
       JOIN entr e ON e.id=a.entr
       LEFT JOIN hist h ON e.id=h.entr
@@ -194,10 +198,12 @@ AssdTo:	stuart
  DROP TABLE __adjiiupd__;
 
  -- Add 'cop' pos to the first sense of だ.  
- -- FIXME: src=1 may not identify the right entry, nor is setting sens=1 neccesarily correct.
+ -- FIXME: src=1 may not identify the right entry in some databases, nor is setting sens=1 neccesarily correct.
+ -- FIXME: no history record created.
  INSERT INTO pos(entr,sens,ord,kw) (SELECT e.id,1,2,15 FROM entr e WHERE e.src=1 AND e.seq=2089020);
  -- Update 'v1' pos on くれる to 'v1k-i'.
- -- FIXME: src=1 may not identify the right entry.
+ -- FIXME: src=1 may not identify the right entry in some databases.
+ -- FIXME: no history record created.
  UPDATE pos SET kw=29 FROM entr e WHERE e.src=1 AND e.seq=1269130 AND e.id=pos.entr AND pos.kw=28;
  
  COMMIT;
@@ -276,4 +282,11 @@ AssdTo:	stuart
 
  Fixed in pg/data/kwpos.csv, patches/018.sql, python/tests/test_jdb_kwds.py,
   python/lib/dtd-jmdict.xml, python/lib/dtd-jmdict-ex.xml
+
+2014-08-21 22:17:00 stuart
+ Replaced the conjugations for 'adj-na' (pos=2), 'n' (pos=17) and 'vs' (pos=46)
+ with a single present/affirm/plain conjugation with footnote referring to the 
+ entry for the base verb (だ, だ and する respectively) for conjugations.
+ This is db patchlevel 19.
+
 

@@ -1,0 +1,38 @@
+Title:	DB patches update chain broken between 010.sql and 013.sql
+Stat:	closed
+Disp:	wont
+Prio:	medium
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart
+
+2014-08-22 18:50:00 stuart
+ If updating a database created before rev 3a49f5d571e4 (2013-12-04) using 
+ tools/patchdb.py and the patches in ./patches/*.sql, the updates will fail
+ unless an additional patch is applied manually.  The occurs because patch
+ 019.sql tries to add id's 7 and 8 to table conotes, but finds id 7 already
+ exists.  It exists because prior to the above mentioned rev, there were 
+ 7 notes and the rev removed note 2 (the "nakucha" note) and renumbered the
+ six remaining.  But there is no patch file that does the same thing so any
+ database created before that rev and possibly updated with patch 010.sql
+ will still have 7 notes in table conotes.  Note that patch 013.sql assumes
+ the non-existent patch was applied.
+
+2014-08-22 19:00:00 stuart
+ I can't think of a way to fix this in the repo that doesn't require a lot
+ of work.  However the number of existing databases this problem could affect
+ is (AFAIK) limited to a tiny number and the issue will not affect databases
+ created after the noted revision.
+ Will document the problem in this IS and provide a manual fix in the off
+ chance that this problem actually occurs sometime.
+
+ To fix by hand, do, between patches 010.sql and 013.sql:
+
+ DELETE FROM conjo_notes WHERE note=2;      -- Delete references to the "nakucha" note.
+ DELETE FROM conotes WHERE id=2;            -- Delete the "nakucha" note.
+ UPDATE conotes SET id=id+100 WHERE id>1;   -- Renumber remaining notes down by 1
+ UPDATE conotes SET id=id-101 WHERE id>100; --  (eg 3->2, 4->3, etc)
+
+ Perhaps we should start numbering patches in increments of 10 or so to allow
+ the insertion of additional patches in the sequence later.
+

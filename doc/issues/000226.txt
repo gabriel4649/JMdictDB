@@ -289,4 +289,10 @@ AssdTo:	stuart
  entry for the base verb (だ, だ and する respectively) for conjugations.
  This is db patchlevel 19.
 
+2014-08-22 17:31:00 stuart
+ Noted problem when testing patch 19 on MS Windows test machine Haru... The
+ conotes table on Haru still contains the "nachucha" note 2 that was deleted
+ in rev 3a49f5d571e4 (2013-12-04) causing patch 019.sql to fail.
+
+ Problem and fix documented in IS-232.
 

@@ -265,7 +265,13 @@ def parse_cmdline ():
                 "commands are normally bracketed by BEGIN and COMMIT commands so "
                 "the patch is applied entirely or not at all.  This script will "
                 "stop if a patch fails and not apply any further ones until the "
-                "problem is corrected and the failing patch sucessfully applied." )
+                "problem is corrected and the failing patch sucessfully applied."
+                ""
+                "On Windows you may need to set an environment variable: " 
+                ""
+                "  set PGCLIENTENCODING=utf8"
+                ""
+                "before running patchdb.py to avoid encoding errors when updating. ")
         p.add_argument ("-t", "--tolevel", default=None,
             help="Upgrade to the given patch level.  This is required unless "
                 "--list is given.")

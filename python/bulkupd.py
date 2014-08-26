@@ -74,11 +74,14 @@ def main (cmdargs=sys.argv):
             try: entr = getentry (cur, seq, src)
             except UpdateError as e:
                 L.error (e); continue
+            hist = jdb.Hist (name=args.name, email=args.email, notes=args.comment,
+                             refs=args.refs, userid=args.userid)
             for edit in edits:
-                try: doedit (entr, edit, args.comment, args.refs, args.name, args.email)
+                try: doedit (entr, hist, edit)
                 except UpdateError as e: 
                     L.error (e); break
-            else: # Executed if the for-loop exits normally (not via 'break'). 
+            else: # Executed if the for-loop exits normally (not via 'break').
+                entr._hist.append (hist)
                 try: submit (cur, entr, args.userid, args.noaction)
                 except UpdateError as e: L.error (e)
                 else: done += 1
@@ -147,7 +150,7 @@ class Cmd:
         pattern = r'''
           ((?:kanj)|(?:rdng)|(?:gloss)|(?:pos)|(?:misc)|(?:fld)|(?:dial)|(?:comment)|(?:refs))
           \s*
-          (?:\[([0-9]+)\])?    # Otional sense number (in square brackets).
+          (?:\[([0-9]+)\])?    # Optional sense number (in square brackets).
           \s+
           ((?:[^"][^\s]*)              # Unquoted or...
           |(?:"(?:(?:\\")|[^"])*"))    #  quoted string.
@@ -209,13 +212,16 @@ def getentry (cur, seq, src):
         if entr.dfrm: raise ChildError (seq)
         return entr
 
-def doedit (entr, cmd, comment, refs, name, email):
-        # entr -- A jdb.Entr() instance. 
+def doedit (entr, hist, cmd):
+        # entr -- A jdb.Entr() instance to be edited. 
+        # hist --  A jdb.Hist instance that will be edited (if the edit
+        #   is to add a comment of refs.)
         # cmd -- A Cmd instance that describes changes to be made to entry.
-        # comment -- Text to be used for Hist().note if no comment in cmd.
-        # refs -- Text to be used for Hist().refs if no refs in cmd.
-        # name -- Text to be used for submitter name.
-        # email -- Text to be used for submitter's email address.
+        # 
+        # Apply the change described by <cmd> to <entr> and /or <hist>.
+        #
+        # Should return True if <entr> or <hist> were actually changed,
+        # False if not, but currently always retuns True.
 
         new = None
         if cmd.operand in ('kanj', 'rdng'): 
@@ -233,13 +239,10 @@ def doedit (entr, cmd, comment, refs, name, email):
             tlist = getattr (getattr (entr, '_sens')[cmd.sens-1], '_'+cmd.operand)
             new, old = kw2id (cmd.operand, cmd.new, cmd.old)
             edit (tlist, 'kw', old, new, cmd.operand, cmd.old, cmd.new)
-        elif cmd.operand == 'comment': comment = cmd.new
-        elif cmd.operand == 'refs': refs = cmd.new
+        elif cmd.operand == 'comment': hist.notes = cmd.new
+        elif cmd.operand == 'refs': hist.refs = cmd.new
         else: raise ValueError (cmd.operand)
 
-          # Provide comments and submitter info for the update.
-        hist = jdb.Hist (notes=comment, refs=refs, name=name, email=email)
-        entr._hist.append (hist)
         return True #FIXME: how to determine if no change was made to entry?
 
 def edit (tlist, srchattr, old, new, operand,  t_old, t_new):
@@ -391,7 +394,7 @@ from lib.pylib.argparse_formatters import ParagraphFormatter
 
 def parse_cmdline (cmdargs):
         u = \
-"Bulkupt.py will edit and submit changes to multiple entries " \
+"Bulkupd.py will edit and submit changes to multiple entries " \
 "based on an input file that describes the entries to be modified " \
 "and the modifications to be made to them."
 

@@ -1,5 +1,5 @@
 <html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
-<!--? Copyright (c) 2013 Stuart McGraw -->
+<!--? Copyright (c) 2014 Stuart McGraw -->
 <!--? $Revision$ $Date$ -->
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -51,14 +51,32 @@
       </div>
   <span class="conjnotes">
     Notes...
-    <table class="conjnotestbl" tal:condition="notes">
-      <tr class="conjnote" tal:repeat="n notes">
+    <table class="conjnotestbl">
+      <tr class="conjnote" tal:condition="notes" tal:repeat="n notes">
         <td class="notenum" valign="top">
           [<span tal:replace="structure n/id">n</span>]
           </td>
         <td class="notetext" tal:content="structure n/txt">note text</td>
         </tr>
+      <tr class="conjnote">
+        <td class="notenum" valign="top">[*]</td>
+        <td class="notetext">This table has been automatically generated. 
+            It should not be assumed that any single conjugation is as
+            frequently used or as natural as any other, or is used at all.</td>
+        </tr>
       </table>
+      <p/><table class="conjacks">
+          <tr><td colspan="2">Acknowledgments: Most of the data used to generate this page is a
+          synthesis of information from the following sources.  
+          The developer (Stuart McGraw <smcg4191@frii.com>)
+          would appreciate being informed of any errors.</td></tr>
+          <tr><td>&nbsp;&nbsp;*</td><td>Jim Breen's <a href="http://www.edrdg.org/cgi-bin/wwwjdic/wwwjdic?1C">WWWjdic verb conjugator</a></td></tr>
+          <tr><td>&nbsp;&nbsp;*</td><td>Ben Bullock's <a href="http://www.sljfaq.org/cgi/verb-inflect.cgi">SljFAQ verb inflector</a></td></tr>
+          <tr><td>&nbsp;&nbsp;*</td><td><a href="http://bookclub.japantimes.co.jp/en/title/A Dictionary of Basic Japanese Grammar">Dictionary of Basic Japanese Grammar</a>, Makino and Tsutsui, ISBN 978-4-7890-0454-1</td></tr>
+          <tr><td>&nbsp;&nbsp;*</td><td>Wikipedia articles:  <a href="http://en.wikipedia.org/wiki/Japanese_verbs">Japanese verbs</a>, 
+              <a href="http://en.wikipedia.org/wiki/Japanese_irregular_verbs">Japanese irregular verbs</a></td></tr>
+        </table>
+
     </span>
   <div metal:use-macro="macros/macros/footer"></div>
   </body>

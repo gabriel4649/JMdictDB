@@ -6,17 +6,10 @@
 \set ON_ERROR_STOP 
 BEGIN;
 
-DROP TABLE IF EXISTS copos_notes, conjo_notes, conj_notes, conotes, conjo, conj, copos CASCADE;
-DROP VIEW IF EXISTS vinfl, vconj CASCADE;
+DROP VIEW IF EXISTS vconotes, vinflxt, vinflxt_, vinfl, vconj, vcpos CASCADE;
+DROP TABLE IF EXISTS conjo_notes, conj_notes, conotes, conjo, conj CASCADE;
 
--- Parts-of-speech that are conjugatable. 
-CREATE TABLE copos (
-    pos INT PRIMARY KEY                   -- Part-of-speech id from 'kwpos'.
-      REFERENCES kwpos(id) ON UPDATE CASCADE, 
-    stem SMALLINT NOT NULL DEFAULT 1);    -- Number of characters to remove from dict form to get stem.
-ALTER TABLE copos OWNER TO jmdictdb;
-
--- Notes for conj, conjo and copos items.
+-- Notes for conj, conjo items.
 CREATE TABLE conotes (
     id INT PRIMARY KEY, 
     txt TEXT NOT NULL);
@@ -37,31 +30,16 @@ CREATE TABLE conjo (
     neg BOOLEAN NOT NULL DEFAULT FALSE,   -- Negative form.
     fml BOOLEAN NOT NULL DEFAULT FALSE,   -- Formal (aka distal) form.
     onum SMALLINT NOT NULL DEFAULT 1,     -- Okurigana variant id when more than one exists.
+      PRIMARY KEY (pos,conj,neg,fml,onum),
+    stem SMALLINT DEFAULT 1,              -- Number of chars to remove to get stem. 
     okuri VARCHAR(50) NOT NULL,           -- Okurigana text.
     euphr VARCHAR(50) DEFAULT NULL,       -- Kana for euphonic change in stem (する and 来る).
     euphk VARCHAR(50) DEFAULT NULL,       -- Kanji for change in stem (used only for 為る-＞出来る).
     pos2 SMALLINT DEFAULT NULL            -- Part-of-speech (kwpos id) of word after conjugation.
-      REFERENCES kwpos(id) ON UPDATE CASCADE,
-    PRIMARY KEY (pos,conj,neg,fml,onum));
+      REFERENCES kwpos(id) ON UPDATE CASCADE);
 ALTER TABLE conjo OWNER TO jmdictdb;
 
--- Notes assignment tables.
-CREATE TABLE copos_notes (
-    pos SMALLINT NOT NULL
-      REFERENCES copos(pos) ON UPDATE CASCADE, 
-    note SMALLINT NOT NULL
-      REFERENCES conotes(id) ON UPDATE CASCADE, 
-    PRIMARY KEY (pos,note));
-ALTER TABLE copos_notes OWNER TO jmdictdb;
-
-CREATE TABLE conj_notes (
-    conj SMALLINT NOT NULL
-      REFERENCES conj(id) ON UPDATE CASCADE, 
-    note SMALLINT NOT NULL
-      REFERENCES conotes(id) ON UPDATE CASCADE, 
-    PRIMARY KEY (conj,note));
-ALTER TABLE conj_notes OWNER TO jmdictdb;
-
+-- Notes that apply to a particular conjugation.
 CREATE TABLE conjo_notes (
     pos SMALLINT NOT NULL,  ---.
     conj SMALLINT NOT NULL, --  \
@@ -90,8 +68,12 @@ CREATE OR REPLACE VIEW vinfl AS (
     SELECT u.id, seq, src, unap, pos, ptxt, knum, ktxt, rnum, rtxt, conj, ctxt, neg, fml, 
         CASE WHEN neg THEN 'neg' ELSE 'aff' END || '-' ||
           CASE WHEN fml THEN 'polite' ELSE 'plain' END AS t, onum,
-        COALESCE(euphk, LEFT(ktxt,LENGTH(ktxt)-stem)) || okuri AS kitxt,
-        COALESCE(euphr, LEFT(rtxt,LENGTH(rtxt)-stem)) || okuri AS ritxt,
+        CASE WHEN ktxt ~ '[^あ-ん].$'  -- True if final verb is kanji, false if it is hiragana
+                                      --  (see IS-226, 2014-08-26).
+            THEN COALESCE((LEFT(ktxt,LENGTH(ktxt)-stem-1)||euphk), LEFT(ktxt,LENGTH(ktxt)-stem))
+            ELSE COALESCE((LEFT(ktxt,LENGTH(ktxt)-stem-1)||euphr), LEFT(ktxt,LENGTH(ktxt)-stem)) END
+            || okuri AS kitxt,
+        COALESCE((LEFT(rtxt,LENGTH(rtxt)-stem-1)||euphr), LEFT(rtxt,LENGTH(rtxt)-stem)) || okuri AS ritxt,
         (SELECT array_agg (note ORDER BY note) FROM conjo_notes n 
             WHERE u.pos=n.pos AND u.conj=n.conj AND u.neg=n.neg
                 AND u.fml=n.fml AND u.onum=n.onum) AS notes
@@ -99,14 +81,13 @@ CREATE OR REPLACE VIEW vinfl AS (
         SELECT DISTINCT entr.id, seq, src, unap, kanj.txt AS ktxt, rdng.txt AS rtxt,
                         pos.kw AS pos, kwpos.kw AS ptxt, conj.id AS conj, conj.name AS ctxt,
                         onum, okuri, neg, fml,
-			kanj.kanj AS knum, rdng.rdng AS rnum, stem, euphr, euphk
+                        kanj.kanj AS knum, rdng.rdng AS rnum, stem, euphr, euphk
 	FROM entr
 	JOIN sens ON entr.id=sens.entr
 	JOIN pos ON pos.entr=sens.entr AND pos.sens=sens.sens
 	JOIN kwpos ON kwpos.id=pos.kw
 	JOIN conjo ON conjo.pos=pos.kw
 	JOIN conj ON conj.id=conjo.conj
-	JOIN copos ON copos.pos=conjo.pos
 	LEFT JOIN kanj ON entr.id=kanj.entr
 	LEFT JOIN rdng ON entr.id=rdng.entr
 	WHERE conjo.okuri IS NOT NULL
@@ -115,7 +96,6 @@ CREATE OR REPLACE VIEW vinfl AS (
 	AND NOT EXISTS (SELECT 1 FROM restr WHERE restr.entr=entr.id AND restr.rdng=rdng.rdng AND restr.kanj=kanj.kanj)
         ) AS u)
     ORDER BY u.id,pos,knum,rnum,conj,neg,fml,onum;
-ALTER VIEW vinfl OWNER TO jmdictdb;
 
 -- Example:
 --      SELECT * FROM vinfl
@@ -140,7 +120,6 @@ CREATE OR REPLACE VIEW vinflxt_ AS (
     FROM vinfl
     GROUP BY id, seq, src, unap, pos, ptxt, knum, ktxt, rnum, rtxt, conj, ctxt, t
     ORDER BY id, pos, ptxt, knum, rnum, conj);
-ALTER VIEW vinflxt_ OWNER TO jmdictdb;
 
 CREATE OR REPLACE VIEW vinflxt AS (
     SELECT id, seq, src, unap, pos, ptxt, knum, ktxt, rnum, rtxt, conj, ctxt,
@@ -151,7 +130,6 @@ CREATE OR REPLACE VIEW vinflxt AS (
         FROM vinflxt_
         GROUP BY id, seq, src, unap, pos, ptxt, knum, ktxt, rnum, rtxt, conj, ctxt
 	ORDER BY id, pos, knum, rnum, conj);
-ALTER VIEW vinflxt OWNER TO jmdictdb;
 
 CREATE OR REPLACE VIEW vconotes AS (
     SELECT DISTINCT k.id AS pos, k.kw AS ptxt, m.*
@@ -160,15 +138,12 @@ CREATE OR REPLACE VIEW vconotes AS (
         JOIN conjo_notes n ON n.pos=c.pos
         JOIN conotes m ON m.id=n.note
         ORDER BY m.id);
-ALTER VIEW vconotes OWNER TO jmdictdb;
 
--- See IS-226.  This view is used to present a pseudo-keyword table
---  that is loaded into the jdb.Kwds instance and provides a list
+-- See IS-226 (2014-06-12).  This view is used to present a pseudo-keyword
+--  table that is loaded into the jdb.Kwds instance and provides a list
 --  of conjugatable pos's in the same format as the kwpos table.
 CREATE OR REPLACE VIEW vcopos AS (
-    SELECT id,kw,descr FROM kwpos p JOIN copos c ON c.pos=p.id);
-ALTER VIEW vcopos OWNER TO jmdictdb;
+    SELECT id,kw,descr FROM kwpos p JOIN (SELECT DISTINCT pos FROM conjo) AS c ON c.pos=p.id);
 GRANT SELECT ON vcopos TO jmdictdbv;
-
 
 COMMIT;

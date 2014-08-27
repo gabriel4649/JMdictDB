@@ -36,7 +36,7 @@
 # nicely, etc.
 #
 #-------------------------------------------------------------------
-# JMdictDB uses a set of five csv (comma separated value) tables
+# JMdictDB uses a set of four csv (comma separated value) tables
 # that contain information needed to conjugate japanese words
 # based on the words' part-of-speech code (e.g., v1 verb, v5k verb,
 # i-adjective, etc).  In JMdictDB these data are loaded into database
@@ -47,7 +47,7 @@
 # program is an example of that.
 #
 # This program conjugates words using primarily the conjugation
-# data in file .../conjo.csv.  That file consists of rows of 9
+# data in file .../conjo.csv.  That file consists of rows of 10
 # values per row:
 #
 #    pos:   A part-of-speech number.  These are defined in kwpos.csv
@@ -62,6 +62,9 @@
 #    onum:  A disambiguating number (starting from 1) for rows
 #           containing variant okurigana for the same conjugation
 #           (e.g., ～なくて and ～ないで).
+#
+#    stem:  The number of characters to remove from the end of a
+#           word before adding okurigana.
 #    okuri: The okurigana text for the conjugated form.
 #    euphr: Replacement kana text for the verb stem in cases where
 #           there is a euphonic change in the stem (e.g. く -> こ in
@@ -74,26 +77,32 @@
 # The first five items form a unique key identifying each
 # conjugation and are used as a key in the python dicts in the
 # code below to identify conjugations.  The remaining items in
-# each row are used to contruct the conjugated form of a word
+# each row are used to construct the conjugated form of a word
 # for the conjugation specified by the key.
 #
-# The file .../copos.csv contains two columns: the first is a part-
-# of-speech (pos) number, the second a small number that is the
-# number of characters to remove from the end of a dictionary form
-# of a word before adding the okurigana text to conjugate it which
-# we'll call trim count ('trimcnt' in the code below).
+# The algorithm for conjugating a word is: 
+# 1. For each (or a desired) conjugation (identified by the
+#    tuple (pos,conj,neg,fml,onum)), get stem, okuri, euphr
+#    and euphk from conjo.csv.
+# 2. If euphr or euphk is non-null, determine if the word to
+#    be conjugated is kanji or kana.  In the general case there
+#    is no easy way of doing this since it is hard to tell how
+#    long the word is if it occurs at the end of a longer phrase.
+#    But since the only PoS values that have euphr or euphk values
+#    currently are for the words: いい,　来る・くる and 為る・する we
+#    can look at the next-to-last character to see if it is kanji
+#    or kana.
+# 3. Conjugate the word:
+# 3a. If euphr and euphk are null, remove 'stem' characters from
+#    the end of the text.
+# 3b. Else if 'euphk' is not null and the word is kanji, remove
+#    stem+1 characters from the end of the text and append 'euphk'
+#    to the end of the text. 
+# 3c. Else if 'euphr' is not null and the word is kana, remove
+#    stem+1 characters from the end of the text and append 'euphr'
+#    to the end of the text. 
+# 3d. Append 'okuri' to the end of the text.
 #
-# Thus, the algorithm for conjugating a word is to identify what
-# part-of-speech the words is and get the corresponding pos number.
-# With that, get the trim count (we'll call it 'trimcnt') from
-# copos.csv.  Then for each (or a desired) conjugation (identified
-# by the tuple (pos,conj,neg,fml,onum)), get okuri, euphr and
-# euphk from conjo.csv.
-#
-# If the word to be conjugated is kana and euphr is non-null,
-# replace the word with euphr and append okuri.  Same for a kanji
-# word and euphk.  If euphr (or euphk) is null then remove trimcnt
-# characters from the end of the word and append okuri.  That's it!
 # (See function construct() below.)
 #
 # The other csv tables are:
@@ -223,29 +232,32 @@ def conjugate (ktxt, rtxt, pos, ct):
         '''
         conjs = {}
           # Get pos number from kw:
-        trimcnt = ct['copos'][pos][1]
         for conj,conjnm in sorted (ct['conj'].values(), key=lambda x:x[0]):
             for neg, fml in (0,0),(0,1),(1,0),(1,1):
                 neg, fml = bool (neg), bool (fml)
                 for onum in range(1,10):  # onum values start at 1, not 0.
-                    try: _,_,_,_,_, okuri, euphr, euphk, _ = ct['conjo'][pos,conj,neg,fml,onum]
+                    try: _,_,_,_,_, stem, okuri, euphr, euphk, _ = ct['conjo'][pos,conj,neg,fml,onum]
                     except KeyError: break;
-                    txt = construct (ktxt, rtxt, trimcnt, okuri, euphk, euphr)
+                    kt = construct (ktxt, stem, okuri, euphr, euphk) if ktxt else ''
+                    rt = construct (rtxt, stem, okuri, euphr, euphk) if rtxt else ''
+                    txt = (kt + '【' + rt + '】') if kt and rt else (kt or rt)
                     conjs[(pos,conj,neg,fml,onum)] = txt
         return conjs
 
-def construct (ktxt, rtxt, trimcnt, okuri, euphk, euphr):
-        '''Given a word (in kanji, kana, or both), generate its conjugated
-        form by removing removing 'trimcnt' characters from its end unless
-        'euphk' or 'euphr' are given which replace the entire kanji or kana
-        text respectively) and then appending the okurgana 'okuri' text.
-        The conjugated kanji and kana text are combined into a single string
-        and returned.'''
+def construct (txt, stem, okuri, euphr, euphk):
+        '''Given a word (in kanji or kana), generate its conjugated form by
+        by removing removing 'stem' characters from its end (and an additional
+        character if the word is kana and 'euphr' is true or the word in in kanji
+        and 'euphk' are true), then appending either 'euphr' or 'euphk'.  We 
+        determine if the word is kanji or kana by looking at its next-to-last
+        character.  Finally, 'okuri' is appended.'''
 
-        if ktxt: ktxt = (euphk or ktxt[:len(ktxt)-trimcnt]) + okuri
-        if rtxt: rtxt = (euphr or rtxt[:len(rtxt)-trimcnt]) + okuri
-        txt = (ktxt + '【' + rtxt + '】') if ktxt and rtxt else (ktxt or rtxt)
-        return txt
+        if len (txt) < 2: raise ValueError ("Conjugatable words must be at least 2 characters long")
+        iskana = txt[-2] > 'あ' and txt[-2] <= 'ん'
+        if iskana and euphr or not iskana and euphk: stem += 1
+        if iskana: conjtxt = txt[:-stem] + (euphr or '') + okuri
+        else:      conjtxt = txt[:-stem] + (euphk or '') + okuri
+        return conjtxt
 
 # The following functions read the .csv conjugation data.
 
@@ -295,10 +307,9 @@ def read_conj_tables (dir):
           # to bools.
         coltypes = {
             'conj': [int, str],
-            'conjo': [int, int, sbool, sbool, int, str, str, str, xint],
+            'conjo': [int, int, sbool, sbool, int, int, str, str, str, xint],
             'conotes': [int, str],
             'conjo_notes': [int, int, sbool, sbool, int, int],
-            'copos': [int, int],
             'kwpos': [int, str, str],}
         ct = {}
         for fn in coltypes.keys():

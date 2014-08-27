@@ -296,3 +296,126 @@ AssdTo:	stuart
 
  Problem and fix documented in IS-232.
 
+2014-08-24:18:13:00 stuart
+ Two problem conjugating kanji of vs-i verbs.
+
+ 1. The view "vinfl" which does the conjugating was incorrect.  If a
+ eupkr or euphk value was present, it would replace the entire left
+ part of the word (eg the nonpast/affirmative/formal conjugation of
+ 'おちゃする' would be generated as します rather than おちゃします.)
+ Fixed in db patchlevel 20: view was changed to keep the left-most
+ part of the word by stripping stem+1 characters off the right end. 
+ I think there are no cases where stem+1 will give the wrong results
+ but if cases arises in future where the 1 needs to be some other value,
+ will add an additional column to table copos to store the value.
+
+ 2. With that fixed we note another problem...
+ The problem is that the vs-i tag applies to both 為る・する and to entries
+ like 質問をする・しつもんをする.  The kanji form of those two entries are
+ conjugated differently.  為る conjugates with a null euphk value: 為ます,
+ but 質問をする requires a euphk value of し: 質問をします.
+ We can't tell what to do without looking and the entry itself (kanji/kana
+ or seq number, etc.) 
+
+ This is same as issue that motivated the requests for the new adj-ix,
+ vi-s and cop-da PoS tags.  But it seems unlikely another request for a
+ special PoS will be received favorably.
+
+ Currently (as of uncommitted dblevel 20), we add euphk text that is the
+ same as the euphr text for the entries ending in する: PoS's vs-s (47) and
+ vs-i (48).  This conjugates all those entries correctly except 為る・する
+ itself.  Because the euphk text replaces the 為 character we end up with
+ broken kanji conjugations:
+
+  seq# 1157170  'vs-i' conjugations for 為る【する】
+                Affirmative                    Negative
+                Plain 	     Formal            Plain                Formal
+  Non-past      する【する】    します【します】      しない【しない】           しません【しません】
+  Past (~ta)    した【した】    しました【しました】  しなかった【しなかった】   しませんでした【しませんでした】
+  ...etc...
+
+ While this would be barely tolerable in an uncommon word, する is pretty 
+ important (and all the 'vs' entries' conjugations now link to it) so we 
+ should get it right.
+
+ [I just noticed that v5-i verbs (有る・ある；　事がある・ことがある) have the 
+ same problem and it occurs with dbpl 19 (checked on Haru and Arakawa)
+ Because the v5-i 'stem' value is 2, the 有 kanji is always removed and
+ hiragana substituted so 有る・ある　->　ある【ある】.  This doesn't involve 
+ any euphr/euphk values so behavior is same on dbpl 19 as current.]
+
+2014-08-26 21:11:00 stuart
+ Revamped the conjugations implemtation in dbpl 20.  Did not keep the 
+ uncommitted changes above except as noted below.
+
+ Dbpl 19 view "vinfl" modified per note above to fix the problem of losing
+ everything to the left of the final conjugated verb.  Ie, in view "vinfl", 
+        COALESCE (euphk, LEFT(ktxt,LENGTH(ktxt)-stem)) || okuri AS kitxt,
+ was replaced with 
+        COALESCE ((LEFT(ktxt,LENGTH(ktxt)-stem-1)||euphk), LEFT(ktxt,LENGTH(ktxt)-stem)) || okuri AS kitxt,
+ and the same for the conjugated reading text.
+
+ Restating the other problem noted above...
+ There are some entries that share common final verb (and have a PoS tag
+ appropriate to that verb) where the kanji text of some entries has the 
+ verb in kanji and some have the verb in kana.  For most PoSs this is not
+ a problem because the same algorithm is used to conjugate both the kanji
+ text and the kana text.  
+
+ But when there are euphr values there is a problem because if the verb is 
+ in kanji, we don't use euphr when conjugating but we must use it if the verb
+ is in kana form.  
+
+ For example, entry 1315710 has two kanji texts: 持ってくる  and 持って来る.
+ When generating the non-past/affirm/formal conjugation for 持ってくる
+ we must include euphr value き: 持ってきます.  But when conjugating 持って来る
+ we must not include it: 持って来ます.  So how the kanji text is processed
+ depends on whether the final (to-be-conjugated) verb is kanji or kana.
+
+ In general there is no easy way to determine this.  We can't look to 
+ see if any particular number characters are all kana because we don't
+ know how long the final verb is.  In 出る杭は打たれる the verb is 4
+ characters but in 易を見る it is only two even though they are both
+ tagged 'v1'.
+
+ However, the above problem only occurs if there is a euphr or euphk 
+ value in the conjugation.  If not, it doesn't matter whether the kanji
+ text verb is kanji or kana since they are both conjugated identically.
+ It further turns out that the only verbs that have euphr or euphk values
+ are two characters long.  So although we can not solve the general case,
+ in the actual cases we have, we can look at the next-to-last character. 
+ If the next-to-last character is kanji we use the kanji conjugation,
+ and if it is kana, we use the reading conjugation (that includes euphr).
+
+ This heuristic is implemented in view "vinfl" (dbpl 20) as shown in this
+ excerpt that forms the conjugated kanji text:
+
+        [...]
+  　    CASE WHEN ktxt ~ '[^あ-ん].$'  -- True if final verb is kanji, false if it is hiragana (see IS-226).
+            THEN COALESCE((LEFT(ktxt,LENGTH(ktxt)-stem-1)||euphk), LEFT(ktxt,LENGTH(ktxt)-stem))
+            ELSE COALESCE((LEFT(ktxt,LENGTH(ktxt)-stem-1)||euphr), LEFT(ktxt,LENGTH(ktxt)-stem)) END
+            || okuri AS kitxt,
+        [...]
+
+ ----------------
+ Another problem is 有る・ある
+
+ In dbpl 19 and earlier, table "copos" provided a "stem" value for each
+ cojugatable PoS that gave the number of characters to strip from the 
+ end of the verb before conjugating it.  For most PoSs, that value was 1. 
+ However, for ある and other 'v5r-i' verbs we used 2 because to form the
+ negative, ない, we need to remove both characters.  But when conjugating
+ the kanji this removes the kanji character (有), which is fine for the
+ negative forms, but loses the kanji when we don't want to for the non-
+ negative forms (eg, 有る -> あります instead of 有ります).
+
+ The fix for this is to move the "stem" values from the "copos" table 
+ into the "conjo" table where we can set it differently for each conjugation, 
+ nor just for each PoS.  So now we can specify it as 2 for the negative
+ conjugations of v5r-i verbs and 1 for the non-negative conjugations.
+
+ Since the only real purpose of table 'copos' was to hold the stem values, 
+ we can dispense with that table.  View 'vcpos' depended on table 'copos'
+ so we modify 'vcpos' to extract the (distinct) PoS values from table 'conjo'
+ instead.
+

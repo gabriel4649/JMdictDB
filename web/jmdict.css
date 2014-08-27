@@ -40,6 +40,10 @@
 /* Conjugations */
 .conjtable	{border-collapse: collapse; border: 1px solid black;}
 .conjbrk	{background: #FFFFE0;}
+.conjacks       {font-size: 75%;
+                  border-style: solid; border-width: thin; 
+		  margin: 5px; padding: 10px;}
+
 
 /* other */
 .helplink	{font-size: 75%;}

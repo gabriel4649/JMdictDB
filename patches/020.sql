@@ -1,3 +1,183 @@
+-- Descr: Revamp conjugation implementation. 
+-- Trans: 19->20
+
+\set ON_ERROR_STOP
+BEGIN;
+
+INSERT INTO dbpatch(level) VALUES(20);
+
+DROP TABLE IF EXISTS copos_notes, copos CASCADE;  -- dbpl 19 tables no longer used.
+
+-------------------------------------------------------------------------------------------
+--  The following DDL is a verbatim copy of pg/conj.sql (sans some comments).
+--  The changes we are making are substantial enough that it is easier to drop,
+--  recreate and reload all the conjugation objects, than to try to update them
+--  in place.
+-------------------------------------------------------------------------------------------
+
+DROP VIEW IF EXISTS vconotes, vinflxt, vinflxt_, vinfl, vconj, vcpos CASCADE;
+DROP TABLE IF EXISTS conjo_notes, conj_notes, conotes, conjo, conj CASCADE;
+
+-- Notes for conj, conjo items.
+CREATE TABLE conotes (
+    id INT PRIMARY KEY, 
+    txt TEXT NOT NULL);
+ALTER TABLE conotes OWNER TO jmdictdb;
+
+-- Verb and adjective inflection names.
+CREATE TABLE conj (
+    id SMALLINT PRIMARY KEY,
+    name VARCHAR(50) UNIQUE);             -- Eg, "present", "past", "conditional", provisional", etc.
+ALTER TABLE conj OWNER TO jmdictdb;
+
+-- Okurigana used for for each verb inflection type.
+CREATE TABLE conjo (
+    pos SMALLINT NOT NULL                 -- Part-of-speech id from 'kwpos'.
+      REFERENCES kwpos(id) ON UPDATE CASCADE,
+    conj SMALLINT NOT NULL                -- Conjugation id from 'conj'.
+      REFERENCES conj(id) ON UPDATE CASCADE, 
+    neg BOOLEAN NOT NULL DEFAULT FALSE,   -- Negative form.
+    fml BOOLEAN NOT NULL DEFAULT FALSE,   -- Formal (aka distal) form.
+    onum SMALLINT NOT NULL DEFAULT 1,     -- Okurigana variant id when more than one exists.
+      PRIMARY KEY (pos,conj,neg,fml,onum),
+    stem SMALLINT DEFAULT 1,              -- Number of chars to remove to get stem. 
+    okuri VARCHAR(50) NOT NULL,           -- Okurigana text.
+    euphr VARCHAR(50) DEFAULT NULL,       -- Kana for euphonic change in stem (する and 来る).
+    euphk VARCHAR(50) DEFAULT NULL,       -- Kanji for change in stem (used only for 為る-＞出来る).
+    pos2 SMALLINT DEFAULT NULL            -- Part-of-speech (kwpos id) of word after conjugation.
+      REFERENCES kwpos(id) ON UPDATE CASCADE);
+ALTER TABLE conjo OWNER TO jmdictdb;
+
+-- Notes that apply to a particular conjugation.
+CREATE TABLE conjo_notes (
+    pos SMALLINT NOT NULL,  ---.
+    conj SMALLINT NOT NULL, --  \
+    neg BOOLEAN NOT NULL,   --   +--- Primary key of table 'conjo'. 
+    fml BOOLEAN NOT NULL,   --  /
+    onum SMALLINT NOT NULL, ---'
+      FOREIGN KEY (pos,conj,neg,fml,onum) REFERENCES conjo(pos,conj,neg,fml,onum) ON UPDATE CASCADE,
+    note SMALLINT NOT NULL
+      REFERENCES conotes(id) ON UPDATE CASCADE, 
+    PRIMARY KEY (pos,conj,neg,fml,onum,note));
+ALTER TABLE conjo_notes OWNER TO jmdictdb;
+
+--------------------------------------------------------------------------------------------------
+----    VIEWS    ---------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+
+CREATE OR REPLACE VIEW vconj AS (
+    SELECT conjo.pos, kwpos.kw AS ptxt, conj.id AS conj, conj.name AS ctxt, conjo.neg, conjo.fml
+    FROM conj
+    INNER JOIN conjo ON conj.id=conjo.conj
+    INNER JOIN kwpos ON kwpos.id=conjo.pos
+    ORDER BY conjo.pos, conjo.conj, conjo.neg, conjo.fml);
+ALTER VIEW vconj OWNER TO jmdictdb;
+
+CREATE OR REPLACE VIEW vinfl AS (
+    SELECT u.id, seq, src, unap, pos, ptxt, knum, ktxt, rnum, rtxt, conj, ctxt, neg, fml, 
+        CASE WHEN neg THEN 'neg' ELSE 'aff' END || '-' ||
+          CASE WHEN fml THEN 'polite' ELSE 'plain' END AS t, onum,
+        CASE WHEN ktxt ~ '[^あ-ん].$'  -- True if final verb is kanji, false if it is hiragana
+                                      --  (see IS-226, 2014-08-26).
+            THEN COALESCE((LEFT(ktxt,LENGTH(ktxt)-stem-1)||euphk), LEFT(ktxt,LENGTH(ktxt)-stem))
+            ELSE COALESCE((LEFT(ktxt,LENGTH(ktxt)-stem-1)||euphr), LEFT(ktxt,LENGTH(ktxt)-stem)) END
+            || okuri AS kitxt,
+        COALESCE((LEFT(rtxt,LENGTH(rtxt)-stem-1)||euphr), LEFT(rtxt,LENGTH(rtxt)-stem)) || okuri AS ritxt,
+        (SELECT array_agg (note ORDER BY note) FROM conjo_notes n 
+            WHERE u.pos=n.pos AND u.conj=n.conj AND u.neg=n.neg
+                AND u.fml=n.fml AND u.onum=n.onum) AS notes
+    FROM (
+        SELECT DISTINCT entr.id, seq, src, unap, kanj.txt AS ktxt, rdng.txt AS rtxt,
+                        pos.kw AS pos, kwpos.kw AS ptxt, conj.id AS conj, conj.name AS ctxt,
+                        onum, okuri, neg, fml,
+                        kanj.kanj AS knum, rdng.rdng AS rnum, stem, euphr, euphk
+	FROM entr
+	JOIN sens ON entr.id=sens.entr
+	JOIN pos ON pos.entr=sens.entr AND pos.sens=sens.sens
+	JOIN kwpos ON kwpos.id=pos.kw
+	JOIN conjo ON conjo.pos=pos.kw
+	JOIN conj ON conj.id=conjo.conj
+	LEFT JOIN kanj ON entr.id=kanj.entr
+	LEFT JOIN rdng ON entr.id=rdng.entr
+	WHERE conjo.okuri IS NOT NULL
+	AND NOT EXISTS (SELECT 1 FROM stagr WHERE stagr.entr=entr.id AND stagr.sens=sens.sens AND stagr.rdng=rdng.rdng)
+	AND NOT EXISTS (SELECT 1 FROM stagk WHERE stagk.entr=entr.id AND stagk.sens=sens.sens AND stagk.kanj=kanj.kanj)
+	AND NOT EXISTS (SELECT 1 FROM restr WHERE restr.entr=entr.id AND restr.rdng=rdng.rdng AND restr.kanj=kanj.kanj)
+        ) AS u)
+    ORDER BY u.id,pos,knum,rnum,conj,neg,fml,onum;
+
+-- Example:
+--      SELECT * FROM vinfl
+--      WHERE seq=.......
+--      ORDER BY seq,knum,rnum,pos,conjid,t,onum; 
+
+-- The following view combines, for each conjugation row, multiple okurigana
+-- and multiple notes into a single string so that each conjugation will have
+-- only one row.  Note that the string inside the string_agg() function below
+-- contains an embedded newline.  This file needs to be saved with Unix-style
+-- ('\n') newlines (rather than Windows style ('\r\n') in order to prevent
+-- the '\r' characters from appearing in the view results.
+
+CREATE OR REPLACE VIEW vinflxt_ AS (
+    SELECT id, seq, src, unap, pos, ptxt, knum, ktxt, rnum, rtxt, conj, ctxt, t, string_agg ( 
+      COALESCE (kitxt,'') || (CASE WHEN kitxt IS NOT NULL THEN '【' ELSE '' END) ||
+      COALESCE (ritxt,'') || (CASE WHEN kitxt IS NOT NULL THEN '】' ELSE '' END) ||
+      (CASE WHEN notes IS NOT NULL THEN ' [' ELSE '' END) ||
+      COALESCE (ARRAY_TO_STRING (notes, ','), '') ||
+      (CASE WHEN notes IS NOT NULL THEN ']' ELSE '' END), ',
+' ORDER BY onum) AS word
+    FROM vinfl
+    GROUP BY id, seq, src, unap, pos, ptxt, knum, ktxt, rnum, rtxt, conj, ctxt, t
+    ORDER BY id, pos, ptxt, knum, rnum, conj);
+
+CREATE OR REPLACE VIEW vinflxt AS (
+    SELECT id, seq, src, unap, pos, ptxt, knum, ktxt, rnum, rtxt, conj, ctxt,
+	MIN (CASE t WHEN 'aff-plain'  THEN word END) AS w0,
+	MIN (CASE t WHEN 'aff-polite' THEN word END) AS w1,
+	MIN (CASE t WHEN 'neg-plain'  THEN word END) AS w2,
+	MIN (CASE t WHEN 'neg-polite' THEN word END) AS w3
+        FROM vinflxt_
+        GROUP BY id, seq, src, unap, pos, ptxt, knum, ktxt, rnum, rtxt, conj, ctxt
+	ORDER BY id, pos, knum, rnum, conj);
+
+CREATE OR REPLACE VIEW vconotes AS (
+    SELECT DISTINCT k.id AS pos, k.kw AS ptxt, m.*
+        FROM kwpos k
+        JOIN conjo c ON c.pos=k.id
+        JOIN conjo_notes n ON n.pos=c.pos
+        JOIN conotes m ON m.id=n.note
+        ORDER BY m.id);
+
+-- See IS-226 (2014-06-12).  This view is used to present a pseudo-keyword
+--  table that is loaded into the jdb.Kwds instance and provides a list
+--  of conjugatable pos's in the same format as the kwpos table.
+CREATE OR REPLACE VIEW vcopos AS (
+    SELECT id,kw,descr FROM kwpos p JOIN (SELECT DISTINCT pos FROM conjo) AS c ON c.pos=p.id);
+GRANT SELECT ON vcopos TO jmdictdbv;
+
+-------------------------------------------------------------------------------------------
+--  The following DML are a verbatim copies of conjugation data in pg/data/*.csv
+--  at the time this patch file was generated.
+-------------------------------------------------------------------------------------------
+
+\copy conj FROM STDIN DELIMITER E'\t' CSV HEADER
+id	name
+1	Non-past
+2	Past (~ta)
+3	Conjunctive (~te)
+4	Provisional (~eba)
+5	Potential
+6	Passive
+7	Causative
+8	Causative-Passive 
+9	Volitional
+10	Imperative
+11	Conditional (~tara)
+12	Alternative (~tari)
+13	Continuative (~i)
+\.
+
+\copy conjo FROM STDIN DELIMITER E'\t' CSV HEADER
 pos	conj	neg	fml	onum	stem	okuri	euphr	euphk	pos2
 1	1	f	f	1	1	い			
 1	1	f	t	1	1	いです			
@@ -1135,3 +1315,169 @@ pos	conj	neg	fml	onum	stem	okuri	euphr	euphk	pos2
 48	12	t	f	1	1	なかったり	し		
 48	12	t	t	1	1	ませんでしたり	し		
 48	13	f	f	1	1	""	し		
+\.
+
+\copy conotes FROM STDIN DELIMITER E'\t' CSV HEADER
+id	note
+1	"Irregular conjugation.  Note that this not the same as the definition
+ of ""irregular verb"" commonly found in textbooks (typically する and
+ 来る).  It denotes okurigana that is different than other words of
+ the same class.  Thus the past tense of 行く (行った) is an irregular
+ conjugation because other く (v5k) verbs use いた as the okurigana for
+ this conjugation.  します is not an irregular conjugation because if
+ we take する to behave as a v1 verb the okurigana is the same as other
+ v1 verbs despite the sound change of the stem (す) part of the verb
+ to し."
+2	na-adjectives and nouns are usually used with the なら nara conditional, instead of with であれば de areba. なら is a contracted and more common form of ならば.
+3	では is often contracted to じゃ in colloquial speech.
+4	The (first) non-abbreviated form is obtained by applying sequentially the causative, then passive conjugations.
+5	The -まい negative form is literary and rather rare.
+6	The ら is sometimes dropped from -られる, etc. in the potential form in conversational Japanese, but it is not regarded as grammatically correct.
+7	"'n' and 'adj-na' words when used as predicates are followed by the
+ copula <a href=""entr.py?svc=jmdict&sid=&q=2089020.jmdict"">だ</a> which is what is conjugated (<a href=""conj.py?svc=jmdict&sid=&q=2089020.jmdict"">conjugations</a>)."
+8	'vs' words are followed by <a href="entr.py?svc=jmdict&sid=&q=1157170.jmdict">する</a> which is what is conjugated (<a href=""conj.py?svc=jmdict&sid=&q=1157170.jmdict"">conjugations</a>).
+\.
+
+\copy conjo_notes FROM STDIN DELIMITER E'\t' CSV HEADER
+pos	conj	neg	fml	onum	note
+2	1	f	f	1	7
+15	1	t	f	1	3
+15	1	t	t	1	3
+15	1	t	t	2	3
+15	2	t	f	1	3
+15	2	t	t	1	3
+15	3	t	f	1	3
+15	4	f	f	1	2
+15	11	t	f	1	3
+15	11	t	t	1	3
+17	1	f	f	1	7
+28	5	f	f	2	6
+28	5	f	t	2	6
+28	5	t	f	2	6
+28	5	t	t	2	6
+28	9	t	f	1	5
+28	9	t	t	1	5
+29	5	f	f	2	6
+29	5	f	t	2	6
+29	5	t	f	2	6
+29	5	t	t	2	6
+29	9	t	f	1	5
+29	9	t	t	1	5
+29	10	f	f	1	1
+30	1	f	t	1	1
+30	1	t	t	1	1
+30	2	f	t	1	1
+30	2	t	t	1	1
+30	3	f	t	1	1
+30	3	t	t	1	1
+30	4	f	t	1	1
+30	4	f	t	2	1
+30	4	t	t	1	1
+30	4	t	t	2	1
+30	9	f	t	1	1
+30	9	t	f	1	5
+30	9	t	t	1	5
+30	10	f	f	1	1
+30	10	f	t	1	1
+30	10	t	t	1	1
+30	11	f	t	1	1
+30	11	t	t	1	1
+30	12	f	t	1	1
+30	13	f	f	1	1
+31	9	t	f	1	5
+31	9	t	t	1	5
+32	9	t	f	1	5
+32	9	t	t	1	5
+33	9	t	f	1	5
+33	9	t	t	1	5
+34	2	f	f	1	1
+34	3	f	f	1	1
+34	9	t	f	1	5
+34	9	t	t	1	5
+34	11	f	f	1	1
+34	12	f	f	1	1
+35	9	t	f	1	5
+35	9	t	t	1	5
+36	9	t	f	1	5
+36	9	t	t	1	5
+37	9	t	f	1	5
+37	9	t	t	1	5
+38	1	t	f	1	1
+38	2	t	f	1	1
+38	3	t	f	1	1
+38	3	t	f	2	1
+38	9	t	f	1	5
+38	9	t	t	1	5
+38	11	t	f	1	1
+38	12	t	f	1	1
+39	9	t	f	1	5
+39	9	t	t	1	5
+40	9	t	f	1	5
+40	9	t	t	1	5
+41	9	t	f	1	5
+41	9	t	t	1	5
+42	2	f	f	1	1
+42	3	f	f	1	1
+42	9	t	f	1	5
+42	9	t	t	1	5
+42	11	f	f	1	1
+42	12	f	f	1	1
+45	5	f	f	2	6
+45	5	f	t	2	6
+45	5	t	f	2	6
+45	5	t	t	2	6
+45	9	t	f	1	5
+45	9	t	t	1	5
+45	10	f	f	1	1
+46	1	f	f	1	8
+47	5	f	f	1	1
+47	5	f	t	1	1
+47	5	t	f	1	1
+47	5	t	t	1	1
+47	6	f	f	1	1
+47	6	f	t	1	1
+47	6	t	f	1	1
+47	6	t	t	1	1
+47	7	f	f	1	1
+47	7	f	f	2	1
+47	7	f	t	1	1
+47	7	f	t	2	1
+47	7	t	f	1	1
+47	7	t	f	2	1
+47	7	t	t	1	1
+47	7	t	t	2	1
+47	8	f	f	1	1
+47	8	f	t	1	1
+47	8	t	f	1	1
+47	8	t	t	1	1
+47	9	t	f	1	5
+47	9	t	t	1	5
+47	10	f	f	2	1
+48	5	f	f	1	1
+48	5	f	t	1	1
+48	5	t	f	1	1
+48	5	t	t	1	1
+48	6	f	f	1	1
+48	6	f	t	1	1
+48	6	t	f	1	1
+48	6	t	t	1	1
+48	7	f	f	1	1
+48	7	f	f	2	1
+48	7	f	t	1	1
+48	7	f	t	2	1
+48	7	t	f	1	1
+48	7	t	f	2	1
+48	7	t	t	1	1
+48	7	t	t	2	1
+48	8	f	f	1	1
+48	8	f	t	1	1
+48	8	t	f	1	1
+48	8	t	t	1	1
+48	9	t	f	1	5
+48	9	t	t	1	5
+48	10	f	f	2	1
+\.
+
+
+COMMIT;
+

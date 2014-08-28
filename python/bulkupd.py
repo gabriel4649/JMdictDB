@@ -48,7 +48,7 @@ def main (cmdargs=sys.argv):
         args = parse_cmdline (cmdargs)
 
           # Open a database connection.
-        cur = jdb.dbOpen (None, **parse_pguri (args.database))
+        cur = jdb.dbOpen (None, **jdb.parse_pguri (args.database))
 
           # Parse the input command file.  The result is a list of
           #  3-tuples of seq, src, edits.  'edits' in turn is a list
@@ -321,7 +321,7 @@ def submit (cur, entr, userid, noaction):
           # removing the superceded entry properly.
 
         L.info ("Submitting %s entry with userid='%s'" 
-                % ("unapproved" if entr.unap else "approved", userid))
+                % ("approved" if action=='a' else "unapproved", userid))
         errs = []
         cur.execute ("BEGIN")
         try: submission (cur, entr, action, errs, is_editor=bool(userid), userid=userid)
@@ -337,27 +337,6 @@ def submit (cur, entr, userid, noaction):
         else:
             L.info ("Doing commit")
             cur.execute("COMMIT")
-
-def parse_pguri (uri_string):
-        '''
-        Parse a Postgresql URI connection string and return a dict() suitable
-        for use as the **kwds argument to psycopg2,connect() function.  For
-        URI syntax see the Postgresql libpq docs for "Connection URIs". 
-        Examples: 
-          postgresql:///jmdict
-          pg://localhost:5678/jmdict 
-        '''
-        import urllib.parse
-        result = urllib.parse.urlparse (uri_string)
-        if result.scheme not in ('postgresql','postgres','pg'):
-            raise ValueError ("Bad scheme name ('%s') in URI: %s" % (result.scheme, uri_string))
-        connection_args = dict (
-            username = result.username,
-            password = result.password,
-            database = result.path[1:],
-            host     = result.hostname,
-            port     = result.port)
-        return connection_args
 
 class ParseError (Exception): pass 
 class DirectiveError (ParseError):
@@ -445,19 +424,21 @@ def parse_cmdline (cmdargs):
                 " pg://[user[:password]@][netloc][:port][/dbname][?param1=value1&...] \n"
                 "Examples: \n"
                 " pg://localhost \n"
-                " pg://remotehost.somewhere.org:5433 \n"
                 " pg://localhost/jmdict \n"
                 " pg:///jmdict \n"
                 " pg://user@localhost \n"
                 " pg://user:mypassword@/jmdict \n"
-                " pg://other@localhost/otherdb?connect_timeout=10&application_name=myapp \n"
+                " pg://remotehost.somewhere.org:8866 \n"
                 "For more details see \"Connection URIs\" in the \"Connections Strings\" "
                 "section of the Postgresql \"libq\" documentation. ")
 
         p.epilog = """\
 Input file syntax:
 
-The input file is a text file and each line contains a directive followed by arguments.  The number and meaning of the arguments depends on the directive.  Blank lines and comments (lines starting with a # character, possibibly preceeded with whitspace) are ignored. 
+The input file is a text file and each line contains a directive followed
+by arguments.  The number and meaning of the arguments depends on the 
+directive.  Blank lines and comments (lines starting with a # character, 
+possibly preceeded with whitspace) are ignored. 
 
 Directives:
     corpus <name>
@@ -478,7 +459,7 @@ Directives:
           and is the sense number containing the items to be acted on.
           If not given, the default is 1.
         <new-value> If operand is kanj, rdng, gloss, comment or refs, this
-          is the text for the item to be added.  If is contains any white-
+          is the text for the item to be added.  If it contains any white-
           space, the entire string should be enclosed in double-quote (")
           characters.  If such a quoted string also contains any double-
           quote (") characters they should be escaped with as backslash (\)

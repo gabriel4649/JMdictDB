@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2012 Stuart McGraw
+#  Copyright (c) 2014 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -68,16 +68,18 @@ import re, collections, shlex, subprocess
 import psycopg2, psycopg2.extensions
 sys.path.append ('/home/stuart/devel/pylib')
 from pylib import dijkstra
+import jdb
 
 class PatchError         (Exception):  pass
 class FileFormatError    (PatchError): pass
 class MultiplePatchError (PatchError): pass
 class NoUpgradePathError (PatchError): pass
 class UnknownLevelError  (PatchError): pass
+class NoPsqlError        (PatchError): pass
 
 def main (args, opts):
         if not opts.list:
-            dbconn = psycopg2.connect (**extract_dbopts (opts, 'keywords'))
+            dbconn = psycopg2.connect (**jdb.parse_pguri (opts.database))
             psycopg2.extensions.register_type (psycopg2.extensions.UNICODE)
             current_patch_level = get_patch_level (dbconn)
             if current_patch_level is None and opts.start is None:
@@ -102,7 +104,7 @@ def main (args, opts):
         else:
             try: upgrade_path = find_upgrade_path (patches, startat, opts.tolevel)
             except PatchError as e: error (str(e))
-            do_upgrade (upgrade_path, opts.apply, opts.verbose)
+            do_upgrade (upgrade_path, opts.database, opts.apply, opts.verbose)
 
 def find_upgrade_path (patches, from_level, to_level):
         transmap = {}
@@ -137,13 +139,12 @@ def list_patches (patches, verbose):
                 with open (patchfile, encoding='utf-8') as f: text = f.read()
                 print (text)
 
-def do_upgrade (upgrade_path, apply, verbose):
+def do_upgrade (upgrade_path, db_uri, apply, verbose):
         for fromlvl, tolvl, patchfile, descr in upgrade_path:
             summary = "%s\nPatch level '%s' to '%s': %s\nDescr: %s" \
                       % ("="*72, fromlvl, tolvl, patchfile, descr)
             print (summary)
-            stat = apply_patch (extract_dbopts (opts, 'psql'),
-                                patchfile, apply, verbose)
+            stat = apply_patch (db_uri, patchfile, apply, verbose)
             if stat: break  # 'stat' will be 0 if patch applied ok, non-zero if not.
 
 def get_patch_level (dbconn):
@@ -192,8 +193,13 @@ def read_patch_file (filename):
         translist = re.findall (r'([0-9a-z_]+)\s*->\s*([0-9a-z_]+)', transtxt, re.I)
         return descr, translist
 
-def apply_patch (dbopts, patchfile, apply, verbose):
-        command = ['psql'] + dbopts + (['-a'] if verbose else []) + ['-f', patchfile]
+def apply_patch (db_uri, patchfile, apply, verbose):
+          # Fix up the database uri parameter so that it is acceptable as 
+          # an argument to psql.  For example, we allow a scheme of "pg" or
+          # nothing which must be changed to "posgresql:" for use with psql.
+          # Easiest way to normalize uri is to parse and then reconstruct it.  
+        uri = jdb.make_pguri (jdb.parse_pguri (db_uri))
+        command = ['psql'] + (['-a'] if verbose else []) + ['-f', patchfile] + [uri]
         if not apply:
             print (' '.join ([shlex.quote(x) for x in command]))
             if verbose:
@@ -202,6 +208,10 @@ def apply_patch (dbopts, patchfile, apply, verbose):
         else:
             try: subprocess.check_call (command)
             except subprocess.CalledProcessError as e: return e.returncode
+            except FileNotFoundError as e:
+                if e.errno == 2 and 'psql' in e.strerror: 
+                    raise NoPsqlError ("psql command not found, please check your PATH")
+                else: raise
         return 0
 
 def dbread (dbconn, sql, args=[]):
@@ -211,27 +221,6 @@ def dbread (dbconn, sql, args=[]):
         rs = c.fetchall()
         c.close()
         return rs
-
-def extract_dbopts (opts, type):
-        # Extract database-specific options from an argparse
-        # namespace ('opts') and return them in a format determined
-        # by the value of 'type':
-        #   "keywords" -- return as a dict suitable for passing
-        #      to the psycopg2.connect() function.
-        #   "psql" -- Return as a list suitable for starting a
-        #      psql subprocess with.
-
-        kw = {}
-        if opts.database: kw['database'] = opts.database
-        if opts.host: kw['host'] = opts.host
-        if opts.user: kw['user'] = opts.user
-        if type == 'keywords': return kw
-        if type == 'psql':
-            optsmap = {'database':'-d', 'host':'-h', 'user':'-U'}
-            optslist = []
-            for k,v in kw.items(): optslist.extend ([optsmap[k], v])
-            return optslist
-        raise ValueError ("Invalid 'type' argument")
 
 def error (msg):
         print (msg, file=sys.stderr)
@@ -243,17 +232,19 @@ from pylib.argparse_formatters import ParagraphFormatter
 def parse_cmdline ():
         v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
                 + " Rev %s (%s)" % __version__
-        p = argparse.ArgumentParser (add_help=False,
+        p = argparse.ArgumentParser (
             formatter_class=ParagraphFormatter,
             description=
-                "Apply a series of patches to a JMdictDB database.",
+                "Apply a series of patches to a JMdictDB database.\n"
+                "Note that the -d (--database) and -t (--tolevel) \"options\" "
+                " are required.",
             epilog=
                 "JMdictDB databases (at least after patch level 9) have a table, "
                 "'dbpatch', that contains the current patch level of the database.  "
                 "This level is a number that represents a series of updates that "
                 "have been made to the database to make its structure the same as "
-                "a database installed from scratch from the currect source code "
-                "the time of the update was produced.  \n\n"
+                "a database installed from scratch from the current source code "
+                "at the time the update was produced.  \n\n"
                 ""
                 "Each patch file contains a single logical change, not cummulative "
                 "changes, so to go from level 2 to level 5, all the patches between "
@@ -265,11 +256,11 @@ def parse_cmdline ():
                 "commands are normally bracketed by BEGIN and COMMIT commands so "
                 "the patch is applied entirely or not at all.  This script will "
                 "stop if a patch fails and not apply any further ones until the "
-                "problem is corrected and the failing patch sucessfully applied."
+                "problem is corrected and the failing patch sucessfully applied.\n\n"
                 ""
-                "On Windows you may need to set an environment variable: " 
+                "On MS Windows you may need to set an environment variable:\n\n" 
                 ""
-                "  set PGCLIENTENCODING=utf8"
+                "  set PGCLIENTENCODING=utf8\n\n"
                 ""
                 "before running patchdb.py to avoid encoding errors when updating. ")
         p.add_argument ("-t", "--tolevel", default=None,
@@ -302,24 +293,24 @@ def parse_cmdline ():
         p.add_argument ("-v", "--verbose", action="store_true", default=False,
             help="Print the patch commands as they are applied.")
 
-        p.add_argument ("-d", "--database", default=None,
-            help="Name of the database to patch.  To help prevent accidents "
-                "there is no default and this option is required if --list "
-                "is not given.")
-        p.add_argument ("-h", "--host", default=None,
-            help="Name host machine database resides on.")
-        p.add_argument ("-u", "--user", default=None,
-            help="Connect to database with this username.")
+        p.add_argument ("-d", "--database", default="pg:///jmdict",
+            help="URI for database to open.  The general form is: \n"
+                "  pg://[user[:password]@][netloc][:port][/dbname][?param1=value1&...] \n"
+                "For more details see \"Connection URIs\" in the \"Connections Strings\" "
+                "section of the Postgresql libq documentation.  "
+                "\n\n"
+                "If the scheme part is not given, \"pg:\" is assumed; if the "
+                "host part is not given, \"localhost\" is assumed. "
+                "(e.g., \"--database jmdict\" is equivalent to \"pg://localhost/jmdict\".)  "
+                "\n\n"
+                "Usually patchdb.py should be run as the \"jmdictdb\" user "
+                "so \"--database //jmdictdb@/jmdict\" will often be appropriate.  ")
 
-        p.add_argument ('--help', action='help', \
-            help="Print this help text and exit.")
         p.add_argument ('--version', action='version', version=v,
             help="Show program's version number and exit.")
         opts = p.parse_args ()
-        if not opts.tolevel and not opts.list:
-            p.error ("The following arguments are required: --tolevel")
-        if not opts.database and not opts.list:
-            p.error ("The following arguments are required: --database")
+        if not (opts.tolevel or opts.database) and not opts.list:
+            p.error ("The --database and --tolevel options are not optional.")
         return [opts.tolevel, opts.patchdir], opts
 
 if __name__ == '__main__':

@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS copos_notes, copos CASCADE;  -- dbpl 19 tables no longer us
 --  in place.
 -------------------------------------------------------------------------------------------
 
+\qecho NOTE: "view does not exist" messages may occur here and are not a problem. 
 DROP VIEW IF EXISTS vconotes, vinflxt, vinflxt_, vinfl, vconj, vcpos CASCADE;
 DROP TABLE IF EXISTS conjo_notes, conj_notes, conotes, conjo, conj CASCADE;
 

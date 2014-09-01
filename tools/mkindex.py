@@ -17,7 +17,7 @@ def main (args, opts):
 
         """
         if (len (args) != 1 or args[0] != 'd' and args[0] != 'c'):
-            print ('Expected one argument which must be "c" or "d"', file=sys.syserr)
+            print ('Expected one argument which must be "c" or "d"', file=sys.stderr)
             sys.exit (1)
         index =[];  fk = []
         for line in sys.stdin:

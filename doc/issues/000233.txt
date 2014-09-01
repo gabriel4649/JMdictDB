@@ -1,0 +1,102 @@
+Title:	xref duplicate key error when trying to approve submission
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart
+
+2014-08-31 19:06:48:00 stuart
+ On 08/31/2014 06:24 PM, René Malenfant rene_malenfant@hotmail.com [jmdict_editors] wrote:
+ > There’s something wrong with a batch of entries related to ヲタ車.
+ > 
+ > Pending edits to オタク cannot be approved because of a database error that appears to
+ > be related to xrefs:
+ >> psycopg2.IntegrityError: duplicate key value violates unique constraint "xref_pkey"
+ >> DETAIL:  Key (entr, sens, xref, xentr, xsens)=(1160253, 1, 1, 1163726, 1) already exists.
+ > 
+ > The error appeared to be related to ヲタ車, as the page for オタク suggested there was a
+ > problem with the incoming x-ref:
+ >> ⇐ see: 2531080 <http://www.edrdg.org/jmdictdb/cgi-bin/entr.py?svc=jmdict&sid=&e=1101691>
+ >>  Exception: list index out of range 1.otaku car  (painted with anime characters,...          
+ > 
+ > So I deleted ヲタ車 because I hoped it would resolve the error, with the intention of
+ > restoring it afterwards.  The entry was successfully deleted, but now it cannot be
+ > restored:
+ >> psycopg2.IntegrityError: duplicate key value violates unique constraint "xref_pkey"
+ >> DETAIL:  Key (entr, sens, xref, xentr, xsens)=(1163722, 1, 2, 1163725, 1) already exists.
+ > After the error is fixed, ヲタ車 should be re-added.
+
+2014-08-31 20:55:00 stuart
+ On Edrdg.org jmdict database (searching for A+R+D, appr+unap):
+   オタク;ヲタク 1034420 A(id=1044413) -> A*(id=1160252) -> A*(1160253) 	
+   ヲタ車【ヲタしゃ】 2531080 D(id=1163722) [shows fwd xref to 1034420 plus 2 other bidir xrefs,
+    no rev xref in 1034420 as expected since 2531080 is marked Deleted.]
+
+ On a jmdict copy made 2014-08-27 installed locally:
+   オタク 1034420 A(id=1044413) -> A*(id=1160252) -> A*(1160253) [shows rev xref to 2531080 
+     ヲタ車 ヲタしゃ (with space char, the【】characters bracketing the reading seem to be gone,
+    probably a side effect of rev 8f604cc07376 (2014-08-22, "web: fix problem with exceptions
+    when displaying xrefs" but that's not germane to current problem.)
+   ヲタ車【ヲタしゃ】 2531080 A(id=1101691) [shows fwd xref to 1034420 plus 2 other bidir xrefs,
+    however the fwd xref to 1034420 shows reading #2 (ヲタク), not オタク.]
+ 
+2014-09-01 10:13:00 stuart
+ In jmdictdb rev 5364426523ef (2014-07-03) replaced function add_filtered_xrefs()
+ in python/lib/jmcgi.py with a version the consolidated forward and reverse xrefs
+ into three groups: forward, back and bi-directional.  The updated code was
+ deployed on Arakawa on 2014-08-24 (I think).  add_filtered_xrefs() is called
+ in by cgi pages that display the contents of entries (entr.py and edconf.py).
+
+ From a debugging session on edsubmit.py when trying to approve the last
+ unapproved entry for 1034420/オタク as Rene reported... 
+
+ Forward xrefs (entr._sens[0]._xref):
+ 0: Xref(TARG=Entr(dfrm=None, chr=None, _sens=[...], _snd=[], seq=1002400,
+  id=219, _krslv=[], srcnote=None, _rdng=[...], _grp=[], unap=False, _hist=[],
+  src=1, _kanj=[...], stat=2, notes=None), direc=1, _xsens=[...], rdng=None,
+  typ=3, xentr=219, kanj=2, xref=None, sens=None, entr=None, xsens=4, notes=None)
+
+ Reverse xrefs (entr._sens[0]._xrer):
+ 0: Xref(TARG=Entr(dfrm=None, chr=None, _sens=[...], _snd=[], seq=2820990,
+  id=1159926, _krslv=[], srcnote='', _rdng=[...], _grp=[], unap=False, _hist=[],
+  src=1, _kanj=[], stat=2, notes=''), direc=-1, rdng=1, typ=3, xentr=1159926,
+  kanj=None, xref=1, sens=1, entr=1160253, xsens=1, notes=None)
+
+ 1: Xref(TARG=Entr(dfrm=None, chr=None, _sens=[...], _snd=[], seq=2229380,
+  id=1100451, _krslv=[], srcnote='', _rdng=[...], _grp=[], unap=False, _hist=[],
+  src=1, _kanj=[], stat=2, notes=''), direc=-1, rdng=1, typ=3, xentr=1100451,
+  kanj=None, xref=2, sens=1, entr=1160253, xsens=1, notes=None)
+
+ [...7 more elided...]
+
+ Note that the xrefs all have a .direc attribute.  This was added
+ by jmcgi.py:add_filtered_xrefs() when it was called in edconf.py. 
+ However, that function is supposed to create a new list (.XREF) of
+ "directional" xrefs on each sens *without* modifying the existing
+ xrefs in ._xref and ._xrer.  But when building the .XREF list, it
+ used references to the actual Xref() instances on the ._xref and
+ ._xrer lists and modified them without making copies thus modifying
+ them on the ._xref and ._xrer lists as well.  The added .direct
+ attribute which is harmless; the big problem comes because
+ add_filtered_xrefs() swaps the attributes the specify the xref's
+ "from" and "to" direction (.entr,.sens and .xentr,.xsens) to allow
+ the template to use the same attributes for display regardless of
+ the direction.  It is that swapping that is doing the damage.
+ The corrupted xrefs are then passed to edsubmit.py where they may
+ or may not cause a failure when edsubmit tries to add the entry
+ to the database.
+
+ Modified jmcgi.py:add_filtered_xrefs() to make copies of the Xref()
+ objects before modifying them for the .XREF list.
+
+ All entries having xrefs that have been submitted since the Arakawa's
+ cgi files were updated with the problem code:
+   -rw-r--r-- 1 jwb jwb  45989 Aug 23 07:41 jmcgi.py
+ (times on Arakawa seem to be UTC) should be checked for corrupted
+ xrefs.  The xref corruption would not necessarily produce an error
+ at submission nor is it limited to approvals.
+
+ Updates made via the bulkupt.py program should not be affected (since 
+ the problem was in the cgi code).
+

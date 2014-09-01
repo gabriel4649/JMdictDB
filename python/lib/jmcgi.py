@@ -20,7 +20,8 @@
 __version__ = ('$Revision: $'[11:-2],
                '$Date: $'[7:-11]);
 
-import sys, re, cgi, urllib.request, urllib.parse, urllib.error, os, os.path, random, time, http.cookies, datetime, time
+import sys, re, cgi, urllib.request, urllib.parse, urllib.error, os, os.path, \
+        random, time, http.cookies, datetime, time, copy
 import jdb, tal, fmt
 
 def parseform (readonly=False):
@@ -649,11 +650,12 @@ def add_filtered_xrefs (entries, rem_unap=False):
                   # s.XREF.  Some of these may be bi-directional (have
                   # xrefs on the target that refer back to us) but we will
                   # indentify those later to fixup the FWD flag to BIDIR.
-                s.XREF = [setdir (x, FWD) for x in s._xref if cond (e, x)]
+                s.XREF = [setdir (copy.deepcopy(x), FWD) for x in s._xref if cond (e, x)]
                   # Make dict of all the fwd xrefs.
                 fwdrefs = {(x.entr,x.sens,x.xentr,x.xsens):x for x in s.XREF}
                 for x in s._xrer:
                     if not cond (e, x): continue
+                    x = copy.deepcopy (x)
                       # Because we will display the reverse xref with the
                       # same code that displays forward xrefs (that is, it 
                       # creates a link to the entry using x.xentr and x.xsens),

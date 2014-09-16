@@ -115,13 +115,20 @@ def main (args, opts):
           # true.  These Entr objects can be used to display info
           # about the xref target or source such as seq#, reading
           # or kanji.  See jdb.augment_xrefs() for details.
+          # Note that <xrefs> and <xrers> below contain references 
+          # to the xrefs on the entries; thus the augmentation done
+          # by jdb.augment_xrefs() alters the xref objects on those 
+          # entries. 
         if pentr:
-            xrefs = jdb.collect_xrefs ([pentr])
-            if xrefs: jdb.augment_xrefs (cur, xrefs)
-            xrers = jdb.collect_xrefs ([pentr], rev=True)
-            if xrers: jdb.augment_xrefs (cur, xrers, rev=True)
-        xrefs = jdb.collect_xrefs ([entr])
-        if xrefs: jdb.augment_xrefs (cur, refs)
+            x = jdb.collect_xrefs ([pentr])
+            if x: jdb.augment_xrefs (cur, x)
+              # Although we don't allow editing of an entry's reverse
+              # xref, we still augment them (on the parent entry)
+              # because we will display them.
+            x = jdb.collect_xrefs ([pentr], rev=True)
+            if x: jdb.augment_xrefs (cur, x, rev=True)
+        x = jdb.collect_xrefs ([entr])
+        if x: jdb.augment_xrefs (cur, x)
 
         if delete:
               # Ignore any content changes made by the submitter by
@@ -159,7 +166,7 @@ def main (args, opts):
 
                   # Copy the reverse xrefs that are on pentr to entr,
                   # removing any that are no longer valid because they
-                  # refer to senses , readings ot kanji no longer present
+                  # refer to senses , readings or kanji no longer present
                   # on the edited entry.  Note that these have already
                   # been augmented above.
                 nuked_xrers = realign_xrers (entr, pentr)

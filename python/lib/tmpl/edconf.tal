@@ -226,19 +226,20 @@
                 <td colspan="2">Cross references:</td>
                 </tr>
               <tr tal:condition="s/XREF" tal:repeat="x s/XREF">
-                <td>&nbsp;</td>
-                <td>
-                  <span tal:replace="python:TALdecode(x.direc,1,'\u21D2',0,'\u21D4',-1,'\u21D0')"></span>
-                  <span tal:replace="structure python:TALabbr('XREF',x.typ)">xref-type</span>:
-                  <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${x/xentr}" tal:content="x/TARG/seq">seq-num</a>
-                  <span tal:condition="x/TARG/_kanj" tal:replace="python:TALkrtxt(x.TARG,'_kanj',x.kanj)">xref-kanj</span>
-                  <span tal:condition="python:TALattrand(x,'kanj','rdng')" tal:omit-tag="">【</span>
-                  <span tal:condition="x/TARG/_rdng" tal:replace="python:TALkrtxt(x.TARG,'_rdng',x.rdng)">xref-rdng</span>
-                  <span tal:condition="python:TALattrand(x,'kanj','rdng')" tal:omit-tag="">】</span>
-                  <span tal:replace="x/xsens">s#</span
-                  >.<span tal:replace="python:TALtxts(x.TARG._sens[x.xsens-1],'_gloss')"></span>
-                  <span tal:condition="x/notes" replace="x/notes">xref-note</span>
-                  </td>
+                  <td>&nbsp;</td>
+                  <td tal:define="knum python:TALdecode(x.direc,1,x.kanj,0,x.kanj,-1,1); 
+                                  rnum python:TALdecode(x.direc,1,x.rdng,0,x.rdng,-1,1)">
+                    <span tal:replace="python:TALdecode(x.direc,1,'\u21D2',0,'\u21D4',-1,'\u21D0')"></span>
+                    <span tal:replace="structure python:TALabbr('XREF',x.typ)">xref-type</span>:
+                    <a tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;e=${x/xentr}" tal:content="x/TARG/seq">seq-num</a>
+                    <span tal:condition="x/TARG/_kanj" tal:replace="python:TALkrtxt(x.TARG,'_kanj',knum)">xref-kanj</span>
+                    <span tal:condition="python:TALattrand(x,'kanj','rdng')" tal:omit-tag="">【</span>
+                    <span tal:condition="x/TARG/_rdng" tal:replace="python:TALkrtxt(x.TARG,'_rdng',rnum)">xref-rdng</span>
+                    <span tal:condition="python:TALattrand(x,'kanj','rdng')" tal:omit-tag="">】</span>
+                    <span tal:replace="x/xsens">s#</span
+                    >.<span tal:replace="python:TALtxts(x.TARG._sens[x.xsens-1],'_gloss')"></span>
+                    <span tal:condition="x/notes" replace="x/notes">xref-note</span>
+                    </td>
                 </tr>
               <tr tal:condition="s/_xrslv">
                 <td colspan="2">Unresolved cross references:</td>

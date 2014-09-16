@@ -1,0 +1,35 @@
+Title:	DB patches update chain broken between 010.sql and 013.sql
+Stat:	open
+Disp:	
+Prio:	medium
+Cats:	bug
+Reqtrs:	
+AssdTo:	stuart
+
+2014-09-14 21:27:00 stuart
+ Received email:
+
+ On 09/14/2014 10:20 PM, Jim Breen wrote:
+ > I've just come across a situation which looks like
+ > a recently introduced bug.
+ > 
+ > The sequence is:
+ > 
+ > (a) I proposed a new entry (2823340) in which I put a
+ > cross-reference ("[see=1836350]") In the display of this
+ > entry it says "=> see: 1836350 腰気 【 こしけ 】 1.mucous discharge..."
+ > 
+ > (b) I looked at 1836350 and decided it needed some work, in particular
+ > the order of the surface forms should be changed from "腰気;帯下"
+ > to "帯下;腰気". When I did that and went to the next screen, I got:
+ > 
+ > "<= see: 2823340 Exception: list index out of range 【 Exception: list
+ > index out of range 】 1.leukorrhoea ......".
+
+2014-09-16 06:41:00 stuart
+ The template file used to generate the edit confirmation page, edconf.tal, 
+ is supposed to be nearly identical to entry display page entr.tal.  But
+ when I fixed the exception problem in entr.tal in rev 8f604cc07376 (2014-08-22)
+ I forgot to make the same fix to edconf.tal.
+
+

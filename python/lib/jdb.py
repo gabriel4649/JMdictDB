@@ -1045,6 +1045,14 @@ def freq_inv (entr):
         #    kanji text, reading text, or both, and may not uniquely
         #    identify a single entry.
         #
+        # Each xref object links two two entries (or more acurately, 
+        # specific senses of two entries) identified by their id
+        # numbers in the attributes .entr and .xentr.  We view an
+        # xref as being "from" .entr and "to" .xentr.  A "forward"
+        # xref (with respect to an entry) is one whose .entr value
+        # is equal to the entry's .id value.  A "reverse" xref is
+        # one whose .xentr value is the same as the entry's .id.
+        # 
         # There are actually three flavours of xref objects:
         #
         # "ordinary" (or unqualified) xrefs represent only the info
@@ -1106,6 +1114,12 @@ def augment_xrefs (dbh, xrefs, rev=False):
         # have only a subset of sub items: they have no _inf, _freq,
         # _hist, _lsrc, _pos, _misc, _fld, _xrer, _restr,
         # _stagr, _stagk, _entrsnd, _edngsnd, lists.
+        #
+        # If <rev> is false, the .TARG entr object will be for the
+        # "forward" xref; that is, its id will be the same as the xref's
+        # .xentr value.  If <rev> is true then .TARG's entr object will
+        # be for the reverse xref; its id will be the same as the xref's
+        # .entr value.
 
         global Debug; start = time()
 

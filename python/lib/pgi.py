@@ -162,10 +162,11 @@ def parse_corpus_opt (sopt, roottag, datestamp, srctarg=None, kw=None):
         """
         Return a corpus id number to use in entr.src and (possibly)
         create a corpus (aka kwsrc) record in the output .pgi file.
-        A kwsrc record has five fields: 'id' (id number), 'kw'
-        (keyword), 'dt' (datetime stamp), 'seq' (name of a Postgresql
-        sequence that will be used to supply sequence numbers for
-        entries in this corpus) and srct (id number of row in kwsrct).
+        A kwsrc record has seven fields: 'id' (id number), 'kw'
+        (keyword), 'dt' (datetime stamp), 'sincr' (increment to
+        use for the Postgresql sequence for this corpus it it needs
+        to be created), 'smin' (minimum sequence value), 'smax'
+        (maximum sequence value), and srct (id number of row in kwsrct).
         We derive four fields from information in the 'sopt' string,
         the 'roottag' string, and the 'datestamp' string parameters.
         'sopt' is contains one to four comma separated fields as
@@ -210,13 +211,13 @@ def parse_corpus_opt (sopt, roottag, datestamp, srctarg=None, kw=None):
               #   Should we raise something more informative and specific?
             corpid = int(a[0])
             if len (a) == 1:
-                return jdb.Obj (id=corpid)
+                return corpid, None
             if len (a) > 1 and a[1]: corpnm = a[1]
             if len (a) > 2 and a[2]: corpdt = a[2]
-            if len (a) > 3 and a[3]: sinc = a[3]
-            if len (a) > 4 and a[4]: smin = a[4]
-            if len (a) > 5 and a[5]: smax = a[5]
-            if len (a) > 6 and a[6]: srct = a[6]
+            if len (a) > 3 and a[3]: sinc = int(a[3])
+            if len (a) > 4 and a[4]: smin = int(a[4])
+            if len (a) > 5 and a[5]: smax = int(a[5])
+            if len (a) > 6 and a[6]: srct = int(a[6])
 
         if not corpnm: corpnm = roottag.lower()
         if not corpid:

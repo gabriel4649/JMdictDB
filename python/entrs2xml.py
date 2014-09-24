@@ -41,7 +41,7 @@ def main (args, opts):
           # If no "--root" option was supplied, choose a default based
           # on the value of the "--compat" option.
         if not opts.root:
-            if opts.compat == 'jmnedict': opts.root = 'JMnedict'
+            if opts.compat in ('jmnedict','jmneold'): opts.root = 'JMnedict'
             else: opts.root = 'JMdict'
 
         outf = None
@@ -51,6 +51,7 @@ def main (args, opts):
               # pythonpath (sys.path) directories.
             if opts.compat == 'jmdict': dtd = "dtd-jmdict.xml"
             elif opts.compat == 'jmnedict': dtd = "dtd-jmnedict.xml"
+            elif opts.compat == 'jmneold': dtd = "dtd-jmneold.xml"
             else: dtd = "dtd-jmdict-ex.xml"
             dir = jdb.find_in_syspath (dtd)
             dtdfn = dir + "/" + dtd             # Fully qualified dtd file name.
@@ -348,8 +349,8 @@ Arguments:
 
         opts, args = p.parse_args ()
         if len (args) > 1: p.error ("%d arguments given, expected at most one.")
-        if opts.compat and opts.compat!='jmdict' and  opts.compat!='jmnedict':
-            p.error ('--compat option value must be either "jmdict" or "jmnedict".')
+        if opts.compat and opts.compat not in ('jmdict','jmnedict','jmneold'):
+            p.error ('--compat option must be one of: "jmdict", "jmnedict" or "jmneold".')
         return args, opts
 
 if __name__ == '__main__':

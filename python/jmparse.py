@@ -50,7 +50,9 @@ def main (args, opts):
         eid = 0
         jmparser = jmxml.Jmparser (KW, logfile=logfile)
         for typ, entr in jmparser.parse_xmlfile (inpf, opts.begin, opts.count,
-                                                 opts.extract, xlang, toptag=True):
+                                                 opts.extract, xlang, toptag=True,
+                                                 seqnum_init=opts.sequence[0],
+                                                 seqnum_incr=opts.sequence[1]):
             if typ == 'entry':
                 eid += 1
                 if not ((eid - 1) % 1800):
@@ -76,7 +78,11 @@ def main (args, opts):
         sys.stdout.write ('\n')
         pgi.finalize (tmpfiles, opts.output, not opts.keep)
 
-
+def parse_seq_opt (s):
+        q = [int(x or 1) for x in s.split (',')]
+        if len (q) < 2: q.append (1)
+        return q[:2]
+ 
 from optparse import OptionParser, OptionGroup
 from pylib.optparse_formatters import IndentedHelpFormatterWithNL
 
@@ -119,9 +125,10 @@ Arguments:
             dest="corpus", default=None,
             help="""\
         CORPUS defines a corpus record (in table kwsrc) to which all
-        entries in the input file will be assigned.  It is set of one
-        to four comma separated items.  Spaces are not permitted within
-        the string.
+        entries in the input file will be assigned.  It consists of
+        up to seven comma separated items.  Spaces are not permitted
+        within the string.  Items can be left out with two adjacent
+        commas.
 
         The CORPUS items are:
 
@@ -134,16 +141,17 @@ Arguments:
 
           dt -- The corpus' date in the form: "yyyy-mm-dd".
 
-          seq -- The name of a Postgresql sequence that will be used
-             to assign sequence numbers of entries of this corpus when
-             those entries have no explicit sequence number.  Note that
-             this does not affect entries loaded by jmdict which always
-             assigns explicit seq numbers to entries it generates.
-             There are five predefined sequences:
-                jmdict_seq, jmnedict_seq, examples_seq, test_seq, seq.
-             You can create additional sequences if required.
+          sinc -- The increment value of the Postgresql sequence
+              associated with this corpus.  (The seqence will be 
+              created automatically with the name "seq_"+<kw>.
 
-          srct -- The id number 
+          smin -- The minimum value of the Postgresql sequence
+              associated with this corpus.
+
+          smax -- The maximum value of the Postgresql sequence
+              associated with this corpus.
+
+          srct -- The corpus type id number (see table kwsrct). 
 
         [N.B. that the corpus table ("kwsrc") also has two other columns,
         'descr' and 'notes' but jmparse provides no means for setting
@@ -217,6 +225,18 @@ Arguments:
             help='Extract "(lit: ...)" text from glosses into separate '
                 '"lit" glosess.')
 
+        p.add_option ("-q", "--sequence", default='1,1',
+            dest="sequence", 
+            help="If the input XML does not contain entry sequence numbers "
+                "in <ent_seq> tags, sequence numbers will be be generated "
+                "based on this option with should consist of two comma-"
+                "separated numbers with no spaces.  The first is the sequence "
+                "number to be used for the first entry.  The second is the "
+                "increment between entries.  Either or both may be omitted "
+                "in which case the missing number will be taken as 1.  This "
+                "option has no effect on entries with a sequence number in "
+                "the XML.  ")
+
         p.add_option ("-k", "--keep", default=False,
             dest="keep", action="store_true",
             help="Do not delete temporary files after program exits.")
@@ -261,6 +281,8 @@ Arguments:
         opts, args = p.parse_args ()
         if len (args) > 1: p.error ("%d arguments given, expected at most one" % len(args))
         if len (args) < 1: args = ["JMdict"]
+        try: opts.sequence = parse_seq_opt (opts.sequence)
+        except (ValueError, IndexError, TypeError): p.error ("Bad --sequence (-q) option value.") 
         return args, opts
 
 if __name__ == '__main__':

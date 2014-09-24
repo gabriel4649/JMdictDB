@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2006-2012 Stuart McGraw
+#  Copyright (c) 2006-2014 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -36,15 +36,19 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
         Generate an XML description of entry 'entr'.
         Parameters:
           entr -- An entry object (such as return by entrList()).
-          compat -- If false, generate XML that completely
-                describes the entry using an enhanced version
-                of the jmdict DTD.
-                If "jmdict", generate XML that uses the standard
-                JMdict DTD but looses information that is not
-                representable with that DTD.
-                If "jmnedict", generate XML that uses the standard
-                JMnedict DTD but looses information that is not
-                representable with that DTD.
+          compat -- 
+                false: generate XML that completely
+                  describes the entry using an enhanced version
+                  of the jmdict DTD.  Otherwise:
+                "jmdict": generate XML that uses the standard
+                  JMdict DTD but looses information that is not
+                  representable with that DTD.
+                "jmnedict": generate XML that uses the standard
+                  (post 2014-10) JMnedict DTD that include seq 
+                  numbers and xrefs.
+                "jmneold": generate XML that uses the old-style
+                  (pre 2014-10) JMnedict DTD that does not include 
+                  seq numbers and xrefs.
           genhists -- If true, generate <audit> elements in the XML.
                 Otherwise, don't.
           genxrefs -- If true generate <xref> elements.  If false
@@ -87,8 +91,8 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
         fmt.extend (info (entr, compat, genhists, last_imported=last_imported))
 
         senss = getattr (entr, '_sens', [])
-        if compat == 'jmnedict':
-            for x in senss: fmt.extend (trans (x))
+        if compat == 'jmnedict' or compat == 'jmneold':
+            for x in senss: fmt.extend (trans (x, compat, entr.src, genxrefs))
         else:
             last_pos = [] if implicit_pos else None
             for x in senss:
@@ -189,21 +193,7 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
             fmt.extend (kwds (s, '_pos', 'POS', 'pos'))
             if prev_pos is not None: prev_pos[:] = this_pos
 
-        xr = []
-        xrfs = getattr (s, '_xref', None)
-        if xrfs and genxrefs:
-            xr.extend (xrefs (xrfs, (not compat) and src))
-        xrfs = getattr (s, '_xrslv', None)
-        if xrfs and genxrefs:
-            xr.extend (xrslvs (xrfs, (not compat) and src))
-        if compat:
-              # The legacy jmdict dtd requires <xref> elements
-              # to preceed <ant> elements.  We sort on the second
-              # character of the xml string which will be "x" for
-              # "<xref>..." and "a" for "<ant>...".  Python sorts
-              # are stable so preexisting order within the xref
-              # and ant groups will be maintained..
-            xr.sort (key=lambda x:x[1], reverse=True)
+        xr = sens_xrefs (sens, src, compat)
         fmt.extend (xr)
 
         fmt.extend (kwds (s, '_fld', 'FLD', 'field'))
@@ -223,12 +213,12 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
         fmt.append ('</sense>')
         return fmt
 
-def trans (s):
+def trans (sens, compat, src, genxrefs):
         """Format a jmnedict trans element.
         s -- A sense object."""
 
         fmt = []
-        nlist = getattr (s, '_misc', [])
+        nlist = getattr (sens, '_misc', [])
         kwtab = getattr (XKW, 'NAME_TYPE')
         for x in nlist:
                # 'kwtab' contains only 'misc' keywords that are used
@@ -237,10 +227,13 @@ def trans (s):
              try: fmt.append ('<name_type>&%s;</name_type>' % kwtab[x.kw].kw)
              except KeyError: pass
         eng_id = KW.LANG['eng'].id
-        for g in getattr (s, '_gloss', []):
+        for g in getattr (sens, '_gloss', []):
             lang = getattr (g, 'g_lang', eng_id)
             lang_attr = (' xml:lang="%s"' % XKW.LANG[lang].kw) if lang != eng_id else ''
             fmt.append ('<trans_det%s>%s</trans_det>' % (lang_attr, esc(g.txt)))
+        if genxrefs:
+            xr = sens_xrefs (sens, src, compat)
+            fmt.extend (xr)
         if fmt:
             fmt.insert (0, '<trans>')
             fmt.append ('</trans>')
@@ -281,6 +274,27 @@ def lsrc (x):
         if not x.txt: fmt.append ('<lsource%s/>' % attr)
         else: fmt.append ('<lsource%s>%s</lsource>' % (attr, esc(x.txt)))
         return fmt
+
+
+def sens_xrefs (sens, src, compat):
+        # Format xrefs and unresolved xrefs for a specific sense.
+        if compat == 'jmneold': return []
+        xr = []
+        xrfs = getattr (sens, '_xref', None)
+        if xrfs:
+            xr.extend (xrefs (xrfs, (not compat) and src))
+        xrfs = getattr (sens, '_xrslv', None)
+        if xrfs:
+            xr.extend (xrslvs (xrfs, (not compat) and src))
+        if compat:
+              # The legacy jmdict dtd requires <xref> elements
+              # to preceed <ant> elements.  We sort on the second
+              # character of the xml string which will be "x" for
+              # "<xref>..." and "a" for "<ant>...".  Python sorts
+              # are stable so preexisting order within the xref
+              # and ant groups will be maintained..
+            xr.sort (key=lambda x:x[1], reverse=True)
+        return xr
 
 def xrefs (xrefs, src):
         # Generate xml for xrefs.  If there is an xref to every
@@ -508,7 +522,7 @@ def entrhdr (entr, compat=None):
             dfrmattr = (' dfrm="%d"' % entr.dfrm) if dfrm else ""
             fmt = ["<entry%s%s%s%s>" % (idattr, statattr, apprattr, dfrmattr)]
         else: fmt = ['<entry>']
-        if getattr (entr, 'seq', None) and compat != 'jmnedict':
+        if getattr (entr, 'seq', None) and compat != 'jmneold':
             fmt.append ('<ent_seq>%d</ent_seq>' % entr.seq)
         if getattr (entr, 'src', None) and not compat:
             src = jdb.KW.SRC[entr.src].kw

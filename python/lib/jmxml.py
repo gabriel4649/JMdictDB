@@ -108,8 +108,10 @@ class Jmparser (object):
 
     def parse_xmlfile (self,
         inpf,           # (file) An open jmdict/jmnedict XML file..
-        startseq=None,  # (int) Skip until this entry seen, or None
-                        #   to start at first entry.
+        startseq=None,  # (int) Skip until an entry with this seq
+                        #   number is seen, or None to start at first
+                        #   entry.  See also parameters seqnum_init
+                        #   and seqnum_incr below.
         elimit=None,    # (int) Maximum number of entries to process.
         xlit=False,     # (bool) Extract "lit" info from glosses.
         xlang=None,     # (list) List of lang id's to limit extracted
@@ -128,24 +130,28 @@ class Jmparser (object):
                         #   expected that <grpdef> elements will occur
                         #   in the XML that define corpora before they
                         #   are referenced by <group> elements.
-        toptag=False):  # (bool) Make first item retuned by iterator
+        toptag=False,   # (bool) Make first item returned by iterator
                         #   a string giving the name of the top-level
                         #   element.
+        seqnum_init=1,  # If an entry does not contain a <ent_seq> tag
+        seqnum_incr=1): #   giving its sequence number, calculate a 
+                        #   seq number for it from the formula:
+                        #     seqnum_init + (seqnum_incr * entrnum)
+                        #   where entrnum is the ordinal position of 
+                        #   the entry in the file, starting at 0.  For
+                        #   example, to get jmdict-like sequence numbers
+                        #   use seqnum_init=1000000 and seqnum_incr=10.
 
         etiter = iter(ElementTree.iterparse( inpf, ("start","end")))
         event, root = next(etiter)
         if toptag: yield 'root', root.tag
-        if corp_dict is None: corp_dict   = {}
+        if corp_dict is None: corp_dict = {}
         if grpdefs is None: grpdefs = {}
         elist=[];  count=0;  entrnum=0
         for event, elem in etiter:
             if elem.tag not in ['entry', 'grpdef', 'corpus']: continue
             if event == "start":
                 lineno = getattr (inpf, 'lineno', None)
-                  # Only jmdict has "ent_seq" elements so if parsing jmnedici
-                  # we will use the the ordinal position of the entry in the
-                  # file, which we maintain by counting entries with 'entrnum',
-                  # as the seq number.
                 if elem.tag == 'entry': entrnum += 1
                 continue
 
@@ -164,7 +170,11 @@ class Jmparser (object):
 
               # From this point on elem.tag is 'entr'...
             prevseq = self.seq
-            self.seq = seq = int (elem.findtext ('ent_seq') or entrnum)
+              # Old-style (pre 2014-10) jmnedict xml does not have "ent_seq"
+              # elements so we will generate a synthetic seq_number based on
+              # the ordinal position of the entry in the file ('entrnum').
+            self.seq = seq = int (elem.findtext ('ent_seq') 
+                                  or ((entrnum-1) * seqnum_incr + seqnum_init))
             if prevseq and seq <= prevseq:
                 self.warn (" (line %d): Sequence less than preceeding sequence" % lineno)
             if not startseq or seq >= startseq:
@@ -742,6 +752,8 @@ def extract (fin, seqs_wanted, dtd=False, fullscan=False, keepends=False):
            ordered, it may be necessary to use 'fullscan' to force
            scanning to the end of the file to find all the requested
            entries. This can take a long time for large files.
+
+        keepends -- retain any trailing whitespace.
         """
 
           # Break the seqs_wanted listed into two lists: a list of
@@ -771,7 +783,8 @@ def extract (fin, seqs_wanted, dtd=False, fullscan=False, keepends=False):
 
             if scanning == 'copy' or  scanning == 'nocopy':
                 if scanning == 'copy':
-                    if keepends: rettxt.append (line.strip())
+                      #FIXME? should we strip() when keepends is true?
+                    if keepends: rettxt.append (line.strip()) 
                     else: rettxt.append (line.rstrip())
                 if line.lstrip().startswith ('</entry>'):
                     if count <= 0 and (not seqs or (seqs[-1] < seq and not fullscan)): break
@@ -792,7 +805,8 @@ def extract (fin, seqs_wanted, dtd=False, fullscan=False, keepends=False):
                     if n < 0: raise IOError ('Invalid <ent_seq> element, line %d', lnnum)
                     seq = int (ln[9:n])
                 else:
-                    seq += 1    # JMnedict has no seq numbers, so just count entries.
+                    seq += 1  # Old-style (pre 2014-10) JMnedict has no seq
+                              #  numbers, so just count entries.
                 count = wanted (seq, seqs, counts, count)
                 if count > 0:
                     if keepends:
@@ -819,8 +833,6 @@ def extract (fin, seqs_wanted, dtd=False, fullscan=False, keepends=False):
                         toplev = line.strip()[1:-1]
                         yield toplev, rettxt;  rettxt = []
                     scanning = 'between_entries'
-
-
 
             else:
                 raise ValueError (scanning)

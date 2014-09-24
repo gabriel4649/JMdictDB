@@ -1,0 +1,74 @@
+Title:	Loaded jmnedict into edrdg database.
+Stat:	open
+Disp:	
+Prio:	high
+Cats:	dev
+Reqtrs:	
+AssdTo:	stuart
+
+2014-09-23 10:13:00 stuart
+ Jim B wants to load jmnedict into the main Edrdg database.  
+ He indicated that he wants to start using sequence numbers 
+ and xrefs in the jmnedict xml.
+
+2014-09-28 12:03:00 stuart
+ Review of the toolchain:
+
+  jmparse.py (parse xml file and produce data for load into db.)
+   * Will accept jmnedict xml with or without sequence numbers.
+   * If no sequence number in input will assign sequence starting 
+     at 1 and with an increment of 1.
+
+  entrs2xml.py (read database and produce xml file.)
+   * Jmnedict compatibility mode output does not include
+     seq numbers or xrefs.
+
+ While testing discovered problems with the documention and
+ implementation of the --corpus option of jmparse.py and 
+ lib/pgi.py.
+
+ Changes made:
+    python/jmparse.py
+      Add option --sequence (-q) to specify sequence
+       number initial and increment values for entries that
+       don't have a seq number.
+      Fix problem with documentation and parsing of the --corpus 
+       option.
+
+    python/lib/jmxml.py
+      Accept seqnum_init and seqnum_incr arguments
+       passed from jmparse.py and use them when generating seq
+       numbers for entries without.
+
+   python/lib/pgi.py -- 
+      Fix multiple errors in function parse_corpus_opt().
+
+    python/entrs2xml.py 
+      Allow --compat=jmneold that behaves as --compat=jmnedict
+       did formerly.  --compat=jmnedict now writes xml with
+       <ent_seq> and <xref> elements.
+    
+    python/lib/fmtxml.py
+      Change name of "jmnedict" compatibility mode to "jmneold"
+      Add new "jmnedict" compatibility mode that is like 
+      "jmneold" except:
+       * produces <ent_seq> elements.
+       * produces xrefs in the <trans> element.
+
+    Makefile
+      Parse jmnedict with --sequence=3000000,10 option to give
+      old-style jmnedict entries different default sequence numbers
+      (was formerly equivalent to --sequence=1,1).
+
+ Did quick test of importing oldstyle jmnedict xml file with just a 
+ few entries, creating some xrefs and exporting to new style xml.
+ Reimported and exported with no significant changes.
+
+ Still to do:
+  Rename old DTD python/lib/dtd-jmnedict.xml to dtd-jmneold.xml.
+  New DTD for jmnedict compatibility in python/lib/dtd-jmnedict.xml
+  (will get from Jim B.)
+
+  Check tests; fix any broken and add tests to test for new-style
+  xml processing.
+

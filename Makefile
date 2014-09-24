@@ -265,7 +265,7 @@ data/jmnedict.xml:
 	mv JMnedict.xml data/jmnedict.xml
 
 data/jmnedict.pgi: data/jmnedict.xml
-	cd python && $(PYTHON) jmparse.py -l ../data/jmnedict.log -o ../data/jmnedict.pgi ../data/jmnedict.xml
+	cd python && $(PYTHON) jmparse.py -q3000000,10 -l ../data/jmnedict.log -o ../data/jmnedict.pgi ../data/jmnedict.xml
 
 data/jmnedict.dmp: data/jmnedict.pgi
 	cd python && $(PYTHON) jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/jmnedict.dmp ../data/jmnedict.pgi

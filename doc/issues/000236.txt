@@ -1,0 +1,42 @@
+Title:	No xrefs appearing in jmdictdb history records or jmdict.xml
+Stat:	open
+Disp:	
+Prio:	critical
+Cats:	dev
+Reqtrs:	rene
+AssdTo:	stuart
+
+2014-09-29 12:43:00 stuart
+ On 09/29/2014 11:14 AM, René Malenfant to JMdict_editors list wrote:
+ > There appear to be another couple of problems with the xref system.
+ > 
+ > First, not all xrefs appear to be exported to WWWJDIC.  For example,
+ > there is an xref on sense 2 of 無念 that does not appear (as in the
+ > images below).
+ > 
+ > Second, I just changed the xref on 有念 from[see=1530770・無念[1,2]] to
+ > [see=1530770・無念[2]], and although the change appears to have been
+ > recorded by the system, it is not recorded in the changelog, which
+ > makes it look as if I did an empty edit.
+
+ and
+
+ On 09/29/2014 11:17 AM, René Malenfan to jmdict_editors wrote:
+ > Actually, I don’t see any xrefs on WWWJDIC at all at the moment.
+
+2014-09-29 13:32:00 stuart
+ Downloaded copy of JMdict.xml from edrdg.org, entries that are supposed
+ to have xrefs don't have any in the XML.  Jean-Luc also reported this
+ in a message to the JMdict editors list.
+
+ Problem is in changes I made to python/lib/fmtxml.py in 
+   http://www.edrdg.org/~smg/cgi-bin/hgweb-jmdictdb.cgi/rev/31bc2439e124
+ Extracted the code to process jmdict xrefs in a sense into a separate
+ function since it is now used by both jmdict sense function and jmnedict
+ trans function and in processes erroneously replaced the correct variable
+ 's' (a sense object) with 'sens'.  Unfortuately 'sens' is defined (it is
+ a function) so no error was generated but because it had no 'xref' attribute,
+ neither were any xrefs.
+
+ Correction pushed to Arakawa. 
+

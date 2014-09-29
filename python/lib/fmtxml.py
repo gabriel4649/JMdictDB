@@ -193,7 +193,7 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
             fmt.extend (kwds (s, '_pos', 'POS', 'pos'))
             if prev_pos is not None: prev_pos[:] = this_pos
 
-        xr = sens_xrefs (sens, src, compat)
+        xr = sens_xrefs (s, src, compat)
         fmt.extend (xr)
 
         fmt.extend (kwds (s, '_fld', 'FLD', 'field'))

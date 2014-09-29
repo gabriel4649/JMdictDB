@@ -1,4 +1,4 @@
-Title:	DB patches update chain broken between 010.sql and 013.sql
+Title:	"Exception: list index out of range" on edconf.py web page
 Stat:	open
 Disp:	
 Prio:	medium

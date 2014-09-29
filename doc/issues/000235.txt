@@ -1,5 +1,5 @@
-Title:	Loaded jmnedict into edrdg database.
-Stat:	open
+Title:	Load jmnedict into edrdg database.
+Stat:	done
 Disp:	
 Prio:	high
 Cats:	dev
@@ -71,4 +71,121 @@ AssdTo:	stuart
 
   Check tests; fix any broken and add tests to test for new-style
   xml processing.
+
+2014-09-24 21:03:00 stuart
+ Do a trial run of loading jmnedict into live database.  Want to
+ get an idea how long it will take to load without dropping indexes
+ and fk constraints.
+
+ Download jmnedict.pgi, 94591651 bytes, 2014-09-24/11:09 (utc) from 
+ ~jwb/stuart/jmdictdb/data/.  Also made and downloaded copy of
+ current jmdict database (jmdict-20140925.dmp).
+
+   make newdb
+   make activate
+   pg_restore -U jmdictdb -d jmdict data/jmdict-20140925.dmp
+   python/jmload.py -u jmdictdb -d jmdict -o data/jmnedict-20140924.dmp data/jmnedict-20140924.pgi
+   psql -U jmdictdb -d jmdict <data/jmnedict-20140924.dmp
+   psql -d jmdict -f pg/syncseq.sql
+ 
+ The last two steps took abouut 5m30s.
+ Repeated the procedure a couple more times while simutaneously
+ submitting an new entry via the jMdictDB web interface.  As expected,
+ a new entry (or edit to an old entry which also creates a new "entr"
+ row in the database) made after jmload.py runs but before the psql
+ load will result in the psql load failing with a duplicate key error.
+ After psql starts, the submission web page hangs after clicking the
+ submit button.  And after the psql load finishes but before syncseq.sql  
+ is run, the submitter gets a duplicate key error.
+
+2014-09-25 11:12:00 stuart
+ Sent following email to Jim:
+  > I did a test load last night and it took less than six minutes.
+  > So much for my ability to estimate how long things will take! :-)
+  > 
+  > The process I tested and I recommend is the following.  I'll
+  > assume you ran jmparse.py on the jmnedict xml file that you
+  > want to load and that you have the resulting jmnedict.pgi file 
+  > in jmdictdb/data/.  If the filename or location are different
+  > then just make the appropriate adjustments below.
+  > 
+  >   cd <your working copy of jmdictdb>
+  > 
+  >     # Get a current backup in case something goes wrong...
+  >   pg_dump -Fc jmdict >jmdict-2014-09-26.backup (or whatever name you want.)
+  > 
+  >     # Create the loadable dump file, jmnedict.dmp, from the pgi file...
+  >   python/jmload.py -u jmdictdb -d jmdict -o data/jmnedict.dmp data/jmnedict.pgi
+  > 
+  >     # load the data into the jmdict database...
+  >   psql -U jmdictdb -d jmdict <data/jmnedict.dmp
+  > 
+  >     # Update the internal sequence number generators (they give out
+  >     # new id numbers when new entries are created and don't know yet
+  >     # about all the new id numbers you just added).  Takes only a
+  >     # second or two to complete...
+  >   psql -d jmdict -f pg/syncseq.sql
+  > 
+  > A question is, do you want to shutdown access to the database 
+  > while loading?  One of the to-do items is to create an easy-to-use
+  > "kill switch" that would, when activated, result is users getting
+  > a "sorry, site is down for maintenance" message.  But it is still
+  > on the to-do list.
+  > 
+  > If someone accesses the database during the load to search or look
+  > at an entry, there will be no problem.
+  > 
+  > The only problem would be if they made a submission (actually click
+  > the submit button on the edit confirmation page) between the time 
+  > you run jmload.py and when the syncseq.sql procedure (last step)
+  > completes.  
+  > 
+  > If they click "submit" after you've used jmload.py to create the
+  > .dmp file but before you've started the "psql ... <data/jmnedict.dmp"
+  > command:
+  > 
+  > * Your "psql ... <data/jmnedict.dmp" will fail with a key error.
+  >   Because the entire load is wrapped in a transaction, no changes
+  >   will have been made to the database.  Rerun the process starting
+  >   from the jmload.py step (because jmload will need to recalculate 
+  >   the id numbers including that last submission).
+  > 
+  > If they click "submit" after you've started the "psql ... <data/-
+  > jmnedict.dmp" command:
+  > 
+  > * The submitter's web page will not respond (the load locks tables
+  >   that are needed for submission) and the page may or may not eventually
+  >   time out depending on browser and settings.
+  > 
+  > If they click "submit" after the "psql ... <data/jmnedict.dmp" 
+  > command has completed but before you've run the "psql ... syncseq.sql"
+  > command:
+  > 
+  > * They will get a key error when they submit.  If they go back
+  >   to the submission page and click submit again after you've 
+  >   run the "psql ... syncseq.sql" (which takes only a couple of
+  >   seconds to complete), their submission will complete normally.
+  > 
+  > Of course there's always the possibility that I'm overlooking
+  > something and some other unpleasant result could occur but that's 
+  > what the backup was for.-
+  > 
+  > If you want to deny access to the system to prevent any of the  
+  > above possibilities you could temporarily rename the these files 
+  > in the Apache cgi-bin/jmdictdb/ directory:
+  > 
+  >   edform.py, edconf.py, edsubmit.py.
+  > 
+  > Or alternatively, replace them with cgi scripts that generate a
+  > "temporarily down for maintenance" message.
+
+2014-09-25 17:51:00 stuart
+ Got an email from jwb reporting that the jmnedict load had been 
+ completed with no problems.
+
+2014-09-25 20:58:00 stuart
+ Email sent to Edict list by jwb reporting that jmnedict was now online.
+  https://groups.yahoo.com/neo/groups/edict-jmdict/conversations/messages/5331.
+
+
 

@@ -296,7 +296,7 @@ AssdTo:	stuart
 
  Problem and fix documented in IS-232.
 
-2014-08-24:18:13:00 stuart
+2014-08-24 18:13:00 stuart
  Two problem conjugating kanji of vs-i verbs.
 
  1. The view "vinfl" which does the conjugating was incorrect.  If a

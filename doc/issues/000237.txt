@@ -1,0 +1,76 @@
+Title:	No xrefs appearing in jmdictdb history records or jmdict.xml
+Stat:	open
+Disp:	
+Prio:	normal
+Cats:	bug
+Reqtrs:	jwb
+AssdTo:	stuart
+
+2014-10-07 09:18:00 stuart
+ On 10/06/2014 11:29 PM, Jim Breen wrote:
+ > Hi Stuart (and Curtis),
+ > I've CCed this to Curtis, as he has exposed the problem.
+ > 
+ > - on 24 Sep Curtis put in an entry (露聊かも - 2824260)
+ > which I approved later that day.
+ > 
+ > - on 6 Oct Curtis added a cross-reference to sense 3 of
+ > 1560070 (露) pointing to 2824260.
+ > 
+ > - an hour or so later I saw that 1560070 had been put into
+ > "submit" mode, but the diff didn't show any changes (I didn't
+ > notice that the xref was new, in fact there was no way for me to tell
+ > that.) As the edit looked null, I rejected it, and emailed Curtis about it.
+ > 
+ > - Curtis has gone back to it and added a comment, but
+ > presumable the xref was there already as he intended.
+ > 
+ > - if you go to 2824260 there is no indication of an incoming
+ > xref.
+ > 
+ > So the questions really are "why didn't the xref show up in the
+ > 'diff', and why is there no incoming xref showing for the target?".
+
+2014-10-07 09:34:00 stuart
+ Answer to second question is that the behavior is expected.
+ An xref from an unapproved entry to an approved one won't
+ appear as a reverse xref in the approved entry because that
+ would imply the xref *was* approved.  After the unapproved
+ entry is approved the entry that is the target of the xref
+ will show the reverse xref.  
+
+ First question (no diff in the unapproved entry showing the
+ added xref) seems likely a bug.
+
+2014-10-07 12:05:00 stuart
+ Installed copy of curent jmdict database locally.
+ There are three version of entry 1560070:
+  jmdict 1560070 A  P 露 つゆ dew/tears/(not) a bit... {id:1159395} 
+  jmdict 1560070 R  P 露 つゆ dew/tears/(not) a bit... {id:1904625} 
+  jmdict 1560070 A* P 露 つゆ dew/tears/(not) a bit... {id:1904633} 
+ Since parent entry {id:1159395} exists, I did same edit to it
+ that Curtis did, add xref to 2824260: 
+  [see=2824260・露聊かも・つゆいささかも[1]]
+ Tried multiple variations (seq number only, with and without sens
+ number, with and without kanji/reading, etc) but in all cases the
+ xref addition appeared in the diffs on the confirmation page, and
+ was also there after submission.
+
+ Did the same (without actually subbmitting) on the live EDRDG 
+ jmdictdb and there is no diff on the confirmation page showing
+ the xref addition. 
+
+ My jmdictdb software is locally at rev 6610ce69d795 2014-09-29 
+ ("No xrefs appearing in jmdictdb history records or jmdict.xml
+ (IS-236)").  That revision updated the library module, fmtxml.py,
+ that generates the xml diffs.
+ My repo on Arakawa is at same rev.
+ Jim's repo on Arakawa is at same rev.
+
+ However, diffing /usr/local/apache2/jmdictdb/lib/fmtxml.py (the 
+ copy used by the jmdictdb cgi scripts) and the copy in my repo
+ shows that the running version does not have the fix made in the
+ latest rev applied.
+
+ Email to Jim asking him to do a "make web".
+

@@ -226,14 +226,14 @@ def trans (sens, compat, src, genxrefs):
                # encountering other (eg jmdict) keywords.  (IS-225)
              try: fmt.append ('<name_type>&%s;</name_type>' % kwtab[x.kw].kw)
              except KeyError: pass
+        if genxrefs:
+            xr = sens_xrefs (sens, src, compat)
+            fmt.extend (xr)
         eng_id = KW.LANG['eng'].id
         for g in getattr (sens, '_gloss', []):
             lang = getattr (g, 'g_lang', eng_id)
             lang_attr = (' xml:lang="%s"' % XKW.LANG[lang].kw) if lang != eng_id else ''
             fmt.append ('<trans_det%s>%s</trans_det>' % (lang_attr, esc(g.txt)))
-        if genxrefs:
-            xr = sens_xrefs (sens, src, compat)
-            fmt.extend (xr)
         if fmt:
             fmt.insert (0, '<trans>')
             fmt.append ('</trans>')

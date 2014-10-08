@@ -8,11 +8,14 @@
 -->
 <!ELEMENT JMnedict (entry*)>
 <!--                                                                   -->
-<!ELEMENT entry (k_ele*, r_ele+, trans+)*>
+<!ELEMENT entry (ent_seq, k_ele*, r_ele+, trans+)*>
 	<!-- Entries consist of kanji elements, reading elements 
 	name translation elements. Each entry must have at 
 	least one reading element and one sense element. Others are optional.
 	-->
+<!ELEMENT ent_seq (#PCDATA)>
+    <!-- A unique numeric sequence number for each entry
+    -->
 <!ELEMENT k_ele (keb, ke_inf*, ke_pri*)>
 	<!-- The kanji element, or in its absence, the reading element, is 
 	the defining component of each entry.
@@ -73,12 +76,21 @@
 	the reading. -->
 <!ELEMENT re_pri (#PCDATA)>
 	<!-- See the comment on ke_pri above. -->
-<!ELEMENT trans (name_type*, trans_det*)>
+<!ELEMENT trans (name_type*, xref*, trans_det*)>
 	<!-- The trans element will record the translational equivalent
 	of the Japanese name, plus other related information. 
 	-->
 <!ELEMENT name_type (#PCDATA)>
 	<!-- The type of name, recorded in the appropriate entity codes.
+	-->
+<!ELEMENT xref (#PCDATA)*>
+    <!-- This element is used to indicate a cross-reference to another
+    entry with a similar or related meaning or sense. The content of
+    this element is typically a keb or reb element in another entry. In some
+    cases a keb will be followed by a reb and/or a sense number to provide
+    a precise target for the cross-reference. Where this happens, a JIS
+    "centre-dot" (0x2126) is placed between the components of the 
+    cross-reference.
 	-->
 <!ELEMENT trans_det (#PCDATA)>
 	<!-- The actual translations of the name, usually as a transcription

@@ -52,9 +52,9 @@ def main (cmdargs=sys.argv):
 
           # Parse the input command file.  The result is a list of
           #  3-tuples of seq, src, edits.  'edits' in turn is a list
-          #  of Cmd() instances that describe changes to be made to
-          #  the entry identified by seq,src.  parse_cmdfile() returns
-          #  None if any errors occured.  
+          #  of Cmd() instances that describe a sequence of changes
+          #  to be made to the entry identified by seq,src. 
+          #  parse_cmdfile() returns None if any errors occured.  
         if not args.filename: f = sys.stdin
         else: f = open (args.filename)
         cmds = parse_cmdfile (f, args.corpus)
@@ -137,6 +137,7 @@ class Cmd:
       # add/repl/del kanj/rdng [oldtxt] [newtxt]
       # add/repl/del gloss[sens] [oldtxt] [newtxt]
       # add/repl/del pos/misc/fld/dial[sens] [oldkw] [newkw]
+      # del entr junktxt
     def __init__ (self, cmd, txt):
         # cmd -- The command directive: one of "add", "repl", "del".
         # txt -- remainder of input file line after removing directive.
@@ -148,7 +149,7 @@ class Cmd:
         self.new = None         # Value to add or use for replacement in entry.
         self.old = None         # Value to delete or replace in entry.
         pattern = r'''
-          ((?:kanj)|(?:rdng)|(?:gloss)|(?:pos)|(?:misc)|(?:fld)|(?:dial)|(?:comment)|(?:refs))
+          ((?:entr)|(?:kanj)|(?:rdng)|(?:gloss)|(?:pos)|(?:misc)|(?:fld)|(?:dial)|(?:comment)|(?:refs))
           \s*
           (?:\[([0-9]+)\])?    # Optional sense number (in square brackets).
           \s+
@@ -177,6 +178,8 @@ class Cmd:
             if not self.sens: self.sens = 1 #raise NoSensError (self.operand)
         if self.operand in ('comment','refs'):
             if cmd != 'add': raise NotAddError (cmd)
+        if self.operand == 'entr':
+            if cmd != 'del': raise NotDelError (cmd)
         if self.operand in ('pos','misc','fld','dial'):
             kwds = getattr (jdb.KW, self.operand.upper()) 
             for kw in self.old, self.new: 
@@ -239,6 +242,8 @@ def doedit (entr, hist, cmd):
             tlist = getattr (getattr (entr, '_sens')[cmd.sens-1], '_'+cmd.operand)
             new, old = kw2id (cmd.operand, cmd.new, cmd.old)
             edit (tlist, 'kw', old, new, cmd.operand, cmd.old, cmd.new)
+        elif cmd.operand == 'entr':
+            if cmd.cmd == 'del': entr.stat = jdb.KW.STAT['D'].id
         elif cmd.operand == 'comment': hist.notes = cmd.new
         elif cmd.operand == 'refs': hist.refs = cmd.new
         else: raise ValueError (cmd.operand)
@@ -351,6 +356,8 @@ class ReplValError (ParseError):
     def __str__(self): return "Replacement value not allowed with '%s' directive" % self.args[0]
 class NotAddError (ParseError):
     def __str__(self): return "Can only 'add' comments or refs, '%s' not allowed" % self.args[0]
+class NotDelError (ParseError):
+    def __str__(self): return "Can only 'del' entries, '%s' not allowed" % self.args[0]
 class KwError (ParseError):
     def __str__(self): return "'%s' not a valid value for '%s'" % self.args
 
@@ -472,6 +479,9 @@ Directives:
          in the current entry and removed.  An error will be generated and
          no changes made to the current entry if no text or keyword matching
          <old-value> is found.
+    del entr xxx
+         The entry with the current seq number will be deleted. "xxx" is 
+         some arbitrary text required to keep the parser happy.
     repl <operand> [<sense#>] <new-value> <old-value>
          <operand> and <sense#> have the same meanings as for the "add"
          directive except that "comment" and "refs" are not valid.
@@ -495,6 +505,9 @@ Usage example:
     repl pos[2] adj-i adj-ix
     repl pos[3] adj-i adj-ix
     repl pos[4] adj-i adj-ix
+    seq 1882070
+    add comment "deleted because ..."
+    del entr xxx
 
 Missing capabilities: 
 There is no way at present to do the following:

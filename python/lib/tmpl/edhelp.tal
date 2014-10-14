@@ -581,12 +581,14 @@
           (1) "lng" is an optional three-letter language code from ISO-639-2.
           See <a href="#kw_lang">language keywords</a> for a full list.
           If not given, default is "eng" (English).<br/>
-          (2) "wp" optional and is either <samp>w</samp> (wasei),
-          <samp>p</samp> (partial), or <samp>wp</samp> (wasei and partial).
+          (2) "wp:" optional and is either <samp>w:</samp> (wasei),
+          <samp>p:</samp> (partial), or <samp>wp:</samp> (wasei and partial).
           A slash character is used to separate the "lng" and "wp" arguments
-          and should not be given unless both arguments are given. <br/>
+          and should not be given unless both arguments are given.  The ":"
+          is required.<br/>
           (3) "text" is optional.  If given it must be enclosed in quotes (")
-          if it contains spaces or commas.  Otherwise quotes are not needed.
+          if it contains spaces, commas, slashes or other special characters.
+          Otherwise quotes are not needed.
           </td>
         <td class="syntable">[lsrc=por:]<br/>[lsrc=ger:Arbeit]<br/>[lsrc=eng/w:"eye mate"]<br/>
           [lsrc=eng/w:outerior]<br/>[lsrc=ice]</td>

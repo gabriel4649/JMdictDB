@@ -17,7 +17,8 @@
 #
 #    make JMDICTFILE=JMdict "LANGOPT=-g fre"
 #
-# Command used to run your Python interpreter.
+# Command used to run your Python interpreter.  Note that the
+# JMdictDB code no longer runs under Python2.
 PYTHON = python3
 
 # The JMdict file to download.  Choice is usually between JMdict 
@@ -52,7 +53,7 @@ DBACT = jmdict
 # created database is moved to production status...
 DBOLD = jmold
 
-# Name of database used for general testing and experimentation.
+# Name of database used for running code tests.
 DBTEST = jmtest
 
 # Postgresql user that will be used to create the jmdictdb
@@ -66,7 +67,7 @@ USER = jmdictdb
 # should match.
 RO_USER = jmdictdbv
 
-# A postgresql user that has create database privs.
+# A postgresql user that has superuser database privs.
 PG_SUPER = postgres
 
 # Name of the machine hosting the Postgresql database server.
@@ -82,7 +83,7 @@ HOST =
 # want to change the definition of WEBROOT below.  Alternatively, you 
 # can configure your web server to serve the cgi files directly from 
 # the development working directory and not use the "web" target in 
-# this makefile install the cgi files to WEBROOT.
+# this makefile (which installs the cgi files to WEBROOT).
 WEBROOT = $(wildcard ~/public_html)
 CGI_DIR = $(WEBROOT)/cgi-bin
 LIB_DIR = $(WEBROOT)/lib
@@ -157,29 +158,38 @@ WEB_TAL	= $(addprefix $(LIB_DIR)/tmpl/,$(TAL_FILES))
 all:
 	@echo 'You must supply an explicit target with this makefile:'
 	@echo
-	@echo '  newdb -- Create a blank jmnew database.'
-	@echo '  jmnew -- Create a jmnew database with jmdictdb objects.'
+	@echo '  newdb -- Create an empty database named "jmnew".'
+	@echo '  jmnew -- Create a database named "jmnew" with jmdictdb tables and '
+	@echo '    jmdictdb objects created but no data loaded.'
 	@echo
 	@echo '  data/jmdict.xml -- Get latest jmdict xml file from Monash.'
 	@echo '  data/jmdict.pgi -- Create intermediate file from jmdict.xml file.'
-	@echo '  data/jmdict.dmp -- Create Postgres load file from intermediate file.'
-	@echo '  loadjm -- Load jmdict into existing database jmnew.'
+	@echo '  loadjm -- Load jmdict into existing database "jmnew".'
 	@echo
 	@echo '  data/jmnedict.xml -- Get latest jmnedict xml file from Monash.'
 	@echo '  data/jmnedict.pgi -- Create intermediate file from jmdict.xml file.'
-	@echo '  data/jmnedict.dmp -- Create Postgres load file from intermediate file.'
-	@echo '  loadne -- Load jmnedict into existing database jmnew.'
+	@echo '  loadne -- Load jmnedict into existing database "jmnew".'
 	@echo
 	@echo '  data/examples.txt -- Get latest Examples file from Monash.'
 	@echo '  data/examples.pgi -- Create intermediate file from examples.xml file.'
-	@echo '  data/examples.dmp -- Create Postgres load file from intermediate file.'
-	@echo '  loadex -- Load examples into the existing database jmnew.'
+	@echo '  loadex -- Load examples into the existing database "jmnew".'
 	@echo
-	@echo '  loadall -- Initialize database jmnew and load jmdict, jmnedict, examples.'
+	@echo '  data/kanjidic2.xml -- Get latest kanjidic2.xml file from Monash.'
+	@echo '  data/kanjidic2.pgi -- Create intermediate file from examples.xml file.'
+	@echo '  loadkd -- Load kanjidic into the existing database "jmnew".'
+	@echo '   * WARNING: kanjidic2 support is usable but incomplete.
 	@echo
-	@echo '  activate -- Move installed database to production status.'
+	@echo '  loadall -- Initialize database "jmnew" and load jmdict, jmnedict'
+	@echo '     and examples.'
+	@echo 
+	@echo '  activate -- Rename the "jmnew" database to "jmdict".'
 	@echo '  web -- Install cgi and other web files to the appropriate places.'
 	@echo '  dist -- Make development snapshot distribution file.'
+	@echo 
+	@echo '  * NOTE: "make loadall" will do all needed database initialization.'
+	@echo '  To load a subset of loadall (eg only loadjm and loadne), you should' 
+	@echo '  do "make jmnew", then "make loadjm", "make loadne", etc as desired, 
+	@echo '  then the last step should be "make postload".
 
 #------ Create jmsess and jmdictdb users ---------------------------------
 
@@ -215,7 +225,7 @@ newdb:
 
 jmnew: newdb
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f reload.sql
-	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
+	cd pg && psql $(PG_HOST) -U $(PG_SUPER) -d $(DB) -f postload.sql
 
 #------ Move installation database to active ----------------------------
 
@@ -232,6 +242,18 @@ activate_test:
 	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'drop database if exists $(DBTEST)'
 	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'alter database $(DB) rename to $(DBTEST)'
 
+#------ Save foreign key and index definitions --------------------------
+
+pgsubdir:
+	cd pg && $(MAKE)
+
+#------ Restore foreign key and index definitions -----------------------
+
+postload:
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f fkcreate.sql
+	cd pg && psql $(PG_HOST) -U $(PG_SUPER) -d $(DB) -f postload.sql
+	@echo 'Remember to check the log files for warning messages.'
+
 #------ Load JMdict -----------------------------------------------------
 
 data/jmdict.xml: 
@@ -243,37 +265,32 @@ data/jmdict.xml:
 data/jmdict.pgi: data/jmdict.xml
 	cd python && $(PYTHON) jmparse.py $(LANGOPT) -y -l ../data/jmdict.log -o ../data/jmdict.pgi ../data/jmdict.xml
 
-data/jmdict.dmp: data/jmdict.pgi
+loadjm: data/jmdict.pgi pgsubdir
 	cd python && $(PYTHON) jmload.py $(JM_HOST) -u $(USER) -d $(DB) -i 1 -o ../data/jmdict.dmp ../data/jmdict.pgi
-
-loadjm: data/jmdict.dmp
-	-cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f fkdrop.sql
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/jmdict.dmp
-	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
+	rm data/jmdict.dmp
 	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) >../data/jmdict_xresolv.log
-	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -c "vacuum analyze xref"
-	@echo 'Remember to check the log files for warning messages.'
 
 #------ Load JMnedict ----------------------------------------------------
 
 # Assumes the jmdict has been loaded into database already.
 
-data/jmnedict.xml: 
+data/jmnedict.xml:
 	rm -f JMnedict.xml.gz
 	wget ftp://ftp.monash.edu.au/pub/nihongo/JMnedict.xml.gz
 	gzip -d JMnedict.xml.gz
 	mv JMnedict.xml data/jmnedict.xml
 
 data/jmnedict.pgi: data/jmnedict.xml
-	cd python && $(PYTHON) jmparse.py -q3000000,10 -l ../data/jmnedict.log -o ../data/jmnedict.pgi ../data/jmnedict.xml
+	cd python && $(PYTHON) jmparse.py -q5000000,1 -l ../data/jmnedict.log -o ../data/jmnedict.pgi ../data/jmnedict.xml
 
-data/jmnedict.dmp: data/jmnedict.pgi
+loadne: data/jmnedict.pgi  pgsubdir
 	cd python && $(PYTHON) jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/jmnedict.dmp ../data/jmnedict.pgi
-
-loadne: data/jmnedict.dmp
-	-cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f fkdrop.sql
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/jmnedict.dmp
-	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
+	rm data/jmnedict.dmp
+	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) >../data/jmnedict_xresolv.log
 
 #------ Load examples ---------------------------------------------------
 
@@ -286,19 +303,17 @@ data/examples.txt:
 data/examples.pgi: data/examples.txt 
 	cd python && $(PYTHON) exparse.py -o ../data/examples.pgi -l ../data/examples.log ../data/examples.txt
 
-data/examples.dmp: data/examples.pgi 
+loadex: data/examples.pgi  pgsubdir
 	cd python && $(PYTHON) jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/examples.dmp ../data/examples.pgi
-
-loadex: data/examples.dmp 
-	-cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f fkdrop.sql
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/examples.dmp
-	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
+	rm data/examples.dmp
 	# The following command is commented out because of the long time
 	# it can take to run.  It may be run manually after 'make' finishes.
 	#cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -s3 -t1 >../data/examples_xresolv.log
 	#cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -c 'vacuum analyze xref;'
 
-#------ Load kanjidic2,xml ---------------------------------------------------
+#------ Load kanjidic2.xml ---------------------------------------------------
 
 data/kanjidic2.xml: 
 	rm -f kanjidic2.xml.gz
@@ -309,35 +324,27 @@ data/kanjidic2.xml:
 data/kanjidic2.pgi: data/kanjidic2.xml 
 	cd python && $(PYTHON) kdparse.py -g en -o ../data/kanjidic2.pgi -l ../data/kanjidic2.log ../data/kanjidic2.xml 
 
-data/kanjidic2.dmp: data/kanjidic2.pgi 
+loadkd: data/kanjidic2.pgi  pgsubdir
 	cd python && $(PYTHON) jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/kanjidic2.dmp ../data/kanjidic2.pgi
-
-loadkd: data/kanjidic2.dmp 
-	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f fkdrop.sql
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/kanjidic2.dmp
-	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
+	rm data/kanjidic2.dmp
 
 #------ Load jmdict, jmnedict, examples -------------------------------------
 
-# Note that we cannot reuse jmnedict.dmp or examples.dmp since the
-# the number of entries may be different in the freshly loaded jmdict
-# set, invalidating the starting id numbers in the other .dmp files.
-
-loadall: jmnew data/jmdict.dmp data/jmnedict.pgi data/examples.pgi 
-	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f drpindex.sql
-	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/jmdict.dmp
-
-	cd python && $(PYTHON) jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/examples.dmp ../data/examples.pgi
-	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/examples.dmp
-
-	cd python && $(PYTHON) jmload.py $(JM_HOST) -u $(USER) -d $(DB) -o ../data/jmnedict.dmp ../data/jmnedict.pgi
-	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/jmnedict.dmp
-
-	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f postload.sql
-	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) >../data/jmdict_xresolv.log
-	#cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -s3 >../data/examples_xresolv.log
+loadall: jmnew loadjm loadne loadex postload
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -c "vacuum analyze xref"
 	@echo 'Remember to check the log files for warning messages.'
+
+reloadall: loadclean jmnew loadjm loadne loadex postload
+	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -c "vacuum analyze xref"
+	@echo 'Remember to check the log files for warning messages.'
+
+loadclean:
+	-cd data && rm jmdict.dmp jmdict.pgi jmdict.log jmdict_xresolv.log\
+         jmnedict.dmp jmnedict.pgi jmnedict.log jmnedict_xresolv.log \
+         examples.dmp examples.pgi examples.log \
+         #kanjdic2.dmp kanjdic2.pgi kanjdic2.log
 
 #------ Move cgi files to web server location --------------------------
 
@@ -360,6 +367,8 @@ $(WEB_TAL): $(LIB_DIR)/%: python/lib/%
 	install -pm 644 $? $@
 
 #------ Other ----------------------------------------------------------
+
+.DELETE_ON_ERROR:
 
 subdirs:
 	cd pg/ && $(MAKE)

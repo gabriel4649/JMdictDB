@@ -5,6 +5,5 @@
 -- as '-U username' depending on exiting defaults.
 
 \set ON_ERROR_STOP 1
-\i mkindex.sql
 \i syncseq.sql
 vacuum analyze

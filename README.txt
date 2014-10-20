@@ -150,7 +150,7 @@ be configured to run Python CGI scripts.
 
 JMdictDB requires Python 3; Python 2 is no longer supported
 although the last working Python 2 version is available in 
-the code repository with the tag, "py2-branch".
+the code repository in the branch, "py2-maint".
 
 Some additional Python modules are also needed.  Version 
 numbers are the versions currently in use in the author's 
@@ -280,6 +280,12 @@ any working database in the event of a problem.  A
 make target, "activate" is provided to move the newly
 loaded database to "jmdict".
 
+No provision is made for concurrent access while loading
+data; we assume that only the access to the database being
+loaded is by the procedures used for the loading.  Use of 
+databases other than the one being loaded can continue as
+usual during loading.
+
 1. Choose passswords to use for Postgreql users "jmdictdb"
    and "jmdictdbv".
 
@@ -358,7 +364,7 @@ loaded database to "jmdict".
    to-date.  You can generally skip this step if you 
    are running unmodified copy of the source (since 
    an attempt is made to keep the distributed support 
-   files updated) but must do this if you've changes
+   files updated) but must do this if you've changed
    any of the support files' dependencies.
 
 8. In the top level directory, run "make" which won't
@@ -375,46 +381,74 @@ loaded database to "jmdict".
    machine, run:
 
 	make loadall
-	make activate
-
-   To load JMdict only, run make thrice with the targets:
-
-	make jmnew
-	make loadjm
-	make activate
 
    Similarly but on a Windows machine:
 
         make DBLOCALE=japanese loadall
-        make activate
-   or 
-	make DBLOCALE=japanese jmnew
-	make DBLOCALE=japanese loadjm
-	make activate
+
+   "make loadall" will create a database named "jmnew", download
+   the needed XML files, then parse and load the JMdict, JMnedict,
+   and Examples files into it and recreate the necessary foreign
+   key constraints and indexes which were disabled during loading
+   for performance reasons.  If any of the prerequistite files
+   are already present (such as the .pgi files produced by the 
+   parsers), it will use them.  To force a complete reloading
+   from scratch (except for the fetching which will be done only 
+   if the needed XML file are not present), use
+
+        make reloadall
+
+   To load a different set of corpora or in a diffent order
+   you'll need to do the steps explicitly.  For example, to
+   load JMdict and Kanjidic2, only, run make four times with
+   the targets:
+
+	make jmnew       # Create empty jmdictdb database.
+	make loadjm      # Load JMdict 
+        make loadkd      # Load Kanjidic2
+        make postload    # Re-create constraints and indices.
+
+   In particular "make postload" should be run last to finalize
+   a sequence of "make loadxx" operations.
+ 
+   After the above "make" commands have completed sucessfully
+   you will have a database named "jmnew" which can be examined
+   to confirm the data is as expected.
+
+   The "make" commands generate a lot of output and it is
+   normal to see as fair number of warning and a few error
+   messages while "make" is running -- files and database
+   objects are often deleted or recreated to be sure that
+   the environment is in a consistent state, and messages
+   are produced if the objects are already gone or present.
+   Unfortunately it is hard to tell what is a problem and
+   what is normal short of experience running the install
+   a number of times.
 
    Some of the more significant Makefile targets are:
 
    jmnew:
 	Create a new database named "jmnew" with all
-	tables needed and ready to load data into.
+	jmdictdb tables and other database objects needed
+        and ready to load data into.
+
+   newdb: 
+        Create an cnmpletely empty database named "jmnew".
+        (This can be useful if one wants to restore a 
+        jmdictdb database previously saved with pg_dump.)
 
    data/jmdict.xml: 
 	Download the current JMdict_e.gz file from the 
 	Moash FTP site, and unpack it.
 
    data/jmdict.pgi: 
-	Do target jmdict.xml if neccessary, then parse
+	Make target jmdict.xml if neccessary, then parse
 	the jmdict.xml file, generating a rebasable 
 	jmdict.pgi file and jmdict.log.
 
-   data/jmdict.dmp:
-	Do target jmdict.pgi if neccessary, then create
-	a Postgresql .dmp file with the entry id numbers
-	resolved.  
-
    loadjm:
-	Do target jmdict.dmp if neccessary, then load
-	the .dmp file into preexisting database "jmnew"
+	Make target jmdict.pgi if neccessary, then load
+	the .pgi file into preexisting database "jmnew"
 	and do all the post-load tasks like creating
 	indexes, resolving xref's etc. After this, the
 	database should be fully loaded and functional,
@@ -430,17 +464,20 @@ loaded database to "jmdict".
 	"jmdict", making it accessible to all the tools
 	and cgi scripts.
 
-   There are similar sets of targets for loading JMnedict
-   and the Examples file.  Note that these targets expect 
-   to load their data into the "jmnew" database and thus
-   should be executed before doing a "make activate".  Or
-   alternatively, you can have them load directly into the
-   active database (with the risk of corrupting it) by 
-   doing, for example, "make DB=jmdict loadex" 
+   There are similar sets of data/* and load* targets for
+   loading JMnedict, the Examples file and Kanjidic2 (though
+   kanjidic2 support, while usable, is still incomplete).
+   Note that these targets expect to load their data into
+   the "jmnew" database and thus should be executed before
+   doing a "make activate".  Or alternatively, you can have
+   them load directly into the active database (and losing
+   the opportunity to validate the data before bringing it
+   to the production database) by doing, for example,
+   "make DB=jmdict loadex" 
 
    Note that currently, the Examples file cross references 
    are not resolved to jmdict xrefs as part of the Makefile
-   directed install, because the api display and query 
+   directed install because the api display and query 
    functions are not able to handle the large number of
    xrefs produced (1M+ total with some entries such as the
    particle "ha" having over 100K referring to it.)
@@ -459,10 +496,12 @@ loaded database to "jmdict".
 
 	make activate
 
-   which will rename any existing "jmdict" database to "jmold", 
-   and rename the "jmnew" database to "jmdict", thus making
-   it the active database.  There must be no active users in
-   any of these database or the commands will fail.
+   which will rename any existing "jmdict" database to "jmold"
+   (any existing "jmold" database is deleted), and rename the
+   "jmnew" database to "jmdict", thus making it the active
+   database and the one accessed by default by the cgi web
+   pages.  There must be no active users in any of these
+   databases or the "make activate" command will fail.
 
 10. If you plan on using the cgi files with a web server, 
    double check the settings in the Makefile (see step #1) 
@@ -509,8 +548,8 @@ http://www.csse.monash.edu.au/~jwb/edict_doc.html
 [*3] 
 On Windows the Postgresql password file is typically in
 "C:\Documents and Settings\<your_windows_user_name>\ -
-  Application Data\Postgresql\pgpass.conf".  For obvious
-reasons we will refer simply to "~/.pgpass" in this document.
+  Application Data\Postgresql\pgpass.conf".  For brevity
+we will refer simply to "~/.pgpass" in this document.
 
 [*4]
 For more information on usernames, passwords, and the .pgpass

@@ -8,10 +8,8 @@
 -- as '-U username' depending on exiting defaults.
 
 \i mktables.sql
-\i conj.sql
 \i loadkw.sql
 \i loadconj.sql
 \i mkviews.sql
-\i mkviews2.sql
 \i mkperms.sql
 

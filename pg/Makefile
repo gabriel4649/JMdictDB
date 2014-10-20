@@ -1,12 +1,18 @@
-all: mkindex.sql drpindex.sql mkperms.sql
-
 PYTHON = python3
 
-mkindex.sql: mktables.sql
-	 ../tools/mkindex.py c <mktables.sql >mkindex.sql
+all: fkcreate.sql mkperms.sql
 
-drpindex.sql: mktables.sql
-	$(PYTHON) ../tools/mkindex.py d <mktables.sql >drpindex.sql
+fkcreate.sql: mktables.sql ../tools/mkcreatefks.sql ../tools/mkdropfks.sql
+	  # Create a temporary JMdictDB database named "jmtmp" that we
+	  #  will use to extract information about the JMdictDB foreign
+	  #  keys and indexes from.
+	-dropdb jmtmp
+	cd .. && make DB=jmtmp jmnew >/dev/null
+	  # Generate scripts that we can use later on a different database
+	  #  to drop and recreate the indexes and foreign keys.
+	psql $(PG_HOST) -U $(USER) -d jmtmp -f ../tools/mkcreatefks.sql >fkcreate.sql
+	psql $(PG_HOST) -U $(USER) -d jmtmp -f ../tools/mkdropfks.sql   >fkdrop.sql
+	-dropdb jmtmp
 
 mkperms.sql: mktables.sql
 	$(PYTHON) ../tools/mkperms.py mktables.sql mkviews.sql >mkperms.sql

@@ -38,16 +38,8 @@ CREATE LANGUAGE 'plpgsql';
 CREATE TABLE dbpatch(
     level INT PRIMARY KEY,
     dt TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'utc'));
-INSERT INTO dbpatch(level) VALUES(20);
+INSERT INTO dbpatch(level) VALUES(21);
 
--- Note: The commented-out ALTER TABLE and CREATE INDEX statements
--- below (where the comments' "--" start in the first column and are
--- followed immediately by text with no intervening space character)
--- are not really comments.  They are extracted by tools/mkindex.py
--- into a separate file that is executed during the database build
--- phase to create indexes and foreign keys.
--- They are kept in comment form in this file order to provide a
--- more coherent view of the schema.
 
 CREATE TABLE kwdial (
     id SMALLINT PRIMARY KEY,
@@ -124,8 +116,7 @@ CREATE TABLE kwsrc (
     sinc SMALLINT,		-- Sequence INCREMENT value used when creating seq.
     smin BIGINT,		-- Sequence MINVALUE value used when creating seq.
     smax BIGINT,		-- Sequence MAXVALUE value used when creating seq.
-    srct SMALLINT NOT NULL);
---ALTER TABLE kwsrc ADD CONSTRAINT kwsrc_srct_fkey FOREIGN KEY (srct) REFERENCES kwsrct(id);
+    srct SMALLINT NOT NULL REFERENCES kwsrct(id));
 
 CREATE OR REPLACE FUNCTION kwsrc_updseq() RETURNS trigger AS $kwsrc_updseq$
     -- Create a sequence for entr.seq numbers whenever a new
@@ -218,23 +209,23 @@ CREATE OR REPLACE FUNCTION syncseq() RETURNS VOID AS $syncseq$
 
 CREATE TABLE entr (
     id SERIAL PRIMARY KEY,
-    src SMALLINT NOT NULL,
-    stat SMALLINT NOT NULL,
+    src SMALLINT NOT NULL
+      REFERENCES kwsrc(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    stat SMALLINT NOT NULL
+      REFERENCES kwstat(id),
     seq BIGINT NOT NULL CHECK(seq>0),
-    dfrm INT,
+    dfrm INT
+      REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE,
     unap BOOLEAN NOT NULL,
     srcnote VARCHAR(255) NULL,
     notes TEXT);
---CREATE INDEX entr_seq ON entr(seq);
---CREATE INDEX entr_stat ON entr(stat) WHERE stat!=2;
---CREATE INDEX entr_dfrm ON entr(dfrm) WHERE dfrm IS NOT NULL;
---CREATE INDEX entr_unap ON entr(unap) WHERE unap;
+CREATE INDEX ON entr(seq);
+CREATE INDEX ON entr(stat) WHERE stat!=2;
+CREATE INDEX ON entr(dfrm) WHERE dfrm IS NOT NULL;
+CREATE INDEX ON entr(unap) WHERE unap;
    -- Following temporarily disabled since it is preventing the 
    -- submission of "approved" entries.
 -- -- CREATE UNIQUE INDEX entr_active ON entr(src,seq,stat,unap) WHERE stat=2 AND NOT unap;
---ALTER TABLE entr ADD CONSTRAINT entr_src_fkey FOREIGN KEY (src) REFERENCES kwsrc(id) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE entr ADD CONSTRAINT entr_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
---ALTER TABLE entr ADD CONSTRAINT entr_dfrm_fkey FOREIGN KEY (dfrm) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE FUNCTION entr_seqdef() RETURNS trigger AS $entr_seqdef$
     -- This function is used as an "insert" trigger on table 
@@ -260,71 +251,70 @@ CREATE TRIGGER entr_seqdef BEFORE INSERT ON entr
 
 
 CREATE TABLE rdng (
-    entr INT NOT NULL,
+    entr INT NOT NULL REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE,
     rdng SMALLINT NOT NULL CHECK (rdng>0),
-    txt VARCHAR(2048) NOT NULL,
-    PRIMARY KEY (entr,rdng));
---CREATE INDEX rdng_txt ON rdng(txt);
---CREATE UNIQUE INDEX rdng_txt1 ON rdng(entr,txt);
---CREATE INDEX rdng_txt2 ON rdng(txt varchar_pattern_ops); --For fast LIKE 'xxx%'
---ALTER TABLE rdng ADD CONSTRAINT rdng_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
+      PRIMARY KEY (entr,rdng),
+    txt VARCHAR(2048) NOT NULL);
+CREATE INDEX ON rdng(txt);
+CREATE UNIQUE INDEX ON rdng(entr,txt);
+CREATE INDEX ON rdng(txt varchar_pattern_ops); --For fast LIKE 'xxx%'
 
 CREATE TABLE kanj (
-    entr INT NOT NULL,
+    entr INT NOT NULL REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE,
     kanj SMALLINT NOT NULL CHECK (kanj>0),
-    txt VARCHAR(2048) NOT NULL,
-    PRIMARY KEY (entr,kanj));
---CREATE INDEX kanj_txt ON kanj(txt);
---CREATE UNIQUE INDEX kanj_txt1 ON kanj(entr,txt);
---CREATE INDEX kanj_txt2 ON kanj(txt varchar_pattern_ops); --For fast LIKE 'xxx%'
---ALTER TABLE kanj ADD CONSTRAINT kanj_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
+      PRIMARY KEY (entr,kanj),
+    txt VARCHAR(2048) NOT NULL);
+CREATE INDEX ON kanj(txt);
+CREATE UNIQUE INDEX ON kanj(entr,txt);
+CREATE INDEX ON kanj(txt varchar_pattern_ops); --For fast LIKE 'xxx%'
 
 CREATE TABLE sens (
-    entr INT NOT NULL,
+    entr INT NOT NULL REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE,
     sens SMALLINT NOT NULL CHECK (sens>0),
-    notes TEXT,
-    PRIMARY KEY (entr,sens));
---ALTER TABLE sens ADD CONSTRAINT sens_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
+      PRIMARY KEY (entr,sens),
+    notes TEXT);
 
 CREATE TABLE gloss (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
+      FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE,
     gloss SMALLINT NOT NULL CHECK (gloss>0),
-    lang SMALLINT NOT NULL DEFAULT 1,
+      PRIMARY KEY (entr,sens,gloss),
+    lang SMALLINT NOT NULL DEFAULT 1
+      REFERENCES kwlang(id),
     ginf SMALLINT NOT NULL DEFAULT 1,
-    txt VARCHAR(2048) NOT NULL,
-    PRIMARY KEY (entr,sens,gloss));
---CREATE INDEX gloss_txt ON gloss(txt); 
---CREATE UNIQUE INDEX gloss_txt1 ON gloss(entr,sens,lang,txt);
---CREATE INDEX gloss_txt2 ON gloss(lower(txt) varchar_pattern_ops); --For case-insensitive LIKE 'xxx%'
---CREATE INDEX gloss_txt3 ON gloss(lower(txt)); 		    --For case-insensitive '='
---ALTER TABLE gloss ADD CONSTRAINT gloss_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE gloss ADD CONSTRAINT gloss_lang_fkey FOREIGN KEY (lang) REFERENCES kwlang(id);
+    txt VARCHAR(2048) NOT NULL);
+CREATE INDEX ON gloss(txt); 
+CREATE UNIQUE INDEX ON gloss(entr,sens,lang,txt);
+CREATE INDEX ON gloss(lower(txt) varchar_pattern_ops); --For case-insensitive LIKE 'xxx%'
+CREATE INDEX ON gloss(lower(txt)); 		    --For case-insensitive '='
 
 CREATE TABLE xref (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
+      FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE,
     xref SMALLINT NOT NULL CHECK (xref>0),
-    typ SMALLINT NOT NULL,
+    typ SMALLINT NOT NULL
+      REFERENCES kwxref(id),
     xentr INT NOT NULL CHECK (xentr!=entr),
     xsens SMALLINT NOT NULL,
+      FOREIGN KEY (xentr,xsens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE,
     rdng SMALLINT,
+      CONSTRAINT xref_rdng_fkey FOREIGN KEY (xentr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE,
     kanj SMALLINT CHECK (kanj IS NOT NULL OR rdng IS NOT NULL),
+      CONSTRAINT xref_kanj_fkey FOREIGN KEY (xentr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE,
     notes TEXT,
-    PRIMARY KEY (entr,sens,xref,xentr,xsens));
+      PRIMARY KEY (entr,sens,xref,xentr,xsens));
+CREATE INDEX ON xref(xentr,xsens);
     --## The following index disabled because it is violated by Examples file xrefs.
     --CREATE UNIQUE INDEX xref_entr_unq ON xref(entr,sens,typ,xentr,xsens);
---CREATE INDEX xref_xentr ON xref(xentr,xsens);
---ALTER TABLE xref ADD CONSTRAINT xref_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE xref ADD CONSTRAINT xref_xentr_fkey FOREIGN KEY (xentr,xsens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE xref ADD CONSTRAINT xref_typ_fkey FOREIGN KEY (typ) REFERENCES kwxref(id);
---ALTER TABLE xref ADD CONSTRAINT xref_rdng_fkey FOREIGN KEY (xentr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE xref ADD CONSTRAINT xref_kanj_fkey FOREIGN KEY (xentr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
 
 CREATE TABLE hist (
-    entr INT NOT NULL,
+    entr INT NOT NULL
+      REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE,
     hist SMALLINT NOT NULL CHECK (hist>0),
-    stat SMALLINT NOT NULL,
+    stat SMALLINT NOT NULL
+      REFERENCES kwstat(id),
     unap BOOLEAN NOT NULL,
     dt TIMESTAMP NOT NULL DEFAULT NOW(),
     userid VARCHAR(20),
@@ -333,127 +323,122 @@ CREATE TABLE hist (
     diff TEXT,
     refs TEXT,
     notes TEXT,
-    PRIMARY KEY (entr,hist));
---CREATE INDEX hist_dt ON hist(dt);
---CREATE INDEX hist_email ON hist(email);
---CREATE INDEX hist_userid ON hist(userid);
---ALTER TABLE hist ADD CONSTRAINT hist_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE hist ADD CONSTRAINT hist_stat_fkey FOREIGN KEY (stat) REFERENCES kwstat(id);
+      PRIMARY KEY (entr,hist));
+CREATE INDEX ON hist(dt);
+CREATE INDEX ON hist(email);
+CREATE INDEX ON hist(userid);
 
 CREATE TABLE dial (
     entr INT NOT NULL,
     sens INT NOT NULL,
+      FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE,
     ord SMALLINT NOT NULL,
-    kw SMALLINT NOT NULL DEFAULT 1,
-    PRIMARY KEY (entr,sens,kw));
---ALTER TABLE dial ADD CONSTRAINT dial_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE dial ADD CONSTRAINT dial_kw_fkey FOREIGN KEY (kw) REFERENCES kwdial(id);
+    kw SMALLINT NOT NULL DEFAULT 1
+      REFERENCES kwdial(id),
+      PRIMARY KEY (entr,sens,kw));
 
 CREATE TABLE fld (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
+      FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE,
     ord SMALLINT NOT NULL,
-    kw SMALLINT NOT NULL,
-    PRIMARY KEY (entr,sens,kw));
---ALTER TABLE fld ADD CONSTRAINT fld_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE fld ADD CONSTRAINT fld_kw_fkey FOREIGN KEY (kw) REFERENCES kwfld(id);
+    kw SMALLINT NOT NULL
+      REFERENCES kwfld(id),
+      PRIMARY KEY (entr,sens,kw));
 
 CREATE TABLE freq (
     entr INT NOT NULL,
     rdng SMALLINT NULL,
+      FOREIGN KEY (entr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE,
     kanj SMALLINT NULL,
-    kw SMALLINT NOT NULL,
+      FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE,
+    kw SMALLINT NOT NULL
+      REFERENCES kwfreq(id),
     value INT,
-    UNIQUE (entr,rdng,kanj,kw),
-    CHECK (rdng NOTNULL OR kanj NOTNULL)) 
-      WITH OIDS;
---CREATE UNIQUE INDEX freq_idx1 ON freq(entr,(coalesce(rdng,999)),(coalesce(kanj,999)),kw); 
---ALTER TABLE freq ADD CONSTRAINT freq_entr_fkey FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE freq ADD CONSTRAINT freq_entr_fkey1 FOREIGN KEY (entr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE freq ADD CONSTRAINT freq_kw_fkey FOREIGN KEY (kw) REFERENCES kwfreq(id);
+      UNIQUE (entr,rdng,kanj,kw),
+      CHECK (rdng NOTNULL OR kanj NOTNULL)) 
+    WITH OIDS;
+CREATE UNIQUE INDEX ON freq(entr,(coalesce(rdng,999)),(coalesce(kanj,999)),kw); 
 
 CREATE TABLE kinf (
     entr INT NOT NULL,
     kanj SMALLINT NOT NULL,
+      FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE,
     ord SMALLINT NOT NULL,
-    kw SMALLINT NOT NULL,
-    PRIMARY KEY (entr,kanj,kw));
---ALTER TABLE kinf ADD CONSTRAINT kinf_entr_fkey FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE kinf ADD CONSTRAINT kinf_kw_fkey FOREIGN KEY (kw) REFERENCES kwkinf(id);
+    kw SMALLINT NOT NULL
+      REFERENCES kwkinf(id),
+      PRIMARY KEY (entr,kanj,kw));
 
 CREATE TABLE lsrc (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
+      FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE,
     ord SMALLINT NOT NULL,
-    lang SMALLINT NOT NULL DEFAULT 1,
+    lang SMALLINT NOT NULL DEFAULT 1
+      REFERENCES kwlang(id),
     txt VARCHAR(250) NOT NULL,
+      PRIMARY KEY (entr,sens,lang,txt),
     part BOOLEAN DEFAULT FALSE,
-    wasei BOOLEAN DEFAULT FALSE,
-    PRIMARY KEY (entr,sens,lang,txt));
---ALTER TABLE lsrc ADD CONSTRAINT lsrc_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE lsrc ADD CONSTRAINT lsrc_lang_fkey FOREIGN KEY (lang) REFERENCES kwlang(id);
+    wasei BOOLEAN DEFAULT FALSE);
 
 CREATE TABLE misc (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
+      FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE,
     ord SMALLINT NOT NULL,
-    kw SMALLINT NOT NULL,
-    PRIMARY KEY (entr,sens,kw));
---ALTER TABLE misc ADD CONSTRAINT misc_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE misc ADD CONSTRAINT misc_kw_fkey FOREIGN KEY (kw) REFERENCES kwmisc(id);
+    kw SMALLINT NOT NULL
+      REFERENCES kwmisc(id),
+      PRIMARY KEY (entr,sens,kw));
 
 CREATE TABLE pos (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
+      FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE,
     ord SMALLINT NOT NULL,
-    kw SMALLINT  NOT NULL,
-    PRIMARY KEY (entr,sens,kw));
---ALTER TABLE pos ADD CONSTRAINT pos_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE pos ADD CONSTRAINT pos_kw_fkey FOREIGN KEY (kw) REFERENCES kwpos(id);
+    kw SMALLINT  NOT NULL
+      REFERENCES kwpos(id),
+      PRIMARY KEY (entr,sens,kw));
 
 CREATE TABLE rinf (
     entr INT NOT NULL,
     rdng SMALLINT NOT NULL,
+      FOREIGN KEY (entr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE,
     ord SMALLINT NOT NULL,
-    kw SMALLINT NOT NULL,
-    PRIMARY KEY (entr,rdng,kw));
---ALTER TABLE rinf ADD CONSTRAINT rinf_entr_fkey FOREIGN KEY (entr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE rinf ADD CONSTRAINT rinf_kw_fkey FOREIGN KEY (kw) REFERENCES kwrinf(id);
-
+    kw SMALLINT NOT NULL
+      REFERENCES kwrinf(id),
+      PRIMARY KEY (entr,rdng,kw));
 
 CREATE TABLE restr (
     entr INT NOT NULL,
     rdng SMALLINT NOT NULL,
+      FOREIGN KEY (entr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE,
     kanj SMALLINT NOT NULL,
-    PRIMARY KEY (entr,rdng,kanj));
---ALTER TABLE restr ADD CONSTRAINT restr_entr_fkey FOREIGN KEY (entr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE restr ADD CONSTRAINT restr_entr_fkey1 FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
+      FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE,
+      PRIMARY KEY (entr,rdng,kanj));
 
 CREATE TABLE stagr (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
+      FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE,
     rdng SMALLINT NOT NULL,
-    PRIMARY KEY (entr,sens,rdng));
---ALTER TABLE stagr ADD CONSTRAINT stagr_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE stagr ADD CONSTRAINT stagr_entr_fkey1 FOREIGN KEY (entr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE;
+      FOREIGN KEY (entr,rdng) REFERENCES rdng(entr,rdng) ON DELETE CASCADE ON UPDATE CASCADE,
+      PRIMARY KEY (entr,sens,rdng));
 
 CREATE TABLE stagk (
     entr INT NOT NULL,
     sens SMALLINT NOT NULL,
+      FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE,
     kanj SMALLINT NOT NULL,
-    PRIMARY KEY (entr,sens,kanj));
---ALTER TABLE stagk ADD CONSTRAINT stagk_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE stagk ADD CONSTRAINT stagk_entr_fkey1 FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE;
+      FOREIGN KEY (entr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE,
+      PRIMARY KEY (entr,sens,kanj));
 
 CREATE TABLE grp (
-    entr INT NOT NULL,
-    kw INT NOT NULL,
+    entr INT NOT NULL REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    kw INT NOT NULL REFERENCES kwgrp(id)  ON DELETE CASCADE ON UPDATE CASCADE,
+      PRIMARY KEY (entr,kw),
     ord INT NOT NULL,
-    notes VARCHAR(250),
-    PRIMARY KEY (entr,kw));
---ALTER TABLE grp ADD CONSTRAINT grp_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE grp ADD CONSTRAINT grp_kw_fkey  FOREIGN KEY (kw)  REFERENCES kwgrp(id)  ON DELETE CASCADE ON UPDATE CASCADE;
---CREATE INDEX grp_kw ON grp(kw);
+    notes VARCHAR(250));
+CREATE INDEX grp_kw ON grp(kw);
 
 -------------------------------
 -- Tables for audio sound clips
@@ -465,48 +450,48 @@ CREATE TABLE sndvol (	-- Audio media volume (directory, CD, etc)
     loc VARCHAR(500),			-- Volume location (directory name or CD id).
     type SMALLINT NOT NULL,		-- Volume type, 1:file, 2:cd
     idstr VARCHAR(100),			-- If type==2, this is CD ID string.
-    corp INT,				-- Corpus id (in table kwsrc).
+    corp INT 				-- Corpus id (in table kwsrc).
+      REFERENCES kwsrc(id) ON UPDATE CASCADE ON DELETE CASCADE,
     notes TEXT);			-- Ad hoc notes pertinent to this sound volume.
 -- Anticipate this table will generally be too small to benefit from indexes.
---ALTER TABLE sndvol ADD CONSTRAINT sndvol_corp_fkey FOREIGN KEY(corp) REFERENCES kwsrc(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 CREATE TABLE sndfile (	-- Audio file, track, etc.
     id SERIAL PRIMARY KEY,		-- File id.
-    vol INT NOT NULL,			-- Volume id (in table sndvol).
+    vol INT NOT NULL 			-- Volume id (in table sndvol).
+      REFERENCES sndvol(id) ON UPDATE CASCADE ON DELETE CASCADE,
     title VARCHAR(50),			-- File title (for display).
     loc VARCHAR(500),			-- File location in vol (filename or track number).
     type SMALLINT,			-- File type.
     notes TEXT);			-- Ad hoc notes pertinent to this sound file.
---CREATE INDEX sndfile_vol ON sndfile(vol);
---ALTER TABLE sndfile ADD CONSTRAINT sndfile_vol_fkey FOREIGN KEY(vol) REFERENCES sndvol(id) ON UPDATE CASCADE ON DELETE CASCADE;
+CREATE INDEX ON sndfile(vol);
 
 CREATE TABLE snd (	-- Audio sound clip.
     id SERIAL PRIMARY KEY,		-- Sound id.
-    file SMALLINT NOT NULL,		-- File id (in table sndfile).
+    file SMALLINT NOT NULL 		-- File id (in table sndfile).
+      REFERENCES sndfile(id) ON UPDATE CASCADE ON DELETE CASCADE,
     strt INT NOT NULL DEFAULT(0),	-- Start of clip in file (10ms units).
     leng INT NOT NULL DEFAULT(0),	-- Length of clip in file (10ms units).
     trns TEXT,				-- Transcription of sound clip (typ. japanese).
     notes VARCHAR(255));		-- Ad hoc notes pertinent to this clip.
---ALTER TABLE snd ADD CONSTRAINT snd_file_fkey FOREIGN KEY(file) REFERENCES sndfile(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 CREATE TABLE entrsnd (	-- Entry to sound clip map.
-    entr INT NOT NULL,		-- Entry id.
+    entr INT NOT NULL		-- Entry id.
+      REFERENCES entr(id) ON UPDATE CASCADE ON DELETE CASCADE,
     ord SMALLINT NOT NULL,	-- Order in entry.
-    snd INT NOT NULL,		-- Sound id.
-    PRIMARY KEY (entr,snd));
---CREATE INDEX entrsnd_snd ON entrsnd(snd);
---ALTER TABLE entrsnd ADD CONSTRAINT entrsnd_entr_fkey FOREIGN KEY(snd) REFERENCES snd(id) ON UPDATE CASCADE ON DELETE CASCADE;
---ALTER TABLE entrsnd ADD CONSTRAINT entrsnd_entr_fkey1 FOREIGN KEY(entr) REFERENCES entr(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    snd INT NOT NULL 		-- Sound id.
+      REFERENCES snd(id) ON UPDATE CASCADE ON DELETE CASCADE,
+      PRIMARY KEY (entr,snd));
+CREATE INDEX ON entrsnd(snd);
 
 CREATE TABLE rdngsnd (	-- Reading to sound clip map.
     entr INT NOT NULL,		-- Entry id.
     rdng INT NOT NULL,		-- Reading number.
+      FOREIGN KEY(entr,rdng) REFERENCES rdng(entr,rdng) ON UPDATE CASCADE ON DELETE CASCADE,
     ord SMALLINT NOT NULL,	-- Order in reading.
-    snd INT NOT NULL,		-- Sound id.
+    snd INT NOT NULL 		-- Sound id.
+      REFERENCES snd(id) ON UPDATE CASCADE ON DELETE CASCADE,
     PRIMARY KEY (entr,rdng,snd));
---CREATE INDEX rdngsnd_snd ON rdngsnd(snd);
---ALTER TABLE rdngsnd ADD CONSTRAINT rdngsnd_entr_fkey FOREIGN KEY(snd) REFERENCES snd(id) ON UPDATE CASCADE ON DELETE CASCADE;
---ALTER TABLE rdngsnd ADD CONSTRAINT rdngsnd_entr_fkey1 FOREIGN KEY(entr,rdng) REFERENCES rdng(entr,rdng) ON UPDATE CASCADE ON DELETE CASCADE;
+CREATE INDEX rdngsnd_snd ON rdngsnd(snd);
 
 
 -- The following tables are used for resolving textual xrefs to 
@@ -516,7 +501,9 @@ CREATE TABLE rdngsnd (	-- Reading to sound clip map.
 CREATE TABLE xresolv (
     entr INT NOT NULL,		-- Entry xref occurs in.
     sens SMALLINT NOT NULL,	-- Sense number xref occurs in.
-    typ SMALLINT NOT NULL,	-- Type of xref (table kwxref).
+      FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE,
+    typ SMALLINT NOT NULL 	-- Type of xref (table kwxref).
+      REFERENCES kwxref(id),
     ord SMALLINT NOT NULL,	-- Order of xref in sense.
     rtxt VARCHAR(250),		-- Reading text of target given in xref.
     ktxt VARCHAR(250),		-- Kanji text of target given in xref.
@@ -525,10 +512,8 @@ CREATE TABLE xresolv (
     prio BOOLEAN DEFAULT FALSE,	-- True if this is a Tanaka corpus exemplar.
     PRIMARY KEY (entr,sens,typ,ord),
     CHECK (rtxt NOTNULL OR ktxt NOTNULL));
---CREATE INDEX xresolv_rdng ON xresolv(rtxt);
---CREATE INDEX xresolv_kanj ON xresolv(ktxt);
---ALTER TABLE xresolv ADD CONSTRAINT xresolv_entr_fkey FOREIGN KEY (entr,sens) REFERENCES sens(entr,sens) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE xresolv ADD CONSTRAINT xresolv_typ_fkey FOREIGN KEY (typ) REFERENCES kwxref(id);
+CREATE INDEX xresolv_rdng ON xresolv(rtxt);
+CREATE INDEX xresolv_kanj ON xresolv(ktxt);
 
 -------------------
 --  Kanjidic tables
@@ -542,6 +527,7 @@ CREATE TABLE kwcinf (
 CREATE TABLE rad (
     num SMALLINT NOT NULL,	-- Radical (bushu) number.
     var SMALLINT NOT NULL,	-- Variant number.
+      PRIMARY KEY (num,var),
     rchr CHAR(1),		-- Radical character from unicode blocks CJK radicals
 				--   2F00-2FDF and Radicals Supplement 2E80-2EFF.
     chr CHAR(1),		-- Radical character from outside radical blocks.
@@ -549,11 +535,11 @@ CREATE TABLE rad (
     loc	CHAR(1) 		-- Location code.
 	CHECK(loc is NULL OR loc IN('O','T','B','R','L','E','V')),
     name VARCHAR(50),		-- Name of radical (japanese).
-    examples VARCHAR(20),	-- Characters that include the radical.
-    PRIMARY KEY (num,var));
+    examples VARCHAR(20));	-- Characters that include the radical.
 
 CREATE TABLE chr(
-    entr INT PRIMARY KEY,	-- Defines readings and meanings, but not kanji.
+    entr INT PRIMARY KEY	-- Defines readings and meanings, but not kanji.
+      REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE,
     chr CHAR(1) NOT NULL,	-- Defines kanji.
     bushu SMALLINT,		-- Radical number.
     strokes SMALLINT,
@@ -561,27 +547,73 @@ CREATE TABLE chr(
     grade SMALLINT,
     jlpt SMALLINT,
     radname VARCHAR(50));
---CREATE UNIQUE INDEX chr_chr ON chr(chr);
---ALTER TABLE chr ADD CONSTRAINT chr_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
+CREATE UNIQUE INDEX ON chr(chr);
 -- XX ALTER TABLE chr ADD CONSTRAINT chr_rad_fkey FOREIGN KEY (bushu) REFERENCES rad(num);
 
 CREATE TABLE cinf(
-    entr INT NOT NULL,
-    kw SMALLINT NOT NULL,
+    entr INT NOT NULL
+      REFERENCES chr(entr) ON DELETE CASCADE ON UPDATE CASCADE,
+    kw SMALLINT NOT NULL
+      REFERENCES kwcinf(id) ON DELETE CASCADE ON UPDATE CASCADE,
     value VARCHAR(50) NOT NULL,
     mctype VARCHAR(50) NOT NULL DEFAULT(''),
-    PRIMARY KEY (entr,kw,value,mctype));
---CREATE INDEX cinf_kw ON cinf(kw);
---CREATE INDEX cinf_val ON cinf(value);
---ALTER TABLE cinf ADD CONSTRAINT chr_entr_fkey FOREIGN KEY (entr) REFERENCES chr(entr) ON DELETE CASCADE ON UPDATE CASCADE;
---ALTER TABLE cinf ADD CONSTRAINT chr_kw_fkey FOREIGN KEY (kw) REFERENCES kwcinf(id) ON DELETE CASCADE ON UPDATE CASCADE;
+      PRIMARY KEY (entr,kw,value,mctype));
+CREATE INDEX cinf_kw ON cinf(kw);
+CREATE INDEX cinf_val ON cinf(value);
 
 CREATE TABLE kresolv(
-    entr INT NOT NULL,
+    entr INT NOT NULL
+      REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE,
     kw SMALLINT NOT NULL,
     value VARCHAR(50) NOT NULL,
-    PRIMARY KEY (entr,kw,value));
---ALTER TABLE kresolv ADD CONSTRAINT kresolv_entr_fkey FOREIGN KEY (entr) REFERENCES entr(id) ON DELETE CASCADE ON UPDATE CASCADE;
+      PRIMARY KEY (entr,kw,value));
 -- No FK constraint on 'kw' (to kwcinf) because it may have a value of
 -- 0, meaning 'ucs', which we don't need or want to be a real cinf item.
+
+---------------------------------------------
+--  Verb/adjective/copula conjugation tables
+---------------------------------------------
+
+DROP TABLE IF EXISTS conjo_notes, conotes, conjo, conj CASCADE;
+
+-- Notes for conj, conjo items.
+CREATE TABLE conotes (
+    id INT PRIMARY KEY, 
+    txt TEXT NOT NULL);
+
+-- Verb and adjective inflection names.
+CREATE TABLE conj (
+    id SMALLINT PRIMARY KEY,
+    name VARCHAR(50) UNIQUE);             -- Eg, "present", "past", "conditional", provisional", etc.
+
+-- Okurigana used for for each verb inflection type.
+CREATE TABLE conjo (
+    pos SMALLINT NOT NULL                 -- Part-of-speech id from 'kwpos'.
+      REFERENCES kwpos(id) ON UPDATE CASCADE,
+    conj SMALLINT NOT NULL                -- Conjugation id from 'conj'.
+      REFERENCES conj(id) ON UPDATE CASCADE, 
+    neg BOOLEAN NOT NULL DEFAULT FALSE,   -- Negative form.
+    fml BOOLEAN NOT NULL DEFAULT FALSE,   -- Formal (aka distal) form.
+    onum SMALLINT NOT NULL DEFAULT 1,     -- Okurigana variant id when more than one exists.
+      PRIMARY KEY (pos,conj,neg,fml,onum),
+    stem SMALLINT DEFAULT 1,              -- Number of chars to remove to get stem. 
+    okuri VARCHAR(50) NOT NULL,           -- Okurigana text.
+    euphr VARCHAR(50) DEFAULT NULL,       -- Kana for euphonic change in stem (する and 来る).
+    euphk VARCHAR(50) DEFAULT NULL,       -- Kanji for change in stem (used only for 為る-＞出来る).
+    pos2 SMALLINT DEFAULT NULL            -- Part-of-speech (kwpos id) of word after conjugation.
+      REFERENCES kwpos(id) ON UPDATE CASCADE);
+
+-- Notes that apply to a particular conjugation.
+CREATE TABLE conjo_notes (
+    pos SMALLINT NOT NULL,  ---.
+    conj SMALLINT NOT NULL, --  \
+    neg BOOLEAN NOT NULL,   --   +--- Primary key of table 'conjo'. 
+    fml BOOLEAN NOT NULL,   --  /
+    onum SMALLINT NOT NULL, ---'
+      FOREIGN KEY (pos,conj,neg,fml,onum) REFERENCES conjo(pos,conj,neg,fml,onum) ON UPDATE CASCADE,
+    note SMALLINT NOT NULL
+      REFERENCES conotes(id) ON UPDATE CASCADE, 
+    PRIMARY KEY (pos,conj,neg,fml,onum,note));
+
+
 

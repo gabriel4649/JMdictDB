@@ -495,7 +495,7 @@ Usage example:
         -s 'Jim Breen' -e 'jimbreen@gmail.com'
       # Following entry is 呉れる（くれる）
     seq 1269130
-    repl v1 v1-ik
+    repl pos v1 v1-ik
       # Following entry is だ
     seq 2089020
     add pos cop-da

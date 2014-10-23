@@ -1,9 +1,9 @@
-﻿お祖父さん[ichi1]；御祖父さん；お爺さん；御爺さん
+﻿お祖父さん[ichi1]；お爺さん；御爺さん；御祖父さん
 おじいさん[ichi1]
-[1][n]
+[1][n][uk]
   [note="usu. お祖父さん"]
   grandfather
   [see=2231000・祖父さん[1,2]]
-[2][n]
+[2][n][uk]
   [note="usu. お爺さん"]
   male senior-citizen

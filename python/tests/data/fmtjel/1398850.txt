@@ -1,4 +1,4 @@
 双対
-そうつい；そうたい
-[1][n][fld=math,fld=physics]
-  reciprocity; duality (physics)
+そうつい
+[1][n][fld=math]
+  duality

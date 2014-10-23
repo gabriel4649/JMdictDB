@@ -1,7 +1,8 @@
 衣替え[news1,nf14]；更衣；衣更え
 ころもがえ[news1,nf14]
 [1][n,vs]
-  [note="更衣 is gikun"]
+  [note="reading is gikun for 更衣"]
   seasonal change of clothing; changing (one's) dress for the season
+  [see=1593475・更衣・こうい[1]]
 [2][n,vs]
   renovation; facelift; changing appearance

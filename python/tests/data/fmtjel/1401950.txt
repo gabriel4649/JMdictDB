@@ -1,6 +1,7 @@
 ﻿草冠；艸
 くさかんむり[草冠]；そうこう
 [1][n]
+  [note="e.g. top of 艾"]
   kanji "grass radical" (radical 140)
 [2][n]
   grass crown

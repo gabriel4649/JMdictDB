@@ -1,6 +1,5 @@
 ﻿
-ティッシュペーパー[gai1]
+ティッシュペーパー[gai1]；ティッシュ・ペーパー
 [1][n]
-  [note="not actual \"tissue paper\" in English"]
-  (a) tissue; facial tissue; facial tissues
-  [see=1612710・塵紙[1,2]]
+  tissue paper; tissue; facial tissue; facial tissues
+  [see=1612710・塵紙[1]]

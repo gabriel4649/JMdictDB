@@ -252,6 +252,8 @@ pgsubdir:
 postload:
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f fkcreate.sql
 	cd pg && psql $(PG_HOST) -U $(PG_SUPER) -d $(DB) -f postload.sql
+	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) >../data/xresolv.log
+
 	@echo 'Remember to check the log files for warning messages.'
 
 #------ Load JMdict -----------------------------------------------------
@@ -270,7 +272,6 @@ loadjm: data/jmdict.pgi pgsubdir
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f fkdrop.sql
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/jmdict.dmp
 	rm data/jmdict.dmp
-	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) >../data/jmdict_xresolv.log
 
 #------ Load JMnedict ----------------------------------------------------
 
@@ -290,7 +291,6 @@ loadne: data/jmnedict.pgi  pgsubdir
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f fkdrop.sql
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) <../data/jmnedict.dmp
 	rm data/jmnedict.dmp
-	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) >../data/jmnedict_xresolv.log
 
 #------ Load examples ---------------------------------------------------
 

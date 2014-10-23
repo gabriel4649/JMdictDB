@@ -108,6 +108,7 @@ t_in[tid] = \
         "e = Entr (src=99, seq=300010)"
 t_exp[tid] = '''\
 <entry>
+<ent_seq>300010</ent_seq>
 </entry>'''
 
 tid = '0300020' ####################################

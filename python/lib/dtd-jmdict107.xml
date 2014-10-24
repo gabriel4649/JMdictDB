@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Rev 1.08 
-	Delete <info> and <example> elements
--->
 <!-- Rev 1.07 
 	Revised POS tags for the adjectives
 -->
@@ -30,7 +27,7 @@
 <!DOCTYPE JMdict [
 <!ELEMENT JMdict (entry*)>
 <!--                                                                   -->
-<!ELEMENT entry (ent_seq, k_ele*, r_ele+, sense+)>
+<!ELEMENT entry (ent_seq, k_ele*, r_ele+, info?, sense+)>
 	<!-- Entries consist of kanji elements, reading elements, 
 	general information and sense elements. Each entry must have at 
 	least one reading element and one sense element. Others are optional.
@@ -128,7 +125,36 @@
 <!ELEMENT re_pri (#PCDATA)>
 	<!-- See the comment on ke_pri above. -->
 <!--                                                                   -->
-<!ELEMENT sense (stagk*, stagr*, pos*, xref*, ant*, field*, misc*, s_inf*, lsource*, dial*, gloss*)>
+<!ELEMENT info (links*, bibl*, etym*, audit*)>
+	<!-- general coded information relating to the entry as a whole.-->
+<!ELEMENT bibl (bib_tag?, bib_txt?)>
+<!ELEMENT bib_tag (#PCDATA)>
+<!ELEMENT bib_txt (#PCDATA)>
+	<!-- Bibliographic information about the entry. The bib_tag will a 
+	coded reference to an entry in an external bibliographic database.
+	The bib_txt field may be used for brief (local) descriptions.-->
+<!ELEMENT etym (#PCDATA)>
+	<!-- This field is used to hold information about the etymology
+	of the kanji or kana parts of the entry. For gairaigo,
+	etymological information may also be in the <lsource> element.
+	-->
+<!ELEMENT links (link_tag, link_desc, link_uri)>
+<!ELEMENT link_tag (#PCDATA)>
+<!ELEMENT link_desc (#PCDATA)>
+<!ELEMENT link_uri (#PCDATA)>
+	<!-- This element holds details of linking information to 
+	entries in other electronic repositories. The link_tag will be
+	coded to indicate the type of link (text, image, sound), the 
+	link_desc will provided a textual label for the link, and the 
+	link_uri contains the actual URI.  -->
+<!ELEMENT audit (upd_date, upd_detl)>
+<!ELEMENT upd_date (#PCDATA)>
+<!ELEMENT upd_detl (#PCDATA)>
+	<!-- The audit element will contain the date and other information
+	about updates to the entry. Can be used to record the source of 
+	the material. -->
+<!--                                                                   -->
+<!ELEMENT sense (stagk*, stagr*, pos*, xref*, ant*, field*, misc*, s_inf*, lsource*, dial*, gloss*, example*)>
 	<!-- The sense element will record the translational equivalent
 	of the Japanese word, plus other related information. Where there
 	are several distinctly different meanings of the word, multiple
@@ -213,6 +239,12 @@
 	are strongly associated with the Japanese word. The purpose is to 
 	establish a set of target-language words which can effectively be 
 	used as head-words in a reverse target-language/Japanese relationship.
+	-->
+<!ELEMENT example (#PCDATA)>
+	<!-- The example elements provide for pairs of short Japanese and
+	target-language phrases or sentences which exemplify the usage of the 
+	Japanese head-word and the target-language gloss. Words in example 
+	fields would typically not be indexed by a dictionary application.
 	-->
 <!ELEMENT s_inf (#PCDATA)>
 	<!-- The sense-information elements provided for additional

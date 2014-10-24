@@ -40,21 +40,32 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
                 false: generate XML that completely
                   describes the entry using an enhanced version
                   of the jmdict DTD.  Otherwise:
-                "jmdict": generate XML that uses the standard
-                  JMdict DTD but looses information that is not
-                  representable with that DTD.
+                "jmdict": synonym for "jmdict108". 
+                "jmdict108": generate XML that uses the standard
+                  JMdict DTD (rev 1.08).  This DTD does not
+                  include the <info> element. 
+                "jmdict107": generate XML that uses the standard
+                  JMdict DTD (rev 1.07).  This outputs only "entry
+                  created" or "entry amended" in the <info> elements.
+                "jmdicthist": generate XML that uses the standard
+                  JMdict DTD (rev 1.07) but includes full history
+                  in the <info> element.
                 "jmnedict": generate XML that uses the standard
                   (post 2014-10) JMnedict DTD that include seq 
                   numbers and xrefs.
                 "jmneold": generate XML that uses the old-style
                   (pre 2014-10) JMnedict DTD that does not include 
                   seq numbers and xrefs.
-          genhists -- If true, generate <audit> elements in the XML.
-                Otherwise, don't.
-          genxrefs -- If true generate <xref> elements.  If false
-                don't.  In order to generate xrefs the 'entr'
-                object must have augmented xrefs.  If it doesn't
-                a exception will be thrown.
+          genhists -- If true, <info> and <audit> elements will 
+                be generated in the XML according to the value of
+                'compat'.   If false they will not be generated 
+                regardless of the value of 'compat'.
+          genxrefs -- If true generate <xref> elements based on the 
+                value of 'compat'.  (Generate for all jmdictxxx and
+                for jmnedict, but not for jmnedictold.) 
+                If false, never generate xrefs.  In order to generate
+                xrefs the 'entr' object must have augmented xrefs.
+                If it doesn't an exception will be thrown.
           wantlist -- If false, return the xml as a single string.
                 with embedded newline characters.  If true, return a
                 list of strings, one line per string, with no embedded
@@ -88,10 +99,11 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
         rdngs = getattr (entr, '_rdng', [])
         for r in rdngs: fmt.extend (rdng (r, kanjs, compat))
 
-        fmt.extend (info (entr, compat, genhists, last_imported=last_imported))
+        if compat in ('jmdict107', 'jmdicthist'):
+            fmt.extend (info (entr, compat, genhists, last_imported=last_imported))
 
         senss = getattr (entr, '_sens', [])
-        if compat == 'jmnedict' or compat == 'jmneold':
+        if compat in ('jmnedict', 'jmneold'):
             for x in senss: fmt.extend (trans (x, compat, entr.src, genxrefs))
         else:
             last_pos = [] if implicit_pos else None
@@ -158,9 +170,9 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
         kanj -- The kanji object of the entry that 's' belongs to.
         rdng -- The reading object of the entry that 's' belongs to.
         compat -- See function entr().  We assume in sens() that if
-            compat is not None it is =='jmdict', that is, if it is
-            'jmnedict', trans() would have been called rather than
-            sens().
+            compat is not None it is =='jmdictxxx', that is, if it 
+            were 'jmnedict', trans() would have been called rather 
+            than sens().
         src -- If 'compat' is None, this should be the value of the
             entry's .src attribute.  It is passed to the xref() func
             which needs it when formatting enhanced xml xrefs.  If
@@ -178,9 +190,6 @@ def sens (s, kanj, rdng, compat, src, genxrefs=True, prev_pos=None):
             pos values when they are the same as in the prevuious
             sense per the JMdict DTD.
             If None, an explict pos will be generated in each sense.
-
-        We attempt to produce the elements in the same order as seen
-        in the EDRDG JMdict XML file of 2009-03-01.
         """
         fmt = []
         fmt.append ('<sense>')
@@ -461,7 +470,7 @@ def audit (h, compat=None, force_created=False):
         fmt = []
         fmt.append ('<audit>')
         fmt.append ('<upd_date>%s</upd_date>' % h.dt.date().isoformat())
-        if not compat:
+        if not compat or compat=='jmdicthist':
             if getattr (h, 'notes', None): fmt.append ('<upd_detl>%s</upd_detl>'   % esc(h.notes))
             if getattr (h, 'stat', None):  fmt.append ('<upd_stat>%s</upd_stat>'   % XKW.STAT[h.stat].kw)
             if getattr (h, 'unap', None):  fmt.append ('<upd_unap/>')

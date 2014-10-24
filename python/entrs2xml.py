@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008-2012 Stuart McGraw
+#  Copyright (c) 2008-2014 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -50,10 +50,12 @@ def main (args, opts):
               # Choose a dtd to use based on the "--compat" option.
               # The dtd file is expected to be located somewhere in the
               # pythonpath (sys.path) directories.
-            if opts.compat == 'jmdict': dtd = "dtd-jmdict.xml"
-            elif opts.compat == 'jmnedict': dtd = "dtd-jmnedict.xml"
-            elif opts.compat == 'jmneold': dtd = "dtd-jmneold.xml"
-            else: dtd = "dtd-jmdict-ex.xml"
+            if   opts.compat == 'jmdict':     dtd = "dtd-jmdict.xml"
+            elif opts.compat == 'jmdict107':  dtd = "dtd-jmdict107.xml"
+            elif opts.compat == 'jmdicthist': dtd = "dtd-jmdict107.xml"
+            elif opts.compat == 'jmnedict':   dtd = "dtd-jmnedict.xml"
+            elif opts.compat == 'jmneold':    dtd = "dtd-jmneold.xml"
+            else:                             dtd = "dtd-jmdict-ex.xml"
             dir = jdb.find_in_syspath (dtd)
             dtdfn = dir + "/" + dtd             # Fully qualified dtd file name.
 
@@ -312,14 +314,31 @@ Arguments:
                 Default is all corpora.""")
 
         p.add_option ("--compat", default=None,
-            help="""If given, must have a value of either 'jmdict' or
-                'jmnedict', and will cause the generation of a file that
-                uses a DTD compatible with the standard Monash JMdict or
-                JMnedict XML files.  Information not compatible with the
-                DTD will not be included in the XML and thus will lost if
-                the database is reloaded from the XML.
-                Without this option, an extended DTD is used that will
-                preserve all information in the database entries.""")
+            help="""If given, COMPAT must have one of the following values:
+
+                jmdict: generate XML that uses the standard
+                  JMdict DTD (rev 1.08).  This DTD does not
+                  include the <info> element. 
+
+                jmdict107: generate XML that uses the standard
+                  JMdict DTD (rev 1.07).  This outputs only "entry
+                  created" or "entry amended" in the <info> elements.
+
+                jmdicthist: generate XML that uses the standard
+                  JMdict DTD (rev 1.07) but includes full history
+                  in the <info> element.
+
+                jmnedict: generate XML that uses the standard
+                  (post 2014-10) JMnedict DTD that include seq 
+                  numbers and xrefs.
+
+                jmneold: generate XML that uses the old-style
+                  (pre 2014-10) JMnedict DTD that does not include 
+                  seq numbers and xrefs.
+
+                If not given: generate XML that completely
+                  describes the entry using an enhanced version
+                  of the jmdict DTD.""")
 
         p.add_option ("--last-imported", default=None, type=int,
             help="""This option is ignored unless the --compat=jmdict
@@ -377,8 +396,10 @@ Arguments:
 
         opts, args = p.parse_args ()
         if len (args) > 1: p.error ("%d arguments given, expected at most one.")
-        if opts.compat and opts.compat not in ('jmdict','jmnedict','jmneold'):
-            p.error ('--compat option must be one of: "jmdict", "jmnedict" or "jmneold".')
+        if opts.compat and opts.compat not in \
+                ('jmdict','jmdict107','jmdicthist','jmnedict','jmneold'):
+            p.error ('--compat option must be one of: "jmdict", "jmdict107", '
+                     '"jmdicthist", "jmnedict" or "jmneold".')
         if  opts.seqfile and (opts.begin or opts.count):
             p.error ('--begin or --count option is incompatible with --seqfile')
         return args, opts

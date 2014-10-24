@@ -113,6 +113,7 @@ def main (args, opts):
                 print ("Multiple entries having seq '%s' found, results " \
                                     "may not be as expected.  Consider using -s to " \
                                     "restrict to a single corpus." % (opts.begin), file=sys.stderr)
+            lastsrc, lastseq, lastid = rs[0].src, rs[0].seq, rs[0].id
         if not opts.begin and not opts.seqfile:
               # If no "--begin" option, remove the " AND" from the front of
               # the 'corp_terms' string.  Read the first entry (by seq number)

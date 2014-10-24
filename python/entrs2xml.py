@@ -33,7 +33,8 @@ import time
 import jdb, fmt, fmtxml
 
 def main (args, opts):
-        debug = opts.debug
+        global Debug
+        Debug = opts.debug
           # Open the database.  jdb.dbopts() extracts the db-related
           # options from the command line options in 'opts'.
         cur = jdb.dbOpen (opts.database, **jdb.dbopts (opts))
@@ -65,6 +66,13 @@ def main (args, opts):
             jdb.reset_encoding (outf, opts.encoding)
             outf.write (dtdtxt)
 
+        if opts.seqfile:
+            if opts.seqfile == '-': f = sys.stdin
+            else: f = open (opts.seqfile)
+                  #FIXME: we should read these incrementally.
+            entrlist = [int(x) for x in f.read().split()]  # seq# separated by sp or nl.
+            if f != sys.stdin: f.close()
+
           # Turn the "--corpus" option value into a string that can be
           # and'ed into a SQL WHERE clause to restrict the results to
           # the specified corpora.
@@ -90,14 +98,14 @@ def main (args, opts):
               # found since the same sequence number may exist in different
               # corpora, or in the same corpus if an entry was edited.
               #
-              # FIXME: no way to select from multiple entries with same seq
-              #   number.  Might want just the stat="A" entries for example.
+              #FIXME: no way to select from multiple entries with same seq
+              # number.  Might want just the stat="A" entries for example.
             sql = "SELECT id,seq,src FROM entr e WHERE seq=%s%s%s ORDER BY src" \
                     % (int(opts.begin), corp_terms, whr_act)
-            if debug: print (sql, file=sys.stderr)
+            if Debug: print (sql, file=sys.stderr)
             start = time.time()
             rs = jdb.dbread (cur, sql)
-            if debug: print ("Time: %s (init read)" % (time.time()-start), file=sys.stderr)
+            if Debug: print ("Time: %s (init read)" % (time.time()-start), file=sys.stderr)
             if not rs:
                 print ("No entry with seq '%s' found" \
                                      % opts.begin, file=sys.stderr);  sys.exit (1)
@@ -105,7 +113,7 @@ def main (args, opts):
                 print ("Multiple entries having seq '%s' found, results " \
                                     "may not be as expected.  Consider using -s to " \
                                     "restrict to a single corpus." % (opts.begin), file=sys.stderr)
-        else:
+        if not opts.begin and not opts.seqfile:
               # If no "--begin" option, remove the " AND" from the front of
               # the 'corp_terms' string.  Read the first entry (by seq number)
               # in the requested corpora.
@@ -114,92 +122,106 @@ def main (args, opts):
               # entries only.
             sql = "SELECT id,seq,src FROM entr e WHERE %s%s ORDER BY src,seq LIMIT 1" % (cc, whr_act)
             start = time.time()
-            if debug: print (sql, file=sys.stderr)
+            if Debug: print (sql, file=sys.stderr)
             rs = jdb.dbread (cur, sql)
-            if debug: print ("Time: %s (init read)" % (time.time()-start), file=sys.stderr)
+            if Debug: print ("Time: %s (init read)" % (time.time()-start), file=sys.stderr)
+            lastsrc, lastseq, lastid = rs[0].src, rs[0].seq, rs[0].id
 
-        lastsrc, lastseq, lastid = rs[0].src, rs[0].seq, rs[0].id
-        count = opts.count; done = 0; blksize = opts.blocksize; corpora = set()
-
-          # Add an enclosing root element only if we are also including 
+          # Add an enclosing root element only if we are also including
           # a DTD (ie, producing a full XML file).  Otherwise, the file
-          # generated will just be a list of <entr> elements. 
+          # generated will just be a list of <entr> elements.
         if not opts.nodtd:
-            if opts.compat:  # Add a date comment... 
+            if opts.compat:  # Add a date comment...
                 today = time.strftime ("%Y-%m-%d", time.localtime())
                 outf.write ("<!-- %s created: %s -->\n" % (opts.root, today))
             outf.write ('<%s>\n' % opts.root)
 
+        entrlist_loc = 0
+        count = opts.count; done = 0; blksize = opts.blocksize; corpora = set()
+
         while count is None or count > 0:
 
-              # In this loop we read blocks of 'blksize' entries.  Each
-              # block read is ordered by entr src (i.e. corpus), seq, and
-              # id.  The block to read is specified in WHERE clause which
-              # is effectively:
-              #   WHERE ((e.src=lastsrc AND e.seq=lastseq AND e.id>=lastid+1)
-              #           OR (e.src=lastsrc AND e.seq>=lastseq)
-              #           OR e.src>lastsrc)
-              # and (lastsrc, lastseq, lastid) are from the last entry in
-              # the last block read.
+            if opts.seqfile:
+                seqnums = tuple (entrlist[entrlist_loc : entrlist_loc+blksize])
+                if not seqnums: break
+                entrlist_loc += blksize
+                  #FIXME: need detection of non-existent seq#s.
+                sql = "SELECT id FROM entr WHERE seq IN %s" + corp_terms + whr_act
+                sql_args = [seqnums]
+                if Debug: print (sql, sql_args, file=sys.stderr)
+                start = time.time()
+                tmptbl = jdb.entrFind (cur, sql, sql_args)
+            else:
+                  # In this loop we read blocks of 'blksize' entries.  Each
+                  # block read is ordered by entr src (i.e. corpus), seq, and
+                  # id.  The block to read is specified in WHERE clause which
+                  # is effectively:
+                  #   WHERE ((e.src=lastsrc AND e.seq=lastseq AND e.id>=lastid+1)
+                  #           OR (e.src=lastsrc AND e.seq>=lastseq)
+                  #           OR e.src>lastsrc)
+                  # and (lastsrc, lastseq, lastid) are from the last entry in
+                  # the last block read.
 
-            whr = "WHERE ((e.src=%%s AND e.seq=%%s AND e.id>=%%s) " \
-                          "OR (e.src=%%s AND e.seq>%%s) " \
-                          "OR e.src>%%s) %s%s" % (corp_terms, whr_act)
-            sql = "SELECT e.id FROM entr e" \
-                  " %s ORDER BY src,seq,id LIMIT %d" \
-                   % (whr, blksize if count is None else min (blksize, count))
+                whr = "WHERE ((e.src=%%s AND e.seq=%%s AND e.id>=%%s) " \
+                              "OR (e.src=%%s AND e.seq>%%s) " \
+                              "OR e.src>%%s) %s%s" % (corp_terms, whr_act)
+                sql = "SELECT e.id FROM entr e" \
+                      " %s ORDER BY src,seq,id LIMIT %d" \
+                       % (whr, blksize if count is None else min (blksize, count))
 
-              # The following args will be substituted for the "%%s" in
-              # the sql above, in jbd.findEntr().
-            sql_args = [lastsrc, lastseq, lastid, lastsrc, lastseq, lastsrc]
+                  # The following args will be substituted for the "%%s" in
+                  # the sql above, in jbd.findEntr().
+                sql_args = [lastsrc, lastseq, lastid, lastsrc, lastseq, lastsrc]
 
-              # Create a temporary table of id numbers and give that to
-              # jdb.entrList().  This is an order of magnitude faster than
-              # giving the above sql directly to entrList().
-            if debug: print (sql, sql_args, file=sys.stderr)
-            start = time.time()
-            tmptbl = jdb.entrFind (cur, sql, sql_args)
+                  # Create a temporary table of id numbers and give that to
+                  # jdb.entrList().  This is an order of magnitude faster than
+                  # giving the above sql directly to entrList().
+                if Debug: print (sql, sql_args, file=sys.stderr)
+                start = time.time()
+                tmptbl = jdb.entrFind (cur, sql, sql_args)
             mid = time.time()
             entrs, raw = jdb.entrList (cur, tmptbl, None, ord="src,seq,id", ret_tuple=True)
             end = time.time()
-            if debug: print ("read %d entries" % len(entrs), file=sys.stderr)
-            if debug: print ("Time: %s (entrFind), %s (entrList)" % (mid-start, end-mid), file=sys.stderr)
+            if Debug: print ("read %d entries" % len(entrs), file=sys.stderr)
+            if Debug: print ("Time: %s (entrFind), %s (entrList)" % (mid-start, end-mid), file=sys.stderr)
             if not entrs : break
-
-              # To format xrefs in xml, they must be augmented so that the
-              # the target reading and kanji text will be available.
-            jdb.augment_xrefs (cur, raw['xref'])
-
-              # Generate xml for each entry and write it to the output file.
-            start = time.time()
-            for e in entrs:
-                if not opts.compat:
-                    if e.src not in corpora:
-                        txt = '\n'.join (fmtxml.corpus ([e.src]))
-                        outf.write (txt + "\n")
-                        corpora.add (e.src)
-                    grp = getattr (e, '_grp', [])
-                    for g in grp:
-                        gob = jdb.KW.GRP[g.kw]
-                        if not hasattr (gob, 'written'):
-                            gob.written = True
-                            txt = '\n'.join (fmtxml.grpdef (gob))
-                            outf.write (txt + "\n")
-                txt = fmtxml.entr (e, compat=opts.compat, genhists=True,
-                                   last_imported=opts.last_imported)
-                outf.write (txt + "\n")
-            if debug: print ("Time: %s (fmt)" % (time.time()-start), file=sys.stderr)
+            write_entrs (cur, entrs, raw, corpora, opts, outf)
 
               # Update the 'last*' variables for the next time through
               # the loop.  Also, decrement 'count', if we are counting.
             lastsrc = entrs[-1].src;  lastseq = entrs[-1].seq;  lastid = entrs[-1].id + 1
             if count is not None: count -= blksize
             done += len (entrs)
-            if not debug: sys.stderr.write ('.')
+            if not Debug: sys.stderr.write ('.')
             else: print ("%d entries written" % done, file=sys.stderr)
         if not opts.nodtd: outf.writelines ('</%s>\n' % opts.root)
-        if not debug: sys.stderr.write ('\n')
+        if not Debug: sys.stderr.write ('\n')
         print ("Wrote %d entries" % done, file=sys.stderr)
+
+def write_entrs (cur, entrs, raw, corpora, opts, outf):
+          # To format xrefs in xml, they must be augmented so that the
+          # the target reading and kanji text will be available.
+        jdb.augment_xrefs (cur, raw['xref'])
+
+          # Generate xml for each entry and write it to the output file.
+        start = time.time()
+        for e in entrs:
+            if not opts.compat:
+                if e.src not in corpora:
+                    txt = '\n'.join (fmtxml.corpus ([e.src]))
+                    outf.write (txt + "\n")
+                    corpora.add (e.src)
+                grp = getattr (e, '_grp', [])
+                for g in grp:
+                    gob = jdb.KW.GRP[g.kw]
+                    if not hasattr (gob, 'written'):
+                        gob.written = True
+                        txt = '\n'.join (fmtxml.grpdef (gob))
+                        outf.write (txt + "\n")
+            txt = fmtxml.entr (e, compat=opts.compat, genhists=True,
+                               last_imported=opts.last_imported)
+            outf.write (txt + "\n")
+        if Debug: print ("Time: %s (fmt)" % (time.time()-start), file=sys.stderr)
 
 def parse_corpus_opt (s, src_col):
         if not s: return ''
@@ -252,6 +274,11 @@ Arguments:
             type="int", metavar="NUM",
             help="Number of entries to process.  If not given, "
                 "all entries in the file will be processed.")
+
+        p.add_option ("--seqfile", default=None,
+            help="Name of a file that contains a list of sequence numbers "
+                "to be extracted.  This and the -b or -c options are mutually "
+                "exclusive.")
 
         p.add_option ("-s", "--corpus", default=None,
             help="""Restrict extracted entries to those belonging to the
@@ -351,6 +378,8 @@ Arguments:
         if len (args) > 1: p.error ("%d arguments given, expected at most one.")
         if opts.compat and opts.compat not in ('jmdict','jmnedict','jmneold'):
             p.error ('--compat option must be one of: "jmdict", "jmnedict" or "jmneold".')
+        if  opts.seqfile and (opts.begin or opts.count):
+            p.error ('--begin or --count option is incompatible with --seqfile')
         return args, opts
 
 if __name__ == '__main__':

@@ -149,7 +149,7 @@ def main (args, opts):
                 if not seqnums: break
                 entrlist_loc += blksize
                   #FIXME: need detection of non-existent seq#s.
-                sql = "SELECT id FROM entr WHERE seq IN %s" + corp_terms + whr_act
+                sql = "SELECT id FROM entr e WHERE seq IN %s" + corp_terms + whr_act
                 sql_args = [seqnums]
                 if Debug: print (sql, sql_args, file=sys.stderr)
                 start = time.time()

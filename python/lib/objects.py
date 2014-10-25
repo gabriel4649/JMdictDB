@@ -252,10 +252,10 @@ class Xref (DbRow):
                           ('entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'))
 
 class Hist (DbRow):
-    def __init__ (s, entr=None, hist=None, stat=None, userid=None, dt=None, name=None,
+    def __init__ (s, entr=None, hist=None, stat=None, unap=None, dt=None, userid=None, name=None,
                   email=None, diff=None, refs=None, notes=None):
-        DbRow.__init__(s, ( entr,  hist,  stat,  userid,  dt,  name,  email,  diff,  refs,  notes),
-                          ('entr','hist','stat','userid','dt','name','email','diff','refs','notes'))
+        DbRow.__init__(s, ( entr,  hist,  stat,  unap,  dt,  userid,  name,  email,  diff,  refs,  notes),
+                          ('entr','hist','stat','unap','dt','userid','name','email','diff','refs','notes'))
 
 class Grp (DbRow):
     def __init__ (s, entr=None, kw=None, ord=None, notes=None):

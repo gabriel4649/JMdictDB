@@ -108,7 +108,7 @@ class Test_Attrs (unittest.TestCase):
     def test000150(_): attrchk (_, Dial(),    ['entr','sens','ord','kw'])
     def test000160(_): attrchk (_, Lsrc(),    ['entr','sens','ord','lang','txt','part','wasei'])
     def test000170(_): attrchk (_, Xref(),    ['entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'])
-    def test000180(_): attrchk (_, Hist(),    ['entr','hist','stat','userid','dt','name','email','diff','refs','notes'])
+    def test000180(_): attrchk (_, Hist(),    ['entr','hist','stat','unap','dt','userid','name','email','diff','refs','notes'])
     def test000190(_): attrchk (_, Grp(),     ['entr','kw','ord','notes'])
     def test000200(_): attrchk (_, Cinf(),    ['entr','kw','value','mctype'])
     def test000210(_): attrchk (_, Chr(),     ['entr','chr','bushu','strokes','freq','grade','jlpt','_cinf'])

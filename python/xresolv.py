@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008,2010 Stuart McGraw
+#  Copyright (c) 2008,2014 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -80,38 +80,58 @@ def main (args, opts):
 
         krmap = read_krmap (dbh, opts.filename, targ_src)
 
-        lastpos = [0,0,0,0]; blksz = 1000
-        while 1:
-            if not opts.noaction and lastpos != [0,0,0,0]:
-                dbh.connection.commit()
+        blksz = 1000
+        for xresolv_rows in get_xresolv_block (dbh, blksz, xref_src):
+            if not xresolv_rows: break
+            resolv (dbh, xresolv_rows, targ_src, krmap)
+            if not opts.noaction: 
                 if opts.verbose: print ("Commit")
-            lastpos = resolv (dbh, lastpos, blksz,
-                              xref_src, targ_src, krmap)
-            if lastpos is None: break
+                dbh.connection.commit()
         dbh.close()
 
-#-----------------------------------------------------------------------
+def get_xresolv_block (dbh, blksz, xref_src, read_xref=False):
+        # Read and yield sucessive blocks of 'blksz' rows from table "xresolv"
+        # (or, despite our name, table "xref" is 'read_xref' is true).  Rows
+        # are ordered by (target) entr id, sens, xref type and xref ord (or 
+        # xref.xref for table "xref") and limited to entries having a .src
+        # attribute of 'xref_src'.  None is returned when no more rows are
+        # available.
+        table = "xref" if read_xref else "xresolv"
+        lastpos = 0, 0, 0, 0
+        while True:
+            e0, s0, t0, o0 = lastpos
+              # Following sql will read 'blksz' xref rows, starting
+              # at 'lastpos' (which is given as a 4-tuple of xresolv.entr,
+              # .sens, .typ and .ord).  Note that the result set must be
+              # ordered on exactly this same set of values in order to
+              # step through them block-wise.
+            sql = "SELECT v.*,e.seq,e.stat,e.unap FROM %s v JOIN entr e ON v.entr=e.id " \
+                            "WHERE e.src=%%s " \
+                              "AND (v.entr>%%s OR (v.entr=%%s " \
+                               "AND (v.sens>%%s OR (v.sens=%%s " \
+                                "AND (v.typ>%%s OR (v.typ=%%s " \
+                                 "AND (v.ord>%%s))))))) " \
+                            "ORDER BY v.entr,v.sens,v.typ,v.ord " \
+                            "LIMIT %s" % (table, blksz)
+            if read_xref:
+                  # If reading the xref rather than the xresolv table make some
+                  # adjustments:
+                sql = sql.replace ('.ord', '.xref')    # The "ord" field is named "xref".
+                t0, o0 = o0, t0  # The typ and xref (aka ord) fields are swapped in xref rows.
+            rs = jdb.dbread (dbh, sql, [xref_src, e0,e0,s0,s0,t0,t0,o0])
+            if len (rs) == 0: return None
+            if Opts.debug & 0x04:
+                print ("Read %d %s rows" % (len(rs), table), file=sys.stderr)
+              # Slicing doesn't seem to currently work on DbRow objects or we could 
+              #  write "lastpos = rs[-1][0:4]" below.
+            lastpos = rs[-1][0], rs[-1][1], rs[-1][2], rs[-1][3]
+            yield rs
+        assert True, "Unexpected break from loop"
+        return
 
-def resolv (dbh, lastpos, blksz, xref_src, targ_src, krmap):
-        e0, s0, t0, o0 = lastpos
-          # Following sql will read 'blksz' xresolv rows, starting
-          # at 'lastpos' (which is given as a 4-tuple of xresolv.entr,
-          # .sens, .typ and .ord).  Note that the result set must be
-          # ordered on exactly this same set of values in order to
-          # step through them block-wise.
-        sql = "SELECT v.*,e.seq,e.stat,e.unap FROM xresolv v JOIN entr e ON v.entr=e.id " \
-                        "WHERE e.src=%%s " \
-                          "AND (v.entr>%%s OR (v.entr=%%s " \
-                           "AND (v.sens>%%s OR (v.sens=%%s " \
-                            "AND (v.typ>%%s OR (v.typ=%%s " \
-                             "AND (v.ord>%%s))))))) " \
-                        "ORDER BY v.entr,v.sens,v.typ,v.ord " \
-                        "LIMIT %s" % blksz
-        rs = jdb.dbread (dbh, sql, [xref_src, e0,e0,s0,s0,t0,t0,o0])
-        if len (rs) == 0: return None
-        if Opts.debug & 0x04:
-            print ("Read %d xresolv rows" % (len(rs),), file=sys.stderr)
-        for v in rs:
+def resolv (dbh, xresolv_rows, targ_src, krmap):
+
+        for v in xresolv_rows:
 
               # Skip this xref if the "ignore-nonactive" option was
               # given and the entry is not active (i.e. is deleted or
@@ -193,8 +213,6 @@ def resolv (dbh, lastpos, blksz, xref_src, targ_src, krmap):
                 dbh.execute ("DELETE FROM xresolv "
                              "WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s",
                              (v.entr,v.sens,v.typ,v.ord))
-        r = rs[-1]
-        return r.entr, r.sens, r.typ, r.ord
 
 class Memoize:
     def __init__( self, func ):
@@ -465,7 +483,7 @@ Arguments: none"""
                 "controls what is printed.  See source code.")
 
         p.epilog = """\
-When a program such as jmparse.py of exparse.py parses
+When a program such as jmparse.py or exparse.py parses
 a corpus file, any xrefs in that file are in textual
 form (often a kanji and/or kana text string that identifies
 the target of the xref).  The database stores xrefs using

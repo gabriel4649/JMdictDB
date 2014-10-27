@@ -252,8 +252,11 @@ pgsubdir:
 postload:
 	cd pg && psql $(PG_HOST) -U $(USER) -d $(DB) -f fkcreate.sql
 	cd pg && psql $(PG_HOST) -U $(PG_SUPER) -d $(DB) -f postload.sql
-	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) >../data/xresolv.log
-
+	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -s jmdict   -t jmdict  >../data/jmdict_xresolv.log
+	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -s jmnedict -t jmnedict >../data/jmnedict_xresolv.log
+        # we don't currently resolve the Examples xrefs because of the large numbers
+        # of some of them (e.g. there are some 90k xrefs to the particle は.
+	#cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -s examples -t jmdict >../data/
 	@echo 'Remember to check the log files for warning messages.'
 
 #------ Load JMdict -----------------------------------------------------

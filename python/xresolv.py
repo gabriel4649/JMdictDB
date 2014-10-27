@@ -69,16 +69,22 @@ def main (args, opts):
           #  2 -- Print executed sql.
           #  4 -- Print info about read xresolve records.
         if opts.debug & 0x02: Debug.prtsql = True
+        if opts.verbose: opts.keep = True
 
         try: dbh = jdb.dbOpen (opts.database, **jdb.dbopts(opts))
         except jdb.dbapi.OperationalError as e:
-            prnt (sys.stderr, "Error, unable to connect to database, do you need -u or -p?\n" % str(e))
-            sys.exit(1)
+            perr ("Error, unable to connect to database, do you need -u or -p?\n" % str(e))
 
-        xref_src = opts.source_corpus or KW.SRC['jmdict'].id
-        targ_src = opts.target_corpus or KW.SRC['jmdict'].id
+        try: xref_src = get_src_ids (opts.source_corpus)
+        except KeyError: perr ("Unknown corpus: '%s'" % opts.source_corpus)
+        try: targ_src = get_src_ids (opts.target_corpus)
+        except KeyError: perr ("Unknown corpus: '%s'" % opts.target_corpus)
 
-        krmap = read_krmap (dbh, opts.filename, targ_src)
+          #FIXME: need to make work with multiple srcs in targ_src and
+          # provide limiting the scope (eg to one src or an entry) of
+          # the K/R pairs in the file.
+        #krmap = read_krmap (dbh, opts.filename, targ_src)
+        krmap = {}
 
         blksz = 1000
         for xresolv_rows in get_xresolv_block (dbh, blksz, xref_src):
@@ -105,23 +111,30 @@ def get_xresolv_block (dbh, blksz, xref_src, read_xref=False):
               # .sens, .typ and .ord).  Note that the result set must be
               # ordered on exactly this same set of values in order to
               # step through them block-wise.
-            sql = "SELECT v.*,e.seq,e.stat,e.unap FROM %s v JOIN entr e ON v.entr=e.id " \
-                            "WHERE e.src=%%s " \
-                              "AND (v.entr>%%s OR (v.entr=%%s " \
+            sql_args = []
+            if xref_src:
+                srcs, neg = xref_src
+                src_condition = "e.src %sIN %%s AND " % ('NOT ' if neg else '')
+                sql_args.append (tuple(srcs))
+            else: src_condition = ''
+            sql = "SELECT v.*,e.src,e.seq,e.stat,e.unap FROM %s v JOIN entr e ON v.entr=e.id " \
+                            "WHERE %s" \
+                              " (v.entr>%%s OR (v.entr=%%s " \
                                "AND (v.sens>%%s OR (v.sens=%%s " \
                                 "AND (v.typ>%%s OR (v.typ=%%s " \
                                  "AND (v.ord>%%s))))))) " \
                             "ORDER BY v.entr,v.sens,v.typ,v.ord " \
-                            "LIMIT %s" % (table, blksz)
+                            "LIMIT %s" % (table, src_condition, blksz)
             if read_xref:
                   # If reading the xref rather than the xresolv table make some
                   # adjustments:
                 sql = sql.replace ('.ord', '.xref')    # The "ord" field is named "xref".
                 t0, o0 = o0, t0  # The typ and xref (aka ord) fields are swapped in xref rows.
-            rs = jdb.dbread (dbh, sql, [xref_src, e0,e0,s0,s0,t0,t0,o0])
+            sql_args.extend ([e0,e0,s0,s0,t0,t0,o0])
+            rs = jdb.dbread (dbh, sql, sql_args)
             if len (rs) == 0: return None
             if Opts.debug & 0x04:
-                print ("Read %d %s rows" % (len(rs), table), file=sys.stderr)
+                print ("Read %d %s rows from %s" % (len(rs), table, lastpos), file=sys.stderr)
               # Slicing doesn't seem to currently work on DbRow objects or we could 
               #  write "lastpos = rs[-1][0:4]" below.
             lastpos = rs[-1][0], rs[-1][1], rs[-1][2], rs[-1][3]
@@ -132,26 +145,20 @@ def get_xresolv_block (dbh, blksz, xref_src, read_xref=False):
 def resolv (dbh, xresolv_rows, targ_src, krmap):
 
         for v in xresolv_rows:
-
               # Skip this xref if the "ignore-nonactive" option was
               # given and the entry is not active (i.e. is deleted or
               # rejected) or is unapproved.  Unapproved entries will
               # be checked during approval submission and unresolved
               # xrefs in rejected/deleted entries are often moot.
-
             if Opts.ignore_nonactive and \
                 (v.stat != jdb.KW.STAT['A'].id or v.unap): continue
-
             e = None
             if krmap:
-
                   # If we have a user supplied map, lookup the xresolv
                   # reading and kanji in it first.
-
                 e = krlookup (krmap, v.rtxt, v.ktxt)
 
             if not e:
-
                   # If there was no map, or the xresolv reading/kanji
                   # was not found in it, look in the database for them.
                   # get_entries() will return an abbreviated entry
@@ -159,14 +166,13 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
                   # reading-kanji pair (if the xresolv rec specifies
                   # both), reading or kanji (if the xresolv rec specifies
                   # one).
-
                 entries = get_entries (dbh, targ_src, v.rtxt, v.ktxt, None)
 
                   # If we didn't find anything, and we did not have both
                   # a reading and a kanji, try again but search for reading
                   # in kanj table or kanji in rdng table because our idea
                   # of when a string is kanji and when it is a reading still
-                  # still does not agree with JMdict's in all casee (IS-26).
+                  # still does not agree with JMdict's in all cases (IS-26).
                   # This hack will be removed when IS-26 is resolved.
 
                 if not entries and (not v.rtxt or not v.ktxt):
@@ -188,10 +194,9 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
                 continue
 
               # Now that we know the target entry, we can create the actual
-              # db xref records.  There may be more than one of the target
+              # db xref records.  There may be more than one if the target
               # entry has multiple senses and no explicit sense was given
               # in the xresolv record.
-
             xrefs = mkxrefs (v, e)
 
             if Opts.verbose and xrefs: prnt (sys.stdout,
@@ -226,10 +231,10 @@ class Memoize:
 @Memoize
 def get_entries (dbh, targ_src, rtxt, ktxt, seq):
 
-        # Find all entries in the corpus targ_src that have a
+        # Find all entries in the corpora targ_src that have a
         # reading and kanji that match rtxt and ktxt.  If seq
         # is given, then the matched entries must also have a
-        # as sequence number tyhat is the same.  Matches are
+        # as sequence number that is the same.  Matches are
         # restricted to entries with stat=2 ("active");
         #
         # The records in the entry list are lists, and are
@@ -247,7 +252,10 @@ def get_entries (dbh, targ_src, rtxt, ktxt, seq):
         if not ktxt and not rtxt:
             raise ValueError ("get_entries(): 'rtxt' and 'ktxt' args are are both empty.")
         args = [];  cond = [];
-        args.append (targ_src); cond.append ("src=%s");
+        if targ_src:
+            srcs, neg = targ_src
+            args.append (tuple (srcs)); 
+            cond.append ("src %sIN %%s" % ('NOT ' if neg else ''));
         if seq:
             args.append (seq); cond.append ("seq=%s")
         if rtxt:
@@ -362,10 +370,10 @@ def mkxrefs (v, e):
 
 def read_krmap (dbh, infn, targ_src):
         if not infn: return None
-        FIN = open (infn, "r", encoding="utf8_sig")
+        fin = open (infn, "r", encoding="utf8_sig")
 
         krmap = {}
-        for lnnum, line in enumberate (FIN):
+        for lnnum, line in enumerate (fin):
             if line.isspace() or re.search (r'^\s*\#', line): continue
             rtxt, ktxt, seq = line.split ('\t', 3)
             try: seq = int (seq)
@@ -386,7 +394,7 @@ def kr (v):
         return s
 
 def fs (v):
-        s = "Seq %d (%d,%d):" % (v.seq,v.sens,v.ord)
+        s = "%s.%d (%d,%d):" % (jdb.KW.SRC[v.src].kw, v.seq,v.sens,v.ord)
         return s
 
 def fmt_jitem (ktxt, rtxt, slist):
@@ -402,6 +410,28 @@ def msg (source, msg, arg):
 
 def prnt (f, msg):
         print (msg, file=f)
+
+def perr (msg):
+        print (msg, file=sys.stderr)
+        sys.exit(1)
+
+def get_src_ids (srclist):
+        if not srclist: return None
+        neg = False
+        if srclist.startswith ('-'):
+            neg = True; srclist = srclist[1:]
+        srcs = srclist.split(',')
+        ids = tuple([get_src_id (x) for x in srcs if x])
+        return ids, neg
+
+def get_src_id (id_or_name):
+          # Return the kwsrc.id value corresponding to 'id_or_name'.
+        if not id_or_name: return None
+        src = id_or_name
+        try: src = int (src)
+        except (ValueError): pass
+        src = jdb.KW.SRC[src].id
+        return src
 
 #-----------------------------------------------------------------------
 
@@ -449,15 +479,17 @@ Arguments: none"""
             help="Ignore unresolved xrefs belonging to entries with a"
                 "status of deleted or rejected or which are unapproved ")
 
-        p.add_option ("-s", "--source-corpus", default=1,
-            type="int", metavar="NUM",
-            help="Limit to xrefs occuring in entries of corpus id "
-                "NUM.  Default = 1 (jmdict).")
+        p.add_option ("-s", "--source-corpus", default=None,
+            metavar='CORPORA',
+            help="Limit to xrefs occuring in entries of CORPORA (a comma-"
+                "separated list of corpus names or id numbers).  If preceeded "
+                "by a \"-\", all corpora will be included except those listed.")
 
-        p.add_option ("-t", "--target-corpus", default=1,
-            type="int",  metavar="NUM",
-            help="Limit to xrefs that resolve to targets in corpus "
-                "NUM.  Default = 1 (jmdict).")
+        p.add_option ("-t", "--target-corpus", default=None,
+            metavar='CORPORA',
+            help="Limit to xrefs that resolve to targets in CORPORA (a comma-"
+                "separated list of corpus names or id numbers).  If preceeded "
+                "by a \"-\", all corpora will be included except those listed.")
 
         p.add_option ("-e", "--encoding", default="utf-8",
             type="str", dest="encoding",

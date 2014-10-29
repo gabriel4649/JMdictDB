@@ -6,6 +6,10 @@
 	many fields from it. It is used for a quick-and-dirty conversion
 	of the ENAMDICT entries, plus the name entries from EDICTH.
 -->
+<!-- Rev 1.08 
+	Matching revision numbers with the JMdict DTD, which was changed
+	to delete the <info> and <example> elements
+-->
 <!ELEMENT JMnedict (entry*)>
 <!--                                                                   -->
 <!ELEMENT entry (ent_seq, k_ele*, r_ele+, trans+)*>

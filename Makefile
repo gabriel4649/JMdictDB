@@ -177,7 +177,7 @@ all:
 	@echo '  data/kanjidic2.xml -- Get latest kanjidic2.xml file from Monash.'
 	@echo '  data/kanjidic2.pgi -- Create intermediate file from examples.xml file.'
 	@echo '  loadkd -- Load kanjidic into the existing database "jmnew".'
-	@echo '   * WARNING: kanjidic2 support is usable but incomplete.
+	@echo '   * WARNING: kanjidic2 support is usable but incomplete.'
 	@echo
 	@echo '  loadall -- Initialize database "jmnew" and load jmdict, jmnedict'
 	@echo '     and examples.'
@@ -188,8 +188,8 @@ all:
 	@echo 
 	@echo '  * NOTE: "make loadall" will do all needed database initialization.'
 	@echo '  To load a subset of loadall (eg only loadjm and loadne), you should' 
-	@echo '  do "make jmnew", then "make loadjm", "make loadne", etc as desired, 
-	@echo '  then the last step should be "make postload".
+	@echo '  do "make jmnew", then "make loadjm", "make loadne", etc as desired,'
+	@echo '  then the last step should be "make postload".'
 
 #------ Create jmsess and jmdictdb users ---------------------------------
 

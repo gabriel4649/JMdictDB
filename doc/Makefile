@@ -16,12 +16,8 @@ schema: schema.png schema.pdf schema.html
 schema.png: schema.dia
 	dia --export $@ -s 1500x $?
 
-# (See README.txt for info about the macros below...)
-
 schema.pdf: schema.odt
-	/usr/bin/openoffice.org-2.0 -invisible \
-	  "macro:///DannysLibrary.Conversion.ExportDoc(/home/stuart/jb/doc/$?,pdf)"
+	/usr/bin/libreoffice --headless --convert-to pdf schema.odt
 
 schema.html: schema.odt
-	/usr/bin/openoffice.org-2.0 -invisible \
-	  "macro:///DannysLibrary.Conversion.ExportDoc(/home/stuart/jb/doc/$?,html)"
+	/usr/bin/libreoffice --headless --convert-to html schema.odt

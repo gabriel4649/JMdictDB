@@ -83,9 +83,11 @@
       <tr>
         <td colspan="2">
           JMdictDB is an open-source Postgresql database and Python API
-          for managing Japanese dictionary data.  It was developed by
-          Stuart McGraw.  For more information, see
-          <a href="http://edrdg.org/~smg/">http://edrdg.org/~smg/</a>.
+          for managing Japanese dictionary data.  Please see 
+          <a href="http://edrdg.org/~smg/">http://edrdg.org/~smg/</a>
+          for more information.  It was developed by Stuart McGraw 
+          (<a href="mailto:jmdictdb@mtneva.com">jmdictdb@mtneva.com</a> / 
+          <a href="http://mtneva.com">http://mtneva.com</a>).
           </td>
         </tr>
       </tbody>

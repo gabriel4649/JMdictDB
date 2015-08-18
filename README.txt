@@ -11,7 +11,7 @@ Discussion takes place on the edict-jmdict@yahoo.com mailing
 list (http://groups.yahoo.com/group/edict-jmdict/)
 
 The software in this package is copyrighted by 
-Stuart McGraw, <smcg4191x@frxii.com>(remove x's) 
+Stuart McGraw, <jmdictdb@mtneva.com>
 (except where otherwise noted) 
 and licensed under the GNU General Public License version 2.  
 See the file COPYING.txt for details.

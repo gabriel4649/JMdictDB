@@ -47,9 +47,10 @@ def main (args, opts):
         sql = '''SELECT DISTINCT e.id
                  FROM entr e
                  JOIN hist h on h.entr=e.id
-                 WHERE h.dt::DATE=%s'''
+                 WHERE h.dt BETWEEN %s::timestamp
+                            AND %s::timestamp + interval '1 day' '''
 
-        entries = jdb.entrList (cur, sql, (day,), 'x.src,x.seq,x.id')
+        entries = jdb.entrList (cur, sql, (day,day,), 'x.src,x.seq,x.id')
 
           # Prepare the entries for display... Augment the xrefs (so that
           # the xref seq# and kanji/reading texts can be shown rather than

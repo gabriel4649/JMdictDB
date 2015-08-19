@@ -20,25 +20,28 @@
 
 # Display entries that were added or updated on a given date (that
 # is, have a history entry with that date) or alternately, an index
-# page the shows dates on which one or more entries were updated.
+# page that shows date links to pages for the entries updated on that
+# date.
 #
 # URL parameters:
 #   i -- Display an index page listing dates for which there
 #        are undates.  Each date is a link which when clicked
 #        will display the actual updates made on that date.
 #        Only one year of dates is shown; the year is specified
-#        with the 'y' parameter.  If 'i' is not present, the 
-#        actuall
+#        with the 'y' parameter.  If 'i' is not present, a page
+#        showing the actual entries updated on the date given 
+#        by 'y', 'm', 'd' will be shown with the entr.tal template.  
 #   y, m, d -- The year, month (1-12) and day (1-31) giving a 
 #        date.  If 'i' was not given, the updates made on this
 #        date will be shown.  If 'i' was given, 'm' and 'd' are
-#        ignored and and index page for the year 'y' is shown.
+#        ignored and an index page for the year 'y' is shown.
 #        If any of 'y', 'm' or 'd' are missing, its value will
 #        be taken from the current date.
-#   n -- A integer greater than 0 that will be subtracted from
-#        the date given with the other parameter.  This is primarily
-#        used with the value 1 to get "yesterday's" updates but
-#        will work with other values. 
+#   n -- A integer greater than 0 that is a number of days that
+#        will be subtracted from the date given with the other
+#        parameters.  This is primarily used with the value 1
+#        to get "yesterday's" updates but will work consistently
+#        with other values.
 #   [other] -- The standard jmdictdb cgi parameters like 'svc',
 #        'sid', etc.  See python/lib/jmcgi.py.
 
@@ -74,7 +77,9 @@ def render_day_updates (y, m, d, n, formvalues):
         # If we have a specific date, we will show the actual entries that
         # were modified on that date.  We do this by retrieving Entr's for
         # any entries that have a 'hist' row with a 'dt' date on that day.
-        # The Entr's are displayed using the standard entr.tal template.
+        # The Entr's are displayed using the standard entr.tal template 
+        # that is also used for displaying other "list of entries" results
+        # (such as from the Search Results page).
 
         cur = formvalues[3]
         sql = '''SELECT DISTINCT e.id
@@ -120,10 +125,9 @@ def render_year_index (y, formvalues):
         # (viw render_day_update() above) for that date.  The range of
         # the dates are limited to one year.
         # Also on the page we generate links for each year for which
-        # there are updates in the database.  This links also point 
-        # back to this script but with only a year, not a full date,
-        # so that when clicked,. they will generate a daily index for
-        # that year.
+        # there are updates in the database.  Those links also points 
+        # back to this script but with 'i' and a year, so that when
+        # clicked, they will generate a daily index for that year.
         
         cur = formvalues[3]
 

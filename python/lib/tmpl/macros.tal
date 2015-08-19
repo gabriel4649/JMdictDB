@@ -11,7 +11,7 @@
             Advanced Search</a>   |
           <a tal:attributes="href string:edform.py?svc=${svc}&amp;sid=${sid}">
             New Entry</a> |
-          <a tal:attributes="href string:updates.py?svc=${svc}&amp;sid=${sid}">
+          <a tal:attributes="href string:updates.py?svc=${svc}&amp;sid=${sid}&i=1">
             Submissions</a>
           </td>
         <td align="right" rowspan="1" class="hlogin">

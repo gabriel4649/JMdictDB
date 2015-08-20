@@ -57,6 +57,8 @@ def main (args, opts):
         formvalues = form, svc, host, cur, sid, sess, parms, cfg
         fv = form.getfirst; fl = form.getlist
         t = datetime.date.today()  # Will supply default value of y, m, d.
+          # y, m, and d below are used to construct sql string and *must*
+          # be forced to int()'s to eliminate possibiliy of sql injection. 
         try: y = int (fv ('y') or t.year)
         except Exception as e: 
             jmcgi.err_page ("Bad 'y' url parameter."); return
@@ -135,15 +137,19 @@ def render_year_index (y, formvalues):
           # for year = 'y' for with there are hist records.  'count' is
           # the number of number of hist records with the coresponding
           # date.
-
+            # Following can by simplified when using postgresql-9.4: 
+            # see changeset jm:b930b6fd1e3b (2015-08-19)
+        start_of_year = '%d-01-01' % y  
+        end_of_year = '%d-12-31' % y
         sql = '''SELECT EXTRACT(YEAR FROM dt)::INT AS y, 
                      EXTRACT(MONTH FROM dt)::INT AS m, 
                      EXTRACT(DAY FROM dt)::INT AS d,
                      COUNT(*)
-                 FROM hist h 
-                 WHERE dt BETWEEN MAKE_DATE(%s,1,1) AND MAKE_DATE(%s,12,31) 
+                 FROM hist h
+                 WHERE dt BETWEEN '%s'::DATE AND '%s'::DATE 
                  GROUP BY EXTRACT(YEAR FROM dt)::INT,EXTRACT(MONTH FROM dt)::INT,EXTRACT(DAY FROM dt)::INT
-                 ORDER BY EXTRACT(YEAR FROM dt)::INT,EXTRACT(MONTH FROM dt)::INT,EXTRACT(DAY FROM dt)::INT'''
+                 ORDER BY EXTRACT(YEAR FROM dt)::INT,EXTRACT(MONTH FROM dt)::INT,EXTRACT(DAY FROM dt)::INT
+                 ''' % (start_of_year, end_of_year)
         cur.execute (sql, (y,y))
         days = cur.fetchall()
 

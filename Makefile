@@ -152,6 +152,7 @@ TAL_FILES = conj.tal \
 	srchsql.tal \
 	submitted.tal \
 	url_errors.tal \
+	updates.tal \
 	jbedits.tal
 WEB_TAL	= $(addprefix $(LIB_DIR)/tmpl/,$(TAL_FILES))
 

@@ -14,7 +14,6 @@
     database for particular days. Dates used are in Coordinated Universal Time (UTC, 
     formerly GMT).  Select a date and click on "View":<br/>
     <FORM ACTION="updates.py" METHOD="GET">
-      <input type="hidden" name="svc" value="jmdict"/>
       <select NAME="y">
         <option tal:repeat="y years" tal:attributes="value y/0" tal:content="y/0"/>
         </select>
@@ -65,6 +64,9 @@
         <option VALUE="31" > 31</option>
         </select>
       <input type="submit" value="View"/>  &nbsp; <input type="reset" value="Reset"/>
+      <input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
+      <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
+      <input type="hidden" name="dbg" tal:condition="dbg" tal:attributes="value dbg"/>
       </form>
 
     <p>Or select one of the links below:</p>

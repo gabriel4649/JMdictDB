@@ -55,7 +55,7 @@
   The actual numbers used in sense numbers are not significant:
   when entered into the database, senses will be ordered starting
   from 1 in the order they occur regardless of the sense numbers
-  used in the Senses box.  Note that sense numbers are not tags
+  used in the Meanings box.  Note that sense numbers are not tags
   (described below); they must not contain any characters (including
   whitespace) other than the number and cannot be grouped with other
   tags.

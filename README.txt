@@ -1,5 +1,3 @@
-$Revision$
-$Date$
 http://www.edrdg.org/~smg/
 
 The JMdictDB project is an informal project to put the contents 
@@ -538,6 +536,27 @@ usual during loading.
    srchform.pl and do searches for jmdict entries.  The url
    corresponding to edform.pl will let you add new entries.
 
+=========
+OPERATION
+=========
+
+   Web access to the JMdictDB system can be suspended temporarily
+   by creating a control file in the installed cgi directory named 
+   "status_maint" or "status_load".  If either file exists, any
+   web access to a cgi script will result in a redirect to 
+   "status_maint.html" or "status_load.html" which present the 
+   user with a message that the system is unavailable due to
+   maintenance or excessive load, respectively.
+
+   The directory in which the cgi scripts look for the control
+   files can be set in the config.ini file.  The location of the
+   html files is not customizable although you can of course 
+   modify their contents.
+
+   It is up to you to create and and remove the control files as
+   appropriate.
+
+======================================================================
 Notes:
 [*1] 
 http://www.csse.monash.edu.au/~jwb/japanese.html

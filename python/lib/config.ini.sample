@@ -11,6 +11,16 @@
 
 [web]
 
+  # The directory in which the jmdictdb CGI scripts will look
+  # for either of the control files "status_maint" or "status_load".
+  # If either is present (contents are ignored) then the script
+  # will return a redirect to one of the static HTML pages, 
+  # "../status_maint.html" or "../status_load.html" according to
+  # the control file name.  The html filenames and location are not
+  # currently configurable.  Note that "../" is the parent directory
+  # of the CGI directory.
+STATUS_DIR = .
+
   # Email address that will appear at the bottom of each
   # cgi web page as the contact for questions etc.
 CONTACT_EMAIL = jimbreen@edrdg.org

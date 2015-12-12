@@ -100,7 +100,9 @@ PG_HOST = -h $(HOST)
 JM_HOST = -r $(HOST)
 endif
 
-CSS_FILES = jmdict.css
+CSS_FILES = jmdict.css \
+	status_maint.html \
+	status_load.html
 WEB_CSS = $(addprefix $(CSS_DIR)/,$(CSS_FILES))
 
 CGI_FILES = conj.py \

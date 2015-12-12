@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008-2014 Stuart McGraw
+#  Copyright (c) 2008-2015 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -16,9 +16,6 @@
 #  along with JMdictDB; if not, write to the Free Software Foundation,
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
-
-__version__ = ('$Revision: $'[11:-2],
-               '$Date: $'[7:-11]);
 
 import sys, re, cgi, urllib.request, urllib.parse, urllib.error, os, os.path, \
         random, time, http.cookies, datetime, time, copy
@@ -46,6 +43,7 @@ def parseform (readonly=False):
         cfg = jdb.cfgOpen ('config.ini')
         def_svc = cfg['web'].get ('DEFAULT_SVC', 'jmdict')
         if def_svc.startswith ('db_'): def_svc = def_svc[3:]
+        check_server_status (cfg.get ('web', 'STATUS_DIR'))
 
         form = cgi.FieldStorage()
         svc = form.getfirst ('svc') or def_svc
@@ -82,6 +80,17 @@ def parseform (readonly=False):
                      for v in form.getlist(k) ]
 
         return form, svc, host, cur, sid, sess, parms, cfg
+
+def check_server_status (status_file_dir):
+        location = None
+        sfd = status_file_dir
+        if os.access (os.path.join (sfd, 'status_maint'), os.F_OK):
+            location = 'status_maint.html'
+        elif os.access (os.path.join (sfd, 'status_load'), os.F_OK):
+            location = 'status_load.html'
+        if location:
+            print ("Location: %s\n" % ('../' + location))
+            sys.exit (0)
 
 COOKIE_NAME = 'jmdictdb_sid'
 SESSION_TIMEOUT = '2 hour'

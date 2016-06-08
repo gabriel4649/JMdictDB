@@ -38,7 +38,7 @@ CREATE LANGUAGE 'plpgsql';
 CREATE TABLE dbpatch(
     level INT PRIMARY KEY,
     dt TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'utc'));
-INSERT INTO dbpatch(level) VALUES(21);
+INSERT INTO dbpatch(level) VALUES(22);
 
 
 CREATE TABLE kwdial (

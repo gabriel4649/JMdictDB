@@ -667,14 +667,16 @@
           kanji or reading restriction text in brackets (separated by
           ASCII or JIS commas). <br/>
           (7) To create a restr tag to a kanji or reading that contains
-          a "・" character, put the kanji or reading inside double quotes.
+          a "・" character or other special characters such as numerics,
+          put the kanji or reading inside double quotes.
           </td>
         <td class="syntable">
           [惚け、呆け]<br/>
           [restr=惚け；呆け]<br/>
           [惚け][restr=呆け]<br/>
           [nokanji]<br/>
-          [restr="アジア・太平洋戦争"] </td>
+          [restr="アジア・太平洋戦争"]
+          [一人一人,"１人１人"] </td>
         </tr>
 
       <tr>

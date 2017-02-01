@@ -190,7 +190,7 @@ def TALdecode (arg, *args):
 def TALm2mn (monthnum,short=False):
           # Convert a month number (1-12) to the name of the month.
         if not monthnum: return ''
-        mn = ['January','Febuary','March','April','May','June','July',
+        mn = ['January','February','March','April','May','June','July',
               'August','September','October','November','December']\
              [int(monthnum)-1]
         if short: return mn[:3]

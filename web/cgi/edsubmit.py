@@ -364,6 +364,14 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
             entr = jdb.add_hist (entr, pentr, userid,
                                  h.name, h.email, h.notes, h.refs, merge_rev)
         if not errs:
+              # Occasionally, often from copy-pasting, a unicode BOM
+              # character finds its way into one of an entry's text
+              #  strings.  We quietly remove any here.
+            n = jdb.bom_fixall (entr)
+            if n > 0:
+                logw ("submission(): Removed %s BOM character(s)" % n)
+
+        if not errs:
             if not disp:
                 added = submit (dbh, entr, edtree, errs)
             elif disp == "a":

@@ -2277,6 +2277,40 @@ def jstr_keb (s):
                  or
                  ((b & KANA) and not (b & ~(KANA | KSYM)))) #reb
 
+BOMle, BOMbe = '\uFFFE', '\uFEFF'
+BOM_STRIP_TAB = {ord(BOMle):None, ord(BOMbe):None}
+def bom_strip (s):
+      # Check string 's' for presence of a unicode BOM (Byte Order
+      # Mark) character in either of the two forms.  If not found
+      # return None; if found return a copy of the string 's' with
+      # all occurances of the BOM character(s) deleted.
+    if not s: return s
+    if BOMle not in s and BOMbe not in s: return None
+    return s.translate (BOM_STRIP_TAB)
+
+def bom_fixn (lst):
+      # Remove BOM characters from the .txt atribute of the objects
+      # in list 'lst' (typically a Kanj, Rdng or Gloss object but
+      # can be any object which has a '.txt' atrribute pointing to
+      # a string or None.)
+      # Return a count of the total number of characters removed
+      # in all the strings.
+    count = 0
+    for o in lst:
+       s = bom_strip (o.txt)
+       if s: o.txt, count = s, count+1 
+    return count
+
+def bom_fixall (e):
+      # Remove BOM character from an entry object ('e') rdng and 
+      # kanj text strings.  We don't check or fix gloss, lsrc,
+      # hist or other text fields since experience to date has
+      # not shown a problem with BOM characters in those fields. 
+    count = 0
+    count += bom_fixn (e._kanj)
+    count += bom_fixn (e._rdng)
+    #for s in e._sens: count += bom_fixn (s._gloss)
+    return count
 
 #=======================================================================
 import psycopg2

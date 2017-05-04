@@ -39,6 +39,15 @@ from xml.etree import cElementTree as ElementTree
 import jdb, pgi
 from iso639maps import iso639_1_to_2
 
+  # The version of the kanjidic XML file that this program is known to
+  # work with.  The version number is found in the "<database_version>"
+  # XML element.  If the version number in the file is different a 
+  # warning written to the log file but parsing continues.  If the 
+  # version number is greatly older or newer than KANJIDIC_VERSION
+  # parsing may fail but generaly it is not a problem and the different
+  # versions will still be parsed successfully.
+KANJIDIC_VERSION = '2017-123'
+
 # Remap the keywords used in the kanjidic2.xml file to
 # the keywords used in the kw* tables.  Those keywords
 # not mentioned below have the same text in both places.
@@ -128,9 +137,10 @@ def parse_xmlfile (infn, srcid, workfiles, start, count, langs):
             if elem.tag == 'header' and event == 'end':
                 xmldate = (elem.find ('date_of_creation')).text
                 if (elem.find ('file_version')).text != '4' or \
-                   (elem.find ('database_version')).text != '2014-175':
-                        warn ('Unexpected kanjidic file version or database version found.'
-                              '\nThis program may or may not work on this file.')
+                   (elem.find ('database_version')).text != KANJIDIC_VERSION:
+                        warn ('Kanjidic XML version is %s but we expected %s.'
+                              '\nThis program may or may not work on this file.'
+                              % (elem.find ('database_version').text, KANJIDIC_VERSION))
 
             # Otherwise we are precessing characters so we want
             # to handle the <character> "end" events but we are
@@ -312,7 +322,7 @@ def rmgroup (rmg, langs=None):
                 if aname == 'r_type': rtype = aval
                 if aname == 'on_type': rtype = aval
                 if aname == 'r_status': rstat = aval
-            if rtype=='pinyin' or rtype=='korean_r' or rtype=='korean_h':
+            if rtype in ('pinyin', 'korean_r', 'korean_h', 'vietnam'):
                 if (rtype, x.text) in dupchk:
                     warn ("Duplicate reading ignored: %s, %s" % (rtype, x.text))
                     continue

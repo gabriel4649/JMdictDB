@@ -27,9 +27,13 @@
   text box for its entry.  The syntax of JEL is similar to EDICT but
   with modifications to facilitate machine parsing.
   There is also a
-  <a tal:attributes="href edhelpq.py?svc=${svc}&amp;sid=${sid}">
+  <a tal:attributes="href string:edhelpq.py?svc=${svc}&amp;sid=${sid}">
     Quick Overview</a>
   of JEL available for getting started.
+  Please read and follow the 
+  <a href="http://www.edrdg.org/wiki/index.php/Editorial_policy">
+    JMdict/EDICT Editorial Policy</a>
+  when making submissions.
 
   <h3><a name="syntaxrules">General Syntax Rules</a></h3>
 

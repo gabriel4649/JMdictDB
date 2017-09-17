@@ -12,7 +12,15 @@
 
   <div class="entry">
     <h3>Getting Started</h3>
-
+    This is a short introduction to submitting corrections to the JMdict/Edict
+     dictionaries.  For full details of the syntax required please see the 
+    <a tal:attributes="href string:edhelp.py?svc=${svc}&amp;sid=${sid}">
+      full JEL reference</a>
+    or the "help" links on the New Entry and Edit Entry forms.
+    Please also be sure you are familiar with the 
+    <a href="http://www.edrdg.org/wiki/index.php/Editorial_policy">
+      JMdict/EDICT Editorial Policy</a>.
+          <p/>
     Entries in the JMdictDB database are usually in three parts: a
     kanji/special character part, a reading(s) part (always in kana) and
     a meaning(s) part. Consider the following entry as it appears in WWWJDIC:

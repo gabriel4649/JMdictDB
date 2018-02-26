@@ -37,8 +37,8 @@
 #
 #-------------------------------------------------------------------
 # JMdictDB uses a set of four csv (comma separated value) tables
-# that contain information needed to conjugate japanese words
-# based on the words' part-of-speech code (e.g., v1 verb, v5k verb,
+# that contain information needed to conjugate a japanese word
+# based on the word's part-of-speech code (e.g., v1 verb, v5k verb,
 # i-adjective, etc).  In JMdictDB these data are loaded into database
 # tables and the word conjugation done via SQL views.
 #
@@ -124,10 +124,11 @@
 # numbers occur.
 #
 # See also:
-# pg/conj.sql -- contains SQL views that perform the same
+# pg/mkviews.sql -- contains SQL views that perform the same
 # operations as this program using the .csv data read into
-# database tables.  Those views provide the conjugated words
-# for the web/cgi/conj.py JMdictDB web page.
+# database tables.  Those views (primarily "vinfl" around
+# line 670) provide the conjugated words for the web/cgi/conj.py
+# JMdictDB web page.
 
 import sys, os, csv, re, collections, pdb
 

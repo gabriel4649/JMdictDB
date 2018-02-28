@@ -51,8 +51,7 @@ def main (args, opts):
               # The dtd file is expected to be located somewhere in the
               # pythonpath (sys.path) directories.
             if   opts.compat == 'jmdict':     dtd = "dtd-jmdict.xml"
-            elif opts.compat == 'jmdict107':  dtd = "dtd-jmdict107.xml"
-            elif opts.compat == 'jmdicthist': dtd = "dtd-jmdict107.xml"
+            elif opts.compat == 'jmdicthist': dtd = "dtd-jmdict.xml"
             elif opts.compat == 'jmnedict':   dtd = "dtd-jmnedict.xml"
             elif opts.compat == 'jmneold':    dtd = "dtd-jmneold.xml"
             else:                             dtd = "dtd-jmdict-ex.xml"
@@ -113,8 +112,8 @@ def main (args, opts):
                                      % opts.begin, file=sys.stderr);  sys.exit (1)
             if len(rs) > 1:
                 print ("Multiple entries having seq '%s' found, results " \
-                                    "may not be as expected.  Consider using -s to " \
-                                    "restrict to a single corpus." % (opts.begin), file=sys.stderr)
+                       "may not be as expected.  Consider using -s to " \
+                       "restrict to a single corpus." % (opts.begin), file=sys.stderr)
             lastsrc, lastseq, lastid = rs[0].src, rs[0].seq, rs[0].id
         if not opts.begin and not opts.seqfile:
               # If no "--begin" option, remove the " AND" from the front of
@@ -221,8 +220,7 @@ def write_entrs (cur, entrs, raw, corpora, opts, outf):
                         gob.written = True
                         txt = '\n'.join (fmtxml.grpdef (gob))
                         outf.write (txt + "\n")
-            txt = fmtxml.entr (e, compat=opts.compat, genhists=True,
-                               last_imported=opts.last_imported)
+            txt = fmtxml.entr (e, compat=opts.compat, genhists=True)
             outf.write (txt + "\n")
         if Debug: print ("Time: %s (fmt)" % (time.time()-start), file=sys.stderr)
 
@@ -317,16 +315,13 @@ Arguments:
             help="""If given, COMPAT must have one of the following values:
 
                 jmdict: generate XML that uses the standard
-                  JMdict DTD (rev 1.08).  This DTD does not
-                  include the <info> element. 
-
-                jmdict107: generate XML that uses the standard
-                  JMdict DTD (rev 1.07).  This outputs only "entry
-                  created" or "entry amended" in the <info> elements.
+                  JMdict DTD (rev 1.09).  DTD changes from rev 1.07
+                  include: 1.08: drop the <info> element entirely;
+                  1.09: add "g_type" attribute to the <gloss> element. 
 
                 jmdicthist: generate XML that uses the standard
-                  JMdict DTD (rev 1.07) but includes full history
-                  in the <info> element.
+                  JMdict DTD (rev 1.09) but includes an <info> element
+                  with the entry's full history.
 
                 jmnedict: generate XML that uses the standard
                   (post 2014-10) JMnedict DTD that include seq 
@@ -339,17 +334,6 @@ Arguments:
                 If not given: generate XML that completely
                   describes the entry using an enhanced version
                   of the jmdict DTD.""")
-
-        p.add_option ("--last-imported", default=None, type=int,
-            help="""This option is ignored unless the --compat=jmdict
-                option is given.  Value must be a number that gives the
-                highest sequence number that was loaded from the JMdict
-                XML file in the corpus being processed.  When writing
-                jmdict compatible XML, entries with higher seq numbers
-                will given audit element lists starting with an "entry
-                created" one.  Entries with lower seq numbers will be
-                given an "entry created" if that's the text of the first
-                history comment, or "entry amended" otherwise.""")
 
         p.add_option ("-r", "--root",
             help="""Name to use as the root element in the output XML file.
@@ -397,8 +381,8 @@ Arguments:
         opts, args = p.parse_args ()
         if len (args) > 1: p.error ("%d arguments given, expected at most one.")
         if opts.compat and opts.compat not in \
-                ('jmdict','jmdict107','jmdicthist','jmnedict','jmneold'):
-            p.error ('--compat option must be one of: "jmdict", "jmdict107", '
+                ('jmdict','jmdicthist','jmnedict','jmneold'):
+            p.error ('--compat option must be one of: "jmdict", '
                      '"jmdicthist", "jmnedict" or "jmneold".')
         if  opts.seqfile and (opts.begin or opts.count):
             p.error ('--begin or --count option is incompatible with --seqfile')

@@ -37,19 +37,15 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
         Parameters:
           entr -- An entry object (such as return by entrList()).
           compat -- 
-                false: generate XML that completely
+                None: generate XML that completely
                   describes the entry using an enhanced version
                   of the jmdict DTD.  Otherwise:
-                "jmdict": synonym for "jmdict108". 
-                "jmdict108": generate XML that uses the standard
-                  JMdict DTD (rev 1.08).  This DTD does not
-                  include the <info> element. 
-                "jmdict107": generate XML that uses the standard
-                  JMdict DTD (rev 1.07).  This outputs only "entry
-                  created" or "entry amended" in the <info> elements.
+                "jmdict": generate XML that uses the most recent 
+                  version of the standard JMdictDTD (currently
+                  rev 1.09).
                 "jmdicthist": generate XML that uses the standard
-                  JMdict DTD (rev 1.07) but includes full history
-                  in the <info> element.
+                  JMdict DTD but adds an <info> element with the
+                  entry's full history.
                 "jmnedict": generate XML that uses the standard
                   (post 2014-10) JMnedict DTD that include seq 
                   numbers and xrefs.
@@ -99,7 +95,7 @@ def entr (entr, compat=None, genhists=False, genxrefs=True, wantlist=False,
         rdngs = getattr (entr, '_rdng', [])
         for r in rdngs: fmt.extend (rdng (r, kanjs, compat))
 
-        if compat in ('jmdict107', 'jmdicthist'):
+        if compat == 'jmdicthist':
             fmt.extend (info (entr, compat, genhists, last_imported=last_imported))
 
         senss = getattr (entr, '_sens', [])
@@ -253,12 +249,12 @@ def gloss (g, compat=None):
         attrs = []
         if g.lang != XKW.LANG['eng'].id:
             attrs.append ('xml:lang="%s"' % XKW.LANG[g.lang].kw)
-          # If 'compat' is not None, we generate all glosses as "equ"
-          # glosses.  There is no way to regenerate the original gloss
-          # for non-"equ" glosses since the were parsed out of some
-          # other gloss but we no longer have any information about
-          # which one.
-        if not compat and g.ginf != XKW.GINF['equ'].id:
+          # As of DTD rev 1.09 ginf attributes are added to glosses so
+          # we no longer do this only for the 'compat is None' condition. 
+          #FIXME: this will produce "g_type" attributes in jmnedict 
+          # in violation of the jmnedict DTD if there are .ginf items 
+          # in the data.  We fragilely count on there not being any.
+        if g.ginf != XKW.GINF['equ'].id:
             attrs.append ('g_type="%s"' % XKW.GINF[g.ginf].kw)
         attr = (' ' if attrs else '') + ' '.join (attrs)
         fmt.append ("<gloss%s>%s</gloss>" % (attr, esc(g.txt)))
@@ -423,6 +419,10 @@ def xrslvs (xrslvs, src):
         # compatible to EDRDG JMdict XML will be produced.
         # Xref items with a type other than "see" or "ant" will
         # be ignored.
+        #FIXME: what is meaning of above comment regarding 'compat'?
+        # No such variable/parameter any more.
+        #FIXME: xrefs that are neither "see" or "ant" should not be
+        # ignored when (the missing) 'compat' parameter is None.
         #
         # xrslvs -- List of unresolved xrefs as Xrslv objects.
         # src -- Corpus id number of the entry that contains 'xref'.

@@ -298,8 +298,10 @@
 	a noun in the target language. When absent, the gender is either
 	not relevant or has yet to be provided.
 	-->
-<!ATTLIST gloss g_type (equ|lit|id) "equ">
-	<!-- The g_type attribute defines the gloss category.
+<!ATTLIST gloss g_type (equ|lit|fig|expl) "equ">
+	<!-- The g_type attribute specifies that the gloss is of a particular
+	type, e.g. "lit" (literal), "fig" (figurative), "expl" (explanation).
+        "equ", the default, denotes a translation equivalent.
 	-->
 <!ELEMENT pri (#PCDATA)>
 	<!-- These elements highlight particular target-language words which 

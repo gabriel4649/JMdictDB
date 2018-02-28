@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Rev 1.09 
+	Added the g_type attribute
+-->
 <!-- Rev 1.08 
 	Delete <info> and <example> elements
 -->
@@ -85,8 +88,8 @@
 	- nfxx: this is an indicator of frequency-of-use ranking in the
 	wordfreq file. "xx" is the number of the set of 500 words in which
 	the entry can be found, with "01" assigned to the first 500, "02"
-	to the second, and so on. (The entries with news1, ichi1, spec1 and 
-	gai1 values are marked with a "(P)" in the EDICT and EDICT2
+	to the second, and so on. (The entries with news1, ichi1, spec1, spec2
+	and gai1 values are marked with a "(P)" in the EDICT and EDICT2
 	files.)
 
 	The reason both the kanji and reading elements are tagged is because 
@@ -208,6 +211,10 @@
 	a noun in the target language. When absent, the gender is either
 	not relevant or has yet to be provided.
 	-->
+<!ATTLIST gloss g_type CDATA #IMPLIED>
+	<!-- The g_type attribute specifies that the gloss is of a particular
+	type, e.g. "lit" (literal), "fig" (figurative), "expl" (explanation).
+	-->
 <!ELEMENT pri (#PCDATA)>
 	<!-- These elements highlight particular target-language words which 
 	are strongly associated with the Japanese word. The purpose is to 
@@ -290,6 +297,7 @@ various information fields.
 <!ENTITY proverb "proverb">
 <!ENTITY prt "particle">
 <!ENTITY physics "physics terminology">
+<!ENTITY quote "quotation">
 <!ENTITY rare "rare">
 <!ENTITY sens "sensitive">
 <!ENTITY sl "slang">

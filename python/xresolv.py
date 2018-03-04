@@ -49,6 +49,14 @@ __version__ = ('$Revision$'[11:-2],
 # When an xref text is not found, or multiple candidate
 # entries still exist after applying the selection
 # algorithm, the fact is reported and that xref skipped.
+#
+#FIXME: It would be nice to be able to run this program
+# incrementally: if an entry has both resolved and unresolved
+# xrefs, this program should resolve the unresolved ones and
+# use the results to add to the xrefs already present or 
+# replace some of those present when the new ones are the 
+# "same".  The problem is determining "sameness".  How does
+# the xrefs' order number (column 'xref') affect comparison? 
 
 import sys, os, inspect, pdb
 _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
@@ -90,14 +98,17 @@ def main (args, opts):
         for xresolv_rows in get_xresolv_block (dbh, blksz, xref_src):
             if not xresolv_rows: break
             resolv (dbh, xresolv_rows, targ_src, krmap)
-            if not opts.noaction: 
-                if opts.verbose: print ("Commit")
+            if opts.noaction:
+                if opts.verbose: print ("ROLLBACK")
+                dbh.connection.rollback()
+            else:
+                if opts.verbose: print ("COMMIT")
                 dbh.connection.commit()
         dbh.close()
 
 def get_xresolv_block (dbh, blksz, xref_src, read_xref=False):
         # Read and yield sucessive blocks of 'blksz' rows from table "xresolv"
-        # (or, despite our name, table "xref" is 'read_xref' is true).  Rows
+        # (or, despite our name, table "xref" if 'read_xref' is true).  Rows
         # are ordered by (target) entr id, sens, xref type and xref ord (or 
         # xref.xref for table "xref") and limited to entries having a .src
         # attribute of 'xref_src'.  None is returned when no more rows are
@@ -145,11 +156,11 @@ def get_xresolv_block (dbh, blksz, xref_src, read_xref=False):
 def resolv (dbh, xresolv_rows, targ_src, krmap):
 
         for v in xresolv_rows:
-              # Skip this xref if the "ignore-nonactive" option was
+              # Skip this xref if the "--ignore-nonactive" option was
               # given and the entry is not active (i.e. is deleted or
               # rejected) or is unapproved.  Unapproved entries will
               # be checked during approval submission and unresolved
-              # xrefs in rejected/deleted entries are often moot.
+              # xrefs in rejected/deleted entries are usually moot.
             if Opts.ignore_nonactive and \
                 (v.stat != jdb.KW.STAT['A'].id or v.unap): continue
             e = None
@@ -202,19 +213,61 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
             if Opts.verbose and xrefs: prnt (sys.stdout,
                 "%s resolved to %d xrefs: %s" % (fs(v),len(xrefs),kr(v)))
 
+              # We may get a "duplicate key" error when trying to add
+              # an xref for this xresolv row if the xref already exists
+              # (perhaps due having previously run this program with the
+              # --keep option).  If that happens we will write an error
+              # message but want to contine processing the rest of the
+              # xresolv rows.  Postgresql will not allow continuing after
+              # an error without a ROLLBACK but a full rollback will undo
+              # all the xrefs we've written so far.  Instead we will create
+              # a savepoint that we can rollback to that will undo only
+              # the xrefs created for this xresolv row.
+            dbh.execute ("SAVEPOINT sp1")
               # Write each xref record to the database...
+            failed = False
             for x in xrefs:
-                if not Opts.noaction:
-                    if Opts.debug & 0x01:
-                        prnt (sys.stderr, "not yet"
-                        )#      "(x.entr,x.sens,x.xref,x.typ,x.xentr"
-                        #           .  "x.xsens}," . (x.rdng}||"") . "," . (x.kanj}||"")
-                        #           . ",x.notes})\n")
-                    jdb.dbinsert (dbh, "xref",
-                                  ["entr","sens","xref","typ","xentr",
-                                   "xsens","rdng","kanj","notes"],
-                                  x)
-            if not Opts.keep:
+                  # We don't need 'failed=False' here because the 'for' loop is
+                  # always exited below the first time 'failed' is set to True.
+                if Opts.debug & 0x01:
+                    prnt (sys.stderr, "not yet"
+                    )#      "(x.entr,x.sens,x.xref,x.typ,x.xentr"
+                    #           .  "x.xsens}," . (x.rdng}||"") . "," . (x.kanj}||"")
+                    #           . ",x.notes})\n")
+                try:
+                    sql = "INSERT INTO xref VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                    dbh.execute (sql, (x.entr,x.sens,x.xref,x.typ,x.xentr,
+                                       x.xsens,x.rdng,x.kanj,None))
+                except jdb.dbapi.IntegrityError as e:
+                    if "duplicate key value" not in str(e):
+                          # If some exception other than a duplicate key
+                          #  error then reraise it.
+                          #FIXME? should we release savepoint sp1 here?
+                        raise
+                      # Format and print a warning message.
+                    mo = re.search (r'\(.+\)', str(e), flags=re.I)
+                      # An 'mo' that is None here (causing an AttributeError
+                      #  exception) indicates the exception text was not what
+                      #  we expected.
+                    prnt (sys.stderr, "%s duplicate key: %s"
+                                      % (fs(v), mo.group(0)))
+                      # Postgresql won't continue after an error.
+                      #  A ROLLBACK would allow it to continue but we would
+                      #  lose all the previous xrefs that have been written
+                      #  but not commited.  Rolling back to the savepoint
+                      #  created just before the INSERT is what's needed.
+                    dbh.execute ("ROLLBACK TO SAVEPOINT sp1", ())
+                      # Since we undid any xrefs added so far for this
+                      # xresolv row we don't want to add any additional
+                      # ones; so exit the for loop.
+                    failed = True
+                    break       # Continue with the next xresolv row.
+                else: dbh.execute ("RELEASE SAVEPOINT sp1")
+
+            if not Opts.keep and not failed:
+                  # The xrefs created from this xresolv row were successfully
+                  # added to the database above so we can delete the xresolv
+                  # row.
                 dbh.execute ("DELETE FROM xresolv "
                              "WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s",
                              (v.entr,v.sens,v.typ,v.ord))
@@ -394,7 +447,7 @@ def kr (v):
         return s
 
 def fs (v):
-        s = "%s.%d (%d,%d):" % (jdb.KW.SRC[v.src].kw, v.seq,v.sens,v.ord)
+        s = "%s.%d (%d,%d,%d):" % (jdb.KW.SRC[v.src].kw, v.seq,v.entr,v.sens,v.ord)
         return s
 
 def fmt_jitem (ktxt, rtxt, slist):

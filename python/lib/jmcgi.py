@@ -491,6 +491,7 @@ def htmlprep (entries):
         add_editable_flag (entries)
         add_unreslvd_flag (entries)
         add_pos_flag (entries)
+        rev_hists (entries)
 
 def add_p_flag (entrs):
         # Add a supplemantary attribute to each entr object in
@@ -609,6 +610,14 @@ def add_pos_flag (entries):
                 for p in s._pos:
                     if p.kw in conjugatable_poslist:
                         e.POS = True;  break
+
+def rev_hists (entries):
+
+        # Reverse the order of history items in each entry so that the
+        # most recent will appear first and the oldest last.
+
+        for e in entries:
+            if e._hist: e._hist = reversed (e._hist)
 
 def add_filtered_xrefs_old (entries, rem_unap=False):
 

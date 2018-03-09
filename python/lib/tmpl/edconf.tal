@@ -358,7 +358,21 @@
           </table>
         </span>
 
-        <br/>
+      <br/>
+      <form action="edsubmit.py" tal:attributes="method method">
+        <input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
+        <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
+        <input type="hidden" name="entr" tal:attributes="value serialized"/>
+        <input type="hidden" name="dbg" tal:attributes="value dbg"/>
+        <input type="Submit" value="Submit"/>
+        <span class="caution" tal:condition="disp">
+          &nbsp;&nbsp;
+          <span tal:condition="python:disp=='a'" tal:omit-tag="">Approve</span>
+          <span tal:condition="python:disp=='r'" tal:omit-tag="">Reject</span>
+          <input type="hidden" name="disp" tal:attributes="value disp"/>
+          </span>
+        </form>
+
         <div class="hist" tal:condition="e/_hist">History:
           <table>
             <tbody class="histtab">
@@ -401,21 +415,7 @@
                 </span>
               </tbody>
             </table>
-          </div>
-
-      <form action="edsubmit.py" tal:attributes="method method">
-        <input type="hidden" name="svc" tal:condition="svc" tal:attributes="value svc"/>
-        <input type="hidden" name="sid" tal:condition="sid" tal:attributes="value sid"/>
-        <input type="hidden" name="entr" tal:attributes="value serialized"/>
-        <input type="hidden" name="dbg" tal:attributes="value dbg"/>
-        <input type="Submit" value="Submit"/>
-        <span class="caution" tal:condition="disp">
-          &nbsp;&nbsp;
-          <span tal:condition="python:disp=='a'" tal:omit-tag="">Approve</span>
-          <span tal:condition="python:disp=='r'" tal:omit-tag="">Reject</span>
-          <input type="hidden" name="disp" tal:attributes="value disp"/>
-          </span>
-        </form>
+          </div><!-- end class="hist" -->
 
       </div>
     </span>

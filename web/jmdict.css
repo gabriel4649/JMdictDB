@@ -13,9 +13,11 @@
 .notes		{font-size: 75%;}
 .preformat	{margin-left: 2em; white-space: pre-wrap;
 		 font-size:110%; font-family: monospace}
-.hist,.histtab	{border-style: solid; border-width: thin; border-color: #A0A0A0; 
+.histtab	{border-style: solid; border-width: thin; border-color: #A0A0A0; 
 		 padding: 5px; font-size: 75%}
 .submitter_name {font-weight: 700}
+.fakelink       {color: #0000EE; /* same as a link's default color. */
+                 text-decoration: underline; cursor: pointer; }
 
 /* Search results list */
 .results	{background: #E8FFF0; 

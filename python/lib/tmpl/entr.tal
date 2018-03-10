@@ -1,5 +1,5 @@
 <html xmlns:tal="http://www.owlfish.com/simpletal/4.1/">
-<!--? Copyright (c) 2008-2010 Stuart McGraw -->
+<!--? Copyright (c) 2008-2018 Stuart McGraw -->
 <!--? $Revision$ $Date$ -->
 
 <!--? ***NOTE***
@@ -9,6 +9,18 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="stylesheet" type="text/css" href="../jmdict.css"/>
+  <script type="text/javascript">
+    function toggle_visibility(cls) {
+      var elist = document.getElementsByClassName(cls);
+        // We use the '!=' operator in the 'for' statement because
+        // something (the simpleTAL templating system?) escapes
+        // '<' and I haven't been able to figure out yet how to
+        // prevent that.
+      for (var i=0; i!=elist.length; i++) {
+        var s = elist[i].style;
+        s.display = s.display==='none' ? 'inline-block' : 'none'; } }
+    </script>
+
   <title>JMdictDB Entries</title>
 </head>
 <body>
@@ -276,9 +288,15 @@
         </form>
 
       <span tal:condition="not:etxt" tal:omit-tag="">
-        <div class="hist" tal:condition="e/_hist">History:
+        <div class="hist" tal:condition="e/_hist">
+          Last update:
+          <span tal:content="string: ${python:TALabbrtxt('STAT',e._hist[0].stat)}${python:'*' if e._hist[0].unap else ''}"/>
+          <span tal:content="e/_hist/0/dt">timestamp</span>&nbsp;
+          <span class="submitter_name" tal:content="e/_hist/0/name">name</span>
+          <br/>History: <span class="fakelink" tal:attributes="onclick string:toggle_visibility('hist_${e/id}')">
+            <font>(hide/show <span tal:replace="python:len(e._hist)"></span> log entries)</font></span>
           <table>
-            <tbody class="histtab">
+            <tbody tal:attributes="class string:hist_${e/id} histtab" style="display:none;">
               <span tal:repeat="h e/_hist" tal:omit-tag="">
                 <span tal:condition="h/email" tal:omit-tag="">
                   <span tal:condition="session/userid" tal:omit-tag="">
@@ -321,7 +339,7 @@
           </div>
         </span>
 
-      <span class="notes">
+      <br/><span class="notes">
         View entry in alternate formats:
         <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;disp=jel&amp;e=${e/id}">jel</a> |
         <a class="displink" tal:attributes="href string:entr.py?svc=${svc}&amp;sid=${sid}&amp;disp=ed&amp;e=${e/id}">edict</a> |

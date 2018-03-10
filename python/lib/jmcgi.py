@@ -617,7 +617,7 @@ def rev_hists (entries):
         # most recent will appear first and the oldest last.
 
         for e in entries:
-            if e._hist: e._hist = reversed (e._hist)
+            if e._hist: e._hist = list (reversed (e._hist))
 
 def add_filtered_xrefs_old (entries, rem_unap=False):
 

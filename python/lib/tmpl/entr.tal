@@ -12,15 +12,14 @@
   <script type="text/javascript">
     function toggle_visibility(cls) {
       var elist = document.getElementsByClassName(cls);
-        // We use the '!=' operator in the 'for' statement because
-        // something (the simpleTAL templating system?) escapes
-        // '<' and I haven't been able to figure out yet how to
-        // prevent that.
+        //FIXME: We use the '!=' operator in the 'for' statement
+        // because something (the simpleTAL templating system?)
+        // escapes '<' and I haven't been able to figure out yet
+        // how to prevent that.
       for (var i=0; i!=elist.length; i++) {
         var s = elist[i].style;
-        s.display = s.display==='none' ? 'inline-block' : 'none'; } }
+        s.display = s.display==='none' ? '' : 'none'; } }
     </script>
-
   <title>JMdictDB Entries</title>
 </head>
 <body>
@@ -289,15 +288,11 @@
 
       <span tal:condition="not:etxt" tal:omit-tag="">
         <div class="hist" tal:condition="e/_hist">
-          Last update:
-          <span tal:content="string: ${python:TALabbrtxt('STAT',e._hist[0].stat)}${python:'*' if e._hist[0].unap else ''}"/>
-          <span tal:content="e/_hist/0/dt">timestamp</span>&nbsp;
-          <span class="submitter_name" tal:content="e/_hist/0/name">name</span>
-          <br/>History: <span class="fakelink" tal:attributes="onclick string:toggle_visibility('hist_${e/id}')">
-            <font>(hide/show <span tal:replace="python:len(e._hist)"></span> log entries)</font></span>
+          <br/>History: 
           <table>
-            <tbody tal:attributes="class string:hist_${e/id} histtab" style="display:none;">
+            <tbody class="histtab">
               <span tal:repeat="h e/_hist" tal:omit-tag="">
+
                 <span tal:condition="h/email" tal:omit-tag="">
                   <span tal:condition="session/userid" tal:omit-tag="">
                     <span tal:define="global email string:&lt;${h/email}&gt;" tal:omit-tag=""/>
@@ -309,7 +304,26 @@
                 <span tal:condition="not:h/email" tal:omit-tag="">
                   <span tal:define="global email string:" tal:omit-tag=""/>
                   </span>
-                <tr>
+
+    <span tal:replace="nothing"> Comment:
+    The two elements below implement the "hide/show older history records".
+    To change the number of records always shown (i.e. not hidden as "older"
+    records) change the number (5 in example lines):
+       ...repeat['h'].number()&gt;5
+       ...repeat['h'].index()==5
+       ...python:len(e._hist)-5
+    in the html below to the number desired.</span>
+                <span tal:condition="python: repeat['h'].number()&gt;5" tal:omit-tag="">
+                  <span tal:define="global cls string:hist_${e/id}" tal:omit-tag=""/>
+                  <span tal:define="global dsp string:display:none" tal:omit-tag=""/>
+                  </span>
+                <tr tal:condition="python: repeat['h'].index()==5"><td colspan="3"> 
+                  <span class="fakelink" tal:attributes="onclick string:toggle_visibility('hist_${e/id}')">
+                    <font size="-1">(show/hide <span tal:replace="python:len(e._hist)-5"></span> older log entries)</font>
+                    </span>
+                  </td></tr>
+
+                <tr tal:attributes="class cls;style dsp">
                   <td tal:content="string:${h/hist}.">#.</td>
                   <td class="hhdr" colspan="2">
                     <span tal:content="string: ${python:TALabbrtxt('STAT',h.stat)}${python:'*' if h.unap else ''}"/>
@@ -318,17 +332,17 @@
                     <span tal:content="email">email</span>
                     </td>
                   </tr>
-                <tr tal:condition="h/refs">
+                <tr tal:condition="h/refs"  tal:attributes="class cls;style dsp">
                   <td>&nbsp;</td>
                   <td valign="top">Refs:</td>
                   <td><pre class="preformat" tal:content="h/refs">refs</pre></td>
                   </tr>
-                <tr tal:condition="h/notes">
+                <tr tal:condition="h/notes" tal:attributes="class cls;style dsp">
                   <td>&nbsp;</td>
                   <td valign="top">Comments:</td>
                   <td><pre class="preformat" tal:content="h/notes">notes</pre></td>
                   </tr>
-                <tr tal:condition="h/diff">
+                <tr tal:condition="h/diff" tal:attributes="class cls;style dsp">
                   <td>&nbsp;</td>
                   <td valign="top">Diff:</td>
                   <td><pre class="preformat" tal:content="h/diff">diff</pre></td>
@@ -336,7 +350,7 @@
                 </span>
               </tbody>
             </table>
-          </div>
+          </div><!-- end class="hist" -->
         </span>
 
       <br/><span class="notes">

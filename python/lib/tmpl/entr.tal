@@ -288,6 +288,8 @@
 
       <span tal:condition="not:etxt" tal:omit-tag="">
         <div class="hist" tal:condition="e/_hist">
+          <span tal:define="global cls nothing" tal:omit-tag=""/>
+          <span tal:define="global dsp nothing" tal:omit-tag=""/>
           <br/>History: 
           <table>
             <tbody class="histtab">

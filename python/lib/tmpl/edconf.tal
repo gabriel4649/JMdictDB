@@ -61,7 +61,7 @@
           number, kanji, and reading you gave, or because multiple entries
           did.  In the latter case you may be able to give the target more
           specifically by giving a seq number or reading with the kanji.
-          Use your browsers 'back" button to return to the previous page
+          Use your browser's "Back" button to return to the previous page
           to make corrections.  Alternatively, you may submit this entry
           as is for later correction, but please note that entries with
           unresolved xrefs can't be approved.
@@ -385,6 +385,8 @@
         </form>
 
       <div class="hist" tal:condition="e/_hist">
+        <span tal:define="global cls nothing" tal:omit-tag=""/>
+        <span tal:define="global dsp nothing" tal:omit-tag=""/>
         <br/>History: 
         <table>
           <tbody class="histtab">

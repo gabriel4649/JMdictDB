@@ -21,7 +21,7 @@
 __version__ = ('$Revision$'[11:-2],
                '$Date$'[7:-11])
 
-import sys, cgi
+import sys, cgi, datetime
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import cgitbx; cgitbx.enable()
 import jdb, jmcgi
@@ -38,7 +38,7 @@ def main (args, opts):
                                         form.getlist ('q'), errs)
         if errs: jmcgi.err_page (errs)
 
-        entries.sort (key=lex_sort)
+        entries.sort (key=hist_sort)
         for e in entries:
             for s in e._sens:
                 if hasattr (s, '_xref'): jdb.augment_xrefs (cur, s._xref)
@@ -80,12 +80,27 @@ def lex_sort (e):
         #
         # FIXME: The Sort in srchres.py is done in database using the
         #  database locale (typically ja_JP.utf8 if JMdictDB installed
-        #  according to instructins).  I do not know if Python string
+        #  according to instructions).  I do not know if Python string
         #  sorts are locale-aware or not.
 
         return (e._kanj[0].txt if e._kanj else ''), \
                (e._rdng[0].txt if e._rdng else ''), \
                e.seq, e.id
+
+def hist_sort (e):
+        # Like lex_sort() above but within each group of entries of the
+        # same kanji/reading/seq values entries will sorted in reverse
+        # order of the most recent history record timestamp.  Note that
+        # because of the primary ordering on kanji/reading that an
+        # entry with a change to its kanji or reading may be placed
+        # out of order with respect one other entries with the same
+        # sequence number.
+
+        future = datetime.datetime(2100,1,1)
+        return (e._kanj[0].txt if e._kanj else ''), \
+               (e._rdng[0].txt if e._rdng else ''), \
+               e.seq, \
+               ((future - e._hist[-1].dt) if e._hist else future)
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

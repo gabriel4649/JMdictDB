@@ -40,7 +40,7 @@ This code is under development and is pre-alpha quality.
 Everything here is subject to future change.  The API code
 is written for Python 3; Python 2 is no longer supported
 (although an older Python 2 version is available from the 
-code repository, seeINSTALLATION/Requirements below).  The 
+code repository, see INSTALLATION/Requirements below).  The 
 web pages use Python/CGI.
 
 The Python 2 to Python 3 conversion was only done recently
@@ -141,10 +141,18 @@ wish to install a local copy of this software:
 
 Requirements
 ------------
-The code is developed and tested on Microsoft Windows XP, 
-Fedora 15, and Unbuntu, with either Apache (on Linux) or 
-IIS (on MS Windows) as a web server.  The webserver should
-be configured to run Python CGI scripts.
+The code is currently developed and tested on Unbuntu using
+Apache as a web server.  The webserver should be configured 
+to run Python CGI scripts.  
+
+Regarding Microsoft Windows:
+Up to mid 2014 the code also ran and was supported on Microsoft 
+Windows XP.  However, current lack of access to a Windows machine 
+has required dropping Windows support but the Windows specific 
+code and documentation have been left in place in case support 
+is revived in the future.  PLEASE BE AWARE THAT REFERENCES TO
+MICROSOFT WINDOWS IN THIS, OTHER DOCUMENTATION, AND CODE ARE
+UNSUPPORTED AND MAY BE WRONG.
 
 JMdictDB requires Python 3; Python 2 is no longer supported
 although the last working Python 2 version is available in 
@@ -155,27 +163,19 @@ numbers are the versions currently in use in the author's
 development environment -- the software may work fine with 
 earlier or later versions, but this has not been verified.
 
-  Postgresql [9.2]
-  Python [3.3] 
+  Postgresql [9.6]
+  Python [3.6] (known not to work before 3.3).
   Additional Python packages:
-    psycopg2-2.4.5 Python-Postgresql connector.
+    psycopg2-2.7.3 Python-Postgresql connector.
       http://initd.org/projects/psycopg2/
       http://stickpeople.com/projects/python/win-psycopg/ (Windows)
     simpleTAL-5.1 -- Template file processor.
       http://www.owlfish.com/software/simpleTAL/
-    ply-3.4 -- YACC'ish parser generator.
+    ply-3.9 -- YACC'ish parser generator.
       http://www.dabeaz.com/ply/
-    lxml-3.0.1 -- XML/XSLT library.  Used by xslfmt.py for doing
+    lxml-4.0.0 -- XML/XSLT library.  Used by xslfmt.py for doing
       xml->edict2 conversion.
-    [wxPython -- (Optional) JMdictDB includes a couple simple
-      GUI tools for accessing the database.  To run these requires
-      wxPython.
-      http://www.wxpython.org/
-      [*** Currently wxPython is not available for Python-3
-      so the two JMdictDB apps that require wxPython 
-      (tools/jmedit.py and python/srvh.py) will not run
-      until it is.]
-  Apache [2.2] (on Unix/Linux/Windows systems) or
+  Apache [2.4] (on Unix/Linux/Windows systems) or
     IIS [5.0] (on MS Windows systems)
   make -- Gnu make is required if you want to use the provided
     Makefile's to automate parts of the installation.

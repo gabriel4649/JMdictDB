@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2006-2012 Stuart McGraw
+#  Copyright (c) 2006-2012,2018 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -38,7 +38,29 @@ def main (args, opts):
                                         form.getlist ('q'), errs)
         if errs: jmcgi.err_page (errs)
 
-        entries.sort (key=hist_sort)
+          # Add a .SEQKR attribute to each entry in 'entries' that
+          # gives the kanji and reading of the newest (most recently 
+          # edited) entry that has the same sequence number. 
+        seqkr_decorate (entries)
+
+          # Sort the entries.  The sorting order will group entries 
+          # with the same sequence number (.src,.seq) together and 
+          # each of those groups will be ordered by the kanji/reading
+          # of the newest (most recently edited) entry in the group.
+          # (The kanji and/or readings of an entry are sometimes changed
+          # and this order will keep the changed entries together with
+          # their pre-changed versions, while maintaining an overall
+          # ordering by kanji/reading.)  Within each group having the 
+          # same sequence number, entries are sorted in descending order
+          # by the timestamp of the most recent history; that is, from
+          # the most recently edited entry to the least recently edited
+          # one. 
+        future = datetime.datetime (2099,1,1)
+        entries.sort (key=lambda e: (
+                e.SEQKR[0], e.SEQKR[1], 
+                e.src, e.seq,  # In case different seqs have same SEQKR.
+                (future - e._hist[-1].dt) if e._hist else future, 
+                e.id))
         for e in entries:
             for s in e._sens:
                 if hasattr (s, '_xref'): jdb.augment_xrefs (cur, s._xref)
@@ -70,37 +92,43 @@ def main (args, opts):
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
                         parms=parms, output=sys.stdout, this_page='entr.py')
 
-def lex_sort (e):
-        # Sort key function for ordering lists of entries lexically,
-        # by its first kanji, then first reading, then seq number,
-        # then id number.  This is the same as the sort used in
-        # the search results page.  We won't include gloss because
-        # there are only a couple entries in JMdict where that might
-        # make a difference.
-        #
-        # FIXME: The Sort in srchres.py is done in database using the
-        #  database locale (typically ja_JP.utf8 if JMdictDB installed
-        #  according to instructions).  I do not know if Python string
-        #  sorts are locale-aware or not.
+def seqkr_decorate (entries):
+        # Add a .SEQKR attribute to every entry in 'entries'.
+        # The value of the added attribute is a 2-tuple of the kanji
+        # and reading texts of the most recently edited entry (i.e.
+        # the entry with the most recent history record whose src,seq
+        # value is the same as the entry being decorated) of those with
+        # the same src,seq number.  
+        # The purpose is to permit a later a sort of 'entries' that will
+        # keep all entries with the same src,seq number together even 
+        # when some have had their kanji or reading values changed, yet
+        # order the groups by kanji,reading order. 
 
-        return (e._kanj[0].txt if e._kanj else ''), \
-               (e._rdng[0].txt if e._rdng else ''), \
-               e.seq, e.id
-
-def hist_sort (e):
-        # Like lex_sort() above but within each group of entries of the
-        # same kanji/reading/seq values entries will sorted in reverse
-        # order of the most recent history record timestamp.  Note that
-        # because of the primary ordering on kanji/reading that an
-        # entry with a change to its kanji or reading may be placed
-        # out of order with respect one other entries with the same
-        # sequence number.
-
-        future = datetime.datetime(2100,1,1)
-        return (e._kanj[0].txt if e._kanj else ''), \
-               (e._rdng[0].txt if e._rdng else ''), \
-               e.seq, \
-               ((future - e._hist[-1].dt) if e._hist else future)
+        import collections
+        seqlist = collections.defaultdict(list)
+          # 'old' should be older than any existant history record.
+        old = datetime.datetime (1970, 1, 1)  # Jan 1, 1970.
+          # Group the entries by e.src,e.seq.
+        for e in entries:
+            seqlist[(e.src,e.seq)].append (e)
+          # 'seqlist' is now a dict with keys that are src,seq 2-tuples and
+          # values that are lists of the entries in 'entries' with that value
+          # of e.src and e.seq.
+          # For each list of entries with a common .src,.seq value...
+        for (src,seq),elist in seqlist.items():
+              # Find the newest entry (the entry with the most recent 
+              # history record in .hist[].  .hist is ordered from oldest
+              # to newest so the most recent history record in an entry
+              # is always .hist[-1].  If there are no history records at
+              # all, assume the entry has a date of 'old'.
+            newest = max (elist, key=
+                          lambda e: (e._hist[-1].dt if e._hist else old, e.id))
+              # Decorate each entry in the list with the kanji/-
+              # reading of the newest entry.
+            seqkr = (newest._kanj[0].txt if newest._kanj else ''),\
+                    (newest._rdng[0].txt if newest._rdng else '')
+            for e in elist: e.SEQKR = seqkr
+        return
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

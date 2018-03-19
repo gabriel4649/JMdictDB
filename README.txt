@@ -22,12 +22,11 @@ http://www.edrdg.org/~smg/.
 This package contains the following directories:
   ./                   Package directory.
   ./doc/               Documentation.
-  ./doc/issues         Bugs and to-do's.
   ./pg/                Database scripts.
   ./pg/data/           Database static data.
   ./python/            Command line apps.
   ./python/lib/        Library modules.
-  ./python/lib/tmpl/   TAL templates.
+  ./python/lib/tmpl/   Web page templates.
   ./tools/             Scripts used by Makefiles.
   ./web/               Web related files.
   ./web/cgi/           CGI scripts.
@@ -36,17 +35,12 @@ This package contains the following directories:
 STATUS
 ======
 
-This code is under development and is pre-alpha quality.
-Everything here is subject to future change.  The API code
+This code is under development and is alpha quality.
+Everything here is subject to future change.  Python code
 is written for Python 3; Python 2 is no longer supported
 (although an older Python 2 version is available from the 
 code repository, see INSTALLATION/Requirements below).  The 
 web pages use Python/CGI.
-
-The Python 2 to Python 3 conversion was only done recently
-(2012-05 through 2012-11 approximately) thus there are likely
-a number of conversion related errors remaining in less 
-frequently used parts of the code.
 
 Development uses Mercurial (http://selenic.com/mercurial)
 as a version control system.  The development repository is
@@ -63,18 +57,17 @@ wwwjdic/JMdict data from wwwjdict users.
 DOCUMENTATION
 =============
 
-Database schema:
-  doc/schema.odt(.html) -- The schema is comprehensively 
-	documented in this Open Office Writer document.
-	If you do not have Open Office can read schema.html
-	which was produced from it.  
-
-  doc/schema.dia(.png) -- A diagram of the database tables
-	and their relationships.  View schema.png id you do
-	not have the open source Dia application.
-
-API Documentation: 
+Overview and general information about JMdictDB:
   README.txt -- This file.
+
+Database schema:
+  doc/schema.odt(.pdf,.html) -- The schema is comprehensively 
+	documented in schema.pdf (or schema.html).  Both were
+        produced from the Open Office Writer document schema.odt.
+
+  doc/schema.dia(.png) -- A diagram of the database tables and
+        their relationships.  schema.png was produced from 
+	schema.dia by the open source Dia application.
 
 ========
 PROGRAMS
@@ -141,7 +134,7 @@ wish to install a local copy of this software:
 
 Requirements
 ------------
-The code is currently developed and tested on Unbuntu using
+The code is currently developed and tested on Ubuntu using
 Apache as a web server.  The webserver should be configured 
 to run Python CGI scripts.  
 
@@ -151,7 +144,7 @@ Windows XP.  However, current lack of access to a Windows machine
 has required dropping Windows support but the Windows specific 
 code and documentation have been left in place in case support 
 is revived in the future.  PLEASE BE AWARE THAT REFERENCES TO
-MICROSOFT WINDOWS IN THIS, OTHER DOCUMENTATION, AND CODE ARE
+MICROSOFT WINDOWS IN THIS AND OTHER DOCUMENTATION AND CODE ARE
 UNSUPPORTED AND MAY BE WRONG.
 
 JMdictDB requires Python 3; Python 2 is no longer supported

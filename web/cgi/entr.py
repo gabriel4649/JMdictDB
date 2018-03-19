@@ -55,12 +55,12 @@ def main (args, opts):
           # by the timestamp of the most recent history; that is, from
           # the most recently edited entry to the least recently edited
           # one. 
-        future = datetime.datetime (2099,1,1)
         entries.sort (key=lambda e: (
                 e.SEQKR[0], e.SEQKR[1], 
                 e.src, e.seq,  # In case different seqs have same SEQKR.
-                (future - e._hist[-1].dt) if e._hist else future, 
-                e.id))
+                  # e._hist[*].dt is a datatime.datetime instance.
+                -(e._hist[-1].dt.timestamp() if e._hist else 0), 
+                -e.id))
         for e in entries:
             for s in e._sens:
                 if hasattr (s, '_xref'): jdb.augment_xrefs (cur, s._xref)
@@ -119,10 +119,10 @@ def seqkr_decorate (entries):
               # Find the newest entry (the entry with the most recent 
               # history record in .hist[].  .hist is ordered from oldest
               # to newest so the most recent history record in an entry
-              # is always .hist[-1].  If there are no history records at
-              # all, assume the entry has a date of 'old'.
+              # is always .hist[-1].  
             newest = max (elist, key=
-                          lambda e: (e._hist[-1].dt if e._hist else old, e.id))
+                          lambda e: (e._hist[-1].dt.timestamp()
+                                     if e._hist else 0, e.id))
               # Decorate each entry in the list with the kanji/-
               # reading of the newest entry.
             seqkr = (newest._kanj[0].txt if newest._kanj else ''),\

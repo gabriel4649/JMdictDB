@@ -28,8 +28,19 @@ CONTACT_EMAIL = jimbreen@edrdg.org
   # Database to use if no svc parameter given.
 DEFAULT_SVC = db_jmdict
 
-  # The following control the number of entries that the search
-  # page will show on the search results page (web/cgi/srchres.py). 
+  # Name (including path) to a logfile that will be used by the CGI
+  # scripts in web/cgi/ when they are invoked without any command
+  # line arguments (typically the case when they are invoked by a
+  # webserver.)  When run with command line arguments (typically
+  # the case when run interactively for debugging purposes) logging 
+  # output will be directed to stderr.
+LOGFILE_NAME = "jmdictdb.log"
+  # The default logging level.  One of:
+  #   debug, info, warning, error, critcal
+LEVEL = debug
+
+# The following control the number of entries that the search
+# page will show on the search results page (web/cgi/srchres.py). 
 
   # Default entries per page, if not overridden in url.
 DEF_ENTRIES_PER_PAGE = 100	

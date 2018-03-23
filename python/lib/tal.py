@@ -30,8 +30,6 @@ import sys, logging, io, copy, re
 from simpletal import simpleTAL, simpleTALES
 import jdb, fmtjel
 
-logging.basicConfig (level=logging.WARNING, stream=sys.stderr)
-
 #FIXME: Should following function be moved into SimpleTalHelper.py?
 
 def fmt_simpletal (tmplfn, xml=False, **kwds):

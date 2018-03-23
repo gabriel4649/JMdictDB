@@ -1,6 +1,6 @@
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2008-2015 Stuart McGraw
+#  Copyright (c) 2008-2015,2018 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -20,10 +20,39 @@
 import sys, re, cgi, urllib.request, urllib.parse, urllib.error, os, os.path, \
         random, time, http.cookies, datetime, time, copy
 import jdb, tal, fmt
+import logger; from logger import L
+
+def getcfg():
+        """
+        Does three things:
+        1. Fixes any url command line argument so that it is usable by
+          the cgi module (see the args() function).
+          Currently the only argument accepted is a url used when this 
+          script run interactively for debugging.  In the future it may
+          also accept an option giving the location of a configuration
+          file.
+        2. Reads the configuration file (location currently hardwired.)
+        3. Initializes the Python logging system so log messages will have
+          a consistent format. Callers of this function should not use
+          the logger.L() function until after this function is called.
+        """
+
+        a, _ = args()
+         # If the .ini filename below has no directory separator in it,
+         # it is looked for in a directory on sys.path.  If it does have
+         # a separator in it it is treated as a normal relative or 
+         # absolute path.
+        cfg = jdb.cfgOpen ('config.ini')
+        if a: loglevel, logfname = "debug",  None 
+        else:
+            logfname = cfg['web'].get ('LOG_FILENAME','jmdictdb.log')
+            loglevel=cfg['web'].get ('LOG_LEVEL', 'debug')
+        logger.log_config (level = loglevel, filename=logfname)
+        return cfg
 
 def parseform (readonly=False):
         """\
-    Do some routine tasksthat are needed for (most) every page, specifically:
+    Do some routine tasks that are needed for (most) every page, specifically:
     * Call cgi.FieldStorage to parse parameters.
     * Extract the svc parameter, validate it, and open the requested database.
     * Get session id and handle log or logout requests.
@@ -38,9 +67,9 @@ def parseform (readonly=False):
         cfg (Config inst.) -- Config object from reading config.ini.
         """
 
-        #logw ("parseform called in %s" % sys.modules['__main__'].__file__)
+        cfg = getcfg()  # This also initializes logging.
+        #L('jmcgi').debug("parseform called in %s" % sys.modules['__main__'].__file__)
         errs=[]; sess=None; sid=''; cur=None; svc=None
-        cfg = jdb.cfgOpen ('config.ini')
         def_svc = cfg['web'].get ('DEFAULT_SVC', 'jmdict')
         if def_svc.startswith ('db_'): def_svc = def_svc[3:]
         check_server_status (cfg.get ('web', 'STATUS_DIR'))
@@ -61,11 +90,11 @@ def parseform (readonly=False):
         sid_from_cookie = False
         if sid: sid_from_cookie = True
         if usid: sid = usid     # Use sid from url if available.
-        #logw ("parseform(): sid=%s, from_cookie=%s, action=%s" % (sid, sid_from_cookie, action))
+        #L('jmcgi').debug("parseform(): sid=%s, from_cookie=%s, action=%s" % (sid, sid_from_cookie, action))
         uname = form.getfirst('username') or ''
         pw = form.getfirst('password') or ''
         sid, sess = get_session (scur, action, sid, uname, pw)
-        #logw ("parseform(): %s session, sid=%s" % ("got" if sess else "no", sid))
+        #L('jmcgi').debug("parseform(): %s session, sid=%s" % ("got" if sess else "no", sid))
         if sid: set_sid_cookie (sid, delete=(action=="logout"))
         if sid_from_cookie: sid=''
         scur.connection.close()
@@ -295,15 +324,15 @@ def esc(s): #FIXME
         else: return str(s)
 
 def str2seq (q):
-        # Convert 'q', a string of the form of either 'seq" or
-        # "seq.corp", where "seq" is a string of digits representing
-        # a seq number, and "corp" is either a string of digits
+        # Convert 'q', a string of the form of either 'seq' or
+        # 'seq.corp', where 'seq' is a string of digits representing
+        # a seq number, and 'corp' is either a string of digits
         # representing a corpus id number or the name of a corpus.
         # The existence of the  corpus, if given, is validated in
         # the KW.SRC dict.  The seq number is only validated as
         # being greater than 0.
         # If sucessful, a 2-tuple of (seq-number, corpus-id) is
-        # retuened, where 'corpus-id will be None if the first
+        # returned, where 'corpus-id' will be None if the first
         # input string format was given.  Otherwise a ValueError
         # exception is raised.
 
@@ -465,18 +494,6 @@ def err_page (errs):
         if isinstance (errs, str): errs = [errs]
         gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
         sys.exit()
-
-def logw (msg, pre=''):
-        #return   # Uncomment me to disable logging.
-        if isinstance (msg, str): msg = msg.encode ('utf-8')
-        try: pid = os.getpid()
-        except OSError: pid = ''
-        ts = datetime.datetime.now().isoformat(' ')
-        try:
-            logf = open ("./jmdictdb.log", "a")
-            print ("%s%s [%s]: %s" % (pre, ts, pid, msg), file=logf)
-            logf.close()
-        except Exception: pass
 
 def htmlprep (entries):
         """\

@@ -129,7 +129,7 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, os, datetime
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-from logger import L
+import logger; from logger import L
 import jdb, jmcgi, fmtxml, serialize
 
 class BranchesError (ValueError): pass
@@ -138,10 +138,9 @@ class IsApprovedError (ValueError): pass
 
 def main():
         jdb.reset_encoding (sys.stdout, 'utf-8')
+        logger.enable()
         errs = []; dbh = svc = None
-        try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
-        except ValueError as e: jmcgi.err_page ([str (e)])
-
+        form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
         L('edsubmit').debug("started: userid=%s, sid=%s" % (sess and sess.userid, sess and sess.id))
         fv = form.getfirst
         meth = fv ('meth');  dbg = fv('dbg')

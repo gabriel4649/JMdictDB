@@ -20,7 +20,8 @@
 # Provide a standard logging configuration for JMdictDB cgi scripts, 
 # tools and library functions.
 
-import sys, logging; L = logging.getLogger;
+import sys, logging, traceback, os, datetime; L = logging.getLogger;
+import jmcgi
 
 def log_config (level="debug", filename=None):
         """
@@ -46,6 +47,17 @@ def log_config (level="debug", filename=None):
           # of WARNING (their DEBUG messages are voluminous.)
         for pkg in ("simpleTAL", "simpleTALES"):
             logging.getLogger (pkg).setLevel (max (lvl, logging.WARNING))
+
+def handler( ex_cls, ex, tb ):
+          # 'errid' not used yet but will be in future.
+        errid = datetime.datetime.now().strftime("%y%m%d-%H%M%S")\
+                + '-' + str(os.getpid())
+        logging.critical( '\n{0}: {1}'.format(ex_cls, ex) )
+        logging.critical( ''.join( traceback.format_tb(tb)) )
+        jmcgi.err_page( [str(ex)] )
+
+def enable(): sys.excepthook = handler
+
 
 # The function L() is exported to provide callers with a consise way to
 # write logging calls.  It is used like:

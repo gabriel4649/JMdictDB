@@ -22,7 +22,7 @@ import sys, re, cgi, urllib.request, urllib.parse, urllib.error, os, os.path, \
 import jdb, tal, fmt
 import logger; from logger import L
 
-def getcfg():
+def initcgi():
         """
         Does three things:
         1. Fixes any url command line argument so that it is usable by
@@ -36,23 +36,36 @@ def getcfg():
           a consistent format. Callers of this function should not use
           the logger.L() function until after this function is called.
         """
-
-        a, _ = args()
-         # If the .ini filename below has no directory separator in it,
-         # it is looked for in a directory on sys.path.  If it does have
-         # a separator in it it is treated as a normal relative or 
-         # absolute path.
+          # Adjust any url argument so that the cgi module can use it.
+        args()
+          # If the .ini filename below has no directory separator in it,
+          # it is looked for in a directory on sys.path.  If it does have
+          # a separator in it it is treated as a normal relative or 
+          # absolute path.
         cfg = jdb.cfgOpen ('config.ini')
-        if a: loglevel, logfname = "debug",  None 
-        else:
-            logfname = cfg['web'].get ('LOG_FILENAME','jmdictdb.log')
-            loglevel=cfg['web'].get ('LOG_LEVEL', 'debug')
+        logfname = cfg['web'].get ('LOG_FILENAME','jmdictdb.log')
+        loglevel=cfg['web'].get ('LOG_LEVEL', 'debug')
         logger.log_config (level = loglevel, filename=logfname)
         return cfg
 
+    #FIXME: parseform() and other functions raise standard Python errors
+    # (e.g. ValueError) for many detected problems such as a bad entry
+    # or sequence number.  Unexpected internal errors of course will
+    # also produce Python exceptions.  Currently the cgi scripts catch
+    # any exceptions and display them on an error page or via the 
+    # logger.handler uncaught exception handler.  Showing exceptions
+    # that are potentially correctable by a user is ok.  But showing 
+    # all exceptions is dangerous -- a failure to connect to a database
+    # could reveal a url containing a password for example.  Unexpected
+    # exceptions should go only into the log file and the error page
+    # sgould report something generic ("Oops, something went wrong").
+    # Perhaps we should use a separate error class for user-relevant
+    # exceptions?
+
 def parseform (readonly=False):
         """\
-    Do some routine tasks that are needed for (most) every page, specifically:
+    Do some routine tasks that are needed for (most) every page,
+    specifically:
     * Call cgi.FieldStorage to parse parameters.
     * Extract the svc parameter, validate it, and open the requested database.
     * Get session id and handle log or logout requests.
@@ -67,7 +80,7 @@ def parseform (readonly=False):
         cfg (Config inst.) -- Config object from reading config.ini.
         """
 
-        cfg = getcfg()  # This also initializes logging.
+        cfg = initcgi()  # Read config, initialize logging.
         #L('jmcgi').debug("parseform called in %s" % sys.modules['__main__'].__file__)
         errs=[]; sess=None; sid=''; cur=None; svc=None
         def_svc = cfg['web'].get ('DEFAULT_SVC', 'jmdict')

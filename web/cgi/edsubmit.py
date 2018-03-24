@@ -139,7 +139,7 @@ class IsApprovedError (ValueError): pass
 def main():
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []; dbh = svc = None
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
         L('edsubmit').debug("started: userid=%s, sid=%s" % (sess and sess.userid, sess and sess.id))
         fv = form.getfirst
@@ -265,8 +265,8 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
               % (disp, is_editor, userid, entr.id, entr.dfrm, entr.stat,
                  entr.unap, entr.seq, entr.src))
         L('edsubmit').debug("submission(): entry text: %s %s"
-              % ((';'.join (k.txt for k in entr._kanj)).encode('utf-8'),
-                 (';'.join (r.txt for r in entr._rdng)).encode('utf-8')))
+              % ((';'.join (k.txt for k in entr._kanj)),
+                 (';'.join (r.txt for r in entr._rdng))))
         L('edsubmit').debug("submission(): seqset: %s" % logseq (dbh, entr.seq, entr.src))
         oldid = entr.id
         entr.id = None          # Submissions, approvals and rejections will
@@ -355,7 +355,8 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
               # When we get here, if merge_rev is true, pentr will also be
               # true.  If we are wrong, add_hist() will throw an exception
               # but will never return a None, so no need to check return val.
-            L('edsubmit').debug("submission(): adding hist for '%s', merge=%s" % (h.name.encode('utf-8'), merge_rev))
+            L('edsubmit').debug("submission(): adding hist for '%s', merge=%s"
+                                % (h.name, merge_rev))
             entr = jdb.add_hist (entr, pentr, userid,
                                  h.name, h.email, h.notes, h.refs, merge_rev)
         if not errs:

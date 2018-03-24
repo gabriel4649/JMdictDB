@@ -89,6 +89,7 @@ def parseform (readonly=False):
 
         form = cgi.FieldStorage()
         svc = form.getfirst ('svc') or def_svc
+        #L('jmcgi').debug("parseform svc=%s" % svc)
         usid = form.getfirst ('sid') or ''    # No SID is "", not None.
         try: svc = safe (svc)
         except ValueError: errs.append ('svc=' + svc)

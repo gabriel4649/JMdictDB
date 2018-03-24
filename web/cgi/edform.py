@@ -110,14 +110,14 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import cgitbx; cgitbx.enable()
+import logger; from logger import L; logger.enable()
 import jdb, jmcgi, fmtjel, serialize, edparse
 
 def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []; entrs =[]
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-        except Exception as e: errs = jmcgi.err_page ([str (e)])
+        except Exception as e: jmcgi.err_page ([str (e)])
 
         fv = form.getfirst; fl = form.getlist
         is_editor = jmcgi.is_editor (sess)

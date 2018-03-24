@@ -23,7 +23,7 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi, copy, time
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import cgitbx; cgitbx.enable()
+import logger; from logger import L; logger.enable()
 import jdb, jmcgi, serialize, jelparse
 
 def main( args, opts ):

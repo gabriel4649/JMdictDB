@@ -47,7 +47,7 @@
 
 import sys, cgi, datetime
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
-import cgitbx; cgitbx.enable()
+import logger; from logger import L; logger.enable()
 import jdb, jmcgi
 
 def main (args, opts):

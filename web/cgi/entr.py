@@ -23,16 +23,16 @@ __version__ = ('$Revision$'[11:-2],
 
 import sys, cgi, datetime
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
+import logger; from logger import L; logger.enable()
 import jdb, jmcgi
 import fmtxml, fmtjel, xslfmt
 import logger; from logger import L
 
 def main (args, opts):
-        logger.enable()
         jdb.reset_encoding (sys.stdout, 'utf-8')
-        #print "Content-type: text/html\n"
         errs = []
-        form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        except Exception as e: jmcgi.err_page ([str (e)])
         entries = jmcgi.get_entrs (cur, form.getlist ('e'),
                                         form.getlist ('q'), errs)
         if errs: jmcgi.err_page (errs)

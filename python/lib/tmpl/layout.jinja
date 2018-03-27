@@ -1,0 +1,125 @@
+{#- Base page template.
+    This provides the basic layout of all JMdictDB pages by providing a 
+    uniform header and footer.
+
+    Overridable blocks: title, content
+    Context variables:
+      svc
+      sid
+      this_page
+      parms
+      asession
+      cfg.web.CONTACT_EMAIL
+
+    Notes (these apply in general to all the templates):
+    - TALxxxx and other non-Jinja filters are definded in python/lib/jinja.py.
+    - The construct "{ # - # }" (but without the embedded whitespace)
+      is used below to remove whitespace.
+-#}
+<!DOCTYPE html>
+<!-- layout.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link rel="stylesheet" type="text/css" href="../jmdict.css">
+  <script type="text/javascript">
+    function toggle_visibility(cls) {
+      var elist = document.getElementsByClassName(cls);
+      for (var i=0; i<elist.length; i++) {
+        var s = elist[i].style;
+        s.display = s.display==='none' ? '' : 'none'; } }
+    </script>
+  <title>{%block title%}{%endblock%}</title>
+  </head>
+<body>
+  <div class="jmd-header">
+    <table width="100%">
+      <tbody class="hlogin">
+        <tr>
+          <td>
+            <h2>JMdictDB - Japanese Dictionary Database</h2>
+            <h3>{{self.title()}}</h3>
+                 {#- self.title() refers back to the "block title" jinja statement. #}
+            <a href="srchformq.py?svc={{svc}}&amp;sid={{sid}}">       Search</a> |
+            <a href="srchform.py?svc={{svc}}&amp;sid={{sid}}">        Advanced Search</a> |
+            <a href="edform.py?svc={{svc}}&amp;sid={{sid}}">          New Entry</a> |
+            <a href="updates.py?svc={{svc}}&amp;sid={{sid}}&amp;i=1"> Submissions</a>
+            </td>
+          <td align="right" rowspan="1">
+            <form name="entrauth" method="post" action="{{this_page}}">
+              {%- for p in parms %}
+              <input type="hidden" name="{{p[0]}}" value="{{p[1]}}">
+                {%- endfor %}
+              {%- if session %}
+              Logged in: {{session.fullname}}
+              <input name="loginout" value="logout" type="submit">
+                {%- endif %}
+              {%- if not session %}
+              <table align="right">
+                <tbody>
+                  <tr><td colspan="3">Login for registered editors</td></tr>
+                  <tr>
+                    <td>Username:</td>
+                    <td><input name="username" type="text" size="8" tabindex="991"></td>
+                    <td rowspan="2"><input name="loginout" value="login" type="submit" tabindex="993"></td>
+                    </tr>
+                  <tr>
+                    <td>Password:</td>
+                    <td><input name="password" type="password" size="8" tabindex="992">
+                        {%- if svc %}
+                        <input type="hidden" name="svc" value="{{svc}}"></td>
+                        {%- endif %}
+                    </tr>
+                  </tbody>
+                </table>
+                {%- endif %}
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div> <!--class="jmd-header"-->
+
+  <div class="jmd-content">
+    {%- block page_content %}{% endblock %}
+    </div> <!--class="jmd-content"-->
+
+  <div class="jmd-footer">
+    <table width="100%">
+      <tbody class="navlinks">
+        <tr>
+          <td>
+            <a href="srchformq.py?svc={{svc}}&amp;sid={{sid}}">       Search</a> |
+            <a href="srchform.py?svc={{svc}}&amp;sid={{sid}}">        Advanced Search</a> |
+            <a href="edform.py?svc={{svc}}&amp;sid={{sid}}">          New Entry</a> |
+            <a href="updates.py?svc={{svc}}&amp;sid={{sid}}&amp;i=1"> Submissions</a>
+            </td>
+          <td align="right">{% if svc %}DB={{svc}}{% endif %}</td>
+          </tr>
+        </tbody>
+      <tr><td colspan="2"><hr width="100%"></td></tr>
+      <tbody class="foottxt">
+        {%- if cfg.web.CONTACT_EMAIL %}
+        <tr>
+          <td colspan="2">
+            If you have questions about, problems using, or suggestions
+            for improving this page, please send email to
+            <a href="mailto:{{cfg.web.CONTACT_EMAIL}}">{{cfg.web.CONTACT_EMAIL}}</a>.
+            </td>
+          </tr>
+          {%- endif %}
+        <tr>
+          <td colspan="2">
+            JMdictDB is an open-source Postgresql database and Python API
+            for managing Japanese dictionary data.  Please see 
+            <a href="http://edrdg.org/~smg/">http://edrdg.org/~smg/</a>
+            for more information.  It was developed by Stuart McGraw 
+            (<a href="mailto:jmdictdb@mtneva.com">jmdictdb@mtneva.com</a> / 
+            <a href="http://mtneva.com">http://mtneva.com</a>).
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div> <!--class="jmd-footer"-->
+  </body>
+</html>

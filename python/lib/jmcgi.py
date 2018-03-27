@@ -20,6 +20,7 @@
 import sys, re, cgi, urllib.request, urllib.parse, urllib.error, os, os.path, \
         random, time, http.cookies, datetime, time, copy
 import jdb, tal, fmt
+import jinja
 
 def parseform (readonly=False):
         """\
@@ -439,6 +440,18 @@ def get_entrs (dbh, elist, qlist, errs, active=None, corpus=None):
             jdb.add_xsens_lists (raw['xref'])
             jdb.mark_seq_xrefs (dbh, raw['xref'])
         return entries
+
+def jinja_page (tmpl, output=None, macros=None, xml=False, **kwds):
+        httphdrs = kwds.get ('HTTP', None)
+        if not httphdrs:
+            if not kwds.get ('NoHTTP', None):
+                httphdrs = "Content-type: text/html\n"
+        if not httphdrs: html = ''
+        else: html = httphdrs + "\n"
+        env = jinja.init()
+        html += jinja.render (tmpl, kwds, env)
+        if output: print (html, file=output)
+        return html
 
 def gen_page (tmpl, output=None, macros=None, xml=False, **kwds):
         httphdrs = kwds.get ('HTTP', None)

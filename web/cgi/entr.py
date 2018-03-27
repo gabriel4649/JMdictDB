@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #######################################################################
 #  This file is part of JMdictDB.
-#  Copyright (c) 2006-2012 Stuart McGraw
+#  Copyright (c) 2006-2012,2018 Stuart McGraw
 #
 #  JMdictDB is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published
@@ -65,8 +65,8 @@ def main (args, opts):
 
         if errs: jmcgi.err_page (errs)
 
-        jmcgi.gen_page ('tmpl/entr.tal', macros='tmpl/macros.tal',
-                        entries=zip(entries, etxts), disp=disp,
+        jmcgi.jinja_page ('entr.jinja', macros='tmpl/macros.tal',
+                        entries=list(zip(entries, etxts)), disp=disp,
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
                         parms=parms, output=sys.stdout, this_page='entr.py')
 

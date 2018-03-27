@@ -1,0 +1,382 @@
+{#- Display JMdictDB entries
+    NOTES:
+    - Much of this form is very similar to edconf.tal and edits made
+      to this form likely also need to be made to edform.tal.
+    - See aslso the notes in layout.jinja which apply in general to 
+      all the templates including this one.
+-#}
+{%- extends "layout.jinja" %}
+{%- block title %} JMdictDB Entries {% endblock %}
+{%- block page_content %}
+    <!-- entry.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
+    {%- if not entries %}
+    <div class="entry"> No entries found. </div>
+      {%- endif %}
+    {%- for e,etxt in entries %}
+    <div class="entry">
+      {{e.src|TALabbr('SRC')|safe}}
+      <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;q={{e.seq}}.{{e.src}}">{{e.seq}}</a>
+      <span class="status">
+        {%- if e.unap %}<span class="pend">{{e.stat|TALdescr('STAT')}} pending</span>
+        {%-else%} {{e.stat|TALdescr('STAT')}} {%endif%}
+        {%- if e.dfrm %}
+        (parent: <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;e={{e.dfrm}}">{{e.dfrm}}</a>)
+        {%-endif%}
+        </span>
+      {%- if e.id > 0 %}<span class="pkid">{id: {{e.id}}}</span> {%endif%}
+
+      {%- if not etxt %}
+        {%- if e.srcnote %}
+      <br>Src Notes: {{e.srcnote}}
+          {%-endif%}
+        {%- if e.notes %}
+      <br>Entry Notes: {{e.notes}}
+          {%-endif%}
+      <br>
+      {%- if e._kanj %}
+        {%- for k in e._kanj %}
+          {#-#}{{'' if loop.first else '； '}}
+      <span class="kanj" >{{k.txt}}</span>
+          {%- if k._inf or k._freq %}
+      <span class="kattrs">[
+            {%- if k._inf %}<span class="kinf">{{k|TALabbrs('KINF','_inf')|safe}}</span>{%endif-%}
+        {{'/' if k._inf and k._freq else ''}}
+            {%- if k._freq %}<span class="kfreq">{{k|TALfreqs|safe}}</span>{%endif-%}]
+        </span>
+            {%-endif%}{# k._inf or k._freq #}
+          {%-endfor%}{# e._kanj #}
+        {%-endif%}{# e._kanj #}
+
+      {%+ if e.HAS_RESTR|d %}<br>{%endif%}
+      {%- if e._kanj and e._rdng %}【 {%endif%}
+      {%- for r in e._rdng %}
+        {#-#}{{'' if loop.first else '； '}}
+      <span class="rdng">{{r.txt}}</span>
+          {%- if r._RESTR|d %}
+      <span class="restr">({% for z in r._RESTR %}{{'' if loop.first else ', '}}{{z}}{%endfor%})</span>
+          {%-endif%}
+        {%- if  r._inf or r._freq %}  
+      <span class="rattrs">[
+          {%- if r._inf %}<span class="rinf">{{r|TALabbrs('RINF','_inf')|safe}}</span>{%endif-%}
+          {{'/' if r._inf and r._freq else ''}}
+         {%- if r._freq %}<span class="rfreq">{{r|TALfreqs|safe}}</span>{%endif%}]
+        </span>
+          {%-endif%}{# r._inf or r.freq #}
+        {%-endfor%}{# e._rdng #}
+        {%- if e._kanj and e._rdng %} 】 {%endif%}
+
+      {%+ if e._sens -%}
+      <table class="senses" border="0">
+        {%- for s in e._sens %}
+        <tr class="sense">
+          <td valign="top">{{s.sens}}.</td>
+          <td colspan="2">
+            {%- if s._STAG|d %}
+            <span class="stag">
+              ({% for z in s._STAG %}{{'' if loop.first else ','}}{{z}}{%endfor%} only)
+              </span>
+              {%-endif%}
+            {%- if s._pos %}
+            <span class="pos">
+              [{{s|TALabbrs('POS','_pos')|safe}}]
+              </span>
+              {%-endif%}
+            {%- if s._misc %}
+            <span class="misc">
+              [{{s|TALabbrs('MISC','_misc')|safe}}]
+              </span>{%endif%}
+            {%- if s._fld %}
+            <span class="fld">
+              &lcub;{{s|TALdescrs('FLD','_fld')}}&rcub;
+              </span>{%endif%}
+            {%- if s._dial %}
+            <span class="dial">
+              Dialect: {{s|TALabbrs('DIAL','_dial')|safe}}
+              </span>{%endif%}
+            {%- if s._lsrc %}
+            <span class="lsrc">
+              Source lang:{{' '}}
+              {%- for z in s._lsrc %}{#--#}
+                {{'' if loop.first else ', '}}
+                {{z.lang|TALabbr('LANG')|safe}}{#--#}
+                {%- if z.part or z.wasei %}(
+                  {#--#}{{'p' if z.part else ''}}{#--#}
+                  {{',' if z.part and z.wasei else ''}}{#--#}
+                  {{'w' if z.wasei else ''}}){#--#}
+                  {%-endif%}{#--#}
+                {{' '+z.txt if z.txt else ''}}{#--#}
+                {%-endfor%}{# s._lsrc #}
+              </span>
+              {%-endif%}
+
+            {%- if s.notes %}
+            <br><span class="note">
+              《{{s.notes}}》
+              </span>
+              {%-endif%}
+
+            {%- if s._gloss -%}
+            {%+ for g in s._gloss %}
+            <br><span class="glossx">▶ {# FIXME: fix gloss css #}
+              {%- if g.lang!=1 %}
+                <span class="glang">{{g.lang|TALabbr('LANG')|safe}}</span>:
+                {%-endif-%}
+              {%- if g.ginf!=1 %}
+                [<span class="ginf">{{g.ginf|TALabbr('GINF')|safe}}</span>]{{' '}}
+                {%-endif-%}
+              {{g.txt}}
+              {#-#}</span>
+                {%-endfor-%}
+              {%-endif-%}
+
+            {%- if s.XREF|d or s.XRER|d or s._xrslv %}
+            <table class="xrefs">
+              {#- s.XREF and s.XRER are identical to s._xref and s._xrer except
+                  some refs (e.g. to unapproved entries) have been removed. They
+                  can be added to an entry by jmcgi.add_filtered_xrefs(). #}
+              {%- if s.XREF %}
+              <tr><td colspan="2">Cross references:</td></tr>
+                {%-endif%}
+              {%- for x in s.XREF %}
+              <tr>
+                <td>&nbsp;</td>
+                <td>
+                    {#- x.TARG is an abbreviated Entr object that is the target of the xref
+                    (see jdb.augment_xrefs() and jmcgi.add_filtered_xrefs()).  'knum' and
+                    'rnum' are indexes (1-based) to the target's kanji and readings respectively
+                    that we will show.  If x is a forward xref (x.direct>=0) the kanj and
+                    reading are given by x.kanj and x.rdng.  If it is a reverse xref,
+                    (x.direc<0) use the first kanji/rdng in the target (knum=rnum=1).  #}
+                  {%- set knum = x.kanj if x.direc >= 0 else 1 -%}
+                  {%- set rnum = x.rdng if x.direc >= 0 else 1 %}
+                  {{['\u21D0','\u21D4','\u21D2'][x.direc+1]}}&nbsp;{#--#}
+                  {{x.typ|TALabbr('XREF')|safe}}: {#-#}
+                  <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;e={{x.xentr}}">{{x.TARG.seq}}</a>
+                  {{x.TARG|TALkrtxt('_kanj',knum) if x.TARG._kanj else ''}}{#--#}
+                  {% if x.TARG._kanj and x.TARG._rdng and rnum %}【{%endif%}{#--#}
+                  {{x.TARG|TALkrtxt('_rdng',rnum) if x.TARG._rdng else ''}}{#--#}
+                  {% if x.TARG._kanj and x.TARG._rdng and rnum %}】{%endif%}{#--#}{{' '}}
+                  {{x.xsens}}. {{x.TARG._sens[x.xsens-1]|TALtxts('_gloss')}}
+                  {{x.notes}}{#--#}
+                  </td>
+                </tr>
+                {%-endfor%}{# s.XREF #}
+              {%- if s._xrslv %}
+              <tr><td colspan="2">Unresolved cross references:</td></tr>
+              {%- for x in s._xrslv -%}
+              <tr>
+                <td>&nbsp;</td>
+                <td>
+                  {{x.typ|TALabbr('XREF')|safe}}:{#--#}
+                  {{x.ktxt}}{{'・' if x.ktxt and x.rtxt else ''}}{{x.rtxt}}
+                  </td>
+                </tr>
+                {%-endfor%}{# s._xrslv -#}
+                {%-endif%}{# s._xreslv #}
+              </table> {# class="xrefs" #}
+              {%endif%}{# s.XREF or s.XRER or s._xrslv #}
+            </td>
+          </tr>
+          {%endfor%}{# e._sens #}
+        </table>
+        {%endif%}{# e._sens #}
+                                                                          {#-#}
+      {%- if e.chr|d %}
+      <br>
+        <table class="kdinfo" valign="top">
+          <tr>
+            <th>Kanji details</th><th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
+            <th>References</th><th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
+            {%+ if e.chr.enc %}<th>Encodings</th>{%endif%}
+            </tr>
+          <tr>
+            <td valign="top">
+              <table class="kddetails" border="1">
+                <tr><td>Strokes:</td><td>{{e.chr.strokes or '&nbsp;'|safe}}</td></tr>
+                <tr><td>Radical:</td><td>{{e.chr.bushu or '&nbsp;'|safe}}</td></tr>
+                <tr><td>Radical name:</td><td>{{e.chr.radname or '&nbsp;'|safe}}</td></tr>
+                <tr><td>Grade:</td><td>{{e.chr.grade or '&nbsp;'|safe}}</td></tr>
+                <tr><td>Freq:</td><td>{{e.chr.freq or '&nbsp;'|safe}}</td></tr>
+                <tr><td>JLPT:</td><td>{{e.chr.jlpt or '&nbsp;'|safe}}</td></tr>
+                </table>
+              </td>
+            <td></td>
+            <td valign="top">
+              <table class="kdrefs" border="1">
+                {% for rf in e.chr._cinf %}
+                <tr>
+                  <td title="{{rf.kw|TALdescr('CINF')}}">{{rf.kw|TALabbrtxt('CINF')}}</td>
+                  {%- if rf.kw|TALabbrtxt('CINF')=='gahoh' and cfg.web.GAHOH_URL %}
+                  <td><a href="{{cfg.web.GAHOH_URL}}{{rf.value}}">{{rf.value}}</a>
+                  {%- else %}
+                  <td>{{rf.value}}</td>
+                  {%-endif%}
+                  </tr>
+                  {%-endfor%}
+                </table>
+              </td>
+            <td></td>
+            {% if e.chr.enc %}
+            <td valign="top">
+              <table class="kdenc" border="1">
+                <tr><td>Unicode:</td><td><a href="{{e.chr.enc.uurl}}">{{e.chr.enc.uni}}</a></td></tr>
+                <tr><td>UTF-8:</td><td>{{e.chr.enc.utf8}}</td></tr>
+                <tr><td>JIS:</td><td>{{e.chr.enc.jis}}</td></tr>
+                <tr><td>ISO2022JP:</td><td>{{e.chr.enc.iso2022jp}}</td></tr>
+                <tr><td>SJIS:</td><td>{{e.chr.enc.sjis}}</td></tr>
+                <tr><td>EUCJP:</td><td>{{e.chr.enc.eucjp}}</td></tr>
+                </table>
+              </td>
+              {%endif%}{# e.chr.enc #}
+            </tr>
+          </table>
+        {%endif%}{# e.chr #}
+                                                                          {#-#}
+      {%- if e._grp %}
+      <br>Belongs to groups:
+        {%- for g in e._grp %}
+      <span class="grp">
+        {{'' if loop.first else ','}}{{g.kw|TALabbr('GRP')|safe}}({{g.ord}})
+          {%-endfor%}
+        </span>
+        {%endif%}
+                                                                          {#-#}
+      {%- if e.HAS_AUDIO|d %}
+      <br>Audio:
+      <table class="audio" border=1>
+        {%- for a in e._snd %}
+        <tr>
+          <td>&nbsp;</td>
+          <td>{{a.snd}}</td>
+          {%- if a.CLIP %}
+            <td>{{a.CLIP.sdir}}</td>
+            <td>{{a.CLIP.sfile}}</td>
+            <td>{{a.CLIP.strt}}</td>
+            <td>{{a.CLIP.leng}}</td>
+            {%-endif%}
+          </tr>
+          {%-endfor%}
+        {%- for r in e._rdng %}
+          {%- for a in r._snd %}
+        <tr>
+          <td>&nbsp;</td>
+          <td>{{a.snd}}</td>
+          {%- if a.CLIP %}
+            <td>{{a.CLIP.sdir}}</td>
+            <td>{{a.CLIP.sfile}}</td>
+            <td>{{a.CLIP.strt}}</td>
+            <td>{{a.CLIP.leng}}</td>
+            {%endif%}
+          </tr>
+            {%-endfor%}
+          {%-endfor%}
+        </table>
+        {%-endif%}
+      {%endif%}{# not etxt #}
+                                                                          {#-#}
+      {%- if etxt and disp=='ed' %}
+        <p><span>{{etxt}}</span></p>
+        {%endif%}
+                                                                          {#-#}
+      {%- if etxt and disp!='ed' %}
+      <span class="preformat">
+        <pre>{{etxt}}</pre></span>
+        {%endif%}
+                                                                          {#-#}
+      {%- if e.POS and not etxt %}
+      <br>
+      <a href="conj.py?e={{e.id}}&amp;svc={{svc}}&amp;sid={{sid}}&amp">Conjugations</a>
+        {%endif%}
+                                                                          {#-#}
+      {%- if e.EDITABLE|d %}
+      <br><br><form action="edform.py" method="get">
+        <input type="submit" value="Edit">
+        <input type="hidden" name="e" value="{{e.id}}">
+        {%- if svc|d %}
+        <input type="hidden" name="svc" value="{{svc}}">
+        {%-endif%}
+        {%- if sid|d %}
+        <input type="hidden" name="sid" value="{{sid}}">
+        {%-endif%}
+        </form>
+        {%endif%}{# e.EDITABLE #}
+                                                                          {#-#}
+      {%- if not etxt and e._hist %}
+      <div class="hist">
+        <span tal:define="global cls nothing" tal:omit-tag=""/>
+        <span tal:define="global dsp nothing" tal:omit-tag=""/>
+        <br>History: 
+        <table>
+          <tbody class="histtab">
+            {%- for h in e._hist %}
+              {%- if h.email %}
+                {%- set email = "<{{h.email}}>" if session else "<...address hidden...>" %}
+                {%-endif%}
+                                                                          {#-#}
+              {#-The three statements below implement the "hide/show older
+                 history records" function.  To change the number of records
+                 always shown (i.e. not hidden as "older" records) change
+                 the number (5 in example lines):
+                   set cls = ... if loop.index>5 ...
+                   set dsp=(loop.index > 5)
+                   if loop/index0 == 5
+                 in the statements below to the number desired.  Zero is a 
+                 valid value. #}
+              {%- set cls = "hist_"+(e.id|string) if loop.index>5 else "" %}
+              {%- set dsp = (loop.index>5) %}
+              {%- if loop.index0 == 5 %}
+            <tr><td colspan="3">
+              <span class="fakelink" onclick="toggle_visibility('hist_{{e.id}}')">
+                <font size="-1">(show/hide {{(e._hist|length)-5}} older log entries)</font>
+                </span>
+              </td></tr>
+              {%endif%}
+                                                                        {#-#}
+            <tr class="{{cls}}" {{dsp|a('style="display:none"')|safe}}>
+              <td>{{h.hist}}.</td>
+              <td class="hhdr" colspan="2">
+                {{h.stat|TALabbrtxt('STAT')|safe}}{{'*' if h.unap else ''}} {# -#}
+                {{h.dt}}&nbsp;  {# -#}
+                <span class="submitter_name">{{h.name}}</span>  {# -#}
+                {{email|d}}
+                </td>
+              </tr>
+            {%- if h.refs %}
+            <tr class="{{cls}}" {{dsp|a('style="display:none"')|safe}}>
+              <td>&nbsp;</td>
+              <td valign="top">Refs:</td>
+              <td><pre class="preformat">{{h.refs}}</pre></td>
+              </tr>
+              {%endif%}
+            {%- if h.notes %}
+            <tr class="{{cls}}" {{dsp|a('style="display:none"')|safe}}>
+              <td>&nbsp;</td>
+              <td valign="top">Comments:</td>
+              <td><pre class="preformat">{{h.notes}}</pre></td>
+              </tr>
+              {%endif%}
+           {%- if h.diff %}
+           <tr class="{{cls}}" {{dsp|a('style="display:none"')|safe}}>
+              <td>&nbsp;</td>
+              <td valign="top">Diff:</td>
+              <td><pre class="preformat">{{h.diff}}</pre></td>
+              </tr>
+              {%endif%}
+            {%-endfor%}{# h in e._hist #}
+            </tbody>
+          </table>
+        </div><!-- end class="hist" -->
+      {%endif%}{# etxt #}
+                                                                          {#-#}
+      <br><span class="notes">
+        View entry in alternate formats:
+        <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=jel&amp;e={{e.id}}">jel</a> |
+        <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=ed&amp;e={{e.id}}">edict</a> |
+        <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=jm&amp;e={{e.id}}">jmdict xml</a> |
+        <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=jmne&amp;e={{e.id}}">jmnedict xml</a> |
+        <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=xml&amp;e={{e.id}}">jmdictdb xml</a>
+        </span>
+
+      </div>
+    {%endfor-%}{# entries #}
+{% endblock %}

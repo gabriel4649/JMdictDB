@@ -64,7 +64,7 @@ def main( args, opts ):
            if x.kw!='nf' and x.kw!='gA': freq.extend ([Kwfreq(x.kw+'1', x.descr),
                                                        Kwfreq(x.kw+'2', x.descr)])
 
-        jmcgi.gen_page ("tmpl/srchform.tal", macros='tmpl/macros.tal', KW=jdb.KW,
+        jmcgi.jinja_page ("srchform.jinja", KW=jdb.KW,
                         pos=pos, misc=misc, stat=stat, src=corp, freq=freq,
                         fld=fld, kinf=kinf, rinf=rinf, dial=dial, parms=parms,
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,

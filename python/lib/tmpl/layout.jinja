@@ -2,19 +2,24 @@
     This provides the basic layout of all JMdictDB pages by providing a 
     uniform header and footer.
 
-    Overridable blocks: title, content
+    Overridable blocks:
+      title -- Text used for visible page headline and head.title element.
+      page_scripts -- Additional, page-specific scripts that will ho into 
+        the <head> element.
+      bady_attrs -- Attributes for the pages's <body> element.
+      content -- Page contents.
     Context variables:
-      svc
-      sid
-      this_page
-      parms
-      asession
-      cfg.web.CONTACT_EMAIL
+      svc -- Token that identifies the database to use.
+      sid -- Session ID number.
+      this_page --
+      parms --
+      session --
+      cfg.web.CONTACT_EMAIL -- 
 
     Notes (these apply in general to all the templates):
     - TALxxxx and other non-Jinja filters are definded in python/lib/jinja.py.
-    - The construct "{ # - # }" (but without the embedded whitespace)
-      is used below to remove whitespace.
+    - The constructs like "{ # - # }" (but without the embedded whitespace)
+      are used below to remove whitespace.
 -#}
 <!DOCTYPE html>
 <!-- layout.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
@@ -29,9 +34,10 @@
         var s = elist[i].style;
         s.display = s.display==='none' ? '' : 'none'; } }
     </script>
+  {% block page_scripts %}{%endblock%}
   <title>{%block title%}{%endblock%}</title>
   </head>
-<body>
+<body {%- block body_attrs %}{%endblock%}>
   <div class="jmd-header">
     <table width="100%">
       <tbody class="hlogin">

@@ -93,7 +93,7 @@ def add_filters (env):
             else: raise ValueError ("Invalid 'what' value: %s" % what)
         @                                                      add_filter (env)
         def TALdecode (arg, *args):
-              # Takings the arguments in *args pairwise, find the first
+              # Taking the arguments in *args pairwise, find the first
               # 2*n'th argument in *args that is "==" to 'arg', and return
               # the 2*n+1'th argument from *args.
             #import pdb; pdb.set_trace()

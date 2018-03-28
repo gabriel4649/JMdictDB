@@ -310,7 +310,7 @@
           <tbody class="histtab">
             {%- for h in e._hist %}
               {%- if h.email %}
-                {%- set email = "<{{h.email}}>" if session else "<...address hidden...>" %}
+                {%- set email = "<"+h.email+">" if session else "<...address hidden...>" %}
                 {%-endif%}
                                                                           {#-#}
               {#-The three statements below implement the "hide/show older

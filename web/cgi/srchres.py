@@ -148,7 +148,7 @@ def main( args, opts ):
             print ("Location: entr.py?%se=%d\n" % (svcstr, rs[0].id))
         else:
             if not meth: meth = 'get' if dbg else 'post'
-            jmcgi.gen_page ("tmpl/srchres.tal", macros='tmpl/macros.tal',
+            jmcgi.jinja_page ("srchres.jinja",
                             results=rs, pt=pgtotal, p0=pgoffset, method=meth,
                             p1=pgoffset+reccnt, soj=soj, sql=sqlp, parms=parms,
                             svc=svc, host=host, sid=sid, session=sess, cfg=cfg,

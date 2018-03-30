@@ -188,7 +188,7 @@ def main (args, opts):
         if errs: jmcgi.err_page (errs)
 
         if not meth: meth = 'get' if dbg else 'post'
-        jmcgi.gen_page ('tmpl/edform.tal', macros='tmpl/macros.tal', parms=parms,
+        jmcgi.jinja_page ('edform.jinja', parms=parms, extra={},
                          entrs=entrs, srcs=srcs, is_editor=is_editor, dbg=dbg,
                          svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
                          method=meth, output=sys.stdout, this_page='edform.py')

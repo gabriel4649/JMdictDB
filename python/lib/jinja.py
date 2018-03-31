@@ -116,7 +116,10 @@ def add_filters (env):
         @                                                      add_filter (env)
           # Wrap a non-vacuous argument with prefix and suffix.
         def w (arg, prefix=None, suffix=None):
-            if arg is None or arg=='' or isinstance(arg,Undefined): return ''
+              # Undefined check must be done first below since "is" or
+              # "==" ops on undefined value will raise error.
+            if isinstance(arg,jinja2.Undefined) or arg is None or arg=='':
+                return ''
             arg = str (arg)
             if prefix: arg = prefix + arg
             if suffix: arg = arg + suffix

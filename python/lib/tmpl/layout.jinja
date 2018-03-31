@@ -6,15 +6,22 @@
       title -- Text used for visible page headline and head.title element.
       page_scripts -- Additional, page-specific scripts that will ho into 
         the <head> element.
-      bady_attrs -- Attributes for the pages's <body> element.
-      content -- Page contents.
+      body_attrs -- Attributes for the pages's <body> element.
+      page_content -- Page contents.
     Context variables:
-      svc -- Token that identifies the database to use.
+      *svc -- Token that identifies the database to use.
+      *cfg.web.CONTACT_EMAIL -- Email address of site admin.
       sid -- Session ID number.
-      this_page --
+      this_page -- Name of cgi script providing page (e.g., "entr.py")
+        If not provided the login fields will not be displayed.  (This
+        value and that of "parms" are used to return to the current page
+        after a login/logout.)
       parms --
-      session --
-      cfg.web.CONTACT_EMAIL -- 
+      session -- Session object if user is logged in.
+      ----
+      [*] Denotes a context variable that must be supplied or template
+       rendering may fail with an UndefinedError exception.  Variables
+       not so marked are optional.
 
     Notes (these apply in general to all the templates):
     - TALxxxx and other non-Jinja filters are definded in python/lib/jinja.py.
@@ -46,21 +53,22 @@
             <h2>JMdictDB - Japanese Dictionary Database</h2>
             <h3>{{self.title()}}</h3>
                  {#- self.title() refers back to the "block title" jinja statement. #}
-            <a href="srchformq.py?svc={{svc}}&amp;sid={{sid}}">       Search</a> |
-            <a href="srchform.py?svc={{svc}}&amp;sid={{sid}}">        Advanced Search</a> |
-            <a href="edform.py?svc={{svc}}&amp;sid={{sid}}">          New Entry</a> |
-            <a href="updates.py?svc={{svc}}&amp;sid={{sid}}&amp;i=1"> Submissions</a>
+            <a href="srchformq.py?svc={{svc}}&amp;sid={{sid|d}}">       Search</a> |
+            <a href="srchform.py?svc={{svc}}&amp;sid={{sid|d}}">        Advanced Search</a> |
+            <a href="edform.py?svc={{svc}}&amp;sid={{sid|d}}">          New Entry</a> |
+            <a href="updates.py?svc={{svc}}&amp;sid={{sid|d}}&amp;i=1"> Submissions</a>
             </td>
           <td align="right" rowspan="1">
+          {%- if this_page|d %} {# Supress the login form is 'this_page' is undefined or false. #}
             <form name="entrauth" method="post" action="{{this_page}}">
-              {%- for p in parms %}
+              {%- for p in parms|d|a([]) %}
               <input type="hidden" name="{{p[0]}}" value="{{p[1]}}">
                 {%- endfor %}
-              {%- if session %}
+              {%- if session|d %}
               Logged in: {{session.fullname}}
               <input name="loginout" value="logout" type="submit">
                 {%- endif %}
-              {%- if not session %}
+              {%- if not session|d %}
               <table align="right">
                 <tbody>
                   <tr><td colspan="3">Login for registered editors</td></tr>
@@ -80,6 +88,7 @@
                 </table>
                 {%- endif %}
               </form>
+            {%- endif %}{# this_page #}
             </td>
           </tr>
         </tbody>
@@ -95,10 +104,10 @@
       <tbody class="navlinks">
         <tr>
           <td>
-            <a href="srchformq.py?svc={{svc}}&amp;sid={{sid}}">       Search</a> |
-            <a href="srchform.py?svc={{svc}}&amp;sid={{sid}}">        Advanced Search</a> |
-            <a href="edform.py?svc={{svc}}&amp;sid={{sid}}">          New Entry</a> |
-            <a href="updates.py?svc={{svc}}&amp;sid={{sid}}&amp;i=1"> Submissions</a>
+            <a href="srchformq.py?svc={{svc}}&amp;sid={{sid|d}}">       Search</a> |
+            <a href="srchform.py?svc={{svc}}&amp;sid={{sid|d}}">        Advanced Search</a> |
+            <a href="edform.py?svc={{svc}}&amp;sid={{sid|d}}">          New Entry</a> |
+            <a href="updates.py?svc={{svc}}&amp;sid={{sid|d}}&amp;i=1"> Submissions</a>
             </td>
           <td align="right">{% if svc %}DB={{svc}}{% endif %}</td>
           </tr>

@@ -36,9 +36,9 @@ def main (args, opts):
             kwset = [t.capitalize(), sorted (kw, key=lambda x:x.kw.lower())]
             kwlist.append (kwset)
             kwhash[t] = kwset[1]
-        jmcgi.gen_page ("tmpl/edhelp.tal", macros='tmpl/macros.tal',
-                        kwlist=kwlist, kwhash=kwhash, svc=svc,
-                        output=sys.stdout)
+        jmcgi.jinja_page ("edhelp.jinja", 
+                          kwlist=kwlist, kwhash=kwhash, svc=svc, cfg=cfg,
+                          output=sys.stdout)
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

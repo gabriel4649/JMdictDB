@@ -1,0 +1,878 @@
+{%- extends "layout.jinja" %}
+{%- block title %}{% endblock%}
+{%- block page_content %}
+<!-- edhelp.jinja, part of JMdictDB.  Copyright (c) 2008-2010 Stuart McGraw -->
+    <div>
+      <h2>Entry Editing Reference</h2>
+      Contents:<br>
+      <a href="#geninfo">General Information</a><br>
+      <a href="#infoflds">Edit Form Informational Fields</a><br>
+      <a href="#inboxes">Edit Form Input Boxes</a><br>
+      <a href="#insyntax">Tag Syntax</a><br>
+      <a href="#kwabbr">Keyword Abbreviations</a><br>
+      <p/>
+
+    <div class="entry">
+      <h2 id="geninfo">General Information</h2>
+      Entries in the dictionaries held in the JMdictDB database are
+      entered and edited using the JMdictDB Edit Language (JEL).
+      It allows one to enter the core information of an entry in three
+      text boxes (Kanji, Readings, Meanings) rather than the dozens of text
+      boxes that would be required if every dictionary field used a separate
+      text box for its entry.  The syntax of JEL is similar to EDICT but
+      with modifications to facilitate machine parsing.
+      There is also a
+      <a href="edhelpq.py?svc={{svc|d}}&sid={{sid|d}}">
+        Quick Overview</a>
+      of JEL available for getting started.
+      Please read and follow the 
+      <a href="http://www.edrdg.org/wiki/index.php/Editorial_policy">
+        JMdict/EDICT Editorial Policy</a>
+      when making submissions.
+
+      <h3 id="syntaxrules">General Syntax Rules</h3>
+
+      The Edit Entry Form consists of a number of text boxes for entering
+      information about an entry, but there are three that accept and parse
+      JEL text: the Kanji, Readings, and Meanings boxes.
+          <p/>
+      In the Kanji and Readings boxes, enter the entry's kanji form and readings.
+      If the entry has more than one of either, separate them with semicolons;
+      either ASCII or JIS semicolons can be used.  Whitespace (including
+      newlines) will be stripped from the beginning and end of each kanji
+      and reading. If the Japanese is written only in kana, omit the Kanji part.
+          <p/>
+      Enter meanings (aka glosses) in the Meanings box. Glosses are grouped into
+      "senses", i.e. sets of related meanings, and each sense starts with
+      a sense number enclosed in square brackets, e.g. <samp>[1]</samp>.
+      This is followed by one or more glosses.  When there is more than
+      one gloss, they are separated by (ASCII) semicolons.
+      If a gloss contains any semicolon (<samp>;</samp>) or left bracket (<samp>[</samp>)
+      characters, they must be escaped with a backslash character (<samp>\</samp>).
+      Whitespace (including newlines) is stripped from the beginning and
+      end of each gloss.
+      The actual numbers used in sense numbers are not significant:
+      when entered into the database, senses will be ordered starting
+      from 1 in the order they occur regardless of the sense numbers
+      used in the Meanings box.  Note that sense numbers are not tags
+      (described below); they must not contain any characters (including
+      whitespace) other than the number and cannot be grouped with other
+      tags.
+
+      <h3>Tags</h3>
+
+      Tags provide extra information that applies to individual kanji,
+      readings, senses, and glosses.  Tags are enclosed in square brackets:
+      <samp>[...]</samp>.  Any number of tags, separated by commas, can
+      be given inside a single pair of square brackets, and multiple sets
+      of square brackets may be used, for example <samp>[n,vs]</samp> and
+      <samp>[n][vs]</samp> will have identical effect.
+      Kanji part and reading tags are given after the kanji or reading they
+      apply to (and before the semicolon that preceedes the following kanji
+      part or reading.  Sense tags can occurs before or after any gloss and
+      will apply to the entire sense.  Gloss tags may occur before or after
+      the gloss they apply to.
+          <p/>
+      Tags are grouped into different types.  For example there is a set of
+      part-of-speech (pos) tags having values like <samp>n</samp> (noun),
+      <samp>v5u</samp> (Godan verb), etc., and are used in senses.  The tags
+      in the "Kanji info" group provide information about kanji parts and have
+      values like <samp>ateji</samp> (phonetic reading) and <samp>iK</samp>
+      (word containing irregular kanji usage).
+      Case is significant in tags; <samp>ik</samp> is not the same as <samp>iK</samp>.
+          <p/>
+      See <a href=#insyntax>Tag Syntax</a> for a list of tag groups and where
+      each group may be used.  See <a href="#kwabbr">Keyword abbreviations</a>
+      for lists of the actual tag values in each group.
+          <p/>
+      Some tags take arguments (see *note below) and are given in the form,
+      <samp>tag_type=tag_value</samp>.
+      In some cases the tag may be given multiple arguments separated by
+      semicolons: <samp>tag_type=tag_value1;tag_value2;...</samp>.  Some tags can be
+      be given in the form, <samp>tag_type=tag_value</samp>, or just <samp>tag_value</samp>.
+      Note that if the first form is used, multiple values are separated with
+      semicolons (<samp>tag_type=tag_value1;tag_value2;...</samp>) but in the second
+      form multiple values are separated with commas (<samp>tag_value1,tag_value2,...</samp>).
+          <p/>
+      When tag values contains any of the ascii characters,
+      <samp>&lt;space&gt; : ; , = / [ ]</samp>,
+      or the JIS characters, <samp>&lt;space&gt; ・ ／ ； 、</samp>,
+      the tag value should be quoted with double quotes:
+      <samp>[note="This is: a quoted text"]</samp>.
+      This is commonly needed when creating an xref or restr tag that contains a
+      "dotted" kanji or reading, for example <samp>[restr="アジア・太平洋戦争"]</samp>.
+      To include a double quote character in quoted text, preceed it with a
+      backslash (<samp>\</samp>) character.
+          <p/>
+      Other tags, for example "lsrc" which is used to label the source language
+      of a gairaigo, have formats specific to them.
+          <p/>
+      Specifics on tags, their values, and their use, are given in the
+      <a href="#kanji">Kanji</a>,
+      <a href="#readings">Readings</a>, <a href="#senses">Meanings</a>, and
+      <a href="#insyntax">Tag Syntax</a> sections below.
+          <p/>
+      *Note: Actually, all tags can be given in the form <samp>tag_type=tag_value</samp>.
+      <samp>v5u</samp> is exactly equivalent to <samp>pos=v5u</samp>.  The short
+      form is usually more convenient, but the longer form may sometimes
+      be needed to avoid misinterpretations.  For example, <samp>lit</samp>
+      can be the value of a gloss tag (literal gloss) or a language (Lithuanian).
+      Since <samp>[lit]</samp> will be interpreted as "literal" when used
+      with a gloss, you will need to use <samp>[lang=lit]</samp> if
+      you want to provide a gloss in Lithuanian.
+
+      </div>
+
+    <div class="entry">
+      <h2 id="infoflds">Edit Form Informational Fields</h2>
+
+      These boxes provide information about the entry being edited
+      and are not changable.  Depending on the JMdictDB configuration,
+      not all of these boxes may be displayed.  The same information
+      is displayed in the Entry and Edit Confirmation forms.
+
+      <dl>
+        <dt id="stat">Stat</dt>
+        <dd>The status of this entry.
+          Every entry has one of three statuses: Active (A), Deleted (D)
+          Rejected (R).  Additionally, every entry is either Unapproved (the
+          status code is followed by an asterisk, "*"), or Approved (status
+          code not followed by asterisk.)  (<a href="#kw_stat">abbrs</a>)
+          </dd>
+
+        <dt id="id">Id</dt>
+        <dd>The database id number of this entry.
+          Every entry (or more specifically, every version of an entry produced
+          by an edit) has a unique id number in the database.  This number is
+          assigned by the system automatically and cannot be manually changed,
+          although the system may change it sometimes.
+          </dd>
+
+        <dt id="seq">Seq</dt>
+        <dd>The sequence number assigned to the entry.  In general, all
+          different versions (edits) of an entry will have the same sequence
+          number.  If not explicitly set, a new entry will be assigned an
+          automatically generated sequence number.
+          Only registered editors may explicitly set a sequence number on
+          a new entry or change a sequence number on an existing one.
+          (See the <a href="#inboxes2">Editor Only section</a> below.)
+          </dd>
+
+        <dt id="srcnote">Src note</dt>
+        <dd>Information about the source of this entry.
+          Only registered editors can change this.
+          (See the <a href="#inboxes2">Editor Only section</a> below.)
+          </dd>
+
+        <dt id="entrnote">Entr note</dt>
+        <dd>Information about this entry as a whole.  Information
+          pertaining to any of the meanings of this entry should go
+          in sense notes in the appropriate sense(s).
+          Only registered editors can change this.
+          (See the <a href="#inboxes2">Editor Only section</a> below.)
+          </dd>
+        </dl>
+      </div>
+
+    <div class="entry">
+      <h2 id="inboxes">Edit Form Input Boxes</h2>
+      <dl>
+        <dt id="corpus">Corpus</dt>
+        <dd>The corpus in which the entry exists or (for new entries) should
+          be entered.  (<a href="#kw_src">abbrs</a>)
+          In some cases, the corpus value will be selectable when editing
+          an entry; in other cases it will be preset and only registered
+          editors can change it.
+          (See the <a href="#inboxes2">Editor Only section</a> below.)
+          </dd>
+
+        <dt id="kanji">Kanji</dt>
+        <dd>
+          Enter the kanji form(s) of the word or expression, separated by semicolons (either
+          Western or Japanese semicolons are ok).
+          Kanji information (<a href="#syn_kinf">syntax</a>,
+          <a href="#kw_kinf">abbrs</a>) and
+          frequency (<a href="#syn_freq">syntax</a>, <a href="#kw_freq">abbrs</a>) tags,
+          enclosed in square brackets ([]) may optionally follow any kanji (before the
+          semicolon if present.)
+          <ul><li>Every kanji form listed must contain at least one kanji or other
+          non-kana character. (In this case, the "sokuon" (ー) vowel extension
+          character is regarded as a kana character.)
+          </li><li>If the word being entered is written only in kana, leave this
+          field blank and enter the kana in the Reading box.
+          </li><li>Kanji forms should be listed in order of "commonness": the most commonly used
+          kanji form first, the most rarely used last.
+          </li><li>Multiple sets of bracketed tags may be given.
+          </li><li>Multiple tags may occur in within a single pair of brackets, separated by commas.
+          </li><li>Order of tags is not significant.
+          </li><li>Conflicting tags (e.g. nf14 and nf19) may not be applied to the same
+          kanji.
+          </li><li>Frequency tags are only processed when submitted by registered editors.
+          If you are not registered, you should should note in the Comments section
+          any freq tags you believe should be applied.
+          </li></ul>
+          Example: 缶 [ateji,ichi1,news1][nf6] ； 罐 [ateji,oK ]
+          </dd>
+
+        <dt id="readings">Readings</dt>
+        <dd>Enter the readings/kana forms used for this word, separated by
+          semicolons (either Western or Japanese semicolons are ok.)
+          Reading information tags (<a href="#syn_rinf">syntax</a>,
+          <a href="#kw_rinf">abbrs</a>), frequency tags
+          (<a href="#syn_freq">syntax</a>, <a href="#kw_freq">abbrs</a>), or
+          restrictions (<a href="#syn_restr">syntax</a>)
+          enclosed in square brackets ([]) may optionally follow any reading
+          (before the semicolon if present.
+          <ul><li>Readings may not contain any non-kana characters.
+          </li><li>Readings should be listed in order of "commonness": the
+          most commonly used reading first, the most rarely used last.
+          </li><li>Multiple sets of bracketed tags may be given.
+          </li><li>Multiple tags may occur in within a single pair of brackets, separated by commas.
+          </li><li>Order of tags is not significant.
+          </li><li>Conflicting tags (e.g. nf14 and nf19) may not be applied to the same
+          reading.
+          </li><li>Frequency tags are only processed when submitted by registered editors.
+          If you are not registered, you should should note in the Comments section
+          any frequency tags you believe should be applied.
+          </li><li>Use a restriction tag to indicate when a reading is only used
+          with a subset of the kanji forms listed in the Kanji box.
+          </li><li>If multiple kanji forms are used with an "restr" tag, separate
+          them with a semicolon (ASCII or JIS).  However if you give multiple
+          restriction kanji forms without an explicit "restr" tag, separate
+          them with commas (ASCII or JIS): <samp>じゃがいも[restr=じゃが芋;馬鈴薯]</samp>
+          or <samp>じゃがいも[じゃが芋,馬鈴薯]</samp>
+          </li><li>If a kana form is not associated with any kanji,
+          use a "restr=nokanji" tag or equivalently but more simply, just a
+          "nokanji" tag. (This typically occurs with plant and animal names where
+          the katakana form is not normally associated with the kanji form.)
+          </li></ul>
+          Examples: のり [gikun,ichi1,news2][nf38] ; ノリ[ichi1,news2,nf38]<br>
+            じゃがいも [spec1,restr=じゃが芋;馬鈴薯] ； ジャガイモ [nokanji]
+          </dd>
+
+        <dt id="senses">Meanings</dt>
+        <dd>Enter meanings (glosses), and their associated tags in the Meanings box.
+          Group them into senses, i.e. sets of related meanings.
+          <ul><li>Each sense starts with a sense number in brackets, e.g., "[1]".
+          </li><li>Sense numbers are not significant other than to signify
+          the start
+          of a new sense.  When the entry is added to the database, senses
+          will be numbered from 1 in the order they occured in the Meanings
+          text box, regardless of the actual sense numbers used.
+          </li><li>Following the sense number are any number of sense tags, glosses
+          and gloss tags, which may be freely intermixed.
+          </li><li>Multiple glosses in a sense are separated by semicolons.
+          Glosses do not need to be enclosed in quotes. even when they contain
+          space characters.  Gloss tags (see below) are considered part of the
+          gloss.  Example: <br>
+            This is gloss 1 [lit]; [fig] This is gloss 2; This is gloss 3<br>
+          </li><li>If a gloss contains left bracket ([) or semicolon (;) characters,
+          those characters must be escaped by preceeding them with a backlslash (\).
+          Example: <br>
+            <samp>This is a single gloss\; even though it contains a semicolon</samp>
+          Note that right brackets (]) are not escaped.
+          </li><li>Sense tags are enclosed in square brackets.  Multiple tags may
+          occur in within a single pair of brackets, separated by commas.  Sense
+          tag apply to the entire sense, no matter where they appear textully in
+          the sense.
+          </li><li>Line breaks are not significant: senses do not
+          have to start on new lines, and glosses and tags may extend over
+          several lines.
+          </li><li>Sense tag values, and specifically part-of-speech tags,
+          are not propagated to following senses.  If sense [2] is a noun,
+          you must explicity say so, even though sense [1] was a noun.
+          </li><li>Sense tags are:
+            <ul><li>ant -- An antonym cross-reference (<a href="#syn_xref">syntax</a>)
+            </li><li>dial -- Dialect (<a href="#syn_dial">syntax</a>, <a href="#kw_dial">abbrs</a>)
+            </li><li>fld -- Domain (<a href="#syn_fld">syntax</a>, <a href="#kw_fld">abbrs</a>)
+            </li><li>lsrc -- Source word and language (<a href="#syn_lsrc">syntax</a>, <a href="#kw_lang">abbrs</a>)
+            </li><li>misc -- Misc sense tags (<a href="#syn_misc">syntax</a>, <a href="#kw_misc">abbrs</a>)
+            </li><li>note -- Sense-related notes (<a href="#syn_note">syntax</a>)
+            </li><li>pos -- Grammatical part-of-speech (<a href="#syn_pos">syntax</a>, <a href="#kw_pos">abbrs</a>)
+            </li><li>restr -- Reading and kanji restrictions (<a href="#syn_restr">syntax</a>).  An explicit
+              "restr=" is optional and any untagged kanji or kana string will taken as
+              a kanji or reading restriction respectively.
+            </li><li>see -- A "see also" cross reference (<a href="#syn_xref">syntax</a>)
+            </li></ul>
+          </li><li>The syntax of gloss information (or ginf) tags is the same
+          as for sense tags but
+          ginf tags apply only to the gloss they are adjacent to.  They may
+          occur before or after the gloss they apply to.  There are two type of
+          gloss tags: translation type tags, and gloss language tags.  Each gloss
+          can have only one translation tag and one language tag.
+          </li><li>Ginf tranlation tags are:
+            <ul><li>equ -- Equivalent translation (<a href="#syn_ginf_equ">syntax</a>).
+               This is the default if no other translation tag is given.
+            </li><li>expl -- Explanatory translation (<a href="#syn_ginf_expl">syntax</a>)
+            </li><li>fig -- Figurative translation (<a href="#syn_ginf_fig">syntax</a>)
+            </li><li>lit -- Literal translation (<a href="#syn_ginf_lit">syntax</a>)
+            </li></ul>
+          </li><li>Ginf language tags are:
+            <ul><li>lang -- Value can be any of the three-letter language codes from
+              ISO-639-2.  This tag indicate the language of the associated gloss.
+              If not given, the default is "eng" (english).  Note that if you want
+              to give a Lithuanian ("lit") gloss, you must use [lang=lit] as
+              [lit] will be interpreted as the gloss translation tag, "literal".
+              (<a href="#kw_lang">abbr</a>)
+            </li></ul>
+          </li><li>When you add a cross reference using a [see=] or [ant=] tag, the
+            cross reference will also appear in the referenced entry under the heading,
+            "References to this sense".
+          </li></ul>
+          Examples:<br>
+            [1][n,vs] cherry blossom viewing; flower viewing <br>
+          <br>
+            <i>Produces results identical to the preceeding example:</i> <br>
+            [1] cherry blossom viewing [vs]; <br>&nbsp;&nbsp;flower viewing [n] <br>
+          <br>
+            [1][exp] anyone can make a mistake <br>
+             &nbsp;[lit] even monkeys fall from trees <br>
+          <br>
+            [1][pn,adj-no][uk,col] <br>
+             &nbsp;that person (guy, fellow) <br>
+            [2][pn][adj-no] that (one) <br>
+          <br>
+            [1][int,col] Go for it (kiddy talk) <br>
+            [2] Keep at it <br>
+             &nbsp;[see=頑張って] <br>
+          <br>
+            [1][n] [note="possibly from 八九三"] <br>
+             &nbsp; professional gambler or ruffian; <br>
+             &nbsp; yakuza (member) <br>
+          <br>
+            [1][exp] welcome; [fre] bienvenue! <br>
+              [note="greeting used in shops, etc."]<br>
+          <br>
+
+        <dt id="delete">Delete</dt>
+        <dd>Click this checkbox if you wish the entire entry to be deleted.
+          Please enter the case for deletion in the Comments and References boxes.
+          These will
+          be preserved in the stub entry used to record deletions. There
+          is no point in changing the entry content and any such changes
+          are ignored.
+          </dd>
+
+        <!--
+          <dt id="makecopy">Delete</dt>
+          <dd>When this checkbox is checked, the entry will be submitted
+            as a new entry rather than an edit of an existing entry.  This
+            is useful when you want enter a new entry that is similar to an
+            existing entry: edit the similar entry, modify it, check this
+            check box, and submit it.
+            </dd>
+          -->
+
+        <dt id="references">References</dt>
+        <dd>Enter sources that validate the entry or entry
+          changes being made.  This is a free form text field
+          and can include example text using the entry.
+          <br>Examples: Daijirin, 広辞苑, 新和英大辞典第５版 (often
+          abbreviated to "GG5".)
+          </dd>
+
+        <dt id="comments">Comments</dt>
+        <dd>Enter any comments you want the editors to read when
+          reviewing this entry.  These comments will be added to the
+          historical record of this entry.  This is a free form text
+          field.</dd>
+
+        <dt id="name">Name</dt>
+        <dd>Your full name.  Consistently using the same name will allow
+        to easily search for your submissions later.</dd>
+
+        <dt id="email">Email</dt>
+        <dd>Your email address.  Required if you want email notification
+        of actions taken that affect your submission. This will not be
+        publically disclosed.
+        <span class="caution">Email notification not implemented yet.</span></dd>
+        </dl>
+      </div>
+
+    <div class="entry">
+      <h2 id="inboxes2">Editor-only Input Boxes</h2>
+        <dl>
+        <dt><br>The following items will only be visible if you are logged in
+        as an editor.</dt><dd><br></dd>
+
+        <dt id="action">Action</dt>
+        <dd>Dropdown box with the following choices:
+        <ul><li>Submit -- Submit the entry as pending, just as a non-logged in
+            sumitter would.
+        </li><li>Approve -- The entry will be approved.  The entries that this
+        entry is based on will be deleted, and the current entry will become
+        the active entry.
+        </li><li>Reject -- The current entry will be marked rejected, and all
+        entries it was based on, except the original entry will be deleted.
+        The original entry will remain as the active entry.
+        </li></ul></dd>
+
+        <dt id="seq_ed">Seq</dt>
+        <dd>Specify an explicit sequence number for this entry.  (Normally
+        this field will be left blank and an edit of an existing entry will
+        keep the same sequence number, a new entry will automatically be
+        assigned the next available sequence number.)</dd>
+
+        <dt id="srcnote_ed">Src Note</dt>
+        <dd>Enter a source note.  This should provide additional information
+        useful for identifying or locating this entry within the corpus.
+        For example, "page 104" or, "sci.lang.japan MessageId:ltb0jenj$jcd$1@ns.src.ricoh.co.jp"
+        The text should either be self-describing, or use a consistent
+        format and interpretation for all the srcnotes of a particular
+        corpus.</dd>
+
+        <dt id="entrnote_ed">Entr Note</dt>
+        <dd>Enter an entry note.  This is ad hoc information that applies
+        to the entry as a whole.  Information specific to a sense (even
+        if there is only one sense) should go in a sense note.</dd>
+
+        <dt id="groups_ed">Groups</dt>
+        <dd>Groups that this entry will be assigned to.  Enter group names
+        or group Id numbers separated by semi-colons (";") if more than one.
+        Each group name or id number may optionally be followed by a period
+        (".") and an order number.  If the same group is given more than
+        once only the last occurance will be used on.</dd>
+        </dl>
+      </div>
+
+    <div class="entry">
+      <h2 id="insyntax">Tag Syntax</h2>
+
+      <table class="syntable">
+        <tbody>
+          <tr>
+            <th class="syntable">Tag group</th>
+            <th class="syntable">Tag</th>
+            <th class="syntable">Description</th>
+            <th class="syntable">Where used</th>
+            <th class="syntable">Format</th>
+            <th class="syntable">Examples</th>
+            </tr>
+
+          <tr id="syn_dial">
+            <td class="syntable">dial</td>
+            <td class="syntable"><a href="#kw_dial">kwds</a></td>
+            <td class="syntable">Dialect</td>
+            <td class="syntable">Senses</td>
+            <td class="syntable">
+              [dial=<span style="font-style: italic;"><a href="#kw_dial">kw</a></span>]
+              or just [<span style="font-style: italic;"><a href="#kw_dial">kw</a></span>]</td>
+            <td class="syntable">[ksb] [dial=ksb]</td>
+            </tr>
+
+          <tr id="syn_ginf">
+            <td class="syntable" id="syn_ginf_equ">
+              ginf <a href="#kw_ginf">(kwds)</a></td>
+            <td class="syntable">equ</td>
+            <td class="syntable">Equivalent translation</td>
+            <td class="syntable">Senses (applies to gloss)</td>
+            <td class="syntable">
+              [equ] <span style="font-style: italic;">the
+              equivalent text</span>...<br>
+              (1) Since "equ" is the default translation type for
+              glosses, it will rarely need to be specified explicitly. <br>
+              (2) The tag can placed at either the beginning or end
+              of the gloss text.
+              </td>
+            <td class="syntable">&nbsp;</td>
+            </tr>
+
+          <tr id="syn_ginf_expl">
+            <td class="syntable">&nbsp;</td>
+            <td class="syntable">expl</td>
+            <td class="syntable">Explanatory translation</td>
+            <td class="syntable">Senses (applies to gloss)</td>
+            <td class="syntable">
+              [expl] <span style="font-style: italic;">the
+              explanatory text</span>...<br>
+              (1) The tag can placed at either the beginning or end
+              of the gloss text.
+              </td>
+            <td class="syntable">&nbsp;</td>
+            </tr>
+
+          <tr id="syn_ginf_fig">
+            <td class="syntable">&nbsp;</td>
+            <td class="syntable">fig</td>
+            <td class="syntable">Figurative translation</td>
+            <td class="syntable">Senses (applies to gloss)</td>
+            <td class="syntable">
+              [fig] <span style="font-style: italic;">the
+              figurative text</span>...<br>
+              (1) The tag can placed at either the beginning or end
+              of the gloss text.
+              </td>
+            <td class="syntable">&nbsp;</td>
+            </tr>
+
+          <tr id="syn_ginf_lit">
+            <td class="syntable">&nbsp;</td>
+            <td class="syntable">lit</td>
+            <td class="syntable">Literal translation</td>
+            <td class="syntable">Senses (applies to gloss)</td>
+            <td class="syntable">
+              [lit] <span style="font-style: italic;">the
+              literal text...</span>]<br>
+              (1) The tag can placed at either the beginning or end
+              of the gloss text.
+              </td>
+            <td class="syntable">[lit] even monkeys fall from trees</td>
+            </tr>
+
+          <tr id="syn_fld">
+            <td class="syntable">fld</td>
+            <td class="syntable"><a href="#kw_fld">kwds</a></td>
+            <td class="syntable">Domain, aka field-of-application tags</td>
+            <td class="syntable">Senses</td>
+            <td class="syntable">
+              [fld=<span style="font-style: italic;"><a href="#kw_fld">kw</a></span>]
+              or just [<span style="font-style: italic;"><a href="#kw_fld">kw</a></span>]</td>
+            <td class="syntable">[food]<br>[fld=mil]</td>
+            </tr>
+
+          <tr id="syn_freq">
+            <td class="syntable">freq</td>
+            <td class="syntable"><a href="#kw_freq">kwds</a></td>
+            <td class="syntable">Frequency-of-use codes</td>
+            <td class="syntable">Kanji, Readings</td>
+            <td class="syntable">
+              [freq=<span style="font-style: italic;"><a href="#kw_freq">kw</a></span>]
+              or just [<span style="font-style: italic;"><a href="#kw_freq">kw</a></span>]</td>
+            <td class="syntable">[ichi1]<br>[freq=ichi1]<br>[news1,nf8]</td>
+          </tr>
+
+          <tr id="syn_kinf">
+            <td class="syntable">kinf</td>
+            <td class="syntable"><a href="#kw_kinf">kwds</a></td>
+            <td class="syntable">Kanji information</td>
+            <td class="syntable">Kanji</td>
+            <td class="syntable">
+              [kinf=<span style="font-style: italic;"><a href="#kw_kinf">kw</a></span>]
+              or just [<span style="font-style: italic;"><a href="#kw_kinf">kw</a></span>]</td>
+            <td class="syntable">[ateji]<br>[kinf=ik]</td>
+            </tr>
+
+          <tr id="syn_lang">
+            <td class="syntable">lang</td>
+            <td class="syntable"><a href="#kw_kinf">kwds</a></td>
+            <td class="syntable">Language</td>
+            <td class="syntable">Senses (applies to gloss)</td>
+            <td class="syntable">
+              [xxx] <span style="font-style: italic;">gloss
+              text...</span>]<br>
+              (1) Specifies the language of the associated gloss.
+              "xxx" is a three-letter code from ISO-639-2. <br>
+              See <a href="#kw_lang">language keywords</a> for a full list.
+              (2) The tag can placed at either the beginning or end
+              of the gloss text. <br>
+              (3) If not given, default is "eng" (english).
+              </td>
+            <td class="syntable">[eng] welcome!; [fre] bienvenue! </td>
+            </tr>
+
+          <tr id="syn_lsrc">
+            <td class="syntable">lsrc</td>
+            <td class="syntable">lsrc</td>
+            <td class="syntable">Source language and word.</td>
+            <td class="syntable">Senses</td>
+            <td class="syntable">
+              lsrc=<span style="font-style: italic;"><a href="#kw_lang">lng</a></span>/<span style="font-style: italic;">wp</span>:<span style="font-style: italic;">text</span>]<br>
+              (1) "lng" is an optional three-letter language code from ISO-639-2.
+              See <a href="#kw_lang">language keywords</a> for a full list.
+              If not given, default is "eng" (English).<br>
+              (2) "wp:" optional and is either <samp>w:</samp> (wasei),
+              <samp>p:</samp> (partial), or <samp>wp:</samp> (wasei and partial).
+              A slash character is used to separate the "lng" and "wp" arguments
+              and should not be given unless both arguments are given.  The ":"
+              is required.<br>
+              (3) "text" is optional.  If given it must be enclosed in quotes (&amp;)
+              if it contains spaces, commas, slashes or other special characters.
+              Otherwise quotes are not needed.
+              </td>
+            <td class="syntable">[lsrc=por:]<br>[lsrc=ger:Arbeit]<br>[lsrc=eng/w:"eye mate"]<br>
+              [lsrc=eng/w:outerior]<br>[lsrc=ice]</td>
+            </tr>
+
+          <tr id="syn_misc">
+            <td class="syntable">misc</td>
+            <td class="syntable"><a href="#kw_misc">kwds</a></td>
+            <td class="syntable">Miscellaneous sense information</td>
+            <td class="syntable">Senses</td>
+            <td class="syntable">
+              [misc=<span style="font-style: italic;"><a href="#kw_misc">kw</a></span>]
+              or just [<span style="font-style: italic;"><a href="#kw_misc">kw</a></span>]</td>
+            <td class="syntable">[sl,derog]<br>[misc=uk]</td>
+            </tr>
+
+          <tr id="syn_note">
+            <td class="syntable">note</td>
+            <td class="syntable">note</td>
+            <td class="syntable">Ad-hoc sense information.</td>
+            <td class="syntable">Senses</td>
+            <td class="syntable">
+              [note="<span style="font-style: italic;">the
+              note text...</span>"]<br>
+              (1) The text must be enclosed in quotes (&amp;) if it contains
+              spaces or commas.  Otherwise quotes are not needed.
+              </td>
+            <td class="syntable">[note="misspelling of こんにちは"]</td>
+            </tr>
+
+          <tr id="syn_pos">
+            <td class="syntable">pos</td>
+            <td class="syntable"><a href="#kw_pos">kwds</a></td>
+            <td class="syntable">Part-of-speech information</td>
+            <td class="syntable">Senses</td>
+            <td class="syntable">
+              [pos=<span style="font-style: italic;"><a href="#kw_pos">kw</a></span>]
+              or just [<span style="font-style: italic;"><a href="#kw_pos">kw</a></span>]</td>
+            <td class="syntable">[n,vs]<br>[pos=n,pos=adj-na]</td>
+            </tr>
+
+          <tr id="syn_rinf">
+            <td class="syntable">rinf</td>
+            <td class="syntable"><a href="#kw_rinf">kwds</a></td>
+            <td class="syntable">Reading information</td>
+            <td class="syntable">Readings</td>
+            <td class="syntable">
+              [rinf=<span style="font-style: italic;"><a href="#kw_rinf">kw</a></span>]
+              or just [<span style="font-style: italic;"><a href="#kw_rinf">kw</a></span>]</td>
+            <td class="syntable">[ok]<br>[rinf=ik]</td>
+            </tr>
+
+          <tr id="syn_restr">
+            <td class="syntable">restr</td>
+            <td class="syntable">restr</td>
+            <td class="syntable">Reading and sense restrictions.</td>
+            <td class="syntable">Readings, Senses</td>
+            <td class="syntable">
+              [<span style="font-style: italic;">XX</span>,<span style="font-style: italic;">XX</span>,...]<br>
+              [restr=<span style="font-style: italic;">XX</span>;<span style="font-style: italic;">XX</span>;...]<br>
+              [restr=nokanji]<br>
+              [nokanji]<br>
+              <br>
+              (1) If the tag is in the Reading section, the XX's must be kanji
+              strings occuring in the Kanji section. <br>
+              (2) If the tag is in the Reading section, XX may be "nokanji".
+              When "nokanji", no other XX's may be used on the reading the
+              tag applies to. <br>
+              (3) If the tag is in a Sense, the XX's may be either kana strings that
+              occur in the Reading section, or kanji strings that occur in the Kanji
+              section. <br>
+              (4) Restr tags are not allowed in the Kanji section. <br>
+              (5) Multiple reading or kanji restriction text may follow the "restr="
+              part; separate them with ASCII or JIS semicolons. <br>
+              (6) The "restr=" part is optional, you can also just put the
+              kanji or reading restriction text in brackets (separated by
+              ASCII or JIS commas). <br>
+              (7) To create a restr tag to a kanji or reading that contains
+              a "・" character or other special characters such as numerics,
+              put the kanji or reading inside double quotes.
+              </td>
+            <td class="syntable">
+              [惚け、呆け]<br>
+              [restr=惚け；呆け]<br>
+              [惚け][restr=呆け]<br>
+              [nokanji]<br>
+              [restr="アジア・太平洋戦争"]
+              [一人一人,"１人１人"] </td>
+            </tr>
+
+          <tr id="syn_xref">
+            <td class="syntable" id="syn_see">xref</td>
+            <td class="syntable" id="syn_ant">see, ant</td>
+            <td class="syntable">Cross-reference</td>
+            <td class="syntable">Senses</td>
+            <td class="syntable">
+              [see=<span style="font-style: italic;">SEQ KK・RR</span>[<span style="font-style: italic;">sense-nums</span>]]<br>
+              [ant=<span style="font-style: italic;">SEQ KK・RR</span>[<span style="font-style: italic;">sense-nums</span>]]<br>
+              <br>
+              (1) There are two kinds of cross-reference:
+                <ul><li>See also (a general cross reference)
+                </li><li>Antonym</li></ul>
+              (2) SEQ is the sequence number of the of the cross reference.
+                KK is the kanji of the target of the cross reference, RR is
+                its reading.  sense-nums is the specific sense(s) in the target
+                being referenced. At least one of SEQ, KK, or RR must be
+                given.<br>
+              (3) SEQ  may be left out if KK and/or RR are supplied and uniquely
+                identify a single target entry.  The kanji (KK・ part) or reading
+                (・RR part) may be left out if the remaining part still uniquely
+                identifies the target entry.<br>
+              (4) If SEQ is given, KK and RR are optional and if given will be
+                used when displaying the xref.  If KK and/or RR are not given, a
+                suitable KK/RR pair for display will be selected automatically.
+                <br>
+              (5) sense-num is optional if the target word has only one sense.
+                Otherwise, it must be given.  Multiple sense numbers can be
+                given, separated by commas.<br>
+              (6) To make an cross reference to a kanji or reading entry
+                that contains a "・" character, put the kanji or reading in
+                double quotes. <br>
+              (7) When an entry is displayed, it will list cross references
+                in other entries that refer to this one under the heading
+                "References to this sense".  Change these by editing the
+                other entry.
+              </td>
+            <td class="syntable">
+              [see=涼しい・すずしい[1]]<br>
+              [ant=暑い[1,2]]<br>
+              [see=1006830 その[1]]<br>
+              [see="スポーツ・ファン"]
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+<!-- RINF KINF FREQ MISC POS FLD DIAL LANG GINF SRC STAT XREF -->
+    <div class="entry">
+      <h2 id="kwabbr">Keyword abbreviations</h2>
+        <table class="kwtable">
+          <tr><td colspan="3"><br></td></tr>
+          <tr id="kw_rinf"><td colspan="3">Rinf -- reading info</td></tr>
+          <tr><td colspan="3"><hr></td></tr>
+          {%- for kwrec in kwhash.RINF %} 
+          <tr>
+            <td>{{kwrec.kw}}</td>
+            <td>{{kwrec.descr}}</td>
+            <td>{{kwrec.id}}</td>
+            </tr>
+            {%- endfor %}
+
+          <tr><td colspan="3"><br></td></tr>
+          <tr id="kw_kinf"><td colspan="3">Kinf -- kanji info</td></tr>
+          <tr><td colspan="3"><hr></td></tr>
+          {%- for kwrec in kwhash.KINF %}
+          <tr>
+            <td>{{kwrec.kw}}</td>
+            <td>{{kwrec.descr}}</td>
+            <td>{{kwrec.id}}</td>
+            </tr>
+            {%- endfor %}
+
+          <tr><td colspan="3"><br></td></tr>
+          <tr id="kw_freq"><td colspan="3">Freq -- frequency-of-use metrics
+            <br><span class="status">The Freq keywords below denote the frequency-of-use scale.
+            They are always followed by a number that gives a value on
+            that scale.  The valid numbers for gai, ichi, news, and spec
+            is 1 or 2.  For nf it is 1 through 48.  For gA it is any number
+            greater than 1.  Thus, you can use "ich1" or "ichi2" but not
+            "ichi3", or "nf27" but not "nf49".</span>
+            </td></tr>
+          <tr><td colspan="3"><hr></td></tr>
+          {%- for kwrec in kwhash.FREQ %}
+          <tr>
+            <td>{{kwrec.kw}}</td>
+            <td>{{kwrec.descr}}</td>
+            <td>{{kwrec.id}}</td>
+            </tr>
+            {%- endfor %}
+
+          <tr><td colspan="3"><br></td></tr>
+          <tr id="kw_misc"><td colspan="3">Misc -- miscellaneous sense info</td></tr>
+          <tr><td colspan="3"><hr></td></tr>
+          {%- for kwrec in kwhash.MISC %}
+          <tr>
+            <td>{{kwrec.kw}}</td>
+            <td>{{kwrec.descr}}</td>
+            <td>{{kwrec.id}}</td>
+            </tr>
+            {%- endfor %}
+
+          <tr><td colspan="3"><br></td></tr>
+          <tr id="kw_pos"><td colspan="3">Pos -- part-of-speech info</td></tr>
+          <tr><td colspan="3"><hr></td></tr>
+          {%- for kwrec in kwhash.POS %}
+          <tr>
+            <td>{{kwrec.kw}}</td>
+            <td>{{kwrec.descr}}</td>
+            <td>{{kwrec.id}}</td>
+            </tr>
+            {%- endfor %}
+
+          <tr><td colspan="3"><br></td></tr>
+          <tr id="kw_fld"><td colspan="3">Fld -- usage domain</td></tr>
+          <tr><td colspan="3"><hr></td></tr>
+          {%- for kwrec in kwhash.FLD %}
+          <tr>
+            <td>{{kwrec.kw}}</td>
+            <td>{{kwrec.descr}}</td>
+            <td>{{kwrec.id}}</td>
+            </tr>
+            {%- endfor %}
+
+          <tr><td colspan="3"><br></td></tr>
+          <tr id="kw_dial"><td colspan="3">Dial -- dialect</td></tr>
+          <tr><td colspan="3"><hr></td></tr>
+          {%- for kwrec in kwhash.DIAL %}
+          <tr>
+            <td>{{kwrec.kw}}</td>
+            <td>{{kwrec.descr}}</td>
+            <td>{{kwrec.id}}</td>
+            </tr>
+            {%- endfor %}
+
+          <tr><td colspan="3"><br></td></tr>
+          <tr id="kw_lang"><td colspan="3">Lang -- language
+            <br><span class="status">These three-letter codes are the
+            same as those defined in ISO-639-2.</span>
+            </a></td></tr>
+          <tr><td colspan="3"><hr></td></tr>
+          {%- for kwrec in kwhash.LANG %}
+          <tr> 
+            <td>{{kwrec.kw}}</td>
+            <td>{{kwrec.descr}}</td>
+            <td>{{kwrec.id}}</td>
+            </tr>
+            {%- endfor %}
+
+          <tr><td colspan="3"><br></td></tr>
+          <tr id="kw_ginf"><td colspan="3">Ginf -- gloss info</td></tr>
+          <tr><td colspan="3"><hr></td></tr>
+          {%- for kwrec in kwhash.GINF %}
+          <tr>
+            <td>{{kwrec.kw}}</td>
+            <td>{{kwrec.descr}}</td>
+            <td>{{kwrec.id}}</td>
+            </tr>
+            {%- endfor %}
+
+          <tr><td colspan="3"><br></td></tr>
+          <tr id="kw_src"><td colspan="3">Src -- corpus info</td></tr>
+          <tr><td colspan="3"><hr></td></tr>
+          {%- for kwrec in kwhash.SRC %}
+          <tr>
+            <td>{{kwrec.kw}}</td>
+            <td>{{kwrec.descr}}</td>
+            <td>{{kwrec.id}}</td>
+            </tr>
+            {%- endfor %}
+
+          <tr><td colspan="3"><br></td></tr>
+          <tr id="kw_stat"><td colspan="3">Stat -- entry status</td></tr>
+          <tr><td colspan="3"><hr></td></tr>
+          {%- for kwrec in kwhash.STAT %}
+          <tr>
+            <td>{{kwrec.kw}}</td>
+            <td>{{kwrec.descr}}</td>
+            <td>{{kwrec.id}}</td>
+            </tr>
+            {%- endfor %}
+
+          <tr><td colspan="3"><br></td></tr>
+          <tr id="kw_xref"><td colspan="3">Xref -- cross-reference types
+            <br><span class="status">Note that only "ant" and "see" are currently used in JMdict.</span>
+            </td></tr>
+          <tr><td colspan="3"><hr></td></tr>
+          {%- for kwrec in kwhash.XREF %}
+          <tr>
+            <td>{{kwrec.kw}}</td>
+            <td>{{kwrec.descr}}</td>
+            <td>{{kwrec.id}}</td>
+            </tr>
+            {%- endfor %}
+          </table>
+        </div>
+  {%- endblock %}

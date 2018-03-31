@@ -1,19 +1,23 @@
 {#- Display JMdictDB entries
-    NOTES:
-    - Much of this form is very similar to edconf.tal and edits made
-      to this form likely also need to be made to edform.tal.
-    - See aslso the notes in layout.jinja which apply in general to 
-      all the templates including this one.
+    NOTE:
+    - This template is used to display one of more JMdictDB entries.
+      It is also used as the base for the edconf.jinja template when
+      displaying new or updated entries for confirmation prior to 
+      submission.
 -#}
 {%- extends "layout.jinja" %}
 {%- block title %} JMdictDB Entries {% endblock %}
+
 {%- block page_content %}
+    {% block edconf_preface %}{% endblock %}
+
     <!-- entry.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
     {%- if not entries %}
     <div class="entry"> No entries found. </div>
       {%- endif %}
     {%- for e,etxt in entries %}
     <div class="entry">
+      {% block edconf_warns %}{% endblock %}
       {{e.src|TALabbr('SRC')|safe}}
       <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;q={{e.seq}}.{{e.src}}">{{e.seq}}</a>
       <span class="status">
@@ -23,7 +27,7 @@
         (parent: <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;e={{e.dfrm}}">{{e.dfrm}}</a>)
         {%-endif%}
         </span>
-      {%- if e.id > 0 %}<span class="pkid">{id: {{e.id}}}</span> {%endif%}
+      {%- if e.id %}<span class="pkid">{id: {{e.id}}}</span> {%endif%}
 
       {%- if not etxt %}
         {%- if e.srcnote %}
@@ -133,7 +137,7 @@
             <table class="xrefs">
               {#- s.XREF and s.XRER are identical to s._xref and s._xrer except
                   some refs (e.g. to unapproved entries) have been removed. They
-                  can be added to an entry by jmcgi.add_filtered_xrefs(). #}
+                  are added to an entry by jmcgi.add_filtered_xrefs(). #}
               {%- if s.XREF %}
               <tr><td colspan="2">Cross references:</td></tr>
                 {%-endif%}
@@ -144,9 +148,9 @@
                     {#- x.TARG is an abbreviated Entr object that is the target of the xref
                     (see jdb.augment_xrefs() and jmcgi.add_filtered_xrefs()).  'knum' and
                     'rnum' are indexes (1-based) to the target's kanji and readings respectively
-                    that we will show.  If x is a forward xref (x.direct>=0) the kanj and
-                    reading are given by x.kanj and x.rdng.  If it is a reverse xref,
-                    (x.direc<0) use the first kanji/rdng in the target (knum=rnum=1).  #}
+                    that we will show.  If x is a forward or bi-directional xref (x.direct>=0)
+                    the kanj and reading are given by x.kanj and x.rdng.  If it is a reverse
+                    xref, (x.direc<0) use the first kanji/rdng in the target (knum=rnum=1).  #}
                   {%- set knum = x.kanj if x.direc >= 0 else 1 -%}
                   {%- set rnum = x.rdng if x.direc >= 0 else 1 %}
                   {{['\u21D0','\u21D4','\u21D2'][x.direc+1]}}&nbsp;{#--#}
@@ -288,6 +292,7 @@
       <a href="conj.py?e={{e.id}}&amp;svc={{svc}}&amp;sid={{sid}}&amp">Conjugations</a>
         {%endif%}
                                                                           {#-#}
+      {% block action scoped%}
       {%- if e.EDITABLE|d %}
       <br><br><form action="edform.py" method="get">
         <input type="submit" value="Edit">
@@ -300,6 +305,7 @@
         {%-endif%}
         </form>
         {%endif%}{# e.EDITABLE #}
+        {% endblock %}
                                                                           {#-#}
       {%- if not etxt and e._hist %}
       <div class="hist">
@@ -333,7 +339,7 @@
               {%endif%}
                                                                         {#-#}
             <tr class="{{cls}}" {{dsp|a('style="display:none"')|safe}}>
-              <td>{{h.hist}}.</td>
+              <td>{{h.hist|d}}.</td>  {#- h.hist may not exist on a new entry. #}
               <td class="hhdr" colspan="2">
                 {{h.stat|TALabbrtxt('STAT')|safe}}{{'*' if h.unap else ''}} {# -#}
                 {{h.dt}}&nbsp;  {# -#}
@@ -365,9 +371,12 @@
             {%-endfor%}{# h in e._hist #}
             </tbody>
           </table>
-        </div><!-- end class="hist" -->
+        </div> {#- class="hist" #}
       {%endif%}{# etxt #}
                                                                           {#-#}
+    {% if e.id|d %} {#- Can't present alternate format links if there is no 
+                        id number (the case for new or updated entries being
+                        shown by edconf.jinja.) #}
       <br><span class="notes">
         View entry in alternate formats:
         <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=jel&amp;e={{e.id}}">jel</a> |
@@ -376,6 +385,7 @@
         <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=jmne&amp;e={{e.id}}">jmnedict xml</a> |
         <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=xml&amp;e={{e.id}}">jmdictdb xml</a>
         </span>
+      {% endif %}
 
       </div>
     {%endfor-%}{# entries #}

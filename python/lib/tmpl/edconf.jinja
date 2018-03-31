@@ -1,0 +1,136 @@
+{#
+  edconf.jinja
+-#}
+{%- extends "entr.jinja" %}
+{%- block title %} JMdictDB Confirm Submission {% endblock %}
+
+{% block edconf_preface %}
+    <div class="edconf_prefix" >
+    Please check the entry below carefully.  If it is what you wish
+    to submit, click the Submit button.  Otherwise, use your brower's
+    <b>Back</b> button to return to the Edit page and make corrections.
+    If you have having a problem entering the information you want,
+    please send email to
+    <a href="mailto:{{cfg.web.CONTACT_EMAIL}}">{{cfg.web.CONTACT_EMAIL}}</a>.
+    <p class="caution">Your entry has not yet been submitted.</p>
+  {% endblock %}
+
+{% block edconf_warns %}
+    {%- if chklist %}
+      <div class="warnings">
+      {%- if chklist.dups|d %}
+        <p class="warnings">
+          <span class="caution">Caution:</span>
+          The following existing entries contain kanji or readings
+          that exist in your proposed entry.  Before submitting your
+          entry, please make sure that it is not a duplicate of, or
+          should not be an amendment to, one of these entries.
+          <ol>
+          {%- for c in chklist.dups %}
+            <li>
+              <a href="entr.py?svc=({svc}}&amp;sid={{sid}}&amp;q={{c.seq}}.{{c.src}}">{{c.seq}}</a>
+              {{c.kanj|d}}{{'【' if c.kanj and c.rdng else ''}}{# -#}
+                {{c.rdng|d}}}{{'】' if c.kanj and c.rdng else ''}} {{c.gloss}}
+              </li>
+            {% endfor %}
+            </ol>
+          </p>
+        {%- endif %}{# chklist.dups #}
+      {%- if chklist.xrslv|d %}
+        <p class="warnings">
+          <span class="caution">Caution:</span>
+          Your entry contains some xrefs that were not resolvable to other
+          entries in this corpus, either because no entries matched the seq
+          number, kanji, and reading you gave, or because multiple entries
+          did.  In the latter case you may be able to give the target more
+          specifically by giving a seq number or reading with the kanji.
+          Use your browser's "Back" button to return to the previous page
+          to make corrections.  Alternatively, you may submit this entry
+          as is for later correction, but please note that entries with
+          unresolved xrefs can't be approved.
+          <ol>
+          {%- for x in chklist.xrslv %}
+            <li>{{x}}</li>
+            {%- endfor %}
+            </ol>
+          </p>
+        {%- endif %}{# chklist.xrslv #}
+      {%- if chklist.xrers|d %}
+        <p class="warnings">
+          <span class="caution">Caution:</span>
+          The xrefs below are on other entries and point to the entry
+          you have edited.  If you submit this entry they will be deleted
+          because they refer to a sense, reading or kanji that no longer
+          exists on this entry.
+          If you want to fix any of these xrefs, you will need to edit the
+          other entry and add them back with the appropriate corrections,
+          <b>after this one is submitted</b>.
+          (Numbers in square brackets are sense numbers.)
+          <ol>
+          {% for x in chklist.xrers %}
+            <li tal:repeat="">
+              <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;e={{x[0]}}">
+                {{x[1]}}
+                </a> [{{x[2]}}] => {{x[3]}}[{{x[4]}}]
+              </li>
+            {% endfor %}
+            </ol>
+          </p>
+          {% endif %}{# chklist.xrers #}
+      {%- if chklist.invkebs|d %}
+        <p class="warnings">
+          <span class="caution">Caution:</span>
+          The following kanji are not valid: {{chklist.invkebs}}
+          </p>
+        {% endif %}
+      {%- if chklist.invrebs|d %}
+        <p class="warnings">
+          <span class="caution">Caution:</span>
+          The following readings are not valid: {{chklist.invrebs}}
+          </p>
+        {% endif %}
+      {%- if chklist.norebs|d %}
+        <p class="warnings">
+          <span class="caution">Caution:</span>
+          No readings were given.  At least one reading is required.<p/>
+          </p>
+        {% endif %}
+      {%- if chklist.nopos|d %}
+        <p class="warnings">
+          <span class="caution">Caution:</span>
+          One or more senses you gave do not have any PoS (Part-of-Speech,
+          for example [n], [v5k], etc.) tags.  Note that PoS tags must be
+          specified on each sense explicitly -- they do not
+          carry over from the preceeding sense.
+          </p>
+        {%- endif %}
+      {%- if chklist.jpgloss|d %}
+        <p class="warnings">
+          <span class="caution">Caution:</span>
+          The following (sense.gloss) numbers identify glosses that contain
+          one or more JIS "fullwidth" character(s).  Please replace them with
+          ordinary (ASCII) characters.  In particular, please note that a JIS
+          semicolon (；) will not be interpreted as a gloss separator.
+        <p/>&nbsp;&nbsp;Sense.gloss: 
+        {%+ for x in chklist.jpgloss %}  {{x}} {%- endfor %}
+        {%- endif %}
+        <hr/>
+      {%- endif %}{# chklist #}
+  {% endblock %}
+
+{% block action %}
+      <br/>
+      <form action="edsubmit.py" method="{{'get' if dbg|d else 'post'}}">
+        {%+ if svc|d %}<input type="hidden" name="svc" value="{{svc}}">{% endif %}
+        {%+ if sid|d %}<input type="hidden" name="sid" value="{{sid}}">{% endif %}
+        <input type="hidden" name="entr"value="{{serialized}}">
+        {%+ if dbg|d %}<input type="hidden" name="dbg" value="1">{% endif %}
+        <input type="Submit" value="Submit">
+        {%- if disp %}
+        <span class="caution">
+          &nbsp;&nbsp;{{'Approve' if disp=='a' else ''}}{{'Reject' if disp=='r' else ''}}
+          <input type="hidden" name="disp" value="{{disp}}">
+          </span>
+          {%- endif %}
+        </form>
+{% endblock %}

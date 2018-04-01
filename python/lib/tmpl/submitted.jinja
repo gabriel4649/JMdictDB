@@ -1,0 +1,22 @@
+{%- extends "layout.jinja" %}
+{% block title %}Submission successful{% endblock %}
+{%- block page_content %}
+<!-- submitted.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
+    <div class="results">
+      <p/><b>Thank you for your contribution!</b>
+      <p/>Your update(s) have been added to the JMdict database
+        as provisional entries with the following seq. number(s):
+      <p/>
+    {% for a in added %}
+      {#- 'added' is a list of 3-tuples of (id#,seq#,src#) for
+          each (although typically only one) added entry.  #}
+      <a href="entr.py?e={{a[0]}}&amp;svc={{svc}}&amp;sid={{sid|d}}">
+        {{a[1]}} ({{a[2]|TALabbrtxt('SRC')}})</a>
+      {% endfor %}
+      <p/>After review by the JMdict editors, they will be accepted
+        and become standard entries, or rejected for reasons that
+        will be described in the Comments section.  In either case
+        the seq. numbers (and links) given above will show you
+        their status.
+      </div>
+  {%- endblock %}

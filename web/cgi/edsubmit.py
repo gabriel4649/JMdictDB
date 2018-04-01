@@ -198,7 +198,7 @@ def main( args, opts ):
             logw ("main(): doing commit")
             dbh.connection.commit()
         if not meth: meth = 'get' if dbg else 'post'
-        jmcgi.gen_page ("tmpl/submitted.tal", macros='tmpl/macros.tal',
+        jmcgi.jinja_page ("submitted.jinja",
                         added=added, parms=parms, meth=meth, dbg=dbg,
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
                         output=sys.stdout, this_page='edsubmit.py')

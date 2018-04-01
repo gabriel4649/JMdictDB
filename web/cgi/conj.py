@@ -63,10 +63,10 @@ def main (args, opts):
 
         if errs: jmcgi.err_page (errs)
 
-        jmcgi.gen_page ('tmpl/conj.tal', macros='tmpl/macros.tal',
+        jmcgi.jinja_page ('conj.jinja',
                         sections=sections, notes=notes,
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        parms=parms, output=sys.stdout, this_page='entr.py')
+                        parms=parms, output=sys.stdout, this_page='conj.py')
 
 def htmlify_conjs (rows):
         for row in rows:

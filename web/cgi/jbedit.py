@@ -56,7 +56,7 @@ def main (args, opts):
         extra = {'ref':ref, 'comment':comment, 'name':name, 'email':email}
         e.NOCORPOPT = ''  # This seems to be required by template, see edform.py
         if not meth: meth = 'get' if dbg else 'post'
-        jmcgi.gen_page ('tmpl/edform.tal', macros='tmpl/macros.tal', parms=parms,
+        jmcgi.jinja_page ('edform.jinja', parms=parms,
                         entrs=[e], extra=extra, srcs=srcs, is_editor=is_editor,
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
                         method=meth, output=sys.stdout, this_page='jbedit.py')

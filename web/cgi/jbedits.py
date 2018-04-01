@@ -48,7 +48,7 @@ def main (args, opts):
         logfiles = [x for x in allfiles if re.search (r'((ok)|(bad))\.log$', x) ]
 
         if not meth: meth = 'get' if dbg else 'post'
-        jmcgi.gen_page ('tmpl/jbedits.tal', macros='tmpl/macros.tal', parms=parms,
+        jmcgi.jinja_page ('jbedits.jinja', parms=parms,
                          filesdir=filesdir, httpdir=httpdir,
                          editfiles=editfiles, logfiles=logfiles,
                          svc=svc, host=host, sid=sid, session=sess, cfg=cfg,

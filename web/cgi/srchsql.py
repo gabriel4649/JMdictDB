@@ -36,7 +36,7 @@ def main( args, opts ):
         #qs = jmcgi.form2qs (form)
         adv_srch_allowed = jmcgi.adv_srch_allowed (cfg, sess)
         if not meth: meth = 'get' if dbg else 'post'
-        jmcgi.gen_page ("tmpl/srchsql.tal", macros='tmpl/macros.tal',
+        jmcgi.jinja_page ("srchsql.jinja",
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
                         adv_srch_allowed = adv_srch_allowed, parms=parms,
                         method=meth, output=sys.stdout, this_page='srchsql.py')

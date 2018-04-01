@@ -51,7 +51,9 @@ def parseform (readonly=False):
         usid = form.getfirst ('sid') or ''    # No SID is "", not None.
         try: svc = safe (svc)
         except ValueError: errs.append ('svc=' + svc)
-        if not errs: cur = jdb.dbOpenSvc (cfg, svc)
+        if not errs:
+            try: cur = jdb.dbOpenSvc (cfg, svc)
+            except KeyError as e: errs.append ('svc=' + str(e))
         if errs: raise ValueError (';'.join (errs))
         host = jdb._extract_hostname (cur.connection)
 
@@ -476,7 +478,7 @@ def gen_page (tmpl, output=None, macros=None, xml=False, **kwds):
 
 def err_page (errs):
         if isinstance (errs, str): errs = [errs]
-        gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
+        jinja_page ('url_errors.jinja', svc='', output=sys.stdout, errs=errs)
         sys.exit()
 
 def logw (msg, pre=''):

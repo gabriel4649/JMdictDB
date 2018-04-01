@@ -22,7 +22,16 @@ import jinja2
 import jdb
 
 def add_filters (env):
-        KW = jdb.KW
+          # Load the database keyword tables object which we use to
+          # convert id's to keyword and descriptions.  However we may
+          # need to render pages before the KW table is available (to
+          # render an error page when the database is not available,
+          # for example) so we continue on without it if necessary
+          # though this will cause any subsequent filter invocations
+          # that require it to fail.
+        try: KW = jdb.KW
+        except AttributeError: KW = None
+
           # The add_filter decoractors are right justified to make it
           # easier to visually locate filter functions by name.
         @                                                      add_filter (env)

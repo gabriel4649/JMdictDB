@@ -1,0 +1,68 @@
+{%- extends "layout.jinja" %}
+{%- block title %}JMdictDB - View Updates{% endblock%}
+{%- block page_content %}
+    <!-- updates.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
+    <div class="results"> 
+      <br/>Use this page to view the additions and amendments to the JMdictDB
+      database for particular days. Dates used are in Coordinated Universal Time (UTC, 
+      formerly GMT).  Select a date and click on "View":<br/>
+      <form action="updates.py" method="get">
+        <select name="y">
+        {%- for y in years %}
+          <option  value="{{y[0]}}">{{y[0]}}</option>
+          {%- endfor %}
+          </select>
+
+        <select name="m">
+        {%- for mi in range (1,13) %}  {# months, 1 thru 12. #}
+          <option value="{{'%0.2d'|format(mi)}}" {{(mi==1)|a('selected')}}> {{'%0.2d'|format(mi)}}</option>
+          {% endfor %}
+          </select>
+ 
+        <select name="d">
+        {%- for di in range (1,32) %}
+          <option value="{{'%0.2d'|format(di)}}" {{(di==1)|a('selected')}}> {{'%0.2d'|format(di)}}</option>
+          {%- endfor %}
+          </select>
+
+        <input type="submit" value="View"/>  &nbsp; <input type="reset" value="Reset">
+        {%- if svc|d %}<input type="hidden" name="svc" value="{{svc}}">{% endif %}
+        {%- if sid|d %}<input type="hidden" name="sid" value="{{sid}}">{% endif %}
+        {%- if dbg|d %}<input type="hidden" name="dbg" value="{{dbg}}">{% endif %}
+        </form>
+
+      <p>Or select one of the links below:</p>
+      <p>
+        <a href="updates.py?svc={{svc}}&amp;sid={{sid}}">Today</a>&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="updates.py?svc={{svc}}&amp;sid={{sid}}&amp;n=1">Yesterday</a>
+        </p>
+      <p>
+      {%- for y in years %}
+        <a href="updates.py?svc={{svc}}&amp;sid={{sid}}&amp;i=1&amp;y={{y[0]}}"> {# -#}
+          {{y[0]}}&nbsp;Updates</a>&nbsp;&nbsp;&nbsp;&nbsp;
+        {%- endfor %}
+        </p>
+
+      <p>Previous days ({{year}}):</p>
+        {#- In the "s in days" loop below we want to start a new <p> each time
+            the month part of 's' changes, that is, the current month in 's' is
+            different than the month on the previous iteration.  We cannot user
+            a regular variable to save the previous month because Jinja resets
+            it at the end of every iteration.  So instead we save the value
+            of the previous month by mutating a dictionary.
+            Alternatively and probably more simply, we could use Jinja's groupby
+            filter, but the current arrangement is the most direct translation 
+            from the original TAL template code.  #}
+      {%- set prev = {'month':''} %}
+      {%- for s in days %}
+        {%- set month = (s[1]|TALm2mn)+(' %0.2d'|format(s[0])) %}
+        {%- if month != prev.month %}{{'\n        '}}<p>{{month}}</p>{% endif %}
+        <a href="updates.py?svc={{svc}}&amp;sid={{sid|d}}&amp;y={{s[0]}}&amp;m={{s[1]}}&amp;d={{s[2]}}">
+          {#- #}{{'%s-%0.2d-%0.2d'|format(s[0],s[1],s[2])}}</a>&nbsp;&nbsp;&nbsp;
+        {#- The following is an awkward but workable way to save the previous
+            month value by mutating the 'prev' dictionary.  The "if" is a no-op
+            container needed by Jinja's syntax.  #}
+        {%- if prev.update({'month': month}) %} {% endif %}
+        {%- endfor %}
+      </div>
+{% endblock %}

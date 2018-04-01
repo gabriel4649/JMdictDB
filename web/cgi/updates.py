@@ -115,10 +115,10 @@ def render_day_updates (y, m, d, n, formvalues):
         jmcgi.add_filtered_xrefs (entries, rem_unap=True)
 
         form, svc, host, cur, sid, sess, parms, cfg = formvalues
-        jmcgi.gen_page ('tmpl/entr.tal', macros='tmpl/macros.tal',
+        jmcgi.jinja_page ('entr.jinja',
                         entries=zip(entries, [None]*len(entries)), disp=None,
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        parms=parms, output=sys.stdout, this_page='entr.py')
+                        parms=parms, output=sys.stdout, this_page='updates.py&i=1')
 
 def render_year_index (y, formvalues):
         # If 'i' was given in the URL params we will generate an index
@@ -164,10 +164,10 @@ def render_year_index (y, formvalues):
         years = cur.fetchall()
 
         form, svc, host, cur, sid, sess, parms, cfg = formvalues
-        jmcgi.gen_page ('tmpl/updates.tal', macros='tmpl/macros.tal',
+        jmcgi.jinja_page ('updates.jinja', 
                         years=years, year=y, days=days, disp=None,
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        parms=parms, output=sys.stdout, this_page='entr.py')
+                        parms=parms, output=sys.stdout, this_page='updates.py?i=1')
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

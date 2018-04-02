@@ -42,7 +42,7 @@
         s.display = s.display==='none' ? '' : 'none'; } }
     </script>
   {% block page_scripts %}{%endblock%}
-  <title>{%block title%}{%endblock%}</title>
+  <title>JMdictDB - {%block title%}{%endblock%}</title>
   </head>
 <body {%- block body_attrs %}{%endblock%}>
   <div class="jmd-header">
@@ -50,8 +50,8 @@
       <tbody class="hlogin">
         <tr>
           <td>
-            <h2>JMdictDB - Japanese Dictionary Database</h2>
-            <h3>{{self.title()}}</h3>
+            <h3>JMdictDB - Japanese Dictionary Database</h3>
+            <h2>{{self.title()}}</h2>
                  {#- self.title() refers back to the "block title" jinja statement. #}
             <a href="srchformq.py?svc={{svc}}&amp;sid={{sid|d}}">       Search</a> |
             <a href="srchform.py?svc={{svc}}&amp;sid={{sid|d}}">        Advanced Search</a> |

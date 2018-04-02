@@ -119,7 +119,7 @@
   {% endblock %}
 
 {% block action %}
-      <br/>
+      <br><br>
       <form action="edsubmit.py" method="{{'get' if dbg|d else 'post'}}">
         {%+ if svc|d %}<input type="hidden" name="svc" value="{{svc}}">{% endif %}
         {%+ if sid|d %}<input type="hidden" name="sid" value="{{sid}}">{% endif %}

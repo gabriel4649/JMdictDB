@@ -46,7 +46,7 @@ def main( args, opts ):
         jmcgi.jinja_page ("groups.jinja",
                          results=rs, parms=parms,
                          svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                         output=sys.stdout, this_page='goups.py')
+                         this_page='goups.py')
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

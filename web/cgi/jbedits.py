@@ -52,7 +52,7 @@ def main (args, opts):
                          filesdir=filesdir, httpdir=httpdir,
                          editfiles=editfiles, logfiles=logfiles,
                          svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                         method=meth, output=sys.stdout, this_page='jbedits.py')
+                         method=meth, this_page='jbedits.py')
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

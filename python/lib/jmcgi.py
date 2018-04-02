@@ -443,7 +443,7 @@ def get_entrs (dbh, elist, qlist, errs, active=None, corpus=None):
             jdb.mark_seq_xrefs (dbh, raw['xref'])
         return entries
 
-def jinja_page (tmpl, output=None, macros=None, xml=False, **kwds):
+def jinja_page (tmpl, output=sys.stdout, **kwds):
         httphdrs = kwds.get ('HTTP', None)
         if not httphdrs:
             if not kwds.get ('NoHTTP', None):

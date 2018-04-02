@@ -220,7 +220,7 @@ def main (args, opts):
                         entries=entrs, serialized=serialized,
                         chklist=chklist, disp=disp, parms=parms, dbg=dbg,
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        output=sys.stdout, this_page='edconf.py')
+                        this_page='edconf.py')
 
 def realign_xrers (entr, pentr):
         # This function mutates 'entr' to remove invalid reverse

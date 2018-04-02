@@ -191,7 +191,7 @@ def main (args, opts):
         jmcgi.jinja_page ('edform.jinja', parms=parms, extra={},
                          entrs=entrs, srcs=srcs, is_editor=is_editor, dbg=dbg,
                          svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                         method=meth, output=sys.stdout, this_page='edform.py')
+                         method=meth, this_page='edform.py')
 
 def remove_freqs (entr):
         for r in getattr (entr, '_rdng', []): r._freq = []

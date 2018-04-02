@@ -201,7 +201,7 @@ def main( args, opts ):
         jmcgi.jinja_page ("submitted.jinja",
                         added=added, parms=parms, meth=meth, dbg=dbg,
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        output=sys.stdout, this_page='edsubmit.py')
+                        this_page='edsubmit.py')
         logw ("main(): thank you page sent")
 
 def submission (dbh, entr, disp, errs, is_editor=False, userid=None):

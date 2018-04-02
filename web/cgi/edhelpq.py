@@ -30,8 +30,7 @@ def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
-        jmcgi.jinja_page ("edhelpq.jinja", cfg=cfg,
-                        svc=svc, output=sys.stdout)
+        jmcgi.jinja_page ("edhelpq.jinja", cfg=cfg, svc=svc)
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

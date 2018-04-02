@@ -68,7 +68,7 @@ def main( args, opts ):
                         pos=pos, misc=misc, stat=stat, src=corp, freq=freq,
                         fld=fld, kinf=kinf, rinf=rinf, dial=dial, parms=parms,
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        method='get', output=sys.stdout, this_page='srchform.py')
+                        method='get', this_page='srchform.py')
 
 def reshape (array, ncols, default=None):
         result = []

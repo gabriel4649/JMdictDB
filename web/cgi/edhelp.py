@@ -37,8 +37,7 @@ def main (args, opts):
             kwlist.append (kwset)
             kwhash[t] = kwset[1]
         jmcgi.jinja_page ("edhelp.jinja", 
-                          kwlist=kwlist, kwhash=kwhash, svc=svc, cfg=cfg,
-                          output=sys.stdout)
+                          kwlist=kwlist, kwhash=kwhash, svc=svc, cfg=cfg)
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

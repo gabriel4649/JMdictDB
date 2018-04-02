@@ -152,7 +152,7 @@ def main( args, opts ):
                             results=rs, pt=pgtotal, p0=pgoffset, method=meth,
                             p1=pgoffset+reccnt, soj=soj, sql=sqlp, parms=parms,
                             svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                            stats=stats, output=sys.stdout, this_page='srchres.py')
+                            stats=stats, this_page='srchres.py')
 
 def d2o (dict_):
         # Copy the key/value items in a dict to attributes on an

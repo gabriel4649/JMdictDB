@@ -39,7 +39,7 @@ def main( args, opts ):
         jmcgi.jinja_page ("srchsql.jinja",
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
                         adv_srch_allowed = adv_srch_allowed, parms=parms,
-                        method=meth, output=sys.stdout, this_page='srchsql.py')
+                        method=meth, this_page='srchsql.py')
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

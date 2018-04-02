@@ -59,7 +59,7 @@ def main (args, opts):
         jmcgi.jinja_page ('edform.jinja', parms=parms,
                         entrs=[e], extra=extra, srcs=srcs, is_editor=is_editor,
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        method=meth, output=sys.stdout, this_page='jbedit.py')
+                        method=meth, this_page='jbedit.py')
 
 def read_editdata (cursor, fullname):
         # Read the edit data in file "fullname" and convert it into

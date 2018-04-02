@@ -65,10 +65,10 @@ def main (args, opts):
 
         if errs: jmcgi.err_page (errs)
 
-        jmcgi.jinja_page ('entr.jinja', macros='tmpl/macros.tal',
+        jmcgi.jinja_page ('entr.jinja',
                         entries=list(zip(entries, etxts)), disp=disp,
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        parms=parms, output=sys.stdout, this_page='entr.py')
+                        parms=parms, this_page='entr.py')
 
 def lex_sort (e):
         # Sort key function for ordering lists of entries lexically,

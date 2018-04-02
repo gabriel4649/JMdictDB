@@ -66,7 +66,7 @@ def main (args, opts):
         jmcgi.jinja_page ('conj.jinja',
                         sections=sections, notes=notes,
                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        parms=parms, output=sys.stdout, this_page='conj.py')
+                        parms=parms, this_page='conj.py')
 
 def htmlify_conjs (rows):
         for row in rows:

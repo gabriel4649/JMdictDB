@@ -27,7 +27,7 @@ This package contains the following directories:
   ./pg/data/           Database static data.
   ./python/            Command line apps.
   ./python/lib/        Library modules.
-  ./python/lib/tmpl/   TAL templates.
+  ./python/lib/tmpl/   Webpage templates.
   ./tools/             Scripts used by Makefiles.
   ./web/               Web related files.
   ./web/cgi/           CGI scripts.
@@ -40,7 +40,7 @@ This code is under development and is pre-alpha quality.
 Everything here is subject to future change.  The API code
 is written for Python 3; Python 2 is no longer supported
 (although an older Python 2 version is available from the 
-code repository, seeINSTALLATION/Requirements below).  The 
+code repository, see INSTALLATION/Requirements below).  The 
 web pages use Python/CGI.
 
 The Python 2 to Python 3 conversion was only done recently
@@ -91,9 +91,6 @@ The following tools find and display entries in the database.
 		 understanding the use of the API in a real
 		 (if tiny) application.  This program is kept
 		 up-to-date.
-  srch.py, srch.tal, srch.xrc, srcht.tal, jmdbss.txt
-		GUI tool to search for and display dajmdict
-		 database entries.
 
 The following tools read an XML or text file and write a 
 file that can be loaded into a Postgresql database.
@@ -161,21 +158,12 @@ earlier or later versions, but this has not been verified.
     psycopg2-2.4.5 Python-Postgresql connector.
       http://initd.org/projects/psycopg2/
       http://stickpeople.com/projects/python/win-psycopg/ (Windows)
-    simpleTAL-5.1 -- Template file processor.
-      http://www.owlfish.com/software/simpleTAL/
     ply-3.4 -- YACC'ish parser generator.
       http://www.dabeaz.com/ply/
     lxml-3.0.1 -- XML/XSLT library.  Used by xslfmt.py for doing
       xml->edict2 conversion.
-    [wxPython -- (Optional) JMdictDB includes a couple simple
-      GUI tools for accessing the database.  To run these requires
-      wxPython.
-      http://www.wxpython.org/
-      [*** Currently wxPython is not available for Python-3
-      so the two JMdictDB apps that require wxPython 
-      (tools/jmedit.py and python/srvh.py) will not run
-      until it is.]
-  Apache [2.2] (on Unix/Linux/Windows systems) or
+    jinja2-2.9.6 -- Template engine for generating web pages.
+  Apache [2.4] (on Unix/Linux/Windows systems) or
     IIS [5.0] (on MS Windows systems)
   make -- Gnu make is required if you want to use the provided
     Makefile's to automate parts of the installation.
@@ -187,8 +175,8 @@ earlier or later versions, but this has not been verified.
     character encoding conversions that are frequenly required
     when working with Japanese language text files.
 
-The principle author has Cygwin (http://cygwin.com) installed on 
-his Windows development machine and uses the make, wget, etc.,
+The principle author had Cygwin (http://cygwin.com) installed on 
+his Windows development machine and used the make, wget, etc.,
 programs provided by that package.  A smaller (though untested)
 alternative might be to use the programs provided by the Gnuwin32
 project: http://gnuwin32.sourceforge.net.

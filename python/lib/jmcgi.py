@@ -19,7 +19,7 @@
 
 import sys, re, cgi, urllib.request, urllib.parse, urllib.error, os, os.path, \
         random, time, http.cookies, datetime, time, copy
-import jdb, tal, fmt
+import jdb, fmt
 import jinja
 
 def parseform (readonly=False):
@@ -455,27 +455,6 @@ def jinja_page (tmpl, output=None, macros=None, xml=False, **kwds):
         if output: print (html, file=output)
         return html
 
-def gen_page (tmpl, output=None, macros=None, xml=False, **kwds):
-        httphdrs = kwds.get ('HTTP', None)
-        if not httphdrs:
-            if not kwds.get ('NoHTTP', None):
-                httphdrs = "Content-type: text/html\n"
-        if not httphdrs: html = ''
-        else: html = httphdrs + "\n"
-          # FIXME: 'tmpl' might contain a directory component containing
-          #  a dot which breaks the following.
-        if tmpl.find ('.') < 0: tmpl = tmpl + '.tal'
-        tmpldir = jdb.find_in_syspath (tmpl)
-        if tmpldir == '': tmpldir = "."
-        if not tmpldir:
-            raise IOError ("File or directory '%s' not found in sys.path" % tmpl)
-        if macros:
-            macros = tal.mktemplate (tmpldir + '/' + macros, xml=xml)
-            kwds['macros'] = macros
-        html += tal.fmt_simpletal (tmpldir + '/' + tmpl, xml=xml, **kwds)
-        if output: print (html, file=output)
-        return html
-
 def err_page (errs):
         if isinstance (errs, str): errs = [errs]
         jinja_page ('url_errors.jinja', svc='', output=sys.stdout, errs=errs)
@@ -579,7 +558,7 @@ def add_audio_flag (entries):
 def add_editable_flag (entries):
 
         # This is a convenience function to avoid embedding this logic
-        # in the TAL templates.  This sets a boolean EDITABLE flag on
+        # in the page templates.  This sets a boolean EDITABLE flag on
         # each entry that says whether or not an "Edit" button should
         # be shown for the entry.  All unapproved entries, and approved
         # active or deleted entries are editable.  Rejected entries aren't.
@@ -592,7 +571,7 @@ def add_editable_flag (entries):
 def add_unreslvd_flag (entries):
 
         # This is a convenience function to avoid embedding this logic
-        # in the TAL templates.  This sets a boolean UNRESLVD flag on
+        # in the page templates.  This sets a boolean UNRESLVD flag on
         # each entry that says whether or not it has any senses that
         # have unresolved xrefs in its '_xunr' list.
 
@@ -606,7 +585,7 @@ def add_unreslvd_flag (entries):
 def add_pos_flag (entries):
 
         # This is a convenience function to avoid embedding this logic
-        # in the TAL templates.  This sets a boolean POS flag on
+        # in the page templates.  This sets a boolean POS flag on
         # each entry if any senses in the entry have a part-of-speech
         # (pos) tag that is conjugatable.  A POS tag is conjugatable
         # if its id number is an id number in jdb.KW.COPOS.  jdb.KW.COPOS
@@ -665,7 +644,7 @@ def add_filtered_xrefs (entries, rem_unap=False):
         # the xref is a "from", "to" or "bidirectional" xref.  If the
         # same xref occurs in both the s._xref and s_xrer lists, it is
         # only added once and the .direc attribute set to "bidirectional".
-        # This allows an entr display app (such as entr.py/entr.tal) to
+        # This allows an entr display app (such as entr.py/entr.jinja) to
         # display an icon for the xref direction.  This was suggested
         # on the Edict maillist by Jean-Luc Leger, 2010-07-29, Subject:
         # "Re: Database testing - call for testers - more comments"

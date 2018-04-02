@@ -16,8 +16,7 @@ import sys
 
 def reset():
     """Return a string that resets the CGI and browser to a known state."""
-    return '''<!--: spam
-Content-Type: text/html
+    return '''Content-Type: text/html
 
 <body bgcolor="#ffffff"><font color="#000000" size="-5"> -->
 <body bgcolor="#ffffff"><font color="#000000" size="-5"> --> -->

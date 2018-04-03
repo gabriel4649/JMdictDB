@@ -133,6 +133,7 @@ LIB_FILES = jdb.py \
 	jelparse.py \
 	jelparse_tab.py \
 	jmcgi.py \
+	logger.py \
 	objects.py \
 	serialize.py \
 	tal.py \

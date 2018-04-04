@@ -376,14 +376,14 @@
     {% if e.id|d %} {#- Can't present alternate format links if there is no 
                         id number (the case for new or updated entries being
                         shown by edconf.jinja.) #}
-      <br><span class="notes">
+      <br><div class="notes">
         View entry in alternate formats:
         <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=jel&amp;e={{e.id}}">jel</a> |
         <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=ed&amp;e={{e.id}}">edict</a> |
         <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=jm&amp;e={{e.id}}">jmdict xml</a> |
         <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=jmne&amp;e={{e.id}}">jmnedict xml</a> |
         <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=xml&amp;e={{e.id}}">jmdictdb xml</a>
-        </span>
+        </div>
       {% endif %}
 
       </div>

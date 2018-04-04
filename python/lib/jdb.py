@@ -869,7 +869,7 @@ def freq2txts (freqs, tt=False):
         for f in freqs:
             kwstr, descr = KW.FREQ[f.kw].kw, KW.FREQ[f.kw].descr
             fstr = ('%s%02d' if kwstr=='nf' else '%s%d') % (kwstr, f.value)
-            if tt: fstr = '<span title="%s">%s</span>' % (descr, fstr)
+            if tt: fstr = '<span class="abbr" title="%s">%s</span>' % (descr, fstr)
             if fstr not in flist: flist.append (fstr)
         return sorted (flist)
 

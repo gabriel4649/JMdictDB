@@ -168,7 +168,7 @@ def _abbr (kwtyp, id, textonly=False):
         kws = getattr (jdb.KW, kwtyp)
         kw, descr =  kws[id].kw, kws[id].descr
         if descr and not textonly:
-           kw = '<span title="%s">%s</span>' % (cgi.escape(descr,1), kw)
+           kw = '<span class="abbr" title="%s">%s</span>' % (cgi.escape(descr,1), kw)
         return kw
 
 def add_filter (env, name=None):

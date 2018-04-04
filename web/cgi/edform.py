@@ -116,12 +116,11 @@ import jdb, jmcgi, fmtjel, serialize, edparse
 def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []; entrs =[]
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: errs = jmcgi.err_page ([str (e)])
 
         fv = form.getfirst; fl = form.getlist
         is_editor = jmcgi.is_editor (sess)
-        dbg = fv ('dbg'); meth = fv ('meth')
         def_corp = fv ('c')             # Default corpus for new entries.
         defcorpid = None
         if def_corp:
@@ -187,11 +186,10 @@ def main (args, opts):
 
         if errs: jmcgi.err_page (errs)
 
-        if not meth: meth = 'get' if dbg else 'post'
         jmcgi.jinja_page ('edform.jinja', parms=parms, extra={},
-                         entrs=entrs, srcs=srcs, is_editor=is_editor, dbg=dbg,
-                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                         method=meth, this_page='edform.py')
+                         entrs=entrs, srcs=srcs, is_editor=is_editor,
+                         svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
+                         this_page='edform.py')
 
 def remove_freqs (entr):
         for r in getattr (entr, '_rdng', []): r._freq = []

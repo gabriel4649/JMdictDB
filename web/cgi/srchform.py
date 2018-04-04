@@ -32,7 +32,7 @@ class Kwfreq (object):
 
 def main( args, opts ):
         jdb.reset_encoding (sys.stdout, 'utf-8')
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
 
         qs = jmcgi.form2qs (form)
@@ -67,8 +67,8 @@ def main( args, opts ):
         jmcgi.jinja_page ("srchform.jinja", KW=jdb.KW,
                         pos=pos, misc=misc, stat=stat, src=corp, freq=freq,
                         fld=fld, kinf=kinf, rinf=rinf, dial=dial, parms=parms,
-                        svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        method='get', this_page='srchform.py')
+                        svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
+                        this_page='srchform.py')
 
 def reshape (array, ncols, default=None):
         result = []

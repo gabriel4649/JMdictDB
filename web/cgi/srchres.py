@@ -29,13 +29,12 @@ import jdb, jmcgi, serialize, jelparse
 def main( args, opts ):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []; so = None; stats = {}
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
 
         cfg_web = d2o (cfg['web'])
         cfg_srch = d2o (cfg['search'])
         fv = form.getfirst; fl = form.getlist
-        dbg = fv ('d'); meth = fv ('meth')
         force_srchres = fv('srchres')  # Force display of srchres page even if only one result.
         sqlp = (fv ('sql') or '')
         soj = (fv ('soj') or '')
@@ -147,11 +146,10 @@ def main( args, opts ):
             svcstr = ("svc=%s&sid=%s&" % (svc,sid)) if svc else ''
             print ("Location: entr.py?%se=%d\n" % (svcstr, rs[0].id))
         else:
-            if not meth: meth = 'get' if dbg else 'post'
             jmcgi.jinja_page ("srchres.jinja",
-                            results=rs, pt=pgtotal, p0=pgoffset, method=meth,
+                            results=rs, pt=pgtotal, p0=pgoffset,
                             p1=pgoffset+reccnt, soj=soj, sql=sqlp, parms=parms,
-                            svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
+                            svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
                             stats=stats, this_page='srchres.py')
 
 def d2o (dict_):

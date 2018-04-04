@@ -28,7 +28,7 @@ import jdb, jmcgi
 
 def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
         kwlist = []; kwhash = {}
         for t in 'RINF KINF FREQ MISC POS FLD DIAL LANG GINF SRC STAT XREF'.split():
@@ -36,8 +36,8 @@ def main (args, opts):
             kwset = [t.capitalize(), sorted (kw, key=lambda x:x.kw.lower())]
             kwlist.append (kwset)
             kwhash[t] = kwset[1]
-        jmcgi.jinja_page ("edhelp.jinja", 
-                          kwlist=kwlist, kwhash=kwhash, svc=svc, cfg=cfg)
+        jmcgi.jinja_page ("edhelp.jinja", svc=svc, dbg=dbg, cfg=cfg, 
+                          kwlist=kwlist, kwhash=kwhash)
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

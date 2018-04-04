@@ -31,7 +31,7 @@ Enc = 'utf-8'
 def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str(e)])
 
           # The filesystem path of the directory containing editdata files.
@@ -41,18 +41,16 @@ def main (args, opts):
 
         fv = lambda x:(form.getfirst(x) or '').decode(Enc)
         is_editor = jmcgi.is_editor (sess)
-        dbg = fv ('d'); meth = fv ('meth')
 
         allfiles = sorted (os.listdir (filesdir))
         editfiles = [x for x in allfiles if re.search (r'[0-9]{5}\.dat$', x) ]
         logfiles = [x for x in allfiles if re.search (r'((ok)|(bad))\.log$', x) ]
 
-        if not meth: meth = 'get' if dbg else 'post'
         jmcgi.jinja_page ('jbedits.jinja', parms=parms,
                          filesdir=filesdir, httpdir=httpdir,
                          editfiles=editfiles, logfiles=logfiles,
-                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                         method=meth, this_page='jbedits.py')
+                         svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
+                         this_page='jbedits.py')
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

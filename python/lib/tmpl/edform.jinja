@@ -1,6 +1,6 @@
 {#- Search for JMdictDB entries
     Context variables:
-      svc, sid, dbg, method -- See layout.jinja.
+      svc, sid, dbg -- See layout.jinja.
 
 .  -#}
 
@@ -39,7 +39,7 @@
       see the edict email list, 2011-09-07, "Entry Edit Form: Usability
       improvements".  #}
     
-    <form action="edconf.py" name="edconf" method="{{method}}">
+    <form action="edconf.py" name="edconf" method="{{'get' if dbg|d else 'post'}}">
       <table class="form">
         <tbody>
           <tr>

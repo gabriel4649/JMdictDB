@@ -31,7 +31,7 @@ def parseform (readonly=False):
     Return an 8-tuple of:
         form (cgi.FieldStorage obj)
         svc (string) -- Checked svc value.
-        host (string) -- Name of host where database server is running.
+        dbg (int) -- true if "dbg" url param has true value, else 0.
         cur (dbapi cursor) -- Open cursor for database defined by 'svc'.
         sid (string) -- session.id in hexidecimal form or "".
         sess (Session inst.) -- Session for sid or None.
@@ -47,6 +47,7 @@ def parseform (readonly=False):
         check_server_status (cfg.get ('web', 'STATUS_DIR'))
 
         form = cgi.FieldStorage()
+        dbg = int (form.getfirst ('dbg') or '0')
         svc = form.getfirst ('svc') or def_svc
         usid = form.getfirst ('sid') or ''    # No SID is "", not None.
         try: svc = safe (svc)
@@ -61,8 +62,7 @@ def parseform (readonly=False):
         scur = jdb.dbOpenSvc (cfg, svc, session=True, nokw=True)
         action = form.getfirst ('loginout') # Will be None, "login" or "logout"
         sid = get_sid_from_cookie() or ''
-        sid_from_cookie = False
-        if sid: sid_from_cookie = True
+        sid_from_cookie = bool (sid)
         if usid: sid = usid     # Use sid from url if available.
         #logw ("parseform(): sid=%s, from_cookie=%s, action=%s" % (sid, sid_from_cookie, action))
         uname = form.getfirst('username') or ''
@@ -82,7 +82,7 @@ def parseform (readonly=False):
                  if k not in ('loginout','username','password')
                      for v in form.getlist(k) ]
 
-        return form, svc, host, cur, sid, sess, parms, cfg
+        return form, svc, dbg, cur, sid, sess, parms, cfg
 
 def check_server_status (status_file_dir):
         location = None
@@ -118,6 +118,7 @@ def get_session (cur, action=None, sid=None, uname=None, pw=None):
             return '', None
         if not action:             # Use sid to retrieve session.
             sess = dbsession (cur, sid)
+            if not sess: sid = ''
         elif action == 'logout':
             if sid: dblogout (cur, sid)
               # Don't clear 'sid' because its value will be needed

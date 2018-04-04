@@ -28,9 +28,9 @@ import jdb, jmcgi
 
 def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
-        jmcgi.jinja_page ("edhelpq.jinja", cfg=cfg, svc=svc)
+        jmcgi.jinja_page ("edhelpq.jinja", cfg=cfg, svc=svc, dbg=dbg)
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

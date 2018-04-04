@@ -31,7 +31,7 @@ def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         #print "Content-type: text/html\n"
         errs = []
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
 
         entries = jmcgi.get_entrs (cur, form.getlist ('e'),
@@ -65,7 +65,7 @@ def main (args, opts):
 
         jmcgi.jinja_page ('conj.jinja',
                         sections=sections, notes=notes,
-                        svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
+                        svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
                         parms=parms, this_page='conj.py')
 
 def htmlify_conjs (rows):

@@ -52,9 +52,9 @@ import jdb, jmcgi
 
 def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
-        formvalues = form, svc, host, cur, sid, sess, parms, cfg
+        formvalues = form, svc, dbg, cur, sid, sess, parms, cfg
         fv = form.getfirst; fl = form.getlist
         t = datetime.date.today()  # Will supply default value of y, m, d.
           # y, m, and d below are used to construct sql string and *must*
@@ -114,10 +114,10 @@ def render_day_updates (y, m, d, n, formvalues):
         jmcgi.htmlprep (entries)
         jmcgi.add_filtered_xrefs (entries, rem_unap=True)
 
-        form, svc, host, cur, sid, sess, parms, cfg = formvalues
+        form, svc, dbg, cur, sid, sess, parms, cfg = formvalues
         jmcgi.jinja_page ('entr.jinja',
                         entries=zip(entries, [None]*len(entries)), disp=None,
-                        svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
+                        svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
                         parms=parms, this_page='updates.py&i=1')
 
 def render_year_index (y, formvalues):
@@ -163,10 +163,10 @@ def render_year_index (y, formvalues):
         cur.execute (sql, ())
         years = cur.fetchall()
 
-        form, svc, host, cur, sid, sess, parms, cfg = formvalues
+        form, svc, dbg, cur, sid, sess, parms, cfg = formvalues
         jmcgi.jinja_page ('updates.jinja', 
                         years=years, year=y, days=days, disp=None,
-                        svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
+                        svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
                         parms=parms, this_page='updates.py?i=1')
 
 if __name__ == '__main__':

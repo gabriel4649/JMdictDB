@@ -31,7 +31,7 @@ Enc = 'utf-8'
 def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
 
           # The filesystem path of the directory containing editdata files.
@@ -41,7 +41,6 @@ def main (args, opts):
 
         fv = lambda x:(form.getfirst(x) or '').decode(Enc)
         is_editor = jmcgi.is_editor (sess)
-        dbg = fv ('d'); meth = fv ('meth')
         srcs = sorted (jdb.KW.recs('SRC'), key=lambda x: x.kw.lower())
 
           # Get the filename url parameter, and validate it.
@@ -55,11 +54,10 @@ def main (args, opts):
             err_page (["Bad file data, unable to unserialize: %s" % str(e)])
         extra = {'ref':ref, 'comment':comment, 'name':name, 'email':email}
         e.NOCORPOPT = ''  # This seems to be required by template, see edform.py
-        if not meth: meth = 'get' if dbg else 'post'
         jmcgi.jinja_page ('edform.jinja', parms=parms,
                         entrs=[e], extra=extra, srcs=srcs, is_editor=is_editor,
-                        svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        method=meth, this_page='jbedit.py')
+                        svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
+                        this_page='jbedit.py')
 
 def read_editdata (cursor, fullname):
         # Read the edit data in file "fullname" and convert it into

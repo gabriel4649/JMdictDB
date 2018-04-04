@@ -29,7 +29,7 @@ import jdb, jmcgi
 def main( args, opts ):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str(e)])
 
         fv = form.getfirst; fl = form.getlist
@@ -45,7 +45,7 @@ def main( args, opts ):
         rs = jdb.dbread (cur, sql)
         jmcgi.jinja_page ("groups.jinja",
                          results=rs, parms=parms,
-                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
+                         svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
                          this_page='goups.py')
 
 if __name__ == '__main__':

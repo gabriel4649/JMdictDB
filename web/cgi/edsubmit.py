@@ -142,13 +142,12 @@ def main( args, opts ):
         cgitbx.enable()
         errs = []; dbh = svc = None
         logw ("Starting submit.py", pre='\n')
-        try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, dbh, sid, sess, parms, cfg = jmcgi.parseform()
         except ValueError as e: jmcgi.err_page ([str (e)])
 
         logw ("main(): parseform done: userid=%s, sid=%s" % (sess and sess.userid, sess and sess.id))
 
         fv = form.getfirst
-        meth = fv ('meth');  dbg = fv('dbg')
           # disp values: '': User submission, 'a': Approve. 'r': Reject;
         disp = fv ('disp') or ''
         if not sess and disp:
@@ -197,10 +196,9 @@ def main( args, opts ):
         else:
             logw ("main(): doing commit")
             dbh.connection.commit()
-        if not meth: meth = 'get' if dbg else 'post'
         jmcgi.jinja_page ("submitted.jinja",
-                        added=added, parms=parms, meth=meth, dbg=dbg,
-                        svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
+                        added=added, parms=parms,
+                        svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
                         this_page='edsubmit.py')
         logw ("main(): thank you page sent")
 

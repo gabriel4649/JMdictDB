@@ -29,11 +29,10 @@ import jdb, jmcgi, jelparse, jellex, serialize, fmt
 def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []; chklist = {}
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
 
         fv = form.getfirst; fl = form.getlist
-        dbg = fv ('dbg'); meth = fv ('meth')
         KW = jdb.KW
 
           # 'eid' will be an integer if we are editing an existing
@@ -218,8 +217,8 @@ def main (args, opts):
         entrs = [[entr, None]]  # Package 'entr' as expected by entr.jinja.
         jmcgi.jinja_page ("edconf.jinja",
                         entries=entrs, serialized=serialized,
-                        chklist=chklist, disp=disp, parms=parms, dbg=dbg,
-                        svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
+                        chklist=chklist, disp=disp, parms=parms,
+                        svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
                         this_page='edconf.py')
 
 def realign_xrers (entr, pentr):

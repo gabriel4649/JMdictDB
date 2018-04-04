@@ -1,7 +1,6 @@
 {#- Search for JMdictDB entries
     Context variables:
       svc, sid, dbg -- See layout.jinja.
-      method -- Method to use when submitting form ("get" or "post")
       src, stat, freq, kinf, rinf, pos, misc, fld, dial --
         These are all 2-D arrays of dimension R rows by C columns of
         jdb.Kwds instances representing rows in a database kwxxx table,
@@ -26,7 +25,7 @@
 
 {%- block page_content %}
     <!-- srchform.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
-    <form action="srchres.py" name="srchres" method="{{method}}">
+    <form action="srchres.py" name="srchres" method="get">
       {%+ if svc %}<input type="hidden" name="svc" value="{{svc}}">{%endif%}
       {% if sid %}<input type="hidden" name="sid" value="{{sid}}">{%endif%}
       {% if dbg|d %}<input type="hidden" name="dbg" value="{{dbg}}">{%endif%}

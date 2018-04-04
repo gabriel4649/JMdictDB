@@ -3,7 +3,7 @@
 {%- block page_content %}
 <!-- groups.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
     <div class="results">
-      <form method="get" action="srchres.py">
+      <form action="srchres.py" method="get">
         <span class="count">{{results|length}} groups found...</span>
       {%- if results|length > 10 %}
         <input name="show" value="Display selected entries" type="submit">
@@ -35,6 +35,7 @@
         {% if results|d %}<input type="reset" name="show" value="Reset">{% endif %}
         {% if svc|d %}<input type="hidden" name="svc" value="{{svc}}">{% endif %}
         {% if sid|d %}<input type="hidden" name="sid" value="{{sid}}">{% endif %}
+        {% if dbg|d %}<input type="hidden" name="dbg" value="{{dbg}}">{% endif %}
         </form>
       </div>
   {% endblock %}

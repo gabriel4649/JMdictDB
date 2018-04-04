@@ -189,10 +189,6 @@ def main( args, opts ):
             logw ("main(): rolling back transaction due to errors")
             dbh.connection.rollback()
             jmcgi.err_page (errs)
-
-        if dbg:
-            logw ("main(): rolling back transaction in dbg mode")
-            dbh.connection.rollback()
         else:
             logw ("main(): doing commit")
             dbh.connection.commit()

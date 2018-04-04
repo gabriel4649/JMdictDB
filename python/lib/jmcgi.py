@@ -921,6 +921,11 @@ def _freqcond (freq, nfval, nfcmp, gaval, gacmp):
         # $freq -- List of indexes from a freq option checkboxe, e.g. "ichi2".
         # $nfval -- String containing an "nf" number ("1" - "48").
         # $nfcmp -- String containing one of ">=", "=", "<=".
+        #   NOTE: The gA freq number was a from a database of Google
+        #     "hits" for various words.  The data was unreliable at the
+        #     time it was collected in the early 2000's and is of little
+        #     use anymore.  The search forms no longer support gA as a 
+        #     search criterion but the code is left in here for reference.
         # gaval -- String containing a gA number.
         # gacmp -- Same as nfcmp.
 
@@ -979,6 +984,8 @@ def _freqcond (freq, nfval, nfcmp, gaval, gacmp):
         if nfval:
             kwid = KW.FREQ['nf'].id
             # Build list of "where" clause parts using the requested comparison and value.
+            if nfcmp == '≤': nfcmp = '<='
+            elif nfcmp == '≥': nfcmp = '>='
             whr.append (
                 "(freq.kw=%s AND freq.value%s%s)" % (kwid, nfcmp, nfval))
 

@@ -187,26 +187,14 @@
                     <input type="checkbox" name="freq" value="{{z.kw}}">{{z.kw}}
                     </span>
                     {%-endfor%}
-                  <br/><span class="optgroup" title="{{KW.FREQ.nf.descr}}">
+                  <span class="optgroup" title="{{KW.FREQ.nf.descr}}">
                     <input type="checkbox" name="freq" value="nf">nf
                     <select name="nfcmp">
-                      <option selected="selected">&lt;=</option>
+                      <option selected="selected">&le;</option>
                       <option>=</option>
-                      <option>&gt;=</option>
+                      <option>&ge;</option>
                       </select>
                     <input name="nfval" size="2">
-                    &nbsp;&nbsp;
-                    {%- if KW.FREQ.gA %}
-                    <span title="{{KW.FREQ.gA.descr}}">
-                      <input type="checkbox" name="freq" value="ga">gA
-                      <select name="gacmp">
-                        <option>&lt;=</option>
-                        <option>=</option>
-                        <option selected="selected">&gt;=</option>
-                        </select>
-                      <input name="gaval" size="8">
-                      </span>
-                      {%-endif%}
                     </span>
                   </td>
                 </tr>

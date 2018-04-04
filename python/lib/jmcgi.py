@@ -101,8 +101,7 @@ def parseform (readonly=False):
         scur = jdb.dbOpenSvc (cfg, svc, session=True, nokw=True)
         action = form.getfirst ('loginout') # Will be None, "login" or "logout"
         sid = get_sid_from_cookie() or ''
-        sid_from_cookie = False
-        if sid: sid_from_cookie = True
+        sid_from_cookie = bool (sid)
         if usid: sid = usid     # Use sid from url if available.
         #L('jmcgi').debug("parseform(): sid=%s, from_cookie=%s, action=%s" % (sid, sid_from_cookie, action))
         uname = form.getfirst('username') or ''
@@ -158,6 +157,7 @@ def get_session (cur, action=None, sid=None, uname=None, pw=None):
             return '', None
         if not action:             # Use sid to retrieve session.
             sess = dbsession (cur, sid)
+            if not sess: sid = ''
         elif action == 'logout':
             if sid: dblogout (cur, sid)
               # Don't clear 'sid' because its value will be needed

@@ -12,6 +12,7 @@
       *svc -- Token that identifies the database to use.
       *cfg.web.CONTACT_EMAIL -- Email address of site admin.
       sid -- Session ID number.
+      dbg -- Boolean for generating page in debug mode.
       this_page -- Name of cgi script providing page (e.g., "entr.py")
         If not provided the login fields will not be displayed.  (This
         value and that of "parms" are used to return to the current page
@@ -61,32 +62,28 @@
           <td align="right" rowspan="1">
           {%- if this_page|d %} {# Supress the login form is 'this_page' is undefined or false. #}
             <form name="entrauth" method="post" action="{{this_page}}">
-              {%- for p in parms|d|a([]) %}
+            {%- for p in parms|d([]) %}
               <input type="hidden" name="{{p[0]}}" value="{{p[1]}}">
-                {%- endfor %}
-              {%- if session|d %}
+              {%- endfor %}
+            {%- if session|d %}
               Logged in: {{session.fullname}}
-              <input name="loginout" value="logout" type="submit">
-                {%- endif %}
-              {%- if not session|d %}
+              <input type="submit" name="loginout" value="logout">
+            {%- else %}{# [not] session #}
               <table align="right">
                 <tbody>
                   <tr><td colspan="3">Login for registered editors</td></tr>
                   <tr>
                     <td>Username:</td>
-                    <td><input name="username" type="text" size="8" tabindex="991"></td>
-                    <td rowspan="2"><input name="loginout" value="login" type="submit" tabindex="993"></td>
+                    <td><input type="text" name="username" size="8" tabindex="991"></td>
+                    <td rowspan="2"><input type="submit" name="loginout" value="login" tabindex="993"></td>
                     </tr>
                   <tr>
                     <td>Password:</td>
-                    <td><input name="password" type="password" size="8" tabindex="992">
-                        {%- if svc %}
-                        <input type="hidden" name="svc" value="{{svc}}"></td>
-                        {%- endif %}
+                    <td><input type="password" name="password" size="8" tabindex="992">
                     </tr>
                   </tbody>
                 </table>
-                {%- endif %}
+              {%- endif %}{# session #}
               </form>
             {%- endif %}{# this_page #}
             </td>

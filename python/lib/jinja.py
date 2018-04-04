@@ -34,6 +34,8 @@ def add_filters (env):
 
           # The add_filter decoractors are right justified to make it
           # easier to visually locate filter functions by name.
+          # The TAL- prefixes are a historical legacy from when these 
+          # functions were used with TAL/TALES templates.
         @                                                      add_filter (env)
         def TALabbrtxt (id, kwtyp):
             return _abbr (kwtyp, id, True)
@@ -85,6 +87,13 @@ def add_filters (env):
                  [int(monthnum)-1]
             if short: return mn[:3]
             return mn
+        @                                                      add_filter (env)
+          # Return True if any augmented xrefs in 'axrefs' point to an
+          # unapproved entry.
+        def TALunap_xrefs (axrefs):
+            for x in axrefs:
+                if x.TARG.unap: return True
+            return False
         @                                                      add_filter (env)
         def N (arg):
             return '' if arg is None else arg

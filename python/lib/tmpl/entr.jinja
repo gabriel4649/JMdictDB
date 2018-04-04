@@ -72,7 +72,7 @@
         {%- if e._kanj and e._rdng %} 】 {%endif%}
 
       {%+ if e._sens -%}
-      <table class="senses" border="0">
+      <table class="senses">
         {%- for s in e._sens %}
         <tr class="sense">
           <td valign="top">{{s.sens}}.</td>
@@ -157,7 +157,8 @@
                   {%- set rnum = x.rdng if x.direc >= 0 else 1 %}
                   {{['\u21D0','\u21D4','\u21D2'][x.direc+1]}}&nbsp;{#--#}
                   {{x.typ|TALabbr('XREF')|safe}}: {#-#}
-                  <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;e={{x.xentr}}">{{x.TARG.seq}}</a>
+                  <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;e={{x.xentr}}">
+                    {{x.TARG.seq}}{{'*' if x.TARG.unap else ''}}</a>
                   {{x.TARG|TALkrtxt('_kanj',knum) if x.TARG._kanj else ''}}{#--#}
                   {% if x.TARG._kanj and x.TARG._rdng and rnum %}【{%endif%}{#--#}
                   {{x.TARG|TALkrtxt('_rdng',rnum) if x.TARG._rdng else ''}}{#--#}
@@ -167,6 +168,11 @@
                   </td>
                 </tr>
                 {%-endfor%}{# s.XREF #}
+              {%- if s.XREF|TALunap_xrefs %} 
+              <tr><td colspan="2" class="notes">
+                Xrefs marked with an asterisk (*) denote a reference to or from an unapproved entry.
+                </td></tr>
+                {%- endif %}
               {%- if s._xrslv %}
               <tr><td colspan="2">Unresolved cross references:</td></tr>
               {%- for x in s._xrslv -%}
@@ -277,24 +283,24 @@
             {%-endfor%}
           {%-endfor%}
         </table>
-        {%-endif%}
-      {%endif%}{# not etxt #}
+        {%- endif %}
+      {%- endif %}{# not etxt #}
                                                                           {#-#}
       {%- if etxt and disp=='ed' %}
         <p><span>{{etxt}}</span></p>
-        {%endif%}
+        {%- endif %}
                                                                           {#-#}
       {%- if etxt and disp!='ed' %}
       <span class="preformat">
         <pre>{{etxt}}</pre></span>
-        {%endif%}
+        {%- endif %}
                                                                           {#-#}
       {%- if e.POS and not etxt %}
       <br>
       <a href="conj.py?e={{e.id}}&amp;svc={{svc}}&amp;sid={{sid}}&amp">Conjugations</a>
-        {%endif%}
+        {%- endif %}
                                                                           {#-#}
-      {% block action scoped%}
+      {%- block action scoped%}
       {%- if e.EDITABLE|d %}
       <br><br><form action="edform.py" method="get">
         <input type="submit" value="Edit">
@@ -304,7 +310,7 @@
         {%+ if dbg|d %}<input type="hidden" name="dbg" value="{{dbg}}">{%endif%}
         </form>
         {%endif%}{# e.EDITABLE #}
-        {% endblock %}
+        {%- endblock %}
                                                                           {#-#}
       {%- if not etxt and e._hist %}
       <div class="hist">

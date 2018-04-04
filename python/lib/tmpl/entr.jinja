@@ -314,9 +314,7 @@
                                                                           {#-#}
       {%- if not etxt and e._hist %}
       <div class="hist">
-        <span tal:define="global cls nothing" tal:omit-tag=""/>
-        <span tal:define="global dsp nothing" tal:omit-tag=""/>
-        <br>History: 
+        <br>History:
         <table>
           <tbody class="histtab">
             {%- for h in e._hist %}

@@ -30,14 +30,30 @@ def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
-        kwlist = []; kwhash = {}
-        for t in 'RINF KINF FREQ MISC POS FLD DIAL LANG GINF SRC STAT XREF'.split():
+        kwhash = {}
+        for t in 'RINF KINF FREQ MISC POS FLD DIAL GINF SRC STAT XREF'.split():
             kw = jdb.KW.recs (t)
             kwset = [t.capitalize(), sorted (kw, key=lambda x:x.kw.lower())]
-            kwlist.append (kwset)
             kwhash[t] = kwset[1]
+        kwhash['LANG'] = get_langs (cur)
         jmcgi.jinja_page ("edhelp.jinja", svc=svc, dbg=dbg, cfg=cfg, 
-                          kwlist=kwlist, kwhash=kwhash)
+                          kwhash=kwhash)
+
+def get_langs (cur):
+        """Get set of kwlang rows for languages currently used in the
+        the database (for gloss and lsrc.)"""
+
+        sql = \
+          "SELECT k.id,k.kw,k.descr FROM "\
+              "(SELECT lang FROM gloss "\
+              "UNION DISTINCT "\
+              "SELECT lang FROM lsrc) AS l "\
+          "JOIN kwlang k ON k.id=l.lang "\
+          "ORDER BY k.kw!='eng', k.kw "
+          # The first "order by" term will sort english to the top
+          # of the list.
+        rows = jdb.dbread (cur, sql)
+        return rows
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

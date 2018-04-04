@@ -13,7 +13,7 @@
 
     <!-- entry.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
     {%- if not entries %}
-    <div class="entry"> No entries found. </div>
+    <div class="entry caution"> No entries found. </div>
       {%- endif %}
     {%- for e,etxt in entries %}
     <div class="entry">
@@ -27,7 +27,9 @@
         (parent: <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;e={{e.dfrm}}">{{e.dfrm}}</a>)
         {%-endif%}
         </span>
-      {%- if e.id %}<span class="pkid">{id: {{e.id}}}</span> {%endif%}
+      {%- if e.id %}<span class="pkid">(id: 
+         <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;e={{e.id}}">{{e.id}}</a>)
+         </span> {%endif%}
 
       {%- if not etxt %}
         {%- if e.srcnote %}
@@ -189,13 +191,13 @@
       <br>
         <table class="kdinfo" valign="top">
           <tr>
-            <th>Kanji details</th><th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
-            <th>References</th><th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
-            {%+ if e.chr.enc %}<th>Encodings</th>{%endif%}
+            <th align="left">Kanji details</th><th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
+            <th align="left">References</th><th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
+            {%+ if e.chr.enc %}<th align="left">Encodings</th>{%endif%}
             </tr>
           <tr>
             <td valign="top">
-              <table class="kddetails" border="1">
+              <table class="kddetails">
                 <tr><td>Strokes:</td><td>{{e.chr.strokes or '&nbsp;'|safe}}</td></tr>
                 <tr><td>Radical:</td><td>{{e.chr.bushu or '&nbsp;'|safe}}</td></tr>
                 <tr><td>Radical name:</td><td>{{e.chr.radname or '&nbsp;'|safe}}</td></tr>
@@ -206,7 +208,7 @@
               </td>
             <td></td>
             <td valign="top">
-              <table class="kdrefs" border="1">
+              <table class="kdrefs">
                 {% for rf in e.chr._cinf %}
                 <tr>
                   <td class="abbr" title="{{rf.kw|TALdescr('CINF')}}">{{rf.kw|TALabbrtxt('CINF')}}</td>
@@ -222,7 +224,7 @@
             <td></td>
             {% if e.chr.enc %}
             <td valign="top">
-              <table class="kdenc" border="1">
+              <table class="kdenc">
                 <tr><td>Unicode:</td><td><a href="{{e.chr.enc.uurl}}">{{e.chr.enc.uni}}</a></td></tr>
                 <tr><td>UTF-8:</td><td>{{e.chr.enc.utf8}}</td></tr>
                 <tr><td>JIS:</td><td>{{e.chr.enc.jis}}</td></tr>

@@ -2,14 +2,15 @@
 .entry		{font-family: arial; font-size: 100%; background: #E8FFF0; 
 		 border-style: solid; border-width: thin; 
 		 margin: 5px; padding: 10px}
-.pkid		{font-size: 55%}
+.pkid		{font-size: 80%}
 .kattrs,.rattrs {font-size: 80%; font-style: italic; color: #008000}
 .pos,.misc	{font-style: italic; color: #008000}
 .dial,.lang	{font-size: 80%}
+.lsrc           {font-size: 80%}
 .status		{font-size: 80%}
 .pend		{color: #FF0000}
 .caution	{color: #FF0000}
-.notice		{font-size: 55%; color: #FF0000}
+.notice		{font-size: 65%; color: #FF0000}
 .notes		{font-size: 75%;}
 .preformat	{margin-left: 2em; white-space: pre-wrap;
 		 font-size:110%; font-family: monospace}
@@ -19,6 +20,9 @@
 .fakelink       {color: #0000EE; /* same as a link's default color. */
                  text-decoration: underline; cursor: pointer; }
 .abbr           {font-style: italic; color: #008000; cursor: pointer; }
+.kddetails,.kdrefs,.kdenc
+                {border-style: none; border-width: thin; }
+                {text-align: left; }
 
 /* Search results list */
 .results	{background: #E8FFF0; 

@@ -45,7 +45,7 @@
         <table class="reslist">
           <tr class="heading">
             <th> </th>
-            <th>Seqnum</th>
+            <th>Seq#</th>
             <th>S</th>
             <th>P</th>
             <th>Kanji</th>
@@ -57,7 +57,7 @@
             <td><input type="checkbox" name="e" value="{{r.id}}"></td>
             <td class="seq">{{r.src|TALabbr('SRC')|safe}}{{' '}}{#--#}
               <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;e={{r.id}}">{{r.seq}}</a></td>
-            <td><span{{r.unap|a(' class="pend"')}}>{{r.stat|TALabbr('STAT')|safe}}</span></td>
+            <td><span{% if r.unap %} class="pend"{% endif %}>{{r.stat|TALabbrtxt('STAT')}}{{'*' if r.unap else ''}}</span></td>
             <td>{{'P' if r.p else ''}}&nbsp;</td>
             <td class="kanj">{{r.kanj}}</td>
             <td class="rdng">{{r.rdng}}</td>

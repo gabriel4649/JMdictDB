@@ -104,11 +104,11 @@
                 {{'' if loop.first else ', '}}
                 {{z.lang|TALabbr('LANG')|safe}}{#--#}
                 {%- if z.part or z.wasei %}(
-                  {#--#}{{'p' if z.part else ''}}{#--#}
+                  {#--#}{{'wasei' if z.wasei else ''}}{#--#}
                   {{',' if z.part and z.wasei else ''}}{#--#}
-                  {{'w' if z.wasei else ''}}){#--#}
+                  {{'partial' if z.part else ''}}){#--#}
                   {%-endif%}{#--#}
-                {{' '+z.txt if z.txt else ''}}{#--#}
+                {{' "'+z.txt+'"' if z.txt else ''}}{#--#}
                 {%-endfor%}{# s._lsrc #}
               </span>
               {%-endif%}
@@ -209,7 +209,7 @@
               <table class="kdrefs" border="1">
                 {% for rf in e.chr._cinf %}
                 <tr>
-                  <td title="{{rf.kw|TALdescr('CINF')}}">{{rf.kw|TALabbrtxt('CINF')}}</td>
+                  <td class="abbr" title="{{rf.kw|TALdescr('CINF')}}">{{rf.kw|TALabbrtxt('CINF')}}</td>
                   {%- if rf.kw|TALabbrtxt('CINF')=='gahoh' and cfg.web.GAHOH_URL %}
                   <td><a href="{{cfg.web.GAHOH_URL}}{{rf.value}}">{{rf.value}}</a>
                   {%- else %}

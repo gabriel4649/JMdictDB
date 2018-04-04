@@ -35,19 +35,6 @@ def add_filters (env):
           # The add_filter decoractors are right justified to make it
           # easier to visually locate filter functions by name.
         @                                                      add_filter (env)
-        def TALhas (parent, attr):
-            return hasattr (parent, attr) and getattr (parent, attr)
-        @                                                      add_filter (env)
-        def TALattrand (parent, *attrs):
-            for a in attrs:
-                if not getattr (parent, a, None): return False
-            return True
-        @                                                      add_filter (env)
-        def TALattror (parent, *attrs):
-            for a in attrs:
-                if getattr (parent, a, None): return True
-            return False
-        @                                                      add_filter (env)
         def TALabbrtxt (id, kwtyp):
             return _abbr (kwtyp, id, True)
         @                                                      add_filter (env)
@@ -89,27 +76,6 @@ def add_filters (env):
             grps = getattr(parent,'_grp',None)
             if not grps: return ''
             return sep.join ([fmtjel.grp (x) for x in grps])
-        @                                                      add_filter (env)
-        def TALfmtjel (entr, what):
-              # Item is _kanj, _rdng, or _sens list.  Return a jel formatted
-              # string for the item.
-            if   what=='s': return fmtjel.senss (getattr(entr,'_sens',[]),
-                                                 getattr(entr,'_kanj',[]),
-                                                 getattr(entr,'_rdng',[]))
-            elif what=='r': return fmtjel.rdngs (getattr(entr,'_rdng',[]),
-                                                 getattr(entr,'_kanj',[]))
-            elif what=='k': return fmtjel.kanjs (getattr(entr,'_kanj',[]))
-            else: raise ValueError ("Invalid 'what' value: %s" % what)
-        @                                                      add_filter (env)
-        def TALdecode (arg, *args):
-              # Taking the arguments in *args pairwise, find the first
-              # 2*n'th argument in *args that is "==" to 'arg', and return
-              # the 2*n+1'th argument from *args.
-            #import pdb; pdb.set_trace()
-            for i in range (0, len(args)-1, 2):
-                if arg == args[i]: return args[i+1]
-            if len(args) % 2: return args[-1]
-            return None
         @                                                      add_filter (env)
         def TALm2mn (monthnum, short=False):
               # Convert a month number (1-12) to the name of the month.

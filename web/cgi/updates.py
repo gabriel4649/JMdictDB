@@ -118,7 +118,7 @@ def render_day_updates (y, m, d, n, formvalues):
         jmcgi.jinja_page ('entr.jinja',
                         entries=zip(entries, [None]*len(entries)), disp=None,
                         svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
-                        parms=parms, this_page='updates.py&i=1')
+                        parms=parms, this_page='updates.py')
 
 def render_year_index (y, formvalues):
         # If 'i' was given in the URL params we will generate an index
@@ -167,7 +167,7 @@ def render_year_index (y, formvalues):
         jmcgi.jinja_page ('updates.jinja', 
                         years=years, year=y, days=days, disp=None,
                         svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
-                        parms=parms, this_page='updates.py?i=1')
+                        parms=parms, this_page='updates.py')
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

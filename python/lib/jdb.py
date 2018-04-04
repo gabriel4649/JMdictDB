@@ -18,9 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11]);
-
 import sys, os, os.path, random, re, datetime, operator, configparser
 from time import time
 from collections import defaultdict
@@ -1828,7 +1825,7 @@ def is_pj (kr):
         """
         for f in getattr (kr, '_freq', []):
               # ichi=1, gai=2, spec=4, 7=news
-            if fw.kw==4 or (f.kw in (1,2,7) and f.value==1): return True
+            if f.kw==4 or (f.kw in (1,2,7) and f.value==1): return True
         return False
 
 #-------------------------------------------------------------------

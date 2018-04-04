@@ -39,6 +39,9 @@
 .descriptor	{font-style: italic; color: #008000;} 
 .optgroup	{font: 75% arial}
 
+/* Edit form */
+.entrinfo       {border-style: solid; border-width: thin;}
+
 /* Conjugations */
 .conjtable	{border-collapse: collapse; border: 1px solid black;}
 .conjbrk	{background: #FFFFE0;}

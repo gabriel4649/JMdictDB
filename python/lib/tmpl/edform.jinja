@@ -67,11 +67,11 @@
           <tr>
             <td> </td>
             <td>
-              <table width="100%" border="1">
+              <table class="entrinfo" width="100%">
               {%- if e.id %} {# I.e., this is an existing entry. #}
                 <tr>
                   <td colspan="2">Status: {{e.stat|TALdescr('STAT') if e.stat else ''}}
-                    {%- if e.unap %}<span class="pend">(Unapproved)</span>{% endif %}</td>
+                    {%- if e.unap %}<span class="pend"> (Unapproved)</span>{% endif %}</td>
                   <td colspan="2">Id: 
                     <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;e={{e.id}}">{{e.id}}</a>
                       {%- if e.dfrm %}
@@ -131,7 +131,8 @@
             {%- endif %}{# not e.id  #}
           <tr>
             <td>Kanji: <br><a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kanji" tabindex="1274">help</a></td>
-            <td><textarea id="kanj" name="kanj" wrap="physical" cols="60" rows="3" tabindex="1202">{{e.ktxt}}</textarea></td>
+            <td><textarea id="kanj" name="kanj" wrap="physical" cols="60" rows="3" tabindex="1202" style="width:100%;">{{e.ktxt}}</textarea></td>
+            <td> </td>
             <td>
               Tags Help: <br>
               <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_kinf" tabindex="1253">kanji info</a><br>
@@ -139,7 +140,8 @@
               </td></tr>
           <tr>
             <td>Reading(s): <br><a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#readings" tabindex="1275">help</a></td>
-            <td><textarea name="rdng" wrap="physical" cols="60" rows="3" tabindex="1203">{{e.rtxt}}</textarea></td>
+            <td><textarea name="rdng" wrap="physical" cols="60" rows="3" tabindex="1203" style="width:100%;">{{e.rtxt}}</textarea></td>
+            <td> </td>
             <td>
               <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_rinf" tabindex="1255">reading info</a><br>
               <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_freq" tabindex="1256">frequency info</a><br>
@@ -147,7 +149,8 @@
               </td></tr>
           <tr>
             <td>Meaning(s): <br><a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#senses" tabindex="1276">help</a></td>
-            <td><textarea name="sens" wrap="physical" cols="60" rows="6" tabindex="1204">{{e.stxt}}</textarea></td>
+            <td><textarea name="sens" wrap="physical" cols="60" rows="6" tabindex="1204" style="width:100%;">{{e.stxt}}</textarea></td>
+            <td> </td>
             <td>
               <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_pos" tabindex="1258">part-of-speech</a><br>
               <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_misc" tabindex="1259">miscellaneous</a><br>
@@ -165,7 +168,8 @@
               This entry should be deleted.  (Please justify in Comments and References boxes.)
               <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#delete" tabindex="1277">help</a>
               </td>
-            <td></td>
+            <td> </td>
+            <td> </td>
             </tr>
             {%- endif %}
         {%- if 0 %} {# Disabled for now, see IS-143. #}
@@ -174,31 +178,36 @@
             <td><input type="checkbox" name="makecopy" {{makecopy|a('checked')}}>  {# Treat as new entry. #}
               &nbsp; <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#makecopy" tabindex="1278">help</a>
               </td>
-            <td></td>
+            <td> </td>
+            <td> </td>
             </tr>
             {%- endif %}
           <tr>
             <td>References: <br><a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#references" tabindex="1279">help</a></td>
-            <td><textarea name="reference" wrap="physical" cols="60" rows="6" tabindex="1205">{{extra.ref|d}}</textarea></td>
-            <td></td>
+            <td><textarea name="reference" wrap="physical" cols="60" rows="6" tabindex="1205" style="width:100%;">{{extra.ref|d}}</textarea></td>
+            <td> </td>
+            <td> </td>
             </tr>
           <tr>
             <td>Comments: <br><a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#comments" tabindex="1280">help</a></td>
-            <td><textarea name="comment" wrap="physical" cols="60" rows="6" tabindex="1206">{{extra.comment|d}}</textarea></td>
-            <td></td>
+            <td><textarea name="comment" wrap="physical" cols="60" rows="6" tabindex="1206" style="width:100%;">{{extra.comment|d}}</textarea></td>
+            <td> </td>
+            <td> </td>
             </tr>
           <tr>
             <td>Name: <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#name" tabindex="1281">help</a></td>
-            <td><input type="text" name="name" size="30" value="{{extra.name|d or session.fullname|d}}" tabindex="1207"></td>
-            <td></td>
+            <td><input type="text" name="name" size="30" style="width:100%;" value="{{extra.name|d or session.fullname|d}}" tabindex="1207"></td>
+            <td> </td>
+            <td> </td>
             </tr>
           <tr>
             <td>Email: <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#email" tabindex="1282">help</a></td>
-            <td><input type="text" name="email" size="30" value="{{extra.email|d or session.email|d}}" tabindex="1208"></td>
-            <td></td>
+            <td><input type="text" name="email" size="30" style="width:100%;" value="{{extra.email|d or session.email|d}}" tabindex="1208"></td>
+            <td> </td>
+            <td> </td>
             </tr>
           <tr>
-            <td></td>
+            <td> </td>
             <td>
               <input type="submit" value=" Next " tabindex="1242"> &nbsp;
               {%- if is_editor %}
@@ -230,11 +239,12 @@
                 </span>
               </td>
             <td> </td>
+            <td> </td>
             </tr>
 
         {%- if session.userid|d %}
           <tr>
-            <td colspan="3">
+            <td colspan="4">
               <br>
               The following may require changing in rare circumstances...
               </td>
@@ -250,29 +260,39 @@
                 {%- endfor %}
                 </select>
               </td>
+            <td> </td>
+            <td> </td>
             </tr>
             {%- endif %}{# e.id #}
           <tr>
             <td>Seq: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#seq" tabindex="1285">help</a></td>
             <td><input type="text" name="seq" size="8" value="{{e.seq}}" tabindex="1221"></td>
+            <td> </td>
+            <td> </td>
             </tr>
           <tr>
             <td>Src note: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#srcnote" tabindex="1286">help</a></td>
-            <td colspan="3">
-              <input type="text" name="srcnote" size="50" value="{{e.srcnote}}" tabindex="1223">
+            <td>
+              <input type="text" name="srcnote" size="50" style="width:100%;" value="{{e.srcnote}}" tabindex="1223">
               </td>
+            <td> </td>
+            <td> </td>
             </tr>
           <tr>
             <td>Entr note: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#entrnote" tabindex="1287">help</a></td>
-            <td colspan="3">
-              <textarea name="notes" wrap="physical" width="100%" cols="60" rows="2" tabindex="1224">{{e.notes}}</textarea>
+            <td>
+              <textarea name="notes" wrap="physical" width="100%" cols="60" rows="2" tabindex="1224" style="width:100%;">{{e.notes}}</textarea>
               </td>
+            <td> </td>
+            <td> </td>
             </tr>
           <tr>
             <td>Groups: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#groups" tabindex="1288">help</a></td>
-            <td colspan="3">
-              <textarea name="grp" wrap="physical" width="100%" cols="60" rows="2" tabindex="1226">{{e|TALgrps}}</textarea>
+            <td>
+              <textarea name="grp" wrap="physical" width="100%" cols="60" rows="2" tabindex="1226" style="width:100%;">{{e|TALgrps}}</textarea>
               </td>
+            <td> </td>
+            <td> </td>
             </tr>
           {%- endif %}{# session.userid #}
           </tbody>

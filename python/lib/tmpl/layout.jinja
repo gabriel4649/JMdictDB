@@ -57,7 +57,8 @@
             <a href="srchformq.py?svc={{svc}}&amp;sid={{sid|d}}">       Search</a> |
             <a href="srchform.py?svc={{svc}}&amp;sid={{sid|d}}">        Advanced Search</a> |
             <a href="edform.py?svc={{svc}}&amp;sid={{sid|d}}">          New Entry</a> |
-            <a href="updates.py?svc={{svc}}&amp;sid={{sid|d}}&amp;i=1"> Submissions</a>
+            <a href="updates.py?svc={{svc}}&amp;sid={{sid|d}}&amp;i=1"> Submissions</a> |
+            <a href="edhelp.py?svc={{svc}}&amp;sid={{sid|d}}">          Help</a>
             </td>
           <td align="right" rowspan="1">
           {%- if this_page|d %} {# Supress the login form is 'this_page' is undefined or false. #}
@@ -104,7 +105,8 @@
             <a href="srchformq.py?svc={{svc}}&amp;sid={{sid|d}}">       Search</a> |
             <a href="srchform.py?svc={{svc}}&amp;sid={{sid|d}}">        Advanced Search</a> |
             <a href="edform.py?svc={{svc}}&amp;sid={{sid|d}}">          New Entry</a> |
-            <a href="updates.py?svc={{svc}}&amp;sid={{sid|d}}&amp;i=1"> Submissions</a>
+            <a href="updates.py?svc={{svc}}&amp;sid={{sid|d}}&amp;i=1"> Submissions</a> |
+            <a href="edhelp.py?svc={{svc}}&amp;sid={{sid|d}}">          Help</a>
             </td>
           <td align="right">{% if svc %}DB={{svc}}{% endif %}</td>
           </tr>

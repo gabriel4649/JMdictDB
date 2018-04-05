@@ -1,0 +1,77 @@
+{%- extends "layout.jinja" %}
+{% block title %}Conjunctions{% endblock %}
+{%- block page_content %}
+    <!-- updates.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
+
+    <div class="results">
+    {% for s in sections %}
+      <div class="conjsect">
+        <table class="conjtable" border width="100%">
+          <tr class="heading">
+            <th rowspan="2">
+              seq# <a href="entr.py?svc={{svc}}&amp;sid={{sid|d}}&amp;e={{s.0.id}}">{{s.0.seq}}</a>
+              <br>({{s[0].src|TALabbr('SRC')|safe}})
+              </th>
+            <th colspan="2">Affirmative</th>
+            <th colspan="2">Negative</th>
+            </tr>
+          <tr class="heading">
+            <th>Plain</th>
+            <th>Formal</th>
+            <th>Plain</th>
+            <th>Formal</th>
+            </tr>
+      {%- for r in s %}
+        {%- if r.sbreak %}
+            <tr class="conjbrk">
+              <td>&nbsp;</td>
+              <td colspan="4">{# -#}
+                {{r.ptxt}} conjugations for {{r.ktxt|d}}{# -#}
+                {% if r.ktxt and r.rtxt %}【{% endif %}{# -#}
+                {{r.rtxt|d}}{# -#}
+                {% if r.ktxt and r.rtxt %}】{% endif -%}
+                </td>
+              </tr>
+          {%- endif %}{# r.sbreak #}
+            <tr class="conjrow">
+              <td class="conjname">{{r.ctxt}}</td>
+              <td class="conjcell">{{(r.w0 or '&nbsp;')|safe}}</td>
+              <td class="conjcell">{{(r.w1 or '&nbsp;')|safe}}</td>
+              <td class="conjcell">{{(r.w2 or '&nbsp;')|safe}}</td>
+              <td class="conjcell">{{(r.w3 or '&nbsp;')|safe}}</td>
+              </tr>
+        {%- endfor %}{# r in s#}
+          </table>
+          <br>
+        </div>
+      {% endfor %}{# s in sections #}
+    <div class="conjnotes">
+      Notes...
+      <table class="conjnotestbl">
+      {% for n in notes %}
+        <tr class="conjnote">
+          <td class="notenum" valign="top">[{{n.id|safe}}]</td>
+          <td class="notetext">{{n.txt|safe}}</td>
+          </tr>
+        {% endfor %}
+        <tr class="conjnote">
+          <td class="notenum" valign="top">[*]</td>
+          <td class="notetext">This table has been automatically generated. 
+              It should not be assumed that any single conjugation is as
+              frequently used or as natural as any other, or is used at all.</td>
+          </tr>
+        </table>
+        <p/><table class="conjacks">
+            <tr><td colspan="2">Acknowledgments: Most of the data used to generate this page is a
+            synthesis of information from the following sources.  
+            The developer (Stuart McGraw <jmdictdb@mtneva.com>)
+            would appreciate being informed of any errors.</td></tr>
+            <tr><td>&nbsp;&nbsp;*</td><td>Jim Breen's <a href="http://www.edrdg.org/cgi-bin/wwwjdic/wwwjdic?1C">WWWjdic verb conjugator</a></td></tr>
+            <tr><td>&nbsp;&nbsp;*</td><td>Ben Bullock's <a href="http://www.sljfaq.org/cgi/verb-inflect.cgi">SljFAQ verb inflector</a></td></tr>
+            <tr><td>&nbsp;&nbsp;*</td><td><a href="http://bookclub.japantimes.co.jp/en/title/A Dictionary of Basic Japanese Grammar">Dictionary of Basic Japanese Grammar</a>, Makino and Tsutsui, ISBN 978-4-7890-0454-1</td></tr>
+            <tr><td>&nbsp;&nbsp;*</td><td>Wikipedia articles:  <a href="http://en.wikipedia.org/wiki/Japanese_verbs">Japanese verbs</a>, 
+                <a href="http://en.wikipedia.org/wiki/Japanese_irregular_verbs">Japanese irregular verbs</a></td></tr>
+          </table>
+
+      </div>
+  {%- endblock %}

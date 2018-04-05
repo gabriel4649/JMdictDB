@@ -1,0 +1,14 @@
+{%- extends "layout.jinja" %}
+{%- block title %}Error{% endblock%}
+{%- block page_content %}
+<!-- url_errors.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
+    <div class="results">
+      We're sorry but your page request could not be processed
+      due to the following error(s):
+      <ul>
+      {% for e in errs %}
+        <li><span class="errormsg">{{e|safe}}</span></li>
+        {% endfor %}
+        </ul>
+      </div>
+  {% endblock %}

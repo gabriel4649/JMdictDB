@@ -1,0 +1,118 @@
+{#- Search for JMdictDB entries
+    Context variables:
+      svc, sid, dbg -- See layout.jinja.
+      src, stat, freq, kinf, rinf, pos, misc, fld, dial --
+        These are all 2-D arrays of dimension R rows by C columns of
+        jdb.Kwds instances representing rows in a database kwxxx table,
+        where 'xxx' stands for "src", "stat", etc.  Each Kwds object
+        (and the coresponding table row) contains information about a
+        JMdictDB keyword (aka tag value):
+          id -- Id number of the keyword
+          kw -- Short string giving the keyword.
+          descr -- A longer description of the keyword.
+        The keywords for each table are organised into a RxC array by
+        srchform.py because they are displayed in that form here.
+      KW -- The full, loaded jdb.Kwds instance.
+-#}
+{%- extends "layout.jinja" %}
+{%- block title %}Basic Search{% endblock %}
+{%- block page_scripts %}
+  <script type="text/javascript"> 
+    function sf(){document.getElementById('t1').focus();}
+    </script>
+  {% endblock %}
+{%- block body_attrs %} class="srchfrm" onload="sf()"{%endblock%}
+
+{%- block page_content %}
+    <!-- srchformq.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
+    <form action="srchres.py" name="srchres" method="get">
+      <table class="form" width="100%">
+        <tr>
+          <td>
+            <table class="top" width="100%">
+              <tr>
+                <td>
+                  <table class="txtsrch" width="100%">
+                    <tr>
+                      <td colspan="3" class="descriptor">Search for text: </td>
+                      </tr>
+                    <tr>
+                      <td>Search in</td>
+                      <td>Search type</td>
+                      <td>For text</td>
+                      </tr>
+                    <tr>
+                      <td>
+                        <select name="s1">
+                          <option value="1" selected="selected">Auto</option>
+                          <option value="2">Kanji</option>
+                          <option value="3">Reading</option>
+                          <option value="4">Gloss</option>
+                          </select>
+                        </td>
+                      <td>
+                        <select name="y1">
+                          <option value="1">Is</option>
+                          <option value="2" selected="selected">Starts</option>
+                          <option value="3">Contains</option>
+                          <option value="4">Ends</option>
+                          </select>
+                        </td>
+                      <td width="100%"><input name="t1" id="t1"/></td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+              <tr>
+                <td><span class="descriptor">...in Dictionary:</span>
+                  <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_src">help</a>
+                  <table class="optgroup">
+                  {%- for r in src %}
+                    <tr>
+                    {%- for c in r %}
+                      <td>
+                      {%- if c -%}
+                        <input type="checkbox" name="src" value="{{c.id}}" {{(c.id==1)|a('checked')}}>{{c.kw}}
+                        {%-endif-%}
+                        </td>
+                      {%-endfor%}
+                      </tr>
+                    {%-endfor%}
+                    </table>
+                  </td>
+                </tr>
+
+              <tr>
+                <td>
+                  <input name="search" value="Search" type="submit">
+                  {%+ if svc %}<input type="hidden" name="svc" value="{{svc}}">{%endif%}
+                  {% if sid %}<input type="hidden" name="sid" value="{{sid}}">{%endif%}
+                  {% if dbg|d %}<input type="hidden" name="dbg" value="{{dbg}}">{%endif%}
+                  <!-- <input type="hidden" name="srchres" value="1"> -->
+                  <input type="reset" value="Reset">
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </form>
+
+    <div class="notes">
+      Notes...
+      <ul>
+        <li>If "Search In" is Auto, the given text will be searched for according
+          to the characters in the search string.  If the search string contains:
+          <ul>
+            <li>any kanji characters: the kanji table is searched.</li>
+            <li>kana characters but no kanji: the reading table is searched.</li>
+            <li>neither kanji nor kana characters: the gloss table is searched.</li>
+            </ul>
+          </li>
+        <li>Within the Dictionary section, no boxes checked is the
+          same as all boxes checked.
+        </ul>
+      </div>{# class="notes" #}
+    <hr width="100%">
+{%endblock%}

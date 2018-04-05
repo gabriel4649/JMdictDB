@@ -31,7 +31,7 @@ import logger; from logger import L
 def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
         entries = jmcgi.get_entrs (cur, form.getlist ('e'),
                                         form.getlist ('q'), errs)
@@ -86,10 +86,10 @@ def main (args, opts):
 
         if errs: jmcgi.err_page (errs)
 
-        jmcgi.gen_page ('tmpl/entr.tal', macros='tmpl/macros.tal',
-                        entries=zip(entries, etxts), disp=disp,
-                        svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        parms=parms, output=sys.stdout, this_page='entr.py')
+        jmcgi.jinja_page ('entr.jinja',
+                        entries=list(zip(entries, etxts)), disp=disp,
+                        svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
+                        parms=parms, this_page='entr.py')
 
 def seqkr_decorate (entries):
         # Add a .SEQKR attribute to every entry in 'entries'.

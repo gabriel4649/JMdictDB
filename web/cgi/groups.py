@@ -29,8 +29,8 @@ import jdb, jmcgi
 def main( args, opts ):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
-        except Exception as e: jmcgi.gen_page ([str(e)])
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        except Exception as e: jmcgi.err_page ([str(e)])
 
         fv = form.getfirst; fl = form.getlist
         orderby = "k.id,s.kw,e.src"
@@ -39,14 +39,14 @@ def main( args, opts ):
                 "LEFT JOIN grp g ON g.kw=k.id " \
                 "LEFT JOIN entr e ON e.id=g.entr " \
                 "LEFT JOIN kwsrc s ON s.id=e.src " \
-                "GROUP BY k.id, k.kw, k.descr, e.src,s.kw " \
+                "GROUP BY k.id, k.kw, k.descr, e.src, s.kw " \
                 "ORDER BY %s" % orderby
 
         rs = jdb.dbread (cur, sql)
-        jmcgi.gen_page ("tmpl/groups.tal", macros='tmpl/macros.tal',
+        jmcgi.jinja_page ("groups.jinja",
                          results=rs, parms=parms,
-                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                         output=sys.stdout, this_page='goups.py')
+                         svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
+                         this_page='goups.py')
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

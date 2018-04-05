@@ -1,0 +1,39 @@
+{%- extends "layout.jinja" %}
+{% block title %}SQL Search{% endblock %}
+{%- block page_content %}
+<!-- srchsql.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
+  {%- if not adv_srch_allowed %}
+    <div class="entry">
+      Advanced search is not available because you do not have
+      the permissions required by the configuration settings for
+      this JMdictDB installation.
+      </div>
+  {%- else %}{# adv_srch_allowed #}
+    <form action="srchres.py" name="srchres" method="get">
+      <table class="form" width="100%">
+        <tr>
+          <td colspan="2">
+            If you know the SQL language and the JMdictDB database schema,
+            you can use this form to enter a SQL statement that will find
+            the entries you are interested in.  The SQL statement must return
+            a result set whose first column is named "id" and contains the
+            entry "id" numbers of the entries you want to see.
+            </td>
+          </tr>
+        <tr>
+          <td>SQL: </td>
+          <td><textarea name="sql" wrap="physical" rows="10" cols="80"></textarea></td>
+          </tr>
+        <tr>
+          <td> </td>
+          <td>
+            <input name="search" value="Search" type="submit">
+            {%+ if svc|d %}<input type="hidden" name="svc" value="{{svc}}">{% endif %}
+            {%+ if sid|d %}<input type="hidden" name="sid" value="{{sid}}">{% endif %}
+            {# <input type="hidden" name="srchres" value="1"> #}
+            </td>
+          </tr>
+        </table>
+      </form>
+      {%- endif %}{# not adv_srch_allowed #}
+  {% endblock %}

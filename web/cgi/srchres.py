@@ -29,13 +29,12 @@ import jdb, jmcgi, serialize, jelparse
 def main( args, opts ):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []; so = None; stats = {}
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
 
         cfg_web = d2o (cfg['web'])
         cfg_srch = d2o (cfg['search'])
         fv = form.getfirst; fl = form.getlist
-        dbg = fv ('d'); meth = fv ('meth')
         force_srchres = fv('srchres')  # Force display of srchres page even if only one result.
         sqlp = (fv ('sql') or '')
         soj = (fv ('soj') or '')
@@ -60,6 +59,9 @@ def main( args, opts ):
             so.grp   = grpsparse (fv('grp'))
             so.src   = fl('src');   so.stat  = fl('stat');  so.unap = fl('appr')
             so.nfval = fv('nfval'); so.nfcmp = fv('nfcmp')
+              # Search using gA freq criterion no longer supported.  See 
+              # the comments in jmcgi._freqcond() but code left here for
+              # reference.
             so.gaval = fv('gaval'); so.gacmp = fv('gacmp')
               #FIXME? use selection boxes for dates?  Or a JS calendar control?
             so.ts = dateparse (fv('ts0'), 0, errs), dateparse (fv('ts1'), 1, errs)
@@ -147,12 +149,11 @@ def main( args, opts ):
             svcstr = ("svc=%s&sid=%s&" % (svc,sid)) if svc else ''
             print ("Location: entr.py?%se=%d\n" % (svcstr, rs[0].id))
         else:
-            if not meth: meth = 'get' if dbg else 'post'
-            jmcgi.gen_page ("tmpl/srchres.tal", macros='tmpl/macros.tal',
-                            results=rs, pt=pgtotal, p0=pgoffset, method=meth,
+            jmcgi.jinja_page ("srchres.jinja",
+                            results=rs, pt=pgtotal, p0=pgoffset,
                             p1=pgoffset+reccnt, soj=soj, sql=sqlp, parms=parms,
-                            svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                            stats=stats, output=sys.stdout, this_page='srchres.py')
+                            svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
+                            stats=stats, this_page='srchres.py')
 
 def d2o (dict_):
         # Copy the key/value items in a dict to attributes on an

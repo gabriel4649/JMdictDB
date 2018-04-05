@@ -1,0 +1,112 @@
+{#- Display JMdictDB entries
+    NOTES:
+    - Much of this form is very similar to edconf.tal and edits made
+      to this form likely also need to be made to edform.tal.
+    - See aslso the notes in layout.jinja which apply in general to 
+      all the templates including this one.
+-#}
+{%- extends "layout.jinja" %}
+{%- block title %}Search results{% endblock %}
+{%- block body_attrs %} class="srchres" {%endblock%}
+{%- block page_content %}
+    <!-- srchres.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
+    <div class="results">
+    {%- if p1<pt and results|length>10 %}
+      <form action="srchres.py" method="get">
+        <input name="next" value="Next page" type="submit">
+        <input type="hidden" name="pt" value="{{pt}}">
+        <input type="hidden" name="p0" value="{{p0}}">
+        <input type="hidden" name="p1" value="{{p1}}">
+        {% if soj %}<input type="hidden" name="soj" value="{{soj}}">{%endif%}
+        {% if sql %}<input type="hidden" name="sql" value="{{sql}}">{%endif%}
+        {% if svc %}<input type="hidden" name="svc" value="{{svc}}">{%endif%}
+        {% if sid %}<input type="hidden" name="sid" value="{{sid}}">{%endif%}
+        {% if dbg|d %}<input type="hidden" name="dbg" value="{{dbg}}">{%endif%}
+        </form>
+      {%endif%}{# p1<pt... #}
+      <form action="entr.py" method="get">
+      {% if not results %}  <span class="caution"> No entries found. </span>
+      {% else %}{# i.e. equiv to "if results" #}
+        <span class="count">{{pt}} matching entries found. {# -#}
+          {% if p1<pt or p0>0 %} Showing entries {{p0+1}} to {{p1}}.{%endif-%}
+          </span>
+        <span class="notes">
+          <br>
+          Only limited information is shown for each entry.
+          To view the full entries, click the sequence number link
+          or use the checkboxes and the Display button.
+          See additional notes at bottom of page.
+          </span>
+        {% if results|length > 10 %}
+        <br>
+        <input name="show" value="Display selected entries" type="submit">
+        <input type="reset" value="Reset">
+          {%endif%}
+        <table class="reslist">
+          <tr class="heading">
+            <th> </th>
+            <th>Seq#</th>
+            <th>S</th>
+            <th>P</th>
+            <th>Kanji</th>
+            <th>Reading</th>
+            <th>Gloss</th>
+            </tr>
+        {%- for r in results %}
+          <tr class="resrow">
+            <td><input type="checkbox" name="e" value="{{r.id}}"></td>
+            <td class="seq">{{r.src|TALabbr('SRC')|safe}}{{' '}}{#--#}
+              <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;e={{r.id}}">{{r.seq}}</a></td>
+            <td><span{% if r.unap %} class="pend"{% endif %}>{{r.stat|TALabbrtxt('STAT')}}{{'*' if r.unap else ''}}</span></td>
+            <td>{{'P' if r.p else ''}}&nbsp;</td>
+            <td class="kanj">{{r.kanj}}</td>
+            <td class="rdng">{{r.rdng}}</td>
+            <td class="gloss">{{r.gloss}}</td>
+            </tr>
+          {%-endfor%}
+          </table>
+        <input type=submit name="show" value="Display selected entries">
+        <input type=reset value="Reset">
+        {%+ if svc %}<input type=hidden name="svc" value="{{svc}}">{%endif%}
+        {%+ if sid %}<input type=hidden name="sid" value="{{sid}}">{%endif%}
+        {%+ if dbg|d %}<input type="hidden" name="dbg" value="{{dbg}}">{%endif%}
+        </form>
+      {%- if p1<pt and results|length>0 %}
+      <form action="srchres.py" method="get">
+        <input name="next" value="Next page" type="submit">
+        <input type="hidden" name="pt" value="{{pt}}">
+        <input type="hidden" name="p0" value="{{p0}}">
+        <input type="hidden" name="p1" value="{{p1}}">
+        {% if soj %}<input type="hidden" name="soj" value="{{soj}}">{%endif%}
+        {% if sql %}<input type="hidden" name="sql" value="{{sql}}">{%endif%}
+        {% if svc %}<input type="hidden" name="svc" value="{{svc}}">{%endif%}
+        {% if sid %}<input type="hidden" name="sid" value="{{sid}}">{%endif%}
+        {% if dbg|d %}<input type="hidden" name="dbg" value="{{dbg}}">{%endif%}
+        </form>
+        {%-endif%}{# p1<pt... #}
+      {%-endif%}{# not results else (i.e. equiv to "if results") #}
+      </div>{# class="results" #}
+    <div class="notes">
+      <br>Notes...
+      <ul>
+        <li>Only the first kanji and first reading are shown for each entry.
+        </li><li>Results are sorted by kanji, then reading, then sequence
+          number, then entry id number (which is not shown).
+        </li><li>The "Seqnum" column lists the dictionary name, and the sequence
+          number of each entry.  Note that there may be multiple entries with
+          the same dictionary and sequence number that represent different edits
+          of the same base entry.
+        </li><li>The "S" column shows the status of the entry:
+          A: active, D: deleted, R: rejected.
+          If followed by an asterisk (*), the entry is unapproved and is
+          waiting for approval by an editor.
+        </li><li>
+          The "P" column indicates an entry that is marked as P (priority)
+          in EDICT.
+        </li><li>The "Gloss" column lists all glosses in all senses of the
+          entry with senses being separated with a "/" character, and glosses
+          within a sense separated with a ";" character.
+        </li></ul>
+      <hr>
+      </div>{# class="notes" #}
+  {%endblock%}

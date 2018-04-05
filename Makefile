@@ -1,6 +1,3 @@
-# $Revision$
-# $Date$
-#
 # This makefile simplifies some of the tasks needed when installing
 # or updating the jmdictdb files.  It can be used on both Unix/Linux 
 # and Windows systems, although on the latter you will need to install
@@ -132,32 +129,32 @@ LIB_FILES = jdb.py \
 	jellex.py \
 	jelparse.py \
 	jelparse_tab.py \
+	jinja.py \
 	jmcgi.py \
 	logger.py \
 	objects.py \
 	serialize.py \
-	tal.py \
 	xmlkw.py \
 	xslfmt.py \
 	edict2.xsl
 WEB_LIB	= $(addprefix $(LIB_DIR)/,$(LIB_FILES))
 
-TAL_FILES = conj.tal \
-	entr.tal \
-	edconf.tal \
-	edform.tal \
-	edhelp.tal \
-	edhelpq.tal \
-	macros.tal \
-	srchform.tal \
-        srchformq.tal \
-	srchres.tal \
-	srchsql.tal \
-	submitted.tal \
-	url_errors.tal \
-	updates.tal \
-	jbedits.tal
-WEB_TAL	= $(addprefix $(LIB_DIR)/tmpl/,$(TAL_FILES))
+TMPL_FILES = conj.jinja \
+	entr.jinja \
+	edconf.jinja \
+	edform.jinja \
+	edhelp.jinja \
+	edhelpq.jinja \
+        layout.jinja \
+	srchform.jinja \
+        srchformq.jinja \
+	srchres.jinja \
+	srchsql.jinja \
+	submitted.jinja \
+	url_errors.jinja \
+	updates.jinja \
+	jbedits.jinja
+WEB_TMPL = $(addprefix $(LIB_DIR)/tmpl/,$(TMPL_FILES))
 
 all:
 	@echo 'You must supply an explicit target with this makefile:'
@@ -355,7 +352,7 @@ loadclean:
 
 #------ Move cgi files to web server location --------------------------
 
-web:	webcgi weblib webtal webcss
+web:	webcgi weblib webtmpl webcss
 
 webcss: $(WEB_CSS)
 $(WEB_CSS): $(CSS_DIR)/%: web/%
@@ -369,8 +366,8 @@ weblib: $(WEB_LIB)
 $(WEB_LIB): $(LIB_DIR)/%: python/lib/%
 	install -pm 644 $? $@
 
-webtal: $(WEB_TAL)
-$(WEB_TAL): $(LIB_DIR)/%: python/lib/%
+webtmpl: $(WEB_TMPL)
+$(WEB_TMPL): $(LIB_DIR)/%: python/lib/%
 	install -pm 644 $? $@
 
 #------ Other ----------------------------------------------------------

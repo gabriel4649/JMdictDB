@@ -19,7 +19,8 @@
 
 import sys, re, cgi, urllib.request, urllib.parse, urllib.error, os, os.path, \
         random, time, http.cookies, datetime, time, copy
-import jdb, tal, fmt
+import jdb, fmt
+import jinja
 import logger; from logger import L
 
 def initcgi():
@@ -72,7 +73,7 @@ def parseform (readonly=False):
     Return an 8-tuple of:
         form (cgi.FieldStorage obj)
         svc (string) -- Checked svc value.
-        host (string) -- Name of host where database server is running.
+        dbg (int) -- true if "dbg" url param has true value, else 0.
         cur (dbapi cursor) -- Open cursor for database defined by 'svc'.
         sid (string) -- session.id in hexidecimal form or "".
         sess (Session inst.) -- Session for sid or None.
@@ -88,12 +89,15 @@ def parseform (readonly=False):
         check_server_status (cfg.get ('web', 'STATUS_DIR'))
 
         form = cgi.FieldStorage()
+        dbg = int (form.getfirst ('dbg') or '0')
         svc = form.getfirst ('svc') or def_svc
         #L('jmcgi').debug("parseform svc=%s" % svc)
         usid = form.getfirst ('sid') or ''    # No SID is "", not None.
         try: svc = safe (svc)
         except ValueError: errs.append ('svc=' + svc)
-        if not errs: cur = jdb.dbOpenSvc (cfg, svc)
+        if not errs:
+            try: cur = jdb.dbOpenSvc (cfg, svc)
+            except KeyError as e: errs.append ('svc=' + str(e))
         if errs: raise ValueError (';'.join (errs))
         host = jdb._extract_hostname (cur.connection)
 
@@ -121,7 +125,7 @@ def parseform (readonly=False):
                  if k not in ('loginout','username','password')
                      for v in form.getlist(k) ]
 
-        return form, svc, host, cur, sid, sess, parms, cfg
+        return form, svc, dbg, cur, sid, sess, parms, cfg
 
 def check_server_status (status_file_dir):
         location = None
@@ -483,30 +487,21 @@ def get_entrs (dbh, elist, qlist, errs, active=None, corpus=None):
             jdb.mark_seq_xrefs (dbh, raw['xref'])
         return entries
 
-def gen_page (tmpl, output=None, macros=None, xml=False, **kwds):
+def jinja_page (tmpl, output=sys.stdout, **kwds):
         httphdrs = kwds.get ('HTTP', None)
         if not httphdrs:
             if not kwds.get ('NoHTTP', None):
                 httphdrs = "Content-type: text/html\n"
         if not httphdrs: html = ''
         else: html = httphdrs + "\n"
-          # FIXME: 'tmpl' might contain a directory component containing
-          #  a dot which breaks the following.
-        if tmpl.find ('.') < 0: tmpl = tmpl + '.tal'
-        tmpldir = jdb.find_in_syspath (tmpl)
-        if tmpldir == '': tmpldir = "."
-        if not tmpldir:
-            raise IOError ("File or directory '%s' not found in sys.path" % tmpl)
-        if macros:
-            macros = tal.mktemplate (tmpldir + '/' + macros, xml=xml)
-            kwds['macros'] = macros
-        html += tal.fmt_simpletal (tmpldir + '/' + tmpl, xml=xml, **kwds)
+        env = jinja.init()
+        html += jinja.render (tmpl, kwds, env)
         if output: print (html, file=output)
         return html
 
 def err_page (errs):
         if isinstance (errs, str): errs = [errs]
-        gen_page ('tmpl/url_errors.tal', output=sys.stdout, errs=errs)
+        jinja_page ('url_errors.jinja', svc='', output=sys.stdout, errs=errs)
         sys.exit()
 
 def htmlprep (entries):
@@ -595,7 +590,7 @@ def add_audio_flag (entries):
 def add_editable_flag (entries):
 
         # This is a convenience function to avoid embedding this logic
-        # in the TAL templates.  This sets a boolean EDITABLE flag on
+        # in the page templates.  This sets a boolean EDITABLE flag on
         # each entry that says whether or not an "Edit" button should
         # be shown for the entry.  All unapproved entries, and approved
         # active or deleted entries are editable.  Rejected entries aren't.
@@ -608,7 +603,7 @@ def add_editable_flag (entries):
 def add_unreslvd_flag (entries):
 
         # This is a convenience function to avoid embedding this logic
-        # in the TAL templates.  This sets a boolean UNRESLVD flag on
+        # in the page templates.  This sets a boolean UNRESLVD flag on
         # each entry that says whether or not it has any senses that
         # have unresolved xrefs in its '_xunr' list.
 
@@ -622,7 +617,7 @@ def add_unreslvd_flag (entries):
 def add_pos_flag (entries):
 
         # This is a convenience function to avoid embedding this logic
-        # in the TAL templates.  This sets a boolean POS flag on
+        # in the page templates.  This sets a boolean POS flag on
         # each entry if any senses in the entry have a part-of-speech
         # (pos) tag that is conjugatable.  A POS tag is conjugatable
         # if its id number is an id number in jdb.KW.COPOS.  jdb.KW.COPOS
@@ -681,7 +676,7 @@ def add_filtered_xrefs (entries, rem_unap=False):
         # the xref is a "from", "to" or "bidirectional" xref.  If the
         # same xref occurs in both the s._xref and s_xrer lists, it is
         # only added once and the .direc attribute set to "bidirectional".
-        # This allows an entr display app (such as entr.py/entr.tal) to
+        # This allows an entr display app (such as entr.py/entr.jinja) to
         # display an icon for the xref direction.  This was suggested
         # on the Edict maillist by Jean-Luc Leger, 2010-07-29, Subject:
         # "Re: Database testing - call for testers - more comments"
@@ -957,6 +952,11 @@ def _freqcond (freq, nfval, nfcmp, gaval, gacmp):
         # $freq -- List of indexes from a freq option checkboxe, e.g. "ichi2".
         # $nfval -- String containing an "nf" number ("1" - "48").
         # $nfcmp -- String containing one of ">=", "=", "<=".
+        #   NOTE: The gA freq number was a from a database of Google
+        #     "hits" for various words.  The data was unreliable at the
+        #     time it was collected in the early 2000's and is of little
+        #     use anymore.  The search forms no longer support gA as a 
+        #     search criterion but the code is left in here for reference.
         # gaval -- String containing a gA number.
         # gacmp -- Same as nfcmp.
 
@@ -1015,6 +1015,8 @@ def _freqcond (freq, nfval, nfcmp, gaval, gacmp):
         if nfval:
             kwid = KW.FREQ['nf'].id
             # Build list of "where" clause parts using the requested comparison and value.
+            if nfcmp == '≤': nfcmp = '<='
+            elif nfcmp == '≥': nfcmp = '>='
             whr.append (
                 "(freq.kw=%s AND freq.value%s%s)" % (kwid, nfcmp, nfval))
 

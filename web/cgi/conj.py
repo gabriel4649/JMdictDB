@@ -30,7 +30,7 @@ import fmtxml, fmtjel, xslfmt
 def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
 
         entries = jmcgi.get_entrs (cur, form.getlist ('e'),
@@ -62,10 +62,10 @@ def main (args, opts):
 
         if errs: jmcgi.err_page (errs)
 
-        jmcgi.gen_page ('tmpl/conj.tal', macros='tmpl/macros.tal',
+        jmcgi.jinja_page ('conj.jinja',
                         sections=sections, notes=notes,
-                        svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        parms=parms, output=sys.stdout, this_page='entr.py')
+                        svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
+                        parms=parms, this_page='conj.py')
 
 def htmlify_conjs (rows):
         for row in rows:

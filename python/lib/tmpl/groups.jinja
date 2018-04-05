@@ -1,0 +1,42 @@
+{%- extends "layout.jinja" %}
+{% block title %}Entry Groups{% endblock %}
+{%- block page_content %}
+<!-- groups.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
+    <div class="results">
+      <form action="srchres.py" method="get">
+        <span class="count">{{results|length}} groups found...</span>
+      {%- if results|length > 10 %}
+        <input name="show" value="Display selected entries" type="submit">
+        <input value="Reset" type="reset">
+        {%- endif %}
+      {%- if results %}
+        <table class="reslist">
+          <tr class="heading">
+            <th> </th>
+            <th>Corpus</th>
+            <th>Entries</th>
+            <th>Name</th>
+            <th>Descr</th>
+            <th>GrpId</th>
+            </tr>
+        {%- for r in results %}
+          <tr class="resrow">
+            <td><input type="checkbox" name="grp" value="{{r.id}}"></td>
+            <td>{{r.corpus}}</td>
+            <td>{{r.cnt}}</td>
+            <td>{{r.kw}}</td>
+            <td>{{r.descr}} </td>
+            <td>{{r.id}}</td>
+            </tr>
+          {%- endfor %}
+          </table>
+        {%- endif %}{# results #}
+        {% if results|d %}<input type="submit" name="show" value="Display selected entries">{% endif %}
+        {% if results|d %}<input type="reset" name="show" value="Reset">{% endif %}
+        {% if svc|d %}<input type="hidden" name="svc" value="{{svc}}">{% endif %}
+        {% if sid|d %}<input type="hidden" name="sid" value="{{sid}}">{% endif %}
+        {% if dbg|d %}<input type="hidden" name="dbg" value="{{dbg}}">{% endif %}
+        </form>
+      </div>
+  {% endblock %}
+

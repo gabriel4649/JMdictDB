@@ -136,14 +136,19 @@ class BranchesError (ValueError): pass
 class NonLeafError (ValueError): pass
 class IsApprovedError (ValueError): pass
 
-def main():
+def main( args, opts ):
+        global Svc, Sid
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []; dbh = svc = None
         try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
-        except Exception as e: jmcgi.err_page ([str (e)])
+        except ValueError as e: jmcgi.err_page ([str (e)])
+          # Svc and Sid are used in function url() and are global in
+          # in order to avoid having to pass them through several layers 
+          # of function calls. 
+        Svc, Sid = svc, sid
+
         L('edsubmit').debug("started: userid=%s, sid=%s" % (sess and sess.userid, sess and sess.id))
         fv = form.getfirst
-        meth = fv ('meth');  dbg = fv('dbg')
           # disp values: '': User submission, 'a': Approve. 'r': Reject;
         disp = fv ('disp') or ''
         if not sess and disp:
@@ -185,18 +190,13 @@ def main():
             L('edsubmit').debug("main(): rolling back transaction due to errors")
             dbh.connection.rollback()
             jmcgi.err_page (errs)
-
-        if dbg:
-            L('edsubmit').debug("main(): rolling back transaction in dbg mode")
-            dbh.connection.rollback()
         else:
             L('edsubmit').debug("main(): doing commit")
             dbh.connection.commit()
-        if not meth: meth = 'get' if dbg else 'post'
-        jmcgi.gen_page ("tmpl/submitted.tal", macros='tmpl/macros.tal',
-                        added=added, parms=parms, meth=meth, dbg=dbg,
-                        svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        output=sys.stdout, this_page='edsubmit.py')
+        jmcgi.jinja_page ("submitted.jinja",
+                        added=added, parms=parms,
+                        svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
+                        this_page='edsubmit.py')
         L('edsubmit').debug("main(): thank you page sent")
 
 def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
@@ -640,8 +640,14 @@ def logseq (cur, seq, src):
         rs = cur.fetchall()
         return ','.join ([str(r) for r in rs])
 
+def url (entrid):
+        return '<a href="entr.py?svc=%s&sid=%s&e=%s">%s</a>' \
+                 % (Svc, Sid, entrid, entrid)
+
 def err_page (errs):
         L('edsubmit').debug("going to error page. Errors:\n%s" % '\n'.join (errs))
         jmcgi.err_page (errs)
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+        args, opts = jmcgi.args()
+        main (args, opts)

@@ -28,18 +28,14 @@ import jdb, jmcgi
 
 def main( args, opts ):
         jdb.reset_encoding (sys.stdout, 'utf-8')
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
 
-        fv = form.getfirst; fl = form.getlist
-        dbg = fv ('d'); meth = fv ('meth')
-        #qs = jmcgi.form2qs (form)
         adv_srch_allowed = jmcgi.adv_srch_allowed (cfg, sess)
-        if not meth: meth = 'get' if dbg else 'post'
-        jmcgi.gen_page ("tmpl/srchsql.tal", macros='tmpl/macros.tal',
-                        svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
+        jmcgi.jinja_page ("srchsql.jinja",
+                        svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
                         adv_srch_allowed = adv_srch_allowed, parms=parms,
-                        method=meth, output=sys.stdout, this_page='srchsql.py')
+                        this_page='srchsql.py')
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

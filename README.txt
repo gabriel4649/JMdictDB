@@ -42,6 +42,11 @@ is written for Python 3; Python 2 is no longer supported
 code repository, see INSTALLATION/Requirements below).  The 
 web pages use Python/CGI.
 
+The Python 2 to Python 3 conversion was only done recently
+(2012-05 through 2012-11 approximately) thus there are likely
+a number of conversion related errors remaining in less 
+frequently used parts of the code.
+
 Development uses Mercurial (http://selenic.com/mercurial)
 as a version control system.  The development repository is
 available for download, and the project's revision history 
@@ -162,12 +167,11 @@ earlier or later versions, but this has not been verified.
     psycopg2-2.7.3 Python-Postgresql connector.
       http://initd.org/projects/psycopg2/
       http://stickpeople.com/projects/python/win-psycopg/ (Windows)
-    simpleTAL-5.1 -- Template file processor.
-      http://www.owlfish.com/software/simpleTAL/
     ply-3.9 -- YACC'ish parser generator.
       http://www.dabeaz.com/ply/
     lxml-4.0.0 -- XML/XSLT library.  Used by xslfmt.py for doing
       xml->edict2 conversion.
+    jinja2-2.9.6 -- Template engine for generating web pages.
   Apache [2.4] (on Unix/Linux/Windows systems) or
     IIS [5.0] (on MS Windows systems)
   make -- Gnu make is required if you want to use the provided
@@ -180,8 +184,8 @@ earlier or later versions, but this has not been verified.
     character encoding conversions that are frequenly required
     when working with Japanese language text files.
 
-The principle author has Cygwin (http://cygwin.com) installed on 
-his Windows development machine and uses the make, wget, etc.,
+The principle author had Cygwin (http://cygwin.com) installed on 
+his Windows development machine and used the make, wget, etc.,
 programs provided by that package.  A smaller (though untested)
 alternative might be to use the programs provided by the Gnuwin32
 project: http://gnuwin32.sourceforge.net.

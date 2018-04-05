@@ -28,16 +28,16 @@ import jdb, jmcgi
 
 def main( args, opts ):
         jdb.reset_encoding (sys.stdout, 'utf-8')
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
 
         qs = jmcgi.form2qs (form)
         corp = reshape (sorted (jdb.KW.recs('SRC'),
                                 key=lambda x:x.kw.lower()), 10)
-        jmcgi.gen_page ("tmpl/srchformq.tal", macros='tmpl/macros.tal',
+        jmcgi.jinja_page ("srchformq.jinja",
                         src=corp, parms=parms,
-                        svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        method='get', output=sys.stdout, this_page='srchformq.py')
+                        svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
+                        this_page='srchformq.py')
 
 def reshape (array, ncols, default=None):
         result = []

@@ -1,0 +1,302 @@
+{#- Search for JMdictDB entries
+    Context variables:
+      svc, sid, dbg -- See layout.jinja.
+
+.  -#}
+
+{%- extends "layout.jinja" %}
+{%- block title %}Edit Entry{% endblock %}
+{%- block page_scripts %}
+  <script type="text/javascript">
+    function sf(){document.getElementById('kanj').focus();}
+    </script>
+  {% endblock %}
+{%- block body_attrs %} class="srchfrm" onload="sf()"{%endblock%}
+
+{%- block page_content %}
+  {%- for e in entrs %}
+    
+      {#- This form requires a modified form of Entr object.  It has three
+      additional attributes: ktxt, rtxt, stxt.  The values of these are
+      JEL formatted text strings that will be used to intialize the Kanji
+      Readings, and Senses boxes on this form.  The native ._kanj, ._rng,
+      and ._sens attributes of the Entr object are ignored.
+
+      If an entry does not have an id number, is is treated as a new entry.
+      It can have other info such as a sense element with PoS list, which
+      will set the default text in the appropriate fields.
+
+      We also accept a parameter, "extra" that contains any of the items,
+      "ref", "comments", "name", "email" which are used to initialize the
+      input boxes of the same names.
+
+      Tab order is set to traverse the main text boxes first (1200-1219)
+      advanced (editor-only) text boxes (1220-1239), submission buttons
+      (1240-1249), tag help links (1250-1269), text input help links
+      (1270-1289), everything else.  Tabindex numbers are above 1000
+      because the login controls, which are defined in a different file
+      and are used by all pages, use the range 990-999.  For discussion
+      see the edict email list, 2011-09-07, "Entry Edit Form: Usability
+      improvements".  #}
+    
+    <form action="edconf.py" name="edconf" method="{{'get' if dbg|d else 'post'}}">
+      <table class="form">
+        <tbody>
+          <tr>
+            <td colspan="3">
+            {%- if e.id %}
+              <h4>Edit an existing entry</h4>
+              Make corrections to this entry by changing the information in
+              the text boxes below.
+            {%- else %}
+              <h4>Enter a new entry</h4>
+              Enter a new Japanese dictionary entry using the text boxes below.
+            {%- endif %}
+              <br>Please be sure you are familiar with the 
+              <a href="http://www.edrdg.org/wiki/index.php/Editorial_policy" tabindex="1270">
+                JMdict/EDICT Editorial Policy</a>.
+              First-time users should read the
+              <a href="edhelpq.py?svc={{svc}}&amp;sid={{sid}}" tabindex="1271">quick overview</a>
+              before proceeding.
+              For detailed help on the information and syntax required in the various
+              fields, please use the "help" links beside each field, or view the
+              <a href="edhelp.py?svc={{svc}}&amp;sid={{sid}}" tabindex="1272">full help file</a>.
+              <p>
+              </td>
+            </tr>
+          <tr>
+            <td> </td>
+            <td>
+              <table class="entrinfo" width="100%">
+              {%- if e.id %} {# I.e., this is an existing entry. #}
+                <tr>
+                  <td colspan="2">Status: {{e.stat|TALdescr('STAT') if e.stat else ''}}
+                    {%- if e.unap %}<span class="pend"> (Unapproved)</span>{% endif %}</td>
+                  <td colspan="2">Id: 
+                    <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;e={{e.id}}">{{e.id}}</a>
+                      {%- if e.dfrm %}
+                      (parent: {# -#}
+                      <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;e={{e.dfrm}}">{{e.dfrm}}</a>)
+                        {%- endif %}
+                    </td>
+                  </tr>
+                <tr>
+                  <td colspan="2">Corpus: {# -#}
+                    {{e.src|TALabbr('SRC')|safe if e.src else ''}} {# -#}
+                    </td>
+                  <td>Seq:
+                  {%- if e.seq %}
+                    <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;q={{e.seq}}.{{e.src}}">{{e.seq}}</a>
+                    {%- endif -%}
+                    </td>
+                  </tr>
+                {%- endif %}{# e.id #}
+              {%- if e.srcnote %}
+                <tr><td colspan="5">Src note: {{e.srcnote}}</td></tr>
+                {%- endif %}
+              {%- if e.notes %}
+                <tr><td colspan="5">Entr note: {{e.notes}}</td></tr>
+                {%- endif %}
+              {%- if e._grp %}
+                <tr><td colspan="5">Groups: {{e|TALgrps}}</td></tr>
+                {%- endif %}
+                </table>
+              </td>
+            </tr>
+
+          {%- if not e.id %} {# I.e., this is a new entry. #}
+          <tr>
+            <td>Corpus: <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#corpus" tabindex="1273">help</a></td>
+            <td colspan="2">
+              <!-- #1 src parameter when new entry and user is editor (or non-ed w corp option). -->
+            {%- if not e.NOCORPOPT or is_editor or not e.src %}
+              {#- Show a corpus select control if this is a new entry, or if use is editor.
+                  Regular users are only allowed to change corpus for existing entries if
+                  NOCORPOPT is false. #}
+              <select name="src" tabindex="1201">
+                {%- if not e.src %}
+                <option name="src" value=0> </option>
+                {%- endif %}
+                {%- for s in srcs %}
+                <option name="src" value="{{s.id}}" {{(s.src is defined and s.src==e.src)|a('selected')}}>{{s.kw}}</option>
+                  {%- endfor %}
+                </select>
+            {%- else %}{# [not] not e.NOCORPOPT or ... #}
+              {{e.src|TALabbr('SRC')}}
+              <!-- #2 src parameter when new entry and user is not editor w/o corp option. -->
+              <input type="hidden" name="src" value="{{e.src}}">
+              {%- endif %}
+              </td>
+            </tr>
+            {%- endif %}{# not e.id  #}
+          <tr>
+            <td>Kanji: <br><a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kanji" tabindex="1274">help</a></td>
+            <td><textarea id="kanj" name="kanj" wrap="physical" cols="60" rows="3" tabindex="1202" style="width:100%;">{{e.ktxt}}</textarea></td>
+            <td> </td>
+            <td>
+              Tags Help: <br>
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_kinf" tabindex="1253">kanji info</a><br>
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_freq" tabindex="1254">frequency info</a>
+              </td></tr>
+          <tr>
+            <td>Reading(s): <br><a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#readings" tabindex="1275">help</a></td>
+            <td><textarea name="rdng" wrap="physical" cols="60" rows="3" tabindex="1203" style="width:100%;">{{e.rtxt}}</textarea></td>
+            <td> </td>
+            <td>
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_rinf" tabindex="1255">reading info</a><br>
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_freq" tabindex="1256">frequency info</a><br>
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#syn_restr" tabindex="1257">restrictions</a>
+              </td></tr>
+          <tr>
+            <td>Meaning(s): <br><a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#senses" tabindex="1276">help</a></td>
+            <td><textarea name="sens" wrap="physical" cols="60" rows="6" tabindex="1204" style="width:100%;">{{e.stxt}}</textarea></td>
+            <td> </td>
+            <td>
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_pos" tabindex="1258">part-of-speech</a><br>
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_misc" tabindex="1259">miscellaneous</a><br>
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_fld" tabindex="1260">field/domain</a><br>
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_dial" tabindex="1261">dialect</a><br>
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#syn_lsrc" tabindex="1262">source-language</a><br>
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#syn_ginf" tabindex="1263">gloss info</a><br>
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#syn_restr" tabindex="1264">restrictions</a><br>
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#syn_xref" tabindex="1265">cross-references</a><br>
+              </td></tr>
+        {%- if e.id %}
+          <tr>
+            <td> </td>
+            <td><input type="checkbox" name="delete" {{e.ISDELETE|a('checked')}}> 
+              This entry should be deleted.  (Please justify in Comments and References boxes.)
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#delete" tabindex="1277">help</a>
+              </td>
+            <td> </td>
+            <td> </td>
+            </tr>
+            {%- endif %}
+        {%- if 0 %} {# Disabled for now, see IS-143. #}
+          <tr>
+            <td> </td>
+            <td><input type="checkbox" name="makecopy" {{makecopy|a('checked')}}>  {# Treat as new entry. #}
+              &nbsp; <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#makecopy" tabindex="1278">help</a>
+              </td>
+            <td> </td>
+            <td> </td>
+            </tr>
+            {%- endif %}
+          <tr>
+            <td>References: <br><a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#references" tabindex="1279">help</a></td>
+            <td><textarea name="reference" wrap="physical" cols="60" rows="6" tabindex="1205" style="width:100%;">{{extra.ref|d}}</textarea></td>
+            <td> </td>
+            <td> </td>
+            </tr>
+          <tr>
+            <td>Comments: <br><a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#comments" tabindex="1280">help</a></td>
+            <td><textarea name="comment" wrap="physical" cols="60" rows="6" tabindex="1206" style="width:100%;">{{extra.comment|d}}</textarea></td>
+            <td> </td>
+            <td> </td>
+            </tr>
+          <tr>
+            <td>Name: <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#name" tabindex="1281">help</a></td>
+            <td><input type="text" name="name" size="30" style="width:100%;" value="{{extra.name|d or session.fullname|d}}" tabindex="1207"></td>
+            <td> </td>
+            <td> </td>
+            </tr>
+          <tr>
+            <td>Email: <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#email" tabindex="1282">help</a></td>
+            <td><input type="text" name="email" size="30" style="width:100%;" value="{{extra.email|d or session.email|d}}" tabindex="1208"></td>
+            <td> </td>
+            <td> </td>
+            </tr>
+          <tr>
+            <td> </td>
+            <td>
+              <input type="submit" value=" Next " tabindex="1242"> &nbsp;
+              {%- if is_editor %}
+              &nbsp;&nbsp;
+              Action: <select name="disp" tabindex="1241">
+                <option name="disp" value="">Submit</option>
+                <option name="disp" value="a" selected="1">Approve</option>
+                <option name="disp" value="r">Reject</option>
+                </select>
+              <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#action" tabindex="1283">help</a>
+                {%- endif %}{# is editor #}
+              {%+ if svc %}<input type="hidden" name="svc" value="{{svc}}">{% endif %}
+              {%+ if sid %}<input type="hidden" name="sid" value="{{sid}}">{% endif %}
+              {%+ if e.id %}<input type="hidden" name="id" value="{{e.id}}">{% endif %}
+              {%+ if e.id %}<input type="hidden" name="stat" value="{{e.stat}}">{% endif %}
+              {%+ if dbg %}<input type="hidden" name="dbg" value="{{dbg}}">{% endif %}
+              {%- if not session.userid|d %}
+                {#- #3 src parameter when existing entry and user is not editor. #}
+                {#-FIXME? shouldn't this also be generated if NOCORPOPT is false?
+                   If select box above is offered, then its value should surely
+                   be returned?  #}
+              {%+ if e.id %}<input type="hidden" name="src" value="{{e.src}}">{% endif %}
+              <input type="hidden" name="seq" value="{{e.seq}}">
+              <input type="hidden" name="srcnote" value="{{e.srcnote}}">
+              <input type="hidden" name="notes" value="{{e.notes}}">
+              {% endif %}{# not session.userid #}
+              <br><span class="notes">
+                Clicking <b>Next</b> will show you a confirmation page from which you can submit your changes.
+                </span>
+              </td>
+            <td> </td>
+            <td> </td>
+            </tr>
+
+        {%- if session.userid|d %}
+          <tr>
+            <td colspan="4">
+              <br>
+              The following may require changing in rare circumstances...
+              </td>
+            </tr>
+          {%- if e.id %}
+          <tr>
+            <td>Corpus: <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#corpus" tabindex="1284">help</a></td>
+            <td>
+              <select name="src" tabindex="1220">
+              {%- for s in srcs %}
+                {# #4 src parameter when existing entry and user is editor. #}
+                <option name="src" {{(s.id==e.src)|a('selected')}} value="{{s.id}}">{{s.kw}}</option>
+                {%- endfor %}
+                </select>
+              </td>
+            <td> </td>
+            <td> </td>
+            </tr>
+            {%- endif %}{# e.id #}
+          <tr>
+            <td>Seq: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#seq_ed" tabindex="1285">help</a></td>
+            <td><input type="text" name="seq" size="8" value="{{e.seq}}" tabindex="1221"></td>
+            <td> </td>
+            <td> </td>
+            </tr>
+          <tr>
+            <td>Src note: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#srcnote_ed" tabindex="1286">help</a></td>
+            <td>
+              <input type="text" name="srcnote" size="50" style="width:100%;" value="{{e.srcnote}}" tabindex="1223">
+              </td>
+            <td> </td>
+            <td> </td>
+            </tr>
+          <tr>
+            <td>Entr note: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#entrnote_ed" tabindex="1287">help</a></td>
+            <td>
+              <textarea name="notes" wrap="physical" width="100%" cols="60" rows="2" tabindex="1224" style="width:100%;">{{e.notes}}</textarea>
+              </td>
+            <td> </td>
+            <td> </td>
+            </tr>
+          <tr>
+            <td>Groups: <a class="helplink" target="edhelp" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#groups_ed" tabindex="1288">help</a></td>
+            <td>
+              <textarea name="grp" wrap="physical" width="100%" cols="60" rows="2" tabindex="1226" style="width:100%;">{{e|TALgrps}}</textarea>
+              </td>
+            <td> </td>
+            <td> </td>
+            </tr>
+          {%- endif %}{# session.userid #}
+          </tbody>
+        </table>
+      </form>
+    {% endfor %}
+  {% endblock %}

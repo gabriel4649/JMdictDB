@@ -18,9 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11]);
-
 import sys, os, os.path, random, re, datetime, operator, configparser
 from time import time
 from collections import defaultdict
@@ -869,7 +866,7 @@ def freq2txts (freqs, tt=False):
         for f in freqs:
             kwstr, descr = KW.FREQ[f.kw].kw, KW.FREQ[f.kw].descr
             fstr = ('%s%02d' if kwstr=='nf' else '%s%d') % (kwstr, f.value)
-            if tt: fstr = '<span title="%s">%s</span>' % (descr, fstr)
+            if tt: fstr = '<span class="abbr" title="%s">%s</span>' % (descr, fstr)
             if fstr not in flist: flist.append (fstr)
         return sorted (flist)
 
@@ -1808,7 +1805,8 @@ def is_p (entr):
         object 'entr' meets the wwwjdic criteria for a "P"
         (popular) marker.  Currently true if any of the entry's
         kanji or readings have a FREQ tag of "ichi1", "gai1",
-        "spec1", or "news1".
+        "spec1", "spec2" or "news1".
+        Ref: http://www.edrdg.org/jmdict/edict_doc.html#IREF05 (sec. E)
         """
         for r in getattr (entr, '_rdng', []):
             for f in getattr (r, '_freq', []):
@@ -1823,13 +1821,11 @@ def is_pj (kr):
         Return True if the Kanj or Rdng object, 'kr', meets the
         wwwjdic criteria for a "P" (popular) marker.  Currently
         true if the object has a FREQ tag of "ichi1", "gai1",
-        "news1", "spec1".
+        "news1", "spec1" or "spec2".
         """
-        #FIXME: I believe J.B. posted a note to the Edict list
-        #  saying that spec2 -> P.
-
         for f in getattr (kr, '_freq', []):
-            if f.kw in (1,2,4,7) and f.value == 1: return True
+              # ichi=1, gai=2, spec=4, 7=news
+            if f.kw==4 or (f.kw in (1,2,7) and f.value==1): return True
         return False
 
 #-------------------------------------------------------------------

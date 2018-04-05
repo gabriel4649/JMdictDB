@@ -29,11 +29,10 @@ import jdb, jmcgi, jelparse, jellex, serialize, fmt
 def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []; chklist = {}
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
 
         fv = form.getfirst; fl = form.getlist
-        dbg = fv ('dbg'); meth = fv ('meth')
         KW = jdb.KW
 
           # 'eid' will be an integer if we are editing an existing
@@ -41,8 +40,12 @@ def main (args, opts):
         pentr = None
         eid = url_int ('id', form, errs)
         if eid:
+             # Get the parent entry of the edited entry.  This is what the
+             # edited entry will be diff'd against for the history record. 
+             # It is also the entry that will be pointed to by the edited
+             # entry's 'dfrm' field.
             pentr = jdb.entrList (cur, None, [eid])
-              # FIXME: Need a better message with more explanation.
+              #FIXME: Need a better message with more explanation.
             if not pentr: errs.append ("The entry you are editing has been deleted.")
             else: pentr = pentr[0]
 
@@ -107,14 +110,14 @@ def main (args, opts):
           # (forward xrefs) if rev not true, or the Xref objects
           # on the entr argument's ._xrer list (reverse xrefs) if
           # rev is true).  This does not remove them from the entry
-          # and is done simply for convinience so we have augment_xrefs()
-          # process them all in one shot.  augment_xrefs adds an
-          # attribute, .TARG, to each Xref object whose value is
-          # an Entr object for the entry the xref points to if rev
-          # is not true, or the entry the xref is from, if rev is
-          # true.  These Entr objects can be used to display info
-          # about the xref target or source such as seq#, reading
-          # or kanji.  See jdb.augment_xrefs() for details.
+          # and is done simply for convenience so we can have 
+          # augment_xrefs() process them all in one shot. 
+          # augment_xrefs add an attribute, .TARG, to each Xref
+          # object whose value is an Entr object for the entry the
+          # xref points to if rev is not true, or the entry the xref
+          # is from, if rev is true.  These Entr objects can be used
+          # to display info about the xref target or source such as
+          # seq#, reading or kanji.  See jdb.augment_xrefs() for details.
           # Note that <xrefs> and <xrers> below contain references 
           # to the xrefs on the entries; thus the augmentation done
           # by jdb.augment_xrefs() alters the xref objects on those 
@@ -206,17 +209,17 @@ def main (args, opts):
             pseq = pentr.seq if pentr else None
             check_for_warnings (cur, entr, pseq, chklist)
 
-        entrs = [entr]
-        jmcgi.add_filtered_xrefs (entrs, rem_unap=False)
-        serialized = serialize.serialize (entrs)
-        jmcgi.htmlprep (entrs)
+          # The following all expect a list of entries.
+        jmcgi.add_filtered_xrefs ([entr], rem_unap=False)
+        serialized = serialize.serialize ([entr])
+        jmcgi.htmlprep ([entr])
 
-        if not meth: meth = 'get' if dbg else 'post'
-        jmcgi.gen_page ("tmpl/edconf.tal", macros='tmpl/macros.tal',
+        entrs = [[entr, None]]  # Package 'entr' as expected by entr.jinja.
+        jmcgi.jinja_page ("edconf.jinja",
                         entries=entrs, serialized=serialized,
-                        chklist=chklist, disp=disp, parms=parms, dbg=dbg,
-                        svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                        method=meth, output=sys.stdout, this_page='edconf.py')
+                        chklist=chklist, disp=disp, parms=parms,
+                        svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
+                        this_page='edconf.py')
 
 def realign_xrers (entr, pentr):
         # This function mutates 'entr' to remove invalid reverse

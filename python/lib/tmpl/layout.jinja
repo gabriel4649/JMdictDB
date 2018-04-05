@@ -1,0 +1,139 @@
+{#- Base page template.
+    This provides the basic layout of all JMdictDB pages by providing a 
+    uniform header and footer.
+
+    Overridable blocks:
+      title -- Text used for visible page headline and head.title element.
+      page_scripts -- Additional, page-specific scripts that will ho into 
+        the <head> element.
+      body_attrs -- Attributes for the pages's <body> element.
+      page_content -- Page contents.
+    Context variables:
+      *svc -- Token that identifies the database to use.
+      *cfg.web.CONTACT_EMAIL -- Email address of site admin.
+      sid -- Session ID number.
+      dbg -- Boolean for generating page in debug mode.
+      this_page -- Name of cgi script providing page (e.g., "entr.py")
+        If not provided the login fields will not be displayed.  (This
+        value and that of "parms" are used to return to the current page
+        after a login/logout.)
+      parms --
+      session -- Session object if user is logged in.
+      ----
+      [*] Denotes a context variable that must be supplied or template
+       rendering may fail with an UndefinedError exception.  Variables
+       not so marked are optional.
+
+    Notes (these apply in general to all the templates):
+    - TALxxxx and other non-Jinja filters are definded in python/lib/jinja.py.
+    - The constructs like "{ # - # }" (but without the embedded whitespace)
+      are used below to remove whitespace.
+-#}
+<!DOCTYPE html>
+<!-- layout.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link rel="stylesheet" type="text/css" href="../jmdict.css">
+  <script type="text/javascript">
+    function toggle_visibility(cls) {
+      var elist = document.getElementsByClassName(cls);
+      for (var i=0; i<elist.length; i++) {
+        var s = elist[i].style;
+        s.display = s.display==='none' ? '' : 'none'; } }
+    </script>
+  {% block page_scripts %}{%endblock%}
+  <title>JMdictDB - {%block title%}{%endblock%}</title>
+  </head>
+<body {%- block body_attrs %}{%endblock%}>
+  <div class="jmd-header">
+    <table width="100%">
+      <tbody class="hlogin">
+        <tr>
+          <td>
+            <h3>JMdictDB - Japanese Dictionary Database</h3>
+            <h2>{{self.title()}}</h2>
+                 {#- self.title() refers back to the "block title" jinja statement. #}
+            <a href="srchformq.py?svc={{svc}}&amp;sid={{sid|d}}">       Search</a> |
+            <a href="srchform.py?svc={{svc}}&amp;sid={{sid|d}}">        Advanced Search</a> |
+            <a href="edform.py?svc={{svc}}&amp;sid={{sid|d}}">          New Entry</a> |
+            <a href="updates.py?svc={{svc}}&amp;sid={{sid|d}}&amp;i=1"> Submissions</a> |
+            <a href="edhelp.py?svc={{svc}}&amp;sid={{sid|d}}">          Help</a>
+            </td>
+          <td align="right" rowspan="1">
+          {%- if this_page|d %} {# Supress the login form is 'this_page' is undefined or false. #}
+            <form name="entrauth" method="post" action="{{this_page}}">
+            {%- for p in parms|d([]) %}
+              <input type="hidden" name="{{p[0]}}" value="{{p[1]}}">
+              {%- endfor %}
+            {%- if session|d %}
+              Logged in: {{session.fullname}}
+              <input type="submit" name="loginout" value="logout">
+            {%- else %}{# [not] session #}
+              <table align="right">
+                <tbody>
+                  <tr><td colspan="3">Login for registered editors</td></tr>
+                  <tr>
+                    <td>Username:</td>
+                    <td><input type="text" name="username" size="8" tabindex="991"></td>
+                    <td rowspan="2"><input type="submit" name="loginout" value="login" tabindex="993"></td>
+                    </tr>
+                  <tr>
+                    <td>Password:</td>
+                    <td><input type="password" name="password" size="8" tabindex="992">
+                    </tr>
+                  </tbody>
+                </table>
+              {%- endif %}{# session #}
+              </form>
+            {%- endif %}{# this_page #}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div> <!--class="jmd-header"-->
+
+  <div class="jmd-content">
+    {%- block page_content %}{% endblock %}
+    </div> <!--class="jmd-content"-->
+
+  <div class="jmd-footer">
+    <table width="100%">
+      <tbody class="navlinks">
+        <tr>
+          <td>
+            <a href="srchformq.py?svc={{svc}}&amp;sid={{sid|d}}">       Search</a> |
+            <a href="srchform.py?svc={{svc}}&amp;sid={{sid|d}}">        Advanced Search</a> |
+            <a href="edform.py?svc={{svc}}&amp;sid={{sid|d}}">          New Entry</a> |
+            <a href="updates.py?svc={{svc}}&amp;sid={{sid|d}}&amp;i=1"> Submissions</a> |
+            <a href="edhelp.py?svc={{svc}}&amp;sid={{sid|d}}">          Help</a>
+            </td>
+          <td align="right">{% if svc %}DB={{svc}}{% endif %}</td>
+          </tr>
+        </tbody>
+      <tbody class="foottxt">
+        <tr><td colspan="2"><hr width="100%"></td></tr>
+      {%- if cfg|d and cfg.web.CONTACT_EMAIL|d %}
+        <tr>
+          <td colspan="2">
+            If you have questions about, problems using, or suggestions
+            for improving this page, please send email to
+            <a href="mailto:{{cfg.web.CONTACT_EMAIL}}">{{cfg.web.CONTACT_EMAIL}}</a>.
+            </td>
+          </tr>
+        {%- endif %}
+        <tr>
+          <td colspan="2">
+            JMdictDB is an open-source Postgresql database and Python API
+            for managing Japanese dictionary data.  Please see 
+            <a href="http://edrdg.org/~smg/">http://edrdg.org/~smg/</a>
+            for more information.  It was developed by Stuart McGraw 
+            (<a href="mailto:jmdictdb@mtneva.com">jmdictdb@mtneva.com</a> / 
+            <a href="http://mtneva.com">http://mtneva.com</a>).
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div> <!--class="jmd-footer"-->
+  </body>
+</html>

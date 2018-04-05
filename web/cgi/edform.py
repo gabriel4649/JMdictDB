@@ -116,7 +116,7 @@ import jdb, jmcgi, fmtjel, serialize, edparse
 def main (args, opts):
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []; entrs =[]
-        try: form, svc, host, cur, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, cur, sid, sess, parms, cfg = jmcgi.parseform()
         except Exception as e: jmcgi.err_page ([str (e)])
 
         fv = form.getfirst; fl = form.getlist
@@ -187,11 +187,10 @@ def main (args, opts):
 
         if errs: jmcgi.err_page (errs)
 
-        if not meth: meth = 'get' if dbg else 'post'
-        jmcgi.gen_page ('tmpl/edform.tal', macros='tmpl/macros.tal', parms=parms,
-                         entrs=entrs, srcs=srcs, is_editor=is_editor, dbg=dbg,
-                         svc=svc, host=host, sid=sid, session=sess, cfg=cfg,
-                         method=meth, output=sys.stdout, this_page='edform.py')
+        jmcgi.jinja_page ('edform.jinja', parms=parms, extra={},
+                         entrs=entrs, srcs=srcs, is_editor=is_editor,
+                         svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
+                         this_page='edform.py')
 
 def remove_freqs (entr):
         for r in getattr (entr, '_rdng', []): r._freq = []

@@ -130,6 +130,7 @@ __version__ = ('$Revision$'[11:-2],
 import sys, os, datetime
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import logger; from logger import L; logger.enable()
+
 import jdb, jmcgi, fmtxml, serialize
 
 class BranchesError (ValueError): pass
@@ -140,7 +141,7 @@ def main( args, opts ):
         global Svc, Sid
         jdb.reset_encoding (sys.stdout, 'utf-8')
         errs = []; dbh = svc = None
-        try: form, svc, host, dbh, sid, sess, parms, cfg = jmcgi.parseform()
+        try: form, svc, dbg, dbh, sid, sess, parms, cfg = jmcgi.parseform()
         except ValueError as e: jmcgi.err_page ([str (e)])
           # Svc and Sid are used in function url() and are global in
           # in order to avoid having to pass them through several layers 
@@ -414,7 +415,7 @@ def approve (dbh, entr, edtree, errs):
                 errs.append ("Edits have been made to this entry.  "\
                     "You need to reject those edits before you can approve this entry.  "\
                     "The id numbers are: %s"\
-                    % ', '.join ("id="+str(x) for x in leafsn([e.args[0]])))
+                    % ', '.join ("id="+url(x) for x in leafsn([e.args[0]])))
                 return
             except BranchesError as e:
                 L('edsubmit').debug("approve(): BranchesError")
@@ -422,7 +423,7 @@ def approve (dbh, entr, edtree, errs):
                     "the predecessor entries of this one, and this "\
                     "entry cannot be approved until those are rejected."\
                     "The id numbers are: %s"\
-                    % ', '.join ("id="+str(x) for x in leafsn(e.args[0])))
+                    % ', '.join ("id="+url(x) for x in leafsn(e.args[0])))
                 return
           # Write the approved entry to the database...
         entr.dfrm = None
@@ -448,7 +449,7 @@ def reject (dbh, entr, edtree, errs, rejcnt=None):
             errs.append ("Edits have been made to this entry.  "\
                     "To reject entries, you must reject the version(s) most recently edited, "\
                     "which are: %s"\
-                    % ', '.join ("id="+str(x) for x in leafsn([e.args[0]])))
+                    % ', '.join ("id="+url(x) for x in leafsn([e.args[0]])))
             return
         except IsApprovedError as e:
             L('edsubmit').debug("reject(): IsApprovedrror")

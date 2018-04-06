@@ -198,7 +198,7 @@ def main( args, opts ):
                         added=added, parms=parms,
                         svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
                         this_page='edsubmit.py')
-        L('edsubmit').debug("main(): thank you page sent")
+        L('edsubmit').debug("main(): thank you page sent, exiting normally")
 
 def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
         # Add a changed entry, 'entr', to the jmdictdb database accessed
@@ -413,15 +413,15 @@ def approve (dbh, entr, edtree, errs):
             except NonLeafError as e:
                 L('edsubmit').debug("approve(): NonLeafError")
                 errs.append ("Edits have been made to this entry.  "\
-                    "You need to reject those edits before you can approve this entry.  "\
-                    "The id numbers are: %s"\
+                    "You need to reject those edits before you can approve "\
+                    "this entry.  The id numbers are: %s"\
                     % ', '.join ("id="+url(x) for x in leafsn([e.args[0]])))
                 return
             except BranchesError as e:
                 L('edsubmit').debug("approve(): BranchesError")
                 errs.append ("There are other edits pending on some of "\
                     "the predecessor entries of this one, and this "\
-                    "entry cannot be approved until those are rejected."\
+                    "entry cannot be approved until those are rejected.  "\
                     "The id numbers are: %s"\
                     % ', '.join ("id="+url(x) for x in leafsn(e.args[0])))
                 return

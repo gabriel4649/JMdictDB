@@ -31,8 +31,9 @@ def log_config (level="debug", filename=None):
           messages will be appended. 
         """
 
-        if filename: msgdest = {'filename': filename }
-        else:        msgdest = {'stream': sys.stderr}
+        if filename and os.access (filename, os.W_OK):
+            msgdest = {'filename': filename }
+        else: msgdest = {'stream': sys.stderr}
         lvl = logging.getLevelName (level.upper())
         if not isinstance (lvl, int): raise ValueError ("bad 'level' parameter: %s" % level)
         logging.basicConfig (
@@ -42,11 +43,6 @@ def log_config (level="debug", filename=None):
               # When both "stream" and "filename" are present and non-None, 
               # "filename" takes precedence according to 
             **msgdest)
-
-          # Set the logging levels for the simpleTAL package to a minimum 
-          # of WARNING (their DEBUG messages are voluminous.)
-        for pkg in ("simpleTAL", "simpleTALES"):
-            logging.getLogger (pkg).setLevel (max (lvl, logging.WARNING))
 
 def handler( ex_cls, ex, tb ):
           # 'errid' not used yet but will be in future.

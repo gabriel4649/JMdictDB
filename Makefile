@@ -145,13 +145,13 @@ TMPL_FILES = conj.jinja \
 	edform.jinja \
 	edhelp.jinja \
 	edhelpq.jinja \
+	error.jinja \
         layout.jinja \
 	srchform.jinja \
         srchformq.jinja \
 	srchres.jinja \
 	srchsql.jinja \
 	submitted.jinja \
-	url_errors.jinja \
 	updates.jinja \
 	jbedits.jinja
 WEB_TMPL = $(addprefix $(LIB_DIR)/tmpl/,$(TMPL_FILES))

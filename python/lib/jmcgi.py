@@ -627,9 +627,12 @@ def add_pos_flag (entries):
         # view 'vcopos' in pg/conj.sql.
         # The .POS attribute set by this function is used to determine
         # if a "Conjugations" link should be shown for the entry.
+        # We exclude nouns and na-adjectives even though the conjugator
+        # will happily conjugate them as だ-predicates.
 
         KW = jdb.KW
-        conjugatable_poslist = [x.id for x in jdb.KW.recs('COPOS')]
+        conjugatable_poslist = [x.id for x in jdb.KW.recs('COPOS')
+                                if x.kw not in ('n', 'adj-na')]
         for e in entries:
             e.POS = False
             for s in e._sens:

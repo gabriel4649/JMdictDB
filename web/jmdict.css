@@ -20,7 +20,7 @@
 .submitter_name {font-weight: 700}
 .fakelink       {color: #0000EE; /* same as a link's default color. */
                  text-decoration: underline; cursor: pointer; }
-.abbr           {font-style: italic; color: #008000; cursor: pointer; }
+.abbr           {font-style: italic; color: #008000; cursor: help; }
 .kddetails,.kdrefs,.kdenc
                 {border-style: none; border-width: thin; }
                 {text-align: left; }

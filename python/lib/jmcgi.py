@@ -499,9 +499,9 @@ def jinja_page (tmpl, output=sys.stdout, **kwds):
         if output: print (html, file=output)
         return html
 
-def err_page (errs):
+def err_page (errs, errid=None):
         if isinstance (errs, str): errs = [errs]
-        jinja_page ('url_errors.jinja', svc='', output=sys.stdout, errs=errs)
+        jinja_page ('error.jinja', svc='', errs=errs, errid=errid)
         sys.exit()
 
 def htmlprep (entries):

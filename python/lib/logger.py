@@ -22,6 +22,10 @@
 
 import sys, logging, traceback, os, datetime
 
+# The function L() is a convenience function provided to importers
+# as a consise way to write logging calls.  It is used like:
+#   L('logger_name').info("log message...")
+
 L = logging.getLogger;
 
 def log_config (level="debug", filename=None):
@@ -33,7 +37,6 @@ def log_config (level="debug", filename=None):
           time this function is called, a logging message will be written
           to stderr to that effect and further logging disabled.
         """
-
         msgdest, disable = {'stream': sys.stderr}, False
         if filename:
             if os.access (filename, os.W_OK):
@@ -52,7 +55,10 @@ def log_config (level="debug", filename=None):
                 msgdest = {'handlers':
                            [logging.FileHandler(filename,'a','utf-8')] }
             else: disable = True
-        lvl = logging.getLevelName (level.upper())
+          # Allow logging levl to be either a number or a string ("debug", 
+          # "error", etc: see the Python Logging module documentation.) 
+        try: lvl = int(level)
+        except ValueError: lvl = logging.getLevelName (level.upper())
         if not isinstance (lvl, int):
             raise ValueError ("bad 'level' parameter: %s" % level)
         logging.basicConfig (
@@ -63,23 +69,19 @@ def log_config (level="debug", filename=None):
               # "filename" takes precedence according to 
             **msgdest)
         if disable:
-            L('logger').error('Unable to write to logging file: %s' % filename)
+            cwd = os.getcwd()
+            L('logger').error(('Unable to write to logging file: %s'
+                               '\n  (cwd: %s)') % (filename, cwd))
             logging.disable (logging.CRITICAL)
 
 def handler( ex_cls, ex, tb ):
         import jmcgi
         errid = datetime.datetime.now().strftime("%y%m%d-%H%M%S")\
                 + '-' + str(os.getpid())
-        logging.critical( '\n{0}: {1}'.format(ex_cls, ex) )
-        logging.critical( ''.join( traceback.format_tb(tb)) )
-        jmcgi.err_page( [str(ex)] )
+        logging.critical( '{0}: {1}'.format(ex_cls, ex) )
+        logging.critical( '\n' + ''.join( traceback.format_tb(tb)) )
+        jmcgi.err_page( [str(ex)], errid )
 
 def enable(): sys.excepthook = handler
 
-
-# The function L() is exported to provide callers with a consise way to
-# write logging calls.  It is used like:
-#
-#   L('logger_name').info("log message...")
-#  
 __all__ = ['log_config', 'L']

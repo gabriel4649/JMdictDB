@@ -509,49 +509,67 @@ usual during loading.
    to serve the cgi files directly from the development directory
    making this step unnecessary.
 
-11. When the cgi files are executed by the web server, they
-   read the file python/lib/pg_service.conf (or its copy as
-   installed in the web server lib directory) to determine
-   the database name and login credentials to use when
-   connecting to the database.
- 
-   In the ./python/lib directory, copy the file, pg_service.sample,
-   to pg_service.conf.  Edit the latter file and set the user
-   and password values appropriately for your database. 
-   You can also delete these lines and Postgresql will use
-   environment values.  If the file is on a *nix system, make
-   sure it is saved with *nix line ending ("\n") and not Windows
-   line endings ("\r\n").  See the Postgresql docs for more 
-   info on the many ways that it offers to set the connection
-   credentials.
+11. Create a config.ini file in the cgi directory where the 
+   lib files were copied based the python/lib/config.ini.sample
+   file and adjusted for your installation.  It should be readable
+   by the web server process and not readable by world (it will
+   contain database passwords.)
 
-   Copy this file webserver's cgi lib directory (the Makefile 
-   does not copy this file for you).  The file must be readable
-   by the user that the web server runs as.  
+   Create a log file as described in the OPERATION section below.
+   It should be writable by the the web server process.
 
    You should now be able to go to the url corresponding to 
-   srchform.pl and do searches for jmdict entries.  The url
-   corresponding to edform.pl will let you add new entries.
+   srchform.py and do searches for jmdict entries.  The url
+   corresponding to edform.py will let you add new entries.
 
 =========
 OPERATION
 =========
 
-   Web access to the JMdictDB system can be suspended temporarily
-   by creating a control file in the installed cgi directory named 
-   "status_maint" or "status_load".  If either file exists, any
-   web access to a cgi script will result in a redirect to 
-   "status_maint.html" or "status_load.html" which present the 
-   user with a message that the system is unavailable due to
-   maintenance or excessive load, respectively.
+Web access to the JMdictDB system can be suspended temporarily
+by creating a control file in the installed CGI directory named 
+"status_maint" or "status_load".  If either file exists, any
+web access to a CGI script will result in a redirect to 
+"status_maint.html" or "status_load.html" which present the 
+user with a message that the system is unavailable due to
+maintenance or excessive load, respectively.
 
-   The directory in which the cgi scripts look for the control
-   files can be set in the config.ini file.  The location of the
-   html files is not customizable although you can of course 
-   modify their contents.
+The directory in which the CGI scripts look for the control
+files can be set in the config.ini file.  The location of the
+html files is not customizable although you can of course 
+modify their contents.
 
-   It is up to you to create and and remove the control files as
-   appropriate.
+It is up to you to create and and remove the control files as
+appropriate.
+
+Log Files:
+----------
+The CGI scripts log events to a log file whose name and location
+are given in the config.ini file (see python/lib/config.ini/sample
+for details.)  The default file location is "jmdictdb.log" in the
+current directory when the script is executed by the web server.
+For Apache-2.4 this will often be in the CGI directory itself.
+
+The logfile must by manually created, the  scripts won't create
+it if it doesn't exist.  It must also have permissions that allow 
+writing by the web server process owner.
+
+If the log file is not writable when a CGI script starts, the 
+script will write a message to that effect to stderr and disable 
+further logging during that scrupt's execution.  The initial 
+message on most web servers will be written to the web server's 
+log file and may help identify where the JMdictDB log file is.
+
+The format of JMdictDB log file messages start with a timestamp
+using the format: "YYMMDD-hhmmss".  The processes number is also
+provided in square brackets: "[pid]".  When a non-fatal error 
+occurs it is logged in the log file and an error page is presented
+to the user that will have an error id number of the form:
+"YYMMDD-hhmmss-pid".  This allows its correlation to the log file
+message which may have moe information such as a Python traceback.
+
+The log file is not truncated or rotated periodically; you must 
+arrange for that.
 
 ======================================================================
 Notes:

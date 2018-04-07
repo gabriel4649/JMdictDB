@@ -10,5 +10,10 @@
         <li><span class="errormsg">{{e|safe}}</span></li>
         {% endfor %}
         </ul>
+      {% if errid %}
+      If you contact the 24x7 JMdictDB World-Wide Operations Center
+      about this error please give your Client Satisfaction Representative
+      the following Error ID number: {{errid}}.
+      {% endif %}
       </div>
   {% endblock %}

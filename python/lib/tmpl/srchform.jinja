@@ -20,6 +20,13 @@
   <script type="text/javascript"> 
     function sf(){document.getElementById('t1').focus();}
     </script>
+  <script type="text/javascript">
+    function freq_p_set() {
+      var kwds = ["gai1", "ichi1", "news1", "spec1", "spec2"];
+      var fp = document.getElementById ("freq_p");
+      for (i=0; i<kwds.length; i++) {
+        (document.getElementById ("freq_"+kwds[i])).checked = fp.checked; } }
+    </script>
   {% endblock %}
 {%- block body_attrs %} class="srchfrm" onload="sf()"{%endblock%}
 
@@ -184,7 +191,7 @@
                   <a class="helplink" target="edhelp" href="edhelp.py?svc={{svc}}&amp;sid={{sid}}#kw_freq">help</a><br/>
                   {%- for z in freq %}
                   <span class="optgroup" title="{{z.descr}}">
-                    <input type="checkbox" name="freq" value="{{z.kw}}">{{z.kw}}
+                    <input type="checkbox" name="freq" value="{{z.kw}}" id="freq_{{z.kw}}">{{z.kw}}
                     </span>
                     {%-endfor%}
                   <span class="optgroup" title="{{KW.FREQ.nf.descr}}">
@@ -195,6 +202,10 @@
                       <option>&ge;</option>
                       </select>
                     <input name="nfval" size="2">
+                    </span>
+                  &nbsp;&nbsp;
+                  <span class="optgroup" title="Set or clear all Edict 'P' freq values">
+                    <input type="checkbox" id="freq_p" onclick="freq_p_set()">P
                     </span>
                   </td>
                 </tr>

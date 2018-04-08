@@ -546,11 +546,13 @@ Log Files:
 ----------
 The CGI scripts log events to a log file whose name and location
 are given in the config.ini file (see python/lib/config.ini/sample
-for details.)  The default file location is "jmdictdb.log" in the
-current directory when the script is executed by the web server.
-For Apache-2.4 this will often be in the CGI directory itself.
+for details.)  If no logfile is given in the config.ini file the
+default is "jmdictdb.log" in the current directory when the script 
+is executed by the web server.  For Apache-2.4 this will often be 
+in the CGI directory itself.  If no logfile level is given, the 
+defaulr is "debug".
 
-The logfile must by manually created, the  scripts won't create
+The logfile must by manually created, the CGI scripts won't create
 it if it doesn't exist.  It must also have permissions that allow 
 writing by the web server process owner.
 

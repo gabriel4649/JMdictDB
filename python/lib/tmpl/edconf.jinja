@@ -28,7 +28,7 @@
           <ol>
           {%- for c in chklist.dups %}
             <li>
-              <a href="entr.py?svc=({svc}}&amp;sid={{sid}}&amp;q={{c.seq}}.{{c.src}}">{{c.seq}}</a>
+              <a href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;q={{c.seq}}.{{c.src}}">{{c.seq}}</a>
               {{c.kanj|d}}{{'【' if c.kanj and c.rdng else ''}}{# -#}
                 {{c.rdng|d}}}{{'】' if c.kanj and c.rdng else ''}} {{c.gloss}}
               </li>

@@ -573,6 +573,30 @@ message which may have moe information such as a Python traceback.
 The log file is not truncated or rotated periodically; you must 
 arrange for that.
 
+Updates:
+--------
+Updates occur periodically to the code and to the database.
+
+Code updates are generally done by:
+  
+  $ cd [...]/jmdictdb
+  $ hg pull & hg update 
+  $ make web
+
+Database updates are generally done by:
+
+  $ cd [...]/jmdictdb
+  $ psql -d jmdict -f patches/nnn-xxxxxx.sql
+
+A curent revision of JMdictDB will always create a new version of
+the database coresponding to the latest patch version -- that is,
+the database updates in ./patches are only used to update running 
+versions of the database created with oldler, non-current versions 
+of the code to the latest version.
+The database patches are sequential and must be applied in order. 
+They will produce an error message and refuse to apply if applied 
+to a database of an incorrect version.
+
 ======================================================================
 Notes:
 [*1] 

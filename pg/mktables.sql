@@ -15,31 +15,63 @@
 --  along with JMdictDB; if not, write to the Free Software Foundation,
 --  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 --
---  Copyright (c) 2006-2014 Stuart McGraw 
+--  Copyright (c) 2006-2014,2018 Stuart McGraw 
 ---------------------------------------------------------------------------
 
--- $Revision$ $Date$
 -- JMdict schema for Postgresql
 
 \unset ON_ERROR_STOP 
 CREATE LANGUAGE 'plpgsql';
 \set ON_ERROR_STOP 
 
--- Update the DB patch number in the INSERT statement below
--- whenever there is a change to the schema or static data. 
--- At the same time create a patch file in the patches/
--- directory to bring a database at the previous patch level
--- to the current one. 
--- We don't support rolling back patches -- to undo a patch
--- create a new one that undoes the previous one.  Thus the
--- current database patch level should be determined by
--- MAX(level) rather than MAX(dt) (although usually they will
--- correspond.) 
-CREATE TABLE dbpatch(
-    level INT PRIMARY KEY,
-    dt TIMESTAMP DEFAULT (NOW() AT TIME ZONE 'utc'));
-INSERT INTO dbpatch(level) VALUES(22);
+-- Objects for identifying database version.
+---------------------------------------------------------------------------
+-- Database version identifier; use a new number whenever a change is
+-- made to the schema in pg/mktables.sql that will prevent the changed
+-- version from working with not-yet-updated application software. 
+-- Should be a random 6-digit hexidecimal string.  One way to generate
+-- is with:
+--   python -c 'import random;print("%06.6x"%random.randint(0,16777215))'
 
+\set updateid '''20c2fe'''
+
+-- This is a function for the benefit of psql scripts that can be
+-- conditionally called to generate an error in order to stop the
+-- the script's execution.  See:
+--   http://dba.stackexchange.com/questions/24518/how-to-conditionally-stop-a-psql-script-based-on-a-variable-value
+CREATE OR REPLACE FUNCTION err(msg TEXT) RETURNS boolean AS $body$
+    BEGIN RAISE '%', msg; END;
+    $body$ LANGUAGE plpgsql;
+
+-- Database update table.
+-- Updates made subsequent to creation will add additional rows to
+-- this table.  The 'id's should be psuedo-random numbers.  Update
+-- dependencies (eg, update Y requires update X to be applied first)
+-- are maintained externally.
+-- The 'active' value indicates if the update is current.  Usually,
+-- an update will replace an earlier update by setting the earlier
+-- update's 'active' value to false.  However, if an update is
+-- independent of other updates (addition of an experimental feature
+-- that does not affect the rest of the schema for example) that
+-- update row may have a true 'active' value in addition to any
+-- other rows that are also active. 
+-- View 'vdb' shows the 'id' values in the hex number form used 
+-- ouside the database and is for convenience.
+
+CREATE TABLE db (
+    id INT PRIMARY KEY,
+    active BOOLEAN DEFAULT TRUE, 
+    ts TIMESTAMP DEFAULT NOW());
+INSERT INTO db(id) VALUES(x:updateid::INT);
+
+-- Presents table "db" with hexidecimal id numbers for convenience.
+CREATE OR REPLACE VIEW vdb AS (
+    SELECT LPAD(TO_HEX(id),6,'0') AS id, active, ts
+    FROM db 
+    ORDER BY ts DESC);
+---------------------------------------------------------------------------
+
+-- Objects for the JMdictDB database.
 
 CREATE TABLE kwdial (
     id SMALLINT PRIMARY KEY,

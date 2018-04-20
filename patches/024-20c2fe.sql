@@ -33,7 +33,7 @@ CREATE TABLE db (
     active BOOLEAN DEFAULT TRUE, 
     ts TIMESTAMP DEFAULT NOW());
 
-CREATE OR REPLACE VIEW vdb AS (
+CREATE OR REPLACE VIEW dbx AS (
     SELECT LPAD(TO_HEX(id),6,'0') AS id, active, ts
     FROM db 
     ORDER BY ts DESC);

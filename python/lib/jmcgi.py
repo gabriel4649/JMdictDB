@@ -99,7 +99,6 @@ def parseform (readonly=False):
             try: cur = jdb.dbOpenSvc (cfg, svc)
             except KeyError as e: errs.append ('svc=' + str(e))
         if errs: raise ValueError (';'.join (errs))
-        host = jdb._extract_hostname (cur.connection)
 
           # Login, logout, and session identification...
         scur = jdb.dbOpenSvc (cfg, svc, session=True, nokw=True)
@@ -168,7 +167,6 @@ def get_session (cur, action=None, sid=None, uname=None, pw=None):
               # by caller to delete cookie.
         elif action == 'login':
             if not re.match (r'^[a-zA-Z0-9_]+$', uname): return '', None
-            if not re.match (r'^[a-zA-Z0-9_]+$', pw): return '', None
             sid, sess = dblogin (cur, uname, pw)
         else: pass    # Ignore invalid 'action' parameter.
         return sid, sess
@@ -180,10 +178,6 @@ def dbsession (cur, sid):
         # table.  This will hopefully avoid the need for a
         # cron job to prune expired entries.
 
-        sid = str (sid)
-          # FIXME: we should log non-digit strings so we find
-          #  out where they come from and fix at the source.
-        if not sid.isdigit(): return ''
         sess = db_validate_sid (cur, sid)
         if not sess: return None
         db_del_old_sessions (cur)
@@ -200,8 +194,8 @@ def dblogin (cur, userid, password):
         # of sessions that was occuring previously.
 
           # Check userid, password validity.
-        sql = "SELECT userid FROM users WHERE userid=%s AND pw=%s "\
-                "AND pw IS NOT NULL AND NOT disabled "
+        sql = "SELECT userid FROM users "\
+              "WHERE userid=%s AND pw=crypt(%s, pw) AND NOT disabled" 
         rs = jdb.dbread (cur, sql, (userid, password))
         if not rs:
             time.sleep (1);  return '', None
@@ -219,9 +213,9 @@ def dblogin (cur, userid, password):
             return sid, rs[0]
 
           # No existing session found, create a new session.
-        sid = random.randint (0, 2**63-1)
-        sql = "INSERT INTO sessions(id,userid,ts) VALUES(%s,%s,DEFAULT)"
-        cur.execute (sql, (sid, userid))
+        sql = "INSERT INTO sessions(userid) VALUES(%s) RETURNING(id)"
+        cur.execute (sql, (userid,))
+        sid = cur.fetchone()[0]
         cur.connection.commit()
         sess = db_validate_sid (cur, sid)
         return sid, sess

@@ -199,6 +199,8 @@ all:
     # users that the jmdictdb app will use to access the database.
  
 init: 
+	# Assume any errors from 'createuser' are due to the user 
+	# already existing and ignore them. 
 	-createuser $(PG_HOST) -U $(PG_SUPER) -SDRP $(USER)
 	-createuser $(PG_HOST) -U $(PG_SUPER) -SDRP $(RO_USER)
 	# Don't automatically drop old session database due to risk 
@@ -208,6 +210,7 @@ init:
 	# database or otherwise manually correct the situation.
 	#psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'drop database if exists $(DBSESS)'
 	psql $(PG_HOST) -U $(PG_SUPER) -d postgres -c 'create database jmsess'
+	psql $(PG_HOST) -U $(PG_SUPER) -d jmsess -c "CREATE EXTENSION IF NOT EXISTS pgcrypto"
 	cd pg && psql $(PG_HOST) -U $(USER) -d jmsess -f mksess.sql
 	@echo 'Remember to add jmdictdb editors to the jmsess "users" table.' 
 

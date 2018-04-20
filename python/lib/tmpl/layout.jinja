@@ -62,7 +62,7 @@
             </td>
           <td align="right" rowspan="1">
           {%- if this_page|d %} {# Supress the login form is 'this_page' is undefined or false. #}
-            <form name="entrauth" method="post" action="{{this_page}}">
+            <form name="entrauth" method="{{'get' if dbg|d else'post'}}" action="{{this_page}}">
             {%- for p in parms|d([]) %}
               <input type="hidden" name="{{p[0]}}" value="{{p[1]}}">
               {%- endfor %}

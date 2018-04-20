@@ -346,10 +346,13 @@ usual during loading.
 
         make init
 
-   to create the users/sessions database.  
-
-   Then, use psql or similar to manually add rows to table
-   "users" for each editor.  "pw" is the user's password.
+   to create the users/sessions database.  It will also
+   create a single user with administration privilege,
+   "admin" with password "admin".  As soon as the install
+   is done, you need at a minimum to change the password.
+   Changing the userid and password is better still.
+   See the see section "Operation / User Management" below
+   for more details.
 
 7. (Optional) In the top-level directory, run 
 
@@ -577,7 +580,7 @@ Updates:
 --------
 Updates occur periodically to the code and to the database.
 
-Code updates are generally done by:
+Program code updates including website scripts are generally done by:
   
   $ cd [...]/jmdictdb
   $ hg pull & hg update 
@@ -586,16 +589,39 @@ Code updates are generally done by:
 Database updates are generally done by:
 
   $ cd [...]/jmdictdb
-  $ psql -d jmdict -f patches/nnn-xxxxxx.sql
+  $ psql -d jmdict -U jmdictdb -f patches/nnn-xxxxxx.sql
 
-A curent revision of JMdictDB will always create a new version of
-the database coresponding to the latest patch version -- that is,
-the database updates in ./patches are only used to update running 
-versions of the database created with oldler, non-current versions 
-of the code to the latest version.
-The database patches are sequential and must be applied in order. 
-They will produce an error message and refuse to apply if applied 
-to a database of an incorrect version.
+IMPORTANT: read the patch file contents before applying the above
+commands.  There are sometimes exceptions to the sequence shown that 
+will be documented in the update file itself.
+
+See the file ./patches/README.txt for more details.
+
+User management:
+----------------
+IMPORTANT: The first time the jmsess database is created by 
+running 'make init', a single user named "admin" with password
+"admin" is created.  You must at a minimum change this user's
+password before making JMdictDB accessible in other than a local
+trusted envirionment.
+
+There is not yet any tools or webpages for adding, removing
+ot updating users and these activities need to be performed
+by direct manipulation of the user data in the "jmsess" database
+using Postgresql's 'psql' command.
+
+To add a new user: 
+  INSERT INTO users VALUES (
+       'jones', 'Bob Jones', 'bjones@ntt.co.jp',
+        crypt('plaintext-password', gen_salt('bf')),
+        FALSE, 'E', NULL);
+
+To disable a user (prevent him/her from logging in):
+  UPDATE users SET disabled=True WHERE userid='jones';
+
+To change a password:
+  UPDATE users SET pw=crypt('plaintext-password', gen_salt('bf'))
+    WHERE userid='jones';
 
 ======================================================================
 Notes:

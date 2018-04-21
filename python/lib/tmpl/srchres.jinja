@@ -10,7 +10,7 @@
 {%- block body_attrs %} class="srchres" {%endblock%}
 {%- block page_content %}
     <!-- srchres.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
-    <div class="results">
+    <div class="item">
     {%- if p1<pt and results|length>10 %}
       <form action="srchres.py" method="get">
         <input name="next" value="Next page" type="submit">
@@ -85,7 +85,7 @@
         </form>
         {%-endif%}{# p1<pt... #}
       {%-endif%}{# not results else (i.e. equiv to "if results") #}
-      </div>{# class="results" #}
+      </div>{# class="item" #}
     <div class="notes">
       <br>Notes...
       <ul>

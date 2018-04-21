@@ -3,14 +3,14 @@
 {%- block page_content %}
 <!-- srchsql.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
   {%- if not adv_srch_allowed %}
-    <div class="entry">
+    <div class="item">
       Advanced search is not available because you do not have
       the permissions required by the configuration settings for
       this JMdictDB installation.
       </div>
   {%- else %}{# adv_srch_allowed #}
     <form action="srchres.py" name="srchres" method="get">
-      <table class="form" width="100%">
+      <table class="item" width="100%">
         <tr>
           <td colspan="2">
             If you know the SQL language and the JMdictDB database schema,

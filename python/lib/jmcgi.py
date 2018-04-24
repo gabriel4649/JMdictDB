@@ -82,7 +82,7 @@ def parseform (readonly=False):
         """
 
         cfg = initcgi()  # Read config, initialize logging.
-        #L('jmcgi').debug("parseform called in %s" % sys.modules['__main__'].__file__)
+        #L('cgi.jmcgi').debug("parseform: called in %s" % sys.modules['__main__'].__file__)
         errs=[]; sess=None; sid=''; cur=None; svc=None
         def_svc = cfg['web'].get ('DEFAULT_SVC', 'jmdict')
         if def_svc.startswith ('db_'): def_svc = def_svc[3:]
@@ -91,7 +91,7 @@ def parseform (readonly=False):
         form = cgi.FieldStorage()
         dbg = int (form.getfirst ('dbg') or '0')
         svc = form.getfirst ('svc') or def_svc
-        #L('jmcgi').debug("parseform svc=%s" % svc)
+        #L('cgi.jmcgi').debug("parseform: svc=%s" % svc)
         usid = form.getfirst ('sid') or ''    # No SID is "", not None.
         try: svc = safe (svc)
         except ValueError: errs.append ('svc=' + svc)
@@ -106,11 +106,11 @@ def parseform (readonly=False):
         sid = get_sid_from_cookie() or ''
         sid_from_cookie = bool (sid)
         if usid: sid = usid     # Use sid from url if available.
-        #L('jmcgi').debug("parseform(): sid=%s, from_cookie=%s, action=%s" % (sid, sid_from_cookie, action))
+        L('cgi.jmcgi').debug("parseform: sid=%s, from_cookie=%s, action=%s" % (sid, sid_from_cookie, action))
         uname = form.getfirst('username') or ''
         pw = form.getfirst('password') or ''
         sid, sess = get_session (scur, action, sid, uname, pw)
-        #L('jmcgi').debug("parseform(): %s session, sid=%s" % ("got" if sess else "no", sid))
+        L('cgi.jmcgi').debug("parseform: %s session, sid=%s" % ("got" if sess else "no", sid))
         if sid: set_sid_cookie (sid, delete=(action=="logout"))
         if sid_from_cookie: sid=''
         scur.connection.close()
@@ -198,18 +198,22 @@ def dblogin (cur, userid, password):
               "WHERE userid=%s AND pw=crypt(%s, pw) AND NOT disabled" 
         rs = jdb.dbread (cur, sql, (userid, password))
         if not rs:
+            L('cgi.jmcgi').debug("login: pw fail for %s" % userid)
             time.sleep (1);  return '', None
 
           # Look for an existing session (the most recent if more than one).
-        sql = "SELECT s.id,s.userid,s.ts,u.fullname,u.email" \
+        sql = "SELECT s.id,s.userid,s.ts,u.fullname,u.email,u.priv" \
               " FROM sessions s JOIN users u ON u.userid=s.userid" \
-              " WHERE u.userid=%%s AND (NOW()-ts)<'%s'::INTERVAL" \
+              " WHERE u.userid=%%s AND NOT u.disabled" \
+              "  AND (NOW()-ts)<'%s'::INTERVAL" \
               " ORDER BY ts DESC LIMIT 1" % SESSION_TIMEOUT
         rs = jdb.dbread (cur, sql, (userid,))
+        L('cgi.jmcgi').debug("login: %s: %s sessions found" % (userid, len(rs)))
         if len (rs) == 1:
             sid = rs[0][0]
               # Update the session timestamp to 'now'.
             db_update_sid_ts (cur, sid)
+            L('cgi.jmcgi').debug("login: %s: using session: %s" % (userid,sid))
             return sid, rs[0]
 
           # No existing session found, create a new session.
@@ -217,6 +221,7 @@ def dblogin (cur, userid, password):
         cur.execute (sql, (userid,))
         sid = cur.fetchone()[0]
         cur.connection.commit()
+        L('cgi.jmcgi').debug("login: %s: new session %s" % (userid, sid))
         sess = db_validate_sid (cur, sid)
         return sid, sess
 
@@ -236,11 +241,13 @@ def dblogout (cur, sid):
 def db_validate_sid (cur, sid):
         # Check that 'sid' is an existing session and if so
         # return a session record.  Otherwise return None.
-        sql = "SELECT s.id,s.userid,s.ts,u.fullname,u.email" \
+        sql = "SELECT s.id,s.userid,s.ts,u.fullname,u.email,u.priv" \
               " FROM sessions s JOIN users u ON u.userid=s.userid" \
-              " WHERE id=%%s AND (NOW()-ts)<'%s'::INTERVAL" \
-               % SESSION_TIMEOUT
+              " WHERE id=%%s AND NOT u.disabled" \
+              "  AND (NOW()-ts)<'%s'::INTERVAL" \
+              % SESSION_TIMEOUT
         rs = jdb.dbread (cur, sql, (sid,))
+        L('cgi.jmcgi').debug("login: validating sid %s, result=%s" % (sid, len(rs)))
         if len (rs) == 0: return None
         return rs[0]
 
@@ -277,11 +284,20 @@ def set_sid_cookie (sid, delete=False):
 
 def is_editor (sess):
         """Return a true value if the 'sess' object (which may be None)
-        is for a logged-in editor.  Note that currently, any non-None
-        session is treated as a logged-in editor."""
+        is for a logged-in editor.  An editor is a user with either 'E'
+        or 'A' privilege error."""
 
-        if sess: return getattr (sess, 'userid', None)
-        return None
+        if not sess: return None
+        return getattr (sess, 'priv', None) in 'EA'
+
+def get_user (uid, svc, cfg):
+        cur = jdb.dbOpenSvc (cfg, svc, session=True, nokw=True)
+        sql = "SELECT * FROM users WHERE userid=%s"
+        users = jdb.dbread (cur, sql, (uid,))
+          # 'userid' is primary key of users table so we should never
+          # receive more than one row.
+        assert len(users)<=1, "Too many rows received"
+        return users[0] if users else None
 
 def adv_srch_allowed (cfg, sess):
         try: v = (cfg['search']['ENABLE_SQL_SEARCH']).lower()
@@ -493,9 +509,18 @@ def jinja_page (tmpl, output=sys.stdout, **kwds):
         if output: print (html, file=output)
         return html
 
-def err_page (errs, errid=None):
+def err_page (errs=[], errid=None, prolog=None, epilog=None):
+          # CAUTION: 'prolog', 'epilog', and the items in 'errs' are rendered  
+          # without html escaping and should either not include any text from
+          # untrusted sources or such text must be escaped by the caller.
         if isinstance (errs, str): errs = [errs]
-        jinja_page ('error.jinja', svc='', errs=errs, errid=errid)
+        jinja_page ('error.jinja', svc='', errs=errs, errid=errid,
+                     prolog=prolog, epilog=epilog)
+        sys.exit()
+
+def redirect (url):
+        print ("Status: 302 Moved")
+        print ("Location: %s\n" % url)
         sys.exit()
 
 def htmlprep (entries):

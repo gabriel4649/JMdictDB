@@ -79,6 +79,11 @@ def add_filters (env):
             if not grps: return ''
             return sep.join ([fmtjel.grp (x) for x in grps])
         @                                                      add_filter (env)
+        def TALpriv (priv):
+              # Return a string representing a session privilege level.
+              #FIXME: we should be calling a lib function to do this.
+            return {None:'user', 'E':'editor', 'A':'admin'}[priv] 
+        @                                                      add_filter (env)
         def TALm2mn (monthnum, short=False):
               # Convert a month number (1-12) to the name of the month.
             if not monthnum: return ''

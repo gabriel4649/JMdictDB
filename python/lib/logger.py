@@ -63,7 +63,7 @@ def log_config (level="debug", filename=None):
             raise ValueError ("bad 'level' parameter: %s" % level)
         logging.basicConfig (
             level=lvl,
-            format='%(asctime)s %(levelname)1.1s [%(process)d] %(name)s: %(message)s',
+            format='%(asctime)s-%(process)d %(levelname)1.1s %(name)s: %(message)s',
             datefmt="%y%m%d-%H%M%S",
               # When both "stream" and "filename" are present and non-None, 
               # "filename" takes precedence according to 

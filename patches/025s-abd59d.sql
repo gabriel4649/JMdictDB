@@ -1,4 +1,4 @@
-\set dbversion  '''7375f3'''
+\set dbversion  '''abd59d'''
 
 -- IMPORTANT:
 -- This is an update to the "jmsess" database (not "jmdict")!
@@ -59,7 +59,7 @@ CREATE OR REPLACE FUNCTION err(msg TEXT) RETURNS boolean AS $body$
 ALTER TABLE users RENAME TO xusers;
 DROP TABLE sessions;
 CREATE TABLE users (
-	userid VARCHAR(64) PRIMARY KEY,
+	userid VARCHAR(16) PRIMARY KEY,
 	fullname TEXT,
 	email TEXT,
 	pw TEXT,
@@ -70,7 +70,8 @@ CREATE TABLE users (
 CREATE TABLE sessions (
 	id TEXT PRIMARY KEY DEFAULT
           translate (encode (gen_random_bytes (12), 'base64'), '+/', '-_'),
-	userid VARCHAR(64) REFERENCES users(userid),
+	userid VARCHAR(64)
+          REFERENCES users(userid) ON DELETE CASCADE ON UPDATE CASCADE,
 	ts TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
         svc VARCHAR(64),
         state JSONB DEFAULT NULL);

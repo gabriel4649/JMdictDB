@@ -1,19 +1,50 @@
+{############################################################################
+Presents an error page to the user consisting of a boiler-plate
+prolog that my optionally be overridden by the caller, a list of
+error messages, and an optional epilog.  An optional logger.py 
+style error id may also be given in which case it will be shown
+at the bottom on the page along with suport contact information.
+
+Context variables:
+  prolog -- If provided, supplies an introductory message at top
+    of page above error list.  If not supplied, a generic "an
+    error occured" message is used instead.
+  errs -- List of individual errors messages.
+  epilog --  If provided, supplies a message that is placed after 
+    the error list.
+  errid -- An error id string of the format produced in
+    python/lib/logger.py.  If present an additional message is
+    placed below all the preceding messages giving the errid 
+    and support center contact info.
+
+CAUTION: 'prolog', 'epilog', and the items in 'errs' are rendered  
+without html escaping and should either not include any text from
+untrusted sources or such text must be escaped by the caller. 
+###########################################################################-#}
+
 {%- extends "layout.jinja" %}
 {%- block title %}Error{% endblock%}
+
 {%- block page_content %}
 <!-- url_errors.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
     <div class="item">
-      We're sorry but your page request could not be processed
-      due to the following error(s):
+    {%- if not prolog|d and errs %}
+      <p>We're sorry but your page request could not be processed
+        due to the following error(s):</p>
+      {%- endif %}   
+    {%+ if prolog|d %}{{prolog|safe}}{% endif %}
+    {%- if errs %}
       <ul>
       {% for e in errs %}
-        <li><span class="errormsg">{{e|safe}}</span></li>
+        <li><span class="errormsg">{{e}}</span></li>
         {% endfor %}
         </ul>
-      {% if errid %}
+      {%- endif %}{# errs #}
+    {%+ if epilog %}{{epilog|safe}}{% endif %}
+    {%- if errid %}
       If you contact the 24x7 JMdictDB World-Wide Operations Center
-      about this error please give your Client Satisfaction Representative
-      the following Error ID number: {{errid}}.
-      {% endif %}
+      about this error please give your Client Satisfaction Assurance
+      Representative the following Error ID number: {{errid}}.
+      {%- endif %}
       </div>
-  {% endblock %}
+  {%- endblock %}

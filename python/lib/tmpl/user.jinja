@@ -1,0 +1,161 @@
+{#- Present user  settings for editing.
+    Context variables:
+      svc, sid, session, dbg -- See layout.jinja.
+      user -- A user table row containing for the user to view/update.
+      new -- (bool) "New user" checkbox should be checked by default.
+    Post values:
+      svc, sid, dbg -- See layout,jinja.
+      new, delete -- Values of corresponding checkboxes.
+      userid, fullname, email -- Values of corresponding text boxes.
+      pw1, pw2 -- (text) Blank if no password change requested or
+        new password otherwise.
+      disabled -- Value of "disabled" checkbox.
+      priv -- "priv" radio button group, value will be one of: "user",
+        "editor", "admin".
+      subjid: Value of 'user.userid'.  This is the is of the user being
+        operated on, may be empty in case of a new user.
+-#}
+{%- extends "layout.jinja" %}
+{%- block title %}User settings{% endblock %}
+{%- block page_scripts %}
+  <script type="text/javascript">
+    function sf(){document.getElementById('t1').focus();}
+    </script>
+  {% endblock %}
+
+{%- block page_content %}
+    <!-- user.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
+    <div class="item">
+    {%- if not session %}
+      <p>Sorry!  This page is only available to logged in users. </p>
+    {%- elif not user and not new %}
+      <p>Sorry!  Unable to find information for the requested user. </p>
+    {%- else %}
+      {%- if result|d == 'success' %}
+        <div class="flash success">Thank you, the user settings have been updated.</div> 
+        {%- endif %}
+      {%- if result|d == 'nochange' %}
+        <div class="flash warn">No user setting changes were found.</div> 
+        {%- endif %}
+      <form action="userupd.py" method="{{'get' if dbg else 'post'}}">
+        <input type="hidden" name="subjid" value="{{user.userid|d}}">
+        <table width="100%">
+        {% if session.priv=='A' %}
+          <tr>
+            <td><a href="user.py?new=1">Add new user</a></td>
+            <td><a href="users.py">List all users</a></td>
+            <td class="notes"></td>
+            </tr>
+          {#- ########
+            This "New User" checkbox is intended to allow easy 'cloning"
+            of accounts: display an existing account, change the userid 
+            and whatever other fields are needed, check the New User box,
+            and submit.  However in the jmdictdb app users have very few 
+            settings and nearly all need changing for a new user so this
+            cloning ability is more distracting than useful and hence it
+            is currently commented out but will leave it here in case it 
+            becomes useful sometime in the future. 
+          <tr>
+            <td>New user</td>
+            <td><input type="checkbox" name="new" {{new|d|a('checked')}}></td>
+            <td class="notes">
+              Check to create a new user rather than update an existing user. </td>
+            </tr>                                               ########}
+          <tr style="visible:none"><td colspan="3">
+            {#- We need a way to pass any "new" url parameter received when
+              generating this page to the userupd.py script that is the action
+              target of this form.  The "New user" checkbox above used to 
+              serve that purpose but here we use a hidden input element as
+              its replacement. #}
+            <td><input type="hidden" name="new" value="{{new|d}}"></td>
+            </tr>
+        {%- if not new %}{# Supress the Delete box if new user. #}
+          <tr>
+            <td>Delete user</td>
+            <td><input type="checkbox" id="delete" name="delete"></td>
+            <td class="notes">Check to delete this user. </td>
+            </tr>
+          {%- endif %}
+          <tr><td colspan="3"><hr width="100%"></td></tr>
+          <tr>
+            <td>Access</td>
+            <td>
+              <input type="checkbox" id="disabled" name="disabled"
+                  {#- #} {{user.disabled|d|a('checked')}}
+                  {#- #} {{(session.priv!='A')|a('disabled')}}>
+              <label for="disabled">Disabled</label>
+              </td>
+            <td class="notes">A disabled account will not allow logins.</td>
+            </tr>
+          <tr>
+            <td>Privilege</td>
+            <td colspan="2">
+              <input type="radio" name="priv" id="priv1" value="user"   {# -#}
+                {{(not user.priv|d or user.priv|d not in 'AE')|a('checked')}}  {# -#}
+                {{(session.priv!='A')|a('disabled')}}>
+              <label for="priv1">User</label>
+              <input type="radio" name="priv" id="priv2" value="editor" {# -#}
+                {{(user.priv|d=='E')|a('checked')}}  {{(session.priv!='A')|a('disabled')}}>
+              <label for="priv2">Editor</label>
+              <input type="radio" name="priv" id="priv3" value="admin"  {# -#}
+                {{(user.priv|d=='A')|a('checked')}}  {{(session.priv!='A')|a('disabled')}}>
+              <label for="priv3">Admin</label>
+              </td>
+            </tr>
+          {% endif %}{# session.priv=='A' #}
+          <tr>
+            <td>User Id</td>
+            <td><input type="text" id="userid" name="userid" value="{{user.userid|d}}"></td>
+            <td class="notes">User ids are case-sensitive, must consist of ascii letters (a-z,A-Z) and
+              digits (0-9), start with a letter and be at least 3 characters long. </td>
+            </tr>
+          <tr>
+            <td>Full Name</td>
+            <td><input type="text" id="fullname" name="fullname" value="{{user.fullname|d}}" width="100%"></td>
+            <td class="notes">Your full name (optional)</td
+            </tr>
+          <tr>
+            <td>Email</td>
+            <td><input type="text" id="email" name="email" value="{{user.email|d}}" width="100%"></td>
+            <td class="notes">Your email address (optional).  This is for administrative use only 
+              and will not be displayed on publically accessible web pages.
+            </tr>
+          <tr>
+            <td colspan="3">
+              If you wish to change your password, enter your new password in both
+              boxes below.  If you leave them blank your password will remain unchanged.
+             </td>
+            </tr>
+          <tr>
+            <td>New password</td>
+            <td><input type="password" id="pw1" name="pw1"></td>
+            <td rowspan="2"></td>
+            </tr>
+          <tr>
+            <td>Confirm Password</td>
+            <td><input type="password" id="pw2" name="pw2"></td>
+            </tr>
+
+          <tr>
+            <td><input type="reset"></td>
+            <td><input type="submit" value="Submit changes">
+            {%+ if svc %}<input type="hidden" name="svc" value="{{svc}}">{%endif%}
+            {% if sid %}<input type="hidden" name="sid" value="{{sid}}">{%endif%}
+            {% if dbg|d %}<input type="hidden" name="dbg" value="{{dbg}}">{%endif%}
+            <td class="notes">Access level: {{session.priv|TALpriv}}</td>
+            </tr>
+          </table>
+        </form>
+      {%- endif %}{# session #}
+      </div>
+
+    <div class="notes">
+      Notes...
+      <ul>
+        <li>You must be logged in to see or edit your user information.</li>
+        <li>Only Administrators can view or change other users' information.</li>
+        <li>Only Administrators can change disabled status or privilege level.</li>
+        </ul>
+      </div>{# class="notes" #}
+    <hr width="100%">
+{%endblock%}

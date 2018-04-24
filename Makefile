@@ -115,12 +115,16 @@ CGI_FILES = conj.py \
 	srchsql.py \
 	jbedit.py \
 	jbedits.py \
-	updates.py
+	updates.py \
+        user.py \
+        users.py \
+        userupd.py
 WEB_CGI	= $(addprefix $(CGI_DIR)/,$(CGI_FILES))
 
 LIB_FILES = jdb.py \
 	cgitbx.py \
 	config.ini \
+	edict2.xsl \
 	edparse.py \
 	fmt.py \
 	fmtjel.py \
@@ -135,8 +139,7 @@ LIB_FILES = jdb.py \
 	objects.py \
 	serialize.py \
 	xmlkw.py \
-	xslfmt.py \
-	edict2.xsl
+	xslfmt.py
 WEB_LIB	= $(addprefix $(LIB_DIR)/,$(LIB_FILES))
 
 TMPL_FILES = conj.jinja \
@@ -146,6 +149,7 @@ TMPL_FILES = conj.jinja \
 	edhelp.jinja \
 	edhelpq.jinja \
 	error.jinja \
+	jbedits.jinja \
         layout.jinja \
 	srchform.jinja \
         srchformq.jinja \
@@ -153,7 +157,8 @@ TMPL_FILES = conj.jinja \
 	srchsql.jinja \
 	submitted.jinja \
 	updates.jinja \
-	jbedits.jinja
+        user.jinja \
+        users.jinja
 WEB_TMPL = $(addprefix $(LIB_DIR)/tmpl/,$(TMPL_FILES))
 
 all:

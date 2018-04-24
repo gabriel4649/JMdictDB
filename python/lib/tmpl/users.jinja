@@ -1,0 +1,47 @@
+{#- List of all users.
+    Context variables:
+      svc, sid, dbg -- See layout.jinja.
+      users -- List of "users" table rows to display.
+    Post values: [none]
+-#}
+{%- extends "layout.jinja" %}
+{%- block title %}User list{% endblock %}
+
+{%- block page_content %}
+    <!-- users.jinja, part of JMdictDB.  Copyright (c) 2018 Stuart McGraw -->
+    <div class="item">
+    {%- if result|d == 'success' %}
+      <div class="flash success">Thank you, the user settings have been updated.</div> 
+      {%- endif %}
+    {%- if result|d == 'nochange' %}
+      <div class="flash warn">No user setting changes were found.</div> 
+      {%- endif %}
+    {%- if not session or session.priv!='A' %}
+      <p>Sorry, only admistrator users may view this page.</p>
+    {%- else %}
+      <table width="100%">
+        <thead>
+          <tr><td colspan="5"><a href="user.py?new=1">Add new user</a></td></tr>
+          <tr><td colspan="5"> </td></tr>
+          <tr align="left">
+            <th>userid</th>
+            <th>fullname</th>
+            <th>email</th>
+            <th>disabled</th>
+            <th>priv</th>
+            </tr>
+          </thead>
+        <tbody>
+        {%- for u in users %}
+          <tr>
+            <td><a href="user.py?svc={{svc}}&sid={{sid}}&dbg={{dbg}}&u={{u.userid}}">{{u.userid}}</a></td>
+            <td>{{u.fullname}}</td>
+            <td>{{u.email}}</td>
+            <td>{{'yes' if u.disabled else ''}}</td>
+            <td>{{u.priv}}</td>
+          {%- endfor %}{# u in users #}
+          </tbody>
+        </table>
+      {%- endif %}{# else #}
+      </div>
+{% endblock -%}

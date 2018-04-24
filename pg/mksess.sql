@@ -29,7 +29,7 @@
 -- with insuffcient privilege.
 
 \set ON_ERROR_STOP
-\set updateid '''7375f3'''
+\set updateid '''abd59d'''
 
 -- Database update table (see comments in mktables.sql).
 CREATE TABLE db (
@@ -45,7 +45,7 @@ CREATE OR REPLACE VIEW dbx AS (
 -- Users and sessions tables.
 
 CREATE TABLE users (
-	userid VARCHAR(64) PRIMARY KEY,
+	userid VARCHAR(16) PRIMARY KEY,
 	fullname TEXT,
 	email TEXT,
 	pw TEXT,
@@ -57,7 +57,8 @@ CREATE TABLE users (
 CREATE TABLE sessions (
 	id TEXT PRIMARY KEY DEFAULT
           translate (encode (gen_random_bytes (12), 'base64'), '+/', '-_'),
-	userid VARCHAR(64) REFERENCES users(userid),
+	userid VARCHAR(64) 
+          REFERENCES users(userid) ON DELETE CASCADE ON UPDATE CASCADE,
 	ts TIMESTAMP DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
         svc VARCHAR(64) DEFAULT NULL,
         state JSONB DEFAULT NULL);

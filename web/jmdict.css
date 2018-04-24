@@ -6,6 +6,12 @@
 .caution	{color: #FF0000}
 .notice		{font-size: 65%; color: #FF0000}
 .notes		{font-size: 75%;}
+.flash          {border-style: solid; border-width: thin; 
+		 margin: 5px; padding: 10px; }
+.flash.error    {background: #FFCCCC; } /* red       hsv=0,20,100 */
+.flash.warn     {background: #FFFFCC; } /* yellow    hsv=60,20,100 */
+.flash.success  {background: #CCFFCC; } /* green     hsv=120,20,100 */
+.flash.info     {background: #CCFFFF; } /* turquoise hsv=240,20,100 */
 
 /* Header/footer*/
 .helplink	{font-size: 75%;}

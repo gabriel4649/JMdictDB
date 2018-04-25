@@ -225,7 +225,8 @@ def gen_sql_params (is_admin, subj, pw1, pw2, userid, fullname, email,
                 collist.append (('pw', "crypt(%s, gen_salt('bf'))"))
                 values.append (pw1)
         else:
-            errors.append ("Password is required for new users.")
+            if not subj:   # 'not subj' is a proxy for action=='n'
+                errors.append ("Password is required for new users.")
 
         if new or userid != subj.userid:
             L('cgi.userupd').debug("userid change: %r" % userid)

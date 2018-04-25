@@ -118,10 +118,12 @@ def parseform (readonly=False):
           # Collect the form parameters.  Caller is expected to pass
           # them to the page template which will use them in the login
           # section as hidden parms so the page can be recreated after
-          # a login.
+          # a login.  We leave out any param name "result" since that
+          # is used as a confirmation message by the userupd.py page
+          # and best to see it only once.
         parms = [(k,v)
                  for k in list(form.keys())
-                 if k not in ('loginout','username','password')
+                 if k not in ('loginout','username','password', 'result')
                      for v in form.getlist(k) ]
 
         return form, svc, dbg, cur, sid, sess, parms, cfg

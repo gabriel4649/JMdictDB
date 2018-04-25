@@ -122,8 +122,12 @@
             </tr>
           <tr>
             <td colspan="3">
+            {%- if new %}
+              A password is required for a new user.
+            {%- else %}
               If you wish to change your password, enter your new password in both
               boxes below.  If you leave them blank your password will remain unchanged.
+              {%- endif %}
              </td>
             </tr>
           <tr>

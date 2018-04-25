@@ -35,8 +35,8 @@ def main( args, opts ):
           #  page.
           # The values "new" (i.e. create) and "delete" are also user
           #  boolean input from user.py indicating what the user wants
-          #  to do.  Neither of them set indicates an update action.
-          #  Both of them set is an error.
+          #  to do.  Neither of them set indicates an update action on
+          #  an existing account.  Both of them set is an error.
           # The form value "subjid" identifies the user whose data was 
           #  originally loaded into the user.py form and is the user any
           #  update or delete will be performed on.  If it differs from
@@ -46,8 +46,15 @@ def main( args, opts ):
           #  privilege.  For a new (create) action, "subjid" is ignored
           #  and the new user is created with the id given in "userid".
 
-        L('cgi.userupd').debug("new=%r, delete=%r, subjid=%r, userid=%r"
-            % (fv('new'), fv('delete'), fv('subjid'), fv('userid')))
+          # Set 'action' to "n" (new), "u" (update), "d" (delete) or
+          #  "x" (invalid) according to the values of fv('new') and 
+          #  fv('delete') that were received from as url parameters
+          #  from the User form. 
+        action = {(0,0):'u', (0,1):'d', (1,0):'n', (1,1):'x'}\
+                   [(bool(fv('new')),bool(fv('delete')))]
+        L('cgi.userupd').debug(
+            "new=%r, delete=%r, action=%r, subjid=%r, userid=%r"
+            % (fv('new'), fv('delete'), action, fv('subjid'), fv('userid')))
  
           # NOTE: The jmcgi.err_page() calls below do not return,
           #  jmcgi.err_page() calls sys.exit().
@@ -60,40 +67,72 @@ def main( args, opts ):
             jmcgi.err_page ([],
                 prolog="<p>You do not have sufficient privilege to alter "
                          "settings for anyone other than yourself.</p>")
-        if (fv('new') or fv('delete')) and sess.priv != 'A':
+        if action in ('nd') and sess.priv != 'A':
             jmcgi.err_page ([],
                 prolog="<p>You do not have sufficient privilege to create "
                           "or delete users.</p>")
-        if fv('new') and fv('delete'):
-            L('cgi.userupd').debug("fv('new')=%r, fv('delete')=%r" 
-                                   % (fv('new'), fv('delete')))
+        if action == 'x':
             jmcgi.err_page ([],
                 prolog="<p>\"New user\" and \"Delete\" are incompatible.</p>")
 
-        subj = None;  errors = []
-        if not fv('delete'):
-            subj = jmcgi.get_user (fv('subjid'), svc, cfg)
-            L('cgi.userupd').debug("updating user %r" % sanitize_o(subj))
+        errors = []
+         # Get the id of the user we will be updating.  If creating a
+         # new user, 'subjid' should not exist and thus 'subj' will be
+         # None which has the beneficial effect of causing gen_sql_-
+         # params() to generate change parameters for every form value
+         # which is what we want when creating a user.
+        subj = jmcgi.get_user (fv('subjid'), svc, cfg)
+        if action in 'nu':   # "new" or "update" action...
+            if action == 'u':
+               L('cgi.userupd').debug("update user %r" % sanitize_o(subj))
+            else:
+                L('cgi.userupd').debug("create user %r" % fv('userid'))
+            if action == 'n' and \
+                    (subj or fv('userid')==sess.userid
+                     or jmcgi.get_user(fv('userid'), svc, cfg)):
+                  # This is the creation of a new user (fv('userid')). 
+                  # The userid must not already exist.  The tests for
+                  # subj and sess.userid are simply to avoid an expensive
+                  # get_user() call when we already know the user exists.
+                errors.append ("Account name %s is already in use."
+                               % fv('userid'))
+            if action == 'u' and fv('userid')!=subj.userid \
+                    and (fv('userid')==sess.userid \
+                         or jmcgi.get_user(fv('userid'), svc, cfg)):
+                  # This is an update of an existing user. 
+                  # If the new userid (fv('userid')) is the same as the
+                  # subj.userid it's not being changed and is ok.  If
+                  # different then it must not be the same as an exiting
+                  # userid.  The test for sess.userid is simply to avoid
+                  # an expensive get_user() call when we already know 
+                  # that user exists.
+                errors.append ("Account name %s is already in use."
+                               % fv('userid'))
+
+              # Get the parameters we'll need for the sql statement used
+              # to update the user/sessions database.
             collist, values, err \
-                = gen_update_sql (sess.priv=='A', subj, fv('pw1'), fv('pw2'),
+                = gen_sql_params (sess.priv=='A', subj, fv('pw1'), fv('pw2'),
                                   fv('userid'), fv('fullname'), fv('email'),
                                   fv('priv'), fv('disabled'))
             errors.extend (err)
             L('cgi.userupd').debug("collist: %r" % collist)
             L('cgi.userupd').debug("values: %r" % sanitize_v (values, collist))
  
-        else:  # Deletion of user is requested...
-              # We ignore changes made to the form fields; since we
+        else:  # "delete" action...
+              # We ignore changes made to the form fields since we
               # are going to delete the user, they are irrelevant. 
-              # except for one: the "userid" field.  If that was
+              # Except for one: the "userid" field.  If that was
               # changed we treat it as an error due to the risk that
               # the user thought the changed userid will be deleted
               # which is not what will happen (we delete the "subjid"
               # user.)
             values = []
             if fv('userid') != fv('subjid'):
-                jmcgi.err_page ([], prolog=
+                errors.append (
                     "Can't delete user when userid has been changed.")
+            if not subj:
+                errors.append ("User '%s' doesn't exist." % fv('subjid'))
 
         if errors:
             jmcgi.err_page (errs=errors, 
@@ -103,16 +142,16 @@ def main( args, opts ):
                 "your changes.")
 
         update_session = None;  result = None
-        if fv('new'):
+        if action == 'n':                         # Create new user...
             cols = ','.join (c for c,p in collist)
             pmarks = ','.join (p for c,p in collist)
             sql = "INSERT INTO users(%s) VALUES (%s)" % (cols, pmarks)
             values_sani = sanitize_v (values, collist)
-        elif fv('delete'):
+        elif action == 'd':                       # Delete existing user...
             sql = "DELETE FROM users WHERE userid=%s"
             values.append (fv('subjid'))
             values_sani = values
-        else:  # Update
+        else:                                     # Update existing user...
             if not collist: result = 'nochange'
             else:
                 if subj and subj.userid == sess.userid \
@@ -132,7 +171,7 @@ def main( args, opts ):
             sesscur.execute (sql, values)
             sesscur.connection.commit()
               #FIXME: trap db errors and try to figure out what went
-              # wrong in terms that a user can action.
+              # wrong in terms that a user can remediate.
             if update_session:
                 L('cgi.userupd').debug("update sess.userid: %r->%r" 
                                        % (sess.userid, update_session))
@@ -150,8 +189,31 @@ def main( args, opts ):
                 + "%s&svc=%s&sid=%s&dbg=%s&result=%s"
                   % (return_to, svc, sid, dbg, result))
 
-def gen_update_sql (is_admin, subj, pw1, pw2, userid, fullname, email,
+def gen_sql_params (is_admin, subj, pw1, pw2, userid, fullname, email,
                     priv, disabled):
+        """
+        Compares the form values received from the User form
+        with the values in 'subj' to determine which have been
+        changed.  For user creation ("new" action) there is no
+        'subj' so any non-null form values will be seen as changes.
+        If the action is delete, this function need not even be 
+        called since the only info needed for deletion is the
+        user id.
+
+        Return values: 
+        collist -- A list of 2-tuples each consisting of
+           column name -- Name of the changed field/
+           parameter -- This is either a psycopg2 paramater marker
+             ("%s") or a Postgresql expression containing the same.
+        values -- A list of the same length as 'collist' containing
+           the values the will be substituted for the parameter markers
+           in collist be Postgresql.
+        errors -- A list of errors discovered when generating 'collist'
+           and 'values'.  If this list in non-empty, 'collist' and
+           'values' should be ignored and the errors should be displayed
+           to the user. 
+        """
+
         new = not subj
         collist = [];  values = [];  errors = [];
 
@@ -162,6 +224,8 @@ def gen_update_sql (is_admin, subj, pw1, pw2, userid, fullname, email,
             else:
                 collist.append (('pw', "crypt(%s, gen_salt('bf'))"))
                 values.append (pw1)
+        else:
+            errors.append ("Password is required for new users.")
 
         if new or userid != subj.userid:
             L('cgi.userupd').debug("userid change: %r" % userid)

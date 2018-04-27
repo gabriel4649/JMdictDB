@@ -1,4 +1,4 @@
- -- This file was auto-generated at 2014-10-19 20:36:29.1857-06, dbpatch level 21.
+ -- This file was auto-generated at 2018-04-26 17:55:29.46816-06, dbver 20c2fe.
 
  ALTER TABLE public.chr DROP CONSTRAINT IF EXISTS chr_entr_fkey;
  ALTER TABLE public.cinf DROP CONSTRAINT IF EXISTS cinf_entr_fkey;
@@ -77,7 +77,7 @@
  ALTER TABLE public.conjo DROP CONSTRAINT IF EXISTS conjo_pkey;
  ALTER TABLE public.conjo_notes DROP CONSTRAINT IF EXISTS conjo_notes_pkey;
  ALTER TABLE public.conotes DROP CONSTRAINT IF EXISTS conotes_pkey;
- ALTER TABLE public.dbpatch DROP CONSTRAINT IF EXISTS dbpatch_pkey;
+ ALTER TABLE public.db DROP CONSTRAINT IF EXISTS db_pkey;
  ALTER TABLE public.dial DROP CONSTRAINT IF EXISTS dial_pkey;
  ALTER TABLE public.entr DROP CONSTRAINT IF EXISTS entr_pkey;
  ALTER TABLE public.entrsnd DROP CONSTRAINT IF EXISTS entrsnd_pkey;

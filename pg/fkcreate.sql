@@ -1,4 +1,4 @@
- -- This file was auto-generated at 2014-10-19 20:36:29.129438-06, dbpatch level 21.
+ -- This file was auto-generated at 2018-04-26 17:55:29.436646-06, dbver 20c2fe.
 
  ALTER TABLE public.kwxref ADD CONSTRAINT kwxref_kw_key UNIQUE (kw);
  ALTER TABLE public.kwstat ADD CONSTRAINT kwstat_kw_key UNIQUE (kw);
@@ -56,7 +56,7 @@
  ALTER TABLE public.entrsnd ADD CONSTRAINT entrsnd_pkey PRIMARY KEY (entr, snd);
  ALTER TABLE public.entr ADD CONSTRAINT entr_pkey PRIMARY KEY (id);
  ALTER TABLE public.dial ADD CONSTRAINT dial_pkey PRIMARY KEY (entr, sens, kw);
- ALTER TABLE public.dbpatch ADD CONSTRAINT dbpatch_pkey PRIMARY KEY (level);
+ ALTER TABLE public.db ADD CONSTRAINT db_pkey PRIMARY KEY (id);
  ALTER TABLE public.conotes ADD CONSTRAINT conotes_pkey PRIMARY KEY (id);
  ALTER TABLE public.conjo_notes ADD CONSTRAINT conjo_notes_pkey PRIMARY KEY (pos, conj, neg, fml, onum, note);
  ALTER TABLE public.conjo ADD CONSTRAINT conjo_pkey PRIMARY KEY (pos, conj, neg, fml, onum);
@@ -144,7 +144,7 @@
  CREATE INDEX entr_stat_idx ON entr USING btree (stat) WHERE (stat <> 2);
  CREATE INDEX entr_unap_idx ON entr USING btree (unap) WHERE unap;
  CREATE INDEX entrsnd_snd_idx ON entrsnd USING btree (snd);
- CREATE UNIQUE INDEX freq_entr_coalesce_coalesce1_kw_idx ON freq USING btree (entr, (COALESCE((rdng)::integer, 999)), (COALESCE((kanj)::integer, 999)), kw);
+ CREATE UNIQUE INDEX freq_entr_coalesce_coalesce1_kw_idx ON freq USING btree (entr, COALESCE((rdng)::integer, 999), COALESCE((kanj)::integer, 999), kw);
  CREATE UNIQUE INDEX freq_entr_rdng_kanj_kw_key ON freq USING btree (entr, rdng, kanj, kw);
  CREATE UNIQUE INDEX gloss_entr_sens_lang_txt_idx ON gloss USING btree (entr, sens, lang, txt);
  CREATE INDEX gloss_lower_idx ON gloss USING btree (lower((txt)::text) varchar_pattern_ops);

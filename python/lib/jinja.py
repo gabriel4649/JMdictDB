@@ -100,6 +100,13 @@ def add_filters (env):
                 if x.TARG.unap: return True
             return False
         @                                                      add_filter (env)
+          # Create a URL parameter for inclusion in a html "href" attribute.
+        def u (arg, name, delim='&'):
+              # Undefined check must be done first below since "is" or
+              # "==" ops on undefined value will raise error.
+            if isinstance(arg,jinja2.Undefined) or not arg: return ''
+            return delim + name + '=' + str(arg)
+        @                                                      add_filter (env)
         def N (arg):
             return '' if arg is None else arg
         @                                                      add_filter (env)

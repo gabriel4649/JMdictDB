@@ -6,8 +6,11 @@
 \set QUIET 1
 \pset tuples_only
 
-SELECT '-- This file was auto-generated at '||now()||', dbpatch level '||MAX(level)||'.'
-    FROM dbpatch;
+-- FIXME: following is not right because post hgrev-20180418-d83617
+-- the db "version" is the set of id# that are active=True, possibly
+-- more than one. 
+SELECT '-- This file was auto-generated at '||now()||', dbver '
+    || (select id order by ts desc limit 1) ||'.' FROM dbx;
 
 SELECT 'ALTER TABLE '||nspname||'.'||relname||' DROP CONSTRAINT IF EXISTS '||conname||';'
     FROM pg_constraint 

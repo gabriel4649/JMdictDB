@@ -14,8 +14,11 @@ SET search_path=public;
 -- the corresponding unique index will fail with a "relation
 -- 'xxxx_key' already exists" error which can be ignored.
 
-SELECT '-- This file was auto-generated at '||now()||', dbpatch level '||MAX(level)||'.'
-    FROM dbpatch;
+-- FIXME: following is not right because post hgrev-20180418-d83617
+-- the db "version" is the set of id# that are active=True, possibly
+-- more than one. 
+SELECT '-- This file was auto-generated at '||now()||', dbver '
+    || (select id order by ts desc limit 1) ||'.' FROM dbx;
 
 SELECT 'ALTER TABLE '||nspname||'.'||relname||' ADD CONSTRAINT '||conname||' '|| pg_get_constraintdef(pg_constraint.oid)||';'
     FROM pg_constraint

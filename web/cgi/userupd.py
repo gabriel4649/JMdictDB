@@ -215,6 +215,9 @@ def gen_sql_params (is_admin, subj, pw1, pw2, userid, fullname, email,
         """
 
         new = not subj
+          # Convert from the "priv" strings we receive from the user.jinja
+          # form to the single letter keys used in the user database. 
+        priv = {'admin':'A', 'editor':'E', 'user':None}.get(priv)
         collist = [];  values = [];  errors = [];
 
         if pw1 or pw2:
@@ -266,9 +269,10 @@ def gen_sql_params (is_admin, subj, pw1, pw2, userid, fullname, email,
               # allow changing the account's priv or disabled status.
 
             if new or priv != subj.priv:
+                L('cgi.userupd').debug("priv: orig=%r, req=%r, new=%r" % (subj.priv,priv,new))
                 L('cgi.userupd').debug("priv change: %r" % priv)
                 collist.append (('priv', "%s"))
-                values.append ({'admin':'A', 'editor':'E'}.get (priv, None))
+                values.append (priv)
 
             if new or bool(disabled) != subj.disabled:
                 L('cgi.userupd').debug("disabled change: %r" % bool(disabled))

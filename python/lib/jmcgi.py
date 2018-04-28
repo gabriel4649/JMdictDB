@@ -100,6 +100,7 @@ def parseform (readonly=False):
         check_server_status (cfg.get ('web', 'STATUS_DIR'))
 
         form = cgi.FieldStorage()
+        L('cgi.jmcgi').debug("query_string: %s" % os.environ.get('QUERY_STRING'))
         for k in form.keys():
           v = ['***']*len(form.getlist(k)) if k in ('password','pw1','pw2') \
                                            else form.getlist(k)

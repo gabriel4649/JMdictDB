@@ -48,21 +48,15 @@ def log_config (level="debug", filename=None):
                   # non-ascii characters, a UnicodeEncodingError is raised.
                   # Curiously, the error and traceback is written to the web
                   # server log file and then control is returned to the python
-                  # program that generated the message, which contrinues on 
+                  # program that generated the message, which continues on 
                   # normally, though the original non-ascii log message never
                   # appears in the logging log file.  The following forces the
                   # logging file to be opened with utf-8 encoding.
                 msgdest = {'handlers':
                            [logging.FileHandler(filename,'a','utf-8')] }
             else: disable = True
-          # Allow logging levl to be either a number or a string ("debug", 
-          # "error", etc: see the Python Logging module documentation.) 
-        try: lvl = int(level)
-        except ValueError: lvl = logging.getLevelName (level.upper())
-        if not isinstance (lvl, int):
-            raise ValueError ("bad 'level' parameter: %s" % level)
         logging.basicConfig (
-            level=lvl,
+            level=levelnum(level),
             format='%(asctime)s-%(process)d %(levelname)1.1s %(name)s: %(message)s',
             datefmt="%y%m%d-%H%M%S",
               # When both "stream" and "filename" are present and non-None, 
@@ -73,6 +67,18 @@ def log_config (level="debug", filename=None):
             L('logger').error(('Unable to write to logging file: %s'
                                '\n  (cwd: %s)') % (filename, cwd))
             logging.disable (logging.CRITICAL)
+
+def levelnum( level ):
+        """
+        Convert logging 'level' which may be an int already or a string
+        representation of an int, or a logging level string ("info", 
+        "error", etc) in either upper or lower case, to an int.
+        """
+        try: lvl = int(level)
+        except ValueError: lvl = logging.getLevelName (level.upper())
+        if not isinstance (lvl, int):
+            raise ValueError ("bad 'level' parameter: %s" % level)
+        return lvl
 
 def handler( ex_cls, ex, tb ):
         import jmcgi

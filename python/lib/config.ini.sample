@@ -28,17 +28,6 @@ CONTACT_EMAIL = jimbreen@edrdg.org
   # Database to use if no svc parameter given.
 DEFAULT_SVC = db_jmdict
 
-  # Name (including path) to a logfile that will be used by the CGI
-  # scripts in web/cgi/ when they are invoked without any command
-  # line arguments (typically the case when they are invoked by a
-  # webserver.)  When run with command line arguments (typically
-  # the case when run interactively for debugging purposes) logging 
-  # output will be directed to stderr.
-LOGFILE_NAME = "jmdictdb.log"
-  # The default logging level.  One of:
-  #   debug, info, warning, error, critcal
-LEVEL = debug
-
 # The following control the number of entries that the search
 # page will show on the search results page (web/cgi/srchres.py). 
 
@@ -61,6 +50,37 @@ EDITDATA_URL = http://localhost/~me/editdata
   # end with a trailing slash.
 GAHOH_URL =
 #GAHOH_URL = http://localhost/gahoh/
+
+# Logging...
+  # Name (including path) to a logfile that will be used by the CGI
+  # scripts in web/cgi/ when they are invoked without any command
+  # line arguments (typically the case when they are invoked by a
+  # webserver.)  When run with command line arguments (typically
+  # the case when run interactively for debugging purposes) or set
+  # to an empty value (nothing following the "=" character) logging 
+  # output will be directed to stderr.  If the key is not present at
+  # all a default value of "jmdictdb.log" will be used.
+LOG_FILENAME = jmdictdb.log
+  # The default logging level (see [logging] section below to fine-
+  # tune for specific logging sources.)  A numberic level (0-50) or
+  # one of:
+  #   debug, info, warning, error, critical [case insensitive].
+  # See the Python logging module documentation for more details.
+  # If not present defaults to "debug". 
+LOG_LEVEL = debug
+
+#[logging]
+  # This section is optional but may be provided to fine-tune logging
+  # output.  The key in each key=value pair name is a logger name as
+  # used in the jmdictdb code.  Each value is a logging level that
+  # overrides the inherited value.  For example, if the two lines below
+  # were uncommented and if LOG_LEVEL is set to "debug" above, all logging
+  # messages at "debug" level or higher will be output, except for "cgi.*"
+  # messages which will output only if at "info" level or higher, except
+  # for "cgi.jmcgi" messages which will be output only if at "error" or
+  # higher.
+#cgi = info
+#cgi.jmcgi = error
 
 #=======================================================================
 [search]

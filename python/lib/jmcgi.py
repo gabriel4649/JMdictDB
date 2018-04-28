@@ -23,7 +23,7 @@ import jdb, fmt
 import jinja
 import logger; from logger import L
 
-def initcgi():
+def initcgi (cfgfilename):
         """
         Does three things:
         1. Fixes any url command line argument so that it is usable by
@@ -43,10 +43,21 @@ def initcgi():
           # it is looked for in a directory on sys.path.  If it does have
           # a separator in it it is treated as a normal relative or 
           # absolute path.
-        cfg = jdb.cfgOpen ('config.ini')
-        logfname = cfg['web'].get ('LOG_FILENAME','jmdictdb.log')
-        loglevel=cfg['web'].get ('LOG_LEVEL', 'debug')
-        logger.log_config (level = loglevel, filename=logfname)
+        cfg = jdb.cfgOpen (cfgfilename)
+        logfname = cfg.get ('web', 'LOG_FILENAME', fallback='jmdictdb.log')
+        loglevel = cfg.get ('web', 'LOG_LEVEL', fallback='debug')
+          # Additional logging configuration.  If there is a [logging]
+          # section in the config file, it should contain key=value 
+          # pairs where each key is the name of a logger used in the
+          # jmdictdb code and the corresponding value is a logging 
+          # level that the logger will be set to.  The level may be 
+          # numeric or a logging module keyword ("info", "error", etc)
+          # in either case.  This is to allow fine tuning exactly 
+          # what logging messages will be output.
+        logger.log_config (level=loglevel, filename=logfname)
+        if cfg.has_section ('logging'):
+            for k,v in cfg.items ('logging'):
+                L(k).setLevel (logger.levelnum(v))
         return cfg
 
     #FIXME: parseform() and other functions raise standard Python errors
@@ -81,8 +92,8 @@ def parseform (readonly=False):
         cfg (Config inst.) -- Config object from reading config.ini.
         """
 
-        cfg = initcgi()  # Read config, initialize logging.
-        #L('cgi.jmcgi').debug("parseform: called in %s" % sys.modules['__main__'].__file__)
+        cfg = initcgi ("config.ini")  # Read config, initialize logging.
+        L('cgi.jmcgi').debug("parseform: called in %s" % sys.modules['__main__'].__file__)
         errs=[]; sess=None; sid=''; cur=None; svc=None
         def_svc = cfg['web'].get ('DEFAULT_SVC', 'jmdict')
         if def_svc.startswith ('db_'): def_svc = def_svc[3:]

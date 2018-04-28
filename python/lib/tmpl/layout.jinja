@@ -67,7 +67,7 @@
               <input type="hidden" name="{{p[0]}}" value="{{p[1]}}">
               {%- endfor %}
             {%- if session|d %}
-              <a href="user.py?svc={{svc}}">{{session.fullname or session.userid}}</a>
+              <a href="user.py?svc={{svc}}&amp;sid={{sid|d}}">{{session.fullname or session.userid}}</a>
               <input type="submit" name="loginout" value="logout">
             {%- else %}{# [not] session #}
               <table align="right">

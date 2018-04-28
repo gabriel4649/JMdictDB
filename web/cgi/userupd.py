@@ -269,7 +269,6 @@ def gen_sql_params (is_admin, subj, pw1, pw2, userid, fullname, email,
               # allow changing the account's priv or disabled status.
 
             if new or priv != subj.priv:
-                L('cgi.userupd').debug("priv: orig=%r, req=%r, new=%r" % (subj.priv,priv,new))
                 L('cgi.userupd').debug("priv change: %r" % priv)
                 collist.append (('priv', "%s"))
                 values.append (priv)

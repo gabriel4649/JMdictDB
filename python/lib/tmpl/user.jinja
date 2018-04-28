@@ -146,7 +146,7 @@
           <tr>
             <td><input type="reset"></td>
             <td><input type="submit" value="Submit changes">
-            <td class="notes">Access level: {{user.priv|TALpriv}}</td>
+            <td class="notes">Access level: {{user.priv|TALpriv if user else ''}}</td>
             </tr>
           </table>
         </form>

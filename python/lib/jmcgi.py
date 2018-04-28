@@ -89,8 +89,10 @@ def parseform (readonly=False):
         check_server_status (cfg.get ('web', 'STATUS_DIR'))
 
         form = cgi.FieldStorage()
-        #for k in form.keys():
-        #  L('cgi.jmcgi').debug("parseform: form key %s=%r" % (k,form.getlist(k)))
+        for k in form.keys():
+          v = ['***']*len(form.getlist(k)) if k in ('password','pw1','pw2') \
+                                           else form.getlist(k)
+          L('cgi.jmcgi').debug("parseform: form key %s=%r" % (k,v))
         dbg = int (form.getfirst ('dbg') or '0')
         svc = form.getfirst ('svc') or def_svc
         #L('cgi.jmcgi').debug("parseform: svc=%s" % svc)

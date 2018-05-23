@@ -17,10 +17,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11]);
-
 import ply.lex, re
 import jdb, fmtjel
 
@@ -39,7 +35,7 @@ class LexSpec:
         ('SNUMLIST','exclusive'),)
 
     tokens = ('SNUM', 'SEMI', 'BRKTL', 'TEXT', 'QTEXT', 'COLON',
-              'COMMA', 'DOT', 'EQL', 'SLASH', 'BRKTR', 'NL',
+              'COMMA', 'DOT', 'EQL', 'SLASH', 'BRKTR', 'NL', 'FF',
               'GTEXT', 'KTEXT', 'RTEXT', 'NUMBER', 'HASH')
 
     def __init__(self): pass
@@ -61,7 +57,7 @@ class LexSpec:
         return t
 
     def t_TEXT (self, t):
-        '[^;\uFF1B\[\u3000 \\t\\r\\n]+'
+        '[^;\uFF1B\[\u3000 \\t\\r\\n\\f]+'
           # Classify it as kanji, reading (kana), or ordinary
           # text and return token accordingly.
         m = jdb.jstr_classify (t.value)
@@ -113,7 +109,7 @@ class LexSpec:
         return t
 
     def t_TAGLIST_TEXT (self, t):
-        '[^;\uFF1B:=,\u3001\\/\\.\\#\uFF0F\u30FB\\[\\] \\t\\r\\n]+'
+        '[^;\uFF1B:=,\u3001\\/\\.\\#\uFF0F\u30FB\\[\\] \\t\\r\\n\\f]+'
           # Classify it as kanji, reading (kana), or ordinary
           # text and return token accordingly.
         t.value = qcleanup(t.value)
@@ -164,9 +160,11 @@ class LexSpec:
     def t_INITIAL_GLOSS_TAGLIST_SNUMLIST_NL (self, t):
         r'\n'
         t.lexer.lineno += 1
-        if t.lexer.current_state() == 'INITIAL':
-            return t
         return None
+
+    def t_INITIAL_GLOSS_TAGLIST_SNUMLIST_FF (self, t):
+        r'\f'
+        return t
 
     t_ignore = ' \u3000\r\t'
     t_TAGLIST_ignore = ' \u3000\r\t'

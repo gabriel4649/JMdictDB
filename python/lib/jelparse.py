@@ -18,9 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-__version__ = ('$Revision$'[11:-2], \
-               '$Date$'[7:-11]);
-
 import sys, ply.yacc, re, unicodedata, pdb
 from collections import defaultdict
 import jellex, jdb
@@ -73,15 +70,15 @@ def p_entr_1(p):
     p[0] = e
 
 def p_preentr_1(p):
-    '''preentr : kanjsect NL rdngsect NL senses'''
+    '''preentr : kanjsect FF rdngsect FF senses'''
     p[0] = jdb.Entr(_kanj=p[1], _rdng=p[3], _sens=p[5])
 
 def p_preentr_2(p):
-    '''preentr : NL rdngsect NL senses'''
+    '''preentr : FF rdngsect FF senses'''
     p[0] = jdb.Entr(_rdng=p[2], _sens=p[4])
 
 def p_preentr_3(p):
-    '''preentr : kanjsect NL NL senses'''
+    '''preentr : kanjsect FF FF senses'''
     p[0] = jdb.Entr(_kanj=p[1], _sens=p[4])
 
 def p_kanjsect_1(p):

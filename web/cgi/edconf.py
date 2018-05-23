@@ -74,8 +74,8 @@ def main (args, opts):
           # JEL parser which will create an Entr object.
         kanj = (stripws (url_str ('kanj', form))).strip()
         rdng = (stripws (url_str ('rdng', form))).strip()
-        sens = (compws (url_str ('sens', form))).strip()
-        intxt = "\n".join ((kanj, rdng, sens))
+        sens = (url_str ('sens', form)).strip()
+        intxt = "\f".join ((kanj, rdng, sens))
         grpstxt = url_str ('grp', form)
 
           # Get the meta-edit info which will go into the history
@@ -484,10 +484,6 @@ def stripws (s):
           # Make sure 's' is a uncode string; .translate() will
           # bomb if is is a str string.
         return (str(s)).translate (Transtbl)
-
-def compws (s):
-        if s is None: return ''
-        return ' '.join (s.split())
 
 if __name__ == '__main__':
         args, opts = jmcgi.args()

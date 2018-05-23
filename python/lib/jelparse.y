@@ -18,9 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-__version__ = ('$Revision$'[11:-2], \
-               '$Date$'[7:-11]);
-
 import sys, ply.yacc, re, unicodedata, pdb
 from collections import defaultdict
 import jellex, jdb
@@ -75,11 +72,11 @@ entr    : preentr
                 p[0] = e }
         ;
 preentr
-        : kanjsect NL rdngsect NL senses
+        : kanjsect FF rdngsect FF senses
                 { p[0] = jdb.Entr(_kanj=p[1], _rdng=p[3], _sens=p[5]) }
-        | NL rdngsect NL senses
+        | FF rdngsect FF senses
                 { p[0] = jdb.Entr(_rdng=p[2], _sens=p[4]) }
-        | kanjsect NL NL senses
+        | kanjsect FF FF senses
                 { p[0] = jdb.Entr(_kanj=p[1], _sens=p[4]) }
         ;
 kanjsect

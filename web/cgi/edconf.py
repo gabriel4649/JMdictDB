@@ -94,11 +94,13 @@ def main (args, opts):
           # to display what the entry was.  The edsubmit page
           # will do the actual deletion.
 
-        entr, perrs = parse (intxt)
-        errs.extend (perrs)
+        entr, errs = parse (intxt)
+          # 'errs' is a list which if not empty has a single item
+          # which is a 2-seq of str's: (error-type, error-message).
         if errs or not entr:
-            if not entr and not errs: errs.append ("Unable to create an entry.")
-            jmcgi.err_page (errs)
+            if not entr and not errs:
+                errs = ([], "Unable to create an entry from your input.")
+            jmcgi.err_page ([errs[0][1]], prolog=errs[0][0])
 
         entr.dfrm = eid;
         entr.unap = not disp
@@ -459,9 +461,7 @@ def parse (krstext):
         try:
             entr = parser.parse (krstext, lexer=lexer, tracking=True)
         except jelparse.ParseError as e:
-            if not e.loc: msg = e.args[0]
-            else: msg = "%s\n<pre>\n%s\n</pre>" % (e.args[0], e.loc)
-            errs.append (msg)
+            errs.append ((e.args[0], e.loc))
         return entr, errs
 
 def url_int (name, form, errs):

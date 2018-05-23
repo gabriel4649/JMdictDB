@@ -61,7 +61,12 @@
 .conjacks       {font-size: 75%;
                   border-style: none; border-width: thin; }
 
-/* help form */
+/* Help form */
 table.syntable	{border: 1px solid black; border-collapse:collapse;}
 td.syntable     {vertical-align:top; border: 1px solid black;
 		 cellpadding:2; cellspacing:2;}
+
+/* Error form */
+.errormsg	{margin: 1px 1px 1px 1em; white-space: pre;
+		 font-size:110%; font-family: monospace;
+                 padding 2px; }

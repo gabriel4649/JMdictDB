@@ -13,11 +13,16 @@ the database to update (typically "jmdict"):
   $ psql -d jmdict -U jmdictdb -f patches/024-20c2fe.sql
 
 However, there may be exceptions which will be documented in the
-comments in the file so you should look at the contents of the update 
-file before applying it.
+comments in the file so you should look at the contents of the 
+update file before applying it.
  
-Updates will generally be applied in numerical order although some may 
-be optional.
+Updates will generally be applied in numerical order although
+some may be optional.
+
+Updates with a "s" after the leading three digits are updates 
+to the session database (which is independent of the main jmdict 
+database.)
+
 
 Old format:
 -----------

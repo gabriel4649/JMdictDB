@@ -335,7 +335,7 @@
               {%- set dsp = (loop.index>5) %}
               {%- if loop.index0 == 5 %}
             <tr><td colspan="3">
-              <span class="fakelink" onclick="toggle_visibility('hist_{{e.id}}')">
+              <span class="fakelink" onclick="toggle_visibility('hist_{{e.id|string}}')">
                 <font size="-1">(show/hide {{(e._hist|length)-5}} older log entries)</font>
                 </span>
               </td></tr>

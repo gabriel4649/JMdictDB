@@ -178,13 +178,12 @@ class LexSpec:
 
 def gcleanup (txt):
         # Clean up a gloss string.
-        # Remove leading and trailing whitespace from string.
         # Replace multiple whitespace characters with one.
+        # Remove leading and trailing whitespace from string.
         # Unescape backslash-escaped ';'s and '['s.
+        #FIXME? what about other control characters?
 
-        txt = re.sub ('^[\\s\u3000\\n\\r]+', '', txt)
-        txt = re.sub ('[\\s\u3000\\n\\r]+$', '', txt)
-        txt = re.sub ('[\\s\u3000\\n\\r]+$', ' ', txt)
+        txt = re.sub (r'[\s\t\u3000\n\r]+', ' ', txt).strip()
         #txt = re.sub (ur'\\([;\[\\])', ur'\1', txt)
         txt = re.sub (r'\\(.)', r'\1', txt)
         return txt
@@ -195,10 +194,9 @@ def qcleanup (txt):
         # Remove leading and trailing whitespace from string.
         # Replace multiple whitespace characters with one.
         # Unescape backslash-escaped '"'s.
+        #FIXME? what about other control characters?
 
-        txt = re.sub ('^[\\s\u3000\\n\\r]+', '', txt)
-        txt = re.sub ('[\\s\u3000\\n\\r]+$', '', txt)
-        txt = re.sub ('[\\s\u3000\\n\\r]+$', ' ', txt)
+        txt = re.sub (r'[\s\t\u3000\n\r]+', ' ', txt).strip()
         #txt = re.sub (ur'\\(["\\])', r'\1', txt)
         txt = re.sub (r'\\(.)', r'\1', txt)
         return txt

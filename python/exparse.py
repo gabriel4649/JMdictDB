@@ -54,14 +54,7 @@ if _ not in sys.path: sys.path.insert(0, _)
 
 import re, datetime
 import jdb, pgi
-
-  # There are two Tatoeba id numbers for each example pair, one is the
-  # for the Japanese sentence, the other for the English sentence.
-  # We need to combine them to get a single seq#.  Since the database
-  # uses a bigint for seq number we just multiply one of the Tatoeba
-  # id numbers by MAXID and then add the second.  At this time, the
-  # largest Tatoeba id numbers in the examples file is about 1.5*10^6.
-MAXID = 10000000
+from pylib import diagnum
 
 Seq = None
 Lnnum = None
@@ -138,14 +131,17 @@ def parse_ex (fin, begin):
             mo = re.search (r'(\s*#\s*ID\s*=\s*(\d+)_(\d+)\s*)$', aln)
             if mo:
                 aln = aln[:mo.start(1)]
-                  # The ID number is of the form "nnnn_mmmm" where "nnnn" is the
-                  # Tatoeba English sentence id number, and "mmmm" is the Japanese
-                  # id number.  Generate a seq number by combining them.
-                  # FIXME: the following assumes that the english sentence id
-                  #  number will never be greater than MAXID.
+                  # The ID number is of the form "nnnn_mmmm" where "nnnn" is
+                  # the Tatoeba English sentence id number, and "mmmm" is the
+                  # Japanese id number.  Generate a seq number by mapping
+                  # each pair to a "diagonal number".  A diagonal number is
+                  # the number you get from a grid (x>=0, y>=0) where the
+                  # cells are numbered starting at the origin and for each
+                  # step along the X-axis, numbering the cells along the
+                  # diagonal (x,y):(y,x) sequentially.
                 id1, id0 = int(mo.group(2)), int(mo.group(3))
-                if id0 >= MAXID: msg ("Warning, ID#%s_%s, 2nd half exceeds limit" % (id1, id0))
-                Seq = id1 * MAXID + id0
+                Seq = diagnum.xy2d (id0-1, id1-1)  # "-1" because there are no
+                                                   #  zero-valued id numbers.
             else:
                 msg ("No ID number found"); continue
             try:

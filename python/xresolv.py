@@ -143,6 +143,7 @@ def get_xresolv_block (dbh, blksz, xref_src, read_xref=False):
                 t0, o0 = o0, t0  # The typ and xref (aka ord) fields are swapped in xref rows.
             sql_args.extend ([e0,e0,s0,s0,t0,t0,o0])
             rs = jdb.dbread (dbh, sql, sql_args)
+            savepoint (dbh, 'CLEAR', '')  # The read seems to invalidate existing savepoints.)
             if len (rs) == 0: return None
             if Opts.debug & 0x04:
                 print ("Read %d %s rows from %s" % (len(rs), table, lastpos), file=sys.stderr)
@@ -223,7 +224,7 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
               # all the xrefs we've written so far.  Instead we will create
               # a savepoint that we can rollback to that will undo only
               # the xrefs created for this xresolv row.
-            dbh.execute ("SAVEPOINT sp1")
+            savepoint (dbh, "CREATE", "sp1")
               # Write each xref record to the database...
             failed = False
             for x in xrefs:
@@ -262,7 +263,6 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
                       # ones; so exit the for loop.
                     failed = True
                     break       # Continue with the next xresolv row.
-                else: dbh.execute ("RELEASE SAVEPOINT sp1")
 
             if not Opts.keep and not failed:
                   # The xrefs created from this xresolv row were successfully
@@ -271,6 +271,25 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
                 dbh.execute ("DELETE FROM xresolv "
                              "WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s",
                              (v.entr,v.sens,v.typ,v.ord))
+
+def savepoint (dbh, action, name, _active=set()):
+          # Postgresql's SAVEPOINT command is non-standard in that it exhibits
+          # stacking behavior: a second SAVEPOINT command with the same name as 
+          # an earlier one will shadow the earlier one and the earlier one will
+          # become active again when the savepoint name is released.
+          # This function ameliorates that deviant behavor a little bit.
+        #L('savepoint').debug("%s %s (active=%r)" % (action, name, _active))
+        if action == 'CLEAR':
+            _active.clear()
+        elif action == 'CREATE':
+            if name in _active: dbh.execute ("RELEASE SAVEPOINT " + name)
+            dbh.execute ("SAVEPOINT " + name)
+            _active.add (name)
+        elif action == 'RELEASE':
+            if name not in _active: return
+            dbh.execute ("RELEASE SAVEPOINT " + name)
+            _active.remove (name)
+        else: raise ValueError (action)
 
 class Memoize:
     def __init__( self, func ):

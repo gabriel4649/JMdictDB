@@ -66,17 +66,15 @@ if _ not in sys.path: sys.path.insert(0, _)
 import re
 from collections import defaultdict
 import jdb
+import logger; from logger import L
 
 #-----------------------------------------------------------------------
 
 def main (args, opts):
-        global Opts
-        Opts = opts
-          # Debugging flags:
-          #  1 -- Print generated xref records.
-          #  2 -- Print executed sql.
-          #  4 -- Print info about read xresolve records.
-        if opts.debug & 0x02: Debug.prtsql = True
+        logger.log_config (level="debug" if opts.debug else "warning")
+        if opts.debug: L().handlers[0].addFilter (
+            lambda x: x.levelno<30 and re.search (opts.debug, x.name))
+        global Opts;  Opts = opts
         if opts.verbose: opts.keep = True
 
         try: dbh = jdb.dbOpen (opts.database, **jdb.dbopts(opts))
@@ -142,11 +140,12 @@ def get_xresolv_block (dbh, blksz, xref_src, read_xref=False):
                 sql = sql.replace ('.ord', '.xref')    # The "ord" field is named "xref".
                 t0, o0 = o0, t0  # The typ and xref (aka ord) fields are swapped in xref rows.
             sql_args.extend ([e0,e0,s0,s0,t0,t0,o0])
+            L('get_xresolv_block').debug("sql: %s" % sql_args)
+            L('get_xresolv_block').debug("args: %r" % (args,))
             rs = jdb.dbread (dbh, sql, sql_args)
             savepoint (dbh, 'CLEAR', '')  # The read seems to invalidate existing savepoints.)
             if len (rs) == 0: return None
-            if Opts.debug & 0x04:
-                print ("Read %d %s rows from %s" % (len(rs), table, lastpos), file=sys.stderr)
+            L('get_xresolv_block').debug("Read %d %s rows from %s" % (len(rs), table, lastpos))
               # Slicing doesn't seem to currently work on DbRow objects or we could 
               #  write "lastpos = rs[-1][0:4]" below.
             lastpos = rs[-1][0], rs[-1][1], rs[-1][2], rs[-1][3]
@@ -157,6 +156,9 @@ def get_xresolv_block (dbh, blksz, xref_src, read_xref=False):
 def resolv (dbh, xresolv_rows, targ_src, krmap):
 
         for v in xresolv_rows:
+            L('resolv').debug("vref: entr=%s, sens=%s, typ=%s, ord=%s \n"
+                                  "  tsens=%s, prio=%s, rtxt=%s, ktxt=%s"
+                % (v.entr,v.sens,v.typ,v.ord,v.tsens,v.prio,v.rtxt,v.ktxt))
               # Skip this xref if the "--ignore-nonactive" option was
               # given and the entry is not active (i.e. is deleted or
               # rejected) or is unapproved.  Unapproved entries will
@@ -230,16 +232,18 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
             for x in xrefs:
                   # We don't need 'failed=False' here because the 'for' loop is
                   # always exited below the first time 'failed' is set to True.
-                if Opts.debug & 0x01:
-                    prnt (sys.stderr, "not yet"
-                    )#      "(x.entr,x.sens,x.xref,x.typ,x.xentr"
-                    #           .  "x.xsens}," . (x.rdng}||"") . "," . (x.kanj}||"")
-                    #           . ",x.notes})\n")
+                L('resolv.xref').debug("xref: entr=%s, sens=%s, xref=%s, typ=%s, \n"
+                                  "  xentr=%s, xsens=%s, rdng=%s, kanj=%s" %
+                      (x.entr,x.sens,x.xref,x.typ,x.xentr,x.xsens,x.rdng or '',x.kanj or ''))
                 try:
                     sql = "INSERT INTO xref VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-                    dbh.execute (sql, (x.entr,x.sens,x.xref,x.typ,x.xentr,
-                                       x.xsens,x.rdng,x.kanj,None))
+                    args = (x.entr,x.sens,x.xref,x.typ,x.xentr,x.xsens,
+                            x.rdng,x.kanj,None)
+                    L('resolv.sql').debug("sql: %s" % sql)
+                    L('resolv.sql').debug("args: %r" % (args,))
+                    dbh.execute (sql, args)
                 except jdb.dbapi.IntegrityError as e:
+                    L('resolv').debug("exception: %s" % str(e))
                     if "duplicate key value" not in str(e):
                           # If some exception other than a duplicate key
                           #  error then reraise it.
@@ -278,7 +282,7 @@ def savepoint (dbh, action, name, _active=set()):
           # an earlier one will shadow the earlier one and the earlier one will
           # become active again when the savepoint name is released.
           # This function ameliorates that deviant behavor a little bit.
-        #L('savepoint').debug("%s %s (active=%r)" % (action, name, _active))
+        L('savepoint').debug("%s %s (active=%r)" % (action, name, _active))
         if action == 'CLEAR':
             _active.clear()
         elif action == 'CREATE':
@@ -580,12 +584,10 @@ Arguments: none"""
         p.add_option ("-p", "--password", default=None,
             type="str", dest="password",
             help="Connect to database with this password.")
-
-        p.add_option ("-D", "--debug", default=0,
-            type="int", metavar="NUM",
-            help="Print debugging output to stderr.  The number NUM "
-                "controls what is printed.  See source code.")
-
+        p.add_option ("-D", "--debug", default='',
+            help="Produce debugging output.  This is a regular "
+                "expression that the selects loggers whose messages will "
+                "be displayed.  For all available output use '.'")
         p.epilog = """\
 When a program such as jmparse.py or exparse.py parses
 a corpus file, any xrefs in that file are in textual

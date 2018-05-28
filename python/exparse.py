@@ -186,7 +186,7 @@ def parseb (bln, jtxt):
         return res
 
 def parsebitem (s, n, jtxt):
-        mo = re.search (r'^([^([{]+)(\((\S+)\))?(\[\d+\])*(\{(\S+)\})?(~)?\s*$', s)
+        mo = re.search (r'^([^([{~]+)(\((\S+)\))?(\[\d+\])*(\{(\S+)\})?(~)?\s*$', s)
         if not mo:
             raise ParseError ("\"B\" line parse error in item %d: '%s'" % (n, s))
 

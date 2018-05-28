@@ -28,7 +28,7 @@ import sys, logging, traceback, os, datetime
 
 L = logging.getLogger;
 
-def log_config (level="debug", filename=None):
+def log_config (level="debug", filename=None, ts=None):
         """
         level -- One of: "critical", "error", "warning", "info", "debug".
         filename -- If not given or None, logging messages will be written 
@@ -36,6 +36,11 @@ def log_config (level="debug", filename=None):
           messages will be appended.  If the file is not writable at the 
           time this function is called, a logging message will be written
           to stderr to that effect and further logging disabled.
+        ts -- Controls the presence or absence of a timestamp prefix on the 
+          logging messages.  If None the timestamp will be absent if the
+          'filename' parameter is false (ie, output to stderr) and present
+          otherwise (output to a file).  If 'ts' is not None then timestamp
+          will be present if true, absent if false.
         """
         msgdest, disable = {'stream': sys.stderr}, False
         if filename:
@@ -55,9 +60,12 @@ def log_config (level="debug", filename=None):
                 msgdest = {'handlers':
                            [logging.FileHandler(filename,'a','utf-8')] }
             else: disable = True
+        if ts is None: want_ts = bool (filename)
+        else: want_ts = ts
+        tsfmt = '%(asctime)s-%(process)d ' if want_ts else ''
         logging.basicConfig (
             level=levelnum(level),
-            format='%(asctime)s-%(process)d %(levelname)1.1s %(name)s: %(message)s',
+            format=tsfmt + '%(levelname)1.1s %(name)s: %(message)s',
             datefmt="%y%m%d-%H%M%S",
               # When both "stream" and "filename" are present and non-None, 
               # "filename" takes precedence according to 

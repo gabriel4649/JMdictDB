@@ -1,15 +1,11 @@
--- Run this file from a shell cd'd to the parent
--- directory of the directory this file is in
--- using a command like:
--- 
---    psql -f pg/load.sql -d postgres [-U username]
+--
+--    psql -f reload.sql [-d jmdict]
 --
 -- You may need to use additional arguments such
 -- as '-U username' depending on exiting defaults.
 
-\i mktables.sql
-\i loadkw.sql
-\i loadconj.sql
-\i mkviews.sql
-\i mkperms.sql
-
+\ir mktables.sql
+\ir loadkw.sql
+\ir loadconj.sql
+\ir mkviews.sql
+\ir mkperms.sql

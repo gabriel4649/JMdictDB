@@ -18,10 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110#1301, USA
 #######################################################################
 
-
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11]);
-
 # This program creates rows in table "xref" based on the
 # textual (kanji and kana) xref information saved in table
 # "xresolv".  xresolv contains "unresolved" xrefs -- that
@@ -66,25 +62,27 @@ if _ not in sys.path: sys.path.insert(0, _)
 import re
 from collections import defaultdict
 import jdb
-import logger; from logger import L
+import logging, logger; from logger import L
 
 #-----------------------------------------------------------------------
 
 def main (args, opts):
-        logger.log_config (level="debug" if opts.debug else "warning")
-        if opts.debug: L().handlers[0].addFilter (
-            lambda x: x.levelno<30 and re.search (opts.debug, x.name))
+        logger.log_config (level="debug" if opts.messages else "warning")
+        if opts.messages:
+            try: filter = parse_mlist (opts.messages)
+            except ValueError as e: sys.exit("Bad -m option: '%s'" % str (e))
+            L().handlers[0].addFilter (filter)
+
         global Opts;  Opts = opts
-        if opts.verbose: opts.keep = True
 
         try: dbh = jdb.dbOpen (opts.database, **jdb.dbopts(opts))
         except jdb.dbapi.OperationalError as e:
-            perr ("Error, unable to connect to database, do you need -u or -p?\n" % str(e))
-
+            sys.exit ("Error, unable to connect to database, "
+                      "do you need -u or -p?\n" % str(e))
         try: xref_src = get_src_ids (opts.source_corpus)
-        except KeyError: perr ("Unknown corpus: '%s'" % opts.source_corpus)
+        except KeyError: sys.exit ("Unknown corpus: '%s'" % opts.source_corpus)
         try: targ_src = get_src_ids (opts.target_corpus)
-        except KeyError: perr ("Unknown corpus: '%s'" % opts.target_corpus)
+        except KeyError: sys.exit ("Unknown corpus: '%s'" % opts.target_corpus)
 
           #FIXME: need to make work with multiple srcs in targ_src and
           # provide limiting the scope (eg to one src or an entry) of
@@ -97,11 +95,9 @@ def main (args, opts):
             if not xresolv_rows: break
             resolv (dbh, xresolv_rows, targ_src, krmap)
             if opts.noaction:
-                if opts.verbose: print ("ROLLBACK")
-                dbh.connection.rollback()
+                L('main').info("ROLLBACK");  dbh.connection.rollback()
             else:
-                if opts.verbose: print ("COMMIT")
-                dbh.connection.commit()
+                L('main').info("COMMIT");  dbh.connection.commit()
         dbh.close()
 
 def get_xresolv_block (dbh, blksz, xref_src, read_xref=False):
@@ -126,35 +122,37 @@ def get_xresolv_block (dbh, blksz, xref_src, read_xref=False):
                 src_condition = "e.src %sIN %%s AND " % ('NOT ' if neg else '')
                 sql_args.append (tuple(srcs))
             else: src_condition = ''
-            sql = "SELECT v.*,e.src,e.seq,e.stat,e.unap FROM %s v JOIN entr e ON v.entr=e.id " \
-                            "WHERE %s" \
-                              " (v.entr>%%s OR (v.entr=%%s " \
-                               "AND (v.sens>%%s OR (v.sens=%%s " \
-                                "AND (v.typ>%%s OR (v.typ=%%s " \
-                                 "AND (v.ord>%%s))))))) " \
-                            "ORDER BY v.entr,v.sens,v.typ,v.ord " \
-                            "LIMIT %s" % (table, src_condition, blksz)
+            sql = "SELECT v.*,e.src,e.seq,e.stat,e.unap "\
+                  "FROM %s v JOIN entr e ON v.entr=e.id "\
+                  "WHERE %s (v.entr>%%s OR (v.entr=%%s "\
+                     "AND (v.sens>%%s OR (v.sens=%%s "\
+                     "AND (v.typ>%%s OR (v.typ=%%s "\
+                     "AND (v.ord>%%s))))))) "\
+                   "ORDER BY v.entr,v.sens,v.typ,v.ord "\
+                   "LIMIT %s" % (table, src_condition, blksz)
             if read_xref:
                   # If reading the xref rather than the xresolv table make some
                   # adjustments:
-                sql = sql.replace ('.ord', '.xref')    # The "ord" field is named "xref".
-                t0, o0 = o0, t0  # The typ and xref (aka ord) fields are swapped in xref rows.
+                  #   The "ord" field is named "xref".
+                sql = sql.replace ('.ord', '.xref')
+                  #   The typ and xref (aka ord) fields are swapped in xref rows.
+                t0, o0 = o0, t0
             sql_args.extend ([e0,e0,s0,s0,t0,t0,o0])
             L('get_xresolv_block').debug("sql: %s" % sql_args)
             L('get_xresolv_block').debug("args: %r" % (args,))
             rs = jdb.dbread (dbh, sql, sql_args)
-            savepoint (dbh, 'CLEAR', '')  # The read seems to invalidate existing savepoints.)
+            savepoint (dbh, 'CLEAR', '')  # read invalidates current savepoints.
             if len (rs) == 0: return None
-            L('get_xresolv_block').debug("Read %d %s rows from %s" % (len(rs), table, lastpos))
-              # Slicing doesn't seem to currently work on DbRow objects or we could 
-              #  write "lastpos = rs[-1][0:4]" below.
+            L('get_xresolv_block').debug("Read %d %s rows from %s"
+                                         % (len(rs), table, lastpos))
+              # Slicing doesn't seem to currently work on DbRow objects or 
+              #  we could write "lastpos = rs[-1][0:4]" below.
             lastpos = rs[-1][0], rs[-1][1], rs[-1][2], rs[-1][3]
             yield rs
         assert True, "Unexpected break from loop"
         return
 
 def resolv (dbh, xresolv_rows, targ_src, krmap):
-
         for v in xresolv_rows:
             L('resolv').debug("vref: entr=%s, sens=%s, typ=%s, ord=%s \n"
                                   "  tsens=%s, prio=%s, rtxt=%s, ktxt=%s"
@@ -204,7 +202,8 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
               # referring entry.
 
             if e[0] == v.entr:
-                msg (fs(v), "self-referential", kr(v))
+                L('resolv').warning("%s %s: %s" 
+                                    % (fs(v), "self-referential", kr(v)))
                 continue
 
               # Now that we know the target entry, we can create the actual
@@ -213,8 +212,9 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
               # in the xresolv record.
             xrefs = mkxrefs (v, e)
 
-            if Opts.verbose and xrefs: prnt (sys.stdout,
-                "%s resolved to %d xrefs: %s" % (fs(v),len(xrefs),kr(v)))
+            if xrefs:
+                msg = "%s resolved to %d xrefs: %s" % (fs(v),len(xrefs),kr(v))
+                L('resolv').info(msg)
 
               # We may get a "duplicate key" error when trying to add
               # an xref for this xresolv row if the xref already exists
@@ -251,11 +251,12 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
                         raise
                       # Format and print a warning message.
                     mo = re.search (r'\(.+\)', str(e), flags=re.I)
+                    assert mo is not None
                       # An 'mo' that is None here (causing an AttributeError
                       #  exception) indicates the exception text was not what
                       #  we expected.
-                    prnt (sys.stderr, "%s duplicate key: %s"
-                                      % (fs(v), mo.group(0)))
+                    L('resolve').warning("%s duplicate key: %s"
+                                         % (fs(v), mo.group(0)))
                       # Postgresql won't continue after an error.
                       #  A ROLLBACK would allow it to continue but we would
                       #  lose all the previous xrefs that have been written
@@ -326,7 +327,8 @@ def get_entries (dbh, targ_src, rtxt, ktxt, seq):
 
         KW = jdb.KW
         if not ktxt and not rtxt:
-            raise ValueError ("get_entries(): 'rtxt' and 'ktxt' args are are both empty.")
+            raise ValueError ("get_entries(): 'rtxt' and 'ktxt' args "
+                              "are are both empty.")
         args = [];  cond = [];
         if targ_src:
             srcs, neg = targ_src
@@ -381,8 +383,9 @@ def choose_target (v, entries):
 
           # And if there were no matching entries at all...
         if 0 == len (entries):
-            msg (fs(v), "not found", kr(v)); return None
-
+            L('choose_target').warning("%s %s: %s" 
+                                       % (fs(v), "not found", kr(v)))
+            return None
         if not ktxt:
               # If there is only one entry that has the
               # given reading as the first reading, and no
@@ -408,7 +411,8 @@ def choose_target (v, entries):
           # At this point we either failed to resolve in one
           # of the above suites, or we had both a reading and
           # kanji with multiple matches -- either way we give up.
-        msg (fs(v), "multiple targets", kr(v))
+        L('choose_target').warning("%s %s: %s" 
+                                   % (fs(v), "multiple targets", kr(v)))
         return None
 
 Prev = None
@@ -439,7 +443,9 @@ def mkxrefs (v, e):
             xrefs.append (xref)
 
         if not xrefs:
-            if v.tsens: msg (fs(v), "Sense not found", kr(v))
+            if v.tsens:
+                L('choose_target').warning("%s %s: %s" 
+                                           % (fs(v), "Sense not found", kr(v)))
             else: raise ValueError ("No senses in retrieved entry!")
 
         return xrefs
@@ -453,7 +459,8 @@ def read_krmap (dbh, infn, targ_src):
             if line.isspace() or re.search (r'^\s*\#', line): continue
             rtxt, ktxt, seq = line.split ('\t', 3)
             try: seq = int (seq)
-            except ValueError: raise ValueError ("Bad seq# at line %d in '%s'" % (lnnum, infn))
+            except ValueError:
+                raise ValueError ("Bad seq# at line %d in '%s'" % (lnnum, infn))
             entrs = get_entries (dbh, targ_src, rtxt, ktxt, seq)
             if not entrs:
                 raise ValueError ("Entry seq not found, or kana/kanji"
@@ -470,7 +477,8 @@ def kr (v):
         return s
 
 def fs (v):
-        s = "%s.%d (%d,%d,%d):" % (jdb.KW.SRC[v.src].kw, v.seq,v.entr,v.sens,v.ord)
+        s = "%s.%d (%d,%d,%d):" \
+           % (jdb.KW.SRC[v.src].kw, v.seq,v.entr,v.sens,v.ord)
         return s
 
 def fmt_jitem (ktxt, rtxt, slist):
@@ -479,17 +487,6 @@ def fmt_jitem (ktxt, rtxt, slist):
         jitem = (ktxt or "") + ('/' if ktxt and rtxt else '') + (rtxt or "")
         if slist: jitem += '[' + ','.join ([str(s) for s in slist]) + ']'
         return jitem
-
-def msg (source, msg, arg):
-        if not Opts.quiet:
-            print ("%s %s: %s" % (source,msg,arg))
-
-def prnt (f, msg):
-        print (msg, file=f)
-
-def perr (msg):
-        print (msg, file=sys.stderr)
-        sys.exit(1)
 
 def get_src_ids (srclist):
         if not srclist: return None
@@ -509,6 +506,27 @@ def get_src_id (id_or_name):
         src = jdb.KW.SRC[src].id
         return src
 
+def parse_mlist (mlist):
+        regexes = []
+        for m in mlist:
+            try:
+                if not m[0].isdigit(): 
+                    level, regex = m[0].upper(), m[1:]
+                    level = {'W':30,'I':20,'D':10}[level]
+                else: level, regex = int(m[0:2]), m[2:]
+                regexes.append ((level, regex))
+            except (ValueError, KeyError, IndexError):
+                raise ValueError (m)
+        filter = lambda x: logmsg_filter (x, regexes)
+        return filter
+
+def logmsg_filter (logrec, regexes):
+        for level, regex in regexes:
+            if logrec.levelno < level or not re.search(regex,logrec.name):
+                continue
+            return True
+        return False
+
 #-----------------------------------------------------------------------
 
 from optparse import OptionParser
@@ -523,9 +541,7 @@ entr.id xrefs and write them to database table "xref".
 
 Arguments: none"""
 
-        v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
-                + " Rev %s (%s)" % __version__
-        p = OptionParser (usage=u, version=v, add_help_option=False,
+        p = OptionParser (usage=u, add_help_option=False,
                           formatter=IndentedHelpFormatterWithNL())
 
         p.add_option ("--help",
@@ -535,14 +551,6 @@ Arguments: none"""
             action="store_true",
             help="Resolve xrefs and generate log file but don't make "
                 "any changes to database. (This implies --keep.)")
-
-        p.add_option ("-v", "--verbose", default=False,
-            action="store_true",
-            help="Print a message for every successfully resolved xref.")
-
-        p.add_option ("-q", "--quiet", default=False,
-            action="store_true",
-            help="Do not print a warning for each unresolvable xref.")
 
         p.add_option ("-f", "--filename", default=None,
             help="Name of a file containing kanji/reading to seq# map.")
@@ -560,6 +568,21 @@ Arguments: none"""
             help="Limit to xrefs occuring in entries of CORPORA (a comma-"
                 "separated list of corpus names or id numbers).  If preceeded "
                 "by a \"-\", all corpora will be included except those listed.")
+
+        p.add_option ("-m", "--messages", default=[], action="append",
+            help="Determines level and source of output messages.  "
+                "May be given mutiple times.  Each occurance has value "
+                "consisting of a single letter: 'W', 'I' or 'D' followed "
+                "immediately (no intervening space) by a regular expression.  "
+                "Messages generated with a level greater or equal to the "
+                "level in the option and whose \"name\" attribute matches "
+                "the option regex with be printed to stderr. \n\n"
+                ""
+                "The current levels and names available are:"
+                " warning: resolv, choose_target; "
+                " info: main, resolv; "
+                " debug get_xresolv_block, resolv, resolv.sql,"
+                " resolv.xref, savepoint;")
 
         p.add_option ("-t", "--target-corpus", default=None,
             metavar='CORPORA',
@@ -584,10 +607,6 @@ Arguments: none"""
         p.add_option ("-p", "--password", default=None,
             type="str", dest="password",
             help="Connect to database with this password.")
-        p.add_option ("-D", "--debug", default='',
-            help="Produce debugging output.  This is a regular "
-                "expression that the selects loggers whose messages will "
-                "be displayed.  For all available output use '.'")
         p.epilog = """\
 When a program such as jmparse.py or exparse.py parses
 a corpus file, any xrefs in that file are in textual

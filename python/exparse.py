@@ -133,15 +133,15 @@ def parse_ex (fin, begin):
                 aln = aln[:mo.start(1)]
                   # The ID number is of the form "nnnn_mmmm" where "nnnn" is
                   # the Tatoeba English sentence id number, and "mmmm" is the
-                  # Japanese id number.  Generate a seq number by mapping
-                  # each pair to a "diagonal number".  A diagonal number is
-                  # the number you get from a grid (x>=0, y>=0) where the
-                  # cells are numbered starting at the origin and for each
-                  # step along the X-axis, numbering the cells along the
-                  # diagonal (x,y):(y,x) sequentially.
+                  # Japanese id number.  Generate a seq number by mapping each
+                  # pair to a "square number".  These are numbers generated
+                  # by assigning sequential numbers on a grid (x>=0, y>=0)
+                  # starting at the origin proceeding down the diagonal, 
+                  # assigning number to each cell on the column and row at
+                  # the diagonal cell. 
                 id1, id0 = int(mo.group(2)), int(mo.group(3))
-                Seq = diagnum.xy2d (id0-1, id1-1)  # "-1" because there are no
-                                                   #  zero-valued id numbers.
+                Seq = diagnum.xy2sq (id0-1, id1-1)  # "-1" because there are no
+                                                    #  zero-valued id numbers.
             else:
                 msg ("No ID number found"); continue
             try:

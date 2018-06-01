@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import sys, unittest, os.path, pdb
 if '../lib' not in sys.path: sys.path.append ('../lib')
@@ -153,6 +153,13 @@ def check2 (_, test, exp=None):
         _.assertEqual (outtxt, exptxt, msg)
 
 def roundtrip (cur, intxt):
+          # Since hg-180523-6b1a12 we use '\f' to separate the kanji, reading
+          # and senses sections in JEL text used as input to jelparse() 
+          # rather than '\n' which was previously used.  To avoid changing
+          # all the test data that still uses '\n', we call secsepfix() to
+          # replace the first two '\n's in the test data with '\f's to make
+          # suitable for parsing.
+        intxt = secsepfix (intxt)
         jellex.lexreset (Lexer, intxt)
         entr = Parser.parse (intxt, lexer=Lexer)
         entr.src = 1
@@ -172,15 +179,8 @@ def loadData (filename, secsep, last=[None,None]):
             last[0] = filename
         return last[1]
 
-
-def loadData (filename, secsep, last=[None,None]):
-        # Read test data file 'filename' caching its data and returning
-        # cached data on subsequent consecutive calls with same filename.
-        if last[0] != filename:
-            last[1] = unittest_extensions.readfile_utf8 (filename,
-                         rmcomments=True, secsep=secsep)
-            last[0] = filename
-        return last[1]
+def secsepfix (s):
+        return s.replace('\n', '\f', 2)
 
 def dotest (_, testid, xmlfn=None, jelfn=None, dir='data/fmtjel', enc='utf_8_sig'):
         if xmlfn is None: xmlfn = os.path.join (dir, testid + '.xml')

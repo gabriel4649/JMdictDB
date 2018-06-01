@@ -240,6 +240,13 @@ def check2 (_, test, exp=None):
         _.assertEqual (outtxt, exptxt, msg)
 
 def roundtrip (cur, intxt):
+          # Since hg-180523-6b1a12 we use '\f' to separate the kanji, reading
+          # and senses sections in JEL text used as input to jelparse() 
+          # rather than '\n' which was previously used.  To avoid changing
+          # all the test data that still uses '\n', we call secsepfix() to
+          # replace the first two '\n's in the test data with '\f's to make
+          # suitable for parsing.
+        intxt = secsepfix (intxt)
         jellex.lexreset (Lexer, intxt)
         entr = Parser.parse (intxt, lexer=Lexer)
         entr.src = 1
@@ -247,6 +254,8 @@ def roundtrip (cur, intxt):
         for s in entr._sens: jdb.augment_xrefs (cur, getattr (s, '_xref', []))
         for s in entr._sens: jdb.add_xsens_lists (getattr (s, '_xref', []))
         for s in entr._sens: jdb.mark_seq_xrefs (cur, getattr (s, '_xref', []))
+          # fmtjel.entr() returns JEL text using '\n', not '\f' as the
+          # section separator character. 
         outtxt = fmtjel.entr (entr, nohdr=True)
         return outtxt
 
@@ -258,6 +267,9 @@ def loadData (filename, secsep, last=[None,None]):
                          rmcomments=True, secsep=secsep)
             last[0] = filename
         return last[1]
+
+def secsepfix (s):
+        return s.replace('\n', '\f', 2)
 
 class Lookuptag (unittest.TestCase):
 

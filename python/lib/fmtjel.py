@@ -45,6 +45,32 @@ def escgloss (txt):
         txt = re.sub (r'([;\[])', r'\\\1', txt)
         return txt
 
+def entr (entr, nohdr=False):
+        # Create a JEL text representation of 'entr'.
+        # We assume that the caller has called jelfmt::markup_xrefs()
+        # on entr before calling fmt_entr() (because jel_xref() uses
+        # the info added by add_xrefsums()).
+        #
+        # Caution: The JEL text entry returned by this function can not
+        # be used directly as input to the JEL parser because the latter
+        # requires the kanji, reading and sense sections to be separated
+        # with '\f' ('\x0c') characters but this function returns the
+        # sections separated with '\n' characters (for display purposes).
+        # Assuming no header line is included, replacing the first two
+        # '\n' characters in the returned text with '\f' will make it
+        # parsable by jelparse().
+
+        sects = []
+        if not nohdr: sects.append (fmt.entrhdr (entr))
+        k = getattr (entr, '_kanj', [])
+        r = getattr (entr, '_rdng', [])
+        s = getattr (entr, '_sens', [])
+        sects.append (kanjs (k))
+        sects.append (rdngs (r, k))
+        sects.append (senss (s, k, r))
+        txt = '\n'.join (sects)
+        return txt
+
 def kanjs (kanjs):
         txt = '\uFF1B'.join ([kanj (x) for x in kanjs])
         return txt
@@ -229,21 +255,6 @@ def grp (grp):
           # FIXME: Handle grp.notes which is currently ignored.
         ord = '' if grp.ord is None else ("." + str (grp.ord))
         return KW.GRP[grp.kw].kw + ord
-
-def entr (entr, nohdr=False):
-        # We assume that the caller has called jelfmt::markup_xrefs()
-        # on entr before calling fmt_entr() (because jel_xref() uses
-        # the info added by add_xrefsums()).
-        sects = []
-        if not nohdr: sects.append (fmt.entrhdr (entr))
-        k = getattr (entr, '_kanj', [])
-        r = getattr (entr, '_rdng', [])
-        s = getattr (entr, '_sens', [])
-        sects.append (kanjs (k))
-        sects.append (rdngs (r, k))
-        sects.append (senss (s, k, r))
-        txt = '\n'.join (sects)
-        return txt
 
 def markup_entr_xrefs (cur, entries):
         all_xrefs = []

@@ -183,7 +183,7 @@ def gcleanup (txt):
         # Unescape backslash-escaped ';'s and '['s.
         #FIXME? what about other control characters?
 
-        txt = re.sub (r'[\s\t\u3000\n\r]+', ' ', txt).strip()
+        txt = re.sub (r'[ \t\u3000\n\r]+', ' ', txt).strip()
         #txt = re.sub (ur'\\([;\[\\])', ur'\1', txt)
         txt = re.sub (r'\\(.)', r'\1', txt)
         return txt
@@ -196,7 +196,7 @@ def qcleanup (txt):
         # Unescape backslash-escaped '"'s.
         #FIXME? what about other control characters?
 
-        txt = re.sub (r'[\s\t\u3000\n\r]+', ' ', txt).strip()
+        txt = re.sub (r'[ \t\u3000\n\r]+', ' ', txt).strip()
         #txt = re.sub (ur'\\(["\\])', r'\1', txt)
         txt = re.sub (r'\\(.)', r'\1', txt)
         return txt

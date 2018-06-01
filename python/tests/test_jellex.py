@@ -22,7 +22,7 @@ class Test_create (unittest.TestCase):
     def test002 (_):
         _.assertEqual (set(_.tokens),
                        set(('SNUM', 'SEMI', 'BRKTL', 'TEXT', 'QTEXT', 'COLON',
-                            'COMMA', 'DOT', 'EQL', 'SLASH', 'BRKTR', 'NL',
+                            'COMMA', 'DOT', 'EQL', 'SLASH', 'BRKTR', 'NL', 'FF',
                             'GTEXT', 'KTEXT', 'RTEXT', 'NUMBER', 'HASH')))
 
 class Test_single1 (unittest.TestCase):
@@ -64,9 +64,11 @@ class Test_single1 (unittest.TestCase):
       # Note the following are not an SNUM due to the space inside brackets.
     #def test000340(_): check(_,'[0 ]',['TEXT','SNUM'])
     #def test000350(_): check(_,'[ 0]',['SNUM'])
-    def test000400(_): check(_,'a;b\uFF1Bc\u3000d e\tf\rg\nh',
-        ['TEXT','SEMI','TEXT','SEMI','TEXT','TEXT','TEXT','TEXT','TEXT','NL','TEXT'],
-        ['a',';','b','\uFF1B','c','d','e','f','g','\n','h'])
+    def test000400(_): check(_,'a;b\uFF1Bc\u3000d e\tf\rg\nh\fi',
+          # The lexer ignores NLs and recognises FFs since revisions
+          # hg-180523-6b1a12 and hg-180525-61238f.
+        ['TEXT','SEMI','TEXT','SEMI','TEXT','TEXT','TEXT','TEXT','TEXT','TEXT','FF','TEXT'],
+        ['a',';','b','\uFF1B','c','d','e','f','g','h','\f','i'])
 
     # Taglist sequences
 
@@ -123,7 +125,7 @@ class Test_single1 (unittest.TestCase):
     def test001620(_): check(_,'[0]text  ',['SNUM','GTEXT'],['[0]','text'])
     def test001630(_): check(_,'[0]  text  ',['SNUM','GTEXT'],['[0]  ','text'])  #FIXME
     def test001640(_): check(_,'[0]  words twice  ',['SNUM','GTEXT'],['[0]  ','words twice'])  #FIXME
-    def test001650(_): check(_,'[0]  words   twice  ',['SNUM','GTEXT'],['[0]  ','words   twice'])  #FIXME
+    def test001650(_): check(_,'[0]  words   twice  ',['SNUM','GTEXT'],['[0]  ','words twice']) #FIXME?
     def test001660(_): check(_,'[0]\u3000\u3000text',['SNUM','GTEXT'],['[0]\u3000\u3000','text'])  #FIXME
     def test001670(_): check(_,'[0]text\u3000\u3000',['SNUM','GTEXT'],['[0]','text'])
     def test001680(_): check(_,'[0]\t\ttext',['SNUM','GTEXT'],['[0]\t\t','text'])  #FIXME

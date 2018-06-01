@@ -18,9 +18,10 @@
 #######################################################################
 
 # Provide a standard logging configuration for JMdictDB cgi scripts, 
-# tools and library functions.
+# tools and library functions and supply functionality that should
+# be provided by the Python's logging module.
 
-import sys, logging, traceback, os, datetime
+import sys, logging, traceback, os, datetime, re, pdb
 
 # The function L() is a convenience function provided to importers
 # as a consise way to write logging calls.  It is used like:
@@ -28,7 +29,7 @@ import sys, logging, traceback, os, datetime
 
 L = logging.getLogger;
 
-def log_config (level="debug", filename=None, ts=None):
+def log_config (level="warning", filename=None, ts=None, filters=None):
         """
         level -- One of: "critical", "error", "warning", "info", "debug".
         filename -- If not given or None, logging messages will be written 
@@ -41,6 +42,34 @@ def log_config (level="debug", filename=None, ts=None):
           'filename' parameter is false (ie, output to stderr) and present
           otherwise (output to a file).  If 'ts' is not None then timestamp
           will be present if true, absent if false.
+        filters -- A list of strings that specify logging messages to
+          output.  Each consists of an initial (case-insensitive) letter
+          from the set ('w', 'i', 'd'} (corresponding to the logging levels,
+          WARNING, INFO, DEBUG) optionally preceeded by a "!" character and
+          the remainder of the string being a regular expression.
+          - Logging messages with a level greater or equal to the logger's
+            level will be output as expected regardless of the filters.
+          - Messages with a level less than the logger's level will be
+            compared with each filter in the order given looking for a
+            match: the message's log level is greater or equal to the
+            filter's log level and message's source (logger name) matches
+            the filter's regex.
+          - If the matched filter was not preceeded with a "!" the log
+            message will be printed and no further filters will be compared.
+          - If the matched filter was preceeded with a "!" the log message
+            will not be printed  no further filters will be compared.
+          - If the log message matched no filters it will not be output.
+
+          Example:
+            logger.log_config (level="error", filters=['!D^xx', 'Dyes$'])
+            L('test_yes').debug('wow')       # Printed (matched filt#2)
+            L('test_no').debug('no see me')  # Not printed (no match)
+            L('test_no').error('see me!')    # Printed (no match but msg
+                                             #  level >= logger level.
+            L('xx_yes').info('but not me')   # Not printed (neg. match)
+          Note that if the order of the two filters were reversed, the
+          forth message would be output because the 'Dyes$' filter would
+          match before the '!D^xx' filter could reject it.
         """
         msgdest, disable = {'stream': sys.stderr}, False
         if filename:
@@ -75,6 +104,20 @@ def log_config (level="debug", filename=None, ts=None):
             L('logger').error(('Unable to write to logging file: %s'
                                '\n  (cwd: %s)') % (filename, cwd))
             logging.disable (logging.CRITICAL)
+        elif filters:
+            try: filter = parse_filter_list (filters, L().getEffectiveLevel())
+            except ValueError as e:
+                L('logger').error("Bad filter: '%s'" % str (e))
+            else:
+                  # Filters attached to loggers apply only to messages
+                  # produced by that logger, the root logger will not
+                  # apply a filter to a message produced by a different
+                  # logger, even if the the root logger is handling it.
+                  # However, the handler will.
+                L().handlers[0].addFilter (filter)
+                  # To allow debug messages to be filtered the logger's
+                  # level has to allow them too.
+                L().setLevel(1)
 
 def levelnum( level ):
         """
@@ -88,6 +131,40 @@ def levelnum( level ):
             raise ValueError ("bad 'level' parameter: %s" % level)
         return lvl
 
+Level_abbr2num = {'C':50,'E':40,'W':30,'I':20,'D':10}
+def parse_filter_list (flist, lvllimit=30):
+        regexes = []
+        for t in flist:
+            t_orig, neg = t, 1
+            try:
+                if t[0] == '!': neg, t = -1, t[1:]
+                if t[0].isdigit():
+                    level, regex = int(t[0:1]), t[2:]
+                else:
+                    level, regex = Level_abbr2num[t[0].upper()], t[1:]
+                regexes.append ((level * neg, regex))
+            except (ValueError, KeyError, IndexError):
+                raise ValueError (t_orig)
+        filter = lambda x: _logmsg_filter (x, regexes, lvllimit)
+        return filter
+
+def _logmsg_filter (rec, regexes, lvllimit):
+          # rec -- Log record created by a logger.
+          # regexes -- List of (level,regex) tuples.
+          # lvllimit -- Logging level at or above which logging messages
+          #   will always be output.
+        if rec.levelno >= lvllimit: return True
+        for lvl,regex in regexes:
+            if rec.levelno < abs(lvl) or not re.search(regex,rec.name):
+                continue
+              # We get here if a regex matched and message level is equal
+              #  or greater than the filter level.  If 'lvl'>0 we return
+              #  True to output the message.  If 'lvl' is negative, this
+              #  is a negative match: return False to NOT output the message.
+            return True if lvl >= 0 else False
+        return False
+
+  # Please document me!
 def handler( ex_cls, ex, tb ):
         import jmcgi
         errid = datetime.datetime.now().strftime("%y%m%d-%H%M%S")\

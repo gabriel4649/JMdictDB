@@ -17,8 +17,8 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-import sys, re, cgi, urllib.request, urllib.parse, urllib.error, os, os.path, \
-        random, time, http.cookies, datetime, time, copy
+import sys, re, cgi, urllib.request, urllib.parse, urllib.error, os, os.path
+import random, time, http.cookies, datetime, time, copy
 import jdb, fmt
 import jinja
 import logger; from logger import L
@@ -34,9 +34,10 @@ def initcgi (cfgfilename):
           file.
         2. Reads the configuration file (location currently hardwired.)
         3. Initializes the Python logging system so log messages will have
-          a consistent format. Callers of this function should not use
-          the logger.L() function until after this function is called.
+          a consistent format. JMdictDB developers should not call the
+          logger.L function() until after this function is called.
         """
+
           # Adjust any url argument so that the cgi module can use it.
         args()
           # If the .ini filename below has no directory separator in it,
@@ -44,20 +45,11 @@ def initcgi (cfgfilename):
           # a separator in it it is treated as a normal relative or 
           # absolute path.
         cfg = jdb.cfgOpen (cfgfilename)
-        logfname = cfg.get ('web', 'LOG_FILENAME', fallback='jmdictdb.log')
-        loglevel = cfg.get ('web', 'LOG_LEVEL', fallback='debug')
-          # Additional logging configuration.  If there is a [logging]
-          # section in the config file, it should contain key=value 
-          # pairs where each key is the name of a logger used in the
-          # jmdictdb code and the corresponding value is a logging 
-          # level that the logger will be set to.  The level may be 
-          # numeric or a logging module keyword ("info", "error", etc)
-          # in either case.  This is to allow fine tuning exactly 
-          # what logging messages will be output.
-        logger.log_config (level=loglevel, filename=logfname)
-        if cfg.has_section ('logging'):
-            for k,v in cfg.items ('logging'):
-                L(k).setLevel (logger.levelnum(v))
+        logfname = cfg.get ('logging', 'LOG_FILENAME', fallback='jmdictdb.log')
+        loglevel = cfg.get ('logging', 'LOG_LEVEL', fallback='warning')
+        filters = parse_cfg_logfilters (
+                   cfg.get ('logging', 'LOG_FILTERS', fallback=''))
+        logger.log_config (level=loglevel, filename=logfname, filters=filters)
         return cfg
 
     #FIXME: parseform() and other functions raise standard Python errors
@@ -1107,3 +1099,10 @@ def wc2like (s):
         s1 = s1.replace ('\x02', '?')
         return s1
 
+def parse_cfg_logfilters (s):
+        result = []
+        for ln in s.splitlines():
+            ln = ln.strip ()
+            if not ln: continue
+            result.append (ln)
+        return result

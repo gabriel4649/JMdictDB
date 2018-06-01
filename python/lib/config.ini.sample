@@ -51,36 +51,65 @@ EDITDATA_URL = http://localhost/~me/editdata
 GAHOH_URL =
 #GAHOH_URL = http://localhost/gahoh/
 
-# Logging...
-  # Name (including path) to a logfile that will be used by the CGI
-  # scripts in web/cgi/ when they are invoked without any command
-  # line arguments (typically the case when they are invoked by a
-  # webserver.)  When run with command line arguments (typically
+#=======================================================================
+[logging]
+
+  # Name (optionally including path) to a logfile that will be used
+  # by the CGI scripts in web/cgi/ when they are invoked without any
+  # command line arguments (typically the case when they are invoked
+  # by a web server.)  When run with command line arguments (typically
   # the case when run interactively for debugging purposes) or set
-  # to an empty value (nothing following the "=" character) logging 
+  # to an empty value (nothing following the "=" character) logging
   # output will be directed to stderr.  If the key is not present at
   # all a default value of "jmdictdb.log" will be used.
 LOG_FILENAME = jmdictdb.log
+
   # The default logging level (see [logging] section below to fine-
   # tune for specific logging sources.)  A numberic level (0-50) or
   # one of:
   #   debug, info, warning, error, critical [case insensitive].
   # See the Python logging module documentation for more details.
-  # If not present defaults to "debug". 
-LOG_LEVEL = debug
+  # If not present defaults to "warning".
+LOG_LEVEL = warning
 
-#[logging]
-  # This section is optional but may be provided to fine-tune logging
-  # output.  The key in each key=value pair name is a logger name as
-  # used in the jmdictdb code.  Each value is a logging level that
-  # overrides the inherited value.  For example, if the two lines below
-  # were uncommented and if LOG_LEVEL is set to "debug" above, all logging
-  # messages at "debug" level or higher will be output, except for "cgi.*"
-  # messages which will output only if at "info" level or higher, except
-  # for "cgi.jmcgi" messages which will be output only if at "error" or
-  # higher.
-#cgi = info
-#cgi.jmcgi = error
+  # Filters:
+  # A list of log levels and regex patterns that specify logging
+  # messages to output.
+  # - Each filter is on a separate line with no intervening blank
+  #   or comment lines and must be indented relative to the
+  #   "LOG_FILTERS=" line.
+  # - A filter consists of an initial (case-insensitive) letter
+  #   from the set ('w', 'i', 'd'} (corresponding to the logging
+  #   levels, WARNING, INFO, DEBUG) optionally preceeded by a "!"
+  #   character.  The remainder of the string is a regular expression.
+  # - Logging messages with a level greater or equal to the logger's
+  #   level will be output as expected regardless of filters.
+  # - Messages with a level less than the logger's level will be
+  #   compared with each filter in the order given looking for a
+  #   match: the message's log level is greater or equal to the
+  #   filter's log level and message's source (logger name) matches
+  #   the filter's regex.
+  # - If the matched filter was not preceeded with a "!" the log
+  #   message will be printed and no further filters will be compared.
+  # - If the matched filter was preceeded with a "!" the log message
+  #   will not be printed  no further filters will be compared.
+  # - If the log message matched no filters it will not be output.
+  # (Note that "filter" is a misnomer, they should actually be
+  # called sieves since they let things through rather than blocking
+  # them out.)
+  #
+  # Example:
+  #   logger.log_config (level="error", filters=['!D^xx', 'Dyes$'])
+  #   L('test_yes').debug('wow')       # Printed (matched filt#2)
+  #   L('test_no').debug('no see me')  # Not printed (no match)
+  #   L('test_no').error('see me!')    # Printed (no match but msg
+  #                                    #  level >= logger level.
+  #   L('xx_yes').info('but not me')   # Not printed (neg. match)
+  # Note that if the order of the two filters were reversed, the
+  # forth message would be output because the 'Dyes$' filter would
+  # match before the '!D^xx' filter could reject it.
+#LOG_FILTERS =
+#  I^submit.*
 
 #=======================================================================
 [search]

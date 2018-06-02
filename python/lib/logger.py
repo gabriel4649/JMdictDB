@@ -17,7 +17,7 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-# Provide a standard logging configuration for JMdictDB cgi scripts, 
+# Provide a standard logging configuration for JMdictDB cgi scripts,
 # tools and library functions and supply functionality that should
 # be provided by the Python's logging module.
 
@@ -32,12 +32,12 @@ L = logging.getLogger;
 def log_config (level="warning", filename=None, ts=None, filters=None):
         """
         level -- One of: "critical", "error", "warning", "info", "debug".
-        filename -- If not given or None, logging messages will be written 
+        filename -- If not given or None, logging messages will be written
           to sys.stderr.  Otherwise the name of a file to which the logging
-          messages will be appended.  If the file is not writable at the 
+          messages will be appended.  If the file is not writable at the
           time this function is called, a logging message will be written
           to stderr to that effect and further logging disabled.
-        ts -- Controls the presence or absence of a timestamp prefix on the 
+        ts -- Controls the presence or absence of a timestamp prefix on the
           logging messages.  If None the timestamp will be absent if the
           'filename' parameter is false (ie, output to stderr) and present
           otherwise (output to a file).  If 'ts' is not None then timestamp
@@ -82,7 +82,7 @@ def log_config (level="warning", filename=None, ts=None, filters=None):
                   # non-ascii characters, a UnicodeEncodingError is raised.
                   # Curiously, the error and traceback is written to the web
                   # server log file and then control is returned to the python
-                  # program that generated the message, which continues on 
+                  # program that generated the message, which continues on
                   # normally, though the original non-ascii log message never
                   # appears in the logging log file.  The following forces the
                   # logging file to be opened with utf-8 encoding.
@@ -96,18 +96,18 @@ def log_config (level="warning", filename=None, ts=None, filters=None):
             level=levelnum(level),
             format=tsfmt + '%(levelname)1.1s %(name)s: %(message)s',
             datefmt="%y%m%d-%H%M%S",
-              # When both "stream" and "filename" are present and non-None, 
-              # "filename" takes precedence according to 
+              # When both "stream" and "filename" are present and non-None,
+              # "filename" takes precedence according to
             **msgdest)
         if disable:
             cwd = os.getcwd()
-            L('logger').error(('Unable to write to logging file: %s'
-                               '\n  (cwd: %s)') % (filename, cwd))
+            L('lib.logger').error(('Unable to write to logging file: %s'
+                                  '\n  (cwd: %s)') % (filename, cwd))
             logging.disable (logging.CRITICAL)
         elif filters:
             try: filter = parse_filter_list (filters, L().getEffectiveLevel())
             except ValueError as e:
-                L('logger').error("Bad filter: '%s'" % str (e))
+                L('lib.logger').error("Bad filter: '%s'" % str (e))
             else:
                   # Filters attached to loggers apply only to messages
                   # produced by that logger, the root logger will not
@@ -122,7 +122,7 @@ def log_config (level="warning", filename=None, ts=None, filters=None):
 def levelnum( level ):
         """
         Convert logging 'level' which may be an int already or a string
-        representation of an int, or a logging level string ("info", 
+        representation of an int, or a logging level string ("info",
         "error", etc) in either upper or lower case, to an int.
         """
         try: lvl = int(level)

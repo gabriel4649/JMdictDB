@@ -85,21 +85,21 @@ def parseform (readonly=False):
         """
 
         cfg = initcgi ("config.ini")  # Read config, initialize logging.
-        L('cgi.jmcgi').debug("parseform: called in %s" % sys.modules['__main__'].__file__)
+        L('lib.jmcgi.parseform').debug("called in %s" % sys.modules['__main__'].__file__)
         errs=[]; sess=None; sid=''; cur=None; svc=None
         def_svc = cfg['web'].get ('DEFAULT_SVC', 'jmdict')
         if def_svc.startswith ('db_'): def_svc = def_svc[3:]
         check_server_status (cfg.get ('web', 'STATUS_DIR'))
 
         form = cgi.FieldStorage()
-        L('cgi.jmcgi').debug("query_string: %s" % os.environ.get('QUERY_STRING'))
+        L('lib.jmcgi').debug("query_string: %s" % os.environ.get('QUERY_STRING'))
         for k in form.keys():
           v = ['***']*len(form.getlist(k)) if k in ('password','pw1','pw2') \
                                            else form.getlist(k)
-          L('cgi.jmcgi').debug("parseform: form key %s=%r" % (k,v))
+          L('lib.jmcgi.parseform').debug("form key %s=%r" % (k,v))
         dbg = int (form.getfirst ('dbg') or '0')
         svc = form.getfirst ('svc') or def_svc
-        #L('cgi.jmcgi').debug("parseform: svc=%s" % svc)
+        #L('lib.jmcgi.parseform').debug("svc=%s" % svc)
         usid = form.getfirst ('sid') or ''    # No SID is "", not None.
         try: svc = safe (svc)
         except ValueError: errs.append ('svc=' + svc)
@@ -114,11 +114,11 @@ def parseform (readonly=False):
         sid = get_sid_from_cookie() or ''
         sid_from_cookie = bool (sid)
         if usid: sid = usid     # Use sid from url if available.
-        L('cgi.jmcgi').debug("parseform: sid=%s, from_cookie=%s, action=%s" % (sid, sid_from_cookie, action))
+        L('lib.jmcgi.parseform').debug("sid=%s, from_cookie=%s, action=%s" % (sid, sid_from_cookie, action))
         uname = form.getfirst('username') or ''
         pw = form.getfirst('password') or ''
         sid, sess = get_session (scur, action, sid, uname, pw)
-        L('cgi.jmcgi').debug("parseform: %s session, sid=%s" % ("got" if sess else "no", sid))
+        L('lib.jmcgi.parseform').debug("%s session, sid=%s" % ("got" if sess else "no", sid))
         if sid: set_sid_cookie (sid, delete=(action=="logout"))
         if sid_from_cookie: sid=''
         scur.connection.close()
@@ -208,7 +208,7 @@ def dblogin (cur, userid, password):
               "WHERE userid=%s AND pw=crypt(%s, pw) AND NOT disabled" 
         rs = jdb.dbread (cur, sql, (userid, password))
         if not rs:
-            L('cgi.jmcgi').debug("login: pw fail for %s" % userid)
+            L('lib.jmcgi.dblogin').debug("pw fail for %s" % userid)
             time.sleep (1);  return '', None
 
           # Look for an existing session (the most recent if more than one).
@@ -218,12 +218,12 @@ def dblogin (cur, userid, password):
               "  AND (NOW()-ts)<'%s'::INTERVAL" \
               " ORDER BY ts DESC LIMIT 1" % SESSION_TIMEOUT
         rs = jdb.dbread (cur, sql, (userid,))
-        L('cgi.jmcgi').debug("login: %s: %s sessions found" % (userid, len(rs)))
+        L('lib.jmcgi.dblogin').debug("%s: %s sessions found" % (userid, len(rs)))
         if len (rs) == 1:
             sid = rs[0][0]
               # Update the session timestamp to 'now'.
             db_update_sid_ts (cur, sid)
-            L('cgi.jmcgi').debug("login: %s: using session: %s" % (userid,sid))
+            L('lib.jmcgi.dblogin').debug("%s: using session: %s" % (userid,sid))
             return sid, rs[0]
 
           # No existing session found, create a new session.
@@ -231,7 +231,7 @@ def dblogin (cur, userid, password):
         cur.execute (sql, (userid,))
         sid = cur.fetchone()[0]
         cur.connection.commit()
-        L('cgi.jmcgi').debug("login: %s: new session %s" % (userid, sid))
+        L('lib.jmcgi.dblogin').debug("%s: new session %s" % (userid, sid))
         sess = db_validate_sid (cur, sid)
         return sid, sess
 
@@ -257,7 +257,7 @@ def db_validate_sid (cur, sid):
               "  AND (NOW()-ts)<'%s'::INTERVAL" \
               % SESSION_TIMEOUT
         rs = jdb.dbread (cur, sql, (sid,))
-        L('cgi.jmcgi').debug("login: validating sid %s, result=%s" % (sid, len(rs)))
+        L('lib.jmcgi.db_validate_sid').debug("validating sid %s, result=%s" % (sid, len(rs)))
         if len (rs) == 0: return None
         return rs[0]
 

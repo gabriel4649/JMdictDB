@@ -52,9 +52,7 @@ def main( args, opts ):
           #  from the User form. 
         action = {(0,0):'u', (0,1):'d', (1,0):'n', (1,1):'x'}\
                    [(bool(fv('new')),bool(fv('delete')))]
-        L('cgi.userupd').debug(
-            "new=%r, delete=%r, action=%r, subjid=%r, userid=%r"
-            % (fv('new'), fv('delete'), action, fv('subjid'), fv('userid')))
+        L('cgi.userupd').debug("new=%r, delete=%r, action=%r, subjid=%r, userid=%r" % (fv('new'), fv('delete'), action, fv('subjid'), fv('userid')))
  
           # NOTE: The jmcgi.err_page() calls below do not return,
           #  jmcgi.err_page() calls sys.exit().
@@ -141,16 +139,19 @@ def main( args, opts ):
                 "to return to the user page, correct them, and resubmit "
                 "your changes.")
 
-        update_session = None;  result = None
+        update_session = None;  result = None;  summary = 'not available'
         if action == 'n':                         # Create new user...
             cols = ','.join (c for c,p in collist)
             pmarks = ','.join (p for c,p in collist)
             sql = "INSERT INTO users(%s) VALUES (%s)" % (cols, pmarks)
             values_sani = sanitize_v (values, collist)
+            summary = "added user \"%s\"" \
+                      % ''.join(p for c,p in collist if c=='userid')
         elif action == 'd':                       # Delete existing user...
             sql = "DELETE FROM users WHERE userid=%s"
             values.append (fv('subjid'))
             values_sani = values
+            summary = "deleted user \"%s\"" % fv('subjid')
         else:                                     # Update existing user...
             if not collist: result = 'nochange'
             else:
@@ -161,21 +162,23 @@ def main( args, opts ):
                 sql = "UPDATE users SET %s WHERE userid=%%s" % updclause
                 values.append (fv('subjid'))
                 values_sani = sanitize_v (values, collist)
+                summary = "updated user %s (%s)" \
+                           % (fv('subjid'), ','.join([c for c,p in collist]))
 
         if result != 'nochange':
             sesscur = jdb.dbOpenSvc (cfg, svc, session=True, nokw=True)
-            L('cgi.userupd').debug("sql:  %r" % sql)
+            L('cgi.userupd.db').debug("sql:  %r" % sql)
               # 'values_sani' should be the same as values but with any
               # password text masked out.
-            L('cgi.userupd').debug("args: %r" % values_sani)
+            L('cgi.userupd.db').debug("args: %r" % values_sani)
             sesscur.execute (sql, values)
             sesscur.connection.commit()
               #FIXME: trap db errors and try to figure out what went
               # wrong in terms that a user can remediate.
             if update_session:
-                L('cgi.userupd').debug("update sess.userid: %r->%r" 
-                                       % (sess.userid, update_session))
+                L('cgi.userupd').debug("update sess.userid: %r->%r" % (sess.userid, update_session))
                 sess.userid = update_session
+            L('cgi.userupd').info(summary)
             result = 'success'
           # If the user is not an admin we send them back to their
           # settings page (using 'userid' since it they may have changed

@@ -35,7 +35,7 @@ def main (args, opts):
             sql = "SELECT * FROM users ORDER BY userid"
             sesscur = jdb.dbOpenSvc (cfg, svc, session=True, nokw=True)
             users = jdb.dbread (sesscur, sql)
-            L('cgi.user').debug('read %d rows from table "user"' % (len(users),))
+            L('cgi.users').debug('read %d rows from table "user"' % (len(users),))
         jmcgi.jinja_page ("users.jinja", users=users, session=sess,
                           cfg=cfg, parms=parms, svc=svc, dbg=dbg,
                           sid=sid, this_page='user.py', result=fv('result'))

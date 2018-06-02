@@ -144,11 +144,12 @@ def main( args, opts ):
         try: form, svc, dbg, dbh, sid, sess, parms, cfg = jmcgi.parseform()
         except ValueError as e: jmcgi.err_page ([str (e)])
           # Svc and Sid are used in function url() and are global in
-          # in order to avoid having to pass them through several layers 
-          # of function calls. 
+          # in order to avoid having to pass them through several layers
+          # of function calls.
         Svc, Sid = svc, sid
 
-        L('edsubmit').debug("started: userid=%s, sid=%s" % (sess and sess.userid, sess and sess.id))
+        L('cgi.edsubmit').debug("started: userid=%s, sid=%s"
+                                % (sess and sess.userid, sess and sess.id))
         fv = form.getfirst
           # disp values: '': User submission, 'a': Approve. 'r': Reject;
         disp = fv ('disp') or ''
@@ -165,7 +166,7 @@ def main( args, opts ):
           # cause the following START TRANSACTON command to fail with:
           #  InternalError: SET TRANSACTION ISOLATION LEVEL must be
           #  called before any query
-        L('edsubmit').debug("main(): starting transaction")
+        L('cgi.edsubmit.main').debug("starting transaction")
         dbh.connection.rollback()
         dbh.execute ("START TRANSACTION ISOLATION LEVEL SERIALIZABLE");
           # FIXME: we unserialize the entr's xref's as they were resolved
@@ -188,17 +189,17 @@ def main( args, opts ):
             if e: added.append (e)
 
         if errs:
-            L('edsubmit').debug("main(): rolling back transaction due to errors")
+            L('cgi.edsubmit.main').info("rolling back transaction due to errors")
             dbh.connection.rollback()
             jmcgi.err_page (errs)
         else:
-            L('edsubmit').debug("main(): doing commit")
+            L('cgi.edsubmit.main').info("doing commit")
             dbh.connection.commit()
         jmcgi.jinja_page ("submitted.jinja",
                         added=added, parms=parms,
                         svc=svc, dbg=dbg, sid=sid, session=sess, cfg=cfg,
                         this_page='edsubmit.py')
-        L('edsubmit').debug("main(): thank you page sent, exiting normally")
+        L('cgi.edsubmit.main').debug("thank you page sent, exiting normally")
 
 def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
         # Add a changed entry, 'entr', to the jmdictdb database accessed
@@ -261,14 +262,14 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
         # differ between the parent and 'entr'.
 
         KW = jdb.KW
-        L('edsubmit').debug(("submission (disp=%s, is_editor=%s, userid=%s, entry id=%s,\n"
-                + " "*36 + "parent=%s, stat=%s, unap=%s, seq=%s, src=%s)")
-              % (disp, is_editor, userid, entr.id, entr.dfrm, entr.stat,
-                 entr.unap, entr.seq, entr.src))
-        L('edsubmit').debug("submission(): entry text: %s %s"
-              % ((';'.join (k.txt for k in entr._kanj)),
-                 (';'.join (r.txt for r in entr._rdng))))
-        L('edsubmit').debug("submission(): seqset: %s" % logseq (dbh, entr.seq, entr.src))
+        L('cgi.edsubmit.submission').info(("disp=%s, is_editor=%s, userid=%s, entry id=%s,\n" + " "*36 + "parent=%s, stat=%s, unap=%s, seq=%s, src=%s")
+          % (disp, is_editor, userid, entr.id, entr.dfrm, entr.stat,
+             entr.unap, entr.seq, entr.src))
+        L('cgi.edsubmit.submission').info("entry text: %s %s"
+          % ((';'.join (k.txt for k in entr._kanj)),
+             (';'.join (r.txt for r in entr._rdng))))
+        L('cgi.edsubmit.submission').debug("seqset: %s"
+          % logseq (dbh, entr.seq, entr.src))
         oldid = entr.id
         entr.id = None          # Submissions, approvals and rejections will
         entr.unap = not disp    #   always produce a new db entry object so
@@ -281,12 +282,14 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
         else:   # Modification of existing entry.
             edroot = get_edroot (dbh, entr.dfrm)
             edtree = get_subtree (dbh, edroot)
-              # Get the parent entry and augment the xrefs so when hist diffs are
-              # generated, they will show xref details.
-            L('edsubmit').debug("submission(): reading parent entry %d" % entr.dfrm)
+              # Get the parent entry and augment the xrefs so when hist diffs
+              # are generated, they will show xref details.
+            L('cgi.edsubmit.submission').debug("reading parent entry %d"
+                                               % entr.dfrm)
             pentr, raw = jdb.entrList (dbh, None, [entr.dfrm], ret_tuple=True)
             if len (pentr) != 1:
-                L('edsubmit').debug("submission(): missing parent %d" % entr.dfrm)
+                L('cgi.edsubmit.submission').debug("missing parent %d"
+                                                   % entr.dfrm)
                   # The editset may have changed between the time our user
                   # displayed the Confirmation screen and they clicked the
                   # Submit button.  Changes involving unapproved edits result
@@ -329,11 +332,11 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
           # Before calling merge_hist() check for a condition that would
           # cause merge_hist() to fail.
         if entr.stat==KW.STAT['D'].id and not getattr (entr, 'dfrm', None):
-            L('edsubmit').debug("submission(): delete of new entry error")
+            L('cgi.edsubmit.submission').debug("delete of new entry error")
             errs.append ("Delete requested but this is a new entry.")
 
         if disp == 'a' and has_xrslv (entr) and entr.stat==KW.STAT['A'].id:
-            L('edsubmit').debug("submission(): unresolved xrefs error")
+            L('cgi.edsubmit.submission').debug("unresolved xrefs error")
             errs.append ("Can't approve because entry has unresolved xrefs")
 
         if not errs:
@@ -342,7 +345,7 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
               # allowed to change.
             if not is_editor:
                 if pentr:
-                    L('edsubmit').debug("submission(): copying freqs from parent")
+                    L('cgi.edsubmit.submission').debug("copying freqs from parent")
                     jdb.copy_freqs (pentr, entr)
                   # Note that non-editors can provide freq items on new
                   # entries.  We expect an editor to vet this when approving.
@@ -356,8 +359,8 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
               # When we get here, if merge_rev is true, pentr will also be
               # true.  If we are wrong, add_hist() will throw an exception
               # but will never return a None, so no need to check return val.
-            L('edsubmit').debug("submission(): adding hist for '%s', merge=%s"
-                                % (h.name, merge_rev))
+            L('cgi.edsubmit.submission').debug("adding hist for '%s', merge=%s"
+                                               % (h.name, merge_rev))
             entr = jdb.add_hist (entr, pentr, userid,
                                  h.name, h.email, h.notes, h.refs, merge_rev)
         if not errs:
@@ -366,7 +369,7 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
               #  strings.  We quietly remove any here.
             n = jdb.bom_fixall (entr)
             if n > 0:
-                L('edsubmit').debug("submission(): Removed %s BOM character(s)" % n)
+                L('cgi.edsubmit.submission').debug("removed %s BOM character(s)" % n)
 
         if not errs:
             if not disp:
@@ -376,9 +379,10 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
             elif disp == "r":
                 added = reject (dbh, entr, edtree, errs, None)
             else:
-                L('edsubmit').debug("submission(): Bad url parameter (disp=%s)" % disp)
+                L('cgi.edsubmit.submission').debug("bad url parameter (disp=%s)" % disp)
                 errs.append ("Bad url parameter (disp=%s)" % disp)
-        L('edsubmit').debug("submission(): seqset: %s" % logseq (dbh, entr.seq, entr.src))
+        L('cgi.edsubmit.submission').debug("seqset: %s"
+                                           % logseq (dbh, entr.seq, entr.src))
         if not errs: return added
           # Note that changes have not been committed yet, caller is
           # expected to do that.
@@ -386,22 +390,23 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
 
 def submit (dbh, entr, edtree, errs):
         KW = jdb.KW
-        L('edsubmit').debug("submit(): submitting entry with parent id %s" % entr.dfrm)
+        L('cgi.edsubmit.submit').debug("submitting entry with parent id %s"
+                                       % entr.dfrm)
         if not entr.dfrm and entr.stat != KW.STAT['A'].id:
-            L('edsubmit').debug("submit(): bad url param exit")
+            L('cgi.edsubmit.submit').debug("bad url param exit")
             errs.append ("Bad url parameter, no dfrm");  return
         if entr.stat == jdb.KW.STAT['R'].id:
-            L('edsubmit').debug("submit(): bad stat=R exit")
+            L('cgi.edsubmit.submit').debug("bad stat=R exit")
             errs.append ("Bad url parameter, stat=R");  return
         res = addentr (dbh, entr)
         return res
 
 def approve (dbh, entr, edtree, errs):
         KW = jdb.KW
-        L('edsubmit').debug("approve(): approving entr id %s" % entr.dfrm)
+        L('cgi.edsubmit.approve').debug("approving entr id %s" % entr.dfrm)
           # Check stat.  May be A or D, but not R.
         if entr.stat == KW.STAT['R'].id:
-            L('edsubmit').debug("approve(): stat=R exit")
+            L('cgi.edsubmit.approve').debug("stat=R exit")
             errs.append ("Bad url parameter, stat=R"); return
 
         dfrmid = entr.dfrm
@@ -411,14 +416,14 @@ def approve (dbh, entr, edtree, errs):
               # chain back to the root entry.
             try: approve_ok (edtree, dfrmid)
             except NonLeafError as e:
-                L('edsubmit').debug("approve(): NonLeafError")
+                L('cgi.edsubmit.approve').debug("NonLeafError")
                 errs.append ("Edits have been made to this entry.  "\
                     "You need to reject those edits before you can approve "\
                     "this entry.  The id numbers are: %s"\
                     % ', '.join ("id="+url(x) for x in leafsn([e.args[0]])))
                 return
             except BranchesError as e:
-                L('edsubmit').debug("approve(): BranchesError")
+                L('cgi.edsubmit.approve').debug("BranchesError")
                 errs.append ("There are other edits pending on some of "\
                     "the predecessor entries of this one, and this "\
                     "entry cannot be approved until those are rejected.  "\
@@ -438,27 +443,28 @@ def approve (dbh, entr, edtree, errs):
 
 def reject (dbh, entr, edtree, errs, rejcnt=None):
         KW = jdb.KW
-        L('edsubmit').debug("reject(): rejecting entry id %s, rejcnt=%s" % (entr.dfrm, rejcnt))
+        L('cgi.edsubmit.reject').debug("rejecting entry id %s, rejcnt=%s"
+                                       % (entr.dfrm, rejcnt))
           # rejectable() returns a list entr rows on the path to the edit
           # edit root, starting with the one closest to the root, and ending
           # with our entry's parent, that can be rejected.  If this is a new
           # entry, 'rejs' will be set to [].
         try: rejs = rejectable (edtree, entr.dfrm)
         except NonLeafError as e:
-            L('edsubmit').debug("reject(): NonLeafError")
+            L('cgi.edsubmit.reject').debug("NonLeafError")
             errs.append ("Edits have been made to this entry.  "\
-                    "To reject entries, you must reject the version(s) most recently edited, "\
-                    "which are: %s"\
+                    "To reject entries, you must reject the version(s) most "
+                    "recently edited, which are: %s"\
                     % ', '.join ("id="+url(x) for x in leafsn([e.args[0]])))
             return
         except IsApprovedError as e:
-            L('edsubmit').debug("reject(): IsApprovedrror")
+            L('cgi.edsubmit.reject').debug("IsApprovedrror")
             errs.append ("You can only reject unapproved entries.")
             return
         if not rejcnt or rejcnt > len(rejs): rejcnt = len(rejs)
         chhead = (rejs[-rejcnt]).id if rejcnt else None
-        L('edsubmit').debug("reject(): rejs=%r, rejcnt=%d, chhead=%s"
-                % ([x.id for x in rejs], -rejcnt, chhead))
+        L('cgi.edsubmit.reject').debug("rejs=%r, rejcnt=%d, chhead=%s"
+          % ([x.id for x in rejs], -rejcnt, chhead))
         entr.stat = KW.STAT['R'].id
         entr.dfrm = None
         entr.unap = False
@@ -469,11 +475,12 @@ def reject (dbh, entr, edtree, errs, rejcnt=None):
 def addentr (dbh, entr):
         entr._hist[-1].unap = entr.unap
         entr._hist[-1].stat = entr.stat
-        L('edsubmit').debug("addentr(): adding entry to database")
-        L('edsubmit').debug("addentr(): %d hists, last hist is %s [%s] %s" % (len(entr._hist),
-              entr._hist[-1].dt, entr._hist[-1].userid, entr._hist[-1].name))
+        L('cgi.edsubmit.addentr').debug("adding entry to database")
+        L('cgi.edsubmit.addentr').debug("%d hists, last hist is %s [%s] %s"
+          % (len(entr._hist), entr._hist[-1].dt, entr._hist[-1].userid,
+             entr._hist[-1].name))
         res = jdb.addentr (dbh, entr)
-        L('edsubmit').debug("addentr(): entry id=%s, seq=%s, src=%s added to database" % res)
+        L('cgi.edsubmit.addentr').info("entry id=%s, seq=%s, src=%s added to database" % res)
         return res
 
 def delentr (dbh, id):
@@ -483,7 +490,8 @@ def delentr (dbh, id):
         # but leaving the entr and hist records, use database
         # function delentr.  'dbh' is an open dbapi cursor object.
 
-        L('edsubmit').debug("delentr(): deleting entry id %s from database" % id)
+        L('cgi.edsubmit.delentr').debug("deleting entry id %s from database"
+                                        % id)
         sql = "DELETE FROM entr WHERE id=%s";
         dbh.execute (sql, (id,))
 
@@ -519,7 +527,7 @@ def approve_ok (edtree, id):
         #    If the given entry is not approvable, an error is raised.
 
         if not edtree:
-            L('edsubmit').debug("approve_ok(): edtree is none, returning")
+            L('cgi.edsubmit.approve_ok').debug("edtree is none, returning")
             return
         root, d = edtree;  erow = d[id];  branches = []
         if erow._dfrm: raise NonLeafError (erow)
@@ -548,7 +556,7 @@ def rejectable (edtree, id):
         # or is approved, an error is raised.
 
         if not edtree:
-            L('edsubmit').debug("rejectable(): edtree is none, returning")
+            L('cgi.edsubmit.rejectable').debug("edtree is none, returning")
             return []
         root, d = edtree;  erow = d[id]
         if erow._dfrm: raise NonLeafError (erow)
@@ -646,7 +654,8 @@ def url (entrid):
                  % (Svc, Sid, entrid, entrid)
 
 def err_page (errs):
-        L('edsubmit').debug("going to error page. Errors:\n%s" % '\n'.join (errs))
+        L('cgi.edsubmit.err_page').debug("going to error page. Errors:\n%s"
+                                         % '\n'.join (errs))
         jmcgi.err_page (errs)
 
 if __name__ == '__main__':

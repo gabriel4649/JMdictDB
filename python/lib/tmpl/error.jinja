@@ -37,7 +37,7 @@ untrusted sources or such text must be escaped by the caller.
       <ul>
       {% for e in errs %}
         {#- Note that 'e' can contain user input and must not be marked 'safe'. #}
-        <li><span class="errormsg">{{e}}</span></li>
+        <li><span class="{{cssclass}}">{{e}}</span></li>
         {% endfor %}
         </ul>
       {%- endif %}{# errs #}

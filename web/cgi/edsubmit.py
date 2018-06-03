@@ -214,6 +214,11 @@ def submission (dbh, entr, disp, errs, is_editor=False, userid=None):
         #   'a' -- Approve this submission.
         #   'r' -- Reject this submission.
         # errs -- A list to which an error messages will be appended.
+        #   Note that if the error message contains html it should be
+        #   wrapped in jmcgi.Markup() to prevent it from being escaped
+        #   in the template.  Conversely, error messages that contain
+        #   text from user input should NOT be so wrapped since they
+        #   must be escaped in the template.
         # is_editor -- True is this submission is being performed by
         #   a logged in editor.  Approved or Rejected dispositions will
         #   fail if this is false.  Its value may be conveniently
@@ -417,18 +422,18 @@ def approve (dbh, entr, edtree, errs):
             try: approve_ok (edtree, dfrmid)
             except NonLeafError as e:
                 L('cgi.edsubmit.approve').debug("NonLeafError")
-                errs.append ("Edits have been made to this entry.  "\
-                    "You need to reject those edits before you can approve "\
-                    "this entry.  The id numbers are: %s"\
-                    % ', '.join ("id="+url(x) for x in leafsn([e.args[0]])))
+                errs.append (jmcgi.Markup("Edits have been made to this "\
+                    "entry.  You need to reject those edits before you can "\
+                    "approve this entry.  The id numbers are: %s"\
+                    % ', '.join ("id="+url(x) for x in leafsn([e.args[0]]))))
                 return
             except BranchesError as e:
                 L('cgi.edsubmit.approve').debug("BranchesError")
-                errs.append ("There are other edits pending on some of "\
-                    "the predecessor entries of this one, and this "\
+                errs.append (jmcgi.Markup("There are other edits pending on "\
+                    "some of the predecessor entries of this one, and this "\
                     "entry cannot be approved until those are rejected.  "\
                     "The id numbers are: %s"\
-                    % ', '.join ("id="+url(x) for x in leafsn(e.args[0])))
+                    % ', '.join ("id="+url(x) for x in leafsn(e.args[0]))))
                 return
           # Write the approved entry to the database...
         entr.dfrm = None
@@ -452,10 +457,10 @@ def reject (dbh, entr, edtree, errs, rejcnt=None):
         try: rejs = rejectable (edtree, entr.dfrm)
         except NonLeafError as e:
             L('cgi.edsubmit.reject').debug("NonLeafError")
-            errs.append ("Edits have been made to this entry.  "\
+            errs.append (jmcgi.Markup("Edits have been made to this entry.  "\
                     "To reject entries, you must reject the version(s) most "
                     "recently edited, which are: %s"\
-                    % ', '.join ("id="+url(x) for x in leafsn([e.args[0]])))
+                    % ', '.join ("id="+url(x) for x in leafsn([e.args[0]]))))
             return
         except IsApprovedError as e:
             L('cgi.edsubmit.reject').debug("IsApprovedrror")

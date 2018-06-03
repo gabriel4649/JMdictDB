@@ -100,7 +100,8 @@ def main (args, opts):
         if errs or not entr:
             if not entr and not errs:
                 errs = ([], "Unable to create an entry from your input.")
-            jmcgi.err_page ([errs[0][1]], prolog=errs[0][0])
+            jmcgi.err_page ([errs[0][1]], prolog=errs[0][0],
+                            cssclass="errormsg")
 
         entr.dfrm = eid;
         entr.unap = not disp

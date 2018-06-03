@@ -20,7 +20,7 @@
 import sys, re, cgi, urllib.request, urllib.parse, urllib.error, os, os.path
 import random, time, http.cookies, datetime, time, copy
 import jdb, fmt
-import jinja
+import jinja; from markupsafe import Markup
 import logger; from logger import L
 
 def initcgi (cfgfilename):
@@ -28,7 +28,7 @@ def initcgi (cfgfilename):
         Does three things:
         1. Fixes any url command line argument so that it is usable by
           the cgi module (see the args() function).
-          Currently the only argument accepted is a url used when this 
+          Currently the only argument accepted is a url used when this
           script run interactively for debugging.  In the future it may
           also accept an option giving the location of a configuration
           file.
@@ -42,7 +42,7 @@ def initcgi (cfgfilename):
         args()
           # If the .ini filename below has no directory separator in it,
           # it is looked for in a directory on sys.path.  If it does have
-          # a separator in it it is treated as a normal relative or 
+          # a separator in it it is treated as a normal relative or
           # absolute path.
         cfg = jdb.cfgOpen (cfgfilename)
         logfname = cfg.get ('logging', 'LOG_FILENAME', fallback='jmdictdb.log')
@@ -56,9 +56,9 @@ def initcgi (cfgfilename):
     # (e.g. ValueError) for many detected problems such as a bad entry
     # or sequence number.  Unexpected internal errors of course will
     # also produce Python exceptions.  Currently the cgi scripts catch
-    # any exceptions and display them on an error page or via the 
+    # any exceptions and display them on an error page or via the
     # logger.handler uncaught exception handler.  Showing exceptions
-    # that are potentially correctable by a user is ok.  But showing 
+    # that are potentially correctable by a user is ok.  But showing
     # all exceptions is dangerous -- a failure to connect to a database
     # could reveal a url containing a password for example.  Unexpected
     # exceptions should go only into the log file and the error page
@@ -205,7 +205,7 @@ def dblogin (cur, userid, password):
 
           # Check userid, password validity.
         sql = "SELECT userid FROM users "\
-              "WHERE userid=%s AND pw=crypt(%s, pw) AND NOT disabled" 
+              "WHERE userid=%s AND pw=crypt(%s, pw) AND NOT disabled"
         rs = jdb.dbread (cur, sql, (userid, password))
         if not rs:
             L('lib.jmcgi.dblogin').debug("pw fail for %s" % userid)
@@ -357,10 +357,6 @@ def clean (s):
             raise ValueError ("clean(): Bad string received")
         return s
 
-def esc(s): #FIXME
-        if not s: return ""
-        else: return str(s)
-
 def str2seq (q):
         # Convert 'q', a string of the form of either 'seq' or
         # 'seq.corp', where 'seq' is a string of digits representing
@@ -401,7 +397,7 @@ def corp2id (c):
 
 def str2eid (e):
         n = int (e)
-        if n <= 0: raise ValueError()
+        if n <= 0: raise ValueError(e)
         return n
 
 def safe (s):
@@ -426,7 +422,9 @@ def get_entrs (dbh, elist, qlist, errs, active=None, corpus=None):
         #       it may be followed by a period, and a corpus identifier
         #       which is either the corpus id number or the corpus name.
         # errs -- Must be a list (or other append()able object) to
-        #       which any error messages will be appended.
+        #       which any error messages will be appended.  The error
+        #       messages may contain user data and should thus be
+        #       escaped before being used in a web page.
         # active -- If 1, only active/approved or new/(unapproved)
         #       entries will be retrieved.
         #       If 2, at most one entry will be returned for each seq number
@@ -453,13 +451,13 @@ def get_entrs (dbh, elist, qlist, errs, active=None, corpus=None):
         for x in (elist or []):
             try: eargs.append (str2eid (str(x)))
             except ValueError:
-                errs.append ("Bad url parameter received: " + esc(x))
+                errs.append ("Bad url parameter received: " + x)
         if eargs: whr.append ("id IN (" + ','.join(['%s']*len(eargs)) + ")")
 
         for x in (qlist or []):
             try: args = list (str2seq (str(x)))
             except ValueError:
-                errs.append ("Bad parameter received: " + esc(x))
+                errs.append ("Bad parameter received: " + x)
             else:
                 if corpus and not args[1]: args[1] = corpid
                 if args[1]:
@@ -519,13 +517,17 @@ def jinja_page (tmpl, output=sys.stdout, **kwds):
         if output: print (html, file=output)
         return html
 
-def err_page (errs=[], errid=None, prolog=None, epilog=None):
-          # CAUTION: 'prolog', 'epilog', and the items in 'errs' are rendered  
-          # without html escaping and should either not include any text from
-          # untrusted sources or such text must be escaped by the caller.
+def err_page (errs=[], errid=None, prolog=None, epilog=None, cssclass=""):
+          # CAUTION: 'prolog' and 'epilog' are rendered in the errors
+          # page template without html escaping and should either not
+          # include any text from untrusted sources or such text must
+          # be escaped by the caller.
+          # The texts in 'errs' will be escaped in the errors page template;
+          # if you need to include html markup in them, wrap the marked up
+          # text in jmcgi.Markup().
         if isinstance (errs, str): errs = [errs]
         jinja_page ('error.jinja', svc='', errs=errs, errid=errid,
-                     prolog=prolog, epilog=epilog)
+                     prolog=prolog, epilog=epilog, cssclass=cssclass)
         sys.exit()
 
 def redirect (url):
@@ -733,11 +735,11 @@ def add_filtered_xrefs (entries, rem_unap=False):
                     if not cond (e, x): continue
                     x = copy.deepcopy (x)
                       # Because we will display the reverse xref with the
-                      # same code that displays forward xrefs (that is, it 
+                      # same code that displays forward xrefs (that is, it
                       # creates a link to the entry using x.xentr and x.xsens),
                       # swap the (entr,sens) and (xentr,xsens) values so that
-                      # when (xentr,xsens) are used, they'll actually be 
-                      # the entr,sens values which identify the entry the 
+                      # when (xentr,xsens) are used, they'll actually be
+                      # the entr,sens values which identify the entry the
                       # the reverse xref is on, which is what we want.
                     x.entr,x.sens,x.xentr,x.xsens = x.xentr,x.xsens,x.entr,x.sens
                       # Is this reverse xref the same as a forward xref?
@@ -745,7 +747,7 @@ def add_filtered_xrefs (entries, rem_unap=False):
                           # If so, change the forward xref's 'direc' attribute
                           # from FWD to BIDIR.
                         setdir (fwdrefs[(x.entr,x.sens,x.xentr,x.xsens)], BIDIR)
-                      # Otherwise (our xref is not bi-directional), add us to 
+                      # Otherwise (our xref is not bi-directional), add us to
                       # the xref list as a reverse xref.
                     else: s.XREF.append (setdir (x, REV))
 
@@ -987,7 +989,7 @@ def _freqcond (freq, nfval, nfcmp, gaval, gacmp):
         #   NOTE: The gA freq number was a from a database of Google
         #     "hits" for various words.  The data was unreliable at the
         #     time it was collected in the early 2000's and is of little
-        #     use anymore.  The search forms no longer support gA as a 
+        #     use anymore.  The search forms no longer support gA as a
         #     search criterion but the code is left in here for reference.
         # gaval -- String containing a gA number.
         # gacmp -- Same as nfcmp.

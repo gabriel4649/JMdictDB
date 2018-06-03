@@ -112,21 +112,22 @@ def main( args, opts ):
             try:
                 cost = jdb.get_query_cost (cur, sql2, sql_args);
             except Exception as e:
-                jmcgi.err_page (["Database error (%s):<pre> %s </pre></body></html>"
-                           % (e.__class__.__name__, str(e))])
+                jmcgi.err_page (errs=[str(e)], cssclass="errormsg",
+                    prolog="Database error (%s)" % e.__class__.__name__)
             stats['cost']=cost;
             if cost > cfg_srch.MAX_QUERY_COST:
                 jmcgi.err_page (
-                       ["The search request you made will likely take too long to execute. "
-                        "Please use your browser's \"back\" button to return to the search "
-                        "page and add more criteria to restrict your search more narrowly. "
+                       ["The search request you made will likely take too "
+                        "long to execute.  Please use your browser's \"back\" "
+                        "button to return to the search page and add more "
+                        "criteria to restrict your search more narrowly. "
                         "(The estimated cost was %.1f, max allowed is %d.)"
                         % (cost, cfg_srch.MAX_QUERY_COST)])
         t0 = time.time()
         try: rs = jdb.dbread (cur, sql2, sql_args)
         except Exception as e:          #FIXME, what exception value(s)?
-            jmcgi.err_page (["Database error (%s):<pre> %s </pre></body></html>"
-                       % (e.__class__.__name__, str(e))])
+            jmcgi.err_page (errs=[str(e)], cssclass="errormsg",
+                prolog="Database error (%s)" % e.__class__.__name__)
         stats['dbtime'] = time.time() - t0
         reccnt = len(rs)
         if pgtotal < 0:
@@ -184,7 +185,7 @@ def dateparse (dstr, upper, errs):
         except ValueError:
             try: dt = time.strptime (dstr, "%Y-%m-%d %H:%M")
             except ValueError:
-                errs.append ("Unable to parse date/time string '%s'." % cgi.escape(dstr))
+                errs.append ("Unable to parse date/time string '%s'." % dstr)
         if dt: return time.mktime (dt)
         return None
 

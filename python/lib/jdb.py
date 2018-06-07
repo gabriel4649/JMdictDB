@@ -22,6 +22,7 @@ import sys, os, os.path, random, re, datetime, operator, configparser
 from time import time
 from collections import defaultdict
 import fmtxml
+import logger; from logger import L
 from objects import *
 
 global KW
@@ -289,7 +290,7 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
         #    If using the Tmptbl returned by Find(), $ord will
         #    usually be: "t.ord".
 
-        global Debug; start = time()
+        global Debug; time_start = time_last = time()
 
         if not tables: tables = (
             'entr','hist','rdng','rinf','kanj','kinf',
@@ -320,26 +321,30 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
             if tbl == "xrer":
                 tblx = "xref"; key = "xentr"
             else: tblx = tbl
-            ##if tblx == "xref": limit = "LIMIT 20"
-            ##else: limit = ''
-            limit = ''
+            if tbl == "xrer": limit = "LIMIT 100"
+            else: limit = ''
             # FIXME: cls should not be dependent on lexical table name.
             # FIXME: rename database table "xresolv" to "xrslv".
             if tblx == "xresolv": cls_name = "Xrslv"
             else: cls_name = tblx.title()
             cls = globals()[cls_name]
 
-            if   typ == 'J': sql = tmpl % (tblx, crit, key, ordby, limit)
-            elif typ == 'I': sql = tmpl % (tblx, key, crit, ordby, limit)
+            if   typ == 'I': sql = tmpl % (tblx, key, crit, ordby, limit)
+            elif typ == 'J': sql = tmpl % (tblx, crit, key, ordby, limit)
+            else: assert True   # this should never happen.
+            if tbl not in t: t[tbl] = []
             try:
-                ##start2 = time()
-                t[tbl] = dbread (dbh, sql, args, cls=cls)
-                ##Debug['table read time, %s'%tbl] = time()start2
+                L('lib.jdb.entr_data.db.sql').debug("sql: "+sql)
+                L('lib.jdb.entr_data.db.sql').debug("args: %r"%args)
+                t[tbl].extend (dbread (dbh, sql, args, cls=cls))
+                L('lib.jdb.entr_data.db.time').debug("table %s read time: %s"%(tbl,time()-time_last))
+                time_last = time()
             except (psycopg2.ProgrammingError) as e:
-                print (e, end='', file=sys.stderr)
-                print ('%s %s' % (sql, args), file=sys.stderr)
+                L('lib.jdb.entr_data').error(str(e))
+                L('lib.jdb.entr_data.db.sql').error("  sql: "+sql)
+                L('lib.jdb.entr_data.db.sql').error("  args: %r"%args)
                 dbh.connection.rollback()
-        Debug['Obj retrieval time'] = time() - start;
+        L('lib.jdb.entr_data.db.time').debug("total time: %s"%(time()-time_start))
         return t
 
 def entr_bld (t):

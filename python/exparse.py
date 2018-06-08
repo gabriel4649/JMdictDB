@@ -60,25 +60,6 @@ Seq = None
 Lnnum = None
 Opts = None
 
-# The following is used to map tags that occur in square brackets
-# immediately preceeding the #ID field to MISC id numbers.
-EX2ID = {
-        'aphorism'              : [82],
-        'bible'                 : [83,"Biblical"],
-        'f'                     : [9],
-        'idiom'                 : [13],
-        'm'                     : [15],
-        'nelson at trafalgar.'  : [83,"Nelson at Trafalgar"],
-        'prov'                  : [81],
-        'proverb. shakespeare'  : [81,'Shakespeare'],
-        'proverb'               : [81],
-        'psalm 26'              : [83,"Biblical"],
-        'quotation'             : [83],
-        'bible quote'           : [83,"Biblical"],
-        'from song lyrics'      : [83,"Song lyrics"],
-        'senryuu'               : [83,"Senryuu"],
-        'xxx'                   : [1],}
-
 class ParseError (Exception): pass
 
 def main (args, opts):
@@ -145,7 +126,7 @@ def parse_ex (fin, begin):
             else:
                 msg ("No ID number found"); continue
             try:
-                jtxt, etxt, kwds = parsea (aln)
+                jtxt, etxt = parsea (aln)
                 idxlist = parseb (bln, jtxt)
             except ParseError as e:
                 msg (e.args[0]); continue
@@ -156,7 +137,7 @@ def parse_ex (fin, begin):
                 msg ("Duplicate id#: %s_%s" % (id1, id0))
                 continue
             seq_cache.add (Seq)
-            entr = mkentr (jtxt, etxt, kwds)
+            entr = mkentr (jtxt, etxt)
             entr.seq = Seq
             entr._sens[0]._xrslv = mkxrslv (idxlist)
             yield entr
@@ -164,18 +145,11 @@ def parse_ex (fin, begin):
 def parsea (aln):
           # When we're called, 'aln' has had the "A: " stripped from
           # its start, and the ID field stripped from it's end.
-        mo = re.search (r'^\s*(.+)\t(.+?)\s*(\[.+\])?\s*$', aln)
+        mo = re.search (r'^\s*(.+)\t(.+?)\s*$', aln)
         if not mo: raise ParseError ('"A" line parse error')
-        jp, en, ntxt = mo.group (1,2,3)
+        jp, en = mo.group (1,2)
         kws = []
-        if ntxt:
-            ntxt = ntxt.replace (']', '[')
-            ntxts = ntxt.split ('[')
-            for nt in ntxts[1:]:
-                if not nt or nt.isspace(): continue
-                try: kws.append (EX2ID[nt.lower()])
-                except KeyError: msg ("Unknown 'A' line note: '%s'" % nt)
-        return jp, en, kws
+        return jp, en
 
 def parseb (bln, jtxt):
         parts = bln.split()
@@ -209,22 +183,16 @@ def hw (ktxt, rtxt):
         if ktxt and rtxt: return "%s(%s)" % (ktxt,rtxt)
         return ktxt or rtxt
 
-def mkentr (jtxt, etxt, kwds):
+def mkentr (jtxt, etxt):
         global Lnnum
           # Create an entry object to represent the "A" line text of the
           # example sentence.
         e = jdb.Entr (stat=KW.STAT_A, unap=False)
         e.srcnote = str (Lnnum)
-          # Each @$kwds item is a 2-array consisting of the kw
-          # id number and optionally a note string.
-        kws = [x[0] for x in kwds]
-        sens_note = "; ".join ([x[1] for x in kwds if len(x)>1]) or None
         if jdb.jstr_reb (jtxt): e._rdng = [jdb.Rdng (txt=jtxt)]
         else:                   e._kanj = [jdb.Kanj (txt=jtxt)]
-        e._sens = [jdb.Sens (notes=sens_note,
-                    _gloss=[jdb.Gloss (lang=KW.LANG_eng,
-                                     ginf=KW.GINF_equ, txt=etxt)],
-                    _misc=[jdb.Misc (kw=x) for x in kws])]
+        e._sens = [jdb.Sens (_gloss=[jdb.Gloss (txt=etxt, ginf=KW.GINF_equ,
+                                                lang=KW.LANG_eng)])]
         return e
 
 def mkxrslv (idxlist):
@@ -244,7 +212,7 @@ def mkxrslv (idxlist):
             else:
                   # This is not list of senses so this cross-ref will
                   # apply to all the target's senses.  Don't set a "sens"
-                  # field in the xrslv record will will result in a NULL
+                  # field in the xrslv record which will result in a NULL
                   # in the database record.
                 res.append (jdb.Obj (ktxt=ktxt, rtxt=rtxt,
                             typ=KW.XREF_uses, notes=note, prio=prio))

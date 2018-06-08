@@ -230,9 +230,9 @@ OrderBy = {
         'restr':"x.entr,x.rdng,x.kanj",
         'stagk':"x.entr,x.sens,x.kanj",  'stagr':"x.entr,x.sens,x.rdng" }
 
-def entr_data (dbh, crit, args=None, ord=None, tables=None):
+def entr_data (dbh, crit, args=None, ord=None, tables=None, xrer_limit=100):
         #
-        # dbh -- An open database handle.
+        # dbh -- An open JMdictDB database handle.
         #
         # crit -- A string that specifies the selection criteria
         #    for the entries that will be returned and is in one
@@ -289,13 +289,38 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
         #    subselect has the alias "t".
         #    If using the Tmptbl returned by Find(), $ord will
         #    usually be: "t.ord".
+        #
+        #  tables -- (optional) A list of table names from which
+        #    to retrieve infomation for building the Entr objects.
+        #    This is useful when not all information is needed in
+        #    an entry (for example the abbreviated entries used
+        #    to hold details of xref targets) and accomplished by
+        #    by specifying a limited set of tables.  If not given
+        #    the default is to use all tables.
+        #
+        #  xrer_limit -- (optional) A positive integer that will
+        #    be used to limit the number of reverse xrefs of
+        #    typ=KW.XREF['uses'].  When the Tatoeba Example sentence
+        #    corpus in loaded into the database and xrefs to jmdict
+        #    words generated, some words like "の" can end up with
+        #    hundreds of thousands of reverse xrefs.  This parameter
+        #    limits the number of such reverse xrefs that will be
+        #    retrieved from the database.  As currently configured,
+        #    xref type "uses" is only used for xrefs from the
+        #    "examples" corpus to the "jmdict" corpus and thus
+        #    provides a suitable selection criterion.  Default is
+        #    100.
+        #    WARNING: this does not take the number of entries into
+        #    account -- one gets at most this number of typ="uses" 
+        #    reverse xrefs whether one is retrieving 1 or 10000
+        #    entries.
 
         global Debug; time_start = time_last = time()
 
         if not tables: tables = (
             'entr','hist','rdng','rinf','kanj','kinf',
             'sens','gloss','misc','pos','fld','dial','lsrc',
-            'restr','stagr','stagk','freq','xref','xrer',
+            'restr','stagr','stagk','freq','xref','xrer','xrere',
             'rdngsnd','entrsnd','grp','chr','cinf','xresolv')
         if args is None: args = []
         if ord is None: ord = ''
@@ -307,8 +332,8 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
             typ = 'J'
         else: typ ='I'                          # un-parenthesised sql.
 
-        if typ == 'I': tmpl = "SELECT x.* FROM %s x WHERE x.%s IN (%s) %s %s"
-        else:          tmpl = "SELECT x.* FROM %s x JOIN %s t ON t.id=x.%s %s %s"
+        if typ == 'I': tmpl = "SELECT x.* FROM %s x WHERE x.%s IN (%s) %s %s %s"
+        else:          tmpl = "SELECT x.* FROM %s x JOIN %s t ON t.id=x.%s %s %s %s"
 
         t = {}
         for tbl in tables:
@@ -318,20 +343,45 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None):
             else: ordby = OrderBy.get (tbl, "")
             if ordby: ordby = "ORDER BY " + ordby
 
-            if tbl == "xrer":
+            if tbl in ("xrer", "xrere"):
+                  # Tables "xrer' and "xrere" are pseudo-tables: they both
+                  # consist of rows from real table "xref" but using different
+                  # criteria for selecting the rows.
+                  # "xrer" selects rows for "reverse" xref: xrefs whos
+                  # (xentr,xsens) values refer to the related entry rather
+                  # than (entr,sens) as in normal "forward" xrefs.  They
+                  # also exclude xrefs of typ=KW.XREF['uses'], the xref.typ
+                  # value used for xrefs from example sentences to jmdict
+                  # words.
+                  # "xrere" is like "xrer" but consists of xrefs only of
+                  # typ=KW.XREF['uses'].  They are treated separately because
+                  # we need to limit the number of these xrefs we retrieve
+                  # since a large set of example sentences with words like
+                  # "の" xref'ed could result in the jmdict "の" entry having
+                  # hundreds of thousands of reverse xrefs.
                 tblx = "xref"; key = "xentr"
-            else: tblx = tbl
-            if tbl == "xrer": limit = "LIMIT 100"
-            else: limit = ''
+                if typ == 'I':           # We are adding to existing
+                    wkeyword = "AND"     #  WHERE clause so "WHERE" not needed.
+                else:  # typ='J', we need to add a full WHERE clause.
+                    wkeyword = "WHERE"   # No existing WHERE clause so we
+                if tbl == "xrer":        #  supply the whole thing.
+                    whr = " %s typ!=%s" % (wkeyword, KW.XREF['uses'].id)
+                    limit = ''
+                else: # tbl == "xrere":
+                    tbl = "xrer"    # Save rows with the xrer rows.
+                    whr = " %s typ=%d" % (wkeyword, KW.XREF['uses'].id)
+                    limit = "LIMIT %s" % xrer_limit
+            else:
+                tblx = tbl;  limit = '';  whr = ''
             # FIXME: cls should not be dependent on lexical table name.
             # FIXME: rename database table "xresolv" to "xrslv".
             if tblx == "xresolv": cls_name = "Xrslv"
             else: cls_name = tblx.title()
             cls = globals()[cls_name]
 
-            if   typ == 'I': sql = tmpl % (tblx, key, crit, ordby, limit)
-            elif typ == 'J': sql = tmpl % (tblx, crit, key, ordby, limit)
-            else: assert True   # this should never happen.
+            if   typ == 'I': sql = tmpl % (tblx, key, crit, whr, ordby, limit)
+            elif typ == 'J': sql = tmpl % (tblx, crit, key, whr, ordby, limit)
+            else: assert False   # this should never happen.
             if tbl not in t: t[tbl] = []
             try:
                 L('lib.jdb.entr_data.db.sql').debug("sql: "+sql)
@@ -1047,14 +1097,14 @@ def freq_inv (entr):
         #    kanji text, reading text, or both, and may not uniquely
         #    identify a single entry.
         #
-        # Each xref object links two two entries (or more acurately, 
+        # Each xref object links two two entries (or more acurately,
         # specific senses of two entries) identified by their id
         # numbers in the attributes .entr and .xentr.  We view an
         # xref as being "from" .entr and "to" .xentr.  A "forward"
         # xref (with respect to an entry) is one whose .entr value
         # is equal to the entry's .id value.  A "reverse" xref is
         # one whose .xentr value is the same as the entry's .id.
-        # 
+        #
         # There are actually three flavours of xref objects:
         #
         # "ordinary" (or unqualified) xrefs represent only the info
@@ -2046,7 +2096,7 @@ class Kwds:
                 fields = [x if x!='' else None for x in fields]
                 try: fields[0] = int (fields[0])
                 except ValueError:
-                      # A ValueError on the first line of the file we 
+                      # A ValueError on the first line of the file we
                       # take to mean that the csv file has a header line
                       # which we'll ignore.
                     if first_line: continue
@@ -2299,14 +2349,14 @@ def bom_fixn (lst):
     count = 0
     for o in lst:
        s = bom_strip (o.txt)
-       if s: o.txt, count = s, count+1 
+       if s: o.txt, count = s, count+1
     return count
 
 def bom_fixall (e):
-      # Remove BOM character from an entry object ('e') rdng and 
+      # Remove BOM character from an entry object ('e') rdng and
       # kanj text strings.  We don't check or fix gloss, lsrc,
       # hist or other text fields since experience to date has
-      # not shown a problem with BOM characters in those fields. 
+      # not shown a problem with BOM characters in those fields.
     count = 0
     count += bom_fixn (e._kanj)
     count += bom_fixn (e._rdng)
@@ -2322,11 +2372,11 @@ def dbOpen (dbname_, **kwds):
         Open a DBAPI cursor to a jmdict database and initialize
         a Kwds instance with the name KW.
 
-        dbOpen() accepts all the same keyword arguments that the 
+        dbOpen() accepts all the same keyword arguments that the
         underlying Psycopg2 connect() call takes ('database', 'user',
         'password', 'host', 'port' in Psycopg2 version 2.4.2 and earlier
         or any keyword args accepted by Postgresql's libpq C library
-        (see http://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-PARAMKEYWORDS) 
+        (see http://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-PARAMKEYWORDS)
         in Pyscopg2 version 2.4.3 and later.
 
         There are three additional acceptable keyword parameters that
@@ -2418,21 +2468,21 @@ def parse_pguri (uri_string, allow_params=False):
         for use as the **kwds argument to psycopg2,connect() or jdb.dbOpen()
         functions.
         For URI syntax see the Postgresql libpq docs for "Connection URIs" in:
-          http://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-PARAMKEYWORDS 
+          http://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-PARAMKEYWORDS
 
-        Examples: 
+        Examples:
           postgresql:///jmdict
-          pg://localhost:5678/jmdict 
+          pg://localhost:5678/jmdict
         (Note: Allowing "pg" as an abbreviation for "postgresql" on the URI
         scheme designator is our own local enhancement.)
 
         If <allow_params> is true, any query string in the URI will also be
         parsed and the keyword,value pairs included in the output dict and
-        will subsequently be interpreted as additional Postgresql libpq 
+        will subsequently be interpreted as additional Postgresql libpq
         keyword,value pairs when passed to Pssycopg2's connect() function
         bt dbOpen().  This in general should only be done if the URI is
         from a trusted source as such parameters can affect things like
-        connection timeouts and ssl modes.  
+        connection timeouts and ssl modes.
         If <allow_params> is false, any query string part of the URI will be
         ignored.
         '''
@@ -2440,7 +2490,7 @@ def parse_pguri (uri_string, allow_params=False):
         result = urllib.parse.urlsplit (uri_string)
         query = urllib.parse.parse_qs (result.query)
         scheme = result.scheme
-        if not scheme: scheme = 'postgresql' 
+        if not scheme: scheme = 'postgresql'
         if scheme not in ('pg', 'postgresql','postgres'):
             raise ValueError ("Bad scheme name ('%s') in URI: %s" % (result.scheme, uri_string))
           # Add query items to results dict first so that uri parameters added
@@ -2456,14 +2506,14 @@ def parse_pguri (uri_string, allow_params=False):
 def make_pguri (connargs):
         '''
         Convert dict of connection arguments such as is returned from jdb.parse_pguri()
-        into a URI string.   The result will always have a scheme, "postgresql:"        
+        into a URI string.   The result will always have a scheme, "postgresql:"
         '''
         # Postgresql URI syntax:
         #   postgresql://[user[:password]@][netloc][:port][/dbname][?param1=value1&...]
 
         # Why, oh why, does urllib not provide better support for this??
         # Its urlunsplit() function does not seem to have any way to accept username
-        # password, port, etc.  
+        # password, port, etc.
         auth = connargs.get('user','')
         if auth and connargs.get ('password'): auth += ':' + connargs['password']
         host = connargs.get('host','')
@@ -2476,7 +2526,7 @@ def make_pguri (connargs):
             for vx in v: q.append ("%s=%s" % (k,vx))
         query = '&'.join (q)
         uri = urllib.parse.urlunsplit (('postgresql',host,connargs.get('database',''),query,''))
-        return uri 
+        return uri
 
 def dbexecute (cur, sql, sql_args):
         # Use this funtion rather than cur.execute() directly.

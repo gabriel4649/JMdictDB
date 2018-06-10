@@ -2379,7 +2379,7 @@ def dbOpen (dbname_, **kwds):
         (see http://www.postgresql.org/docs/current/static/libpq-connect.html#LIBPQ-PARAMKEYWORDS)
         in Pyscopg2 version 2.4.3 and later.
 
-        There are three additional acceptable keyword parameters that
+        There are four additional acceptable keyword parameters that
         are used only within this function:
 
             autocommit -- If true puts the connection in "autocommit"
@@ -2398,8 +2398,12 @@ def dbOpen (dbname_, **kwds):
                 Postgresql's isolation levels but the first (0) is
                 implemented purely within psycopg2.
 
-        Only one of autocommit and isolation may be non-None.
-        It also accepts one other keyword argument:
+            Only one of autocommit and isolation may be non-None.
+
+            require -- A list of int's or hexidecimal str's giving
+                the active updates required to be present in the 
+                database's "db" table.  If any are missing a 
+                KeyError exception is raised with the missing values.
 
             nokw -- Suppress the reading of keyword data from the
                 database and the creation of the jdb.KW variable.
@@ -2423,6 +2427,8 @@ def dbOpen (dbname_, **kwds):
         if 'nokw' in kwargs: del kwargs['nokw']
         if isolation is not None and autocommit:
             raise ValueError ("Only one of 'autocommit' and 'isolation' may be given.")
+        require = kwargs.get ('require')
+        if 'require' in kwargs: del kwargs['require']
         if dbname_: kwargs['database'] = dbname_
 
           # Remove kwds with None values since psycopg2 doesn't
@@ -2457,8 +2463,20 @@ def dbOpen (dbname_, **kwds):
         if not nokw:
             global KW
             KW = Kwds (conn.cursor())
-
+        if require: dbrequire (conn, require)
         return conn.cursor()
+
+def dbrequire (dbconn, require):
+          # require -- A list of ints (typically given  in hexidecimal)
+          #              of db update numbers required by the calling
+          #              application.
+        import db    # We import inside function to avoid importing if
+                     #   this function is not called.
+        missing = db.require (dbconn, require)
+          #FIXME: include database name or URI in error message.
+          #FIXME? should db.require() raise error instead?
+        if missing: raise KeyError ("Database missing required updates: %s"
+                                    % ','.join(["%06.6x"%r for r in missing]))
 
 import urllib.parse
 

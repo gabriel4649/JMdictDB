@@ -131,18 +131,19 @@ def get_xresolv_block (dbh, blksz, xref_src, read_xref=False):
                    "ORDER BY v.entr,v.sens,v.typ,v.ord "\
                    "LIMIT %s" % (table, src_condition, blksz)
             if read_xref:
-                  # If reading the xref rather than the xresolv table make some
-                  # adjustments:
+                  # If reading the xref rather than the xresolv table make
+                  # some adjustments:
                   #   The "ord" field is named "xref".
                 sql = sql.replace ('.ord', '.xref')
-                  #   The typ and xref (aka ord) fields are swapped in xref rows.
+                  #   The typ and xref (aka ord) fields are swapped in
+                  #   xref rows.
                 t0, o0 = o0, t0
             sql_args.extend ([e0,e0,s0,s0,t0,t0,o0])
             L('get_xresolv_block').debug("sql: %s" % sql_args)
             L('get_xresolv_block').debug("args: %r" % (args,))
             rs = jdb.dbread (dbh, sql, sql_args)
             savepoint (dbh, 'CLEAR', '')  # read invalidates current savepoints.
-            if len (rs) == 0: return None
+            if len (rs) == 0: return
             L('get_xresolv_block').debug("Read %d %s rows from %s"
                                          % (len(rs), table, lastpos))
               # Slicing doesn't seem to currently work on DbRow objects or 
@@ -150,7 +151,6 @@ def get_xresolv_block (dbh, blksz, xref_src, read_xref=False):
             lastpos = rs[-1][0], rs[-1][1], rs[-1][2], rs[-1][3]
             yield rs
         assert True, "Unexpected break from loop"
-        return
 
 def resolv (dbh, xresolv_rows, targ_src, krmap):
         for v in xresolv_rows:
@@ -194,7 +194,8 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
                   # if it can narrow the target down to a single entry, which
                   # it will return as a 7-element array (see get_entries() for
                   # description).  If it can't find a unique entry, it takes
-                  # care of generating an error message and returns a false value.
+                  # care of generating an error message and returns a false
+                  # value.
                 e = choose_target (v, entries)
                 if not e: continue
 
@@ -238,7 +239,7 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
                 try:
                     sql = "INSERT INTO xref VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                     args = (x.entr,x.sens,x.xref,x.typ,x.xentr,x.xsens,
-                            x.rdng,x.kanj,None)
+                            x.rdng,x.kanj,x.notes)
                     L('resolv.sql').debug("sql: %s" % sql)
                     L('resolv.sql').debug("args: %r" % (args,))
                     dbh.execute (sql, args)
@@ -421,34 +422,35 @@ def mkxrefs (v, e):
         global Prev
         cntr = 1 + (Prev.xref if Prev else 0)
         xrefs = []
-        for s in range (1, e[6]+1):
-
-              # If there was a sense number given in the xresolv
-              # record (field "tsens") then step through the
-              # senses until we get to that one and generate
-              # an xref only for it.  If there is no tsens,
-              # generate an xref for every sense.
-            if v.tsens and v.tsens != s: continue
-
-              # The db xref records use column "xref" as a order
-              # number and to distinguish between multiple xrefs
-              # in the same entr/sens.  We use cntr to maintain
-              # its value, and it is reset to 1 here whenever we
-              # see an xref record with a new entr or sens value.
-            if not Prev or Prev.entr != v.entr \
-                        or Prev.sens != v.sens: cntr = 1
-            xref = jdb.Obj (entr=v.entr, sens=v.sens, xref=cntr, typ=v.typ,
-                            xentr=e[0], xsens=s, rdng=e[2], kanj=e[3])
-            cntr += 1;  Prev = xref
-            xrefs.append (xref)
-
-        if not xrefs:
-            if v.tsens:
-                L('choose_target').warning("%s %s: %s" 
-                                           % (fs(v), "Sense not found", kr(v)))
-            else: raise ValueError ("No senses in retrieved entry!")
-
-        return xrefs
+          # If there is no tsens, generate an xref to only the first
+          # sense.  Rationale: Revs prior to ~2018-06-07 we generated
+          # xrefs to all senses in this scenario.  When there were a
+          # lot of reverse xrefs to a word from the Example sentences,
+          # every sense of the target word would have them all repeated.
+          # However unless there is only one target sense, we can be
+          # sure we are wrong: if the senses were so similar to be
+          # interchangable they wouldn't be separate senses.  Since
+          # we'll be wrong either way and someone will need to manually
+          # correct it later, choose the way that produces the least
+          # amount of clutter in the entry.
+        nosens = False
+        if not v.tsens:
+            v.tsens = 1
+            if e[6] != 1: nosens = True
+        if v.tsens > e[6]:
+            L('mkxrefs').error("%s %s: %s" 
+                               % (fs(v), "sense number too big", kr(v)))
+            return []
+        if not Prev or Prev.entr != v.entr \
+                    or Prev.sens != v.sens: cntr = 1
+        notes = 'P' if v.prio else ''
+        if nosens: notes += 'S'
+        if v.notes: notes += ':' + v.notes
+        xref = jdb.Obj (entr=v.entr, sens=v.sens, xref=cntr, typ=v.typ,
+                        xentr=e[0], xsens=v.tsens, rdng=e[2], kanj=e[3],
+                        notes=notes)
+        cntr += 1;  Prev = xref
+        return [xref]
 
 def read_krmap (dbh, infn, targ_src):
         if not infn: return None

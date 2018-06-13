@@ -120,9 +120,8 @@ def parse_ex (fin, begin):
                   # starting at the origin proceeding down the diagonal, 
                   # assigning number to each cell on the column and row at
                   # the diagonal cell. 
-                id1, id0 = int(mo.group(2)), int(mo.group(3))
-                Seq = diagnum.xy2sq (id0-1, id1-1)  # "-1" because there are no
-                                                    #  zero-valued id numbers.
+                id0, id1 = int(mo.group(2)), int(mo.group(3))
+                Seq = tatoeba2seq (id0, id1)
             else:
                 msg ("No ID number found"); continue
             try:
@@ -134,7 +133,7 @@ def parse_ex (fin, begin):
               # Turns out some of the entries in the examples file are duplicates
               # (including the ID#) so we check the seq#
             if Seq in seq_cache:
-                msg ("Duplicate id#: %s_%s" % (id1, id0))
+                msg ("Duplicate id#: %s_%s" % (id0, id1))
                 continue
             seq_cache.add (Seq)
             entr = mkentr (jtxt, etxt)
@@ -222,6 +221,13 @@ def mkxrslv (idxlist):
 def kana_only (txt):
         v = jdb.jstr_reb (txt)
         return (v & jdb.KANA) and not (v & jdb.KANJI)
+
+def tatoeba2seq (id1, id2):
+          # Convert a Tatoeba id number pair to a jmdict sequence number.
+          # The xy2sq() function is 0-based but since the id numbers are
+          # 1-based, subtract one.  And since jmdict seq numbers are 1-
+          # based and xy2sq(0,0) returns 0 add one to adjust.
+        return 1 + diagnum.xy2sq (id1-1, id2-1)
 
 def _msg (logfile, verbose, message):
         # This function should not be called directly.  It is called

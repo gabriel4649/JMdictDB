@@ -90,6 +90,8 @@ CREATE TABLE xref (
     kanj SMALLINT CHECK (kanj IS NOT NULL OR rdng IS NOT NULL),
       CONSTRAINT xref_kanj_fkey FOREIGN KEY (xentr,kanj) REFERENCES kanj(entr,kanj) ON DELETE CASCADE ON UPDATE CASCADE,
     notes TEXT,
+    nosens BOOLEAN NOT NULL DEFAULT FALSE,  -- No specific target sense preferred.
+    lowpri BOOLEAN NOT NULL DEFAULT FALSE,  -- Low priority xref.
       PRIMARY KEY (entr,sens,xref,xentr,xsens));
 CREATE INDEX ON xref(xentr,xsens);
     --## The following index disabled because it is violated by Examples file xrefs.

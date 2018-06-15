@@ -67,9 +67,10 @@ import logging, logger; from logger import L
 #-----------------------------------------------------------------------
 
 def main (args, opts):
-        logger.log_config (level="debug" if opts.messages else "warning")
+        level = loglevel (opts.level)
+        logger.log_config (level=1 if opts.messages else level)
         if opts.messages:
-            try: filter = parse_mlist (opts.messages)
+            try: filter = parse_mlist (opts.messages, level)
             except ValueError as e: sys.exit("Bad -m option: '%s'" % str (e))
             L().handlers[0].addFilter (filter)
 
@@ -80,10 +81,13 @@ def main (args, opts):
             sys.exit ("Error, unable to connect to database, "
                       "do you need -u or -p?\n" % str(e))
         try: xref_src = get_src_ids (opts.source_corpus)
-        except KeyError: sys.exit ("Unknown corpus: '%s'" % opts.source_corpus)
+        except KeyError: 
+            L('unknown corpus').warning(opts.source_corpus)
+            sys.exit (0)
         try: targ_src = get_src_ids (opts.target_corpus)
-        except KeyError: sys.exit ("Unknown corpus: '%s'" % opts.target_corpus)
-
+        except KeyError:
+            L('unknown corpus').warning(opts.target_corpus)
+            sys.exit (0)
           #FIXME: need to make work with multiple srcs in targ_src and
           # provide limiting the scope (eg to one src or an entry) of
           # the K/R pairs in the file.
@@ -95,9 +99,9 @@ def main (args, opts):
             if not xresolv_rows: break
             resolv (dbh, xresolv_rows, targ_src, krmap)
             if opts.noaction:
-                L('main').info("ROLLBACK");  dbh.connection.rollback()
+                L('trans').info("ROLLBACK");  dbh.connection.rollback()
             else:
-                L('main').info("COMMIT");  dbh.connection.commit()
+                L('trans').info("COMMIT");  dbh.connection.commit()
         dbh.close()
 
 def get_xresolv_block (dbh, blksz, xref_src, read_xref=False):
@@ -142,7 +146,6 @@ def get_xresolv_block (dbh, blksz, xref_src, read_xref=False):
             L('get_xresolv_block').debug("sql: %s" % sql_args)
             L('get_xresolv_block').debug("args: %r" % (args,))
             rs = jdb.dbread (dbh, sql, sql_args)
-            savepoint (dbh, 'CLEAR', '')  # read invalidates current savepoints.
             if len (rs) == 0: return
             L('get_xresolv_block').debug("Read %d %s rows from %s"
                                          % (len(rs), table, lastpos))
@@ -203,76 +206,19 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
               # referring entry.
 
             if e[0] == v.entr:
-                L('resolv').warning("%s %s: %s" 
-                                    % (fs(v), "self-referential", kr(v)))
+                L('self-referential').error("skipped %s %s" % (fs(v), kr(v)))
                 continue
 
               # Now that we know the target entry, we can create the actual
               # db xref records.  There may be more than one if the target
               # entry has multiple senses and no explicit sense was given
               # in the xresolv record.
-            xrefs = mkxrefs (v, e)
+            xref = mkxref (v, e)
+            if xref:
+                L('resolved').info("%s -> xref %r" % (fs(v), xref))
+                wrxref (dbh, xref)
 
-            if xrefs:
-                msg = "%s resolved to %d xrefs: %s" % (fs(v),len(xrefs),kr(v))
-                L('resolv').info(msg)
-
-              # We may get a "duplicate key" error when trying to add
-              # an xref for this xresolv row if the xref already exists
-              # (perhaps due having previously run this program with the
-              # --keep option).  If that happens we will write an error
-              # message but want to contine processing the rest of the
-              # xresolv rows.  Postgresql will not allow continuing after
-              # an error without a ROLLBACK but a full rollback will undo
-              # all the xrefs we've written so far.  Instead we will create
-              # a savepoint that we can rollback to that will undo only
-              # the xrefs created for this xresolv row.
-            savepoint (dbh, "CREATE", "sp1")
-              # Write each xref record to the database...
-            failed = False
-            for x in xrefs:
-                  # We don't need 'failed=False' here because the 'for' loop is
-                  # always exited below the first time 'failed' is set to True.
-                L('resolv.xref').debug("xref: entr=%s, sens=%s, xref=%s, typ=%s,"
-                                  " xentr=%s, xsens=%s, rdng=%s, kanj=%s,"
-                                  " nosens=%s, lowpri=%r" %
-                      (x.entr,x.sens,x.xref,x.typ,x.xentr,x.xsens,
-                       x.rdng or '',x.kanj or '',x.nosens,x.lowpri))
-                try:
-                    sql = "INSERT INTO xref VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-                    args = (x.entr,x.sens,x.xref,x.typ,x.xentr,x.xsens,
-                            x.rdng,x.kanj,x.notes,x.nosens,x.lowpri)
-                    L('resolv.sql').debug("sql: %s" % sql)
-                    L('resolv.sql').debug("args: %r" % (args,))
-                    dbh.execute (sql, args)
-                except jdb.dbapi.IntegrityError as e:
-                    L('resolv').debug("exception: %s" % str(e))
-                    if "duplicate key value" not in str(e):
-                          # If some exception other than a duplicate key
-                          #  error then reraise it.
-                          #FIXME? should we release savepoint sp1 here?
-                        raise
-                      # Format and print a warning message.
-                    mo = re.search (r'\(.+\)', str(e), flags=re.I)
-                    assert mo is not None
-                      # An 'mo' that is None here (causing an AttributeError
-                      #  exception) indicates the exception text was not what
-                      #  we expected.
-                    L('resolve').warning("%s duplicate key: %s"
-                                         % (fs(v), mo.group(0)))
-                      # Postgresql won't continue after an error.
-                      #  A ROLLBACK would allow it to continue but we would
-                      #  lose all the previous xrefs that have been written
-                      #  but not commited.  Rolling back to the savepoint
-                      #  created just before the INSERT is what's needed.
-                    dbh.execute ("ROLLBACK TO SAVEPOINT sp1", ())
-                      # Since we undid any xrefs added so far for this
-                      # xresolv row we don't want to add any additional
-                      # ones; so exit the for loop.
-                    failed = True
-                    break       # Continue with the next xresolv row.
-
-            if not Opts.keep and not failed:
+            if xref and not Opts.keep:
                   # The xrefs created from this xresolv row were successfully
                   # added to the database above so we can delete the xresolv
                   # row.
@@ -280,24 +226,57 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
                              "WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s",
                              (v.entr,v.sens,v.typ,v.ord))
 
-def savepoint (dbh, action, name, _active=set()):
-          # Postgresql's SAVEPOINT command is non-standard in that it exhibits
-          # stacking behavior: a second SAVEPOINT command with the same name as 
-          # an earlier one will shadow the earlier one and the earlier one will
-          # become active again when the savepoint name is released.
-          # This function ameliorates that deviant behavor a little bit.
-        L('savepoint').debug("%s %s (active=%r)" % (action, name, _active))
-        if action == 'CLEAR':
-            _active.clear()
-        elif action == 'CREATE':
-            if name in _active: dbh.execute ("RELEASE SAVEPOINT " + name)
-            dbh.execute ("SAVEPOINT " + name)
-            _active.add (name)
-        elif action == 'RELEASE':
-            if name not in _active: return
-            dbh.execute ("RELEASE SAVEPOINT " + name)
-            _active.remove (name)
-        else: raise ValueError (action)
+def wrxref (dbh, xref):
+        x = xref    # For brevity.
+        L('wrxref').debug("xref: entr=%s, sens=%s, xref=%s, typ=%s,"
+                              " xentr=%s, xsens=%s, rdng=%s, kanj=%s,"
+                              " nosens=%s, lowpri=%r" %
+              (x.entr,x.sens,x.xref,x.typ,x.xentr,x.xsens,
+               x.rdng or '',x.kanj or '',x.nosens,x.lowpri))
+          # We may get a "duplicate key" error when trying to add
+          # an xref for this xresolv row if the xref already exists
+          # (perhaps due having previously run this program with the
+          # --keep option).  If that happens we will write an error
+          # message but want to contine processing the rest of the
+          # xresolv rows.  Postgresql will not allow continuing after
+          # an error without a ROLLBACK but a full rollback will undo
+          # all the xrefs we've written so far.  Instead we will create
+          # a savepoint that we can rollback to that will undo only
+          # the xrefs created for this xresolv row.
+
+        dbh.execute ("SAVEPOINT sp1", ())
+        try:
+            sql = "INSERT INTO xref VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            args = (x.entr,x.sens,x.xref,x.typ,x.xentr,x.xsens,
+                    x.rdng,x.kanj,x.notes,x.nosens,x.lowpri)
+            L('wrxref.sql').debug("sql: %s" % sql)
+            L('wrxref.sql').debug("args: %r" % (args,))
+            dbh.execute (sql, args)
+        except jdb.dbapi.IntegrityError as e:
+            L('wrxref').debug("exception: %s" % str(e))
+            if "duplicate key value" not in str(e):
+                  # If some exception other than a duplicate key
+                  #  error then reraise it.
+                dbh.execute ("RELEASE SAVEPOINT sp1", ())
+                raise
+              # Format and print a warning message.
+            mo = re.search (r'\(.+\)', str(e), flags=re.I)
+            assert mo is not None
+              # An 'mo' that is None here (causing an AttributeError
+              #  exception) indicates the exception text was not what
+              #  we expected.
+            L('duplicate key').warning("%r" % (xref))
+              # Postgresql won't continue after an error.
+              #  A ROLLBACK would allow it to continue but we would
+              #  lose all the previous xrefs that have been written
+              #  but not commited.  Rolling back to the savepoint
+              #  created just before the INSERT is what's needed.
+            dbh.execute ("ROLLBACK TO SAVEPOINT sp1", ())
+            updxref (dbh, xref)
+            xref = None
+        else:
+            dbh.execute ("RELEASE SAVEPOINT sp1", ())
+        return xref
 
 class Memoize:
     def __init__( self, func ):
@@ -386,8 +365,7 @@ def choose_target (v, entries):
 
           # And if there were no matching entries at all...
         if 0 == len (entries):
-            L('choose_target').warning("%s %s: %s" 
-                                       % (fs(v), "not found", kr(v)))
+            L('not found').error("%s %s" % (fs(v), kr(v)))
             return None
         if not ktxt:
               # If there is only one entry that has the
@@ -414,16 +392,10 @@ def choose_target (v, entries):
           # At this point we either failed to resolve in one
           # of the above suites, or we had both a reading and
           # kanji with multiple matches -- either way we give up.
-        L('choose_target').warning("%s %s: %s" 
-                                   % (fs(v), "multiple targets", kr(v)))
+        L('multiple targets').error("%s %s" % (fs(v), kr(v)))
         return None
 
-Prev = None
-
-def mkxrefs (v, e):
-        global Prev
-        cntr = 1 + (Prev.xref if Prev else 0)
-        xrefs = []
+def mkxref (v, e):
           # If there is no tsens, generate an xref to only the first
           # sense.  Rationale: Revs prior to ~2018-06-07 we generated
           # xrefs to all senses in this scenario.  When there were a
@@ -438,19 +410,18 @@ def mkxrefs (v, e):
           # first *will* be the right sense.
         nosens = False
         if not v.tsens:
+            if e[6] != 1:
+                L('multiple senses').warning("using sense 1: %s %s"
+                                             % (fs(v), kr(v)))
+                nosens = True
             v.tsens = 1
-            if e[6] != 1: nosens = True
         if v.tsens > e[6]:
-            L('mkxrefs').error("%s %s: %s" 
-                               % (fs(v), "sense number too big", kr(v)))
-            return []
-        if not Prev or Prev.entr != v.entr \
-                    or Prev.sens != v.sens: cntr = 1
-        xref = jdb.Obj (entr=v.entr, sens=v.sens, xref=cntr, typ=v.typ,
+            L('sense number too big').error("%s %s" % (fs(v), kr(v)))
+            return None
+        xref = jdb.Obj (entr=v.entr, sens=v.sens, xref=v.ord, typ=v.typ,
                         xentr=e[0], xsens=v.tsens, rdng=e[2], kanj=e[3],
                         notes=v.notes, nosens=nosens, lowpri=not v.prio)
-        cntr += 1;  Prev = xref
-        return [xref]
+        return xref
 
 def read_krmap (dbh, infn, targ_src):
         if not infn: return None
@@ -479,6 +450,7 @@ def kr (v):
         return s
 
 def fs (v):
+          # Format unresolved xref 'v' in a standard way for messages.
         s = "%s.%d (%d,%d,%d):" \
            % (jdb.KW.SRC[v.src].kw, v.seq,v.entr,v.sens,v.ord)
         return s
@@ -508,26 +480,33 @@ def get_src_id (id_or_name):
         src = jdb.KW.SRC[src].id
         return src
 
-def parse_mlist (mlist):
+def parse_mlist (mlist, thresh):
         regexes = []
-        for m in mlist:
-            try:
-                if not m[0].isdigit(): 
-                    level, regex = m[0].upper(), m[1:]
-                    level = {'W':30,'I':20,'D':10}[level]
-                else: level, regex = int(m[0:2]), m[2:]
-                regexes.append ((level, regex))
-            except (ValueError, KeyError, IndexError):
-                raise ValueError (m)
-        filter = lambda x: logmsg_filter (x, regexes)
+        for regex in mlist:
+            neg = False
+            if regex.startswith ('!'): regex, neg = regex[1:], True
+            regexes.append ((neg, regex))
+        filter = lambda x: logmsg_filter (x, regexes, thresh)
         return filter
 
-def logmsg_filter (logrec, regexes):
-        for level, regex in regexes:
-            if logrec.levelno < level or not re.search(regex,logrec.name):
-                continue
-            return True
-        return False
+def logmsg_filter (logrec, regexes, thresh=30):
+        for neg, regex in regexes:
+            if not re.search(regex,logrec.name): continue
+              # The last regex matched.  For a regular match (ie, no "!"
+              # was given and 'inverted' is False) return True to print
+              # the log message.  If "!" was given, 'inverted' is True
+              # and we return False to suppress the message. 
+            return not neg
+        return logrec.levelno >= thresh
+
+def loglevel (thresh):
+        try:
+            try: lvl = int(thresh)
+            except (ValueError, TypeError):
+                lvl = {'e':40, 'w':30, 'i':20, 'd':10}.get (thresh[0].lower())
+        except (ValueError, TypeError, IndexError):
+            raise ValueError ("Bad 'level' option: %s" % thresh)
+        return lvl
 
 #-----------------------------------------------------------------------
 
@@ -571,20 +550,40 @@ Arguments: none"""
                 "separated list of corpus names or id numbers).  If preceeded "
                 "by a \"-\", all corpora will be included except those listed.")
 
+        p.add_option ("-l", "--level", default='warn',
+            help="Logging level, one of: 'error', 'warning', 'info', 'debug'."
+                "  May be abbreviated to a single letter.  Log messages at "
+                "or above this level will be printed sans the exceptions"
+                "specified by any --messages options given.")
+
         p.add_option ("-m", "--messages", default=[], action="append",
-            help="Determines level and source of output messages.  "
-                "May be given mutiple times.  Each occurance has value "
-                "consisting of a single letter: 'W', 'I' or 'D' followed "
-                "immediately (no intervening space) by a regular expression.  "
-                "Messages generated with a level greater or equal to the "
-                "level in the option and whose \"name\" attribute matches "
-                "the option regex with be printed to stderr. \n\n"
-                ""
-                "The current levels and names available are:"
-                " warning: resolv, choose_target; "
-                " info: main, resolv; "
-                " debug get_xresolv_block, resolv, resolv.sql,"
-                " resolv.xref, savepoint;")
+            help="Allows finer-grained control of logging messages than "
+                "provided by --level.  The value of this option is a "
+                "a regular expression, optionally prefixed with a \"!\" "
+                "character.  Multiple --message options may be given.  "
+                "When a logging message is generated the message's source "
+                "string (aka logger name) is matched against each --message "
+                "regex in turn; if it matches and no \"!\" was given, the "
+                "log message is printed.  If no \"!\" was given the message "
+                "is not printed.  In either case no further --message regexes "
+                "are checked for that log message.  If there was no match, "
+                "the next regex is checked.  If no regexes match, the result "
+                "is determined by the --level option."
+                "\n\n"
+                "The available source names (and their levels) are: "
+                    "multiple targets (E); "
+                    "not found (E); "
+                    "self-referential (E); "
+                    "sense number too big (E); "
+                    "duplicate key (W); "
+                    "multiple senses (W); "
+                    "unknown corpus (W); "
+                    "resolved (I); "
+                    "trans (I); "
+                    "get_xresolv_block (D); "
+                    "resolv (D); "
+                    "wrxref (D); "
+                    "wrxref.sql (D); ")
 
         p.add_option ("-t", "--target-corpus", default=None,
             metavar='CORPORA',
@@ -629,31 +628,31 @@ and the xref target entry kanji and/or reading, and
 optionally, sense number.
 
 This program searches for an entry matching the kanji
-and reading and creates one or more xref records using
-the target entry's id number.  The matching process is
-more involved than doing a simple search because a kanji
-xref may match several entries, and our job is to find
-the right one.  This is currently done by a fast but
-inaccurate method that does not take into account restr,
-stagr, and stag restrictions which limit certain reading-
-kanji combinations and thus would make unabiguous some
-xrefs that this program considers ambiguous.  See the
-comments in sub choose_entry() for a description of
-the algorithm.
+and reading and creates an xref record using the target 
+entry's id number.  The matching process is more involved 
+than doing a simple search because a kanji xref may match 
+several entries, and our job is to find the right one.
+This is currently done by a fast but inaccurate method 
+that does not take into account restr, stagr, and stag 
+restrictions which limit certain reading-kanji combinations 
+and thus would make unabiguous some xrefs that this program 
+considers ambiguous.  See the comments in sub choose_entry() 
+for a description of the algorithm.
 
 When an xref text is not found, or multiple candidate
 entries still exist after applying the selection
-algorithm, the fact is reported (unless the -q option
-was given) and that xref skipped.
+algorithm, the fact is reported and that xref skipped.
 
-Before the program exits, it prints a summary of all
-unresolvable xrefs, grouped by reason and xref text.
-Following the xref text, in parenthesis, is the number
-of xresolv xrefs that included that unresolvable text.
-All normal (non-fatal) messages (other than debug
-messages generated via the -D option) are written to
-stdout.  Fatal errors and debug messages are written
-to stderr."""
+Error and other messages refer to unresolved xrefs using
+the format: "corpus.seq# (entr-id, sens#, ord#) where 
+all except ord# refer to the entry the xref is from.
+Error (E) messages indicate no resolved xref was generated.
+Warning (W) messages indicate an xref was produced but 
+might not be what was wanted.  Info (I) messages report 
+sucessful completion of an action.  There are also
+a number of debug (D) messages that can be optionally 
+enabled.
+."""
 
         opts, args = p.parse_args ()
         return args, opts

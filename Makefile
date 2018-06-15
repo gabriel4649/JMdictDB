@@ -261,12 +261,12 @@ postload:
 	  # Resolving xrefs below is lookup intensive so make sure we have good stats...
 	psql $(PG_HOST) -U $(PG_SUPER) -d $(DB) -c 'vacuum analyze'
 	  # Try to resolve unresolved xrefs.  Running these multiple times is innocuous.
-	date >>data/jmdict_xresolv.log
-	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -i -s jmdict   -t jmdict  >>../data/jmdict_xresolv.log 2>&1
-	date >>data/jmnedict_xresolv.log
-	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -i -s jmnedict -t jmnedict >>../data/jmnedict_xresolv.log 2>&1
-	date >>data/examples_xresolv.log
-	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -i -s examples -t jmdict >>../data/examples_xresolv.log 2>&1
+	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -i \
+           -sjmdict   -tjmdict   -m'!multiple senses' >../data/jmdict_xresolv.log 2>&1
+	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -i \
+           -sjmnedict -tjmnedict -m'!multiple senses' >../data/jmnedict_xresolv.log 2>&1
+	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -i \
+           -sexamples -tjmdict   -m'!multiple senses' >../data/examples_xresolv.log 2>&1
 	psql $(PG_HOST) -U $(PG_SUPER) -d $(DB) -c 'vacuum analyze'
 	@echo 'Remember to check the log files for warning messages.'
 

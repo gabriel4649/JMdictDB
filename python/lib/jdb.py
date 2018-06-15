@@ -230,7 +230,7 @@ OrderBy = {
         'restr':"x.entr,x.rdng,x.kanj",
         'stagk':"x.entr,x.sens,x.kanj",  'stagr':"x.entr,x.sens,x.rdng" }
 
-def entr_data (dbh, crit, args=None, ord=None, tables=None, xrer_limit=100):
+def entr_data (dbh, crit, args=None, ord=None, tables=None):
         #
         # dbh -- An open JMdictDB database handle.
         #
@@ -297,30 +297,13 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None, xrer_limit=100):
         #    to hold details of xref targets) and accomplished by
         #    by specifying a limited set of tables.  If not given
         #    the default is to use all tables.
-        #
-        #  xrer_limit -- (optional) A positive integer that will
-        #    be used to limit the number of reverse xrefs of
-        #    typ=KW.XREF['uses'].  When the Tatoeba Example sentence
-        #    corpus in loaded into the database and xrefs to jmdict
-        #    words generated, some words like "の" can end up with
-        #    hundreds of thousands of reverse xrefs.  This parameter
-        #    limits the number of such reverse xrefs that will be
-        #    retrieved from the database.  As currently configured,
-        #    xref type "uses" is only used for xrefs from the
-        #    "examples" corpus to the "jmdict" corpus and thus
-        #    provides a suitable selection criterion.  Default is
-        #    100.
-        #    WARNING: this does not take the number of entries into
-        #    account -- one gets at most this number of typ="uses" 
-        #    reverse xrefs whether one is retrieving 1 or 10000
-        #    entries.
 
         global Debug; time_start = time_last = time()
 
         if not tables: tables = (
             'entr','hist','rdng','rinf','kanj','kinf',
             'sens','gloss','misc','pos','fld','dial','lsrc',
-            'restr','stagr','stagk','freq','xref','xrer','xrere',
+            'restr','stagr','stagk','freq','xref','xrer',
             'rdngsnd','entrsnd','grp','chr','cinf','xresolv')
         if args is None: args = []
         if ord is None: ord = ''
@@ -343,34 +326,24 @@ def entr_data (dbh, crit, args=None, ord=None, tables=None, xrer_limit=100):
             else: ordby = OrderBy.get (tbl, "")
             if ordby: ordby = "ORDER BY " + ordby
 
-            if tbl in ("xrer", "xrere"):
-                  # Tables "xrer' and "xrere" are pseudo-tables: they both
-                  # consist of rows from real table "xref" but using different
-                  # criteria for selecting the rows.
-                  # "xrer" selects rows for "reverse" xref: xrefs whos
+            if tbl == "xrer":
+                  # Table "xrer' is a pseudo-table: it consists of rows
+                  # from real table "xref" but using different criteria
+                  # for selecting the rows.
+                  # "xrer" selects rows for "reverse" xrefs: xrefs whos
                   # (xentr,xsens) values refer to the related entry rather
-                  # than (entr,sens) as in normal "forward" xrefs.  They
-                  # also exclude xrefs of typ=KW.XREF['uses'], the xref.typ
-                  # value used for xrefs from example sentences to jmdict
-                  # words.
-                  # "xrere" is like "xrer" but consists of xrefs only of
-                  # typ=KW.XREF['uses'].  They are treated separately because
-                  # we need to limit the number of these xrefs we retrieve
-                  # since a large set of example sentences with words like
-                  # "の" xref'ed could result in the jmdict "の" entry having
-                  # hundreds of thousands of reverse xrefs.
+                  # than (entr,sens) as in normal "forward" xrefs.
+                  # We select only rows not marked as "lowpri" (low priority)
+                  # to avoid getting an excessively large of number of xrer
+                  # rows in cases of words like "の" which could have hundreds
+                  # of thousands of reverse xrefs to example sentences.
                 tblx = "xref"; key = "xentr"
                 if typ == 'I':           # We are adding to existing
                     wkeyword = "AND"     #  WHERE clause so "WHERE" not needed.
                 else:  # typ='J', we need to add a full WHERE clause.
                     wkeyword = "WHERE"   # No existing WHERE clause so we
-                if tbl == "xrer":        #  supply the whole thing.
-                    whr = " %s typ!=%s" % (wkeyword, KW.XREF['uses'].id)
-                    limit = ''
-                else: # tbl == "xrere":
-                    tbl = "xrer"    # Save rows with the xrer rows.
-                    whr = " %s typ=%d" % (wkeyword, KW.XREF['uses'].id)
-                    limit = "LIMIT %s" % xrer_limit
+                whr = " %s not lowpri" % (wkeyword,)
+                limit = ''  # Not currently used.
             else:
                 tblx = tbl;  limit = '';  whr = ''
             # FIXME: cls should not be dependent on lexical table name.

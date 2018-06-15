@@ -233,13 +233,15 @@ def resolv (dbh, xresolv_rows, targ_src, krmap):
             for x in xrefs:
                   # We don't need 'failed=False' here because the 'for' loop is
                   # always exited below the first time 'failed' is set to True.
-                L('resolv.xref').debug("xref: entr=%s, sens=%s, xref=%s, typ=%s, \n"
-                                  "  xentr=%s, xsens=%s, rdng=%s, kanj=%s" %
-                      (x.entr,x.sens,x.xref,x.typ,x.xentr,x.xsens,x.rdng or '',x.kanj or ''))
+                L('resolv.xref').debug("xref: entr=%s, sens=%s, xref=%s, typ=%s,"
+                                  " xentr=%s, xsens=%s, rdng=%s, kanj=%s,"
+                                  " nosens=%s, lowpri=%r" %
+                      (x.entr,x.sens,x.xref,x.typ,x.xentr,x.xsens,
+                       x.rdng or '',x.kanj or '',x.nosens,x.lowpri))
                 try:
-                    sql = "INSERT INTO xref VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                    sql = "INSERT INTO xref VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                     args = (x.entr,x.sens,x.xref,x.typ,x.xentr,x.xsens,
-                            x.rdng,x.kanj,x.notes)
+                            x.rdng,x.kanj,x.notes,x.nosens,x.lowpri)
                     L('resolv.sql').debug("sql: %s" % sql)
                     L('resolv.sql').debug("args: %r" % (args,))
                     dbh.execute (sql, args)
@@ -432,7 +434,8 @@ def mkxrefs (v, e):
           # interchangable they wouldn't be separate senses.  Since
           # we'll be wrong either way and someone will need to manually
           # correct it later, choose the way that produces the least
-          # amount of clutter in the entry.
+          # amount of clutter in the entry.  Also, in many cases the
+          # first *will* be the right sense.
         nosens = False
         if not v.tsens:
             v.tsens = 1
@@ -443,12 +446,9 @@ def mkxrefs (v, e):
             return []
         if not Prev or Prev.entr != v.entr \
                     or Prev.sens != v.sens: cntr = 1
-        notes = 'P' if v.prio else ''
-        if nosens: notes += 'S'
-        if v.notes: notes += ':' + v.notes
         xref = jdb.Obj (entr=v.entr, sens=v.sens, xref=cntr, typ=v.typ,
                         xentr=e[0], xsens=v.tsens, rdng=e[2], kanj=e[3],
-                        notes=notes)
+                        notes=v.notes, nosens=nosens, lowpri=not v.prio)
         cntr += 1;  Prev = xref
         return [xref]
 

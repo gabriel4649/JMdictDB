@@ -3,6 +3,9 @@
 -- run when a new JMdictDB database is created and by imptabs.sql
 -- which creates a copy of the tables in a separate schema for
 -- use when importing bulk data.
+
+-- NOTE: Remember to check if any corresponding changes are needed
+-- to python/lib/objects.py when this file is updated. 
  
 CREATE TABLE kwsrc (
     id SMALLINT PRIMARY KEY,

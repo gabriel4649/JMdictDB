@@ -247,9 +247,9 @@ class Lsrc (DbRow):
 
 class Xref (DbRow):
     def __init__ (s, entr=None, sens=None, xref=None, typ=None, xentr=None, xsens=None,
-                  rdng=None, kanj=None, notes=None):
-        DbRow.__init__(s, ( entr,  sens,  xref,  typ,  xentr,  xsens,  rdng,  kanj,  notes),
-                          ('entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes'))
+                  rdng=None, kanj=None, notes=None, nosens=None, lowpri=None):
+        DbRow.__init__(s, ( entr,  sens,  xref,  typ,  xentr,  xsens,  rdng,  kanj,  notes,  nosens,  lowpri),
+                          ('entr','sens','xref','typ','xentr','xsens','rdng','kanj','notes','nosens','lowpri'))
 
 class Hist (DbRow):
     def __init__ (s, entr=None, hist=None, stat=None, unap=None, dt=None, userid=None, name=None,

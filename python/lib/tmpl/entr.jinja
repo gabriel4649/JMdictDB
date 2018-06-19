@@ -163,23 +163,19 @@
                   {% if x.TARG._kanj and x.TARG._rdng and rnum %}【{%endif%}{#--#}
                   {{x.TARG|TALkrtxt('_rdng',rnum) if x.TARG._rdng else ''}}{#--#}
                   {% if x.TARG._kanj and x.TARG._rdng and rnum %}】{%endif%}{#--#}{{' '}}
-                  {{x.xsens}}. {{x.TARG._sens[x.xsens-1]|TALtxts('_gloss')}}
+                  {{x.xsens}}{{'*' if x.nosens else ''}}. {{x.TARG._sens[x.xsens-1]|TALtxts('_gloss','; ')}}
                   {{x.notes}}{#--#}
                   </td>
                 </tr>
                 {%-endfor%}{# s.XREF #}
-              {%- if s.XREF|TALunap_xrefs %} 
-              <tr><td colspan="2" class="notes">
-                Xrefs marked with an asterisk (*) denote a reference to or from an unapproved entry.
-                </td></tr>
-                {%- endif %}
+
               {%- if s._xrslv %}
               <tr><td colspan="2">Unresolved cross references:</td></tr>
               {%- for x in s._xrslv -%}
               <tr>
                 <td>&nbsp;</td>
                 <td>
-                  {{x.typ|TALabbr('XREF')|safe}}:{#--#}
+                  {{x.typ|TALabbr('XREF')|safe}}: {# -#}
                   {{x.ktxt}}{{'・' if x.ktxt and x.rtxt else ''}}{{x.rtxt}}
                   </td>
                 </tr>
@@ -388,6 +384,16 @@
         <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=jmne&amp;e={{e.id}}">jmnedict xml</a> |
         <a class="displink" href="entr.py?svc={{svc}}&amp;sid={{sid}}&amp;disp=xml&amp;e={{e.id}}">jmdictdb xml</a>
         </div>
+
+      <br><div class="notes">
+        Notes:
+        <ul>
+        <li>Cross references marked with an asterisk (*) denote a reference
+          to or from an unapproved entry.</li>
+        <li>Sense #1 marked with an asterisk (*) indicates sense was not
+          specified in source and sense #1 was chosen by default.</li>
+        </ul>
+      </div>
       {% endif %}
 
       </div>

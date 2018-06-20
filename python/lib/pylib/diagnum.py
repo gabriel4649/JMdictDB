@@ -40,6 +40,12 @@ def sq2xy (q):
         else:   y, x = b, b - divmod(r,2)[0]
         return x, y
 
+  # Similar functions but assuming x, y and q are 1-based.
+def xy2sq1 (x, y): return 1 + xy2sq (x-1, y-1)
+def sq2xy1 (q): 
+        x, y = sq2xy (q - 1)
+        return x+1, y+1
+
 #-----------------------------------------------------------------------------
 # Given an integer x,y regtangular coordinate, xy2d(x,y) will return
 # a "diagonal index" calculated by numbering grid points sequentially

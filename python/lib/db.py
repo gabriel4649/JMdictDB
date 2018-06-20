@@ -1,41 +1,109 @@
 import sys
 import psycopg2, psycopg2.extras
+from psycopg2.extras import DictCursorBase
 from psycopg2 import Error, Warning, InterfaceError, DatabaseError, \
     DataError, OperationalError,IntegrityError, InternalError, \
     ProgrammingError, NotSupportedError
+
 dbapi = psycopg2
 
-def connect (dburi, cursors=psycopg2.extras.DictCursor):
+class DbRowCursor (DictCursorBase):
+    # We can use the DictCursorBase class even though we are not
+    # implementing any sort of "dict" cursor because all it really
+    # does is to call ._build_index() to create a column name to
+    # index mapping after any .execute() calls, which is all we need.
+    # We do require that the mapping exist before any row objects
+    # are created in the fetch* methods and setting ._prefetch to 0
+    # will force that to occur.
+
+    def __init__(self, *args, **kwargs):
+        kwargs['row_factory'] = DbRow
+        super(DbRowCursor, self).__init__(*args, **kwargs)
+        self._prefetch = 0
+
+    def execute(self, query, vars=None):
+        self.index = {}
+        self._query_executed = 1
+        return super(DbRowCursor, self).execute(query, vars)
+
+    def callproc(self, procname, vars=None):
+        self.index = {}
+        self._query_executed = 1
+        return super(DbRowCursor, self).callproc(procname, vars)
+
+    def _build_index(self):
+        if self._query_executed == 1 and self.description:
+            self.index = [x[0] for x in self.description]
+            self._query_executed = 0
+
+class DbRow (object):
+    def __init__(self, cursor):
+        self.__cols__ = cursor.index
+    def __getitem__ (self, idx):
+        return getattr (self, self.__cols__[idx])
+    def __setitem__ (self, idx, value):
+        name = self.__cols__[idx]
+        setattr (self, name, value)
+    def __len__(self):
+        return len(self.__cols__)
+    def __iter__(self):
+        for n in self.__cols__: yield getattr (self, n)
+    def __eq__(self, other): return _compare (self, other)
+    def __ne__(self, other): return not _compare (self, other)
+    def __hash__(self): return id (self)    #FIXME?!
+    @property
+    def __list__(self): return [getattr (self, x) for x in self.__cols__]
+    @property
+    def __tuple__(self): return tuple((getattr(self,x) for x in self.__cols__))
+    def __repr__ (self):
+        return self.__class__.__name__ + '(' \
+                 + ', '.join([k + '=' + _p(v)
+                              for k,v in list(self.__dict__.items())
+                              if k != '__cols__']) + ')'
+def _p (o):
+        if isinstance (o, (int,str,bool,type(None))):
+            return repr(o)
+        if isinstance (o, (datetime.datetime, datetime.date, datetime.time)):
+            return str(o)
+        if isinstance (o, list):
+            if len(o) == 0: return "[]"
+            else: return "[...]"
+        if isinstance (o, dict):
+            if len(o) == 0: return "{}"
+            else: return "{...}"
+        else: return repr (o)
+
+
+def connect (dburi, cursor_factory=DbRowCursor):
         dbargs = parse_pguri (dburi)
-        dbconn = dbapi.connect (**dbargs)
+        dbconn = dbapi.connect (cursor_factory=cursor_factory, **dbargs)
         return dbconn
 
-def ex (dbconn, sql, args=(), cursor_factory=psycopg2.extras.DictCursor):
+def ex (dbconn, sql, args=(), cursor_factory=None):
         cur = dbconn.cursor (cursor_factory=cursor_factory)
         cur.execute (sql, args)
         return cur
 
-def query (dbconn, sql, args=(), one=False,
-           cursor_factory=psycopg2.extras.DictCursor):
+def query (dbconn, sql, args=(), one=False, cursor_factory=None):
         cur = ex (dbconn, sql, args, cursor_factory=cursor_factory)
         if one: return cur.fetchone()
         else: return cur.fetchall()
 
-def query1 (dbconn, sql, args=(), cursor_factory=psycopg2.extras.DictCursor):
+def query1 (dbconn, sql, args=(), cursor_factory=None):
         return query (dbconn, sql, args, one=True,
                       cursor_factory=cursor_factory)
+
 
   # When passed as sql argument to a sql statement executed by psycopg2,
   # DEFAULT will result in a postgresql DEFAULT argument.
   # See https://www.postgresql.org/message-id/CA+mi_8ZQx-vMm6PMAw72a0sRATEh3RBXu5rwHHhNNpQk0YHwQg@mail.gmail.com:
-
 class Default(object):
     def __conform__(self, proto):
         if proto is psycopg2.extensions.ISQLQuote: return self
     def getquoted(self): return 'DEFAULT'
 DEFAULT = Default()
 
-if sys.version_info.major == 2: import urlparse 
+if sys.version_info.major == 2: import urlparse
 else: import urllib.parse as urlparse
 
 def dburi_norm (dburi, scheme='postgres'):
@@ -43,10 +111,10 @@ def dburi_norm (dburi, scheme='postgres'):
         scheme, netloc, path, query, fragment = o
         if scheme == 'pg': o = o._replace (scheme='postgres')
         if not netloc:
-              # The following is to work around another Python PITA: 
+              # The following is to work around another Python PITA:
               # urllib treats a "netloc" value of '//' as empty and
               # normalizes it away when it reconstructing the URI.
-              # That is, 
+              # That is,
               #   >>> urlunsplit (urlsplit('postgres://localhost/jmdict'))
               #   'postgres://localhost/jmdict'
               # returns what one would expect but,
@@ -169,7 +237,7 @@ def require (dbconn, want, table='db'):
         returned.
 
         want -- A list or set of update numbers that we require
-            to be in the database's "db" table and have the 
+            to be in the database's "db" table and have the
             "active" value set.  May be either 6-digit hexidecimal
             strings or ints.
         Returns: A set of update id (int) numbers in <want> that
@@ -200,20 +268,20 @@ def rowop (dbconn, tblname, pkey, values, minupd=False,
                    autokey=None, returning=True):
     # Perform a basic IUD (Insert, Update or Delete) operation on
     # a single row identified by primary key on a single table.
-    # 'pkey' is a dict whose keys are column names and values 
+    # 'pkey' is a dict whose keys are column names and values
     # identify the row wanted.
     #   dbconn -- Open DBAPI connection obbject.
     #   tblname -- Name of table.
     #   pkey -- A dict whose key(s) are the name(s) of primary key
     #      column(s) for table 'tblname' and the values identify the
     #      row to be updated.
-    #   values -- A dict whose keys are the names of the columns to 
+    #   values -- A dict whose keys are the names of the columns to
     #      be updated and the values the give the values to update to.
-    #   minupd -- If false (default), all column mentioned in values 
+    #   minupd -- If false (default), all column mentioned in values
     #      will be updated, whether or not the current value in the
     #      database is the same.  In 'minupd' is true, the current row
     #      row will be retrieved for comparison and only those columns
-    #      that are different will be updated.  Please be aware of the 
+    #      that are different will be updated.  Please be aware of the
     #      possible concurrency implications of this.
     #   autokey -- Allows insert of new rows with an auto-increment of
     #      of a 2-part composite integer primary key.  A 2-item sequence
@@ -227,11 +295,11 @@ def rowop (dbconn, tblname, pkey, values, minupd=False,
     #      issues in an environment with many concurrent operations or
     #      high insert rates.
     #   returning -- (bool) if true (default) return
- 
+
     ##  The following explict conversion is not needed if dicts are
     ##  registered with psycopg2 to be automatically adapted to json
     ##  as is currently done in lib/db.py.  See also the ## comments
-    ##  in two "sqlargs =" statements below. 
+    ##  in two "sqlargs =" statements below.
     ##    def A(x): return db.Json(x) if isinstance(x,dict) else x
 
         if pkey and values:            # Update
@@ -260,9 +328,9 @@ def rowop (dbconn, tblname, pkey, values, minupd=False,
             sqlargs = list(values.values())  ## = [A(x) for x in values.values()]
             pmarks = ','.join (['%s'] * len (sqlargs))
             akexpr = ''
-            if autokey: 
+            if autokey:
                 pk1, pk2 = autokey    # Names of the primary key columns.
-                if pk1 not in values.keys():  # We must have a value for 
+                if pk1 not in values.keys():  # We must have a value for
                     raise KeyError (pk1)      #  the first part of the pk.
                 akexpr = ',(SELECT 1+COALESCE(MAX(%s),0) FROM %s WHERE %s=%%s)' \
                          % (pk2, tblname, pk1)
@@ -284,7 +352,7 @@ def rowop (dbconn, tblname, pkey, values, minupd=False,
         if not returning: return rowcount
 
         rs = cursor.fetchall()
-          # If caller specifed a 'pk' that was not in fact a primary 
+          # If caller specifed a 'pk' that was not in fact a primary
           # key, more than one record could be affect, which for safety
           # we complain about.
         if len(rs) > 1: raise KeyError ((tblname, pkey))
@@ -295,7 +363,7 @@ def rowdiff (a, b, raise_missing=False):
         diff = {}; amissing = set(); bmissing = set()
         for k,v in a.items():
             if k not in b: bmissing.add (k)
-            else: 
+            else:
                 if b[k] != v: diff[k] = (v,b[k])
         for k,v in b.items():
             if k not in a: amissing.add (k)
@@ -314,3 +382,4 @@ def rowchanges (new, old, raise_missing=False):
             if k not in old and raise_missing: raise KeyError (k)
             if k not in old or old[k] != v: diff[k] = v
         return diff
+

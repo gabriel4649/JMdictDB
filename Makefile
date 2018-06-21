@@ -261,11 +261,11 @@ postload:
 	  # Resolving xrefs below is lookup intensive so make sure we have good stats...
 	psql $(PG_HOST) -U $(PG_SUPER) -d $(DB) -c 'vacuum analyze'
 	  # Try to resolve unresolved xrefs.  Running these multiple times is innocuous.
-	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -i \
+	cd python && $(PYTHON) xresolv.py -d postgres://$(USER)@$(HOST)/$(DB) -i \
            -sjmdict   -tjmdict   -verror >../data/jmdict_xresolv.log 2>&1
-	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -i \
+	cd python && $(PYTHON) xresolv.py -d postgres://$(USER)@$(HOST)/$(DB) -i \
            -sjmnedict -tjmnedict -verror >../data/jmnedict_xresolv.log 2>&1
-	cd python && $(PYTHON) xresolv.py $(JM_HOST) -u $(USER) -d $(DB) -i \
+	cd python && $(PYTHON) xresolv.py -d postgres://$(USER)@$(HOST)/$(DB) -i \
            -sexamples -tjmdict   -verror >../data/examples_xresolv.log 2>&1
 	psql $(PG_HOST) -U $(PG_SUPER) -d $(DB) -c 'vacuum analyze'
 	@echo 'Remember to check the log files for warning messages.'

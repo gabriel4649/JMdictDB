@@ -64,40 +64,42 @@ import logging, logger; from logger import L
 
 #-----------------------------------------------------------------------
 
-def main (args, opts):
-        level = loglevel (opts.level)
-        logger.log_config (level=1 if opts.messages else level)
-        if opts.messages:
-            try: filter = parse_mlist (opts.messages, level)
+def main (cmdln_args):
+        args = parse_cmdline (cmdln_args)
+        level = loglevel (args.level)
+        logger.log_config (level=1 if args.messages else level)
+        if args.messages:
+            try: filter = parse_mlist (args.messages, level)
             except ValueError as e: sys.exit("Bad -m option: '%s'" % str (e))
             L().handlers[0].addFilter (filter)
 
-        global Opts;  Opts = opts
+        global Args;  Args = args
 
-        Opts.existing = 'replace'
-        try: dbh = jdb.dbOpen (opts.database, **jdb.dbopts(opts))
+        try:
+            dbopts = jdb.parse_pguri(args.database) 
+            dbh = jdb.dbOpen (dbopts['database'], **dbopts)
         except jdb.dbapi.OperationalError as e:
             sys.exit ("Error, unable to connect to database, "
                       "do you need -u or -p?\n" % str(e))
-        try: xref_src = get_src_ids (opts.source_corpus)
+        try: xref_src = get_src_ids (args.source_corpus)
         except KeyError:
-            L('unknown corpus').warning(opts.source_corpus)
+            L('unknown corpus').warning(args.source_corpus)
             sys.exit (0)
-        try: targ_src = get_src_ids (opts.target_corpus)
+        try: targ_src = get_src_ids (args.target_corpus)
         except KeyError:
-            L('unknown corpus').warning(opts.target_corpus)
+            L('unknown corpus').warning(args.target_corpus)
             sys.exit (0)
           #FIXME: need to make work with multiple srcs in targ_src and
           # provide limiting the scope (eg to one src or an entry) of
           # the K/R pairs in the file.
-        #krmap = read_krmap (dbh, opts.krmap, targ_src)
+        #krmap = read_krmap (dbh, args.krmap, targ_src)
         krmap = {}
 
         blksz = 1000
         for rows in get_xresolv_set (dbh, xref_src, blksz):
             do_entr_set (dbh, list (rows), targ_src, krmap,
-                         opts.partial, opts.preserve)
-        if opts.noaction:
+                         args.partial, args.preserve)
+        if args.noaction:
             L('trans').info("ROLLBACK");  dbh.connection.rollback()
         else:
             L('trans').info("COMMIT");  dbh.connection.commit()
@@ -127,7 +129,7 @@ def do_entr_set (dbh, vrows, targ_src, krmap, partial=False, preserve=False):
           # or rejected) or is unapproved.  Unapproved entries will
           # be checked during approval submission and unresolved
           # xrefs in rejected/deleted entries are usually moot.
-        if Opts.ignore_nonactive and (vrows[0].stat != jdb.KW.STAT['A'].id
+        if Args.ignore_nonactive and (vrows[0].stat != jdb.KW.STAT['A'].id
                                       or vrows[0].unap):
             L('invalid').info("skipping inactive or unapproved entry %d"
                                % vrows[0].entr)
@@ -165,7 +167,7 @@ def do_entr_set (dbh, vrows, targ_src, krmap, partial=False, preserve=False):
                     dbh.execute ("ROLLBACK TO sp2")
                     xrefs = []
         finally: dbh.execute ("RELEASE sp2")
-        if not Opts.keep:
+        if not Args.keep:
             sql = "DELETE FROM xresolv "\
                   "WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s"
             for x in xrefs:
@@ -479,7 +481,7 @@ def get_xresolv_block (dbh, xref_src, blksz, read_xrefs=False):
                 t0, o0 = o0, t0
             sql_args.extend ([e0,e0,s0,s0,t0,t0,o0])
             L('get_xresolv_block').debug("sql: %s" % sql_args)
-            L('get_xresolv_block').debug("args: %r" % (args,))
+            L('get_xresolv_block').debug("args: %r" % (sql_args,))
             rs = jdb.dbread (dbh, sql, sql_args)
             if len (rs) == 0: return
             L('get_xresolv_block').debug("Read %d %s rows from %s"
@@ -577,55 +579,45 @@ def loglevel (thresh):
         return lvl
 
 #-----------------------------------------------------------------------
+import argparse, textwrap
+from pylib.argparse_formatters import ParagraphFormatterML 
+def parse_cmdline (cmdln_args):
+        p = argparse.ArgumentParser (prog=cmdln_args[0],
+            formatter_class=ParagraphFormatterML,
+            description="Resolve a set of unresolved xrefs by identifying "
+                "one specific target entry for each one and creating "
+                "xrefs to them.")
 
-from optparse import OptionParser
-from pylib.optparse_formatters import IndentedHelpFormatterWithNL
-
-def parse_cmdline ():
-        u = \
-"""\n\t%prog [options]
-
-%prog will convert textual xrefs in table "xresolv", to actual
-entr.id xrefs and write them to database table "xref".
-
-Arguments: none"""
-
-        p = OptionParser (usage=u, add_help_option=False,
-                          formatter=IndentedHelpFormatterWithNL())
-
-        p.add_option ("--help",
-            action="help", help="Print this help message.")
-
-        p.add_option ("-n", "--noaction", default=False,
+        p.add_argument ("-n", "--noaction", default=False,
             action="store_true",
             help="Resolve xrefs and generate log file but don't make "
                 "any changes to database. (This implies --keep.)")
 
-        p.add_option ("-i", "--ignore-nonactive", default=False,
+        p.add_argument ("-i", "--ignore-nonactive", default=False,
             action="store_true",
             help="Ignore unresolved xrefs belonging to entries with a"
                 "status of deleted or rejected or which are unapproved ")
 
-        p.add_option ("-s", "--source-corpus", default=None,
+        p.add_argument ("-s", "--source-corpus", default=None,
             metavar='CORPORA',
             help="Limit to xrefs occuring in entries of CORPORA (a comma-"
                 "separated list of corpus names or id numbers).  If preceeded "
                 "by a \"-\", all corpora will be included except those listed.")
 
-        p.add_option ("-t", "--target-corpus", default=None,
+        p.add_argument ("-t", "--target-corpus", default=None,
             metavar='CORPORA',
             help="Limit to xrefs that resolve to targets in CORPORA (a comma-"
                 "separated list of corpus names or id numbers).  If preceeded "
                 "by a \"-\", all corpora will be included except those listed.")
 
-        p.add_option ("--krmap", default=None,
+        p.add_argument ("--krmap", default=None,
             help="Name of a file containing kanji/reading to seq# map.")
 
-        p.add_option ("-k", "--keep", default=False, action="store_true",
+        p.add_argument ("-k", "--keep", default=False, action="store_true",
             help="Do not delete unresolved xrefs after they are resolved.  "
                 "This is primarily to aid in debugging.")
 
-        p.add_option ("--partial", default=False, action="store_true",
+        p.add_argument ("--partial", default=False, action="store_true",
             help="Create xrefs for an entry even if some of them can't be "
                 "created.  Default behavior without this option is not "
                 "to create any xrefs for an entry if any of them can't "
@@ -633,7 +625,7 @@ Arguments: none"""
                 "This option can be useful when performing incremental "
                 "updates.")
 
-        p.add_option ("--preserve", default=False, action="store_true",
+        p.add_argument ("--preserve", default=False, action="store_true",
             help="Do not delete existing xrefs for an entry prior to "
                 "resolving unresolved xrefs.  If an unresolved xref "
                 "resolves to the same key as a preexisting one, the "
@@ -644,18 +636,18 @@ Arguments: none"""
                 "This option can be useful when performing incremental "
                 "updates.")
 
-        #p.add_option ("-l", "--logfile", default=None,
+        #p.add_argument ("-l", "--logfile", default=None,
         #    help="Name of file log messages will be written to."
         #        "If not given messages will be written to stderr.")
 
-        p.add_option ("-v", "--level", default='warn',
+        p.add_argument ("-v", "--level", default='warn',
             help="Logging level, one of: "
                 "'error', 'warning', 'info', 'debug'.  "
                 "May be abbreviated to a single letter.  Log messages at "
                 "or above this level will be printed sans the exceptions"
                 "specified by any --messages options given.")
 
-        p.add_option ("-m", "--messages", default=[], action="append",
+        p.add_argument ("-m", "--messages", default=[], action="append",
             help="Allows finer-grained control of logging messages than "
                 "provided by --level.  The value of this option is a "
                 "a regular expression, optionally prefixed with a \"!\" "
@@ -667,40 +659,10 @@ Arguments: none"""
                 "is not printed.  In either case no further --message regexes "
                 "are checked for that log message.  If there was no match, "
                 "the next regex is checked.  If no regexes match, the result "
-                "is determined by the --level option."
-                "\n\n"
-                "The available source names (and their levels) are: "
-                    "multiple targets (E); "
-                    "not found (E); "
-                    "self-referential (E); "
-                    "sense number too big (E); "
-                    "duplicate key (W); "
-                    "multiple senses (W); "
-                    "unknown corpus (W); "
-                    "resolved (I); "
-                    "trans (I); "
-                    "get_xresolv_block (D); "
-                    "resolv (D); "
-                    "wrxref (D); "
-                    "wrxref.sql (D); ")
+                "is determined by the --level option.")
 
-        p.add_option ("-e", "--encoding", default="utf-8",
-            type="str", dest="encoding",
-            help="Encoding for output (typically \"sjis\", \"utf8\", "
-              "or \"euc-jp\"")
-
-        p.add_option ("-d", "--database",
-            type="str", dest="database", default="jmdict",
-            help="Name of the database to load.")
-        p.add_option ("-h", "--host", default=None,
-            type="str", dest="host",
-            help="Name host machine database resides on.")
-        p.add_option ("-u", "--user", default=None,
-            type="str", dest="user",
-            help="Connect to database with this username.")
-        p.add_option ("-p", "--password", default=None,
-            type="str", dest="password",
-            help="Connect to database with this password.")
+        p.add_argument ("-d", "--database", default="jmdict",
+            help="URI for the database to use.")
         p.epilog = """\
 When a program such as jmparse.py or exparse.py parses
 a corpus file, any xrefs in that file are in textual
@@ -747,10 +709,7 @@ a number of debug (D) messages that can be optionally
 enabled.
 ."""
 
-        opts, args = p.parse_args ()
-        return args, opts
+        args = p.parse_args (cmdln_args[1:])
+        return args
 
-if __name__ == '__main__':
-        args, opts = parse_cmdline()
-        main (args, opts)
-
+if __name__ == '__main__': main (sys.argv)

@@ -133,7 +133,7 @@ def parse_ex (fin, begin):
               # Turns out some of the entries in the examples file are duplicates
               # (including the ID#) so we check the seq#
             if Seq in seq_cache:
-                msg ("Duplicate id#: %s_%s" % (id0, id1))
+                msg ("Duplicate id#: %s_%s" % (id_en, id_jp))
                 continue
             seq_cache.add (Seq)
             entr = mkentr (jtxt, etxt)

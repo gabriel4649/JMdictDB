@@ -59,13 +59,20 @@ _ = os.path.join (os.path.dirname(_), 'python', 'lib')
 if _ not in sys.path: sys.path.insert(0, _)
 
 import re, itertools
-import jdb
+import db, jdb
 import logging, logger; from logger import L
 
 #-----------------------------------------------------------------------
 
 def main (cmdln_args):
         args = parse_cmdline (cmdln_args)
+        try: dbconn = db.connect (args.database)
+        except jdb.dbapi.OperationalError as e:
+            sys.exit ("Error, unable to connect to database: %s" % str(e))
+        KW = jdb.Kwds (dbconn.cursor())
+          # Monkey patch jdb module until migration to db module is complete
+          # because many lib functions still expect KW as a jdb global. 
+        jdb.KW = KW
         level = loglevel (args.level)
         logger.log_config (level=1 if args.messages else level)
         if args.messages:
@@ -75,12 +82,6 @@ def main (cmdln_args):
 
         global Args;  Args = args
 
-        try:
-            dbopts = jdb.parse_pguri(args.database) 
-            dbh = jdb.dbOpen (dbopts['database'], **dbopts)
-        except jdb.dbapi.OperationalError as e:
-            sys.exit ("Error, unable to connect to database, "
-                      "do you need -u or -p?\n" % str(e))
         try: xref_src = get_src_ids (args.source_corpus)
         except KeyError:
             L('unknown corpus').warning(args.source_corpus)
@@ -92,20 +93,19 @@ def main (cmdln_args):
           #FIXME: need to make work with multiple srcs in targ_src and
           # provide limiting the scope (eg to one src or an entry) of
           # the K/R pairs in the file.
-        #krmap = read_krmap (dbh, args.krmap, targ_src)
+        #krmap = read_krmap (dbconn, args.krmap, targ_src)
         krmap = {}
 
         blksz = 1000
-        for rows in get_xresolv_set (dbh, xref_src, blksz):
-            do_entr_set (dbh, list (rows), targ_src, krmap,
+        for rows in get_xresolv_set (dbconn, xref_src, blksz):
+            do_entr_set (dbconn, list (rows), targ_src, krmap,
                          args.partial, args.preserve)
         if args.noaction:
-            L('trans').info("ROLLBACK");  dbh.connection.rollback()
+            L('trans').info("ROLLBACK");  dbconn.rollback()
         else:
-            L('trans').info("COMMIT");  dbh.connection.commit()
-        dbh.close()
+            L('trans').info("COMMIT");  dbconn.commit()
 
-def do_entr_set (dbh, vrows, targ_src, krmap, partial=False, preserve=False):
+def do_entr_set (dbconn, vrows, targ_src, krmap, partial=False, preserve=False):
           # Attempt to resolve a set of xresolve rows associated with a
           # a single entry.
           #
@@ -135,17 +135,17 @@ def do_entr_set (dbh, vrows, targ_src, krmap, partial=False, preserve=False):
                                % vrows[0].entr)
             return
 
-        dbh.execute ("SAVEPOINT sp2")
+        db.ex (dbconn, "SAVEPOINT sp2")
         try:
             if not preserve:
                 entrid = vrows[0].entr
                 L('entr_set').info("deleting old xrefs for entr=%s" % entrid)
-                dbh.execute ("DELETE FROM xref WHERE entr=%s", (entrid,))
+                db.ex (dbconn, "DELETE FROM xref WHERE entr=%s", (entrid,))
             xrefs = []
             for v in vrows:
-                xref = resolv (dbh, v, targ_src, krmap)
+                xref = resolv (dbconn, v, targ_src, krmap)
                 if xref:
-                    err = not wrxref (dbh, xref, upsert=partial)
+                    err = not wrxref (dbconn, xref, upsert=partial)
                     if not err: xrefs.append (xref)
 
               # 'xrefs' now contains an Xref instance for every 'vrows'
@@ -164,17 +164,17 @@ def do_entr_set (dbh, vrows, targ_src, krmap, partial=False, preserve=False):
                 if not partial:
                     L('results').error("skipping entry %d due to errors"
                                       % (vrows[0].entr,))
-                    dbh.execute ("ROLLBACK TO sp2")
+                    db.ex (dbconn, "ROLLBACK TO sp2")
                     xrefs = []
-        finally: dbh.execute ("RELEASE sp2")
+        finally: db.ex (dbconn, "RELEASE sp2")
         if not Args.keep:
             sql = "DELETE FROM xresolv "\
                   "WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s"
             for x in xrefs:
                   # x is xref row, not x.resolv row, hence x.xref, not x.ord.
-                dbh.execute (sql, (x.entr, x.sens, x.typ, x.xref))
+                db.ex (dbconn, sql, (x.entr, x.sens, x.typ, x.xref))
 
-def resolv (dbh, xresolv_row, targ_src, krmap):
+def resolv (dbconn, xresolv_row, targ_src, krmap):
         v = xresolv_row     # For brevity.
         L('resolving').debug("entr=%s, sens=%s, typ=%s, ord=%s, "
                           "tsens=%s, prio=%s, rtxt=%s, ktxt=%s"
@@ -193,7 +193,7 @@ def resolv (dbh, xresolv_row, targ_src, krmap):
               # reading-kanji pair (if the xresolv rec specifies
               # both), reading or kanji (if the xresolv rec specifies
               # one).
-            entries = get_entries (dbh, targ_src, v.rtxt, v.ktxt, None)
+            entries = get_entries (dbconn, targ_src, v.rtxt, v.ktxt, None)
 
               # If we didn't find anything, and we did not have both
               # a reading and a kanji, try again but search for reading
@@ -203,7 +203,7 @@ def resolv (dbh, xresolv_row, targ_src, krmap):
               # This hack will be removed when IS-26 is resolved.
 
             if not entries and (not v.rtxt or not v.ktxt):
-                entries = get_entries (dbh, targ_src, v.ktxt, v.rtxt, None)
+                entries = get_entries (dbconn, targ_src, v.ktxt, v.rtxt, None)
 
               # Choose_target() will examine the entries and determine if
               # if it can narrow the target down to a single entry, which
@@ -230,8 +230,8 @@ def resolv (dbh, xresolv_row, targ_src, krmap):
             L('resolved').info("%s -> xref %r" % (fs(v), xref))
         return xref
 
-def wrxref (dbh, xref, upsert=False):
-          # dbh -- Open database connection.
+def wrxref (dbconn, xref, upsert=False):
+          # dbconn -- Open database connection.
           # xref -- (Xref) instance add to database.
           # upsert -- (bool) action to take if xref already in db.
           #   true: update it to match 'xref';
@@ -253,7 +253,7 @@ def wrxref (dbh, xref, upsert=False):
         pk = x.entr,x.sens,x.xref,x.xentr,x.xsens
         sql = "SELECT * FROM xref "\
               "WHERE entr=%s AND sens=%s AND xref=%s AND xentr=%s AND xsens=%s"
-        existing = jdb.dbread (dbh, sql, pk)
+        existing = db.query (dbconn, sql, pk)
         if existing:
             e = existing[0]   # For brevity.
             if (e.typ,e.rdng,e.kanj,e.notes,e.nosens,e.lowpri) \
@@ -277,7 +277,7 @@ def wrxref (dbh, xref, upsert=False):
         args = pk + a + a
         L('wrxref.sql').debug("sql: %s" % sql)
         L('wrxref.sql').debug("args: %r" % (args,))
-        dbh.execute (sql, args)
+        db.ex (dbconn, sql, args)
         return xref
 
 class Memoize:
@@ -290,7 +290,7 @@ class Memoize:
         return self.cache[args]
 
 @Memoize
-def get_entries (dbh, targ_src, rtxt, ktxt, seq):
+def get_entries (dbconn, targ_src, rtxt, ktxt, seq):
 
         # Find all entries in the corpora targ_src that have a
         # reading and kanji that match rtxt and ktxt.  If seq
@@ -335,8 +335,7 @@ def get_entries (dbh, targ_src, rtxt, ktxt, seq):
                 + ("JOIN kanj k ON k.entr=e.id " if ktxt else "") \
                 + "WHERE stat=%s AND %s" \
                 % (KW.STAT['A'].id, " AND ".join (cond))
-        dbh.execute (sql, args)
-        rs = dbh.fetchall()
+        rs = db.query (dbconn, sql, args)
         return rs
 
 def choose_target (v, entries):
@@ -425,23 +424,23 @@ def mkxref (v, e):
                         notes=v.notes, nosens=nosens, lowpri=not v.prio)
         return xref
 
-def get_xresolv_set (dbh, xref_src, blksz):
+def get_xresolv_set (dbconn, xref_src, blksz):
           # Yield sequential blocks (lists of xresolv rows) where all rows
           # in the block have the same .entr value and are ordered on
           # sens,typ,ord.  We expect get_xresolv_row() to supply rows
           # in .entr,.sens,.typ,.ord order.
-        reader = get_xresolv_row (dbh, xref_src, blksz)
+        reader = get_xresolv_row (dbconn, xref_src, blksz)
         keyfunc = lambda x: x.entr
         for key, group in itertools.groupby (reader, keyfunc):
             yield group
 
-def get_xresolv_row (dbh, xref_src, blksz, read_xrefs=False):
+def get_xresolv_row (dbconn, xref_src, blksz, read_xrefs=False):
           # Read blocks of xresolv rows from the database and yield
           # one row at a time.  Rows are ordered on entr,sens,typ,ord.
-        for blk in get_xresolv_block (dbh, xref_src, blksz):
+        for blk in get_xresolv_block (dbconn, xref_src, blksz):
             for row in blk: yield row
 
-def get_xresolv_block (dbh, xref_src, blksz, read_xrefs=False):
+def get_xresolv_block (dbconn, xref_src, blksz, read_xrefs=False):
         # Read and yield sucessive blocks of 'blksz' rows from table "xresolv"
         # (or, despite our name, table "xref" if 'read_xrefs' is true).  Rows
         # are ordered by (target) entr id, sens, xref type and xref ord (or
@@ -482,7 +481,7 @@ def get_xresolv_block (dbh, xref_src, blksz, read_xrefs=False):
             sql_args.extend ([e0,e0,s0,s0,t0,t0,o0])
             L('get_xresolv_block').debug("sql: %s" % sql_args)
             L('get_xresolv_block').debug("args: %r" % (sql_args,))
-            rs = jdb.dbread (dbh, sql, sql_args)
+            rs = db.query (dbconn, sql, sql_args)
             if len (rs) == 0: return
             L('get_xresolv_block').debug("Read %d %s rows from %s"
                                          % (len(rs), table, lastpos))
@@ -493,7 +492,7 @@ def get_xresolv_block (dbh, xref_src, blksz, read_xrefs=False):
         assert True, "Unexpected break from loop"
         return
 
-def read_krmap (dbh, infn, targ_src):
+def read_krmap (dbconn, infn, targ_src):
         if not infn: return None
         fin = open (infn, "r", encoding="utf8_sig")
 
@@ -504,7 +503,7 @@ def read_krmap (dbh, infn, targ_src):
             try: seq = int (seq)
             except ValueError:
                 raise ValueError ("Bad seq# at line %d in '%s'" % (lnnum, infn))
-            entrs = get_entries (dbh, targ_src, rtxt, ktxt, seq)
+            entrs = get_entries (dbconn.cursor(), targ_src, rtxt, ktxt, seq)
             if not entrs:
                 raise ValueError ("Entry seq not found, or kana/kanji"
                                   " mismatch at line %d in '%s'" % (lnnum, infn))
@@ -579,6 +578,19 @@ def loglevel (thresh):
         return lvl
 
 #-----------------------------------------------------------------------
+
+from optparse import OptionParser
+from pylib.optparse_formatters import IndentedHelpFormatterWithNL
+
+def parse_cmdline ():
+        u = \
+"""\n\t%prog [options]
+
+%prog will convert textual xrefs in table "xresolv", to actual
+entr.id xrefs and write them to database table "xref".
+
+Arguments: none"""
+
 import argparse, textwrap
 from pylib.argparse_formatters import ParagraphFormatterML 
 def parse_cmdline (cmdln_args):
@@ -713,3 +725,5 @@ enabled.
         return args
 
 if __name__ == '__main__': main (sys.argv)
+
+

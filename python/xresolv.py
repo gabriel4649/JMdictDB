@@ -52,6 +52,9 @@
 # xresolv table augmented with additional info from the
 # associated entry: .src, .seq, .stat, .unap.
 
+# NOTE: not any faster than hg-180622-6434ea version:
+#   http://localhost/hgdev/jmdictdb/file/6434ea4e620b/python/xresolv.py
+# Still takes ~45-50 min to resolve examples file xrefs.
 
 import sys, os, inspect, pdb
 _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
@@ -71,10 +74,11 @@ def main (cmdln_args):
             sys.exit ("Error, unable to connect to database: %s" % str(e))
         KW = jdb.Kwds (dbconn.cursor())
           # Monkey patch jdb module until migration to db module is complete
-          # because many lib functions still expect KW as a jdb global. 
+          # because many lib functions still expect KW as a jdb global.
         jdb.KW = KW
         level = loglevel (args.level)
-        logger.log_config (level=1 if args.messages else level)
+        logger.log_config (level=1 if args.messages else level,
+                           filename=args.logfile)
         if args.messages:
             try: filter = parse_mlist (args.messages, level)
             except ValueError as e: sys.exit("Bad -m option: '%s'" % str (e))
@@ -96,139 +100,85 @@ def main (cmdln_args):
         #krmap = read_krmap (dbconn, args.krmap, targ_src)
         krmap = {}
 
-        blksz = 1000
-        for rows in get_xresolv_set (dbconn, xref_src, blksz):
-            do_entr_set (dbconn, list (rows), targ_src, krmap,
-                         args.partial, args.preserve)
+        #delete_existing (dbconn, ...)
+        for rows in get_candidates (dbconn, xref_src, targ_src):
+            resolve (dbconn, rows)
+
         if args.noaction:
             L('trans').info("ROLLBACK");  dbconn.rollback()
         else:
             L('trans').info("COMMIT");  dbconn.commit()
 
-def do_entr_set (dbconn, vrows, targ_src, krmap, partial=False, preserve=False):
-          # Attempt to resolve a set of xresolve rows associated with a
-          # a single entry.
-          #
-          # vrows -- a block of xresolv rows with a common .entr attribute
-          #   value and sorted by (.sens, .typ, .ord).
-          # targ_src -- (list) Only entries with these .src values will
-          #   be candidates for resolution targets.
-          # kmap -- Not currently used.
-          # partial --Allow partial resolutions of full entr set.
-          #   If false a failure to resolve any xresolv row will fail the
-          #   entire set of xresolv rows with the same .entr value and no
-          #   xrefs will be generated for any of the xresolve rows.
-          #   It true, only the failing xresolve rows will fail to generate
-          #   xrefs; the non-failing rows will.
-          # preserve -- if true, do not replace all preexisting xrefs with
-          #   the newly resolved ones.  Instead replace only those that
-          #   match one of the newly resolved ones.
+def resolve (dbconn, candidates):
+        row = choose_candidate (candidates)
+        if not row: return None
+        xref = mkxref (row)
+        if not xref: return None
+        result = wrxref (dbconn, xref)
+        return result
 
-          # Skip this set of xresolv rows if the "--ignore-nonactive"
-          # option was given and the entry is not active (i.e. is deleted
-          # or rejected) or is unapproved.  Unapproved entries will
-          # be checked during approval submission and unresolved
-          # xrefs in rejected/deleted entries are usually moot.
-        if Args.ignore_nonactive and (vrows[0].stat != jdb.KW.STAT['A'].id
-                                      or vrows[0].unap):
-            L('invalid').info("skipping inactive or unapproved entry %d"
-                               % vrows[0].entr)
-            return
+def get_candidates (dbconn, xref_src, targ_src):
+        xs_lst, xs_inv = xref_src
+        ts_lst, ts_inv = targ_src
+        L().info("reading candidates from database, may take a while...")
+        sql = "SELECT * FROM rslv"\
+              " WHERE src %sIN %%s AND (tsrc %sIN %%s OR tsrc IS NULL)"\
+              " ORDER BY entr,sens,typ,ord,targ"\
+              % ('NOT ' if xs_inv else '', 'NOT ' if xs_inv else '')
+        args = (xs_lst, ts_lst)
+        L().debug("sql: %s" % sql)
+        L().debug("args: %r" % (args,))
+        rs = db.query (dbconn, sql, args)
+        L().info("read %d candidates from database" % len(rs))
+        key = lambda x: (x.entr, x.sens, x.typ, x.ord)
+        for _, rows in itertools.groupby (rs, key=key):
+            yield list(rows)
 
-        db.ex (dbconn, "SAVEPOINT sp2")
-        try:
-            if not preserve:
-                entrid = vrows[0].entr
-                L('entr_set').info("deleting old xrefs for entr=%s" % entrid)
-                db.ex (dbconn, "DELETE FROM xref WHERE entr=%s", (entrid,))
-            xrefs = []
-            for v in vrows:
-                xref = resolv (dbconn, v, targ_src, krmap)
-                if xref:
-                    err = not wrxref (dbconn, xref, upsert=partial)
-                    if not err: xrefs.append (xref)
-
-              # 'xrefs' now contains an Xref instance for every 'vrows'
-              # item that was successfully resolved.  If 'partial' is not
-              # true, we require every 'vrows' item to have been resolved;
-              # if not the case then rollback all the newly created
-              # database xrefs.
-              # We don't abort on the first error because we want to
-              # gererate error messages for all the failing vrows' items.
-            if len(vrows) == len(xrefs):
-                L('results').info("entr %d: all %d items resolved"
-                                   % (vrows[0].entr, len(vrows)))
-            else:
-                L('results').info("entry %d: %d items not resolved"
-                                  % (vrows[0].entr, len(vrows)-len(xrefs)))
-                if not partial:
-                    L('results').error("skipping entry %d due to errors"
-                                      % (vrows[0].entr,))
-                    db.ex (dbconn, "ROLLBACK TO sp2")
-                    xrefs = []
-        finally: db.ex (dbconn, "RELEASE sp2")
-        if not Args.keep:
-            sql = "DELETE FROM xresolv "\
-                  "WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s"
-            for x in xrefs:
-                  # x is xref row, not x.resolv row, hence x.xref, not x.ord.
-                db.ex (dbconn, sql, (x.entr, x.sens, x.typ, x.xref))
-
-def resolv (dbconn, xresolv_row, targ_src, krmap):
-        v = xresolv_row     # For brevity.
-        L('resolving').debug("entr=%s, sens=%s, typ=%s, ord=%s, "
-                          "tsens=%s, prio=%s, rtxt=%s, ktxt=%s"
-            % (v.entr,v.sens,v.typ,v.ord,v.tsens,v.prio,v.rtxt,v.ktxt))
-        e = None
-        if krmap:
-              # If we have a user supplied map, lookup the xresolv
-              # reading and kanji in it first.
-            e = krlookup (krmap, v.rtxt, v.ktxt)
-
-        if not e:
-              # If there was no map, or the xresolv reading/kanji
-              # was not found in it, look in the database for them.
-              # get_entries() will return an abbreviated entry
-              # summary record for each entry that has a matching
-              # reading-kanji pair (if the xresolv rec specifies
-              # both), reading or kanji (if the xresolv rec specifies
-              # one).
-            entries = get_entries (dbconn, targ_src, v.rtxt, v.ktxt, None)
-
-              # If we didn't find anything, and we did not have both
-              # a reading and a kanji, try again but search for reading
-              # in kanj table or kanji in rdng table because our idea
-              # of when a string is kanji and when it is a reading still
-              # still does not agree with JMdict's in all cases (IS-26).
-              # This hack will be removed when IS-26 is resolved.
-
-            if not entries and (not v.rtxt or not v.ktxt):
-                entries = get_entries (dbconn, targ_src, v.ktxt, v.rtxt, None)
-
-              # Choose_target() will examine the entries and determine if
-              # if it can narrow the target down to a single entry, which
-              # it will return as a 7-element array (see get_entries() for
-              # description).  If it can't find a unique entry, it takes
-              # care of generating an error message and returns a false
-              # value.
-            e = choose_target (v, entries)
-            if not e: return None
-
-          # Check that the chosen target entry isn't the same as the
-          # referring entry.
-
-        if e[0] == v.entr:
-            L('self-referential').error("skipped %s %s" % (fs(v), kr(v)))
-            return None # i.e., failed.
-
-          # Now that we know the target entry, we can create the actual
-          # db xref records.  There may be more than one if the target
-          # entry has multiple senses and no explicit sense was given
-          # in the xresolv record.
-        xref = mkxref (v, e)
-        if xref:
-            L('resolved').info("%s -> xref %r" % (fs(v), xref))
-        return xref
+def choose_candidate (rows):
+        L('choose_candidate').debug("received %d rows" % len(rows))
+        if len(rows) == 1:
+              # There is only one candidates row based on which we can decide
+              # unambiguously among three possibilities: 1) there was no match,
+              # 2) there were multiple matches, or 3) we found exactly one
+              # match.
+            v = rows[0]
+            if v.tsrc is None:
+                L('xref target not found').error(fs(v))
+                return None
+            if v.nentr==1:
+                L('xref resolved (1)').info(fs(v))
+                return v
+            if rows[0].nentr>1:
+                L('multiple candidates').error(fs(v))
+                return None
+          # If there were multiple candidates rows we need to look through
+          # them all to find the best choice.  We will never choose a
+          # candidates row that has .nentr>1 since that is definitionally
+          # a match to multiple targets.  Also note the candidates must
+          # already match the unresolved xref's reading or kanji or both
+          # (if the xref specifies both).
+        for v in rows:
+               # If looking for a reading match, first choice is a match
+               # to the first reading of an entry that has no kanji.
+            if v.nentr == 1 and not v.ktxt and v.rdng==1 and v.nokanji:
+                L('xref resolved (2)').info(fs(v))
+                return v
+        for v in rows:
+               # Otherwise look for a candidate that matches on either the
+               # first reading or first kanji.
+            first = (v.rtxt and v.rdng==1) or (v.ktxt and v.kanj==1)
+            if v.nentr == 1 and first:
+                L('xref resolved (3)').info(fs(v))
+                return v
+        for v in rows:
+               # And as last choice accept a candidate with a matching
+               # reading and/or kanji regardless of the position of the
+               # matches.
+            if v.nentr == 1:
+                L('xref resolved (4)').info(fs(v))
+                return v
+        L('multiple candidates').error(fs(v))
+        return None
 
 def wrxref (dbconn, xref, upsert=False):
           # dbconn -- Open database connection.
@@ -249,7 +199,7 @@ def wrxref (dbconn, xref, upsert=False):
           # then we just print an info message and do an upsert operation.
           # If upsert is not true then it is an error,
           # And if there is no preexisting entry we just do the upsert
-          # which in this case devolves to a plain insert. 
+          # which in this case devolves to a plain insert.
         pk = x.entr,x.sens,x.xref,x.xentr,x.xsens
         sql = "SELECT * FROM xref "\
               "WHERE entr=%s AND sens=%s AND xref=%s AND xentr=%s AND xsens=%s"
@@ -270,7 +220,7 @@ def wrxref (dbconn, xref, upsert=False):
           # asssigned by default; we should explicitly define it there too.
         sql = "INSERT INTO xref(entr,sens,xref,xentr,xsens,"\
                                "typ,rdng,kanj,notes,nosens,lowpri) "\
-              "VALUES(%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s)"\
+              "VALUES(%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s) "\
               "ON CONFLICT ON CONSTRAINT xref_pkey DO UPDATE "\
               "SET typ=%s,rdng=%s,kanj=%s,notes=%s,nosens=%s,lowpri=%s"
         a = (x.typ,x.rdng,x.kanj,x.notes,x.nosens,x.lowpri)
@@ -280,123 +230,7 @@ def wrxref (dbconn, xref, upsert=False):
         db.ex (dbconn, sql, args)
         return xref
 
-class Memoize:
-    def __init__( self, func ):
-        self.func = func
-        self.cache = {}
-    def __call__( self, *args ):
-        if not args in self.cache:
-            self.cache[args] = self.func( *args )
-        return self.cache[args]
-
-@Memoize
-def get_entries (dbconn, targ_src, rtxt, ktxt, seq):
-
-        # Find all entries in the corpora targ_src that have a
-        # reading and kanji that match rtxt and ktxt.  If seq
-        # is given, then the matched entries must also have a
-        # as sequence number that is the same.  Matches are
-        # restricted to entries with stat=2 ("active");
-        #
-        # The records in the entry list are lists, and are
-        # indexed as follows:
-        #
-        #       0 -- entr.id
-        #       1 -- entr.seq
-        #       2 -- rdng.rdng
-        #       3 -- kanj.kanj
-        #       4 -- total number of readings in entry.
-        #       5 -- total number of kanji in entry.
-        #       6 -- total number of senses in entry.
-
-        KW = jdb.KW
-        if not ktxt and not rtxt:
-            raise ValueError ("get_entries(): 'rtxt' and 'ktxt' args "
-                              "are are both empty.")
-        args = [];  cond = [];
-        if targ_src:
-            srcs, neg = targ_src
-            args.append (tuple (srcs));
-            cond.append ("src %sIN %%s" % ('NOT ' if neg else ''));
-        if seq:
-            args.append (seq); cond.append ("seq=%s")
-        if rtxt:
-            args.append (rtxt); cond.append ("r.txt=%s")
-        if ktxt:
-            args.append (ktxt); cond.append ("k.txt=%s")
-        sql = "SELECT DISTINCT id,seq," \
-                + ("r.rdng," if rtxt else "NULL AS rdng,") \
-                + ("k.kanj," if ktxt else "NULL AS kanj,") \
-                + "(SELECT COUNT(*) FROM rdng WHERE entr=id) AS rcnt," \
-                  "(SELECT COUNT(*) FROM kanj WHERE entr=id) AS kcnt," \
-                  "(SELECT COUNT(*) FROM sens WHERE entr=id) AS scnt" \
-                " FROM entr e " \
-                + ("JOIN rdng r ON r.entr=e.id " if rtxt else "") \
-                + ("JOIN kanj k ON k.entr=e.id " if ktxt else "") \
-                + "WHERE stat=%s AND %s" \
-                % (KW.STAT['A'].id, " AND ".join (cond))
-        rs = db.query (dbconn, sql, args)
-        return rs
-
-def choose_target (v, entries):
-        # From that candidate target entries in entries,
-        # choose the one we will use for xref target for
-        # the xresolv record in v.
-        #
-        # The current algorithm is what was intended to be
-        # implemented by the former xresolv.sql script.
-        # Like that script, it does not take into account
-        # any of the restr, stagk, stagr information.
-        # Ideally, if we find a single match based on the
-        # first valid (considering those restrictions)
-        # reading/kanji we should use that as a target.
-        # The best way to do that is under review.
-        #
-        # The list of entries we received are those that
-        # have a matching reading and kanji (in any positions)
-        # if the xresolv record had both reading and kanji,
-        # or a matching reading or kani (in any position)
-        # if the xresolv record had only a reading or kanji.
-
-        rtxt = v.rtxt;  ktxt = v.ktxt
-
-          # If there is only a single entry that matched,
-          # that must be the target.
-        if 1 == len (entries): return entries[0]
-
-          # And if there were no matching entries at all...
-        if 0 == len (entries):
-            L('not found').error("%s %s" % (fs(v), kr(v)))
-            return None
-        if not ktxt:
-              # If there is only one entry that has the
-              # given reading as the first reading, and no
-              # kanji, that's it.
-            candidates = [x for x in entries if x[5]==0 and x[2]==1]
-            if 1 == len (candidates): return candidates[0]
-
-              # If there is only one entry that has the
-              # given reading and no kanji, that's it.
-            candidates = [x for x in entries if x[5]==0]
-            if 1 == len (candidates): return candidates[0]
-
-              # Is there is only one entry with reading
-              # as the first reading?
-            candidates = [x for x in entries if x[2]==1]
-            if 1 == len (candidates): return candidates[0]
-
-        elif not rtxt:
-              # Is there only one entry whose 1st kanji matches?
-            candidates = [x for x in entries if x[3]==1]
-            if 1 == len (candidates): return candidates[0]
-
-          # At this point we either failed to resolve in one
-          # of the above suites, or we had both a reading and
-          # kanji with multiple matches -- either way we give up.
-        L('multiple targets').error("%s %s" % (fs(v), kr(v)))
-        return None
-
-def mkxref (v, e):
+def mkxref (v):
           # If there is no tsens, generate an xref to only the first
           # sense.  Rationale: Revs prior to ~2018-06-07 we generated
           # xrefs to all senses in this scenario.  When there were a
@@ -411,86 +245,17 @@ def mkxref (v, e):
           # first *will* be the right sense.
         nosens = False
         if not v.tsens:
-            if e[6] != 1:
-                L('multiple senses').warning("using sense 1: %s %s"
-                                             % (fs(v), kr(v)))
+            if v.nsens != 1:
+                L('multiple senses').warning("using sense 1: %s" % (fs(v)))
                 nosens = True
             v.tsens = 1
-        if v.tsens > e[6]:
-            L('sense number too big').error("%s %s" % (fs(v), kr(v)))
+        if v.tsens > v.nsens:
+            L('sense number too big').error(fs(v))
             return None
         xref = jdb.Obj (entr=v.entr, sens=v.sens, xref=v.ord, typ=v.typ,
-                        xentr=e[0], xsens=v.tsens, rdng=e[2], kanj=e[3],
+                        xentr=v.targ, xsens=v.tsens, rdng=v.rdng, kanj=v.kanj,
                         notes=v.notes, nosens=nosens, lowpri=not v.prio)
         return xref
-
-def get_xresolv_set (dbconn, xref_src, blksz):
-          # Yield sequential blocks (lists of xresolv rows) where all rows
-          # in the block have the same .entr value and are ordered on
-          # sens,typ,ord.  We expect get_xresolv_row() to supply rows
-          # in .entr,.sens,.typ,.ord order.
-        reader = get_xresolv_row (dbconn, xref_src, blksz)
-        keyfunc = lambda x: x.entr
-        for key, group in itertools.groupby (reader, keyfunc):
-            yield group
-
-def get_xresolv_row (dbconn, xref_src, blksz, read_xrefs=False):
-          # Read blocks of xresolv rows from the database and yield
-          # one row at a time.  Rows are ordered on entr,sens,typ,ord.
-        for blk in get_xresolv_block (dbconn, xref_src, blksz):
-            for row in blk: yield row
-
-def get_xresolv_block (dbconn, xref_src, blksz, read_xrefs=False):
-        # Read and yield sucessive blocks of 'blksz' rows from table "xresolv"
-        # (or, despite our name, table "xref" if 'read_xrefs' is true).  Rows
-        # are ordered by (target) entr id, sens, xref type and xref ord (or
-        # xref.xref for table "xref") and limited to entries having a .src
-        # attribute of 'xref_src'.  None is returned when no more rows are
-        # available.
-        table = "xref" if read_xrefs else "xresolv"
-        lastpos = 0, 0, 0, 0
-        while True:
-            e0, s0, t0, o0 = lastpos
-              # Following sql will read 'blksz' xref rows, starting
-              # at 'lastpos' (which is given as a 4-tuple of xresolv.entr,
-              # .sens, .typ and .ord).  Note that the result set must be
-              # ordered on exactly this same set of values in order to
-              # step through them block-wise.
-            sql_args = []
-            if xref_src:
-                srcs, neg = xref_src
-                src_condition = "e.src %sIN %%s AND " % ('NOT ' if neg else '')
-                sql_args.append (tuple(srcs))
-            else: src_condition = ''
-            sql = "SELECT v.*,e.src,e.seq,e.stat,e.unap "\
-                  "FROM %s v JOIN entr e ON v.entr=e.id "\
-                  "WHERE %s (v.entr>%%s OR (v.entr=%%s "\
-                     "AND (v.sens>%%s OR (v.sens=%%s "\
-                     "AND (v.typ>%%s OR (v.typ=%%s "\
-                     "AND (v.ord>%%s))))))) "\
-                   "ORDER BY v.entr,v.sens,v.typ,v.ord "\
-                   "LIMIT %s" % (table, src_condition, blksz)
-            if read_xrefs:
-                  # If reading the xref rather than the xresolv table make some
-                  # adjustments:
-                  #   The "ord" field is named "xref".
-                sql = sql.replace ('.ord', '.xref')
-                  #   The typ and xref (aka ord) fields are swapped
-                  #   in xref rows.
-                t0, o0 = o0, t0
-            sql_args.extend ([e0,e0,s0,s0,t0,t0,o0])
-            L('get_xresolv_block').debug("sql: %s" % sql_args)
-            L('get_xresolv_block').debug("args: %r" % (sql_args,))
-            rs = db.query (dbconn, sql, sql_args)
-            if len (rs) == 0: return
-            L('get_xresolv_block').debug("Read %d %s rows from %s"
-                                         % (len(rs), table, lastpos))
-              # Slicing doesn't seem to currently work on DbRow objects or
-              #  we could write "lastpos = rs[-1][0:4]" below.
-            lastpos = rs[-1][0], rs[-1][1], rs[-1][2], rs[-1][3]
-            yield rs
-        assert True, "Unexpected break from loop"
-        return
 
 def read_krmap (dbconn, infn, targ_src):
         if not infn: return None
@@ -514,20 +279,17 @@ def lookup_krmap (krmap, rtxt, ktxt):
         key = ((ktxt or ""),(rtxt or ""))
         return krmap[key]
 
-def kr (v):
-        s = fmt_jitem (v.ktxt, v.rtxt, [v.tsens] if v.tsens else [])
-        return s
-
 def fs (v):
           # Format unresolved xref 'v' in a standard way for messages.
-        s = "%s.%d (%d,%d,%d):" \
-           % (jdb.KW.SRC[v.src].kw, v.seq,v.entr,v.sens,v.ord)
+        s = "%s.%d (%d,%d,%d) %s:" \
+           % (jdb.KW.SRC[v.src].kw,v.seq, v.entr,v.sens,v.ord,
+              fmt_jitem(v.ktxt, v.rtxt, [v.tsens] if v.tsens else []))
         return s
 
 def fmt_jitem (ktxt, rtxt, slist):
           # FIXME: move this function into one of the formatting
           # modules (e.g. fmt.py or fmtjel.py).
-        jitem = (ktxt or "") + ('/' if ktxt and rtxt else '') + (rtxt or "")
+        jitem = (ktxt or "") + ('・' if ktxt and rtxt else '') + (rtxt or "")
         if slist: jitem += '[' + ','.join ([str(s) for s in slist]) + ']'
         return jitem
 
@@ -592,7 +354,7 @@ entr.id xrefs and write them to database table "xref".
 Arguments: none"""
 
 import argparse, textwrap
-from pylib.argparse_formatters import ParagraphFormatterML 
+from pylib.argparse_formatters import ParagraphFormatterML
 def parse_cmdline (cmdln_args):
         p = argparse.ArgumentParser (prog=cmdln_args[0],
             formatter_class=ParagraphFormatterML,
@@ -648,9 +410,9 @@ def parse_cmdline (cmdln_args):
                 "This option can be useful when performing incremental "
                 "updates.")
 
-        #p.add_argument ("-l", "--logfile", default=None,
-        #    help="Name of file log messages will be written to."
-        #        "If not given messages will be written to stderr.")
+        p.add_argument ("-l", "--logfile", default=None,
+            help="Name of file log messages will be written to."
+                "If not given messages will be written to stderr.")
 
         p.add_argument ("-v", "--level", default='warn',
             help="Logging level, one of: "
@@ -727,3 +489,79 @@ enabled.
 if __name__ == '__main__': main (sys.argv)
 
 
+##  For reference this is the SQL for the "rslv" query used in the
+##  get_candidates() function above.
+##
+##  ----------------------------------------------------------------------------
+##  -- This view is used by xresolv.py for finding entries that could
+##  -- possibly be the intended targets of unresolved xrefs in table
+##  -- "xresolv".  
+##  -- It joins the rows in xresolve to entries based on a common reading
+##  -- text, kanji text, or both.  Because the joins vary depending on the
+##  -- join column there are three separate SELECTs, one for each case,
+##  -- UNIONed together.
+##  -- There may be multiple (or no) entries that have kanji or a reading
+##  -- matching an xresolv row so a particular xresolv row may result in
+##  -- 0 or multiple rows returned.  This view provides data in additional
+##  -- columns that is intended to allow for a reasonable guess at which
+##  -- entry is the intended target (or that no reasonable guess is justified)
+##  -- in the case of multiple matches.
+##
+##CREATE OR REPLACE VIEW rslv AS (
+##    -- Query for xresolv with both 'rtxt' and 'ktxt'  (~30s 250K rows)
+##    SELECT v.seq, v.src, v.entr, v.sens, v.typ, v.ord,
+##           v.rtxt, v.ktxt, v.tsens, v.notes, v.prio,
+##           c.src AS tsrc, count(*) AS nentr, min(c.id) AS targ,
+##           c.rdng, c.kanj, FALSE AS nokanji,
+##           max(c.nsens) AS nsens
+##    FROM (SELECT z.*,seq,src FROM xresolv z JOIN entr e ON e.id=z.entr
+##          WHERE ktxt IS NOT NULL AND rtxt IS NOT NULL
+##            AND e.stat=2 AND NOT e.unap)
+##          AS v
+##    LEFT JOIN rkv c ON v.rtxt=c.rtxt AND v.ktxt=c.ktxt
+##    GROUP BY v.seq,v.src,v.entr,v.sens,v.typ,v.ord,v.rtxt,v.ktxt,
+##             v.tsens,v.notes,v.prio, c.src,c.rdng,c.kanj
+##    UNION
+##
+##    -- Query for xresolv with only rtxt (~3m 1500K rows)
+##    SELECT v.seq, v.src, v.entr, v.sens, v.typ, v.ord,
+##           v.rtxt, v.ktxt, v.tsens, v.notes, v.prio,
+##           c.src AS tsrc, count(*) AS nentr, min(c.id) AS targ,
+##           c.rdng, NULL AS kanj, nokanji, max(c.nsens) AS nsens
+##    FROM
+##       (SELECT z.*,seq,src FROM xresolv z JOIN entr e ON e.id=z.entr
+##        WHERE ktxt IS NULL AND rtxt IS NOT NULL )
+##        AS v
+##    LEFT JOIN
+##       (SELECT e.id,e.src,r.txt as rtxt,r.rdng,
+##                 -- The "not exists..." clause below is true if there
+##                 -- are no kanj table rows for the entry.
+##               (NOT EXISTS (SELECT 1 FROM kanj k WHERE k.entr=e.id))
+##                 -- This cause is true if this reading is tagged <nokanji>.
+##                 OR j.rdng IS NOT NULL AS nokanji,
+##               (SELECT count(*) FROM sens s WHERE s.entr=e.id) AS nsens
+##        FROM entr e JOIN rdng r ON r.entr=e.id
+##        LEFT JOIN re_nokanji j ON j.id=e.id AND j.rdng=r.rdng
+##        WHERE e.stat=2 AND NOT e.unap) 
+##        AS c ON (v.rtxt=c.rtxt)
+##    GROUP BY v.seq,v.src,v.entr,v.sens,v.typ,v.ord,v.rtxt,v.ktxt,
+##             v.tsens,v.notes,v.prio, c.src,c.rdng,c.nokanji
+##    UNION
+##
+##    -- Query for xresolv with only ktxt (~1m, 500K rows)
+##    SELECT v.seq, v.src, v.entr, v.sens, v.typ, v.ord,
+##           v.rtxt, v.ktxt, v.tsens, v.notes, v.prio,
+##           c.src AS tsrc, count(*) AS nentr, min(c.id) AS targ,
+##           NULL AS rdng, c.kanj, NULL AS nokanji, max(c.nsens) AS nsens
+##    FROM
+##       (SELECT z.*,seq,src FROM xresolv z JOIN entr e ON e.id=z.entr
+##        WHERE rtxt IS NULL AND ktxt IS NOT NULL )
+##        AS v
+##    LEFT JOIN 
+##       (SELECT e.id,e.src,k.txt as ktxt,k.kanj,
+##               (SELECT count(*) FROM sens s WHERE s.entr=e.id) AS nsens
+##        FROM entr e JOIN kanj k ON k.entr=e.id
+##        WHERE e.stat=2 AND NOT e.unap) 
+##        AS c ON (v.ktxt=c.ktxt)
+##    GROUP BY v.seq,v.src,v.entr,v.sens,v.typ,v.ord,v.rtxt,v.ktxt,
+##             v.tsens,v.notes,v.prio, c.src,c.kanj);

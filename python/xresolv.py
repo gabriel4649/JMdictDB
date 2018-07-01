@@ -51,25 +51,24 @@
 # and subsequently by get_xresolv_set() are rows from the
 # xresolv table augmented with additional info from the
 # associated entry: .src, .seq, .stat, .unap.
-#
-# NOTE: not any faster than hg-180622-6434ea version:
-#   http://localhost/hgdev/jmdictdb/file/6434ea4e620b/python/xresolv.py
-# Still takes ~45-50 min to resolve examples file xrefs.
 
 import sys, os, inspect, pdb
 _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
 _ = os.path.join (os.path.dirname(_), 'python', 'lib')
 if _ not in sys.path: sys.path.insert(0, _)
 
-import re, itertools
+import re, itertools, threading, queue
 import db, jdb
 import logging, logger; from logger import L
+
+Debug = 0 # True    # Set to True to disable multiple threads for debugging.
 
 #-----------------------------------------------------------------------
 
 def main (cmdln_args):
         args = parse_cmdline (cmdln_args)
-        try: dbconn = db.connect (args.database)
+        dburi = args.database
+        try: dbconn = db.connect (dburi)
         except jdb.dbapi.OperationalError as e:
             sys.exit ("Error, unable to connect to database: %s" % str(e))
         KW = jdb.Kwds (dbconn.cursor())
@@ -100,24 +99,66 @@ def main (cmdln_args):
         #krmap = read_krmap (dbconn, args.krmap, targ_src)
         krmap = {}
 
-        #delete_existing (dbconn, ...)
-        key = lambda x: (x.entr, x.sens, x.typ, x.ord)
+        qwriter = queue.Queue();  threads = []
+
+        nwriters = 6 if not Debug else 1
+        writer = lambda: \
+            thprocess_entr_cands (qwriter, dburi, upsert=False, keep=args.keep)
+        for n in range (nwriters):
+            thname = 'writer%s' % n
+            L().debug("starting thread %s" % thname)
+            threads.append (thstart (thname, writer))
+
         for rows in get_entr_cands (dbconn, xref_src, targ_src,
-                                    start=args.start, stop=args.stop,):
+                                    start=args.start, stop=args.stop):
               # 'rows' is a set of target candidate rows for all the
               # unresolved xrefs for a single entry.
-            for _,cands in itertools.groupby (rows, key=key):
-                  # 'cands' is the set of target candidate rows for
-                  # each single unresolved xref in 'rows'.
-                row = choose_candidate (list(cands))
-                if not row: continue
-                xref = mkxref (row)
-                if not xref: continue
-                r = wrxref (dbconn, xref, upsert=False, postdel=not args.keep)
-        if args.noaction:
-            L('trans').info("ROLLBACK");  dbconn.rollback()
-        else:
-            L('trans').info("COMMIT");  dbconn.commit()
+            qwriter.put (rows)
+            #process_entr_cands (dbconn, rows, upsert=False, keep=args.keep)
+        for n in range (nwriters): qwriter.put (None)
+
+        for t in threads: t.join()
+
+def thstart (name, func):
+        if Debug:
+            func(); return
+        t = threading.Thread (name=name, target=func)
+        t.daemon = True;  t.start()
+        return t
+
+def thcheck (threads):
+            dead, live = [], []
+            for t in threads:
+                if t.is_alive(): live.append (t)
+                else: dead.append (t)
+            threads[:] = live
+            return dead
+
+def thprocess_entr_cands (workq, dburi, upsert, keep):
+        dbconn = db.connect (dburi)
+        me = threading.current_thread()
+        while True:
+            L(me.name).debug("'%s' getting a packet, queue len=%d"
+                      % (me.name, workq.qsize()))
+            rows = workq.get (block=True)
+            if rows:
+                L(me.name).debug("got %s rows for entry %s" % (len(rows), rows[0].entr))
+                process_entr_cands (dbconn, rows, upsert, keep)
+            else:
+                L(me.name).debug("commit")
+                #dbconn.commit()
+                break
+
+def process_entr_cands (dbconn, rows, upsert, keep):
+        key = lambda x: (x.entr, x.sens, x.typ, x.ord)
+        for _,cands in itertools.groupby (rows, key=key):
+              # 'cands' is the set of target candidate rows for
+              # each single unresolved xref in 'rows'.
+            row = choose_candidate (list(cands))
+            if not row: continue
+            xref = mkxref (row)
+            if not xref: continue
+            r = wrxref (dbconn, xref, upsert, keep)
 
 def get_entr_cands (dbconn, xref_src, targ_src, start=None, stop=None):
         # Yield sets of candidates rows for all unresolved xrefs 
@@ -206,15 +247,15 @@ def choose_candidate (rows):
         L('multiple candidates').error(fs(v))
         return None
 
-def wrxref (dbconn, xref, upsert=False, postdel=False):
+def wrxref (dbconn, xref, upsert, keep):
           # dbconn -- Open database connection.
           # xref -- (Xref) instance add to database.
           # upsert -- (bool) action to take if xref already in db.
           #   true: update it to match 'xref';
           #   false: raise duplicate key error.
-          # postdel -- (bool) if true, delete the unresolved xref from
-          #   the xresolv table after it have successfully been resolved
-          #   and added to the xref table.  If false, 
+          # keep -- (bool) if false, delete the unresolved xrefs from
+          #   the xresolv table after each has successfully been resolved
+          #   and added to the xref table.  If true, this is not done.
 
         x = xref    # For brevity.
         L('wrxref').debug("xref: entr=%s, sens=%s, xref=%s, typ=%s,"
@@ -259,7 +300,7 @@ def wrxref (dbconn, xref, upsert=False, postdel=False):
         L('wrxref.sql').debug("sql: %s" % sql)
         L('wrxref.sql').debug("args: %r" % (args,))
         db.ex (dbconn, sql, args)
-        if postdel:
+        if not keep:
             sql = "DELETE FROM xresolv"\
                   " WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s"
               # CAUTION: we assume here that xref.xref has the same value
@@ -439,24 +480,24 @@ def parse_cmdline (cmdln_args):
             help="Do not delete unresolved xrefs after they are resolved.  "
                 "This is primarily to aid in debugging.")
 
-        p.add_argument ("--partial", default=False, action="store_true",
-            help="Create xrefs for an entry even if some of them can't be "
-                "created.  Default behavior without this option is not "
-                "to create any xrefs for an entry if any of them can't "
-                "be created.  "
-                "This option can be useful when performing incremental "
-                "updates.")
-
-        p.add_argument ("--preserve", default=False, action="store_true",
-            help="Do not delete existing xrefs for an entry prior to "
-                "resolving unresolved xrefs.  If an unresolved xref "
-                "resolves to the same key as a preexisting one, the "
-                "preexisting one will be updated to match the new one.  "
-                "Default behavior without this option is to delete any "
-                "preexisting xrefs for an entry prior to resolving xrefs "
-                "for that entry.  "
-                "This option can be useful when performing incremental "
-                "updates.")
+#        p.add_argument ("--partial", default=False, action="store_true",
+#            help="Create xrefs for an entry even if some of them can't be "
+#                "created.  Default behavior without this option is not "
+#                "to create any xrefs for an entry if any of them can't "
+#                "be created.  "
+#                "This option can be useful when performing incremental "
+#                "updates.")
+#
+#        p.add_argument ("--preserve", default=False, action="store_true",
+#            help="Do not delete existing xrefs for an entry prior to "
+#                "resolving unresolved xrefs.  If an unresolved xref "
+#                "resolves to the same key as a preexisting one, the "
+#                "preexisting one will be updated to match the new one.  "
+#                "Default behavior without this option is to delete any "
+#                "preexisting xrefs for an entry prior to resolving xrefs "
+#                "for that entry.  "
+#                "This option can be useful when performing incremental "
+#                "updates.")
 
         p.add_argument ("-l", "--logfile", default=None,
             help="Name of file log messages will be written to."

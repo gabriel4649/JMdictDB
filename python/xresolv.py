@@ -51,7 +51,7 @@
 # and subsequently by get_xresolv_set() are rows from the
 # xresolv table augmented with additional info from the
 # associated entry: .src, .seq, .stat, .unap.
-
+#
 # NOTE: not any faster than hg-180622-6434ea version:
 #   http://localhost/hgdev/jmdictdb/file/6434ea4e620b/python/xresolv.py
 # Still takes ~45-50 min to resolve examples file xrefs.
@@ -101,36 +101,62 @@ def main (cmdln_args):
         krmap = {}
 
         #delete_existing (dbconn, ...)
-        for rows in get_candidates (dbconn, xref_src, targ_src):
-            resolve (dbconn, rows)
-
+        key = lambda x: (x.entr, x.sens, x.typ, x.ord)
+        for rows in get_entr_cands (dbconn, xref_src, targ_src,
+                                    start=args.start, stop=args.stop,):
+              # 'rows' is a set of target candidate rows for all the
+              # unresolved xrefs for a single entry.
+            for _,cands in itertools.groupby (rows, key=key):
+                  # 'cands' is the set of target candidate rows for
+                  # each single unresolved xref in 'rows'.
+                row = choose_candidate (list(cands))
+                if not row: continue
+                xref = mkxref (row)
+                if not xref: continue
+                r = wrxref (dbconn, xref, upsert=False, postdel=not args.keep)
         if args.noaction:
             L('trans').info("ROLLBACK");  dbconn.rollback()
         else:
             L('trans').info("COMMIT");  dbconn.commit()
 
-def resolve (dbconn, candidates):
-        row = choose_candidate (candidates)
-        if not row: return None
-        xref = mkxref (row)
-        if not xref: return None
-        result = wrxref (dbconn, xref)
-        return result
+def get_entr_cands (dbconn, xref_src, targ_src, start=None, stop=None):
+        # Yield sets of candidates rows for all unresolved xrefs 
+        # for a single entry.
+        #
+        # dbconn -- An open dbapi connection to a jmdictdb database.
+        # xref_src -- A 2-tuple consiting of:
+        #   0: a sequence of numbers identifying the entr.src numbers
+        #     to be included or excluded when searching for xrefs to 
+        #     resolve.
+        #   1: (bool) if false the values in item 0 specify src numbers
+        #     to include; if false they are numbers to exclude.
+        # targ_src -- Same format as 'xref_src' but for target entry 
+        #   .src numbers.
+        # start -- lowest entry id number to process.  If None of not
+        #   given default is 1.
+        # stop -- process entries up to but not including this id number.
 
-def get_candidates (dbconn, xref_src, targ_src):
         xs_lst, xs_inv = xref_src
         ts_lst, ts_inv = targ_src
         L().info("reading candidates from database, may take a while...")
+        r1 = "entr>=%s" if start else ""
+        r2 = "entr<%s" if stop else ""
+        range = r1 + (" AND " if r1 and r2 else "") + r2
+        range = (" AND " + range) if range else ""  
         sql = "SELECT * FROM rslv"\
               " WHERE src %sIN %%s AND (tsrc %sIN %%s OR tsrc IS NULL)"\
+              " %s"\
               " ORDER BY entr,sens,typ,ord,targ"\
-              % ('NOT ' if xs_inv else '', 'NOT ' if xs_inv else '')
-        args = (xs_lst, ts_lst)
+              % ('NOT ' if xs_inv else '', 'NOT ' if xs_inv else '', range)
+        args = [xs_lst, ts_lst]
+        if r1: args.append (start)
+        if r2: args.append (stop)
         L().debug("sql: %s" % sql)
         L().debug("args: %r" % (args,))
-        rs = db.query (dbconn, sql, args)
+        rs = db.query (dbconn, sql, tuple(args))
         L().info("read %d candidates from database" % len(rs))
         key = lambda x: (x.entr, x.sens, x.typ, x.ord)
+        key = lambda x: x.entr
         for _, rows in itertools.groupby (rs, key=key):
             yield list(rows)
 
@@ -180,12 +206,15 @@ def choose_candidate (rows):
         L('multiple candidates').error(fs(v))
         return None
 
-def wrxref (dbconn, xref, upsert=False):
+def wrxref (dbconn, xref, upsert=False, postdel=False):
           # dbconn -- Open database connection.
           # xref -- (Xref) instance add to database.
           # upsert -- (bool) action to take if xref already in db.
           #   true: update it to match 'xref';
           #   false: raise duplicate key error.
+          # postdel -- (bool) if true, delete the unresolved xref from
+          #   the xresolv table after it have successfully been resolved
+          #   and added to the xref table.  If false, 
 
         x = xref    # For brevity.
         L('wrxref').debug("xref: entr=%s, sens=%s, xref=%s, typ=%s,"
@@ -214,20 +243,33 @@ def wrxref (dbconn, xref, upsert=False):
                 lg = L('update').info if upsert else  L('update').error
                 lg ("existing xref: %r" % e)
         if existing and not upsert: return None
-
+        a = (x.typ,x.rdng,x.kanj,x.notes,x.nosens,x.lowpri)
           #FIXME: we have to explicitly give the name of the xref primary
           # key constraint below but currently in entrobj.sql the name is
           # asssigned by default; we should explicitly define it there too.
         sql = "INSERT INTO xref(entr,sens,xref,xentr,xsens,"\
                                "typ,rdng,kanj,notes,nosens,lowpri) "\
-              "VALUES(%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s) "\
+              "VALUES(%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s) "
+        args = pk + a
+        if upsert:
+            sql += \
               "ON CONFLICT ON CONSTRAINT xref_pkey DO UPDATE "\
               "SET typ=%s,rdng=%s,kanj=%s,notes=%s,nosens=%s,lowpri=%s"
-        a = (x.typ,x.rdng,x.kanj,x.notes,x.nosens,x.lowpri)
-        args = pk + a + a
+            args += a
         L('wrxref.sql').debug("sql: %s" % sql)
         L('wrxref.sql').debug("args: %r" % (args,))
         db.ex (dbconn, sql, args)
+        if postdel:
+            sql = "DELETE FROM xresolv"\
+                  " WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s"
+              # CAUTION: we assume here that xref.xref has the same value
+              #  as xresolv.ord and thus we can use xref.xref to delete 
+              #  the corresponding xresolv row.  That is currently true but
+              #  has not been true in past and could change in the future.
+            args = x.entr, x.sens, x.typ, x.xref
+            L('wrxref.sql').debug("sql: %s" % sql)
+            L('wrxref.sql').debug("args: %r" % (args,))
+            db.ex (dbconn, sql, args)
         return xref
 
 def mkxref (v):
@@ -383,6 +425,12 @@ def parse_cmdline (cmdln_args):
             help="Limit to xrefs that resolve to targets in CORPORA (a comma-"
                 "separated list of corpus names or id numbers).  If preceeded "
                 "by a \"-\", all corpora will be included except those listed.")
+
+        p.add_argument ("--start", default=None,
+            help="Starting entry id number to process.")
+
+        p.add_argument ("--stop", default=None,
+            help="One greater than the last entry id number to process.")
 
         p.add_argument ("--krmap", default=None,
             help="Name of a file containing kanji/reading to seq# map.")

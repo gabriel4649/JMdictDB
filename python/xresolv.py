@@ -60,8 +60,14 @@ if _ not in sys.path: sys.path.insert(0, _)
 import re, itertools, threading, queue
 import db, jdb
 import logging, logger; from logger import L
+  # Set to True to disable multiple threads for debugging.
+  #FIXME: doesn't work.
+Debug = 0 # True
 
-Debug = 0 # True    # Set to True to disable multiple threads for debugging.
+NWRITERS = 8    # Number of threads doing inserts.
+NDELETERS = 2   # Number of threads deleting xresolv rows.  If this
+  # is set to zero, and deletions are needed, they will be done in
+  # the writers threads after the xref insert.
 
 #-----------------------------------------------------------------------
 
@@ -99,15 +105,24 @@ def main (cmdln_args):
         #krmap = read_krmap (dbconn, args.krmap, targ_src)
         krmap = {}
 
-        qwriter = queue.Queue();  threads = []
+        if args.keep: NDELETERS = 0   # Disable deleter threads. 
+        qwriter = queue.Queue();  qdeleter = queue.Queue();  threads = []
 
-        nwriters = 6 if not Debug else 1
+        nwriters = NWRITERS if not Debug else 1
         writer = lambda: \
-            thprocess_entr_cands (qwriter, dburi, upsert=False, keep=args.keep)
+            thprocess_entr_cands (qwriter, dburi, upsert=False, keep=args.keep,
+                                  delq=qdeleter if NDELETERS>0 else None)
         for n in range (nwriters):
-            thname = 'writer%s' % n
+            thname = 'ins%s' % n
             L().debug("starting thread %s" % thname)
             threads.append (thstart (thname, writer))
+
+        ndeleters = NDELETERS if not Debug else 0
+        deleter = lambda: thdel_xresolv (qdeleter, dburi)
+        for n in range (ndeleters):
+            thname = 'del%s' % n
+            L().debug("starting thread %s" % thname)
+            threads.append (thstart (thname, deleter))
 
         for rows in get_entr_cands (dbconn, xref_src, targ_src,
                                     start=args.start, stop=args.stop):
@@ -116,8 +131,9 @@ def main (cmdln_args):
             qwriter.put (rows)
             #process_entr_cands (dbconn, rows, upsert=False, keep=args.keep)
         for n in range (nwriters): qwriter.put (None)
-
+        for n in range (ndeleters): qdeleter.put (None)
         for t in threads: t.join()
+        L().info("normal exit")
 
 def thstart (name, func):
         if Debug:
@@ -126,30 +142,35 @@ def thstart (name, func):
         t.daemon = True;  t.start()
         return t
 
-def thcheck (threads):
-            dead, live = [], []
-            for t in threads:
-                if t.is_alive(): live.append (t)
-                else: dead.append (t)
-            threads[:] = live
-            return dead
-
-def thprocess_entr_cands (workq, dburi, upsert, keep):
+def thprocess_entr_cands (workq, dburi, upsert, keep, delq):
         dbconn = db.connect (dburi)
         me = threading.current_thread()
         while True:
-            L(me.name).debug("'%s' getting a packet, queue len=%d"
-                      % (me.name, workq.qsize()))
+            L(me.name).debug("reading queue, len=%d" % workq.qsize())
             rows = workq.get (block=True)
             if rows:
                 L(me.name).debug("got %s rows for entry %s" % (len(rows), rows[0].entr))
-                process_entr_cands (dbconn, rows, upsert, keep)
+                process_entr_cands (dbconn, rows, upsert, keep, delq)
             else:
                 L(me.name).debug("commit")
                 #dbconn.commit()
                 break
 
-def process_entr_cands (dbconn, rows, upsert, keep):
+def thdel_xresolv (workq, dburi):
+        dbconn = db.connect (dburi)
+        me = threading.current_thread()
+        while True:
+            L(me.name).debug("reading queue, len=%d" % workq.qsize())
+            xref = workq.get (block=True)
+            if xref:
+                L(me.name).info("deleting xresolv %r" % (xref,))
+                del_xresolv (dbconn, xref)
+            else:
+                L(me.name).debug("commit")
+                #dbconn.commit()
+                break
+
+def process_entr_cands (dbconn, rows, upsert, keep, delq=None):
         key = lambda x: (x.entr, x.sens, x.typ, x.ord)
         for _,cands in itertools.groupby (rows, key=key):
               # 'cands' is the set of target candidate rows for
@@ -158,7 +179,10 @@ def process_entr_cands (dbconn, rows, upsert, keep):
             if not row: continue
             xref = mkxref (row)
             if not xref: continue
-            r = wrxref (dbconn, xref, upsert, keep)
+            result = wrxref (dbconn, xref, upsert, keep)
+            if result and not keep:
+               if delq: delq.put (xref)
+               else: del_xresolv (dbconn, xref)
 
 def get_entr_cands (dbconn, xref_src, targ_src, start=None, stop=None):
         # Yield sets of candidates rows for all unresolved xrefs 
@@ -300,17 +324,20 @@ def wrxref (dbconn, xref, upsert, keep):
         L('wrxref.sql').debug("sql: %s" % sql)
         L('wrxref.sql').debug("args: %r" % (args,))
         db.ex (dbconn, sql, args)
-        if not keep:
-            sql = "DELETE FROM xresolv"\
-                  " WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s"
-              # CAUTION: we assume here that xref.xref has the same value
-              #  as xresolv.ord and thus we can use xref.xref to delete 
-              #  the corresponding xresolv row.  That is currently true but
-              #  has not been true in past and could change in the future.
-            args = x.entr, x.sens, x.typ, x.xref
-            L('wrxref.sql').debug("sql: %s" % sql)
-            L('wrxref.sql').debug("args: %r" % (args,))
-            db.ex (dbconn, sql, args)
+        return x
+
+def del_xresolv (dbconn, xref): 
+        x = xref    # For brevity.
+        sql = "DELETE FROM xresolv"\
+              " WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s"
+          # CAUTION: we assume here that xref.xref has the same value
+          #  as xresolv.ord and thus we can use xref.xref to delete 
+          #  the corresponding xresolv row.  That is currently true but
+          #  has not been true in past and could change in the future.
+        args = x.entr, x.sens, x.typ, x.xref
+        L('del_xresolv.sql').debug("sql: %s" % sql)
+        L('del_xresolv.sql').debug("args: %r" % (args,))
+        db.ex (dbconn, sql, args)
         return xref
 
 def mkxref (v):

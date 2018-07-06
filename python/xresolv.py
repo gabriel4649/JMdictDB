@@ -64,10 +64,7 @@ import logging, logger; from logger import L
   #FIXME: doesn't work.
 Debug = 0 # True
 
-NWRITERS = 8    # Number of threads doing inserts.
-NDELETERS = 2   # Number of threads deleting xresolv rows.  If this
-  # is set to zero, and deletions are needed, they will be done in
-  # the writers threads after the xref insert.
+NWRITERS = 1    # Number of threads doing inserts.
 
 #-----------------------------------------------------------------------
 
@@ -89,7 +86,7 @@ def main (cmdln_args):
             except ValueError as e: sys.exit("Bad -m option: '%s'" % str (e))
             L().handlers[0].addFilter (filter)
 
-        global Args;  Args = args
+        global NDELETERS, Args;  Args = args
 
         try: xref_src = get_src_ids (args.source_corpus)
         except KeyError:
@@ -99,41 +96,48 @@ def main (cmdln_args):
         except KeyError:
             L('unknown corpus').warning(args.target_corpus)
             sys.exit (0)
-          #FIXME: need to make work with multiple srcs in targ_src and
-          # provide limiting the scope (eg to one src or an entry) of
-          # the K/R pairs in the file.
-        #krmap = read_krmap (dbconn, args.krmap, targ_src)
-        krmap = {}
 
-        if args.keep: NDELETERS = 0   # Disable deleter threads. 
-        qwriter = queue.Queue();  qdeleter = queue.Queue();  threads = []
+        qwriter = IterableQueue()
+        threads = []
 
         nwriters = NWRITERS if not Debug else 1
-        writer = lambda: \
-            thprocess_entr_cands (qwriter, dburi, upsert=False, keep=args.keep,
-                                  delq=qdeleter if NDELETERS>0 else None)
+        barrier = threading.Barrier (nwriters)
+        qwriter_iter = iter (qwriter)
+        writer = lambda: thwriter (qwriter_iter, dburi, barrier)
         for n in range (nwriters):
             thname = 'ins%s' % n
             L().debug("starting thread %s" % thname)
             threads.append (thstart (thname, writer))
 
-        ndeleters = NDELETERS if not Debug else 0
-        deleter = lambda: thdel_xresolv (qdeleter, dburi)
-        for n in range (ndeleters):
-            thname = 'del%s' % n
-            L().debug("starting thread %s" % thname)
-            threads.append (thstart (thname, deleter))
-
+        xrefcnt = 0
         for rows in get_entr_cands (dbconn, xref_src, targ_src,
                                     start=args.start, stop=args.stop):
               # 'rows' is a set of target candidate rows for all the
               # unresolved xrefs for a single entry.
-            qwriter.put (rows)
-            #process_entr_cands (dbconn, rows, upsert=False, keep=args.keep)
-        for n in range (nwriters): qwriter.put (None)
-        for n in range (ndeleters): qdeleter.put (None)
+            xrefs = process_entr_cands (dbconn, rows)
+            L().debug("process_entr_cands returned %s xrefs" % len(xrefs))
+            for x in xrefs:
+                csv  = '\t'.join ([str(x.entr), str(x.sens), str(x.xref), 
+                                   str(x.typ), str(x.xentr), str(x.xsens),
+                                   str(x.rdng) if x.rdng else '\\N',
+                                   str(x.kanj) if x.kanj else '\\N',
+                                   x.notes or '\\N',
+                                   "t" if x.nosens else "f",
+                                   "t" if x.lowpri else "f"])
+                qwriter.put (csv)
+            xrefcnt += len (xrefs)
+        qwriter.close();
         for t in threads: t.join()
-        L().info("normal exit")
+
+        if barrier.broken:
+            sys.exit ("Error, no xrefs created")
+        if qwriter.qsize() > 0:
+            sys.exit ("writer queue still has %d items!" % qwriter.qsize())
+
+        delcnt = del_xresolv (dbconn, xref_src, targ_src,
+                                  start=args.start, stop=args.stop)        
+        L().info("normal exit, %d xrefs generated, %d xresolvs deleted"
+                 % (xrefcnt, delcnt))
 
 def thstart (name, func):
         if Debug:
@@ -142,35 +146,27 @@ def thstart (name, func):
         t.daemon = True;  t.start()
         return t
 
-def thprocess_entr_cands (workq, dburi, upsert, keep, delq):
+def thwriter (workq, dburi, barrier):
         dbconn = db.connect (dburi)
         me = threading.current_thread()
-        while True:
-            L(me.name).debug("reading queue, len=%d" % workq.qsize())
-            rows = workq.get (block=True)
-            if rows:
-                L(me.name).debug("got %s rows for entry %s" % (len(rows), rows[0].entr))
-                process_entr_cands (dbconn, rows, upsert, keep, delq)
-            else:
-                L(me.name).debug("commit")
-                #dbconn.commit()
-                break
+        pf = IteratorFile (workq, name=me.name)
+        cursor = dbconn.cursor()
+        L(me.name).debug("starting postgresql copy")
+        try: cursor.copy_from (pf, 'xref')
+        except Exception as e:
+             L(me.name).error (str(e))
+             barrier.abort()
+        L(me.name).debug("waiting at barrier")
+        try: n = barrier.wait()
+        except threading.BrokenBarrierError:
+             L(me.name).info("rollback (broken barrier)")
+             dbconn.rollback()
+        else:
+             L(me.name).info("committing (not really :-)")
+             dbconn.rollback() #.commit()
 
-def thdel_xresolv (workq, dburi):
-        dbconn = db.connect (dburi)
-        me = threading.current_thread()
-        while True:
-            L(me.name).debug("reading queue, len=%d" % workq.qsize())
-            xref = workq.get (block=True)
-            if xref:
-                L(me.name).info("deleting xresolv %r" % (xref,))
-                del_xresolv (dbconn, xref)
-            else:
-                L(me.name).debug("commit")
-                #dbconn.commit()
-                break
-
-def process_entr_cands (dbconn, rows, upsert, keep, delq=None):
+def process_entr_cands (workq, rows):
+        xrefs = []
         key = lambda x: (x.entr, x.sens, x.typ, x.ord)
         for _,cands in itertools.groupby (rows, key=key):
               # 'cands' is the set of target candidate rows for
@@ -179,10 +175,8 @@ def process_entr_cands (dbconn, rows, upsert, keep, delq=None):
             if not row: continue
             xref = mkxref (row)
             if not xref: continue
-            result = wrxref (dbconn, xref, upsert, keep)
-            if result and not keep:
-               if delq: delq.put (xref)
-               else: del_xresolv (dbconn, xref)
+            xrefs.append (xref)
+        return xrefs
 
 def get_entr_cands (dbconn, xref_src, targ_src, start=None, stop=None):
         # Yield sets of candidates rows for all unresolved xrefs 
@@ -201,29 +195,44 @@ def get_entr_cands (dbconn, xref_src, targ_src, start=None, stop=None):
         #   given default is 1.
         # stop -- process entries up to but not including this id number.
 
-        xs_lst, xs_inv = xref_src
-        ts_lst, ts_inv = targ_src
         L().info("reading candidates from database, may take a while...")
-        r1 = "entr>=%s" if start else ""
-        r2 = "entr<%s" if stop else ""
-        range = r1 + (" AND " if r1 and r2 else "") + r2
-        range = (" AND " + range) if range else ""  
-        sql = "SELECT * FROM rslv"\
-              " WHERE src %sIN %%s AND (tsrc %sIN %%s OR tsrc IS NULL)"\
-              " %s"\
-              " ORDER BY entr,sens,typ,ord,targ"\
-              % ('NOT ' if xs_inv else '', 'NOT ' if xs_inv else '', range)
-        args = [xs_lst, ts_lst]
-        if r1: args.append (start)
-        if r2: args.append (stop)
+        c1, args1 = src_clause (xref_src, targ_src)
+        c2, args2 = idrange_clause (start, stop)
+        whr = ("WHERE " if c1 or c2 else "") + c1 \
+               + (" AND " if c1 and c2 else "") + c2
+        args = tuple (args1 + args2)
+        sql = "SELECT * FROM rslv v %s"\
+              " ORDER BY entr,sens,typ,ord,targ" % whr
         L().debug("sql: %s" % sql)
         L().debug("args: %r" % (args,))
-        rs = db.query (dbconn, sql, tuple(args))
+        rs = db.query (dbconn, sql, args)
         L().info("read %d candidates from database" % len(rs))
         key = lambda x: (x.entr, x.sens, x.typ, x.ord)
         key = lambda x: x.entr
         for _, rows in itertools.groupby (rs, key=key):
             yield list(rows)
+
+def src_clause (xref_src, targ_src):
+        xs_lst, xs_inv = xref_src
+        ts_lst, ts_inv = targ_src
+        args = [] 
+        c1 = ("src %sIN %%s" % ('NOT ' if xs_inv else '')) if xs_lst else ''
+        if c1: args.append(xs_lst)
+        if ts_lst:
+            c2 = "(tsrc %sIN %%s OR tsrc IS NULL)" % ('NOT ' if ts_inv else '')
+            args.append (ts_lst)
+        else: c2 = ""
+        clause = c1 + (" AND " if c1 or c2 else "") + c2 
+        return clause, args
+
+def idrange_clause (start=None, stop=None):
+        args = []
+        r1 = "v.entr>=%s" if start else ""
+        r2 = "v.entr<%s" if stop else ""
+        if r1: args.append (start)
+        if r2: args.append (stop)
+        clause = r1 + (" AND " if r1 and r2 else "") + r2
+        return clause, args
 
 def choose_candidate (rows):
         L('choose_candidate').debug("received %d rows" % len(rows))
@@ -271,74 +280,29 @@ def choose_candidate (rows):
         L('multiple candidates').error(fs(v))
         return None
 
-def wrxref (dbconn, xref, upsert, keep):
-          # dbconn -- Open database connection.
-          # xref -- (Xref) instance add to database.
-          # upsert -- (bool) action to take if xref already in db.
-          #   true: update it to match 'xref';
-          #   false: raise duplicate key error.
-          # keep -- (bool) if false, delete the unresolved xrefs from
-          #   the xresolv table after each has successfully been resolved
-          #   and added to the xref table.  If true, this is not done.
-
-        x = xref    # For brevity.
-        L('wrxref').debug("xref: entr=%s, sens=%s, xref=%s, typ=%s,"
-                              " xentr=%s, xsens=%s, rdng=%s, kanj=%s,"
-                              " nosens=%s, lowpri=%r" %
-              (x.entr,x.sens,x.xref,x.typ,x.xentr,x.xsens,
-               x.rdng or '',x.kanj or '',x.nosens,x.lowpri))
-
-          # Write an xref to the "xref" database table.
-          # We check for a duplicate key first.  If 'upsert' is true
-          # then we just print an info message and do an upsert operation.
-          # If upsert is not true then it is an error,
-          # And if there is no preexisting entry we just do the upsert
-          # which in this case devolves to a plain insert.
-        pk = x.entr,x.sens,x.xref,x.xentr,x.xsens
-        sql = "SELECT * FROM xref "\
-              "WHERE entr=%s AND sens=%s AND xref=%s AND xentr=%s AND xsens=%s"
-        existing = db.query (dbconn, sql, pk)
-        if existing:
-            e = existing[0]   # For brevity.
-            if (e.typ,e.rdng,e.kanj,e.notes,e.nosens,e.lowpri) \
-                    == (x.typ,x.rdng,x.kanj,x.notes,x.nosens,x.lowpri):
-                L('update').info('no change needed')
-                return xref
-            else:
-                lg = L('update').info if upsert else  L('update').error
-                lg ("existing xref: %r" % e)
-        if existing and not upsert: return None
-        a = (x.typ,x.rdng,x.kanj,x.notes,x.nosens,x.lowpri)
-          #FIXME: we have to explicitly give the name of the xref primary
-          # key constraint below but currently in entrobj.sql the name is
-          # asssigned by default; we should explicitly define it there too.
-        sql = "INSERT INTO xref(entr,sens,xref,xentr,xsens,"\
-                               "typ,rdng,kanj,notes,nosens,lowpri) "\
-              "VALUES(%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s) "
-        args = pk + a
-        if upsert:
-            sql += \
-              "ON CONFLICT ON CONSTRAINT xref_pkey DO UPDATE "\
-              "SET typ=%s,rdng=%s,kanj=%s,notes=%s,nosens=%s,lowpri=%s"
-            args += a
-        L('wrxref.sql').debug("sql: %s" % sql)
-        L('wrxref.sql').debug("args: %r" % (args,))
-        db.ex (dbconn, sql, args)
-        return x
-
-def del_xresolv (dbconn, xref): 
-        x = xref    # For brevity.
-        sql = "DELETE FROM xresolv"\
-              " WHERE entr=%s AND sens=%s AND typ=%s AND ord=%s"
+def del_xresolv (dbconn, xref_src=[], targ_src=None, start=None, stop=None): 
           # CAUTION: we assume here that xref.xref has the same value
           #  as xresolv.ord and thus we can use xref.xref to delete 
           #  the corresponding xresolv row.  That is currently true but
           #  has not been true in past and could change in the future.
-        args = x.entr, x.sens, x.typ, x.xref
+        c1, args1 = src_clause (xref_src, targ_src)
+        c2, args2 = idrange_clause (start, stop)
+        whr = ("AND " if c1 or c2 else "") + c1 \
+               + (" AND " if c1 and c2 else "") + c2
+        args = args1 + args2
+        sql = "DELETE FROM xresolv v"\
+              " USING (SELECT x.entr, x.sens, x.xref, x.typ,"\
+                            " ex.src, et.src as tsrc "\
+                     " FROM xref x"\
+                     " JOIN entr ex ON x.entr=ex.id"\
+                     " JOIN entr et ON x.xentr=et.id) AS x"\
+              " WHERE v.entr=x.entr AND v.sens=x.sens"\
+                " AND v.typ=x.typ AND v.ord=x.xref"\
+                " %s" % whr
         L('del_xresolv.sql').debug("sql: %s" % sql)
         L('del_xresolv.sql').debug("args: %r" % (args,))
-        db.ex (dbconn, sql, args)
-        return xref
+        cursor = db.ex (dbconn, sql, args)
+        return cursor.rowcount
 
 def mkxref (v):
           # If there is no tsens, generate an xref to only the first
@@ -366,28 +330,6 @@ def mkxref (v):
                         xentr=v.targ, xsens=v.tsens, rdng=v.rdng, kanj=v.kanj,
                         notes=v.notes, nosens=nosens, lowpri=not v.prio)
         return xref
-
-def read_krmap (dbconn, infn, targ_src):
-        if not infn: return None
-        fin = open (infn, "r", encoding="utf8_sig")
-
-        krmap = {}
-        for lnnum, line in enumerate (fin):
-            if line.isspace() or re.search (r'^\s*\#', line): continue
-            rtxt, ktxt, seq = line.split ('\t', 3)
-            try: seq = int (seq)
-            except ValueError:
-                raise ValueError ("Bad seq# at line %d in '%s'" % (lnnum, infn))
-            entrs = get_entries (dbconn.cursor(), targ_src, rtxt, ktxt, seq)
-            if not entrs:
-                raise ValueError ("Entry seq not found, or kana/kanji"
-                                  " mismatch at line %d in '%s'" % (lnnum, infn))
-            krmap[(ktxt,rtxt)] = entrs[0]
-        return krmap
-
-def lookup_krmap (krmap, rtxt, ktxt):
-        key = ((ktxt or ""),(rtxt or ""))
-        return krmap[key]
 
 def fs (v):
           # Format unresolved xref 'v' in a standard way for messages.
@@ -449,19 +391,58 @@ def loglevel (thresh):
             raise ValueError ("Bad 'level' option: %s" % thresh)
         return lvl
 
+class IterableQueue (queue.Queue): 
+    _sentinel = object()
+    def __iter__ (self):
+        return iter (self.get, self._sentinel)
+    def close (self):
+        self.put (self._sentinel)
+    def next(self):
+        L('IterableQueue').debug(".get(), current len=%s" % self.qsize())
+        item = self.get()
+        if item is self._sentinel:
+             self.put (self._sentinel)  # In case we get called again.
+             raise StopIteration
+        else: return item
+
+  # Following from https://gist.github.com/jsheedy/ed81cdf18190183b3b7d/
+  # (iter_file.py).
+import io
+class IteratorFile(io.TextIOBase):
+    """ given an iterator which yields strings,
+        return a file like object for reading those strings """
+    def __init__(self, iterable, name=''):
+        self._it = iterable
+        self._f = io.StringIO()
+        self.name = name
+    def read(self, length=sys.maxsize):
+        L(self.name).debug("IteratorFile.read: %s" % length)
+        try:
+            while self._f.tell() < length:
+                item = next (self._it)
+                L(self.name).debug("IteratorFile.read: got queue item")
+                self._f.write(item + "\n")
+        except StopIteration as e:
+            L(name).debug("IteratorFile: StopIteration exception")
+              # Soak up StopIteration. This block is not necessary because
+              # of finally, but just to be explicit.
+            pass
+        finally:
+            self._f.seek(0)
+            data = self._f.read(length)
+              # Save the remainder for next read.
+            remainder = self._f.read()
+            self._f.seek(0)
+            self._f.truncate(0)
+            self._f.write(remainder)
+            L(self.name).debug("read returning %d bytes" % len(data)) 
+            return data
+    def readline(self):
+        line = next(self._it)
+        L(self.name).debug("IteratorFile.readline: got queue item")
+        return 
+
 #-----------------------------------------------------------------------
-
-from optparse import OptionParser
-from pylib.optparse_formatters import IndentedHelpFormatterWithNL
-
-def parse_cmdline ():
-        u = \
-"""\n\t%prog [options]
-
-%prog will convert textual xrefs in table "xresolv", to actual
-entr.id xrefs and write them to database table "xref".
-
-Arguments: none"""
 
 import argparse, textwrap
 from pylib.argparse_formatters import ParagraphFormatterML
@@ -495,36 +476,23 @@ def parse_cmdline (cmdln_args):
                 "by a \"-\", all corpora will be included except those listed.")
 
         p.add_argument ("--start", default=None,
-            help="Starting entry id number to process.")
+            help="Limit processing to unresolved xrefs with entry id numbers "
+                "equal to or greater than this value.")
 
         p.add_argument ("--stop", default=None,
-            help="One greater than the last entry id number to process.")
-
-        p.add_argument ("--krmap", default=None,
-            help="Name of a file containing kanji/reading to seq# map.")
+            help="Limit processing to unresolved xrefs with entry id numbers "
+                "less than this value.")
 
         p.add_argument ("-k", "--keep", default=False, action="store_true",
             help="Do not delete unresolved xrefs after they are resolved.  "
-                "This is primarily to aid in debugging.")
-
-#        p.add_argument ("--partial", default=False, action="store_true",
-#            help="Create xrefs for an entry even if some of them can't be "
-#                "created.  Default behavior without this option is not "
-#                "to create any xrefs for an entry if any of them can't "
-#                "be created.  "
-#                "This option can be useful when performing incremental "
-#                "updates.")
-#
-#        p.add_argument ("--preserve", default=False, action="store_true",
-#            help="Do not delete existing xrefs for an entry prior to "
-#                "resolving unresolved xrefs.  If an unresolved xref "
-#                "resolves to the same key as a preexisting one, the "
-#                "preexisting one will be updated to match the new one.  "
-#                "Default behavior without this option is to delete any "
-#                "preexisting xrefs for an entry prior to resolving xrefs "
-#                "for that entry.  "
-#                "This option can be useful when performing incremental "
-#                "updates.")
+                "This is primarily to aid in debugging.  If not given "
+                "unresolved xrefs that match an existing xref (match based "
+                "on the values of entr, sens, typ, and ord) subject to the "
+                "conditions given by --source-corpus, --target-corpus, "
+                "--start and --stop will be deleted.  "
+                "Note that all matching unresolved xrefs will be deleted, "
+                "whether the matching xref was created by this execution "
+                "of the program or earlier.")
 
         p.add_argument ("-l", "--logfile", default=None,
             help="Name of file log messages will be written to."
@@ -554,49 +522,49 @@ def parse_cmdline (cmdln_args):
         p.add_argument ("-d", "--database", default="jmdict",
             help="URI for the database to use.")
         p.epilog = """\
-When a program such as jmparse.py or exparse.py parses
-a corpus file, any xrefs in that file are in textual
-form (often a kanji and/or kana text string that identifies
-the target of the xref).  The database stores xrefs using
-the actual entry id number of the target entry but the
-textual form canot be resolved into the id form at parse
-time since the target entry may not even be in the database
-yet. Instead, the parser programs save the textual form of
-the xref in a table, 'xresolv', and it is the job of this
-program, when run later, to convert the textual 'xresolv'
-table xrefs into the id form of xrefs and load them into
-table 'xref'.
+ When a program such as jmparse.py or exparse.py parses
+ a corpus file, any xrefs in that file are in textual
+ form (often a kanji and/or kana text string that identifies
+ the target of the xref).  The database stores xrefs using
+ the actual entry id number of the target entry but the
+ textual form canot be resolved into the id form at parse
+ time since the target entry may not even be in the database
+ yet. Instead, the parser programs save the textual form of
+ the xref in a table, 'xresolv', and it is the job of this
+ program, when run later, to convert the textual 'xresolv'
+ table xrefs into the id form of xrefs and load them into
+ table 'xref'.
 
-Each xresolv row contains the entr id and sens number
-of the entry that contained the xref, the type of xref,
-and the xref target entry kanji and/or reading, and
-optionally, sense number.
+ Each xresolv row contains the entr id and sens number
+ of the entry that contained the xref, the type of xref,
+ and the xref target entry kanji and/or reading, and
+ optionally, sense number.
 
-This program searches for an entry matching the kanji
-and reading and creates an xref record using the target
-entry's id number.  The matching process is more involved
-than doing a simple search because a kanji xref may match
-several entries, and our job is to find the right one.
-This is currently done by a fast but inaccurate method
-that does not take into account restr, stagr, and stag
-restrictions which limit certain reading-kanji combinations
-and thus would make unabiguous some xrefs that this program
-considers ambiguous.  See the comments in sub choose_entry()
-for a description of the algorithm.
+ This program searches for an entry matching the kanji
+ and reading and creates an xref record using the target
+ entry's id number.  The matching process is more involved
+ than doing a simple search because a kanji xref may match
+ several entries, and our job is to find the right one.
+ This is currently done by a fast but inaccurate method
+ that does not take into account restr, stagr, and stag
+ restrictions which limit certain reading-kanji combinations
+ and thus would make unabiguous some xrefs that this program
+ considers ambiguous.  See the comments in sub choose_entry()
+ for a description of the algorithm.
 
-When an xref text is not found, or multiple candidate
-entries still exist after applying the selection
-algorithm, the fact is reported and that xref skipped.
+ When an xref text is not found, or multiple candidate
+ entries still exist after applying the selection
+ algorithm, the fact is reported and that xref skipped.
 
-Error and other messages refer to unresolved xrefs using
-the format: "corpus.seq# (entr-id, sens#, ord#) where
-all except ord# refer to the entry the xref is from.
-Error (E) messages indicate no resolved xref was generated.
-Warning (W) messages indicate an xref was produced but
-might not be what was wanted.  Info (I) messages report
-sucessful completion of an action.  There are also
-a number of debug (D) messages that can be optionally
-enabled.
+ Error and other messages refer to unresolved xrefs using
+ the format: "corpus.seq# (entr-id, sens#, ord#) where
+ all except ord# refer to the entry the xref is from.
+ Error (E) messages indicate no resolved xref was generated.
+ Warning (W) messages indicate an xref was produced but
+ might not be what was wanted.  Info (I) messages report
+ sucessful completion of an action.  There are also
+ a number of debug (D) messages that can be optionally
+ enabled.
 ."""
 
         args = p.parse_args (cmdln_args[1:])

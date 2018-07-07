@@ -57,7 +57,7 @@ _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
 _ = os.path.join (os.path.dirname(_), 'python', 'lib')
 if _ not in sys.path: sys.path.insert(0, _)
 
-import re, itertools, threading, queue
+import re, itertools, io
 import db, jdb
 import logging, logger; from logger import L
   # Set to True to disable multiple threads for debugging.
@@ -95,30 +95,11 @@ def main (cmdln_args):
             L('unknown corpus').warning(args.target_corpus)
             sys.exit (0)
 
-          # Start the database writer threads...
-        qwriter = queue.Queue()
-        threads = []
-        nwriters = NWRITERS if not Debug else 1
-          # A barrier is used to cause each thread, after it has written
-          # all its data, to wait for all the other threads to finish too,
-          # after which, they will all do commits.  The intent is to not
-          # have any commit unless they all do.
-          # The commit/rollbacks need to be done in the threads themselves
-          # since each uses a separate, independent database connection.
-          #FIXME? would using Postgresql's two-phase commit be better?
-        barrier = threading.Barrier (nwriters)
-        writer = lambda: thwriter (qwriter, dburi, barrier)
-        for n in range (nwriters):
-            thname = 'ins%s' % n
-            L().debug("starting thread %s" % thname)
-            threads.append (thstart (thname, writer))
 
-          # Now read the unresolved xrefs and their candidate targets
+          # Read the unresolved xrefs and their candidate targets
           # from the database and call 'process_entr_cands()' to
           # select the optimal candidate for each unresolved xref.
-          # Each such xref is added to the 'qwriter' queue for a
-          # database writer thread to pull it off and write in to
-          # to the database.
+        tmpf = io.StringIO()
         xrefcnt = 0
         for rows in get_entr_cands (dbconn, xref_src, targ_src,
                                     start=args.start, stop=args.stop):
@@ -133,86 +114,27 @@ def main (cmdln_args):
                                    str(x.kanj) if x.kanj else '\\N',
                                    x.notes or '\\N',
                                    "t" if x.nosens else "f",
-                                   "t" if x.lowpri else "f"])
+                                   "t" if x.lowpri else "f"]) + '\n'
                 #L().debug("adding row to queue")
-                qwriter.put (csv)
+                tmpf.write (csv)
             xrefcnt += len (xrefs)
 
-          # Signal the threads that there are no more unresolved xrefs
-          # to process by adding None to the queue.  Since each thread
-          # will remove it, we add 'nwriters' None's so that each thread
-          # will get one.
-        L('xresolv').debug("xresolv resolutions complete, queuing None")
-        for _ in range (nwriters): qwriter.put (None)
-
-          # 'qwriter.join() will block until the queue the writer
-          # processes have removed and processed all the queue items.
-        L('xresolv').debug("waiting for queue completion...")
-        qwriter.join()
-          # Wait for all the threads to terminate.
-        L('xresolv').debug("joining threads...")
-        for t in threads: t.join()
-
-          # Check the barrier status.  If one of the writer threads had
-          # a problem, it sets the barrier to "broken" causing all the
-          # threads to do a rollback.
-        if barrier.broken:
-            sys.exit ("Error, no xrefs created")
-
-          # Just to be sure...
-        if qwriter.qsize() > 0:
-            sys.exit ("writer queue still has %d items!" % qwriter.qsize())
+        cursor = dbconn.cursor()
+        tmpf.seek(0)
+          #FIXME: wrap following in try/except
+        cursor.copy_from (tmpf, 'xref')
 
           # Now delete any unresolved xrefs that have corresponding
           # resolved xrefs.  The delete is restricted to the same
           # xref and target .src values and start and stop entry id's
-          # that were used in selecting the unresolved xrefs.
+          # that were used in selecting the unresolved xrefs.  However
+          # we still delete *any* matching unresolved xref whether 
+          # the matched xref was created by us or not.
         delcnt = del_xresolv (dbconn, xref_src, targ_src,
                                   start=args.start, stop=args.stop)
         dbconn.commit()
         L().info("normal exit, %d xrefs generated, %d xresolvs deleted"
                  % (xrefcnt, delcnt))
-
-def thwriter (workq, dburi, barrier):
-          # Open a per-thead database connection.  This will result
-          # in each thread getting a separate postgresql process giving
-          # a large performance gain on a multi-core machine.
-        dbconn = db.connect (dburi)
-        me = threading.current_thread()  # For thread name for logging.
-          # We use Postgresql's COPY command which offers the highest
-          # performance for bulk loading data.  The psycopg2 module's
-          # interface to it expects to read from a "file-like" object.
-          # FileQueue is a class the presents a file-like interface
-          # to psycopg2 while readign the data from the writer queue.
-        pf = FileQueue (workq, name=me.name)
-        cursor = dbconn.cursor()
-        L(me.name).debug("starting postgresql copy")
-        try: cursor.copy_from (pf, 'xref')
-        except Exception as e:
-             L(me.name).error (str(e))
-             barrier.abort()
-          # After all the data has been written to the database, wait
-          # for all the other threads to finish.  When all threads are
-          # done the basrrier.wait() call will complete.
-        L(me.name).debug("waiting at barrier")
-        try: n = barrier.wait()
-        except threading.BrokenBarrierError:
-               # If any of the threads had a problem, an exception
-               # is raised which all receive and all will rollback.
-             L(me.name).info("rollback (broken barrier)")
-             dbconn.rollback()
-        else:
-               # No exception so all the threads commit.
-             L(me.name).info("committing")
-             dbconn.commit()
-
-def thstart (name, func):
-          # Utility function for starting a thread.
-        if Debug:
-            func(); return
-        t = threading.Thread (name=name, target=func)
-        t.daemon = True;  t.start()
-        return t
 
 def process_entr_cands (workq, rows):
         xrefs = []
@@ -439,47 +361,6 @@ def loglevel (thresh):
         except (ValueError, TypeError, IndexError):
             raise ValueError ("Bad 'level' option: %s" % thresh)
         return lvl
-
-class FileQueue:
-      # Allows read access to the contents of queue.Queue instance via
-      # the python file protocol (.read() and .readline() methods).
-
-    def __init__ (self, queue, name=''):
-        self.q = queue
-        self.name = name
-        self.eof = False
-    def read (self, length=sys.maxsize):
-        #L(self.name).debug("FileQueue.read(length=%s), quelen=%d"
-        #                   % (length, self.q.qsize()))
-        if self.eof:
-            L(self.name).debug("FileQueue.read: returning eof")
-            return ''
-        size = 0;  bufarray = [];  count = 0
-        while True:
-            line = self.readline()
-            if line is None:
-                #L(self.name).debug("FileQueue.read: got None")
-                self.eof = True
-                if not bufarray:
-                    L(self.name).debug("FileQueue.read: returning eof")
-                    return ''
-                else: break
-            #L(self.name).debug("FileQueue.read: got line")
-            if size + len(line) > length:
-                self.q.put (line);  break
-            bufarray.append (line)
-            size += len(line) + 1   # '+1' to account for the "\n" added
-                                    #  to each line in join() below.
-            count += 1
-        text = '\n'.join(bufarray) + '\n'
-        #L(self.name).debug("FileQueue: read returning %d lines (%d bytes)"
-        #                     % (count, len(text)))
-        return text
-    def readline (self):
-        L(self.name).debug("FileQueue.readline")
-        line = self.q.get()
-        self.q.task_done()
-        return line
 
 #-----------------------------------------------------------------------
 

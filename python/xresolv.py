@@ -86,8 +86,6 @@ def main (cmdln_args):
             except ValueError as e: sys.exit("Bad -m option: '%s'" % str (e))
             L().handlers[0].addFilter (filter)
 
-        global NDELETERS, Args;  Args = args
-
         try: xref_src = get_src_ids (args.source_corpus)
         except KeyError:
             L('unknown corpus').warning(args.source_corpus)
@@ -97,73 +95,124 @@ def main (cmdln_args):
             L('unknown corpus').warning(args.target_corpus)
             sys.exit (0)
 
-        qwriter = IterableQueue()
+          # Start the database writer threads...
+        qwriter = queue.Queue()
         threads = []
-
         nwriters = NWRITERS if not Debug else 1
+          # A barrier is used to cause each thread, after it has written
+          # all its data, to wait for all the other threads to finish too,
+          # after which, they will all do commits.  The intent is to not
+          # have any commit unless they all do.
+          # The commit/rollbacks need to be done in the threads themselves
+          # since each uses a separate, independent database connection.
+          #FIXME? would using Postgresql's two-phase commit be better?
         barrier = threading.Barrier (nwriters)
-        qwriter_iter = iter (qwriter)
-        writer = lambda: thwriter (qwriter_iter, dburi, barrier)
+        writer = lambda: thwriter (qwriter, dburi, barrier)
         for n in range (nwriters):
             thname = 'ins%s' % n
             L().debug("starting thread %s" % thname)
             threads.append (thstart (thname, writer))
 
+          # Now read the unresolved xrefs and their candidate targets
+          # from the database and call 'process_entr_cands()' to
+          # select the optimal candidate for each unresolved xref.
+          # Each such xref is added to the 'qwriter' queue for a
+          # database writer thread to pull it off and write in to
+          # to the database.
         xrefcnt = 0
         for rows in get_entr_cands (dbconn, xref_src, targ_src,
                                     start=args.start, stop=args.stop):
               # 'rows' is a set of target candidate rows for all the
               # unresolved xrefs for a single entry.
             xrefs = process_entr_cands (dbconn, rows)
-            L().debug("process_entr_cands returned %s xrefs" % len(xrefs))
+            L('xresolv').debug("process_entr_cands returned %s xrefs" % len(xrefs))
             for x in xrefs:
-                csv  = '\t'.join ([str(x.entr), str(x.sens), str(x.xref), 
+                csv  = '\t'.join ([str(x.entr), str(x.sens), str(x.xref),
                                    str(x.typ), str(x.xentr), str(x.xsens),
                                    str(x.rdng) if x.rdng else '\\N',
                                    str(x.kanj) if x.kanj else '\\N',
                                    x.notes or '\\N',
                                    "t" if x.nosens else "f",
                                    "t" if x.lowpri else "f"])
+                #L().debug("adding row to queue")
                 qwriter.put (csv)
             xrefcnt += len (xrefs)
-        qwriter.close();
+
+          # Signal the threads that there are no more unresolved xrefs
+          # to process by adding None to the queue.  Since each thread
+          # will remove it, we add 'nwriters' None's so that each thread
+          # will get one.
+        L('xresolv').debug("xresolv resolutions complete, queuing None")
+        for _ in range (nwriters): qwriter.put (None)
+
+          # 'qwriter.join() will block until the queue the writer
+          # processes have removed and processed all the queue items.
+        L('xresolv').debug("waiting for queue completion...")
+        qwriter.join()
+          # Wait for all the threads to terminate.
+        L('xresolv').debug("joining threads...")
         for t in threads: t.join()
 
+          # Check the barrier status.  If one of the writer threads had
+          # a problem, it sets the barrier to "broken" causing all the
+          # threads to do a rollback.
         if barrier.broken:
             sys.exit ("Error, no xrefs created")
+
+          # Just to be sure...
         if qwriter.qsize() > 0:
             sys.exit ("writer queue still has %d items!" % qwriter.qsize())
 
+          # Now delete any unresolved xrefs that have corresponding
+          # resolved xrefs.  The delete is restricted to the same
+          # xref and target .src values and start and stop entry id's
+          # that were used in selecting the unresolved xrefs.
         delcnt = del_xresolv (dbconn, xref_src, targ_src,
-                                  start=args.start, stop=args.stop)        
+                                  start=args.start, stop=args.stop)
+        dbconn.commit()
         L().info("normal exit, %d xrefs generated, %d xresolvs deleted"
                  % (xrefcnt, delcnt))
 
-def thstart (name, func):
-        if Debug:
-            func(); return
-        t = threading.Thread (name=name, target=func)
-        t.daemon = True;  t.start()
-        return t
-
 def thwriter (workq, dburi, barrier):
+          # Open a per-thead database connection.  This will result
+          # in each thread getting a separate postgresql process giving
+          # a large performance gain on a multi-core machine.
         dbconn = db.connect (dburi)
-        me = threading.current_thread()
-        pf = IteratorFile (workq, name=me.name)
+        me = threading.current_thread()  # For thread name for logging.
+          # We use Postgresql's COPY command which offers the highest
+          # performance for bulk loading data.  The psycopg2 module's
+          # interface to it expects to read from a "file-like" object.
+          # FileQueue is a class the presents a file-like interface
+          # to psycopg2 while readign the data from the writer queue.
+        pf = FileQueue (workq, name=me.name)
         cursor = dbconn.cursor()
         L(me.name).debug("starting postgresql copy")
         try: cursor.copy_from (pf, 'xref')
         except Exception as e:
              L(me.name).error (str(e))
              barrier.abort()
+          # After all the data has been written to the database, wait
+          # for all the other threads to finish.  When all threads are
+          # done the basrrier.wait() call will complete.
         L(me.name).debug("waiting at barrier")
         try: n = barrier.wait()
         except threading.BrokenBarrierError:
+               # If any of the threads had a problem, an exception
+               # is raised which all receive and all will rollback.
              L(me.name).info("rollback (broken barrier)")
              dbconn.rollback()
         else:
-             L(me.name).info("committing (not really :-)")
-             dbconn.rollback() #.commit()
+               # No exception so all the threads commit.
+             L(me.name).info("committing")
+             dbconn.commit()
+
+def thstart (name, func):
+          # Utility function for starting a thread.
+        if Debug:
+            func(); return
+        t = threading.Thread (name=name, target=func)
+        t.daemon = True;  t.start()
+        return t
 
 def process_entr_cands (workq, rows):
         xrefs = []
@@ -179,17 +228,17 @@ def process_entr_cands (workq, rows):
         return xrefs
 
 def get_entr_cands (dbconn, xref_src, targ_src, start=None, stop=None):
-        # Yield sets of candidates rows for all unresolved xrefs 
+        # Yield sets of candidates rows for all unresolved xrefs
         # for a single entry.
         #
         # dbconn -- An open dbapi connection to a jmdictdb database.
         # xref_src -- A 2-tuple consiting of:
         #   0: a sequence of numbers identifying the entr.src numbers
-        #     to be included or excluded when searching for xrefs to 
+        #     to be included or excluded when searching for xrefs to
         #     resolve.
         #   1: (bool) if false the values in item 0 specify src numbers
         #     to include; if false they are numbers to exclude.
-        # targ_src -- Same format as 'xref_src' but for target entry 
+        # targ_src -- Same format as 'xref_src' but for target entry
         #   .src numbers.
         # start -- lowest entry id number to process.  If None of not
         #   given default is 1.
@@ -215,14 +264,14 @@ def get_entr_cands (dbconn, xref_src, targ_src, start=None, stop=None):
 def src_clause (xref_src, targ_src):
         xs_lst, xs_inv = xref_src
         ts_lst, ts_inv = targ_src
-        args = [] 
+        args = []
         c1 = ("src %sIN %%s" % ('NOT ' if xs_inv else '')) if xs_lst else ''
         if c1: args.append(xs_lst)
         if ts_lst:
             c2 = "(tsrc %sIN %%s OR tsrc IS NULL)" % ('NOT ' if ts_inv else '')
             args.append (ts_lst)
         else: c2 = ""
-        clause = c1 + (" AND " if c1 or c2 else "") + c2 
+        clause = c1 + (" AND " if c1 or c2 else "") + c2
         return clause, args
 
 def idrange_clause (start=None, stop=None):
@@ -280,9 +329,9 @@ def choose_candidate (rows):
         L('multiple candidates').error(fs(v))
         return None
 
-def del_xresolv (dbconn, xref_src=[], targ_src=None, start=None, stop=None): 
+def del_xresolv (dbconn, xref_src=[], targ_src=None, start=None, stop=None):
           # CAUTION: we assume here that xref.xref has the same value
-          #  as xresolv.ord and thus we can use xref.xref to delete 
+          #  as xresolv.ord and thus we can use xref.xref to delete
           #  the corresponding xresolv row.  That is currently true but
           #  has not been true in past and could change in the future.
         c1, args1 = src_clause (xref_src, targ_src)
@@ -391,56 +440,46 @@ def loglevel (thresh):
             raise ValueError ("Bad 'level' option: %s" % thresh)
         return lvl
 
-class IterableQueue (queue.Queue): 
-    _sentinel = object()
-    def __iter__ (self):
-        return iter (self.get, self._sentinel)
-    def close (self):
-        self.put (self._sentinel)
-    def next(self):
-        L('IterableQueue').debug(".get(), current len=%s" % self.qsize())
-        item = self.get()
-        if item is self._sentinel:
-             self.put (self._sentinel)  # In case we get called again.
-             raise StopIteration
-        else: return item
+class FileQueue:
+      # Allows read access to the contents of queue.Queue instance via
+      # the python file protocol (.read() and .readline() methods).
 
-  # Following from https://gist.github.com/jsheedy/ed81cdf18190183b3b7d/
-  # (iter_file.py).
-import io
-class IteratorFile(io.TextIOBase):
-    """ given an iterator which yields strings,
-        return a file like object for reading those strings """
-    def __init__(self, iterable, name=''):
-        self._it = iterable
-        self._f = io.StringIO()
+    def __init__ (self, queue, name=''):
+        self.q = queue
         self.name = name
-    def read(self, length=sys.maxsize):
-        L(self.name).debug("IteratorFile.read: %s" % length)
-        try:
-            while self._f.tell() < length:
-                item = next (self._it)
-                L(self.name).debug("IteratorFile.read: got queue item")
-                self._f.write(item + "\n")
-        except StopIteration as e:
-            L(name).debug("IteratorFile: StopIteration exception")
-              # Soak up StopIteration. This block is not necessary because
-              # of finally, but just to be explicit.
-            pass
-        finally:
-            self._f.seek(0)
-            data = self._f.read(length)
-              # Save the remainder for next read.
-            remainder = self._f.read()
-            self._f.seek(0)
-            self._f.truncate(0)
-            self._f.write(remainder)
-            L(self.name).debug("read returning %d bytes" % len(data)) 
-            return data
-    def readline(self):
-        line = next(self._it)
-        L(self.name).debug("IteratorFile.readline: got queue item")
-        return 
+        self.eof = False
+    def read (self, length=sys.maxsize):
+        #L(self.name).debug("FileQueue.read(length=%s), quelen=%d"
+        #                   % (length, self.q.qsize()))
+        if self.eof:
+            L(self.name).debug("FileQueue.read: returning eof")
+            return ''
+        size = 0;  bufarray = [];  count = 0
+        while True:
+            line = self.readline()
+            if line is None:
+                #L(self.name).debug("FileQueue.read: got None")
+                self.eof = True
+                if not bufarray:
+                    L(self.name).debug("FileQueue.read: returning eof")
+                    return ''
+                else: break
+            #L(self.name).debug("FileQueue.read: got line")
+            if size + len(line) > length:
+                self.q.put (line);  break
+            bufarray.append (line)
+            size += len(line) + 1   # '+1' to account for the "\n" added
+                                    #  to each line in join() below.
+            count += 1
+        text = '\n'.join(bufarray) + '\n'
+        #L(self.name).debug("FileQueue: read returning %d lines (%d bytes)"
+        #                     % (count, len(text)))
+        return text
+    def readline (self):
+        L(self.name).debug("FileQueue.readline")
+        line = self.q.get()
+        self.q.task_done()
+        return line
 
 #-----------------------------------------------------------------------
 
@@ -521,6 +560,11 @@ def parse_cmdline (cmdln_args):
 
         p.add_argument ("-d", "--database", default="jmdict",
             help="URI for the database to use.")
+          # p.epilog text is indented by one space in order to include a
+          # space character between each line of text.  Putting the space
+          # character at the end of each line is undesirable because it
+          # prevents running a cleanup tool on the file that removes
+          # trailing whitespace.
         p.epilog = """\
  When a program such as jmparse.py or exparse.py parses
  a corpus file, any xrefs in that file are in textual
@@ -579,7 +623,7 @@ if __name__ == '__main__': main (sys.argv)
 ##  ----------------------------------------------------------------------------
 ##  -- This view is used by xresolv.py for finding entries that could
 ##  -- possibly be the intended targets of unresolved xrefs in table
-##  -- "xresolv".  
+##  -- "xresolv".
 ##  -- It joins the rows in xresolve to entries based on a common reading
 ##  -- text, kanji text, or both.  Because the joins vary depending on the
 ##  -- join column there are three separate SELECTs, one for each case,
@@ -626,7 +670,7 @@ if __name__ == '__main__': main (sys.argv)
 ##               (SELECT count(*) FROM sens s WHERE s.entr=e.id) AS nsens
 ##        FROM entr e JOIN rdng r ON r.entr=e.id
 ##        LEFT JOIN re_nokanji j ON j.id=e.id AND j.rdng=r.rdng
-##        WHERE e.stat=2 AND NOT e.unap) 
+##        WHERE e.stat=2 AND NOT e.unap)
 ##        AS c ON (v.rtxt=c.rtxt)
 ##    GROUP BY v.seq,v.src,v.entr,v.sens,v.typ,v.ord,v.rtxt,v.ktxt,
 ##             v.tsens,v.notes,v.prio, c.src,c.rdng,c.nokanji
@@ -641,11 +685,11 @@ if __name__ == '__main__': main (sys.argv)
 ##       (SELECT z.*,seq,src FROM xresolv z JOIN entr e ON e.id=z.entr
 ##        WHERE rtxt IS NULL AND ktxt IS NOT NULL )
 ##        AS v
-##    LEFT JOIN 
+##    LEFT JOIN
 ##       (SELECT e.id,e.src,k.txt as ktxt,k.kanj,
 ##               (SELECT count(*) FROM sens s WHERE s.entr=e.id) AS nsens
 ##        FROM entr e JOIN kanj k ON k.entr=e.id
-##        WHERE e.stat=2 AND NOT e.unap) 
+##        WHERE e.stat=2 AND NOT e.unap)
 ##        AS c ON (v.ktxt=c.ktxt)
 ##    GROUP BY v.seq,v.src,v.entr,v.sens,v.typ,v.ord,v.rtxt,v.ktxt,
 ##             v.tsens,v.notes,v.prio, c.src,c.kanj);

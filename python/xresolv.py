@@ -95,30 +95,18 @@ def main (cmdln_args):
             L('unknown corpus').warning(args.target_corpus)
             sys.exit (0)
 
-
           # Read the unresolved xrefs and their candidate targets
-          # from the database and call 'process_entr_cands()' to
-          # select the optimal candidate for each unresolved xref.
+          # from the database, choose the optimal candidates and write
+          # the xrefs generated from them to file 'tmpf'.
         tmpf = io.StringIO()
-        xrefcnt = 0
-        for rows in get_entr_cands (dbconn, xref_src, targ_src,
-                                    start=args.start, stop=args.stop):
-              # 'rows' is a set of target candidate rows for all the
-              # unresolved xrefs for a single entry.
-            xrefs = process_entr_cands (dbconn, rows)
-            L('xresolv').debug("process_entr_cands returned %s xrefs" % len(xrefs))
-            for x in xrefs:
-                csv  = '\t'.join ([str(x.entr), str(x.sens), str(x.xref),
-                                   str(x.typ), str(x.xentr), str(x.xsens),
-                                   str(x.rdng) if x.rdng else '\\N',
-                                   str(x.kanj) if x.kanj else '\\N',
-                                   x.notes or '\\N',
-                                   "t" if x.nosens else "f",
-                                   "t" if x.lowpri else "f"]) + '\n'
-                #L().debug("adding row to queue")
-                tmpf.write (csv)
-            xrefcnt += len (xrefs)
+        entrcnt, unrefcnt, xrefcnt \
+            = resolve (dbconn, tmpf, xref_src, targ_src,
+                       start=args.start, stop=args.stop,
+                       active=not args.ignore_nonactive)
 
+          # Write the generated xrefs in file 'tmpf' back to the
+          # database using Postgresql's COPY command (via psycopg2's
+          # 'copy_from()' function).
         cursor = dbconn.cursor()
         tmpf.seek(0)
           #FIXME: wrap following in try/except
@@ -128,15 +116,48 @@ def main (cmdln_args):
           # resolved xrefs.  The delete is restricted to the same
           # xref and target .src values and start and stop entry id's
           # that were used in selecting the unresolved xrefs.  However
-          # we still delete *any* matching unresolved xref whether 
+          # we still delete *any* matching unresolved xref whether
           # the matched xref was created by us or not.
-        delcnt = del_xresolv (dbconn, xref_src, targ_src,
-                                  start=args.start, stop=args.stop)
-        dbconn.commit()
-        L().info("normal exit, %d xrefs generated, %d xresolvs deleted"
-                 % (xrefcnt, delcnt))
+        delcnt = 0
+        if not args.keep:
+            delcnt = del_xresolv (dbconn, xref_src, targ_src,
+                                  start=args.start, stop=args.stop,
+                                  active=not args.ignore_nonactive)
+        L().info("processed %d unresolved, %d xrefs generated, "
+                 "%d xresolvs deleted" % (unrefcnt, xrefcnt, delcnt))
+        if args.noaction:
+            L().info("rollback due to --noaction")
+            dbconn.rollback()
+        else: dbconn.commit()
 
-def process_entr_cands (workq, rows):
+def resolve (dbconn, tmpf, xref_src, targ_src, start=None, stop=None,
+                           active=False):
+          # Call process_entr_cands() to get candidate entries for the
+          # unresolved xrefs limited by our function arguments, choose the
+          # optimal one for each unresolved xref, create a corresponding
+          # xref row and write to the temp file 'tmpf'.
+        entrcnt = unrefcnt = xrefcnt = 0
+        for rows in get_entr_cands (dbconn, xref_src, targ_src,
+                                            start, stop, active):
+              # 'rows' is a set of target candidate rows for all the
+              # unresolved xrefs for a single entry.
+            xrefs = process_entr_cands (rows)
+            L('resolve').debug("process_entr_cands returned %s xrefs" % len(xrefs))
+            for x in xrefs:
+                csv  = '\t'.join ([str(x.entr), str(x.sens), str(x.xref),
+                                   str(x.typ), str(x.xentr), str(x.xsens),
+                                   str(x.rdng) if x.rdng else '\\N',
+                                   str(x.kanj) if x.kanj else '\\N',
+                                   x.notes or '\\N',
+                                   "t" if x.nosens else "f",
+                                   "t" if x.lowpri else "f"]) + '\n'
+                tmpf.write (csv)
+            entrcnt += 1
+            unrefcnt += unrefcount (rows)
+            xrefcnt += len (xrefs)
+        return entrcnt, unrefcnt, xrefcnt
+
+def process_entr_cands (rows):
         xrefs = []
         key = lambda x: (x.entr, x.sens, x.typ, x.ord)
         for _,cands in itertools.groupby (rows, key=key):
@@ -149,7 +170,8 @@ def process_entr_cands (workq, rows):
             xrefs.append (xref)
         return xrefs
 
-def get_entr_cands (dbconn, xref_src, targ_src, start=None, stop=None):
+def get_entr_cands (dbconn, xref_src, targ_src, start=None, stop=None,
+                            active=False):
         # Yield sets of candidates rows for all unresolved xrefs
         # for a single entry.
         #
@@ -162,15 +184,46 @@ def get_entr_cands (dbconn, xref_src, targ_src, start=None, stop=None):
         #     to include; if false they are numbers to exclude.
         # targ_src -- Same format as 'xref_src' but for target entry
         #   .src numbers.
-        # start -- lowest entry id number to process.  If None of not
+        # start -- Lowest entry id number to process.  If None of not
         #   given default is 1.
-        # stop -- process entries up to but not including this id number.
+        # stop -- Process entries up to but not including this id number.
+        # active -- (bool) If true do not process any unresolved xrefs
+        #   that are attached to deleted, rejected, or unapproved entries
+        #   (i.e. restrict processing to active, approved entries).
+        #   If false, such unresolved xrefs will be processed along with
+        #   the active, approved ones.
+        ## Following parameter is currently ignored, see comments below.
+        ## appr_targ -- (bool) if true restrict target candidate entries
+        ##   to those that are approved.  If false, unapproved entries
+        ##   will also be target candidates.
 
         L().info("reading candidates from database, may take a while...")
+          #FIXME: this replicates same WHERE logic used in del_xresolv();
+          # should factor out to a single location, either in python
+          # code or in a database view.
         c1, args1 = src_clause (xref_src, targ_src)
         c2, args2 = idrange_clause (start, stop)
-        whr = ("WHERE " if c1 or c2 else "") + c1 \
-               + (" AND " if c1 and c2 else "") + c2
+          #FIXME: should not hardwire 'stat' value.
+        c3 = "v.stat=2 AND NOT v.unapp" if active else ""
+          # Disallow resolution to deleted or rejected entries.
+          #FIXME: should not hardwire 'stat' value.
+        c4 = "tstat=2"
+          #FIXME: following condition controls whether or not unapproved
+          # xrefs are considered as target candidates.  It is disabled
+          # because it is probably the wrong thing to do right now.  If an
+          # xref is resolved to an unapproved entry, the target unapproved
+          # entry will not get the reverse xref and if it is approved the
+          # resulting new active entry will not have the reverse xref.
+          # We probably need to generate xrefs to all the unapproved entries
+          # as well as the approved active one but that means restoring a
+          # flavor of the "one unresolved -> multiple xrefs" capability
+          # that was removed in hg-180615-3e9e9c.
+          # Without this condition unapproved edits will result in
+          # resolution failing due to multiple targets forcing manual
+          # intervention which seems the best option at the moment.
+        c5 = "" #"NOT tunap" if appr_targ else "")
+        whr = " AND ".join([c for c in [c1,c2,c3,c4,c5] if c])
+        if whr: whr = "WHERE " + whr
         args = tuple (args1 + args2)
         sql = "SELECT * FROM rslv v %s"\
               " ORDER BY entr,sens,typ,ord,targ" % whr
@@ -184,8 +237,8 @@ def get_entr_cands (dbconn, xref_src, targ_src, start=None, stop=None):
             yield list(rows)
 
 def src_clause (xref_src, targ_src):
-        xs_lst, xs_inv = xref_src
-        ts_lst, ts_inv = targ_src
+        xs_lst, xs_inv = xref_src or ([], None)
+        ts_lst, ts_inv = targ_src or ([], None)
         args = []
         c1 = ("src %sIN %%s" % ('NOT ' if xs_inv else '')) if xs_lst else ''
         if c1: args.append(xs_lst)
@@ -193,7 +246,7 @@ def src_clause (xref_src, targ_src):
             c2 = "(tsrc %sIN %%s OR tsrc IS NULL)" % ('NOT ' if ts_inv else '')
             args.append (ts_lst)
         else: c2 = ""
-        clause = c1 + (" AND " if c1 or c2 else "") + c2
+        clause = c1 + (" AND " if c1 and c2 else "") + c2
         return clause, args
 
 def idrange_clause (start=None, stop=None):
@@ -251,25 +304,33 @@ def choose_candidate (rows):
         L('multiple candidates').error(fs(v))
         return None
 
-def del_xresolv (dbconn, xref_src=[], targ_src=None, start=None, stop=None):
+def del_xresolv (dbconn, xref_src=[], targ_src=None, start=None, stop=None,
+                         active=False):
           # CAUTION: we assume here that xref.xref has the same value
           #  as xresolv.ord and thus we can use xref.xref to delete
           #  the corresponding xresolv row.  That is currently true but
           #  has not been true in past and could change in the future.
+          #FIXME: this replicates same WHERE logic used in resolve();
+          # should factor out to a single location, either in python
+          # code or in a database view.
+        c0 = "v.entr=x.entr AND v.sens=x.sens"\
+             " AND v.typ=x.typ AND v.ord=x.xref"
         c1, args1 = src_clause (xref_src, targ_src)
         c2, args2 = idrange_clause (start, stop)
-        whr = ("AND " if c1 or c2 else "") + c1 \
-               + (" AND " if c1 and c2 else "") + c2
+        c3 = "v.stat=2 AND NOT v.unapp" if active else ""
+        c4 = "tstat=2"
+        c5 = "" #"NOT tunap" if appr_targ else "")
+        whr = " AND ".join([c for c in [c0,c1,c2,c3,c4,c5] if c])
+        if whr: whr = "WHERE " + whr
         args = args1 + args2
         sql = "DELETE FROM xresolv v"\
               " USING (SELECT x.entr, x.sens, x.xref, x.typ,"\
-                            " ex.src, et.src as tsrc "\
+                            " ex.src, ex.stat, ex.unap,"\
+                            " et.src as tsrc,et.stat AS tstat,et.unap AS tunap"\
                      " FROM xref x"\
                      " JOIN entr ex ON x.entr=ex.id"\
                      " JOIN entr et ON x.xentr=et.id) AS x"\
-              " WHERE v.entr=x.entr AND v.sens=x.sens"\
-                " AND v.typ=x.typ AND v.ord=x.xref"\
-                " %s" % whr
+              " %s" % whr
         L('del_xresolv.sql').debug("sql: %s" % sql)
         L('del_xresolv.sql').debug("args: %r" % (args,))
         cursor = db.ex (dbconn, sql, args)
@@ -301,6 +362,17 @@ def mkxref (v):
                         xentr=v.targ, xsens=v.tsens, rdng=v.rdng, kanj=v.kanj,
                         notes=v.notes, nosens=nosens, lowpri=not v.prio)
         return xref
+
+def unrefcount (rows):
+          # Count and return the number of unique unresolved xrefs in
+          # a set of candidate rows.  Since a single unresolved xref
+          # may have multiple candidates the number may be smaller than
+          # the length of 'rows'.  The view "rslv" which is the source
+          # of 'rows' guarantees there will be at least on row for each
+          # unresolved xref.
+        count = set()
+        for r in rows: count.add ((r.entr,r.sens,r.typ,r.ord))
+        return len (count)
 
 def fs (v):
           # Format unresolved xref 'v' in a standard way for messages.
@@ -364,7 +436,7 @@ def loglevel (thresh):
 
 #-----------------------------------------------------------------------
 
-import argparse, textwrap
+import argparse
 from pylib.argparse_formatters import ParagraphFormatterML
 def parse_cmdline (cmdln_args):
         p = argparse.ArgumentParser (prog=cmdln_args[0],
@@ -498,8 +570,24 @@ def parse_cmdline (cmdln_args):
 if __name__ == '__main__': main (sys.argv)
 
 
-##  For reference this is the SQL for the "rslv" query used in the
-##  get_candidates() function above.
+##  For reference this is the SQL for the "rslv" (and supporting "rkv")
+##  queries used in the get_candidates() function above.
+##
+##  ----------------------------------------------------------------------------
+##  -- Support view for "rslv" below.  Return reading and kanji information
+##  -- information for entries taking into account restr restrictions.
+##CREATE OR REPLACE VIEW rkv AS (
+##    SELECT e.id,e.src,e.stat,e.unap,
+##           r.rdng,r.txt AS rtxt,rk.kanj,rk.txt AS ktxt,
+##           (SELECT COUNT(*) FROM sens s WHERE s.entr=e.id) AS nsens
+##    FROM entr e
+##    JOIN rdng r ON r.entr=e.id
+##    LEFT JOIN
+##        (SELECT r.entr,r.rdng,k.kanj,k.txt
+##        FROM rdng r
+##        LEFT JOIN kanj k ON k.entr=r.entr
+##        LEFT JOIN restr j ON j.entr=r.entr AND j.rdng=r.rdng AND j.kanj=k.kanj
+##        WHERE j.rdng IS NULL) AS rk ON rk.entr=r.entr AND rk.rdng=r.rdng);
 ##
 ##  ----------------------------------------------------------------------------
 ##  -- This view is used by xresolv.py for finding entries that could
@@ -517,32 +605,35 @@ if __name__ == '__main__': main (sys.argv)
 ##  -- in the case of multiple matches.
 ##
 ##CREATE OR REPLACE VIEW rslv AS (
-##    -- Query for xresolv with both 'rtxt' and 'ktxt'  (~30s 250K rows)
-##    SELECT v.seq, v.src, v.entr, v.sens, v.typ, v.ord,
+##    -- Query for xresolv with both 'rtxt' and 'ktxt'
+##    SELECT v.seq, v.src, v.stat, v.unap, v.entr, v.sens, v.typ, v.ord,
 ##           v.rtxt, v.ktxt, v.tsens, v.notes, v.prio,
-##           c.src AS tsrc, count(*) AS nentr, min(c.id) AS targ,
+##           c.src AS tsrc, c.stat AS tstat, c.unap AS tunap,
+##           count(*) AS nentr, min(c.id) AS targ,
 ##           c.rdng, c.kanj, FALSE AS nokanji,
 ##           max(c.nsens) AS nsens
-##    FROM (SELECT z.*,seq,src FROM xresolv z JOIN entr e ON e.id=z.entr
-##          WHERE ktxt IS NOT NULL AND rtxt IS NOT NULL
-##            AND e.stat=2 AND NOT e.unap)
+##    FROM (SELECT z.*,seq,src,stat,unap
+##          FROM xresolv z JOIN entr e ON e.id=z.entr
+##          WHERE ktxt IS NOT NULL AND rtxt IS NOT NULL)
 ##          AS v
 ##    LEFT JOIN rkv c ON v.rtxt=c.rtxt AND v.ktxt=c.ktxt
-##    GROUP BY v.seq,v.src,v.entr,v.sens,v.typ,v.ord,v.rtxt,v.ktxt,
-##             v.tsens,v.notes,v.prio, c.src,c.rdng,c.kanj
+##    GROUP BY v.seq,v.src,v.stat,v.unap,v.entr,v.sens,v.typ,v.ord,v.rtxt,v.ktxt,
+##             v.tsens,v.notes,v.prio, c.src,c.stat,c.unap,c.rdng,c.kanj
 ##    UNION
 ##
-##    -- Query for xresolv with only rtxt (~3m 1500K rows)
-##    SELECT v.seq, v.src, v.entr, v.sens, v.typ, v.ord,
+##    -- Query for xresolv with only rtxt
+##    SELECT v.seq, v.src, v.stat, v.unap, v.entr, v.sens, v.typ, v.ord,
 ##           v.rtxt, v.ktxt, v.tsens, v.notes, v.prio,
-##           c.src AS tsrc, count(*) AS nentr, min(c.id) AS targ,
+##           c.src AS tsrc, c.stat AS tstat, c.unap AS tunap,
+##           count(*) AS nentr, min(c.id) AS targ,
 ##           c.rdng, NULL AS kanj, nokanji, max(c.nsens) AS nsens
 ##    FROM
-##       (SELECT z.*,seq,src FROM xresolv z JOIN entr e ON e.id=z.entr
+##       (SELECT z.*,seq,src,stat,unap
+##        FROM xresolv z JOIN entr e ON e.id=z.entr
 ##        WHERE ktxt IS NULL AND rtxt IS NOT NULL )
 ##        AS v
 ##    LEFT JOIN
-##       (SELECT e.id,e.src,r.txt as rtxt,r.rdng,
+##       (SELECT e.id,e.src,e.stat,e.unap,r.txt as rtxt,r.rdng,
 ##                 -- The "not exists..." clause below is true if there
 ##                 -- are no kanj table rows for the entry.
 ##               (NOT EXISTS (SELECT 1 FROM kanj k WHERE k.entr=e.id))
@@ -550,27 +641,26 @@ if __name__ == '__main__': main (sys.argv)
 ##                 OR j.rdng IS NOT NULL AS nokanji,
 ##               (SELECT count(*) FROM sens s WHERE s.entr=e.id) AS nsens
 ##        FROM entr e JOIN rdng r ON r.entr=e.id
-##        LEFT JOIN re_nokanji j ON j.id=e.id AND j.rdng=r.rdng
-##        WHERE e.stat=2 AND NOT e.unap)
+##        LEFT JOIN re_nokanji j ON j.id=e.id AND j.rdng=r.rdng)
 ##        AS c ON (v.rtxt=c.rtxt)
-##    GROUP BY v.seq,v.src,v.entr,v.sens,v.typ,v.ord,v.rtxt,v.ktxt,
-##             v.tsens,v.notes,v.prio, c.src,c.rdng,c.nokanji
+##    GROUP BY v.seq,v.src,v.stat,v.unap,v.entr,v.sens,v.typ,v.ord,v.rtxt,v.ktxt,
+##             v.tsens,v.notes,v.prio, c.src,c.stat,c.unap,c.rdng,c.nokanji
 ##    UNION
 ##
-##    -- Query for xresolv with only ktxt (~1m, 500K rows)
-##    SELECT v.seq, v.src, v.entr, v.sens, v.typ, v.ord,
+##    -- Query for xresolv with only ktxt
+##    SELECT v.seq, v.src, v.stat, v.unap, v.entr, v.sens, v.typ, v.ord,
 ##           v.rtxt, v.ktxt, v.tsens, v.notes, v.prio,
-##           c.src AS tsrc, count(*) AS nentr, min(c.id) AS targ,
+##           c.src AS tsrc, c.stat AS tstat, c.unap AS tunap,
+##           count(*) AS nentr, min(c.id) AS targ,
 ##           NULL AS rdng, c.kanj, NULL AS nokanji, max(c.nsens) AS nsens
 ##    FROM
-##       (SELECT z.*,seq,src FROM xresolv z JOIN entr e ON e.id=z.entr
+##       (SELECT z.*,seq,src,stat,unap FROM xresolv z JOIN entr e ON e.id=z.entr
 ##        WHERE rtxt IS NULL AND ktxt IS NOT NULL )
 ##        AS v
 ##    LEFT JOIN
-##       (SELECT e.id,e.src,k.txt as ktxt,k.kanj,
+##       (SELECT e.id,e.src,e.stat,e.unap,k.txt as ktxt,k.kanj,
 ##               (SELECT count(*) FROM sens s WHERE s.entr=e.id) AS nsens
-##        FROM entr e JOIN kanj k ON k.entr=e.id
-##        WHERE e.stat=2 AND NOT e.unap)
+##        FROM entr e JOIN kanj k ON k.entr=e.id)
 ##        AS c ON (v.ktxt=c.ktxt)
-##    GROUP BY v.seq,v.src,v.entr,v.sens,v.typ,v.ord,v.rtxt,v.ktxt,
-##             v.tsens,v.notes,v.prio, c.src,c.kanj);
+##    GROUP BY v.seq,v.src,v.stat,v.unap,v.entr,v.sens,v.typ,v.ord,v.rtxt,v.ktxt,
+##             v.tsens,v.notes,v.prio, c.src,c.stat,c.unap,c.kanj);

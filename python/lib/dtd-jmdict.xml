@@ -148,7 +148,7 @@
 	cases a keb will be followed by a reb and/or a sense number to provide
 	a precise target for the cross-reference. Where this happens, a JIS
 	"centre-dot" (0x2126) is placed between the components of the 
-	cross-reference.
+	cross-reference. The target keb or reb must not contain a centre-dot.
 	-->
 <!ELEMENT ant (#PCDATA)*>
 	<!-- This element is used to indicate another entry which is an
@@ -333,7 +333,7 @@ various information fields.
 <!ENTITY vs "noun or participle which takes the aux. verb suru">
 <!ENTITY vs-c "su verb - precursor to the modern suru">
 <!ENTITY vs-s "suru verb - special class">
-<!ENTITY vs-i "suru verb - irregular">
+<!ENTITY vs-i "suru verb - included">
 <!ENTITY kyb "Kyoto-ben">
 <!ENTITY osb "Osaka-ben">
 <!ENTITY ksb "Kansai-ben">

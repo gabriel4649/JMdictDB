@@ -18,9 +18,6 @@
 --  Copyright (c) 2007 Stuart McGraw 
 ---------------------------------------------------------------------------
 
-
--- $Revision$ $Date$
-
 SELECT setval('entr_id_seq',  (SELECT max(id) FROM entr));
 SELECT setval('snd_id_seq',  (SELECT max(id) FROM snd));
 SELECT setval('sndfile_id_seq',  (SELECT max(id) FROM sndfile));

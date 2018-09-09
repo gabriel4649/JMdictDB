@@ -2,7 +2,6 @@
 # from Microsoft Window's MMSYSTEM.H
 # (in c:\program files\microsoft visual studio\VC98\Include\)
 # These were taken from MSVS-6.0sp5 on Windows 2000.
-# $Id$
 
 DRV_RESERVED                    = 0x0800
 DRV_MCI_FIRST                   = DRV_RESERVED

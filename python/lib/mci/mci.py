@@ -7,7 +7,6 @@
 #   Currently this is very incomplete, containing only those
 #   interfaces I need for audio work.
 #
-#   $Id$
 #==============================================================
 
 from ctypes import *

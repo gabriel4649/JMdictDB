@@ -655,9 +655,6 @@ CREATE OR REPLACE VIEW vt_entr3 AS (
 --
 -- Views for word conjugations.
 
--- $Revision$ $Date$
--- Copyright (c) 2006-2013, Stuart McGraw 
-
 DROP VIEW IF EXISTS vconotes, vinflxt, vinflxt_, vinfl, vconj, vcpos CASCADE;
 
 CREATE OR REPLACE VIEW vconj AS (

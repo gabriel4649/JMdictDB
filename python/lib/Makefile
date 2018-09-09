@@ -1,6 +1,3 @@
-# $Revision$
-# $Date$
-
 all: jelparse.py
 
 PYTHON = python3

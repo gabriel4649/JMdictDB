@@ -1,6 +1,3 @@
-# $Revision$
-# $Date$
-
 all: schema
 
 schema: schema.png schema.pdf schema.html

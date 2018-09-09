@@ -18,9 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11])
-
 # This program will process a file of wwwjdict submission data
 # and turn it into a set of files, one per submission, that can
 # be opened by cgi script jbedit.py to present an html Edit Entry
@@ -325,9 +322,7 @@ def parse_cmdline ():
 
 Arguments:  Name of input file containing raw submission data."""
 
-        v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
-                + " Rev %s (%s)" % __version__
-        p = OptionParser (usage=u, version=v)
+        p = OptionParser (usage=u)
 
         p.add_option ("-o", "--outdir", default='.',
             help="Path to directory in which to create output files "

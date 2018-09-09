@@ -18,9 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11]);
-
 # This program will read an Examples file containing paired
 # English and Japanese sentences and available for download
 # at
@@ -285,9 +282,7 @@ Arguments:
         filename -- Name of input examples file.  Default is
         "examples.txt"."""
 
-        v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
-                + " Rev %s (%s)" % __version__
-        p = OptionParser (usage=u, version=v, add_help_option=False)
+        p = OptionParser (usage=u, add_help_option=False)
 
         p.add_option ("--help",
             action="help", help="Print this help message.")

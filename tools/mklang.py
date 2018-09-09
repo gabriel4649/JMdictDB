@@ -18,10 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11]);
-
 import sys
 
 def main (args, opts):
@@ -71,9 +67,7 @@ def parse_cmdline ():
 Arguments:
         iso-639-file -- Name of the file containing the iso-639 data."""
 
-        v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
-                + " Rev %s (%s)" % __version__
-        p = OptionParser (usage=u, version=v, add_help_option=False)
+        p = OptionParser (usage=u, add_help_option=False)
         p.add_option ("-2", "--iso239-2",
             action="store_false", dest="format",
             help="Input file is a \"|\" delimited ISO-639-2 file. ")

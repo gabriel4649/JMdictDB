@@ -5,9 +5,6 @@ space/tabs in argument files.  Print names of changed files.
 This file is a modified version on the untabify.py script
 distributed with Python."""
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11]);
-
 import sys, os, re
 
 def main (args, opts):
@@ -60,8 +57,6 @@ def process (filename, tabsize, alltabs, noaction, suffix):
 import argparse
 
 def parse_cmdline ():
-        v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
-                + " Rev %s (%s)" % __version__
         p = argparse.ArgumentParser (description=
             "Replace tabs with spaces and remove trailing whitespace "
             "in files.")
@@ -80,7 +75,6 @@ def parse_cmdline ():
                 "of files that would have been modified.")
         p.add_argument ("-b", "--backup", metavar='SUFFIX', default='~',
             help='Backup filename suffix.  Default is "~"')
-        p.add_argument ('--version', action='version', version=v)
         p.epilog = ("\nExit status is 0 if no files modified, 1 if "
             "one or more files were modified, on 2 on other errors.")
         opts = p.parse_args ()

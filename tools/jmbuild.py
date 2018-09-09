@@ -18,9 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11])
-
 # WARNING --  this file has only been partially converted to Python3.
 
 # This program build a complete XML file by combining a DTD
@@ -110,7 +107,7 @@ Arguments:
             if ordered entries in the output file are wanted.
             """
 
-        p = OptionParser (usage=u, version="%s (%s)" % __version__[::-1])
+        p = OptionParser (usage=u)
 
         p.add_option ("-e", "--encoding", default="UTF-8",
             metavar="ENC",

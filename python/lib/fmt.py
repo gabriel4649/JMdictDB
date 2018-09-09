@@ -18,9 +18,6 @@
 #######################################################################
 
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11]);
-
 from collections import defaultdict
 import jdb
 

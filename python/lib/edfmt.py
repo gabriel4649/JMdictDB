@@ -19,9 +19,6 @@
 #######################################################################
 
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11])
-
 import sys, pdb
 import jdb, fmt
 from objects import *

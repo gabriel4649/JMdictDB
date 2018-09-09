@@ -4,9 +4,6 @@
 # Simple command line tool to find and display entries
 # in the JMdict database.
 
-__version__ = ("$Revision$"[11:-2],
-               "$Date$"[7:-11])
-
 import sys, os, inspect, pdb
 _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
 _ = os.path.join (os.path.dirname(_), 'python', 'lib')
@@ -169,9 +166,7 @@ arguments:  [text | number]...
         option.
         """
 
-        v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
-                + " Rev %s (%s)" % _VERSION_
-        p = OptionParser (usage=u, version=v, add_help_option=False,
+        p = OptionParser (usage=u, add_help_option=False,
                           option_class=MyOption)
 
         p.add_option ("--id", "-i", action="append", dest="id",

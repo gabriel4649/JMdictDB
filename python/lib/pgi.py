@@ -17,8 +17,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11]);
 """
 Module: Functions for writing Postgres "COPY" data to ".pgi" files.
 """

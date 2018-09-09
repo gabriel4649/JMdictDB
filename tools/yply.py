@@ -10,9 +10,6 @@
 # Based on the yply code written by David Beazley (dave@dabeaz.com)
 # October 2, 2006 and distributed with the examples in Ply-2.3.
 
-__version__ = ("$Revision$"[11:-2],
-               "$Date$"[7:-11])
-
 import sys, os, inspect, pdb
 _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
 _ = os.path.join (os.path.dirname(_), 'python', 'lib')
@@ -37,8 +34,7 @@ def parse_cmdline ():
   %prog will generate a PLY-compatible parser module from a YACC
   specification file."""
 
-        v = "Version %s (%s)" % __version__
-        p = OptionParser (usage=u, version=v)
+        p = OptionParser (usage=u)
         p.add_option ("-c", "--nocode",
             action="store_true", dest="nocode", default=False,
             help="Don't produce any of the semantic action code.  "\

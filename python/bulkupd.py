@@ -18,9 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110#1301, USA
 #######################################################################.
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11]);
-
 import sys, re, logging, pdb
 
 # Have to call basicConfig() before imports because edsubmit.py imports jmcgi.py
@@ -384,8 +381,6 @@ def parse_cmdline (cmdargs):
 "based on an input file that describes the entries to be modified " \
 "and the modifications to be made to them."
 
-        v = cmdargs[0][max (0,cmdargs[0].rfind('\\')+1):] \
-                + " Rev %s (%s)" % __version__
         p = ArgumentParser (description=u, formatter_class=ParagraphFormatter)
 
         p.add_argument ("filename", nargs='?', default=None,

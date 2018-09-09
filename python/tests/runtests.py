@@ -18,10 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11])
-
 # Run all or a subset of the JMdictDB tests.
 # Run with "--help" option for information on command line
 # arguments and options.
@@ -111,8 +107,7 @@ Arguments:
                 names matching the pattern, "test_*" (i.e. python
                 files matching "test_*.py") will be run."""
 
-        v = "%s (%s)" % __version__
-        p = OptionParser (usage=u, version=v)
+        p = OptionParser (usage=u)
         p.add_option ("-o", "--output", metavar="FILENAME",
             help="""Write details of test failures and errors to
                 FILENAME.  If not given details will be written

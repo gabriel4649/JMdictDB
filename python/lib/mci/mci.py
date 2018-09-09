@@ -10,8 +10,6 @@
 #   $Id$
 #==============================================================
 
-__Version__ = [(x.split())[1] for x in ("$Revision$","$Date$")]
-
 from ctypes import *
 try: from ctypes.wintypes import *
 except ValueError: raise ImportError ('mci module not available')

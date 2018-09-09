@@ -124,9 +124,6 @@
 # yet handled gracefully in the code -- so the result will
 # be an unhandled exception and traceback.)
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11]);
-
 import sys, os, datetime
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import logger; from logger import L; logger.enable()

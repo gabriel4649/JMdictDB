@@ -21,10 +21,6 @@
 # Generate a static keywords module from database kw tables or csv files.
 #
 
-
-__version__ = ("$Revision$"[11:-2],
-               "$Date$"[7:-11])
-
 import sys, os, inspect, pdb
 _ = os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0])
 _ = os.path.join (os.path.dirname(_), 'python', 'lib')
@@ -78,8 +74,7 @@ def parse_cmdline ():
 Arguments:
         csv-directory -- Path to directory containg csv files."""
 
-        v = "Version %s (%s)" % __version__
-        p = OptionParser (usage=u, version=v, add_help_option=False)
+        p = OptionParser (usage=u, add_help_option=False)
 
         p.add_option ("--help",
             action="help", help="Print this help message.")

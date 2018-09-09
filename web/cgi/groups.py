@@ -18,9 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11])
-
 import sys, cgi
 sys.path.extend (['../lib','../../python/lib','../python/lib'])
 import logger; from logger import L; logger.enable()

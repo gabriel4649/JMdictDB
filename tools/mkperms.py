@@ -24,10 +24,6 @@
 # stdout should be saved in file pg/mkperms.sql.
 #
 
-
-__version__ = ("$Revision$"[11:-2],
-               "$Date$"[7:-11])
-
 import sys, re, datetime
 
 def main (args, opts):

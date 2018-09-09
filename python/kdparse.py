@@ -18,8 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11]);
 # To do:
 # Misc/variant not processed.  Use xref?
 # Skip cinf records ignore skip_misclass, skip misclass type.
@@ -419,9 +417,7 @@ def parse_cmdline ():
 arguments:
   xmlfile          Filename of a JMdict XML file.  Utf-8 encoding expected."""
 
-        v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
-                + " Rev %s (%s)" % __version__
-        p = OptionParser (usage=u, version=v)
+        p = OptionParser (usage=u)
         p.add_option ("-b", "--begin",
              type="int", dest="b", default=0,
              help="Begin processing at first entry that occurs "

@@ -18,9 +18,6 @@
 #######################################################################
 
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11])
-
 # Parse Edict2 text into an JMdictDB Entr object.  Note that
 # edict2 is not a serialization format: there is information
 # in an Entr that is not representable in edict2 and will

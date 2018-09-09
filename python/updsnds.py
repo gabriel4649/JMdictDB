@@ -18,9 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11]);
-
 # This program will read a label file produced by Audacity,
 # attempt to find matching sounds already in the database,
 # and update the strt and leng parameters of the existing
@@ -171,9 +168,7 @@ Arguments:
         outfile -- Name of the output XML file.  If not given output
                 is written to stdout."""
 
-        v = sys.argv[0][max (0,sys.argv[0].rfind('\\')+1):] \
-                + " Rev %s (%s)" % __version__
-        p = OptionParser (usage=u, version=v, add_help_option=False,
+        p = OptionParser (usage=u, add_help_option=False,
                 formatter=IndentedHelpFormatterWithNL())
 
         p.add_option ("--help",

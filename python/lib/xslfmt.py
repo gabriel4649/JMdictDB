@@ -17,10 +17,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #######################################################################
 
-
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11]);
-
 """
 Apply an xslt transform to an entry formatted as xml.  Typically
 this is used with the "to_edit2.xsl" stylesheet to get a Edict2

@@ -18,9 +18,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #######################################################################
 
-__version__ = ('$Revision$'[11:-2],
-               '$Date$'[7:-11])
-
 # This page will present a form for entering new entries to
 # and for modifying existing entries.  Multiple entries can
 # be specified which will generate a page with multiple edit
